@@ -43,5 +43,6 @@ pub fn supported_output_formats() -> Vec<String> {
         "jpg".to_string(),
         "png".to_string(),
         "webp".to_string(),
+        "avif".to_string(),
     ]
 }

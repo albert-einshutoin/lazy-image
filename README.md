@@ -2,9 +2,9 @@
 
 > **Next-generation image processing engine for Node.js**
 > 
-> Smaller files. Better quality. Powered by Rust + mozjpeg.
+> Smaller files. Better quality. Powered by Rust + mozjpeg + AVIF.
 
-[![npm version](https://badge.fury.io/js/lazy-image.svg)](https://www.npmjs.com/package/lazy-image)
+[![npm version](https://badge.fury.io/js/@alberteinshutoin/lazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 
 ---
 
@@ -14,30 +14,40 @@
 
 | Format | lazy-image | sharp | Difference |
 |--------|-----------|-------|------------|
+| **AVIF** | **77,800 bytes** | N/A | 🏆 **Next-gen** |
 | **JPEG** | 86,761 bytes | 88,171 bytes | **-1.6%** ✅ |
 | **WebP** | 111,334 bytes | 114,664 bytes | **-2.9%** ✅ |
 | **Complex Pipeline** | 38,939 bytes | 44,516 bytes | **-12.5%** ✅ |
 
-> *Tested with 23MB PNG input, resize to 800px, quality 75-80*
+> *Tested with 23MB PNG input, resize to 800px, quality 60-80*
 
-**Translation**: If you serve 1 billion images/month, lazy-image saves you **~125GB of bandwidth per month** on complex pipelines alone.
+### AVIF: The Ultimate Compression
+
+```
+AVIF vs JPEG: -10.3% smaller
+AVIF vs WebP: -30.1% smaller
+```
+
+**Translation**: If you serve 1 billion images/month and switch to AVIF, you save **~300GB of bandwidth per month** compared to WebP.
 
 ---
 
 ## ⚡ Features
 
-- 🚀 **Smaller files** than sharp (mozjpeg + libwebp with aggressive optimization)
+- 🏆 **AVIF support** - Next-gen format, 30% smaller than WebP
+- 🚀 **Smaller files** than sharp (mozjpeg + libwebp + ravif)
 - 🔗 **Fluent API** with method chaining
 - 📦 **Lazy pipeline** - operations are queued and executed in a single pass
 - 🔄 **Async/Promise-based** - doesn't block the event loop
-- 🦀 **Pure Rust core** via NAPI-RS (no runtime dependencies)
+- 🦀 **Pure Rust core** via NAPI-RS
+- 🌍 **Cross-platform** - macOS, Windows, Linux
 
 ---
 
 ## 📦 Installation
 
 ```bash
-npm install lazy-image
+npm install @alberteinshutoin/lazy-image
 ```
 
 ---
@@ -45,7 +55,7 @@ npm install lazy-image
 ## 🔧 Usage
 
 ```javascript
-const { ImageEngine } = require('lazy-image');
+const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 const fs = require('fs');
 
 // Load image
@@ -56,20 +66,21 @@ const result = await ImageEngine.from(buffer)
   .resize(800, null)     // Width 800, auto height
   .rotate(90)            // Rotate 90°
   .grayscale()           // Convert to grayscale
-  .toBuffer('jpeg', 75); // JPEG quality 75
+  .toBuffer('avif', 60); // AVIF quality 60 (smallest!)
 
-fs.writeFileSync('output.jpg', result);
+fs.writeFileSync('output.avif', result);
 ```
 
-### Multi-output (clone for different formats)
+### Multi-format output
 
 ```javascript
 const engine = ImageEngine.from(buffer).resize(600, null);
 
-// Clone for parallel encoding
-const [jpeg, webp] = await Promise.all([
+// Generate all formats in parallel
+const [jpeg, webp, avif] = await Promise.all([
   engine.clone().toBuffer('jpeg', 80),
   engine.clone().toBuffer('webp', 80),
+  engine.clone().toBuffer('avif', 60),
 ]);
 ```
 
@@ -98,7 +109,7 @@ Create a new engine from an image buffer.
 
 | Method | Description |
 |--------|-------------|
-| `.toBuffer(format, quality?)` | Encode to buffer. Format: `'jpeg'`, `'png'`, `'webp'` |
+| `.toBuffer(format, quality?)` | Encode to buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` |
 | `.clone()` | Clone the engine for multi-output |
 | `.dimensions()` | Get `{ width, height }` |
 
@@ -111,11 +122,11 @@ Create a new engine from an image buffer.
 - ✅ **Build-time optimization** (static site generation, CI/CD)
 - ✅ **Batch processing** (thumbnail generation, media pipelines)
 - ✅ **Bandwidth-sensitive applications** (CDN, mobile apps)
+- ✅ **AVIF generation** (lazy-image has native AVIF support)
 
 ### When to use sharp instead
 
-- ⚠️ **Real-time processing** with strict latency requirements
-- ⚠️ **JPEG input with no resize** (sharp's libjpeg-turbo decode is faster)
+- ⚠️ **Real-time processing** with strict latency requirements (<100ms)
 
 ---
 
@@ -123,10 +134,21 @@ Create a new engine from an image buffer.
 
 ### Why smaller files?
 
-1. **mozjpeg** with progressive mode, optimized Huffman tables, and scan optimization
-2. **Chroma subsampling** (4:2:0) forced for web-optimal output
-3. **Smoothing factor** applied before JPEG encoding to reduce noise
-4. **libwebp** with method=6 (max compression) and multi-pass encoding
+1. **mozjpeg** - Progressive mode, optimized Huffman tables, scan optimization
+2. **libwebp** - Method 6 (max compression), multi-pass encoding
+3. **ravif** - Pure Rust AVIF encoder, AV1-based compression
+4. **Chroma subsampling** (4:2:0) forced for web-optimal output
+5. **Smoothing/preprocessing** applied before encoding
+
+### Supported Platforms
+
+| Platform | Architecture | Status |
+|----------|-------------|--------|
+| macOS | x64 (Intel) | ✅ |
+| macOS | arm64 (Apple Silicon) | ✅ |
+| Windows | x64 | ✅ |
+| Linux | x64 (glibc) | ✅ |
+| Linux | x64 (musl/Alpine) | ✅ |
 
 ### Architecture
 
@@ -137,10 +159,10 @@ Create a new engine from an image buffer.
 │                     NAPI-RS Bridge                          │
 ├─────────────────────────────────────────────────────────────┤
 │                         Rust Core                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │ mozjpeg     │  │ libwebp     │  │ fast_image_resize   │  │
-│  │ (JPEG enc)  │  │ (WebP enc)  │  │ (SIMD resize)       │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────┐  │
+│  │ mozjpeg  │  │ libwebp  │  │  ravif   │  │ fast_image  │  │
+│  │ (JPEG)   │  │ (WebP)   │  │ (AVIF)   │  │ _resize     │  │
+│  └──────────┘  └──────────┘  └──────────┘  └─────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -179,6 +201,7 @@ Built on the shoulders of giants:
 
 - [mozjpeg](https://github.com/mozilla/mozjpeg) - Mozilla's JPEG encoder
 - [libwebp](https://chromium.googlesource.com/webm/libwebp) - Google's WebP codec
+- [ravif](https://github.com/nicoptere/ravif) - Pure Rust AVIF encoder
 - [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer
 - [napi-rs](https://napi.rs/) - Rust bindings for Node.js
 

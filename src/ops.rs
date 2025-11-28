@@ -40,6 +40,7 @@ pub enum OutputFormat {
     Jpeg { quality: u8 },
     Png,
     WebP { quality: u8 },
+    Avif { quality: u8 },
 }
 
 impl OutputFormat {
@@ -49,6 +50,7 @@ impl OutputFormat {
             "jpeg" | "jpg" => Ok(Self::Jpeg { quality: q }),
             "png" => Ok(Self::Png),
             "webp" => Ok(Self::WebP { quality: q }),
+            "avif" => Ok(Self::Avif { quality: q }),
             other => Err(format!("unsupported format: {other}")),
         }
     }

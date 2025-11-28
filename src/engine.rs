@@ -11,6 +11,8 @@ use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
 use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 use napi::bindgen_prelude::*;
 use napi::{Env, JsBuffer, Task};
+use ravif::{Encoder as AvifEncoder, Img};
+use rgb::FromSlice;
 use std::io::Cursor;
 use std::panic;
 
@@ -456,6 +458,32 @@ impl EncodeTask {
         
         Ok(mem.to_vec())
     }
+
+    /// Encode to AVIF - next-gen format, even smaller than WebP
+    fn encode_avif(img: &DynamicImage, quality: u8) -> Result<Vec<u8>> {
+        let rgba = img.to_rgba8();
+        let (width, height) = rgba.dimensions();
+        let pixels = rgba.as_raw();
+
+        // Convert to ravif's expected format
+        let img_ref = Img::new(
+            pixels.as_rgba(),
+            width as usize,
+            height as usize,
+        );
+
+        // Create encoder with quality setting
+        // ravif quality: 0-100 (higher = better quality, larger file)
+        // For compression, we invert: lower quality = smaller file
+        let encoder = AvifEncoder::new()
+            .with_quality(quality as f32)
+            .with_speed(6);  // 1-10, higher = faster but larger
+
+        let result = encoder.encode_rgba(img_ref)
+            .map_err(|e| Error::from_reason(format!("AVIF encode failed: {e}")))?;
+
+        Ok(result.avif_file)
+    }
 }
 
 #[napi]
@@ -475,6 +503,7 @@ impl Task for EncodeTask {
             OutputFormat::Jpeg { quality } => Self::encode_jpeg(&processed, *quality),
             OutputFormat::Png => Self::encode_png(&processed),
             OutputFormat::WebP { quality } => Self::encode_webp(&processed, *quality),
+            OutputFormat::Avif { quality } => Self::encode_avif(&processed, *quality),
         }
     }
 
