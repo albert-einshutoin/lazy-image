@@ -1,0 +1,47 @@
+{
+  "name": "lazy-image",
+  "version": "0.1.0",
+  "description": "Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/lazy-image"
+  },
+  "keywords": [
+    "image",
+    "resize",
+    "jpeg",
+    "webp",
+    "png",
+    "mozjpeg",
+    "sharp",
+    "rust",
+    "napi",
+    "optimization"
+  ],
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "build": "napi build --platform --release",
+    "test": "node test.js"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0",
+    "sharp": "^0.34.5"
+  },
+  "napi": {
+    "name": "lazy-image",
+    "triples": {
+      "defaults": true,
+      "additional": []
+    }
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "*.node"
+  ]
+}

@@ -1,0 +1,42 @@
+[package]
+name = "lazy-image"
+version = "0.1.0"
+edition = "2021"
+description = "Next-gen image processing engine - faster, smaller, better than sharp"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# NAPI binding
+napi = { version = "2.14", features = ["async"] }
+napi-derive = "2.14"
+
+# Image decoding/encoding
+image = { version = "0.24", default-features = false, features = [
+    "jpeg",
+    "png",
+    "webp",
+] }
+
+# SIMD-accelerated image resizing - this is where we catch libvips
+fast_image_resize = "5"
+
+# High-quality JPEG encoding - the core of our advantage over sharp
+mozjpeg = "0.10"
+
+# WebP encoding
+webp = "0.2"
+
+# Parallelism - use it or remove it
+rayon = "1.8"
+
+# Error handling done right
+thiserror = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true

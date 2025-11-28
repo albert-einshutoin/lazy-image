@@ -1,0 +1,9 @@
+# Cargo configuration for napi-rs on macOS
+# The napi_* symbols are provided by Node.js at runtime, not at link time
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-arg=-undefined", "-C", "link-arg=dynamic_lookup"]
+
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-undefined", "-C", "link-arg=dynamic_lookup"]
+

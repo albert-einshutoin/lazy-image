@@ -1,0 +1,23 @@
+# Rust
+/target
+
+# Node
+node_modules/
+*.node
+
+# Test outputs
+out_*.jpg
+out_*.webp
+out_*.png
+test_input.jpg
+test_input.png
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
