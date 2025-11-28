@@ -15,8 +15,51 @@ extern crate napi_derive;
 mod engine;
 mod ops;
 
+use image::io::Reader as ImageReader;
+use napi::bindgen_prelude::*;
+use std::io::Cursor;
+
 // Re-export the engine for NAPI
 pub use engine::ImageEngine;
+
+/// Image metadata returned by inspect()
+#[napi(object)]
+pub struct ImageMetadata {
+    /// Image width in pixels
+    pub width: u32,
+    /// Image height in pixels
+    pub height: u32,
+    /// Detected format (jpeg, png, webp, gif, etc.)
+    pub format: Option<String>,
+}
+
+/// Inspect image metadata WITHOUT decoding pixels.
+/// This reads only the header bytes - extremely fast (<1ms).
+/// 
+/// Use this to check dimensions before processing, or to reject
+/// images that are too large without wasting CPU on decoding.
+#[napi]
+pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
+    let cursor = Cursor::new(buffer.as_ref());
+    
+    let reader = ImageReader::new(cursor)
+        .with_guessed_format()
+        .map_err(|e| Error::from_reason(format!("failed to read image header: {e}")))?;
+    
+    // Get format from header (no decoding)
+    let format = reader.format().map(|f| format!("{:?}", f).to_lowercase());
+    
+    // Get dimensions from header (minimal decoding - just reads header bytes)
+    let (width, height) = reader
+        .into_dimensions()
+        .map_err(|e| Error::from_reason(format!("failed to read dimensions: {e}")))?;
+    
+    Ok(ImageMetadata {
+        width,
+        height,
+        format,
+    })
+}
 
 /// Get library version
 #[napi]

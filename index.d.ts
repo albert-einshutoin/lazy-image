@@ -7,6 +7,23 @@ export interface Dimensions {
   width: number
   height: number
 }
+/** Image metadata returned by inspect() */
+export interface ImageMetadata {
+  /** Image width in pixels */
+  width: number
+  /** Image height in pixels */
+  height: number
+  /** Detected format (jpeg, png, webp, gif, etc.) */
+  format?: string
+}
+/**
+ * Inspect image metadata WITHOUT decoding pixels.
+ * This reads only the header bytes - extremely fast (<1ms).
+ *
+ * Use this to check dimensions before processing, or to reject
+ * images that are too large without wasting CPU on decoding.
+ */
+export declare function inspect(buffer: Buffer): ImageMetadata
 /** Get library version */
 export declare function version(): string
 /** Get supported input formats */
