@@ -23,7 +23,7 @@
   "license": "MIT",
   "scripts": {
     "build": "napi build --platform --release",
-    "test": "node test.js"
+    "test": "node test/basic.test.js"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.0",

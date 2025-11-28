@@ -361,7 +361,7 @@ impl EncodeTask {
     }
 
     /// Apply all queued operations
-    fn apply_ops(mut img: DynamicImage, ops: &[Operation]) -> DynamicImage {
+    fn apply_ops(mut img: DynamicImage, ops: &[Operation]) -> Result<DynamicImage> {
         for op in ops {
             img = match op {
                 Operation::Resize { width, height } => {
@@ -372,13 +372,23 @@ impl EncodeTask {
                         *height
                     );
                     // Use SIMD-accelerated fast_image_resize
-                    Self::fast_resize(&img, w, h).unwrap_or_else(|_| {
+                    Self::fast_resize(&img, w, h).unwrap_or_else(|e| {
                         // Fallback to image crate if fast_image_resize fails
+                        eprintln!("[lazy-image] fast_resize failed ({}), falling back to Lanczos3", e);
                         img.resize_exact(w, h, image::imageops::FilterType::Lanczos3)
                     })
                 }
 
                 Operation::Crop { x, y, width, height } => {
+                    // Validate crop bounds
+                    let img_w = img.width();
+                    let img_h = img.height();
+                    if *x + *width > img_w || *y + *height > img_h {
+                        return Err(Error::from_reason(format!(
+                            "crop bounds ({}+{}, {}+{}) exceed image dimensions ({}x{})",
+                            x, width, y, height, img_w, img_h
+                        )));
+                    }
                     img.crop_imm(*x, *y, *width, *height)
                 }
 
@@ -390,7 +400,13 @@ impl EncodeTask {
                         -90 => img.rotate270(),
                         -180 => img.rotate180(),
                         -270 => img.rotate90(),
-                        _ => img, // Ignore invalid rotations
+                        0 => img, // No-op for 0 degrees
+                        _ => {
+                            return Err(Error::from_reason(format!(
+                                "unsupported rotation angle: {}. Only 0, 90, 180, 270 (and negatives) are supported",
+                                degrees
+                            )));
+                        }
                     }
                 }
 
@@ -408,10 +424,8 @@ impl EncodeTask {
                 }
             };
         }
-        img
+        Ok(img)
     }
-
-    /// SIMD-accelerated resize using fast_image_resize
     fn fast_resize(img: &DynamicImage, dst_width: u32, dst_height: u32) -> std::result::Result<DynamicImage, String> {
         let src_width = img.width();
         let src_height = img.height();
@@ -709,7 +723,7 @@ impl Task for EncodeTask {
         let img = self.decode()?;
 
         // 2. Apply operations
-        let processed = Self::apply_ops(img, &self.ops);
+        let processed = Self::apply_ops(img, &self.ops)?;
 
         // 3. Encode with ICC profile preservation
         let icc = self.icc_profile.as_deref();
@@ -761,7 +775,7 @@ impl Task for WriteFileTask {
         let img = encode_task.decode()?;
 
         // 2. Apply operations
-        let processed = EncodeTask::apply_ops(img, &encode_task.ops);
+        let processed = EncodeTask::apply_ops(img, &encode_task.ops)?;
 
         // 3. Encode with ICC profile preservation
         let icc = encode_task.icc_profile.as_deref();

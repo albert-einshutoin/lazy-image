@@ -262,6 +262,9 @@ ICC color profiles are automatically:
 
 This ensures photos from iPhones (P3 color space) or professional cameras (Adobe RGB) maintain their intended colors.
 
+
+> **Note**: AVIF format does not currently preserve ICC profiles (ravif limitation).
+> AVIF output assumes sRGB color space. Use JPEG or PNG for color-critical workflows.
 ### Supported Platforms
 
 | Platform | Architecture | Status |
