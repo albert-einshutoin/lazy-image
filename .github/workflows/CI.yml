@@ -43,13 +43,11 @@ jobs:
               sudo apt-get update
               sudo apt-get install -y nasm
               npm run build -- --target x86_64-unknown-linux-gnu
-          - host: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            build: |
-              sudo apt-get update
-              sudo apt-get install -y gcc-aarch64-linux-gnu nasm
-              export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
-              npm run build -- --target aarch64-unknown-linux-gnu
+          # TODO: aarch64-unknown-linux-gnu requires native ARM64 runner or Docker
+          # Cross-compilation of mozjpeg/libwebp is complex
+          # - host: ubuntu-latest
+          #   target: aarch64-unknown-linux-gnu
+          #   build: ...
           
           # Linux (musl)
           - host: ubuntu-latest
