@@ -29,6 +29,7 @@ use ravif::{Encoder as AvifEncoder, Img};
 use rgb::FromSlice;
 use std::io::Cursor;
 use std::panic;
+use std::sync::Arc;
 
 /// The main image processing engine.
 ///
@@ -43,13 +44,13 @@ use std::panic;
 #[napi]
 pub struct ImageEngine {
     /// Raw source bytes - we delay decoding until compute()
-    source: Option<Vec<u8>>,
+    source: Option<Arc<Vec<u8>>>,
     /// Decoded image (populated after first decode or on sync operations)
     decoded: Option<DynamicImage>,
     /// Queued operations
     ops: Vec<Operation>,
     /// ICC color profile extracted from source image
-    icc_profile: Option<Vec<u8>>,
+    icc_profile: Option<Arc<Vec<u8>>>,
 }
 
 #[napi]
@@ -65,10 +66,10 @@ impl ImageEngine {
         let data = buffer.to_vec();
         
         // Extract ICC profile before any processing
-        let icc_profile = extract_icc_profile(&data);
+        let icc_profile = extract_icc_profile(&data).map(Arc::new);
         
         ImageEngine {
-            source: Some(data),
+            source: Some(Arc::new(data)),
             decoded: None,
             ops: Vec::new(),
             icc_profile,
@@ -86,10 +87,10 @@ impl ImageEngine {
             .map_err(|e| Error::from_reason(format!("failed to read file '{}': {}", path, e)))?;
 
         // Extract ICC profile before any processing
-        let icc_profile = extract_icc_profile(&data);
+        let icc_profile = extract_icc_profile(&data).map(Arc::new);
 
         Ok(ImageEngine {
-            source: Some(data),
+            source: Some(Arc::new(data)),
             decoded: None,
             ops: Vec::new(),
             icc_profile,
@@ -288,11 +289,11 @@ impl ImageEngine {
 // =============================================================================
 
 pub struct EncodeTask {
-    source: Option<Vec<u8>>,
+    source: Option<Arc<Vec<u8>>>,
     decoded: Option<DynamicImage>,
     ops: Vec<Operation>,
     format: OutputFormat,
-    icc_profile: Option<Vec<u8>>,
+    icc_profile: Option<Arc<Vec<u8>>>,
 }
 
 impl EncodeTask {
@@ -722,7 +723,7 @@ impl EncodeTask {
         let processed = Self::apply_ops(img, &self.ops)?;
 
         // 3. Encode with ICC profile preservation
-        let icc = self.icc_profile.as_deref();
+        let icc = self.icc_profile.as_ref().map(|v| v.as_slice());
         match &self.format {
             OutputFormat::Jpeg { quality } => Self::encode_jpeg(&processed, *quality, icc),
             OutputFormat::Png => Self::encode_png(&processed, icc),
@@ -751,11 +752,11 @@ impl Task for EncodeTask {
 // =============================================================================
 
 pub struct WriteFileTask {
-    source: Option<Vec<u8>>,
+    source: Option<Arc<Vec<u8>>>,
     decoded: Option<DynamicImage>,
     ops: Vec<Operation>,
     format: OutputFormat,
-    icc_profile: Option<Vec<u8>>,
+    icc_profile: Option<Arc<Vec<u8>>>,
     output_path: String,
 }
 
