@@ -24,6 +24,12 @@ export interface ImageMetadata {
  * images that are too large without wasting CPU on decoding.
  */
 export declare function inspect(buffer: Buffer): ImageMetadata
+/**
+ * Inspect image metadata from a file path WITHOUT loading into Node.js heap.
+ * **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
+ * This is the recommended way for server-side metadata inspection.
+ */
+export declare function inspectFile(path: string): ImageMetadata
 /** Get library version */
 export declare function version(): string
 /** Get supported input formats */
@@ -48,6 +54,12 @@ export declare class ImageEngine {
    * Extracts ICC profile from the source image if present.
    */
   static from(buffer: Buffer): ImageEngine
+  /**
+   * Create engine from a file path.
+   * **Memory-efficient**: Reads directly into Rust heap, bypassing Node.js V8 heap.
+   * This is the recommended way for server-side processing of large images.
+   */
+  static fromPath(path: string): ImageEngine
   /** Create a clone of this engine (for multi-output scenarios) */
   clone(): ImageEngine
   /** Resize image. Width or height can be null to maintain aspect ratio. */
@@ -72,6 +84,14 @@ export declare class ImageEngine {
    * quality: 1-100 (default 80, ignored for PNG)
    */
   toBuffer(format: string, quality?: number | undefined | null): Promise<unknown>
+  /**
+   * Encode and write directly to a file asynchronously.
+   * **Memory-efficient**: Combined with fromPath(), this enables
+   * full file-to-file processing without touching Node.js heap.
+   *
+   * Returns the number of bytes written.
+   */
+  toFile(path: string, format: string, quality?: number | undefined | null): Promise<unknown>
   /** Get image dimensions (decodes image if needed) */
   dimensions(): Dimensions
   /**

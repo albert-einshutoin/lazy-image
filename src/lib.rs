@@ -61,6 +61,36 @@ pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
     })
 }
 
+/// Inspect image metadata from a file path WITHOUT loading into Node.js heap.
+/// **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
+/// This is the recommended way for server-side metadata inspection.
+#[napi(js_name = "inspectFile")]
+pub fn inspect_file(path: String) -> Result<ImageMetadata> {
+    use std::fs::File;
+    use std::io::BufReader;
+
+    let file = File::open(&path)
+        .map_err(|e| Error::from_reason(format!("failed to open file '{}': {}", path, e)))?;
+    
+    let reader = ImageReader::new(BufReader::new(file))
+        .with_guessed_format()
+        .map_err(|e| Error::from_reason(format!("failed to read image header: {e}")))?;
+    
+    // Get format from header (no decoding)
+    let format = reader.format().map(|f| format!("{:?}", f).to_lowercase());
+    
+    // Get dimensions from header (minimal decoding - just reads header bytes)
+    let (width, height) = reader
+        .into_dimensions()
+        .map_err(|e| Error::from_reason(format!("failed to read dimensions: {e}")))?;
+    
+    Ok(ImageMetadata {
+        width,
+        height,
+        format,
+    })
+}
+
 /// Get library version
 #[napi]
 pub fn version() -> String {

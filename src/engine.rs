@@ -62,6 +62,27 @@ impl ImageEngine {
         }
     }
 
+    /// Create engine from a file path. 
+    /// **Memory-efficient**: Reads directly into Rust heap, bypassing Node.js V8 heap.
+    /// This is the recommended way for server-side processing of large images.
+    #[napi(factory, js_name = "fromPath")]
+    pub fn from_path(path: String) -> Result<Self> {
+        use std::fs;
+
+        let data = fs::read(&path)
+            .map_err(|e| Error::from_reason(format!("failed to read file '{}': {}", path, e)))?;
+
+        // Extract ICC profile before any processing
+        let icc_profile = extract_icc_profile(&data);
+
+        Ok(ImageEngine {
+            source: Some(data),
+            decoded: None,
+            ops: Vec::new(),
+            icc_profile,
+        })
+    }
+
     /// Create a clone of this engine (for multi-output scenarios)
     #[napi(js_name = "clone")]
     pub fn clone_engine(&self) -> Result<ImageEngine> {
@@ -163,6 +184,37 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+        }))
+    }
+
+    /// Encode and write directly to a file asynchronously.
+    /// **Memory-efficient**: Combined with fromPath(), this enables
+    /// full file-to-file processing without touching Node.js heap.
+    /// 
+    /// Returns the number of bytes written.
+    #[napi(js_name = "toFile")]
+    pub fn to_file(
+        &mut self,
+        path: String,
+        format: String,
+        quality: Option<u8>,
+    ) -> Result<AsyncTask<WriteFileTask>> {
+        let output_format = OutputFormat::from_str(&format, quality)
+            .map_err(Error::from_reason)?;
+
+        // Take ownership of source data
+        let source = self.source.take();
+        let decoded = self.decoded.take();
+        let ops = std::mem::take(&mut self.ops);
+        let icc_profile = self.icc_profile.take();
+
+        Ok(AsyncTask::new(WriteFileTask {
+            source,
+            decoded,
+            ops,
+            format: output_format,
+            icc_profile,
+            output_path: path,
         }))
     }
 
@@ -648,6 +700,68 @@ impl Task for EncodeTask {
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
         env.create_buffer_with_data(output).map(|b| b.into_raw())
+    }
+}
+
+// =============================================================================
+// WRITE FILE TASK - File output without touching Node.js heap
+// =============================================================================
+
+pub struct WriteFileTask {
+    source: Option<Vec<u8>>,
+    decoded: Option<DynamicImage>,
+    ops: Vec<Operation>,
+    format: OutputFormat,
+    icc_profile: Option<Vec<u8>>,
+    output_path: String,
+}
+
+#[napi]
+impl Task for WriteFileTask {
+    type Output = u32; // Bytes written
+    type JsValue = u32;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        use std::fs::File;
+        use std::io::Write;
+
+        // Reuse EncodeTask's processing logic
+        let encode_task = EncodeTask {
+            source: self.source.take(),
+            decoded: self.decoded.take(),
+            ops: std::mem::take(&mut self.ops),
+            format: self.format.clone(),
+            icc_profile: self.icc_profile.take(),
+        };
+
+        // 1. Decode
+        let img = encode_task.decode()?;
+
+        // 2. Apply operations
+        let processed = EncodeTask::apply_ops(img, &encode_task.ops);
+
+        // 3. Encode with ICC profile preservation
+        let icc = encode_task.icc_profile.as_deref();
+        let data = match &encode_task.format {
+            OutputFormat::Jpeg { quality } => EncodeTask::encode_jpeg(&processed, *quality, icc)?,
+            OutputFormat::Png => EncodeTask::encode_png(&processed, icc)?,
+            OutputFormat::WebP { quality } => EncodeTask::encode_webp(&processed, *quality, icc)?,
+            OutputFormat::Avif { quality } => EncodeTask::encode_avif(&processed, *quality, icc)?,
+        };
+
+        // 4. Write to file
+        let mut file = File::create(&self.output_path)
+            .map_err(|e| Error::from_reason(format!("failed to create file '{}': {}", self.output_path, e)))?;
+        
+        let bytes_written = data.len() as u32;
+        file.write_all(&data)
+            .map_err(|e| Error::from_reason(format!("failed to write file '{}': {}", self.output_path, e)))?;
+        
+        Ok(bytes_written)
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        Ok(output)
     }
 }
 
