@@ -83,7 +83,7 @@ export declare class ImageEngine {
    * format: "jpeg", "jpg", "png", "webp"
    * quality: 1-100 (default 80, ignored for PNG)
    */
-  toBuffer(format: string, quality?: number | undefined | null): Promise<unknown>
+  toBuffer(format: string, quality?: number | undefined | null): Promise<Buffer>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -91,7 +91,7 @@ export declare class ImageEngine {
    *
    * Returns the number of bytes written.
    */
-  toFile(path: string, format: string, quality?: number | undefined | null): Promise<unknown>
+  toFile(path: string, format: string, quality?: number | undefined | null): Promise<number>
   /** Get image dimensions (decodes image if needed) */
   dimensions(): Dimensions
   /**

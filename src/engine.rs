@@ -5,6 +5,19 @@
 // 2. Runs everything in a single pass on compute()
 // 3. Uses NAPI AsyncTask to not block Node.js main thread
 
+
+// =============================================================================
+// SECURITY LIMITS
+// =============================================================================
+
+/// Maximum allowed image dimension (width or height).
+/// Images larger than 32768x32768 are rejected to prevent decompression bombs.
+/// This is the same limit used by libvips/sharp.
+const MAX_DIMENSION: u32 = 32768;
+
+/// Maximum allowed total pixels (width * height).
+/// 100 megapixels = 400MB uncompressed RGBA. Beyond this is likely malicious.
+const MAX_PIXELS: u64 = 100_000_000;
 use crate::ops::{Operation, OutputFormat};
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
@@ -163,7 +176,7 @@ impl ImageEngine {
     /// Encode to buffer asynchronously.
     /// format: "jpeg", "jpg", "png", "webp"
     /// quality: 1-100 (default 80, ignored for PNG)
-    #[napi]
+    #[napi(ts_return_type = "Promise<Buffer>")]
     pub fn to_buffer(
         &mut self,
         format: String,
@@ -192,7 +205,7 @@ impl ImageEngine {
     /// full file-to-file processing without touching Node.js heap.
     /// 
     /// Returns the number of bytes written.
-    #[napi(js_name = "toFile")]
+    #[napi(js_name = "toFile", ts_return_type = "Promise<number>")]
     pub fn to_file(
         &mut self,
         path: String,
@@ -257,11 +270,16 @@ impl ImageEngine {
             let img = image::load_from_memory(source)
                 .map_err(|e| Error::from_reason(format!("failed to decode: {e}")))?;
             
+            // Security check: reject decompression bombs
+            let (w, h) = img.dimensions();
+            check_dimensions(w, h)?;
+            
             self.decoded = Some(img);
         }
         
-        // Safe because we just set it above
-        Ok(self.decoded.as_ref().unwrap())
+        // Safe: we just set it above, use ok_or for safety
+        self.decoded.as_ref()
+            .ok_or_else(|| Error::from_reason("decode failed unexpectedly"))
     }
 }
 
@@ -281,7 +299,7 @@ impl EncodeTask {
     /// Decode image from source bytes
     /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
     fn decode(&self) -> Result<DynamicImage> {
-        // Prefer already decoded image
+        // Prefer already decoded image (already validated)
         if let Some(ref img) = self.decoded {
             return Ok(img.clone());
         }
@@ -290,16 +308,21 @@ impl EncodeTask {
             .ok_or_else(|| Error::from_reason("no image source"))?;
 
         // Check magic bytes for JPEG (0xFF 0xD8)
-        if source.len() >= 2 && source[0] == 0xFF && source[1] == 0xD8 {
+        let img = if source.len() >= 2 && source[0] == 0xFF && source[1] == 0xD8 {
             // JPEG detected - use mozjpeg for TURBO speed
-            Self::decode_jpeg_mozjpeg(source)
+            Self::decode_jpeg_mozjpeg(source)?
         } else {
             // PNG, WebP, etc - use image crate
             image::load_from_memory(source)
-                .map_err(|e| Error::from_reason(format!("decode failed: {e}")))
-        }
-    }
+                .map_err(|e| Error::from_reason(format!("decode failed: {e}")))?
+        };
 
+        // Security check: reject decompression bombs
+        let (w, h) = img.dimensions();
+        check_dimensions(w, h)?;
+
+        Ok(img)
+    }
     /// Decode JPEG using mozjpeg (backed by libjpeg-turbo)
     /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
     fn decode_jpeg_mozjpeg(data: &[u8]) -> Result<DynamicImage> {
@@ -748,16 +771,37 @@ impl Task for WriteFileTask {
             OutputFormat::WebP { quality } => EncodeTask::encode_webp(&processed, *quality, icc)?,
             OutputFormat::Avif { quality } => EncodeTask::encode_avif(&processed, *quality, icc)?,
         };
-
-        // 4. Write to file
-        let mut file = File::create(&self.output_path)
-            .map_err(|e| Error::from_reason(format!("failed to create file '{}': {}", self.output_path, e)))?;
+        // 4. Atomic write: write to temp file, then rename on success
+        let temp_path = format!("{}.tmp.{}", self.output_path, std::process::id());
         
-        let bytes_written = data.len() as u32;
-        file.write_all(&data)
-            .map_err(|e| Error::from_reason(format!("failed to write file '{}': {}", self.output_path, e)))?;
+        let write_result = (|| -> Result<u32> {
+            let mut file = File::create(&temp_path)
+                .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
+            
+            let bytes_written = data.len() as u32;
+            file.write_all(&data)
+                .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
+            
+            // Ensure data is flushed to disk
+            file.sync_all()
+                .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
+            
+            Ok(bytes_written)
+        })();
         
-        Ok(bytes_written)
+        match write_result {
+            Ok(bytes) => {
+                // Success: rename temp file to final destination
+                std::fs::rename(&temp_path, &self.output_path)
+                    .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
+                Ok(bytes)
+            }
+            Err(e) => {
+                // Failure: clean up temp file
+                let _ = std::fs::remove_file(&temp_path);
+                Err(e)
+            }
+        }
     }
 
     fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
@@ -792,6 +836,25 @@ fn calc_resize_dimensions(
 
 /// Extract ICC profile from image data.
 /// Supports JPEG (APP2 marker), PNG (iCCP chunk), and WebP (ICCP chunk).
+
+/// Check if image dimensions are within safe limits.
+/// Returns an error if the image is too large (potential decompression bomb).
+fn check_dimensions(width: u32, height: u32) -> Result<()> {
+    if width > MAX_DIMENSION || height > MAX_DIMENSION {
+        return Err(Error::from_reason(format!(
+            "image too large: {}x{} exceeds max dimension {}", 
+            width, height, MAX_DIMENSION
+        )));
+    }
+    let pixels = width as u64 * height as u64;
+    if pixels > MAX_PIXELS {
+        return Err(Error::from_reason(format!(
+            "image too large: {} pixels exceeds max {}", 
+            pixels, MAX_PIXELS
+        )));
+    }
+    Ok(())
+}
 fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
     // Check magic bytes to determine format
     if data.len() < 12 {
