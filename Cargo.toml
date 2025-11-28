@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.5.1"
+version = "0.5.2"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
@@ -39,8 +39,6 @@ img-parts = "0.3"
 # Compression for PNG ICC chunks
 flate2 = "1.0"
 
-# Parallelism - use it or remove it
-rayon = "1.8"
 
 # Error handling done right
 thiserror = "2"

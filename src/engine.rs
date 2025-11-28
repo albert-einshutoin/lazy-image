@@ -711,14 +711,10 @@ impl EncodeTask {
 
         Ok(result.avif_file)
     }
-}
 
-#[napi]
-impl Task for EncodeTask {
-    type Output = Vec<u8>;
-    type JsValue = JsBuffer;
-
-    fn compute(&mut self) -> Result<Self::Output> {
+    /// Process image: decode → apply ops → encode
+    /// This is the core processing pipeline shared by toBuffer and toFile.
+    fn process_and_encode(&mut self) -> Result<Vec<u8>> {
         // 1. Decode
         let img = self.decode()?;
 
@@ -733,6 +729,16 @@ impl Task for EncodeTask {
             OutputFormat::WebP { quality } => Self::encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => Self::encode_avif(&processed, *quality, icc),
         }
+    }
+}
+
+#[napi]
+impl Task for EncodeTask {
+    type Output = Vec<u8>;
+    type JsValue = JsBuffer;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        self.process_and_encode()
     }
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
@@ -762,8 +768,8 @@ impl Task for WriteFileTask {
         use std::fs::File;
         use std::io::Write;
 
-        // Reuse EncodeTask's processing logic
-        let encode_task = EncodeTask {
+        // Create EncodeTask and use its process_and_encode method
+        let mut encode_task = EncodeTask {
             source: self.source.take(),
             decoded: self.decoded.take(),
             ops: std::mem::take(&mut self.ops),
@@ -771,21 +777,10 @@ impl Task for WriteFileTask {
             icc_profile: self.icc_profile.take(),
         };
 
-        // 1. Decode
-        let img = encode_task.decode()?;
+        // Process image using shared logic
+        let data = encode_task.process_and_encode()?;
 
-        // 2. Apply operations
-        let processed = EncodeTask::apply_ops(img, &encode_task.ops)?;
-
-        // 3. Encode with ICC profile preservation
-        let icc = encode_task.icc_profile.as_deref();
-        let data = match &encode_task.format {
-            OutputFormat::Jpeg { quality } => EncodeTask::encode_jpeg(&processed, *quality, icc)?,
-            OutputFormat::Png => EncodeTask::encode_png(&processed, icc)?,
-            OutputFormat::WebP { quality } => EncodeTask::encode_webp(&processed, *quality, icc)?,
-            OutputFormat::Avif { quality } => EncodeTask::encode_avif(&processed, *quality, icc)?,
-        };
-        // 4. Atomic write: write to temp file, then rename on success
+        // Atomic write: write to temp file, then rename on success
         let temp_path = format!("{}.tmp.{}", self.output_path, std::process::id());
         
         let write_result = (|| -> Result<u32> {
@@ -817,7 +812,6 @@ impl Task for WriteFileTask {
             }
         }
     }
-
     fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
         Ok(output)
     }

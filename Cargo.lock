@@ -423,7 +423,7 @@ checksum = "00810f1d8b74be64b13dbf3db89ac67740615d6c891f0e7b6179326533011a07"
 
 [[package]]
 name = "lazy-image"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "fast_image_resize",
  "flate2",
@@ -433,7 +433,6 @@ dependencies = [
  "napi",
  "napi-derive",
  "ravif",
- "rayon",
  "rgb",
  "thiserror 2.0.17",
  "webp",
