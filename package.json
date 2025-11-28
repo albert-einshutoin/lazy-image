@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/lazy-image"
+    "url": "https://github.com/albert-einshutoin/lazy-image"
   },
   "keywords": [
     "image",
@@ -43,5 +43,6 @@
     "index.js",
     "index.d.ts",
     "*.node"
-  ]
+  ],
+  "homepage": "https://github.com/albert-einshutoin/lazy-image#readme"
 }
