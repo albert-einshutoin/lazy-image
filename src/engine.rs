@@ -8,6 +8,7 @@
 use crate::ops::{Operation, OutputFormat};
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
+use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
 use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 use napi::bindgen_prelude::*;
 use napi::{Env, JsBuffer, Task};
@@ -34,6 +35,8 @@ pub struct ImageEngine {
     decoded: Option<DynamicImage>,
     /// Queued operations
     ops: Vec<Operation>,
+    /// ICC color profile extracted from source image
+    icc_profile: Option<Vec<u8>>,
 }
 
 #[napi]
@@ -43,12 +46,19 @@ impl ImageEngine {
     // =========================================================================
 
     /// Create engine from a buffer. Decoding is lazy.
+    /// Extracts ICC profile from the source image if present.
     #[napi(factory)]
     pub fn from(buffer: Buffer) -> Self {
+        let data = buffer.to_vec();
+        
+        // Extract ICC profile before any processing
+        let icc_profile = extract_icc_profile(&data);
+        
         ImageEngine {
-            source: Some(buffer.to_vec()),
+            source: Some(data),
             decoded: None,
             ops: Vec::new(),
+            icc_profile,
         }
     }
 
@@ -59,6 +69,7 @@ impl ImageEngine {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
+            icc_profile: self.icc_profile.clone(),
         })
     }
 
@@ -144,12 +155,14 @@ impl ImageEngine {
         let source = self.source.take();
         let decoded = self.decoded.take();
         let ops = std::mem::take(&mut self.ops);
+        let icc_profile = self.icc_profile.take();
 
         Ok(AsyncTask::new(EncodeTask {
             source,
             decoded,
             ops,
             format: output_format,
+            icc_profile,
         }))
     }
 
@@ -163,6 +176,13 @@ impl ImageEngine {
         let img = self.ensure_decoded()?;
         let (w, h) = img.dimensions();
         Ok(Dimensions { width: w, height: h })
+    }
+
+    /// Check if an ICC color profile was extracted from the source image.
+    /// Returns the profile size in bytes, or null if no profile exists.
+    #[napi(js_name = "hasIccProfile")]
+    pub fn has_icc_profile(&self) -> Option<u32> {
+        self.icc_profile.as_ref().map(|p| p.len() as u32)
     }
 }
 
@@ -202,6 +222,7 @@ pub struct EncodeTask {
     decoded: Option<DynamicImage>,
     ops: Vec<Operation>,
     format: OutputFormat,
+    icc_profile: Option<Vec<u8>>,
 }
 
 impl EncodeTask {
@@ -360,7 +381,7 @@ impl EncodeTask {
     }
 
     /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings
-    fn encode_jpeg(img: &DynamicImage, quality: u8) -> Result<Vec<u8>> {
+    fn encode_jpeg(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         let rgb = img.to_rgb8();
         let (w, h) = rgb.dimensions();
         let pixels = rgb.into_raw();
@@ -415,19 +436,106 @@ impl EncodeTask {
             output
         });
 
-        result.map_err(|_| Error::from_reason("mozjpeg panicked during encoding"))
+        let encoded = result.map_err(|_| Error::from_reason("mozjpeg panicked during encoding"))?;
+
+        // Embed ICC profile using img-parts if present
+        if let Some(icc_data) = icc {
+            Self::embed_icc_jpeg(encoded, icc_data)
+        } else {
+            Ok(encoded)
+        }
+    }
+
+    /// Embed ICC profile into JPEG using img-parts
+    fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> Result<Vec<u8>> {
+        use img_parts::jpeg::{Jpeg, JpegSegment};
+        use img_parts::Bytes;
+
+        let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data))
+            .map_err(|e| Error::from_reason(format!("failed to parse JPEG for ICC: {e}")))?;
+
+        // Build ICC marker: "ICC_PROFILE\0" + chunk_num + total_chunks + data
+        // For simplicity, we embed as a single chunk (works for profiles < 64KB)
+        let mut marker_data = Vec::with_capacity(14 + icc.len());
+        marker_data.extend_from_slice(b"ICC_PROFILE\0");
+        marker_data.push(1); // Chunk number
+        marker_data.push(1); // Total chunks
+        marker_data.extend_from_slice(icc);
+
+        // Create APP2 segment
+        let segment = JpegSegment::new_with_contents(
+            img_parts::jpeg::markers::APP2,
+            Bytes::from(marker_data),
+        );
+
+        // Insert after SOI (before other segments)
+        let segments = jpeg.segments_mut();
+        segments.insert(0, segment);
+
+        // Encode back
+        let mut output = Vec::new();
+        jpeg.encoder()
+            .write_to(&mut output)
+            .map_err(|e| Error::from_reason(format!("failed to write JPEG with ICC: {e}")))?;
+
+        Ok(output)
     }
 
     /// Encode to PNG using image crate
-    fn encode_png(img: &DynamicImage) -> Result<Vec<u8>> {
+    fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         let mut buf = Vec::new();
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| Error::from_reason(format!("PNG encode failed: {e}")))?;
-        Ok(buf)
+
+        // Embed ICC profile if present
+        if let Some(icc_data) = icc {
+            Self::embed_icc_png(buf, icc_data)
+        } else {
+            Ok(buf)
+        }
+    }
+
+    /// Embed ICC profile into PNG using img-parts
+    fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> Result<Vec<u8>> {
+        use img_parts::png::Png;
+        use img_parts::{Bytes, ImageICC};
+        use flate2::write::ZlibEncoder;
+        use flate2::Compression;
+        use std::io::Write;
+
+        let mut png = Png::from_bytes(Bytes::from(png_data))
+            .map_err(|e| Error::from_reason(format!("failed to parse PNG for ICC: {e}")))?;
+
+        // iCCP chunk format: profile_name (null-terminated) + compression_method (0) + compressed_data
+        let profile_name = b"ICC\0"; // Short name
+        let compression_method = 0u8; // zlib
+
+        // Compress ICC data
+        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(icc)
+            .map_err(|e| Error::from_reason(format!("failed to compress ICC: {e}")))?;
+        let compressed = encoder.finish()
+            .map_err(|e| Error::from_reason(format!("failed to finish ICC compression: {e}")))?;
+
+        let mut chunk_data = Vec::with_capacity(profile_name.len() + 1 + compressed.len());
+        chunk_data.extend_from_slice(profile_name);
+        chunk_data.push(compression_method);
+        chunk_data.extend_from_slice(&compressed);
+
+        // Use img-parts' ICC API
+        png.set_icc_profile(Some(Bytes::from(chunk_data)));
+
+        // Encode back
+        let mut output = Vec::new();
+        png.encoder()
+            .write_to(&mut output)
+            .map_err(|e| Error::from_reason(format!("failed to write PNG with ICC: {e}")))?;
+
+        Ok(output)
     }
 
     /// Encode to WebP with optimized settings
-    fn encode_webp(img: &DynamicImage, quality: u8) -> Result<Vec<u8>> {
+    fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         // Use RGB instead of RGBA for smaller files
         let rgb = img.to_rgb8();
         let (w, h) = rgb.dimensions();
@@ -456,11 +564,38 @@ impl EncodeTask {
         let mem = encoder.encode_advanced(&config)
             .map_err(|e| Error::from_reason(format!("WebP encode failed: {e:?}")))?;
         
-        Ok(mem.to_vec())
+        let encoded = mem.to_vec();
+
+        // Embed ICC profile if present
+        if let Some(icc_data) = icc {
+            Self::embed_icc_webp(encoded, icc_data)
+        } else {
+            Ok(encoded)
+        }
+    }
+
+    /// Embed ICC profile into WebP using img-parts
+    fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> Result<Vec<u8>> {
+        use img_parts::webp::WebP;
+        use img_parts::Bytes;
+
+        let mut webp = WebP::from_bytes(Bytes::from(webp_data))
+            .map_err(|e| Error::from_reason(format!("failed to parse WebP for ICC: {e}")))?;
+
+        // Set the ICCP chunk directly
+        webp.set_icc_profile(Some(Bytes::from(icc.to_vec())));
+
+        // Encode back
+        let mut output = Vec::new();
+        webp.encoder()
+            .write_to(&mut output)
+            .map_err(|e| Error::from_reason(format!("failed to write WebP with ICC: {e}")))?;
+
+        Ok(output)
     }
 
     /// Encode to AVIF - next-gen format, even smaller than WebP
-    fn encode_avif(img: &DynamicImage, quality: u8) -> Result<Vec<u8>> {
+    fn encode_avif(img: &DynamicImage, quality: u8, _icc: Option<&[u8]>) -> Result<Vec<u8>> {
         let rgba = img.to_rgba8();
         let (width, height) = rgba.dimensions();
         let pixels = rgba.as_raw();
@@ -474,10 +609,13 @@ impl EncodeTask {
 
         // Create encoder with quality setting
         // ravif quality: 0-100 (higher = better quality, larger file)
-        // For compression, we invert: lower quality = smaller file
         let encoder = AvifEncoder::new()
             .with_quality(quality as f32)
             .with_speed(6);  // 1-10, higher = faster but larger
+
+        // Note: ravif 0.11 doesn't have native ICC embedding API
+        // AVIF files assume sRGB by default, which is acceptable for web use
+        // TODO: Consider using libavif bindings for full ICC support in the future
 
         let result = encoder.encode_rgba(img_ref)
             .map_err(|e| Error::from_reason(format!("AVIF encode failed: {e}")))?;
@@ -498,12 +636,13 @@ impl Task for EncodeTask {
         // 2. Apply operations
         let processed = Self::apply_ops(img, &self.ops);
 
-        // 3. Encode
+        // 3. Encode with ICC profile preservation
+        let icc = self.icc_profile.as_deref();
         match &self.format {
-            OutputFormat::Jpeg { quality } => Self::encode_jpeg(&processed, *quality),
-            OutputFormat::Png => Self::encode_png(&processed),
-            OutputFormat::WebP { quality } => Self::encode_webp(&processed, *quality),
-            OutputFormat::Avif { quality } => Self::encode_avif(&processed, *quality),
+            OutputFormat::Jpeg { quality } => Self::encode_jpeg(&processed, *quality, icc),
+            OutputFormat::Png => Self::encode_png(&processed, icc),
+            OutputFormat::WebP { quality } => Self::encode_webp(&processed, *quality, icc),
+            OutputFormat::Avif { quality } => Self::encode_avif(&processed, *quality, icc),
         }
     }
 
@@ -535,4 +674,49 @@ fn calc_resize_dimensions(
         }
         (None, None) => (orig_w, orig_h),
     }
+}
+
+/// Extract ICC profile from image data.
+/// Supports JPEG (APP2 marker), PNG (iCCP chunk), and WebP (ICCP chunk).
+fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
+    // Check magic bytes to determine format
+    if data.len() < 12 {
+        return None;
+    }
+
+    // JPEG: starts with 0xFF 0xD8
+    if data[0] == 0xFF && data[1] == 0xD8 {
+        return extract_icc_from_jpeg(data);
+    }
+
+    // PNG: starts with 0x89 0x50 0x4E 0x47
+    if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 {
+        return extract_icc_from_png(data);
+    }
+
+    // WebP: starts with "RIFF" then 4 bytes size then "WEBP"
+    if &data[0..4] == b"RIFF" && &data[8..12] == b"WEBP" {
+        return extract_icc_from_webp(data);
+    }
+
+    None
+}
+
+/// Extract ICC profile from JPEG data
+fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
+    let jpeg = Jpeg::from_bytes(data.to_vec().into()).ok()?;
+    jpeg.icc_profile().map(|icc| icc.to_vec())
+}
+
+/// Extract ICC profile from PNG data
+fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
+    let png = Png::from_bytes(data.to_vec().into()).ok()?;
+    png.icc_profile().map(|icc| icc.to_vec())
+}
+
+/// Extract ICC profile from WebP data
+fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
+    use img_parts::webp::WebP;
+    let webp = WebP::from_bytes(data.to_vec().into()).ok()?;
+    webp.icc_profile().map(|icc| icc.to_vec())
 }

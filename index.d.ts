@@ -43,7 +43,10 @@ export declare function supportedOutputFormats(): Array<string>
  * ```
  */
 export declare class ImageEngine {
-  /** Create engine from a buffer. Decoding is lazy. */
+  /**
+   * Create engine from a buffer. Decoding is lazy.
+   * Extracts ICC profile from the source image if present.
+   */
   static from(buffer: Buffer): ImageEngine
   /** Create a clone of this engine (for multi-output scenarios) */
   clone(): ImageEngine
@@ -71,4 +74,9 @@ export declare class ImageEngine {
   toBuffer(format: string, quality?: number | undefined | null): Promise<unknown>
   /** Get image dimensions (decodes image if needed) */
   dimensions(): Dimensions
+  /**
+   * Check if an ICC color profile was extracted from the source image.
+   * Returns the profile size in bytes, or null if no profile exists.
+   */
+  hasIccProfile(): number | null
 }
