@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "repository": {
@@ -46,11 +46,11 @@
     }
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-x64": "0.7.4",
-    "@alberteinshutoin/lazy-image-darwin-arm64": "0.7.4",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.7.4",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.7.4",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.7.4"
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.7.5",
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.7.5",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.7.5",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.7.5",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.7.5"
   },
   "engines": {
     "node": ">= 18"

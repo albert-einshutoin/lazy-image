@@ -529,6 +529,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.7.5 | Fixed platform-specific package publishing (robust CI/CD workflow) |
 | v0.7.4 | Fixed platform-specific package publishing (CI/CD improvements) |
 | v0.7.3 | Batch processing concurrency control (limit parallel workers) |
 | v0.7.2 | Format-specific default quality (JPEG: 85, WebP: 80, AVIF: 60) |
