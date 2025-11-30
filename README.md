@@ -81,25 +81,27 @@ Only the binary for your platform is downloaded.
 
 **lazy-image is 2-3x smaller** because all dependencies (mozjpeg, libwebp, ravif) are statically linked into a single binary, while sharp requires a separate libvips package.
 
-### Manual Platform Installation
+### Installation Notes
 
-If automatic installation fails, install your platform package manually:
+The main package (`@alberteinshutoin/lazy-image`) automatically installs the correct platform-specific binary via `optionalDependencies`.  
+You typically only need to run:
 
 ```bash
-# macOS Apple Silicon
-npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-darwin-arm64
+npm install @alberteinshutoin/lazy-image
+```
 
-# macOS Intel
-npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-darwin-x64
+**Note**: Platform-specific packages are published automatically via CI/CD.  
+If you encounter installation issues, check [GitHub Actions](https://github.com/albert-einshutoin/lazy-image/actions) to ensure the latest release was successfully published.
 
-# Windows x64
-npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-win32-x64-msvc
+### Manual Platform Installation (if needed)
 
-# Linux x64 (glibc - Ubuntu, Debian, etc.)
-npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-linux-x64-gnu
+If automatic installation fails, you may need to install your platform package manually.  
+However, **platform-specific packages are currently only published via CI/CD on tag releases**.  
+For development, build from source:
 
-# Linux x64 (musl - Alpine)
-npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-linux-x64-musl
+```bash
+npm install
+npm run build
 ```
 
 ---

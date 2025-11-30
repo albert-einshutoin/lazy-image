@@ -153,18 +153,36 @@ jobs:
         run: |
           npm exec -- napi prepublish --skip-gh-release
           # List generated packages
+          echo "Generated packages:"
           ls -la npm/ || true
+          echo "Package directories:"
+          find npm -type d -maxdepth 1 || true
 
       - name: Publish platform packages
         run: |
+          set -e
+          published=0
+          failed=0
           for pkg in npm/*; do
             if [ -d "$pkg" ]; then
-              echo "Publishing $pkg..."
+              pkg_name=$(basename "$pkg")
+              echo "Publishing $pkg_name..."
               cd "$pkg"
-              npm publish --access public --provenance || true
+              if npm publish --access public --provenance; then
+                echo "✅ Successfully published $pkg_name"
+                published=$((published + 1))
+              else
+                echo "❌ Failed to publish $pkg_name"
+                failed=$((failed + 1))
+              fi
               cd ../..
             fi
           done
+          echo "Published: $published, Failed: $failed"
+          if [ $failed -gt 0 ]; then
+            echo "Some packages failed to publish"
+            exit 1
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
