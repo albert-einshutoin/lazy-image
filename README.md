@@ -198,11 +198,39 @@ await optimizeImage('photo.jpg', 'thumb.webp', {
 const engine = ImageEngine.from(buffer).resize(600, null);
 
 // Generate all formats in parallel
+// Note: Each format has optimal default quality (JPEG: 85, WebP: 80, AVIF: 60)
 const [jpeg, webp, avif] = await Promise.all([
-  engine.clone().toBuffer('jpeg', 80),
-  engine.clone().toBuffer('webp', 80),
-  engine.clone().toBuffer('avif', 60),
+  engine.clone().toBuffer('jpeg'),      // Uses default quality 85
+  engine.clone().toBuffer('webp'),      // Uses default quality 80
+  engine.clone().toBuffer('avif'),      // Uses default quality 60
 ]);
+
+// Or specify custom quality
+const [jpeg2, webp2, avif2] = await Promise.all([
+  engine.clone().toBuffer('jpeg', 90), // Custom quality
+  engine.clone().toBuffer('webp', 85),
+  engine.clone().toBuffer('avif', 70),
+]);
+```
+
+### Quality Settings (v0.7.2+)
+
+Each format has an optimal default quality based on its compression characteristics:
+
+| Format | Default Quality | Recommended Range | Notes |
+|--------|----------------|-------------------|-------|
+| **JPEG** | 85 | 70-95 | Higher quality for better detail retention |
+| **WebP** | 80 | 70-90 | Balanced quality and file size |
+| **AVIF** | 60 | 50-80 | High compression efficiency means lower quality still looks great |
+
+**Why different defaults?**
+- **JPEG (85)**: JPEG benefits from higher quality to avoid compression artifacts
+- **WebP (80)**: WebP's superior compression allows good quality at 80
+- **AVIF (60)**: AVIF's advanced compression means 60 quality often matches JPEG 85 visually
+
+You can always override the default by specifying quality explicitly:
+```javascript
+await engine.toBuffer('jpeg', 90); // Override default (85 → 90)
 ```
 
 ### Performance Metrics (v0.6.0+)
@@ -298,9 +326,9 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 
 | Method | Description |
 |--------|-------------|
-| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` |
-| `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics |
-| `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient) |
+| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
+| `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
+| `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Quality defaults: JPEG=85, WebP=80, AVIF=60 |
 | `.processBatch(inputs, outDir, format, quality?)` | Process multiple images in parallel |
 | `.clone()` | Clone the engine for multi-output |
 
@@ -484,6 +512,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.7.2 | Format-specific default quality (JPEG: 85, WebP: 80, AVIF: 60) |
 | v0.7.1 | Platform-specific packages (reduced download from 42MB to ~6-9MB) |
 | v0.7.0 | Built-in presets (`thumbnail`, `avatar`, `hero`, `social`) |
 | v0.6.0 | Performance metrics (`toBufferWithMetrics`), batch processing (`processBatch`), color space API, adaptive encoder settings |

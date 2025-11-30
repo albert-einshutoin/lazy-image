@@ -55,13 +55,29 @@ pub enum OutputFormat {
 }
 
 impl OutputFormat {
+    /// Create OutputFormat from string with format-specific default quality.
+    /// 
+    /// Default quality by format (when quality is None):
+    /// - JPEG: 85 (high quality, balanced file size)
+    /// - WebP: 80 (optimal for WebP's compression characteristics)
+    /// - AVIF: 60 (AVIF's high compression efficiency means lower quality still looks great)
+    /// 
+    /// These defaults are chosen based on each format's characteristics and real-world usage.
     pub fn from_str(format: &str, quality: Option<u8>) -> Result<Self, String> {
-        let q = quality.unwrap_or(80);
         match format.to_lowercase().as_str() {
-            "jpeg" | "jpg" => Ok(Self::Jpeg { quality: q }),
+            "jpeg" | "jpg" => {
+                let q = quality.unwrap_or(85); // JPEG default: 85
+                Ok(Self::Jpeg { quality: q })
+            }
             "png" => Ok(Self::Png),
-            "webp" => Ok(Self::WebP { quality: q }),
-            "avif" => Ok(Self::Avif { quality: q }),
+            "webp" => {
+                let q = quality.unwrap_or(80); // WebP default: 80
+                Ok(Self::WebP { quality: q })
+            }
+            "avif" => {
+                let q = quality.unwrap_or(60); // AVIF default: 60 (high compression efficiency)
+                Ok(Self::Avif { quality: q })
+            }
             other => Err(format!("unsupported format: {other}")),
         }
     }

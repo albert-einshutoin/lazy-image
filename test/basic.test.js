@@ -210,6 +210,39 @@ async function runTests() {
         assert(threw, 'should have thrown an error');
     });
 
+    // Default quality tests (v0.7.2+)
+    await asyncTest('JPEG default quality is 85', async () => {
+        // Test that JPEG uses quality 85 when not specified
+        // We can't directly test the quality value, but we can verify it works
+        const result1 = await ImageEngine.from(buffer).resize(100).toBuffer('jpeg');
+        const result2 = await ImageEngine.from(buffer).resize(100).toBuffer('jpeg', 85);
+        // Both should produce valid output
+        assert(result1.length > 0, 'default quality should work');
+        assert(result2.length > 0, 'explicit quality 85 should work');
+        // Default quality (85) should produce similar or larger file than explicit 85
+        // (they should be the same since default is 85)
+        assert(Math.abs(result1.length - result2.length) < result1.length * 0.1, 
+            'default quality should match explicit 85');
+    });
+
+    await asyncTest('WebP default quality is 80', async () => {
+        const result1 = await ImageEngine.from(buffer).resize(100).toBuffer('webp');
+        const result2 = await ImageEngine.from(buffer).resize(100).toBuffer('webp', 80);
+        assert(result1.length > 0, 'default quality should work');
+        assert(result2.length > 0, 'explicit quality 80 should work');
+        assert(Math.abs(result1.length - result2.length) < result1.length * 0.1,
+            'default quality should match explicit 80');
+    });
+
+    await asyncTest('AVIF default quality is 60', async () => {
+        const result1 = await ImageEngine.from(buffer).resize(100).toBuffer('avif');
+        const result2 = await ImageEngine.from(buffer).resize(100).toBuffer('avif', 60);
+        assert(result1.length > 0, 'default quality should work');
+        assert(result2.length > 0, 'explicit quality 60 should work');
+        assert(Math.abs(result1.length - result2.length) < result1.length * 0.1,
+            'default quality should match explicit 60');
+    });
+
     // Summary
     console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
     process.exit(failed > 0 ? 1 : 0);
