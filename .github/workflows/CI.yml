@@ -259,42 +259,41 @@ jobs:
             echo "✅ Created npm/$platform/package.json"
           done
 
-      - name: Generate npm packages
+      - name: Finalize npm packages
         run: |
-          # Verify structure before running napi prepublish
-          echo "=== Verifying structure before napi prepublish ==="
+          # Verify structure
+          echo "=== Verifying structure ==="
           for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-x64-musl; do
-            if [ -f "npm/$platform/lazy-image.$platform.node" ]; then
-              echo "✅ npm/$platform/lazy-image.$platform.node exists"
+            if [ -f "npm/$platform/lazy-image.$platform.node" ] && [ -f "npm/$platform/package.json" ]; then
+              echo "✅ npm/$platform/ - both .node and package.json exist"
             else
-              echo "❌ npm/$platform/lazy-image.$platform.node MISSING"
+              echo "❌ npm/$platform/ - missing files"
+              exit 1
             fi
           done
           
-          # Run napi prepublish
+          # Verify package.json contents
           echo ""
-          echo "=== Running napi prepublish ==="
-          npm exec -- napi prepublish --skip-gh-release || {
-            echo "❌ napi prepublish failed"
-            echo "Current npm/ structure:"
-            find npm -type f | head -20
-            exit 1
-          }
+          echo "=== Verifying package.json contents ==="
+          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-x64-musl; do
+            echo "Package: $platform"
+            cat "npm/$platform/package.json" | jq -r '.name, .version, .main' || cat "npm/$platform/package.json"
+            echo ""
+          done
           
           # List generated packages
-          echo ""
           echo "=== Generated packages ==="
           ls -la npm/ || true
           echo ""
           echo "=== Package directories ==="
           find npm -type d -maxdepth 1 || true
           echo ""
-          echo "=== Package contents (first 3) ==="
+          echo "=== Package contents ==="
           for pkg_dir in npm/*/; do
             if [ -d "$pkg_dir" ]; then
               pkg_name=$(basename "$pkg_dir")
               echo "Package: $pkg_name"
-              ls -la "$pkg_dir" | head -5
+              ls -la "$pkg_dir"
               echo ""
             fi
           done
