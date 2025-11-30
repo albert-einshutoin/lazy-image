@@ -45,7 +45,8 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "*.node"
+    "*.node",
+    "README.md"
   ],
   "homepage": "https://github.com/albert-einshutoin/lazy-image#readme"
 }

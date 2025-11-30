@@ -416,4 +416,17 @@ Built on the shoulders of giants:
 
 ---
 
+## 🧭 Project Direction & Roadmap
+
+lazy-image has a focused scope: web image optimization for backends, CDNs, and build pipelines.
+
+See **[docs/ROADMAP.md](./docs/ROADMAP.md)** for:
+
+- Vision & positioning
+- In-scope vs out-of-scope features
+- High-level version roadmap
+- Contribution guidelines (what we accept / reject)
+
+---
+
 **Ship it.** 🚀
