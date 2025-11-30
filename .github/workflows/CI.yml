@@ -146,11 +146,59 @@ jobs:
         with:
           path: artifacts
 
-      - name: Move artifacts
+      - name: Prepare artifacts for napi prepublish
         run: |
-          # Move all .node files from artifact subdirectories to root
-          find artifacts -name "*.node" -exec cp {} . \;
-          ls -la *.node
+          # napi prepublish expects .node files in npm/{platform}/ directories
+          # Create npm directory structure and copy .node files to correct locations
+          mkdir -p npm
+          
+          # Map artifact names to napi platform names
+          # artifacts/bindings-x86_64-apple-darwin/*.node -> npm/darwin-x64/
+          # artifacts/bindings-aarch64-apple-darwin/*.node -> npm/darwin-arm64/
+          # artifacts/bindings-x86_64-pc-windows-msvc/*.node -> npm/win32-x64-msvc/
+          # artifacts/bindings-x86_64-unknown-linux-gnu/*.node -> npm/linux-x64-gnu/
+          # artifacts/bindings-x86_64-unknown-linux-musl/*.node -> npm/linux-x64-musl/
+          
+          for artifact_dir in artifacts/*/; do
+            if [ -d "$artifact_dir" ]; then
+              # Extract platform from artifact directory name
+              artifact_name=$(basename "$artifact_dir")
+              
+              # Map to napi platform names
+              case "$artifact_name" in
+                bindings-x86_64-apple-darwin)
+                  platform="darwin-x64"
+                  ;;
+                bindings-aarch64-apple-darwin)
+                  platform="darwin-arm64"
+                  ;;
+                bindings-x86_64-pc-windows-msvc)
+                  platform="win32-x64-msvc"
+                  ;;
+                bindings-x86_64-unknown-linux-gnu)
+                  platform="linux-x64-gnu"
+                  ;;
+                bindings-x86_64-unknown-linux-musl)
+                  platform="linux-x64-musl"
+                  ;;
+                *)
+                  echo "Unknown platform: $artifact_name"
+                  continue
+                  ;;
+              esac
+              
+              # Create platform directory and copy .node file
+              mkdir -p "npm/$platform"
+              find "$artifact_dir" -name "*.node" -exec cp {} "npm/$platform/" \;
+              echo "Copied .node file for $platform"
+            fi
+          done
+          
+          # List what we have
+          echo "Platform directories created:"
+          find npm -type d -maxdepth 1
+          echo "Node files:"
+          find npm -name "*.node"
 
       - name: Generate npm packages
         run: |
