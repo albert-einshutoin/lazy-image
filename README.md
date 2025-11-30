@@ -60,13 +60,15 @@ Only the binary for your platform is downloaded.
 | Package | Size | Description |
 |---------|------|-------------|
 | `@alberteinshutoin/lazy-image` | ~15 KB | Main package (JS + types) |
-| `@alberteinshutoin/lazy-image-darwin-arm64` | ~5.5 MB | macOS Apple Silicon |
-| `@alberteinshutoin/lazy-image-darwin-x64` | ~6.0 MB | macOS Intel |
-| `@alberteinshutoin/lazy-image-win32-x64-msvc` | ~6.5 MB | Windows x64 |
-| `@alberteinshutoin/lazy-image-linux-x64-gnu` | ~8.0 MB | Linux x64 (glibc) |
-| `@alberteinshutoin/lazy-image-linux-x64-musl` | ~8.5 MB | Linux x64 (musl/Alpine) |
+| `@alberteinshutoin/lazy-image-darwin-arm64` | ~5.7 MB | macOS Apple Silicon |
+| `@alberteinshutoin/lazy-image-darwin-x64` | ~8.5 MB | macOS Intel |
+| `@alberteinshutoin/lazy-image-win32-x64-msvc` | ~9.1 MB | Windows x64 |
+| `@alberteinshutoin/lazy-image-linux-x64-gnu` | ~9.1 MB | Linux x64 (glibc) |
+| `@alberteinshutoin/lazy-image-linux-x64-musl` | ~9.1 MB | Linux x64 (musl/Alpine) |
 
 **Total download**: ~6-9 MB (one platform only)
+
+> **Note**: Actual sizes may vary slightly. These are approximate unpacked sizes from npm registry.
 
 ### Size Comparison with sharp
 
@@ -74,10 +76,10 @@ Only the binary for your platform is downloaded.
 
 | Platform | lazy-image | sharp (actual total) |
 |----------|------------|---------------------|
-| macOS ARM64 | **~5.5 MB** | ~17 MB (534KB + 274KB + 16.1MB) |
-| macOS Intel | **~6.0 MB** | ~18 MB |
-| Linux x64 | **~8.0 MB** | ~21 MB |
-| Windows x64 | **~6.5 MB** | ~15 MB |
+| macOS ARM64 | **~5.7 MB** | ~17 MB (534KB + 274KB + 16.1MB) |
+| macOS Intel | **~8.5 MB** | ~18 MB |
+| Linux x64 | **~9.1 MB** | ~21 MB |
+| Windows x64 | **~9.1 MB** | ~15 MB |
 
 **lazy-image is 2-3x smaller** because all dependencies (mozjpeg, libwebp, ravif) are statically linked into a single binary, while sharp requires a separate libvips package.
 
@@ -95,9 +97,10 @@ npm install @alberteinshutoin/lazy-image
 - npm automatically installs the correct platform package via `optionalDependencies`
 
 **Publishing:**
-- Platform-specific packages are published automatically via CI/CD on tag releases (e.g., `v0.7.2`)
+- Platform-specific packages are published automatically via CI/CD on tag releases (e.g., `v0.7.7`)
 - CI/README changes are tested but don't trigger npm publish (only tag releases do)
 - If you encounter installation issues, check [GitHub Actions](https://github.com/albert-einshutoin/lazy-image/actions) to ensure the latest release was successfully published
+- All platform packages are published with proper npm token permissions for the `@alberteinshutoin` scope
 
 ### Building from Source
 
@@ -343,10 +346,10 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 
 | Method | Description |
 |--------|-------------|
-| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
-| `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
-| `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Quality defaults: JPEG=85, WebP=80, AVIF=60 |
-| `.processBatch(inputs, outDir, format, quality?, concurrency?)` | Process multiple images in parallel. Concurrency: number of workers (0 = CPU cores) |
+| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Quality defaults: JPEG=85, WebP=80, AVIF=60. If quality is omitted, format-specific default is used. |
+| `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
+| `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
+| `.processBatch(inputs, outDir, format, quality?, concurrency?)` | Process multiple images in parallel. `inputs`: array of file paths. `concurrency`: number of workers (0 or undefined = CPU cores). Returns array of `BatchResult` |
 | `.clone()` | Clone the engine for multi-output |
 
 ### Utilities
