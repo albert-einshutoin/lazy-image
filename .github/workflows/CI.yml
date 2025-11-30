@@ -258,9 +258,12 @@ jobs:
                 cpu: ['$cpu_part'],
                 files: ['lazy-image.${platform}.node'],
                 license: 'MIT',
+                publishConfig: {
+                  access: 'public'
+                },
                 repository: {
                   type: 'git',
-                  url: 'https://github.com/albert-einshutoin/lazy-image'
+                  url: 'https://github.com/albert-einshutoin/lazy-image.git'
                 },
                 engines: {
                   node: '>= 18'
