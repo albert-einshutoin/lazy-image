@@ -27,8 +27,7 @@
     "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.0",
-    "sharp": "^0.34.5"
+    "@napi-rs/cli": "^2.18.0"
   },
   "napi": {
     "name": "lazy-image",
