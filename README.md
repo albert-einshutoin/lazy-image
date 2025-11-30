@@ -68,6 +68,19 @@ Only the binary for your platform is downloaded.
 
 **Total download**: ~6-9 MB (one platform only)
 
+### Size Comparison with sharp
+
+> **Note**: sharp's main package (534 KB) is misleading - it requires `@img/sharp-libvips-*` (~16-20 MB) as a separate download.
+
+| Platform | lazy-image | sharp (actual total) |
+|----------|------------|---------------------|
+| macOS ARM64 | **~5.5 MB** | ~17 MB (534KB + 274KB + 16.1MB) |
+| macOS Intel | **~6.0 MB** | ~18 MB |
+| Linux x64 | **~8.0 MB** | ~21 MB |
+| Windows x64 | **~6.5 MB** | ~15 MB |
+
+**lazy-image is 2-3x smaller** because all dependencies (mozjpeg, libwebp, ravif) are statically linked into a single binary, while sharp requires a separate libvips package.
+
 ### Manual Platform Installation
 
 If automatic installation fails, install your platform package manually:
