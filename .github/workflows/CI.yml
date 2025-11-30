@@ -137,6 +137,18 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org
+      
+      - name: Verify npm authentication
+        run: |
+          echo "Verifying npm authentication..."
+          npm whoami || {
+            echo "❌ npm authentication failed"
+            echo "Please check that NPM_TOKEN secret is set correctly"
+            exit 1
+          }
+          echo "✅ npm authentication successful"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
@@ -300,27 +312,73 @@ jobs:
 
       - name: Publish platform packages
         run: |
-          set -e
+          set +e  # Don't exit on error, we want to try all packages
           published=0
           failed=0
+          failed_packages=()
+          
           for pkg in npm/*; do
             if [ -d "$pkg" ]; then
               pkg_name=$(basename "$pkg")
+              echo ""
+              echo "=========================================="
               echo "Publishing $pkg_name..."
+              echo "=========================================="
               cd "$pkg"
-              if npm publish --access public --provenance; then
+              
+              # Verify package.json exists and has publishConfig
+              if [ ! -f "package.json" ]; then
+                echo "❌ package.json not found in $pkg_name"
+                failed=$((failed + 1))
+                failed_packages+=("$pkg_name")
+                cd ../..
+                continue
+              fi
+              
+              # Check if publishConfig is set
+              if ! grep -q '"publishConfig"' package.json; then
+                echo "⚠️  Warning: publishConfig not found in package.json"
+              fi
+              
+              # Try to publish
+              if npm publish --access public --provenance 2>&1; then
                 echo "✅ Successfully published $pkg_name"
                 published=$((published + 1))
               else
-                echo "❌ Failed to publish $pkg_name"
+                publish_error=$?
+                echo "❌ Failed to publish $pkg_name (exit code: $publish_error)"
+                echo ""
+                echo "Common causes:"
+                echo "1. NPM_TOKEN does not have permission to publish to @alberteinshutoin scope"
+                echo "2. Package already exists (check npm registry)"
+                echo "3. Invalid package.json"
+                echo ""
                 failed=$((failed + 1))
+                failed_packages+=("$pkg_name")
               fi
               cd ../..
             fi
           done
-          echo "Published: $published, Failed: $failed"
+          
+          echo ""
+          echo "=========================================="
+          echo "Publish Summary"
+          echo "=========================================="
+          echo "Published: $published"
+          echo "Failed: $failed"
+          if [ ${#failed_packages[@]} -gt 0 ]; then
+            echo "Failed packages: ${failed_packages[*]}"
+          fi
+          
           if [ $failed -gt 0 ]; then
-            echo "Some packages failed to publish"
+            echo ""
+            echo "❌ Some packages failed to publish"
+            echo ""
+            echo "Troubleshooting steps:"
+            echo "1. Verify NPM_TOKEN has 'Read and Write' permissions"
+            echo "2. Check if you have access to @alberteinshutoin scope"
+            echo "3. If scope is an organization, ensure you're a member"
+            echo "4. Try publishing manually: cd npm/<platform> && npm publish --access public"
             exit 1
           fi
         env:
