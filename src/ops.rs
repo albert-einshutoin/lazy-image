@@ -66,3 +66,61 @@ impl OutputFormat {
         }
     }
 }
+
+// =============================================================================
+// PRESETS - Common configurations for web image optimization
+// =============================================================================
+
+/// Preset configuration for common use cases.
+/// Each preset defines optimal settings for a specific purpose.
+#[derive(Clone, Debug)]
+pub struct PresetConfig {
+    /// Target width (None = maintain aspect ratio)
+    pub width: Option<u32>,
+    /// Target height (None = maintain aspect ratio)
+    pub height: Option<u32>,
+    /// Output format
+    pub format: OutputFormat,
+}
+
+impl PresetConfig {
+    /// Create a new preset configuration
+    pub fn new(width: Option<u32>, height: Option<u32>, format: OutputFormat) -> Self {
+        Self { width, height, format }
+    }
+
+    /// Get the built-in preset by name
+    pub fn get(name: &str) -> Option<Self> {
+        match name.to_lowercase().as_str() {
+            "thumbnail" => Some(Self::thumbnail()),
+            "avatar" => Some(Self::avatar()),
+            "hero" => Some(Self::hero()),
+            "social" => Some(Self::social()),
+            _ => None,
+        }
+    }
+
+    /// Thumbnail preset: 150x150, WebP quality 75
+    /// Use case: Gallery thumbnails, preview images
+    pub fn thumbnail() -> Self {
+        Self::new(Some(150), Some(150), OutputFormat::WebP { quality: 75 })
+    }
+
+    /// Avatar preset: 200x200, WebP quality 80
+    /// Use case: User profile pictures
+    pub fn avatar() -> Self {
+        Self::new(Some(200), Some(200), OutputFormat::WebP { quality: 80 })
+    }
+
+    /// Hero preset: 1920 width, JPEG quality 85
+    /// Use case: Hero images, banners
+    pub fn hero() -> Self {
+        Self::new(Some(1920), None, OutputFormat::Jpeg { quality: 85 })
+    }
+
+    /// Social preset: 1200x630, JPEG quality 80
+    /// Use case: OGP/Twitter Card images
+    pub fn social() -> Self {
+        Self::new(Some(1200), Some(630), OutputFormat::Jpeg { quality: 80 })
+    }
+}

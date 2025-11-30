@@ -198,6 +198,26 @@ results.forEach(r => {
 });
 ```
 
+### Presets (v0.7.0+)
+
+```javascript
+// Use built-in presets for common use cases
+const engine = ImageEngine.fromPath('photo.jpg');
+
+// Apply preset and get recommended settings
+const preset = engine.preset('thumbnail');
+// preset = { format: 'webp', quality: 75, width: 150, height: 150 }
+
+// Use the preset settings
+const buffer = await engine.toBuffer(preset.format, preset.quality);
+
+// Available presets:
+// - 'thumbnail': 150x150, WebP q75 (gallery thumbnails)
+// - 'avatar':    200x200, WebP q80 (profile pictures)
+// - 'hero':      1920w,   JPEG q85 (hero images, banners)
+// - 'social':    1200x630, JPEG q80 (OGP/Twitter cards)
+```
+
 ---
 
 ## 📚 API
@@ -222,6 +242,7 @@ results.forEach(r => {
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.toColorspace(space)` | Convert to color space (`'srgb'`) |
+| `.preset(name)` | Apply preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) |
 
 ### Output
 
@@ -254,6 +275,13 @@ interface ImageMetadata {
 interface Dimensions {
   width: number;
   height: number;
+}
+
+interface PresetResult {
+  format: string;
+  quality?: number;
+  width?: number;
+  height?: number;
 }
 
 interface ProcessingMetrics {
@@ -406,6 +434,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.7.0 | Built-in presets (`thumbnail`, `avatar`, `hero`, `social`) |
 | v0.6.0 | Performance metrics (`toBufferWithMetrics`), batch processing (`processBatch`), color space API, adaptive encoder settings |
 | v0.5.0 | Memory-efficient file I/O (`fromPath`, `toFile`, `inspectFile`) |
 | v0.4.0 | ICC color profile preservation |

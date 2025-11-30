@@ -7,6 +7,17 @@ export interface Dimensions {
   width: number
   height: number
 }
+/** Result of applying a preset, contains recommended output settings */
+export interface PresetResult {
+  /** Recommended output format */
+  format: string
+  /** Recommended quality (None for PNG) */
+  quality?: number
+  /** Target width (None if aspect ratio preserved) */
+  width?: number
+  /** Target height (None if aspect ratio preserved) */
+  height?: number
+}
 export interface BatchResult {
   source: string
   success: boolean
@@ -104,6 +115,18 @@ export declare class ImageEngine {
    * Currently ensures the image is in RGB/RGBA format.
    */
   toColorspace(colorSpace: string): ImageEngine
+  /**
+   * Apply a built-in preset for common use cases.
+   *
+   * Available presets:
+   * - "thumbnail": 150x150, WebP quality 75 (gallery thumbnails)
+   * - "avatar": 200x200, WebP quality 80 (profile pictures)
+   * - "hero": 1920 width, JPEG quality 85 (hero images, banners)
+   * - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
+   *
+   * Returns the preset configuration for use with toBuffer/toFile.
+   */
+  preset(name: string): PresetResult
   /**
    * Encode to buffer asynchronously.
    * format: "jpeg", "jpg", "png", "webp"

@@ -73,7 +73,7 @@ impl QualitySettings {
 }
 
 
-use crate::ops::{Operation, OutputFormat};
+use crate::ops::{Operation, OutputFormat, PresetConfig};
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
@@ -241,6 +241,48 @@ impl ImageEngine {
     }
 
     // =========================================================================
+    // PRESETS - Common configurations for web optimization
+    // =========================================================================
+
+    /// Apply a built-in preset for common use cases.
+    /// 
+    /// Available presets:
+    /// - "thumbnail": 150x150, WebP quality 75 (gallery thumbnails)
+    /// - "avatar": 200x200, WebP quality 80 (profile pictures)
+    /// - "hero": 1920 width, JPEG quality 85 (hero images, banners)
+    /// - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
+    /// 
+    /// Returns the preset configuration for use with toBuffer/toFile.
+    #[napi]
+    pub fn preset(&mut self, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
+        let config = PresetConfig::get(&name)
+            .ok_or_else(|| Error::from_reason(format!(
+                "unknown preset: '{}'. Available: thumbnail, avatar, hero, social", name
+            )))?;
+        
+        // Apply resize operation
+        self.ops.push(Operation::Resize { 
+            width: config.width, 
+            height: config.height 
+        });
+        
+        // Return preset info for the user to use with toBuffer/toFile
+        let (format_str, quality) = match &config.format {
+            OutputFormat::Jpeg { quality } => ("jpeg", Some(*quality)),
+            OutputFormat::Png => ("png", None),
+            OutputFormat::WebP { quality } => ("webp", Some(*quality)),
+            OutputFormat::Avif { quality } => ("avif", Some(*quality)),
+        };
+        
+        Ok(PresetResult {
+            format: format_str.to_string(),
+            quality,
+            width: config.width,
+            height: config.height,
+        })
+    }
+
+    // =========================================================================
     // OUTPUT - Triggers async computation
     // =========================================================================
 
@@ -370,6 +412,19 @@ impl ImageEngine {
 pub struct Dimensions {
     pub width: u32,
     pub height: u32,
+}
+
+/// Result of applying a preset, contains recommended output settings
+#[napi(object)]
+pub struct PresetResult {
+    /// Recommended output format
+    pub format: String,
+    /// Recommended quality (None for PNG)
+    pub quality: Option<u8>,
+    /// Target width (None if aspect ratio preserved)
+    pub width: Option<u32>,
+    /// Target height (None if aspect ratio preserved)
+    pub height: Option<u32>,
 }
 
 #[napi(object)]
