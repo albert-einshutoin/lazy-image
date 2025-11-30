@@ -241,6 +241,9 @@ jobs:
         run: |
           # Remove .node files from main package (they're in platform packages now)
           rm -f *.node
-          npm publish --access public --provenance
+          # Restore original package.json if napi prepublish modified it
+          git checkout package.json || true
+          # Publish without running prepublishOnly (we already ran napi prepublish manually)
+          npm publish --access public --provenance --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
