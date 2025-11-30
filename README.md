@@ -52,6 +52,43 @@ AVIF vs WebP: -30.1% smaller
 npm install @alberteinshutoin/lazy-image
 ```
 
+### Package Size
+
+lazy-image uses **platform-specific packages** to minimize download size.  
+Only the binary for your platform is downloaded.
+
+| Package | Size | Description |
+|---------|------|-------------|
+| `@alberteinshutoin/lazy-image` | ~15 KB | Main package (JS + types) |
+| `@alberteinshutoin/lazy-image-darwin-arm64` | ~5.5 MB | macOS Apple Silicon |
+| `@alberteinshutoin/lazy-image-darwin-x64` | ~6.0 MB | macOS Intel |
+| `@alberteinshutoin/lazy-image-win32-x64-msvc` | ~6.5 MB | Windows x64 |
+| `@alberteinshutoin/lazy-image-linux-x64-gnu` | ~8.0 MB | Linux x64 (glibc) |
+| `@alberteinshutoin/lazy-image-linux-x64-musl` | ~8.5 MB | Linux x64 (musl/Alpine) |
+
+**Total download**: ~6-9 MB (one platform only)
+
+### Manual Platform Installation
+
+If automatic installation fails, install your platform package manually:
+
+```bash
+# macOS Apple Silicon
+npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-darwin-arm64
+
+# macOS Intel
+npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-darwin-x64
+
+# Windows x64
+npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-win32-x64-msvc
+
+# Linux x64 (glibc - Ubuntu, Debian, etc.)
+npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-linux-x64-gnu
+
+# Linux x64 (musl - Alpine)
+npm install @alberteinshutoin/lazy-image @alberteinshutoin/lazy-image-linux-x64-musl
+```
+
 ---
 
 ## 🔧 Usage
@@ -434,6 +471,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.7.1 | Platform-specific packages (reduced download from 42MB to ~6-9MB) |
 | v0.7.0 | Built-in presets (`thumbnail`, `avatar`, `hero`, `social`) |
 | v0.6.0 | Performance metrics (`toBufferWithMetrics`), batch processing (`processBatch`), color space API, adaptive encoder settings |
 | v0.5.0 | Memory-efficient file I/O (`fromPath`, `toFile`, `inspectFile`) |

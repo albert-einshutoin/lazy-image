@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "repository": {
@@ -23,7 +23,8 @@
   "license": "MIT",
   "scripts": {
     "build": "napi build --platform --release",
-    "test": "node test/basic.test.js"
+    "test": "node test/basic.test.js",
+    "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.0",
@@ -32,12 +33,25 @@
   "napi": {
     "name": "lazy-image",
     "triples": {
-      "defaults": true,
+      "defaults": false,
       "additional": [
+        "x86_64-apple-darwin",
         "aarch64-apple-darwin",
+        "x86_64-pc-windows-msvc",
+        "x86_64-unknown-linux-gnu",
         "x86_64-unknown-linux-musl"
       ]
+    },
+    "package": {
+      "name": "@alberteinshutoin/lazy-image"
     }
+  },
+  "optionalDependencies": {
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.7.1",
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.7.1",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.7.1",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.7.1",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.7.1"
   },
   "engines": {
     "node": ">= 18"
@@ -45,7 +59,6 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "*.node",
     "README.md"
   ],
   "homepage": "https://github.com/albert-einshutoin/lazy-image#readme"
