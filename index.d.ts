@@ -155,11 +155,12 @@ export declare class ImageEngine {
   hasIccProfile(): number | null
   /**
    * Process multiple images in parallel with the same operations.
-   * @param inputs Array of input file paths
-   * @param outputDir Directory to write processed images
-   * @param format Output format ("jpeg", "png", "webp", "avif")
-   * @param quality Optional quality (1-100, uses format-specific default if undefined)
-   * @param concurrency Optional number of parallel workers (default: CPU core count, 0 = use default)
+   *
+   * - inputs: Array of input file paths
+   * - output_dir: Directory to write processed images
+   * - format: Output format ("jpeg", "png", "webp", "avif")
+   * - quality: Optional quality (1-100, uses format-specific default if None)
+   * - concurrency: Optional number of parallel workers (default: CPU core count)
    */
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
