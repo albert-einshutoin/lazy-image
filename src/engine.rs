@@ -1295,7 +1295,7 @@ impl Task for BatchTask {
                 },
                 Err(e) => {
                     // Preserve error information with context
-                    let error_msg = format!("{}: {}", input_path, e.to_string());
+                    let error_msg = format!("{}: {}", input_path, e);
                     BatchResult {
                         source: input_path.clone(),
                         success: false,
@@ -1362,7 +1362,6 @@ fn calc_resize_dimensions(
 
 /// Extract ICC profile from image data.
 /// Supports JPEG (APP2 marker), PNG (iCCP chunk), and WebP (ICCP chunk).
-
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
 fn check_dimensions(width: u32, height: u32) -> Result<()> {
