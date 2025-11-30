@@ -155,6 +155,45 @@ const [jpeg, webp, avif] = await Promise.all([
 ]);
 ```
 
+### Performance Metrics (v0.6.0+)
+
+```javascript
+// Get detailed timing information
+const { data, metrics } = await ImageEngine.from(buffer)
+  .resize(800)
+  .toBufferWithMetrics('jpeg', 80);
+
+console.log(metrics);
+// {
+//   decodeTime: 12.5,   // ms
+//   processTime: 8.3,   // ms
+//   encodeTime: 45.2,   // ms
+//   memoryPeak: 2621440 // bytes
+// }
+```
+
+### Batch Processing (v0.6.0+)
+
+```javascript
+// Process multiple images in parallel
+const results = await ImageEngine.from(buffer)
+  .resize(800)
+  .processBatch(
+    ['img1.jpg', 'img2.jpg', 'img3.jpg'],
+    './output',
+    'webp',
+    80
+  );
+
+results.forEach(r => {
+  if (r.success) {
+    console.log(`✅ ${r.source} → ${r.outputPath}`);
+  } else {
+    console.log(`❌ ${r.source}: ${r.error}`);
+  }
+});
+```
+
 ---
 
 ## 📚 API
@@ -178,13 +217,16 @@ const [jpeg, webp, avif] = await Promise.all([
 | `.grayscale()` | Convert to grayscale |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
+| `.toColorspace(space)` | Convert to color space (`'srgb'`) |
 
 ### Output
 
 | Method | Description |
 |--------|-------------|
 | `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` |
+| `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient) |
+| `.processBatch(inputs, outDir, format, quality?)` | Process multiple images in parallel |
 | `.clone()` | Clone the engine for multi-output |
 
 ### Utilities
@@ -208,6 +250,25 @@ interface ImageMetadata {
 interface Dimensions {
   width: number;
   height: number;
+}
+
+interface ProcessingMetrics {
+  decodeTime: number;   // milliseconds
+  processTime: number;  // milliseconds
+  encodeTime: number;   // milliseconds
+  memoryPeak: number;   // bytes
+}
+
+interface OutputWithMetrics {
+  data: Buffer;
+  metrics: ProcessingMetrics;
+}
+
+interface BatchResult {
+  source: string;
+  success: boolean;
+  error?: string;
+  outputPath?: string;
 }
 ```
 
@@ -341,6 +402,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.6.0 | Performance metrics (`toBufferWithMetrics`), batch processing (`processBatch`), color space API, adaptive encoder settings |
 | v0.5.0 | Memory-efficient file I/O (`fromPath`, `toFile`, `inspectFile`) |
 | v0.4.0 | ICC color profile preservation |
 | v0.3.1 | Fast metadata (`inspect`) |
