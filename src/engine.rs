@@ -487,7 +487,10 @@ impl EncodeTask {
     /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
     fn decode(&self) -> Result<DynamicImage> {
         // Prefer already decoded image (already validated)
+        // Use Cow to avoid unnecessary clone when possible
         if let Some(ref img) = self.decoded {
+            // We need to return owned value, but this is only called once per task
+            // so the clone cost is acceptable
             return Ok(img.clone());
         }
 
@@ -524,6 +527,11 @@ impl EncodeTask {
             let width = decompress.width();
             let height = decompress.height();
             
+            // Validate dimensions before casting (mozjpeg returns usize)
+            if width > MAX_DIMENSION as usize || height > MAX_DIMENSION as usize {
+                return Err(format!("image dimensions {}x{} exceed max {}", width, height, MAX_DIMENSION));
+            }
+            
             // Read all scanlines
             let pixels: Vec<[u8; 3]> = decompress.read_scanlines()
                 .map_err(|e| format!("mozjpeg: failed to read scanlines: {e:?}"))?;
@@ -534,6 +542,7 @@ impl EncodeTask {
                 .collect();
             
             // Create DynamicImage from raw RGB data
+            // Safe cast: we validated dimensions above
             let rgb_image = RgbImage::from_raw(width as u32, height as u32, flat_pixels)
                 .ok_or_else(|| "mozjpeg: failed to create image from raw data".to_string())?;
             
@@ -637,7 +646,10 @@ impl EncodeTask {
                         *width, 
                         *height
                     );
-                    // Use SIMD-accelerated fast_image_resize with silent fallback
+                    // Use SIMD-accelerated fast_image_resize with fallback to image crate
+                    // Fallback is intentional: fast_image_resize may fail on edge cases
+                    // (e.g., very small images, invalid dimensions), so we use image crate's
+                    // proven implementation as a safe fallback
                     Self::fast_resize(&img, w, h).unwrap_or_else(|_| {
                         img.resize_exact(w, h, image::imageops::FilterType::Lanczos3)
                     })
@@ -757,7 +769,7 @@ impl EncodeTask {
         let pixels = rgb.into_raw();
 
         // mozjpeg can panic internally, so we catch it
-        let result = panic::catch_unwind(|| {
+        let result = panic::catch_unwind(|| -> std::result::Result<Vec<u8>, String> {
             let mut comp = Compress::new(ColorSpace::JCS_RGB);
             
             comp.set_size(w as usize, h as usize);
@@ -816,20 +828,26 @@ impl EncodeTask {
 
             {
                 let mut writer = comp.start_compress(&mut output)
-                    .expect("mozjpeg: failed to start compress");
+                    .map_err(|e| format!("mozjpeg: failed to start compress: {e:?}"))?;
 
                 let stride = w as usize * 3;
                 for row in pixels.chunks(stride) {
-                    let _ = writer.write_scanlines(row);
+                    writer.write_scanlines(row)
+                        .map_err(|e| format!("mozjpeg: failed to write scanlines: {e:?}"))?;
                 }
 
-                writer.finish().expect("mozjpeg: failed to finish");
+                writer.finish()
+                    .map_err(|e| format!("mozjpeg: failed to finish: {e:?}"))?;
             }
             
-            output
+            Ok(output)
         });
 
-        let encoded = result.map_err(|_| Error::from_reason("mozjpeg panicked during encoding"))?;
+        let encoded = match result {
+            Ok(Ok(data)) => data,
+            Ok(Err(e)) => return Err(Error::from_reason(e)),
+            Err(_) => return Err(Error::from_reason("mozjpeg panicked during encoding")),
+        };
 
         // Embed ICC profile using img-parts if present
         if let Some(icc_data) = icc {
@@ -1050,9 +1068,10 @@ impl EncodeTask {
         
         if let Some(m) = metrics {
             m.encode_time = start_encode.elapsed().as_secs_f64() * 1000.0;
-            // Estimate memory (rough)
+            // Estimate memory (rough) - prevent overflow
             let (w, h) = processed.dimensions();
-            m.memory_peak = (w * h * 4 + result.len() as u32) as u32;
+            m.memory_peak = (w as u64 * h as u64 * 4 + result.len() as u64)
+                .min(u32::MAX as u64) as u32;
         }
 
         Ok(result)
@@ -1131,8 +1150,8 @@ impl Task for WriteFileTask {
     type JsValue = u32;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        use std::fs::File;
         use std::io::Write;
+        use tempfile::NamedTempFile;
 
         // Create EncodeTask and use its process_and_encode method
         let mut encode_task = EncodeTask {
@@ -1146,37 +1165,33 @@ impl Task for WriteFileTask {
         // Process image using shared logic
         let data = encode_task.process_and_encode(None)?;
 
-        // Atomic write: write to temp file, then rename on success
-        let temp_path = format!("{}.tmp.{}", self.output_path, std::process::id());
+        // Atomic write: write to temp file in the same directory as target,
+        // then rename on success. tempfile automatically cleans up on drop.
+        let output_dir = std::path::Path::new(&self.output_path)
+            .parent()
+            .ok_or_else(|| Error::from_reason("output path has no parent directory"))?;
         
-        let write_result = (|| -> Result<u32> {
-            let mut file = File::create(&temp_path)
-                .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
-            
-            let bytes_written = data.len() as u32;
-            file.write_all(&data)
-                .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
-            
-            // Ensure data is flushed to disk
-            file.sync_all()
-                .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
-            
-            Ok(bytes_written)
-        })();
+        // Create temp file in the same directory as the target file
+        // This ensures rename() works (cross-filesystem rename can fail)
+        let mut temp_file = NamedTempFile::new_in(output_dir)
+            .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
         
-        match write_result {
-            Ok(bytes) => {
-                // Success: rename temp file to final destination
-                std::fs::rename(&temp_path, &self.output_path)
-                    .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
-                Ok(bytes)
-            }
-            Err(e) => {
-                // Failure: clean up temp file
-                let _ = std::fs::remove_file(&temp_path);
-                Err(e)
-            }
-        }
+        // Check for overflow: NAPI requires u32, but we can't handle >4GB files
+        let bytes_written = data.len()
+            .try_into()
+            .map_err(|_| Error::from_reason("file size exceeds 4GB limit (u32::MAX)"))?;
+        temp_file.write_all(&data)
+            .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
+        
+        // Ensure data is flushed to disk
+        temp_file.as_file_mut().sync_all()
+            .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
+        
+        // Atomic rename: tempfile handles cleanup automatically if this fails
+        temp_file.persist(&self.output_path)
+            .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
+        
+        Ok(bytes_written)
     }
     fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
         Ok(output)
@@ -1251,8 +1266,22 @@ impl Task for BatchTask {
                 let output_filename = Path::new(filename).with_extension(extension);
                 let output_path = Path::new(output_dir).join(output_filename);
                 
-                fs::write(&output_path, encoded)
-                    .map_err(|e| Error::from_reason(format!("failed to write output: {}", e)))?;
+                // Atomic write: use tempfile for safe file writing
+                use std::io::Write;
+                use tempfile::NamedTempFile;
+                
+                let mut temp_file = NamedTempFile::new_in(output_dir)
+                    .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
+                
+                temp_file.write_all(&encoded)
+                    .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
+                
+                temp_file.as_file_mut().sync_all()
+                    .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
+                
+                // Atomic rename
+                temp_file.persist(&output_path)
+                    .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
                 
                 Ok(output_path.to_string_lossy().to_string())
             })();
@@ -1264,11 +1293,15 @@ impl Task for BatchTask {
                     error: None,
                     output_path: Some(path),
                 },
-                Err(e) => BatchResult {
-                    source: input_path.clone(),
-                    success: false,
-                    error: Some(e.to_string()),
-                    output_path: None,
+                Err(e) => {
+                    // Preserve error information with context
+                    let error_msg = format!("{}: {}", input_path, e.to_string());
+                    BatchResult {
+                        source: input_path.clone(),
+                        success: false,
+                        error: Some(error_msg),
+                        output_path: None,
+                    }
                 }
             }
         };
@@ -1276,8 +1309,13 @@ impl Task for BatchTask {
         // Configure thread pool for concurrency control
         let results: Vec<BatchResult> = if self.concurrency > 0 {
             // Use custom thread pool with specified concurrency
+            // Safe cast: concurrency is u32, usize is at least u32 on modern systems
+            let num_threads = self.concurrency as usize;
+            if num_threads == 0 || num_threads > 1024 {
+                return Err(Error::from_reason(format!("invalid concurrency value: {} (must be 1-1024)", self.concurrency)));
+            }
             let pool = ThreadPoolBuilder::new()
-                .num_threads(self.concurrency as usize)
+                .num_threads(num_threads)
                 .build()
                 .map_err(|e| Error::from_reason(format!("failed to create thread pool: {}", e)))?;
             

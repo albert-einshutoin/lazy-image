@@ -39,7 +39,8 @@ img-parts = "0.3"
 # Compression for PNG ICC chunks
 flate2 = "1.0"
 
-
+# Temporary file handling
+tempfile = "3.10"
 
 # Parallel processing for batch operations
 rayon = "1.8"
