@@ -7,6 +7,12 @@ export interface Dimensions {
   width: number
   height: number
 }
+export interface BatchResult {
+  source: string
+  success: boolean
+  error?: string
+  outputPath?: string
+}
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
@@ -36,6 +42,21 @@ export declare function version(): string
 export declare function supportedInputFormats(): Array<string>
 /** Get supported output formats */
 export declare function supportedOutputFormats(): Array<string>
+/** Processing metrics for performance monitoring */
+export interface ProcessingMetrics {
+  /** Time taken to decode the image (milliseconds) */
+  decodeTime: number
+  /** Time taken to apply all operations (milliseconds) */
+  processTime: number
+  /** Time taken to encode the image (milliseconds) */
+  encodeTime: number
+  /** Peak memory usage during processing (bytes, as u32 for NAPI compatibility) */
+  memoryPeak: number
+}
+export interface OutputWithMetrics {
+  data: Buffer
+  metrics: ProcessingMetrics
+}
 /**
  * The main image processing engine.
  *
@@ -79,11 +100,21 @@ export declare class ImageEngine {
   /** Adjust contrast (-100 to 100) */
   contrast(value: number): ImageEngine
   /**
+   * Convert to specific color space (e.g. 'srgb')
+   * Currently ensures the image is in RGB/RGBA format.
+   */
+  toColorspace(colorSpace: string): ImageEngine
+  /**
    * Encode to buffer asynchronously.
    * format: "jpeg", "jpg", "png", "webp"
    * quality: 1-100 (default 80, ignored for PNG)
    */
   toBuffer(format: string, quality?: number | undefined | null): Promise<Buffer>
+  /**
+   * Encode to buffer asynchronously with performance metrics.
+   * Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
+   */
+  toBufferWithMetrics(format: string, quality?: number | undefined | null): Promise<OutputWithMetrics>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -99,4 +130,5 @@ export declare class ImageEngine {
    * Returns the profile size in bytes, or null if no profile exists.
    */
   hasIccProfile(): number | null
+  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null): Promise<BatchResult[]>
 }

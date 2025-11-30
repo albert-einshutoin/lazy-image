@@ -32,7 +32,18 @@ pub enum Operation {
 
     /// Grayscale conversion
     Grayscale,
+
+    /// Color space conversion (currently supports basic RGB/RGBA assurance)
+    ColorSpace { target: ColorSpace },
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ColorSpace {
+    Srgb,
+    DisplayP3, // Placeholder
+    AdobeRgb,  // Placeholder
+}
+
 
 /// Output format for encoding
 #[derive(Clone, Debug)]

@@ -17,6 +17,7 @@ mod ops;
 
 use image::io::Reader as ImageReader;
 use napi::bindgen_prelude::*;
+use napi::JsBuffer;
 use std::io::Cursor;
 
 // Re-export the engine for NAPI
@@ -119,3 +120,24 @@ pub fn supported_output_formats() -> Vec<String> {
         "avif".to_string(),
     ]
 }
+
+/// Processing metrics for performance monitoring
+#[napi(object)]
+#[derive(Default)]
+pub struct ProcessingMetrics {
+    /// Time taken to decode the image (milliseconds)
+    pub decode_time: f64,
+    /// Time taken to apply all operations (milliseconds)
+    pub process_time: f64,
+    /// Time taken to encode the image (milliseconds)
+    pub encode_time: f64,
+    /// Peak memory usage during processing (bytes, as u32 for NAPI compatibility)
+    pub memory_peak: u32,
+}
+
+#[napi(object)]
+pub struct OutputWithMetrics {
+    pub data: JsBuffer,
+    pub metrics: ProcessingMetrics,
+}
+

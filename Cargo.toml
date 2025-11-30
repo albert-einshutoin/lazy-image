@@ -1,12 +1,12 @@
 [package]
 name = "lazy-image"
-version = "0.5.4"
+version = "0.6.0"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # NAPI binding
@@ -40,8 +40,12 @@ img-parts = "0.3"
 flate2 = "1.0"
 
 
-# Error handling done right
-thiserror = "2"
+
+# Parallel processing for batch operations
+rayon = "1.8"
+
+[dev-dependencies]
+criterion = "0.5"
 
 [profile.release]
 lto = true

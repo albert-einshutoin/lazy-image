@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "description": "Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "repository": {
