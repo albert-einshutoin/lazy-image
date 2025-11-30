@@ -17,7 +17,6 @@ mod ops;
 
 use image::io::Reader as ImageReader;
 use napi::bindgen_prelude::*;
-use napi::JsBuffer;
 use std::io::Cursor;
 
 // Re-export the engine for NAPI
@@ -137,7 +136,7 @@ pub struct ProcessingMetrics {
 
 #[napi(object)]
 pub struct OutputWithMetrics {
-    pub data: JsBuffer,
+    pub data: napi::JsBuffer,
     pub metrics: ProcessingMetrics,
 }
 

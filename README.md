@@ -175,15 +175,19 @@ console.log(metrics);
 ### Batch Processing (v0.6.0+)
 
 ```javascript
-// Process multiple images in parallel
-const results = await ImageEngine.from(buffer)
+// Process multiple images in parallel with the same operations
+// Note: Create an engine just to define operations - no source image needed
+const engine = ImageEngine.fromPath('dummy.jpg') // or use any existing image
   .resize(800)
-  .processBatch(
-    ['img1.jpg', 'img2.jpg', 'img3.jpg'],
-    './output',
-    'webp',
-    80
-  );
+  .grayscale();
+
+// Apply the same operations to multiple files
+const results = await engine.processBatch(
+  ['img1.jpg', 'img2.jpg', 'img3.jpg'],
+  './output',
+  'webp',
+  80
+);
 
 results.forEach(r => {
   if (r.success) {
