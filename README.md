@@ -81,23 +81,27 @@ Only the binary for your platform is downloaded.
 
 **lazy-image is 2-3x smaller** because all dependencies (mozjpeg, libwebp, ravif) are statically linked into a single binary, while sharp requires a separate libvips package.
 
-### Installation Notes
+### Installation
 
-The main package (`@alberteinshutoin/lazy-image`) automatically installs the correct platform-specific binary via `optionalDependencies`.  
-You typically only need to run:
+The main package automatically installs the correct platform-specific binary:
 
 ```bash
 npm install @alberteinshutoin/lazy-image
 ```
 
-**Note**: Platform-specific packages are published automatically via CI/CD.  
-If you encounter installation issues, check [GitHub Actions](https://github.com/albert-einshutoin/lazy-image/actions) to ensure the latest release was successfully published.
+**How it works:**
+- The main package (`@alberteinshutoin/lazy-image`) contains only JavaScript and TypeScript definitions
+- Platform-specific native binaries are published as separate packages (e.g., `@alberteinshutoin/lazy-image-darwin-arm64`)
+- npm automatically installs the correct platform package via `optionalDependencies`
 
-### Manual Platform Installation (if needed)
+**Publishing:**
+- Platform-specific packages are published automatically via CI/CD on tag releases (e.g., `v0.7.2`)
+- CI/README changes are tested but don't trigger npm publish (only tag releases do)
+- If you encounter installation issues, check [GitHub Actions](https://github.com/albert-einshutoin/lazy-image/actions) to ensure the latest release was successfully published
 
-If automatic installation fails, you may need to install your platform package manually.  
-However, **platform-specific packages are currently only published via CI/CD on tag releases**.  
-For development, build from source:
+### Building from Source
+
+For development or if platform packages aren't available:
 
 ```bash
 npm install
