@@ -225,6 +225,36 @@ jobs:
           fi
           
           echo "✅ All required platforms are present"
+          
+          # Create skeleton package.json for each platform
+          # napi prepublish needs these to generate the final package.json
+          echo ""
+          echo "=== Creating skeleton package.json for each platform ==="
+          for platform in "${required_platforms[@]}"; do
+            pkg_name="@alberteinshutoin/lazy-image-${platform}"
+            cat > "npm/$platform/package.json" <<EOF
+{
+  "name": "$pkg_name",
+  "version": "$(node -p "require('./package.json').version")",
+  "description": "Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg",
+  "main": "lazy-image.${platform}.node",
+  "os": ["$(echo $platform | cut -d'-' -f1)"],
+  "cpu": ["$(echo $platform | cut -d'-' -f2)"],
+  "files": [
+    "lazy-image.${platform}.node"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/albert-einshutoin/lazy-image"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}
+EOF
+            echo "✅ Created npm/$platform/package.json"
+          done
 
       - name: Generate npm packages
         run: |
