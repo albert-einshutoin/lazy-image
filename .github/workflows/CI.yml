@@ -152,62 +152,119 @@ jobs:
           # Create npm directory structure and copy .node files to correct locations
           mkdir -p npm
           
-          # Map artifact names to napi platform names
-          # artifacts/bindings-x86_64-apple-darwin/*.node -> npm/darwin-x64/
-          # artifacts/bindings-aarch64-apple-darwin/*.node -> npm/darwin-arm64/
-          # artifacts/bindings-x86_64-pc-windows-msvc/*.node -> npm/win32-x64-msvc/
-          # artifacts/bindings-x86_64-unknown-linux-gnu/*.node -> npm/linux-x64-gnu/
-          # artifacts/bindings-x86_64-unknown-linux-musl/*.node -> npm/linux-x64-musl/
+          # Map Rust target triple to npm platform names
+          # napi prepublish uses npm platform names, not Rust target triples
+          declare -A platform_map=(
+            ["x86_64-apple-darwin"]="darwin-x64"
+            ["aarch64-apple-darwin"]="darwin-arm64"
+            ["x86_64-pc-windows-msvc"]="win32-x64-msvc"
+            ["x86_64-unknown-linux-gnu"]="linux-x64-gnu"
+            ["x86_64-unknown-linux-musl"]="linux-x64-musl"
+          )
           
+          # Process each artifact directory
           for artifact_dir in artifacts/*/; do
-            if [ -d "$artifact_dir" ]; then
-              # Extract platform from artifact directory name
-              artifact_name=$(basename "$artifact_dir")
-              
-              # Map to napi platform names
-              case "$artifact_name" in
-                bindings-x86_64-apple-darwin)
-                  platform="darwin-x64"
-                  ;;
-                bindings-aarch64-apple-darwin)
-                  platform="darwin-arm64"
-                  ;;
-                bindings-x86_64-pc-windows-msvc)
-                  platform="win32-x64-msvc"
-                  ;;
-                bindings-x86_64-unknown-linux-gnu)
-                  platform="linux-x64-gnu"
-                  ;;
-                bindings-x86_64-unknown-linux-musl)
-                  platform="linux-x64-musl"
-                  ;;
-                *)
-                  echo "Unknown platform: $artifact_name"
-                  continue
-                  ;;
-              esac
-              
-              # Create platform directory and copy .node file
-              mkdir -p "npm/$platform"
-              find "$artifact_dir" -name "*.node" -exec cp {} "npm/$platform/" \;
-              echo "Copied .node file for $platform"
+            if [ ! -d "$artifact_dir" ]; then
+              continue
+            fi
+            
+            artifact_name=$(basename "$artifact_dir")
+            echo "Processing artifact: $artifact_name"
+            
+            # Extract Rust target from artifact name (bindings-{target})
+            rust_target="${artifact_name#bindings-}"
+            
+            # Get npm platform name
+            platform="${platform_map[$rust_target]}"
+            
+            if [ -z "$platform" ]; then
+              echo "⚠️  Unknown platform mapping for: $rust_target"
+              continue
+            fi
+            
+            # Find .node file in artifact directory
+            node_file=$(find "$artifact_dir" -name "*.node" -type f | head -1)
+            
+            if [ -z "$node_file" ]; then
+              echo "❌ No .node file found in $artifact_dir"
+              continue
+            fi
+            
+            # Create platform directory and copy .node file with correct name
+            mkdir -p "npm/$platform"
+            # napi prepublish expects: npm/{platform}/lazy-image.{platform}.node
+            target_name="lazy-image.${platform}.node"
+            cp "$node_file" "npm/$platform/$target_name"
+            echo "✅ Copied $node_file -> npm/$platform/$target_name"
+          done
+          
+          # Verify all required platforms are present
+          echo ""
+          echo "=== Platform directories created ==="
+          find npm -type d -maxdepth 1 | sort
+          echo ""
+          echo "=== Node files ==="
+          find npm -name "*.node" | sort
+          echo ""
+          
+          # Check if all required platforms are present
+          required_platforms=("darwin-x64" "darwin-arm64" "win32-x64-msvc" "linux-x64-gnu" "linux-x64-musl")
+          missing=0
+          for platform in "${required_platforms[@]}"; do
+            if [ ! -f "npm/$platform/lazy-image.$platform.node" ]; then
+              echo "❌ Missing: npm/$platform/lazy-image.$platform.node"
+              missing=$((missing + 1))
+            else
+              echo "✅ Found: npm/$platform/lazy-image.$platform.node"
             fi
           done
           
-          # List what we have
-          echo "Platform directories created:"
-          find npm -type d -maxdepth 1
-          echo "Node files:"
-          find npm -name "*.node"
+          if [ $missing -gt 0 ]; then
+            echo "ERROR: Missing $missing platform(s). Cannot proceed with napi prepublish."
+            exit 1
+          fi
+          
+          echo "✅ All required platforms are present"
 
       - name: Generate npm packages
         run: |
-          npm exec -- napi prepublish --skip-gh-release
+          # Verify structure before running napi prepublish
+          echo "=== Verifying structure before napi prepublish ==="
+          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-x64-musl; do
+            if [ -f "npm/$platform/lazy-image.$platform.node" ]; then
+              echo "✅ npm/$platform/lazy-image.$platform.node exists"
+            else
+              echo "❌ npm/$platform/lazy-image.$platform.node MISSING"
+            fi
+          done
+          
+          # Run napi prepublish
+          echo ""
+          echo "=== Running napi prepublish ==="
+          npm exec -- napi prepublish --skip-gh-release || {
+            echo "❌ napi prepublish failed"
+            echo "Current npm/ structure:"
+            find npm -type f | head -20
+            exit 1
+          }
+          
           # List generated packages
-          echo "Generated packages:"
+          echo ""
+          echo "=== Generated packages ==="
           ls -la npm/ || true
-          echo "Package directories:"
+          echo ""
+          echo "=== Package directories ==="
           find npm -type d -maxdepth 1 || true
+          echo ""
+          echo "=== Package contents (first 3) ==="
+          for pkg_dir in npm/*/; do
+            if [ -d "$pkg_dir" ]; then
+              pkg_name=$(basename "$pkg_dir")
+              echo "Package: $pkg_name"
+              ls -la "$pkg_dir" | head -5
+              echo ""
+            fi
+          done
 
       - name: Publish platform packages
         run: |
