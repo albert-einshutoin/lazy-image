@@ -266,11 +266,22 @@ const engine = ImageEngine.fromPath('dummy.jpg') // or use any existing image
   .grayscale();
 
 // Apply the same operations to multiple files
+// Default: uses all CPU cores for parallel processing
 const results = await engine.processBatch(
   ['img1.jpg', 'img2.jpg', 'img3.jpg'],
   './output',
   'webp',
-  80
+  80  // quality (optional, uses format default if omitted)
+);
+
+// Control concurrency (v0.7.3+)
+// Limit to 4 parallel workers (useful for memory-constrained environments)
+const results2 = await engine.processBatch(
+  ['img1.jpg', 'img2.jpg', 'img3.jpg'],
+  './output',
+  'webp',
+  80,
+  4  // concurrency: number of parallel workers (0 = use CPU cores)
 );
 
 results.forEach(r => {
@@ -335,7 +346,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Quality defaults: JPEG=85, WebP=80, AVIF=60 |
-| `.processBatch(inputs, outDir, format, quality?)` | Process multiple images in parallel |
+| `.processBatch(inputs, outDir, format, quality?, concurrency?)` | Process multiple images in parallel. Concurrency: number of workers (0 = CPU cores) |
 | `.clone()` | Clone the engine for multi-output |
 
 ### Utilities
@@ -518,6 +529,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.7.3 | Batch processing concurrency control (limit parallel workers) |
 | v0.7.2 | Format-specific default quality (JPEG: 85, WebP: 80, AVIF: 60) |
 | v0.7.1 | Platform-specific packages (reduced download from 42MB to ~6-9MB) |
 | v0.7.0 | Built-in presets (`thumbnail`, `avatar`, `hero`, `social`) |

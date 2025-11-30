@@ -243,6 +243,32 @@ async function runTests() {
             'default quality should match explicit 60');
     });
 
+    // Batch processing concurrency test (v0.7.3+)
+    await asyncTest('processBatch with concurrency control works', async () => {
+        const engine = ImageEngine.from(buffer).resize(100);
+        const testDir = path.join(__dirname, 'test_batch_output');
+        try {
+            // Test with custom concurrency (2 workers)
+            const results = await engine.processBatch(
+                [TEST_IMAGE, TEST_IMAGE],
+                testDir,
+                'jpeg',
+                80,
+                2  // concurrency
+            );
+            assert(results.length === 2, 'should process 2 images');
+            assert(results.every(r => r.success), 'all should succeed');
+        } finally {
+            // Cleanup
+            if (fs.existsSync(testDir)) {
+                fs.readdirSync(testDir).forEach(file => {
+                    fs.unlinkSync(path.join(testDir, file));
+                });
+                fs.rmdirSync(testDir);
+            }
+        }
+    });
+
     // Summary
     console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
     process.exit(failed > 0 ? 1 : 0);

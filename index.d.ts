@@ -153,5 +153,13 @@ export declare class ImageEngine {
    * Returns the profile size in bytes, or null if no profile exists.
    */
   hasIccProfile(): number | null
-  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null): Promise<BatchResult[]>
+  /**
+   * Process multiple images in parallel with the same operations.
+   * @param inputs Array of input file paths
+   * @param outputDir Directory to write processed images
+   * @param format Output format ("jpeg", "png", "webp", "avif")
+   * @param quality Optional quality (1-100, uses format-specific default if undefined)
+   * @param concurrency Optional number of parallel workers (default: CPU core count, 0 = use default)
+   */
+  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }

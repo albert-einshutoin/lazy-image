@@ -388,6 +388,13 @@ impl ImageEngine {
         self.icc_profile.as_ref().map(|p| p.len() as u32)
     }
 
+    /// Process multiple images in parallel with the same operations.
+    /// 
+    /// - inputs: Array of input file paths
+    /// - output_dir: Directory to write processed images
+    /// - format: Output format ("jpeg", "png", "webp", "avif")
+    /// - quality: Optional quality (1-100, uses format-specific default if None)
+    /// - concurrency: Optional number of parallel workers (default: CPU core count)
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
@@ -395,6 +402,7 @@ impl ImageEngine {
         output_dir: String,
         format: String,
         quality: Option<u8>,
+        concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(Error::from_reason)?;
@@ -404,6 +412,7 @@ impl ImageEngine {
             output_dir,
             ops,
             format: output_format,
+            concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
         }))
     }
 }
@@ -1179,6 +1188,7 @@ pub struct BatchTask {
     output_dir: String,
     ops: Vec<Operation>,
     format: OutputFormat,
+    concurrency: u32,
 }
 
 #[napi]
@@ -1189,14 +1199,19 @@ impl Task for BatchTask {
     fn compute(&mut self) -> Result<Self::Output> {
         use std::fs;
         use std::path::Path;
+        use rayon::ThreadPoolBuilder;
 
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir)
                 .map_err(|e| Error::from_reason(format!("failed to create output dir: {}", e)))?;
         }
 
-        let results: Vec<BatchResult> = self.inputs.par_iter().map(|input_path| {
-            let process_one = || -> Result<String> {
+        // Helper closure to process a single image
+        let ops = &self.ops;
+        let format = &self.format;
+        let output_dir = &self.output_dir;
+        let process_one = |input_path: &String| -> BatchResult {
+            let result = (|| -> Result<String> {
                 let data = fs::read(input_path)
                     .map_err(|e| Error::from_reason(format!("failed to read file: {}", e)))?;
                 
@@ -1212,10 +1227,10 @@ impl Task for BatchTask {
                 let (w, h) = img.dimensions();
                 check_dimensions(w, h)?;
 
-                let processed = EncodeTask::apply_ops(img, &self.ops)?;
+                let processed = EncodeTask::apply_ops(img, ops)?;
 
                 let icc = icc_profile.as_ref().map(|v| v.as_slice());
-                let encoded = match &self.format {
+                let encoded = match format {
                     OutputFormat::Jpeg { quality } => EncodeTask::encode_jpeg(&processed, *quality, icc)?,
                     OutputFormat::Png => EncodeTask::encode_png(&processed, icc)?,
                     OutputFormat::WebP { quality } => EncodeTask::encode_webp(&processed, *quality, icc)?,
@@ -1226,7 +1241,7 @@ impl Task for BatchTask {
                     .file_name()
                     .ok_or_else(|| Error::from_reason("invalid filename"))?;
                 
-                let extension = match &self.format {
+                let extension = match format {
                     OutputFormat::Jpeg { .. } => "jpg",
                     OutputFormat::Png => "png",
                     OutputFormat::WebP { .. } => "webp",
@@ -1234,15 +1249,15 @@ impl Task for BatchTask {
                 };
                 
                 let output_filename = Path::new(filename).with_extension(extension);
-                let output_path = Path::new(&self.output_dir).join(output_filename);
+                let output_path = Path::new(output_dir).join(output_filename);
                 
                 fs::write(&output_path, encoded)
                     .map_err(|e| Error::from_reason(format!("failed to write output: {}", e)))?;
                 
                 Ok(output_path.to_string_lossy().to_string())
-            };
+            })();
 
-            match process_one() {
+            match result {
                 Ok(path) => BatchResult {
                     source: input_path.clone(),
                     success: true,
@@ -1256,7 +1271,23 @@ impl Task for BatchTask {
                     output_path: None,
                 }
             }
-        }).collect();
+        };
+
+        // Configure thread pool for concurrency control
+        let results: Vec<BatchResult> = if self.concurrency > 0 {
+            // Use custom thread pool with specified concurrency
+            let pool = ThreadPoolBuilder::new()
+                .num_threads(self.concurrency as usize)
+                .build()
+                .map_err(|e| Error::from_reason(format!("failed to create thread pool: {}", e)))?;
+            
+            pool.install(|| {
+                self.inputs.par_iter().map(process_one).collect()
+            })
+        } else {
+            // Use default thread pool (CPU cores)
+            self.inputs.par_iter().map(process_one).collect()
+        };
 
         Ok(results)
     }
