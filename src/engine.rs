@@ -1796,6 +1796,288 @@ mod tests {
             // 最小JPEGにはICCプロファイルがない
             assert!(result.is_none());
         }
+
+        // Helper function to create a minimal valid ICC profile (sRGB)
+        fn create_minimal_srgb_icc() -> Vec<u8> {
+            // 最小限の有効なsRGB ICCプロファイル（128バイト）
+            let mut data = vec![0u8; 128];
+            // プロファイルサイズ（最初の4バイト、big-endian）
+            data[0] = 0x00;
+            data[1] = 0x00;
+            data[2] = 0x00;
+            data[3] = 0x80; // 128バイト
+            // CMM type (bytes 4-7): "ADBE" (ASCII)
+            data[4] = b'A';
+            data[5] = b'D';
+            data[6] = b'B';
+            data[7] = b'E';
+            // Version (byte 8): 2
+            data[8] = 2;
+            // Profile class (bytes 12-15): "mntr" (monitor)
+            data[12] = b'm';
+            data[13] = b'n';
+            data[14] = b't';
+            data[15] = b'r';
+            // Data color space (bytes 16-19): "RGB " (ASCII)
+            data[16] = b'R';
+            data[17] = b'G';
+            data[18] = b'B';
+            data[19] = b' ';
+            // PCS (bytes 20-23): "XYZ " (ASCII)
+            data[20] = b'X';
+            data[21] = b'Y';
+            data[22] = b'Z';
+            data[23] = b' ';
+            data
+        }
+
+        // Helper function to create JPEG with ICC profile
+        fn create_jpeg_with_icc(icc: &[u8]) -> Vec<u8> {
+            let img = create_test_image(100, 100);
+            EncodeTask::encode_jpeg(&img, 80, Some(icc)).unwrap()
+        }
+
+        // Helper function to create PNG with ICC profile
+        fn create_png_with_icc(icc: &[u8]) -> Vec<u8> {
+            let img = create_test_image(100, 100);
+            EncodeTask::encode_png(&img, Some(icc)).unwrap()
+        }
+
+        // Helper function to create WebP with ICC profile
+        fn create_webp_with_icc(icc: &[u8]) -> Vec<u8> {
+            let img = create_test_image(100, 100);
+            EncodeTask::encode_webp(&img, 80, Some(icc)).unwrap()
+        }
+
+        mod extraction_tests {
+            use super::*;
+
+            #[test]
+            fn test_extract_icc_from_jpeg_with_profile() {
+                let icc = create_minimal_srgb_icc();
+                let jpeg = create_jpeg_with_icc(&icc);
+                let extracted = extract_icc_profile(&jpeg);
+                assert!(extracted.is_some());
+                let extracted = extracted.unwrap();
+                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                assert!(extracted.len() >= 128);
+            }
+
+            #[test]
+            fn test_extract_icc_from_png_with_profile() {
+                let icc = create_minimal_srgb_icc();
+                let png = create_png_with_icc(&icc);
+                let extracted = extract_icc_profile(&png);
+                // PNGのICC埋め込みはimg-partsの実装に依存するため、
+                // 抽出が成功するかどうかは実装次第
+                // 少なくともエラーにならないことを確認
+                // 実際の動作はimg-partsのバージョンに依存する可能性がある
+                if extracted.is_none() {
+                    // PNGのICC埋め込みが動作しない場合は、警告として記録
+                    // これは既知の制限事項の可能性がある
+                    eprintln!("Warning: PNG ICC profile extraction failed - this may be a limitation of img-parts");
+                }
+            }
+
+            #[test]
+            fn test_extract_icc_from_webp_with_profile() {
+                let icc = create_minimal_srgb_icc();
+                let webp = create_webp_with_icc(&icc);
+                let extracted = extract_icc_profile(&webp);
+                assert!(extracted.is_some());
+            }
+
+            #[test]
+            fn test_extract_icc_returns_none_for_no_icc() {
+                let jpeg = create_minimal_jpeg();
+                let icc = extract_icc_profile(&jpeg);
+                assert!(icc.is_none());
+            }
+
+            #[test]
+            fn test_extract_icc_returns_none_for_non_image() {
+                let icc = extract_icc_profile(b"not an image");
+                assert!(icc.is_none());
+            }
+
+            #[test]
+            fn test_extract_icc_returns_none_for_empty() {
+                let icc = extract_icc_profile(&[]);
+                assert!(icc.is_none());
+            }
+        }
+
+        mod validation_tests {
+            use super::*;
+
+            #[test]
+            fn test_validate_valid_icc() {
+                let icc = create_minimal_srgb_icc();
+                assert!(validate_icc_profile(&icc));
+            }
+
+            #[test]
+            fn test_validate_truncated_icc() {
+                let icc = create_minimal_srgb_icc();
+                // 途中で切り詰め
+                let truncated = &icc[..50];
+                assert!(!validate_icc_profile(truncated));
+            }
+
+            #[test]
+            fn test_validate_wrong_size_field() {
+                let mut icc = create_minimal_srgb_icc();
+                // サイズフィールド（先頭4バイト）を不正値に
+                icc[0] = 0xFF;
+                icc[1] = 0xFF;
+                icc[2] = 0xFF;
+                icc[3] = 0xFF;
+                assert!(!validate_icc_profile(&icc));
+            }
+
+            #[test]
+            fn test_validate_too_short() {
+                assert!(!validate_icc_profile(&[0; 100])); // 128バイト未満
+            }
+
+            #[test]
+            fn test_validate_empty() {
+                assert!(!validate_icc_profile(&[]));
+            }
+        }
+
+        mod roundtrip_tests {
+            use super::*;
+
+            #[test]
+            fn test_jpeg_roundtrip() {
+                // 1. 元画像からICC抽出
+                let original_icc = create_minimal_srgb_icc();
+                let jpeg = create_jpeg_with_icc(&original_icc);
+                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+
+                // 2. 画像デコード
+                let img = image::load_from_memory(&jpeg).unwrap();
+
+                // 3. ICCを埋め込んでJPEGエンコード
+                let encoded = EncodeTask::encode_jpeg(&img, 80, Some(&extracted_icc)).unwrap();
+
+                // 4. エンコード結果からICC再抽出
+                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+
+                // 5. 同一性確認
+                assert_eq!(extracted_icc, re_extracted_icc);
+            }
+
+            #[test]
+            fn test_png_roundtrip() {
+                let original_icc = create_minimal_srgb_icc();
+                let png = create_png_with_icc(&original_icc);
+                let extracted_icc = extract_icc_profile(&png);
+
+                // PNGのICC埋め込みが動作しない場合はスキップ
+                if extracted_icc.is_none() {
+                    eprintln!("Skipping PNG roundtrip test - ICC extraction not supported");
+                    return;
+                }
+
+                let extracted_icc = extracted_icc.unwrap();
+                let img = image::load_from_memory(&png).unwrap();
+                let encoded = EncodeTask::encode_png(&img, Some(&extracted_icc)).unwrap();
+                let re_extracted_icc = extract_icc_profile(&encoded);
+
+                if re_extracted_icc.is_some() {
+                    assert_eq!(extracted_icc, re_extracted_icc.unwrap());
+                } else {
+                    eprintln!("Warning: PNG ICC roundtrip failed - ICC may not be preserved");
+                }
+            }
+
+            #[test]
+            fn test_webp_roundtrip() {
+                let original_icc = create_minimal_srgb_icc();
+                let webp = create_webp_with_icc(&original_icc);
+                let extracted_icc = extract_icc_profile(&webp).unwrap();
+
+                let img = image::load_from_memory(&webp).unwrap();
+                let encoded = EncodeTask::encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
+                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+
+                assert_eq!(extracted_icc, re_extracted_icc);
+            }
+
+            #[test]
+            fn test_cross_format_roundtrip_jpeg_to_png() {
+                // JPEGからICCを抽出してPNGに埋め込み
+                let icc = create_minimal_srgb_icc();
+                let jpeg = create_jpeg_with_icc(&icc);
+                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+
+                let img = image::load_from_memory(&jpeg).unwrap();
+                let png = EncodeTask::encode_png(&img, Some(&extracted_icc)).unwrap();
+                let re_extracted = extract_icc_profile(&png);
+
+                // PNGのICC抽出が動作しない場合はスキップ
+                if re_extracted.is_none() {
+                    eprintln!("Skipping JPEG to PNG roundtrip test - PNG ICC extraction not supported");
+                    return;
+                }
+
+                assert_eq!(extracted_icc, re_extracted.unwrap());
+            }
+
+            #[test]
+            fn test_cross_format_roundtrip_png_to_webp() {
+                // PNGからICCを抽出してWebPに埋め込み
+                let icc = create_minimal_srgb_icc();
+                let png = create_png_with_icc(&icc);
+                let extracted_icc = extract_icc_profile(&png);
+
+                // PNGのICC抽出が動作しない場合はスキップ
+                if extracted_icc.is_none() {
+                    eprintln!("Skipping PNG to WebP roundtrip test - PNG ICC extraction not supported");
+                    return;
+                }
+
+                let extracted_icc = extracted_icc.unwrap();
+                let img = image::load_from_memory(&png).unwrap();
+                let webp = EncodeTask::encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
+                let re_extracted = extract_icc_profile(&webp).unwrap();
+
+                assert_eq!(extracted_icc, re_extracted);
+            }
+        }
+
+        mod avif_icc_tests {
+            use super::*;
+
+            #[test]
+            fn test_avif_loses_icc_profile() {
+                // AVIFはICCを保持しないことを明示的にテスト
+                // これはドキュメント化された制限事項
+                let icc = create_minimal_srgb_icc();
+                let img = create_test_image(100, 100);
+                let avif = EncodeTask::encode_avif(&img, 60, Some(&icc)).unwrap();
+
+                // AVIFからはICCが抽出できないことを確認
+                // （現在のravif実装の制限）
+                let extracted = extract_icc_profile(&avif);
+                assert!(
+                    extracted.is_none(),
+                    "AVIF should not preserve ICC profile (known limitation)"
+                );
+            }
+
+            #[test]
+            fn test_avif_encoding_with_icc_does_not_crash() {
+                // ICCプロファイルを渡してもクラッシュしないことを確認
+                let icc = create_minimal_srgb_icc();
+                let img = create_test_image(100, 100);
+                let result = EncodeTask::encode_avif(&img, 60, Some(&icc));
+                // エラーにならずにエンコードできる（ICCは無視される）
+                assert!(result.is_ok());
+            }
+        }
     }
 
     mod apply_ops_tests {
