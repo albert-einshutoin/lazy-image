@@ -288,6 +288,9 @@ impl ImageEngine {
     /// Encode to buffer asynchronously.
     /// format: "jpeg", "jpg", "png", "webp"
     /// quality: 1-100 (default 80, ignored for PNG)
+    /// 
+    /// **Non-destructive**: This method can be called multiple times on the same engine instance.
+    /// The source data is cloned internally, allowing multiple format outputs.
     #[napi(ts_return_type = "Promise<Buffer>")]
     pub fn to_buffer(
         &mut self,
@@ -297,11 +300,11 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        // Take ownership of source data
-        let source = self.source.take();
-        let decoded = self.decoded.take();
-        let ops = std::mem::take(&mut self.ops);
-        let icc_profile = self.icc_profile.take();
+        // Clone source data (non-destructive: allows multiple calls)
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(EncodeTask {
             source,
@@ -314,6 +317,9 @@ impl ImageEngine {
 
     /// Encode to buffer asynchronously with performance metrics.
     /// Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
+    /// 
+    /// **Non-destructive**: This method can be called multiple times on the same engine instance.
+    /// The source data is cloned internally, allowing multiple format outputs.
     #[napi(ts_return_type = "Promise<OutputWithMetrics>")]
     pub fn to_buffer_with_metrics(
         &mut self,
@@ -323,10 +329,11 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        let source = self.source.take();
-        let decoded = self.decoded.take();
-        let ops = std::mem::take(&mut self.ops);
-        let icc_profile = self.icc_profile.take();
+        // Clone source data (non-destructive: allows multiple calls)
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
             source,
@@ -341,6 +348,9 @@ impl ImageEngine {
     /// **Memory-efficient**: Combined with fromPath(), this enables
     /// full file-to-file processing without touching Node.js heap.
     /// 
+    /// **Non-destructive**: This method can be called multiple times on the same engine instance.
+    /// The source data is cloned internally, allowing multiple format outputs.
+    /// 
     /// Returns the number of bytes written.
     #[napi(js_name = "toFile", ts_return_type = "Promise<number>")]
     pub fn to_file(
@@ -352,11 +362,11 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        // Take ownership of source data
-        let source = self.source.take();
-        let decoded = self.decoded.take();
-        let ops = std::mem::take(&mut self.ops);
-        let icc_profile = self.icc_profile.take();
+        // Clone source data (non-destructive: allows multiple calls)
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(WriteFileTask {
             source,
