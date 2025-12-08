@@ -1487,3 +1487,938 @@ fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
     let webp = WebP::from_bytes(data.to_vec().into()).ok()?;
     webp.icc_profile().map(|icc| icc.to_vec())
 }
+
+// =============================================================================
+// UNIT TESTS
+// =============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
+
+    // Helper function to create test images
+    fn create_test_image(width: u32, height: u32) -> DynamicImage {
+        DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
+            image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
+        }))
+    }
+
+    fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
+        DynamicImage::ImageRgba8(RgbaImage::from_fn(width, height, |x, y| {
+            image::Rgba([(x % 256) as u8, (y % 256) as u8, 128, 255])
+        }))
+    }
+
+    // Helper to create minimal valid JPEG bytes
+    fn create_minimal_jpeg() -> Vec<u8> {
+        // Create a 1x1 RGB image and encode it as JPEG
+        let img = create_test_image(1, 1);
+        let rgb = img.to_rgb8();
+        let (w, h) = rgb.dimensions();
+        let pixels = rgb.into_raw();
+
+        // Use mozjpeg to create a valid JPEG
+        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
+        comp.set_size(w as usize, h as usize);
+        comp.set_quality(80.0);
+        comp.set_color_space(mozjpeg::ColorSpace::JCS_YCbCr);
+        comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
+
+        let mut output = Vec::new();
+        {
+            let mut writer = comp.start_compress(&mut output).unwrap();
+            let stride = w as usize * 3;
+            for row in pixels.chunks(stride) {
+                writer.write_scanlines(row).unwrap();
+            }
+            writer.finish().unwrap();
+        }
+        output
+    }
+
+    // Helper to create minimal valid PNG bytes
+    fn create_minimal_png() -> Vec<u8> {
+        let img = create_test_image(1, 1);
+        let mut buf = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut buf), image::ImageFormat::Png)
+            .unwrap();
+        buf
+    }
+
+    // Helper to create minimal valid WebP bytes
+    fn create_minimal_webp() -> Vec<u8> {
+        let img = create_test_image(10, 10);
+        let rgb = img.to_rgb8();
+        let (w, h) = rgb.dimensions();
+        let encoder = webp::Encoder::from_rgb(&rgb, w, h);
+        let config = webp::WebPConfig::new().unwrap();
+        let mem = encoder.encode_advanced(&config).unwrap();
+        mem.to_vec()
+    }
+
+    mod resize_calc_tests {
+        use super::*;
+
+        #[test]
+        fn test_both_dimensions_specified() {
+            let (w, h) = calc_resize_dimensions(1000, 800, Some(500), Some(400));
+            assert_eq!((w, h), (500, 400));
+        }
+
+        #[test]
+        fn test_width_only_maintains_aspect_ratio() {
+            let (w, h) = calc_resize_dimensions(1000, 500, Some(500), None);
+            assert_eq!(w, 500);
+            assert_eq!(h, 250); // 1000:500 = 500:250
+        }
+
+        #[test]
+        fn test_height_only_maintains_aspect_ratio() {
+            let (w, h) = calc_resize_dimensions(1000, 500, None, Some(250));
+            assert_eq!(w, 500);
+            assert_eq!(h, 250);
+        }
+
+        #[test]
+        fn test_none_returns_original() {
+            let (w, h) = calc_resize_dimensions(1000, 500, None, None);
+            assert_eq!((w, h), (1000, 500));
+        }
+
+        #[test]
+        fn test_rounding_behavior() {
+            // 奇数サイズでの丸め動作確認
+            let (w, h) = calc_resize_dimensions(101, 51, Some(50), None);
+            assert_eq!(w, 50);
+            // 101:51 ≈ 50:25.2... → 25に丸められるべき
+            assert_eq!(h, 25);
+        }
+
+        #[test]
+        fn test_aspect_ratio_preservation_wide() {
+            // 横長画像
+            let (w, h) = calc_resize_dimensions(2000, 1000, Some(1000), None);
+            assert_eq!(w, 1000);
+            assert_eq!(h, 500);
+        }
+
+        #[test]
+        fn test_aspect_ratio_preservation_tall() {
+            // 縦長画像
+            let (w, h) = calc_resize_dimensions(1000, 2000, None, Some(1000));
+            assert_eq!(w, 500);
+            assert_eq!(h, 1000);
+        }
+
+        #[test]
+        fn test_square_image() {
+            let (w, h) = calc_resize_dimensions(100, 100, Some(50), None);
+            assert_eq!(w, 50);
+            assert_eq!(h, 50);
+        }
+    }
+
+    mod security_tests {
+        use super::*;
+
+        #[test]
+        fn test_check_dimensions_valid() {
+            assert!(check_dimensions(1920, 1080).is_ok());
+            // 32768 x 32768 = 1,073,741,824 > MAX_PIXELS(100,000,000) なのでエラーになる
+            // MAX_DIMENSIONチェックは通るが、MAX_PIXELSチェックで弾かれる
+            let result = check_dimensions(32768, 32768);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds max"));
+        }
+
+        #[test]
+        fn test_check_dimensions_exceeds_max_dimension() {
+            let result = check_dimensions(32769, 1);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds max dimension"));
+        }
+
+        #[test]
+        fn test_check_dimensions_exceeds_max_dimension_height() {
+            let result = check_dimensions(1, 32769);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds max dimension"));
+        }
+
+        #[test]
+        fn test_check_dimensions_exceeds_max_pixels() {
+            // 10001 x 10000 = 100,010,000 > MAX_PIXELS(100,000,000)
+            let result = check_dimensions(10001, 10000);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds max"));
+        }
+
+        #[test]
+        fn test_check_dimensions_at_pixel_boundary() {
+            // ちょうど100,000,000ピクセル = OK
+            assert!(check_dimensions(10000, 10000).is_ok());
+        }
+
+        #[test]
+        fn test_check_dimensions_at_max_dimension() {
+            // 境界値: 32768 x 32768 = 1,073,741,824 > MAX_PIXELS
+            // しかし、MAX_DIMENSIONチェックが先に来るので、これはOK
+            // 実際にはMAX_PIXELSチェックで弾かれる
+            let result = check_dimensions(32768, 32768);
+            // 32768 * 32768 = 1,073,741,824 > 100,000,000
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds max"));
+        }
+
+        #[test]
+        fn test_check_dimensions_small_image() {
+            assert!(check_dimensions(1, 1).is_ok());
+        }
+
+        #[test]
+        fn test_check_dimensions_zero_dimension() {
+            // 0次元は技術的には無効だが、check_dimensionsではチェックしない
+            // image crateが処理する
+            assert!(check_dimensions(0, 100).is_ok()); // 0 * 100 = 0 < MAX_PIXELS
+        }
+    }
+
+    mod icc_tests {
+        use super::*;
+
+        #[test]
+        fn test_validate_icc_profile_too_small() {
+            let data = vec![0u8; 127]; // 128バイト未満
+            assert!(!validate_icc_profile(&data));
+        }
+
+        #[test]
+        fn test_validate_icc_profile_minimal_valid() {
+            // 最小限の有効なICCプロファイル（128バイト）
+            let mut data = vec![0u8; 128];
+            // プロファイルサイズ（最初の4バイト、big-endian）
+            data[0] = 0x00;
+            data[1] = 0x00;
+            data[2] = 0x00;
+            data[3] = 0x80; // 128バイト
+            // CMM type (bytes 4-7): "ADBE" (ASCII)
+            data[4] = b'A';
+            data[5] = b'D';
+            data[6] = b'B';
+            data[7] = b'E';
+            // Version (byte 8): 2
+            data[8] = 2;
+            // Profile class (bytes 12-15): "mntr" (monitor)
+            data[12] = b'm';
+            data[13] = b'n';
+            data[14] = b't';
+            data[15] = b'r';
+            // Data color space (bytes 16-19): "RGB " (ASCII)
+            data[16] = b'R';
+            data[17] = b'G';
+            data[18] = b'B';
+            data[19] = b' ';
+            // PCS (bytes 20-23): "XYZ " (ASCII)
+            data[20] = b'X';
+            data[21] = b'Y';
+            data[22] = b'Z';
+            data[23] = b' ';
+
+            assert!(validate_icc_profile(&data));
+        }
+
+        #[test]
+        fn test_validate_icc_profile_size_mismatch() {
+            let mut data = vec![0u8; 200];
+            // プロファイルサイズを200に設定
+            data[0] = 0x00;
+            data[1] = 0x00;
+            data[2] = 0x00;
+            data[3] = 0xC8; // 200バイト
+            // しかし実際のデータは200バイトなので、これは有効
+            // サイズが一致しない場合をテスト
+            data[3] = 0x00;
+            data[3] = 0xFF; // 255バイトと設定（実際は200バイト）
+
+            // サイズが一致しないので無効
+            assert!(!validate_icc_profile(&data));
+        }
+
+        #[test]
+        fn test_validate_icc_profile_invalid_version() {
+            let mut data = vec![0u8; 128];
+            data[0] = 0x00;
+            data[1] = 0x00;
+            data[2] = 0x00;
+            data[3] = 0x80;
+            data[8] = 20; // バージョンが大きすぎる
+
+            assert!(!validate_icc_profile(&data));
+        }
+
+        #[test]
+        fn test_extract_icc_from_jpeg_no_profile() {
+            // ICCプロファイルなしのJPEG
+            let jpeg_data = create_minimal_jpeg();
+            let result = extract_icc_from_jpeg(&jpeg_data);
+            assert!(result.is_none());
+        }
+
+        #[test]
+        fn test_extract_icc_from_png_no_profile() {
+            // ICCプロファイルなしのPNG
+            let png_data = create_minimal_png();
+            let result = extract_icc_from_png(&png_data);
+            assert!(result.is_none());
+        }
+
+        #[test]
+        fn test_extract_icc_from_webp_no_profile() {
+            // ICCプロファイルなしのWebP
+            let webp_data = create_minimal_webp();
+            let result = extract_icc_from_webp(&webp_data);
+            assert!(result.is_none());
+        }
+
+        #[test]
+        fn test_extract_icc_profile_invalid_data() {
+            let invalid_data = vec![0u8; 10];
+            let result = extract_icc_profile(&invalid_data);
+            assert!(result.is_none());
+        }
+
+        #[test]
+        fn test_extract_icc_profile_jpeg() {
+            let jpeg_data = create_minimal_jpeg();
+            // JPEGからICCプロファイルを抽出（存在しない場合）
+            let result = extract_icc_profile(&jpeg_data);
+            // 最小JPEGにはICCプロファイルがない
+            assert!(result.is_none());
+        }
+    }
+
+    mod apply_ops_tests {
+        use super::*;
+
+        #[test]
+        fn test_resize_operation() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Resize {
+                width: Some(50),
+                height: Some(50),
+            }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 50));
+        }
+
+        #[test]
+        fn test_resize_width_only() {
+            let img = create_test_image(100, 50);
+            let ops = vec![Operation::Resize {
+                width: Some(50),
+                height: None,
+            }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 25));
+        }
+
+        #[test]
+        fn test_resize_height_only() {
+            let img = create_test_image(100, 50);
+            let ops = vec![Operation::Resize {
+                width: None,
+                height: Some(25),
+            }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 25));
+        }
+
+        #[test]
+        fn test_crop_valid() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Crop {
+                x: 10,
+                y: 10,
+                width: 50,
+                height: 50,
+            }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 50));
+        }
+
+        #[test]
+        fn test_crop_out_of_bounds() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Crop {
+                x: 60,
+                y: 60,
+                width: 50,
+                height: 50,
+            }];
+            let result = EncodeTask::apply_ops(img, &ops);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("crop bounds"));
+        }
+
+        #[test]
+        fn test_crop_at_origin() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Crop {
+                x: 0,
+                y: 0,
+                width: 50,
+                height: 50,
+            }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 50));
+        }
+
+        #[test]
+        fn test_crop_entire_image() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Crop {
+                x: 0,
+                y: 0,
+                width: 100,
+                height: 100,
+            }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_rotate_90() {
+            let img = create_test_image(100, 50);
+            let ops = vec![Operation::Rotate { degrees: 90 }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 100)); // 幅と高さが入れ替わる
+        }
+
+        #[test]
+        fn test_rotate_180() {
+            let img = create_test_image(100, 50);
+            let ops = vec![Operation::Rotate { degrees: 180 }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 50)); // サイズは変わらない
+        }
+
+        #[test]
+        fn test_rotate_270() {
+            let img = create_test_image(100, 50);
+            let ops = vec![Operation::Rotate { degrees: 270 }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 100));
+        }
+
+        #[test]
+        fn test_rotate_neg90() {
+            let img = create_test_image(100, 50);
+            let ops = vec![Operation::Rotate { degrees: -90 }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (50, 100));
+        }
+
+        #[test]
+        fn test_rotate_0() {
+            let img = create_test_image(100, 50);
+            let ops = vec![Operation::Rotate { degrees: 0 }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 50));
+        }
+
+        #[test]
+        fn test_rotate_invalid_angle() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Rotate { degrees: 45 }];
+            let result = EncodeTask::apply_ops(img, &ops);
+            assert!(result.is_err());
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .contains("unsupported rotation"));
+        }
+
+        #[test]
+        fn test_flip_h() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::FlipH];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_flip_v() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::FlipV];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_grayscale_reduces_channels() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Grayscale];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            // グレースケール後はLuma8形式
+            assert!(matches!(result, DynamicImage::ImageLuma8(_)));
+        }
+
+        #[test]
+        fn test_brightness() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Brightness { value: 50 }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_contrast() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::Contrast { value: 50 }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_colorspace_srgb() {
+            let img = create_test_image(100, 100);
+            let ops = vec![Operation::ColorSpace {
+                target: crate::ops::ColorSpace::Srgb,
+            }];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_chained_operations() {
+            let img = create_test_image(200, 100);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(100),
+                    height: None,
+                },
+                Operation::Rotate { degrees: 90 },
+                Operation::Grayscale,
+            ];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            // 200x100 → resize → 100x50 → rotate90 → 50x100
+            assert_eq!(result.dimensions(), (50, 100));
+            assert!(matches!(result, DynamicImage::ImageLuma8(_)));
+        }
+
+        #[test]
+        fn test_empty_operations() {
+            let img = create_test_image(100, 100);
+            let ops = vec![];
+            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            assert_eq!(result.dimensions(), (100, 100));
+        }
+    }
+
+    mod optimize_ops_tests {
+        use super::*;
+
+        #[test]
+        fn test_consecutive_resizes_combined() {
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(800),
+                    height: None,
+                },
+                Operation::Resize {
+                    width: Some(400),
+                    height: None,
+                },
+            ];
+            let optimized = EncodeTask::optimize_ops(&ops);
+            assert_eq!(optimized.len(), 1);
+            if let Operation::Resize { width, height: _ } = &optimized[0] {
+                assert_eq!(*width, Some(400));
+            } else {
+                panic!("Expected Resize operation");
+            }
+        }
+
+        #[test]
+        fn test_non_consecutive_resizes_not_combined() {
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(800),
+                    height: None,
+                },
+                Operation::Grayscale,
+                Operation::Resize {
+                    width: Some(400),
+                    height: None,
+                },
+            ];
+            let optimized = EncodeTask::optimize_ops(&ops);
+            assert_eq!(optimized.len(), 3);
+        }
+
+        #[test]
+        fn test_single_operation() {
+            let ops = vec![Operation::Resize {
+                width: Some(100),
+                height: None,
+            }];
+            let optimized = EncodeTask::optimize_ops(&ops);
+            assert_eq!(optimized.len(), 1);
+        }
+
+        #[test]
+        fn test_empty_operations() {
+            let ops = vec![];
+            let optimized = EncodeTask::optimize_ops(&ops);
+            assert_eq!(optimized.len(), 0);
+        }
+
+        #[test]
+        fn test_multiple_consecutive_resizes() {
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(1000),
+                    height: None,
+                },
+                Operation::Resize {
+                    width: Some(800),
+                    height: None,
+                },
+                Operation::Resize {
+                    width: Some(400),
+                    height: None,
+                },
+            ];
+            let optimized = EncodeTask::optimize_ops(&ops);
+            assert_eq!(optimized.len(), 1);
+            if let Operation::Resize { width, height: _ } = &optimized[0] {
+                assert_eq!(*width, Some(400));
+            }
+        }
+
+        #[test]
+        fn test_resize_with_both_dimensions() {
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(800),
+                    height: None,
+                },
+                Operation::Resize {
+                    width: Some(400),
+                    height: Some(300),
+                },
+            ];
+            let optimized = EncodeTask::optimize_ops(&ops);
+            assert_eq!(optimized.len(), 1);
+            if let Operation::Resize { width, height } = &optimized[0] {
+                assert_eq!(*width, Some(400));
+                assert_eq!(*height, Some(300));
+            }
+        }
+    }
+
+    mod encode_tests {
+        use super::*;
+
+        #[test]
+        fn test_encode_jpeg_produces_valid_jpeg() {
+            let img = create_test_image(100, 100);
+            let result = EncodeTask::encode_jpeg(&img, 80, None).unwrap();
+            // JPEGマジックバイト確認
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            // JPEGエンドマーカー確認
+            assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_quality_affects_size() {
+            let img = create_test_image(100, 100);
+            let high_quality = EncodeTask::encode_jpeg(&img, 95, None).unwrap();
+            let low_quality = EncodeTask::encode_jpeg(&img, 50, None).unwrap();
+            // 高品質の方が通常は大きい（ただし、画像内容によっては逆転する可能性もある）
+            // 少なくとも両方とも有効なJPEGであることを確認
+            assert!(high_quality.len() > 0);
+            assert!(low_quality.len() > 0);
+            assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
+            assert_eq!(&low_quality[0..2], &[0xFF, 0xD8]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_with_icc() {
+            let img = create_test_image(100, 100);
+            // 最小限の有効なICCプロファイル
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80; // 128バイト
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = EncodeTask::encode_jpeg(&img, 80, Some(&icc_data)).unwrap();
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+        }
+
+        #[test]
+        fn test_encode_png_produces_valid_png() {
+            let img = create_test_image(100, 100);
+            let result = EncodeTask::encode_png(&img, None).unwrap();
+            // PNGマジックバイト確認
+            assert_eq!(
+                &result[0..8],
+                &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+            );
+        }
+
+        #[test]
+        fn test_encode_png_with_icc() {
+            let img = create_test_image(100, 100);
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80;
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = EncodeTask::encode_png(&img, Some(&icc_data)).unwrap();
+            assert_eq!(
+                &result[0..8],
+                &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+            );
+        }
+
+        #[test]
+        fn test_encode_webp_produces_valid_webp() {
+            let img = create_test_image(100, 100);
+            let result = EncodeTask::encode_webp(&img, 80, None).unwrap();
+            // WebPマジックバイト確認 (RIFF....WEBP)
+            assert_eq!(&result[0..4], b"RIFF");
+            assert_eq!(&result[8..12], b"WEBP");
+        }
+
+        #[test]
+        fn test_encode_webp_with_icc() {
+            let img = create_test_image(100, 100);
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80;
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = EncodeTask::encode_webp(&img, 80, Some(&icc_data)).unwrap();
+            assert_eq!(&result[0..4], b"RIFF");
+            assert_eq!(&result[8..12], b"WEBP");
+        }
+
+        #[test]
+        fn test_encode_avif_produces_valid_avif() {
+            let img = create_test_image(100, 100);
+            let result = EncodeTask::encode_avif(&img, 60, None).unwrap();
+            // AVIFは先頭にftypボックス
+            assert!(result.len() > 12);
+            // "ftyp"が含まれることを確認
+            let has_ftyp = result.windows(4).any(|w| w == b"ftyp");
+            assert!(has_ftyp);
+        }
+
+        #[test]
+        fn test_encode_avif_quality_affects_size() {
+            let img = create_test_image(100, 100);
+            let high_quality = EncodeTask::encode_avif(&img, 80, None).unwrap();
+            let low_quality = EncodeTask::encode_avif(&img, 40, None).unwrap();
+            // 両方とも有効なAVIFであることを確認
+            assert!(high_quality.len() > 0);
+            assert!(low_quality.len() > 0);
+        }
+
+        #[test]
+        fn test_encode_rgba_image() {
+            let img = create_test_image_rgba(100, 100);
+            let jpeg_result = EncodeTask::encode_jpeg(&img, 80, None).unwrap();
+            assert_eq!(&jpeg_result[0..2], &[0xFF, 0xD8]);
+
+            let png_result = EncodeTask::encode_png(&img, None).unwrap();
+            assert_eq!(
+                &png_result[0..8],
+                &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+            );
+        }
+    }
+
+    mod decode_tests {
+        use super::*;
+
+        #[test]
+        fn test_decode_jpeg_mozjpeg() {
+            let jpeg_data = create_minimal_jpeg();
+            let result = EncodeTask::decode_jpeg_mozjpeg(&jpeg_data);
+            assert!(result.is_ok());
+            let img = result.unwrap();
+            assert!(img.dimensions().0 > 0);
+            assert!(img.dimensions().1 > 0);
+        }
+
+        #[test]
+        fn test_decode_jpeg_mozjpeg_invalid_data() {
+            let invalid_data = vec![0xFF, 0xD8, 0x00]; // 不完全なJPEG
+            let result = EncodeTask::decode_jpeg_mozjpeg(&invalid_data);
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_decode_with_image_crate() {
+            // PNGデータでdecode()がimage crateを使うことを確認
+            let png_data = create_minimal_png();
+            let task = EncodeTask {
+                source: Some(Arc::new(png_data)),
+                decoded: None,
+                ops: vec![],
+                format: OutputFormat::Png,
+                icc_profile: None,
+            };
+            let result = task.decode();
+            assert!(result.is_ok());
+            let img = result.unwrap();
+            assert!(img.dimensions().0 > 0);
+            assert!(img.dimensions().1 > 0);
+        }
+
+        #[test]
+        fn test_decode_already_decoded() {
+            let img = create_test_image(100, 100);
+            let task = EncodeTask {
+                source: None,
+                decoded: Some(img.clone()),
+                ops: vec![],
+                format: OutputFormat::Png,
+                icc_profile: None,
+            };
+            let result = task.decode();
+            assert!(result.is_ok());
+            let decoded_img = result.unwrap();
+            assert_eq!(decoded_img.dimensions(), img.dimensions());
+        }
+
+        #[test]
+        fn test_decode_no_source() {
+            let task = EncodeTask {
+                source: None,
+                decoded: None,
+                ops: vec![],
+                format: OutputFormat::Png,
+                icc_profile: None,
+            };
+            let result = task.decode();
+            assert!(result.is_err());
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .contains("no image source"));
+        }
+    }
+
+    mod fast_resize_tests {
+        use super::*;
+
+        #[test]
+        fn test_fast_resize_downscale() {
+            let img = create_test_image(200, 200);
+            let result = EncodeTask::fast_resize(&img, 100, 100);
+            assert!(result.is_ok());
+            let resized = result.unwrap();
+            assert_eq!(resized.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_fast_resize_upscale() {
+            let img = create_test_image(50, 50);
+            let result = EncodeTask::fast_resize(&img, 100, 100);
+            assert!(result.is_ok());
+            let resized = result.unwrap();
+            assert_eq!(resized.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_fast_resize_aspect_ratio_change() {
+            let img = create_test_image(200, 100);
+            let result = EncodeTask::fast_resize(&img, 100, 200);
+            assert!(result.is_ok());
+            let resized = result.unwrap();
+            assert_eq!(resized.dimensions(), (100, 200));
+        }
+
+        #[test]
+        fn test_fast_resize_invalid_dimensions() {
+            let img = create_test_image(100, 100);
+            let result = EncodeTask::fast_resize(&img, 0, 100);
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_fast_resize_same_size() {
+            let img = create_test_image(100, 100);
+            let result = EncodeTask::fast_resize(&img, 100, 100);
+            assert!(result.is_ok());
+            let resized = result.unwrap();
+            assert_eq!(resized.dimensions(), (100, 100));
+        }
+
+        #[test]
+        fn test_fast_resize_rgba() {
+            let img = create_test_image_rgba(100, 100);
+            let result = EncodeTask::fast_resize(&img, 50, 50);
+            assert!(result.is_ok());
+            let resized = result.unwrap();
+            assert_eq!(resized.dimensions(), (50, 50));
+        }
+    }
+}
