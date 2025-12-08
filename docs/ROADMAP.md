@@ -66,6 +66,61 @@ If the answer to any of these is “no”, the feature is rejected.
 - More consistent defaults for JPEG/WebP/AVIF
 - Improved batch processing (concurrency tuning, better output)
 
+### 0.8.x (Production Readiness)
+**Goal: Fix architectural issues and improve production reliability**
+
+#### Error Handling Overhaul
+- Replace string-based errors with structured error types
+  - `DecodeError`, `EncodeError`, `InvalidICCProfile`, `DimensionTooLarge`, `UnimplementedFormat`
+  - Error codes and proper error classification
+  - Better error messages with context
+- **Why**: Current `Error::from_reason()` approach loses type safety and makes error handling difficult
+
+#### Documentation & Transparency
+- Explicitly document input format limitations
+  - 16bit images are converted to 8bit (by design, not a bug)
+  - Clear limitations section in README
+- **Why**: Users need to know limitations upfront, not discover them at runtime
+
+#### Thread Model Safety
+- Fix dual thread pool issue (libuv + rayon)
+  - Design clear thread usage strategy
+  - Default concurrency = CPU cores
+  - For batch processing: use rayon threads exclusively, minimize libuv usage
+  - Document thread model and Docker/CPU-limited environment behavior
+- **Why**: Current model can cause unpredictable scheduling and thread saturation under load
+
+#### Encoder Parameter Control
+- Improve quality-to-encoder-parameters mapping
+  - JPEG: SSIM-based quality adjustment
+  - WebP: image complexity-aware method optimization
+  - AVIF: content-adaptive encoding
+- Move beyond "fixed threshold" approach
+- **Why**: Single quality parameter is insufficient for optimal compression across formats
+
+#### API Consistency & Maintainability
+- Improve internal Rust API consistency
+  - Standardize error handling patterns
+  - Improve code organization for maintainability
+  - Better separation of concerns
+- **Why**: Current implementation works but is hard to maintain and debug
+
+#### Memory Efficiency for Large Images
+- Address memory pressure in high-concurrency scenarios
+  - 50MP × 10 parallel processing on 4-8GB RAM servers
+  - Improve memory usage patterns
+  - Consider streaming/chunked processing for very large images (if justified)
+- **Why**: Current "full decode → full hold → process → re-encode" model can fail under memory pressure
+
+#### API Design Decisions
+- **A-001: toBuffer()非破壊化検討** ✅ **完了**
+  - ADR-001を作成し、非破壊化を決定
+  - 選択肢1（現状維持）、選択肢2（非破壊化）、選択肢3（両方提供）を比較
+  - 選択肢2（非破壊化）を採用：`take()`を`clone()`に変更
+  - メモリ効率への影響は限定的（`Arc`により参照カウントのみ増加）
+  - 詳細は `docs/ADR-001-toBuffer-destructive-behavior.md` を参照
+- **Why**: v1.0前に重要なAPI設計判断を確定させる必要がある
+
 ### 1.0
 - API surface freeze (no breaking changes)
 - Stability across platforms (macOS/Win/Linux)
