@@ -131,17 +131,26 @@ export declare class ImageEngine {
    * Encode to buffer asynchronously.
    * format: "jpeg", "jpg", "png", "webp"
    * quality: 1-100 (default 80, ignored for PNG)
+   *
+   * **Non-destructive**: This method can be called multiple times on the same engine instance.
+   * The source data is cloned internally, allowing multiple format outputs.
    */
   toBuffer(format: string, quality?: number | undefined | null): Promise<Buffer>
   /**
    * Encode to buffer asynchronously with performance metrics.
    * Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
+   *
+   * **Non-destructive**: This method can be called multiple times on the same engine instance.
+   * The source data is cloned internally, allowing multiple format outputs.
    */
   toBufferWithMetrics(format: string, quality?: number | undefined | null): Promise<OutputWithMetrics>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
    * full file-to-file processing without touching Node.js heap.
+   *
+   * **Non-destructive**: This method can be called multiple times on the same engine instance.
+   * The source data is cloned internally, allowing multiple format outputs.
    *
    * Returns the number of bytes written.
    */

@@ -23,7 +23,9 @@
   "license": "MIT",
   "scripts": {
     "build": "napi build --platform --release",
-    "test": "node test/basic.test.js",
+    "test": "node test/basic.test.js && node test/edge-cases.test.js",
+    "test:basic": "node test/basic.test.js",
+    "test:edge": "node test/edge-cases.test.js",
     "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
