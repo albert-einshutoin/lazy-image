@@ -140,3 +140,248 @@ impl PresetConfig {
         Self::new(Some(1200), Some(630), OutputFormat::Jpeg { quality: 80 })
     }
 }
+
+// =============================================================================
+// UNIT TESTS
+// =============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod output_format_tests {
+        use super::*;
+
+        #[test]
+        fn test_jpeg_with_quality() {
+            let format = OutputFormat::from_str("jpeg", Some(90)).unwrap();
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 90 }));
+        }
+
+        #[test]
+        fn test_jpeg_default_quality() {
+            let format = OutputFormat::from_str("jpeg", None).unwrap();
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 85 }));
+        }
+
+        #[test]
+        fn test_jpg_alias() {
+            let format = OutputFormat::from_str("jpg", None).unwrap();
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 85 }));
+        }
+
+        #[test]
+        fn test_jpg_with_quality() {
+            let format = OutputFormat::from_str("jpg", Some(75)).unwrap();
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 75 }));
+        }
+
+        #[test]
+        fn test_webp_with_quality() {
+            let format = OutputFormat::from_str("webp", Some(90)).unwrap();
+            assert!(matches!(format, OutputFormat::WebP { quality: 90 }));
+        }
+
+        #[test]
+        fn test_webp_default_quality() {
+            let format = OutputFormat::from_str("webp", None).unwrap();
+            assert!(matches!(format, OutputFormat::WebP { quality: 80 }));
+        }
+
+        #[test]
+        fn test_avif_with_quality() {
+            let format = OutputFormat::from_str("avif", Some(70)).unwrap();
+            assert!(matches!(format, OutputFormat::Avif { quality: 70 }));
+        }
+
+        #[test]
+        fn test_avif_default_quality() {
+            let format = OutputFormat::from_str("avif", None).unwrap();
+            assert!(matches!(format, OutputFormat::Avif { quality: 60 }));
+        }
+
+        #[test]
+        fn test_png_format() {
+            let format = OutputFormat::from_str("png", None).unwrap();
+            assert!(matches!(format, OutputFormat::Png));
+        }
+
+        #[test]
+        fn test_png_ignores_quality() {
+            let format = OutputFormat::from_str("png", Some(50)).unwrap();
+            assert!(matches!(format, OutputFormat::Png));
+        }
+
+        #[test]
+        fn test_case_insensitive_jpeg() {
+            assert!(OutputFormat::from_str("JPEG", None).is_ok());
+            assert!(OutputFormat::from_str("Jpeg", None).is_ok());
+            assert!(OutputFormat::from_str("jPeG", None).is_ok());
+        }
+
+        #[test]
+        fn test_case_insensitive_jpg() {
+            assert!(OutputFormat::from_str("JPG", None).is_ok());
+            assert!(OutputFormat::from_str("Jpg", None).is_ok());
+        }
+
+        #[test]
+        fn test_case_insensitive_webp() {
+            assert!(OutputFormat::from_str("WEBP", None).is_ok());
+            assert!(OutputFormat::from_str("WebP", None).is_ok());
+            assert!(OutputFormat::from_str("wEbP", None).is_ok());
+        }
+
+        #[test]
+        fn test_case_insensitive_avif() {
+            assert!(OutputFormat::from_str("AVIF", None).is_ok());
+            assert!(OutputFormat::from_str("Avif", None).is_ok());
+        }
+
+        #[test]
+        fn test_case_insensitive_png() {
+            assert!(OutputFormat::from_str("PNG", None).is_ok());
+            assert!(OutputFormat::from_str("Png", None).is_ok());
+        }
+
+        #[test]
+        fn test_unsupported_format() {
+            let result = OutputFormat::from_str("gif", None);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().contains("unsupported format"));
+        }
+
+        #[test]
+        fn test_unsupported_format_bmp() {
+            let result = OutputFormat::from_str("bmp", None);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().contains("unsupported format"));
+        }
+
+        #[test]
+        fn test_empty_format() {
+            let result = OutputFormat::from_str("", None);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().contains("unsupported format"));
+        }
+
+        #[test]
+        fn test_quality_range() {
+            // 品質値の範囲テスト（1-100が有効）
+            let format = OutputFormat::from_str("jpeg", Some(1)).unwrap();
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 1 }));
+
+            let format = OutputFormat::from_str("jpeg", Some(100)).unwrap();
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 100 }));
+        }
+    }
+
+    mod preset_config_tests {
+        use super::*;
+
+        #[test]
+        fn test_thumbnail_preset() {
+            let preset = PresetConfig::get("thumbnail").unwrap();
+            assert_eq!(preset.width, Some(150));
+            assert_eq!(preset.height, Some(150));
+            assert!(matches!(preset.format, OutputFormat::WebP { quality: 75 }));
+        }
+
+        #[test]
+        fn test_avatar_preset() {
+            let preset = PresetConfig::get("avatar").unwrap();
+            assert_eq!(preset.width, Some(200));
+            assert_eq!(preset.height, Some(200));
+            assert!(matches!(preset.format, OutputFormat::WebP { quality: 80 }));
+        }
+
+        #[test]
+        fn test_hero_preset() {
+            let preset = PresetConfig::get("hero").unwrap();
+            assert_eq!(preset.width, Some(1920));
+            assert_eq!(preset.height, None); // アスペクト比維持
+            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 85 }));
+        }
+
+        #[test]
+        fn test_social_preset() {
+            let preset = PresetConfig::get("social").unwrap();
+            assert_eq!(preset.width, Some(1200));
+            assert_eq!(preset.height, Some(630)); // OGP標準サイズ
+            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 80 }));
+        }
+
+        #[test]
+        fn test_case_insensitive_thumbnail() {
+            assert!(PresetConfig::get("THUMBNAIL").is_some());
+            assert!(PresetConfig::get("Thumbnail").is_some());
+            assert!(PresetConfig::get("ThUmBnAiL").is_some());
+            
+            let preset = PresetConfig::get("THUMBNAIL").unwrap();
+            assert_eq!(preset.width, Some(150));
+            assert_eq!(preset.height, Some(150));
+        }
+
+        #[test]
+        fn test_case_insensitive_avatar() {
+            assert!(PresetConfig::get("AVATAR").is_some());
+            assert!(PresetConfig::get("Avatar").is_some());
+            
+            let preset = PresetConfig::get("AVATAR").unwrap();
+            assert_eq!(preset.width, Some(200));
+            assert_eq!(preset.height, Some(200));
+        }
+
+        #[test]
+        fn test_case_insensitive_hero() {
+            assert!(PresetConfig::get("HERO").is_some());
+            assert!(PresetConfig::get("Hero").is_some());
+            
+            let preset = PresetConfig::get("HERO").unwrap();
+            assert_eq!(preset.width, Some(1920));
+            assert_eq!(preset.height, None);
+        }
+
+        #[test]
+        fn test_case_insensitive_social() {
+            assert!(PresetConfig::get("SOCIAL").is_some());
+            assert!(PresetConfig::get("Social").is_some());
+            
+            let preset = PresetConfig::get("SOCIAL").unwrap();
+            assert_eq!(preset.width, Some(1200));
+            assert_eq!(preset.height, Some(630));
+        }
+
+        #[test]
+        fn test_unknown_preset() {
+            assert!(PresetConfig::get("unknown").is_none());
+            assert!(PresetConfig::get("").is_none());
+            assert!(PresetConfig::get("invalid").is_none());
+            assert!(PresetConfig::get("thumbnails").is_none()); // 複数形は無効
+        }
+
+        #[test]
+        fn test_preset_new() {
+            let preset = PresetConfig::new(
+                Some(800),
+                Some(600),
+                OutputFormat::Jpeg { quality: 90 },
+            );
+            assert_eq!(preset.width, Some(800));
+            assert_eq!(preset.height, Some(600));
+            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 90 }));
+        }
+
+        #[test]
+        fn test_preset_new_with_none() {
+            let preset = PresetConfig::new(
+                Some(1920),
+                None,
+                OutputFormat::WebP { quality: 80 },
+            );
+            assert_eq!(preset.width, Some(1920));
+            assert_eq!(preset.height, None);
+            assert!(matches!(preset.format, OutputFormat::WebP { quality: 80 }));
+        }
+    }
+}
