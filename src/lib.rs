@@ -22,6 +22,7 @@ use std::io::Cursor;
 
 // Re-export the engine for NAPI
 pub use engine::ImageEngine;
+use error::LazyImageError;
 
 /// Image metadata returned by inspect()
 #[napi(object)]
@@ -45,7 +46,7 @@ pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
     
     let reader = ImageReader::new(cursor)
         .with_guessed_format()
-        .map_err(|e| Error::from_reason(format!("failed to read image header: {e}")))?;
+        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read image header: {e}"))))?;
     
     // Get format from header (no decoding)
     let format = reader.format().map(|f| format!("{:?}", f).to_lowercase());
@@ -53,7 +54,7 @@ pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
     // Get dimensions from header (minimal decoding - just reads header bytes)
     let (width, height) = reader
         .into_dimensions()
-        .map_err(|e| Error::from_reason(format!("failed to read dimensions: {e}")))?;
+        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read dimensions: {e}"))))?;
     
     Ok(ImageMetadata {
         width,
@@ -71,11 +72,11 @@ pub fn inspect_file(path: String) -> Result<ImageMetadata> {
     use std::io::BufReader;
 
     let file = File::open(&path)
-        .map_err(|e| Error::from_reason(format!("failed to open file '{}': {}", path, e)))?;
+        .map_err(|e| napi::Error::from(LazyImageError::file_read_failed(&path, e)))?;
     
     let reader = ImageReader::new(BufReader::new(file))
         .with_guessed_format()
-        .map_err(|e| Error::from_reason(format!("failed to read image header: {e}")))?;
+        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read image header: {e}"))))?;
     
     // Get format from header (no decoding)
     let format = reader.format().map(|f| format!("{:?}", f).to_lowercase());
@@ -83,7 +84,7 @@ pub fn inspect_file(path: String) -> Result<ImageMetadata> {
     // Get dimensions from header (minimal decoding - just reads header bytes)
     let (width, height) = reader
         .into_dimensions()
-        .map_err(|e| Error::from_reason(format!("failed to read dimensions: {e}")))?;
+        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read dimensions: {e}"))))?;
     
     Ok(ImageMetadata {
         width,
