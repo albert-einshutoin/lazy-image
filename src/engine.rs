@@ -13,7 +13,7 @@
 /// Maximum allowed image dimension (width or height).
 /// Images larger than 32768x32768 are rejected to prevent decompression bombs.
 /// This is the same limit used by libvips/sharp.
-const MAX_DIMENSION: u32 = 32768;
+pub const MAX_DIMENSION: u32 = 32768;
 
 /// Maximum allowed total pixels (width * height).
 /// 100 megapixels = 400MB uncompressed RGBA. Beyond this is likely malicious.
@@ -475,17 +475,17 @@ impl ImageEngine {
 // =============================================================================
 
 pub struct EncodeTask {
-    source: Option<Arc<Vec<u8>>>,
-    decoded: Option<DynamicImage>,
-    ops: Vec<Operation>,
-    format: OutputFormat,
-    icc_profile: Option<Arc<Vec<u8>>>,
+    pub source: Option<Arc<Vec<u8>>>,
+    pub decoded: Option<DynamicImage>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
 }
 
 impl EncodeTask {
     /// Decode image from source bytes
     /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
-    fn decode(&self) -> Result<DynamicImage> {
+    pub fn decode(&self) -> Result<DynamicImage> {
         // Prefer already decoded image (already validated)
         // Use Cow to avoid unnecessary clone when possible
         if let Some(ref img) = self.decoded {
@@ -633,7 +633,7 @@ impl EncodeTask {
     }
 
     /// Apply all queued operations
-    fn apply_ops(mut img: DynamicImage, ops: &[Operation]) -> Result<DynamicImage> {
+    pub fn apply_ops(mut img: DynamicImage, ops: &[Operation]) -> Result<DynamicImage> {
         // Optimize operations first
         let optimized_ops = Self::optimize_ops(ops);
 
@@ -719,7 +719,7 @@ impl EncodeTask {
         }
         Ok(img)
     }
-    fn fast_resize(img: &DynamicImage, dst_width: u32, dst_height: u32) -> std::result::Result<DynamicImage, String> {
+    pub fn fast_resize(img: &DynamicImage, dst_width: u32, dst_height: u32) -> std::result::Result<DynamicImage, String> {
         let src_width = img.width();
         let src_height = img.height();
 
@@ -763,7 +763,7 @@ impl EncodeTask {
     }
 
     /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings
-    fn encode_jpeg(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_jpeg(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         let rgb = img.to_rgb8();
         let (w, h) = rgb.dimensions();
         let pixels = rgb.into_raw();
@@ -893,7 +893,7 @@ impl EncodeTask {
     }
 
     /// Encode to PNG using image crate
-    fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         let mut buf = Vec::new();
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| Error::from_reason(format!("PNG encode failed: {e}")))?;
@@ -946,7 +946,7 @@ impl EncodeTask {
     }
 
     /// Encode to WebP with optimized settings
-    fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         // Use RGB instead of RGBA for smaller files (unless alpha is needed)
         let rgb = img.to_rgb8();
         let (w, h) = rgb.dimensions();
@@ -1004,7 +1004,7 @@ impl EncodeTask {
     /// 
     /// Note: ICC profile embedding is not currently supported by ravif.
     /// AVIF files will use sRGB color space by default.
-    fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         let rgba = img.to_rgba8();
         let (width, height) = rgba.dimensions();
         let pixels = rgba.as_raw();
@@ -1340,7 +1340,7 @@ impl Task for BatchTask {
 // =============================================================================
 
 /// Calculate resize dimensions maintaining aspect ratio
-fn calc_resize_dimensions(
+pub fn calc_resize_dimensions(
     orig_w: u32,
     orig_h: u32,
     target_w: Option<u32>,
@@ -1364,7 +1364,7 @@ fn calc_resize_dimensions(
 /// Supports JPEG (APP2 marker), PNG (iCCP chunk), and WebP (ICCP chunk).
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
-fn check_dimensions(width: u32, height: u32) -> Result<()> {
+pub fn check_dimensions(width: u32, height: u32) -> Result<()> {
     if width > MAX_DIMENSION || height > MAX_DIMENSION {
         return Err(Error::from_reason(format!(
             "image too large: {}x{} exceeds max dimension {}", 
