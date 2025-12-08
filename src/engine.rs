@@ -1193,7 +1193,7 @@ impl Task for WriteFileTask {
         
         // Atomic rename: tempfile handles cleanup automatically if this fails
         temp_file.persist(&self.output_path)
-            .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&self.output_path, e.into())))?;
+            .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&self.output_path.display().to_string(), e)))?;
         
         Ok(bytes_written)
     }
@@ -1274,9 +1274,8 @@ impl Task for BatchTask {
                 use std::io::Write;
                 use tempfile::NamedTempFile;
                 
-                let output_dir_path = Path::new(output_dir);
-                let mut temp_file = NamedTempFile::new_in(output_dir_path)
-                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&output_dir_path.to_string_lossy().to_string(), e)))?;
+                let mut temp_file = NamedTempFile::new_in(output_dir)
+                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&output_dir.to_string_lossy().to_string(), e)))?;
                 
                 let temp_path = temp_file.path().to_path_buf();
                 temp_file.write_all(&encoded)
@@ -1287,7 +1286,7 @@ impl Task for BatchTask {
                 
                 // Atomic rename
                 temp_file.persist(&output_path)
-                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&output_path.to_string_lossy().to_string(), e.into())))?;
+                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&output_path.display().to_string(), e)))?;
                 
                 Ok(output_path.to_string_lossy().to_string())
             })();
@@ -1371,15 +1370,16 @@ pub fn calc_resize_dimensions(
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
 pub fn check_dimensions(width: u32, height: u32) -> Result<()> {
-    if width > MAX_DIMENSION {
-        return Err(napi::Error::from(LazyImageError::dimension_exceeds_limit(width, MAX_DIMENSION)));
-    }
-    if height > MAX_DIMENSION {
-        return Err(napi::Error::from(LazyImageError::dimension_exceeds_limit(height, MAX_DIMENSION)));
+    if width > MAX_DIMENSION || height > MAX_DIMENSION {
+        return Err(napi::Error::from(LazyImageError::dimension_exceeds_limit(
+            width.max(height), MAX_DIMENSION
+        )));
     }
     let pixels = width as u64 * height as u64;
     if pixels > MAX_PIXELS {
-        return Err(napi::Error::from(LazyImageError::pixel_count_exceeds_limit(pixels, MAX_PIXELS)));
+        return Err(napi::Error::from(LazyImageError::pixel_count_exceeds_limit(
+            pixels, MAX_PIXELS
+        )));
     }
     Ok(())
 }
