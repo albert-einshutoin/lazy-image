@@ -1111,11 +1111,11 @@ impl Task for EncodeWithMetricsTask {
     fn compute(&mut self) -> Result<Self::Output> {
         //Reuse EncodeTask logic
         let mut task = EncodeTask {
-            source: self.source.take(),
-            decoded: self.decoded.take(),
-            ops: std::mem::take(&mut self.ops),
+            source: self.source.clone(),
+            decoded: self.decoded.clone(),
+            ops: self.ops.clone(),
             format: self.format.clone(),
-            icc_profile: self.icc_profile.take(),
+            icc_profile: self.icc_profile.clone(),
         };
         
         use crate::ProcessingMetrics;
@@ -1158,11 +1158,11 @@ impl Task for WriteFileTask {
 
         // Create EncodeTask and use its process_and_encode method
         let mut encode_task = EncodeTask {
-            source: self.source.take(),
-            decoded: self.decoded.take(),
-            ops: std::mem::take(&mut self.ops),
+            source: self.source.clone(),
+            decoded: self.decoded.clone(),
+            ops: self.ops.clone(),
             format: self.format.clone(),
-            icc_profile: self.icc_profile.take(),
+            icc_profile: self.icc_profile.clone(),
         };
 
         // Process image using shared logic
