@@ -1193,7 +1193,10 @@ impl Task for WriteFileTask {
         
         // Atomic rename: tempfile handles cleanup automatically if this fails
         temp_file.persist(&self.output_path)
-            .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&self.output_path.display().to_string(), e)))?;
+            .map_err(|e| {
+                let io_error = std::io::Error::new(std::io::ErrorKind::Other, format!("failed to persist file: {}", e));
+                napi::Error::from(LazyImageError::file_write_failed(&self.output_path, io_error))
+            })?;
         
         Ok(bytes_written)
     }
@@ -1275,7 +1278,7 @@ impl Task for BatchTask {
                 use tempfile::NamedTempFile;
                 
                 let mut temp_file = NamedTempFile::new_in(output_dir)
-                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&output_dir.to_string_lossy().to_string(), e)))?;
+                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(output_dir, e)))?;
                 
                 let temp_path = temp_file.path().to_path_buf();
                 temp_file.write_all(&encoded)
@@ -1286,7 +1289,10 @@ impl Task for BatchTask {
                 
                 // Atomic rename
                 temp_file.persist(&output_path)
-                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&output_path.display().to_string(), e)))?;
+                    .map_err(|e| {
+                        let io_error = std::io::Error::new(std::io::ErrorKind::Other, format!("failed to persist file: {}", e));
+                        napi::Error::from(LazyImageError::file_write_failed(&output_path.display().to_string(), io_error))
+                    })?;
                 
                 Ok(output_path.to_string_lossy().to_string())
             })();
