@@ -12,8 +12,9 @@
 #[macro_use]
 extern crate napi_derive;
 
-mod engine;
-mod ops;
+pub mod engine;
+pub mod error;
+pub mod ops;
 
 use image::io::Reader as ImageReader;
 use napi::bindgen_prelude::*;

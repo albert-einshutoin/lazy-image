@@ -13,7 +13,7 @@
 /// Maximum allowed image dimension (width or height).
 /// Images larger than 32768x32768 are rejected to prevent decompression bombs.
 /// This is the same limit used by libvips/sharp.
-const MAX_DIMENSION: u32 = 32768;
+pub const MAX_DIMENSION: u32 = 32768;
 
 /// Maximum allowed total pixels (width * height).
 /// 100 megapixels = 400MB uncompressed RGBA. Beyond this is likely malicious.
@@ -73,6 +73,7 @@ impl QualitySettings {
 }
 
 
+use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat, PresetConfig};
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
@@ -140,7 +141,7 @@ impl ImageEngine {
         use std::fs;
 
         let data = fs::read(&path)
-            .map_err(|e| Error::from_reason(format!("failed to read file '{}': {}", path, e)))?;
+            .map_err(|e| Error::from(LazyImageError::file_read_failed(&path, &e)))?;
 
         // Extract ICC profile before any processing
         let icc_profile = extract_icc_profile(&data).map(Arc::new);
@@ -234,7 +235,7 @@ impl ImageEngine {
             "srgb" => crate::ops::ColorSpace::Srgb,
             "p3" | "display-p3" => crate::ops::ColorSpace::DisplayP3,
             "adobergb" => crate::ops::ColorSpace::AdobeRgb,
-            _ => return Err(Error::from_reason(format!("unsupported color space: {}", color_space))),
+            _ => return Err(Error::from(LazyImageError::unsupported_color_space(&color_space))),
         };
         self.ops.push(Operation::ColorSpace { target });
         Ok(this)
@@ -256,9 +257,7 @@ impl ImageEngine {
     #[napi]
     pub fn preset(&mut self, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
         let config = PresetConfig::get(&name)
-            .ok_or_else(|| Error::from_reason(format!(
-                "unknown preset: '{}'. Available: thumbnail, avatar, hero, social", name
-            )))?;
+            .ok_or_else(|| Error::from(LazyImageError::invalid_preset(&name)))?;
         
         // Apply resize operation
         self.ops.push(Operation::Resize { 
@@ -296,7 +295,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|e| Error::from(LazyImageError::Generic { message: e }))?;
 
         // Take ownership of source data
         let source = self.source.take();
@@ -322,7 +321,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|e| Error::from(LazyImageError::Generic { message: e }))?;
 
         let source = self.source.take();
         let decoded = self.decoded.take();
@@ -351,7 +350,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|e| Error::from(LazyImageError::Generic { message: e }))?;
 
         // Take ownership of source data
         let source = self.source.take();
@@ -405,7 +404,7 @@ impl ImageEngine {
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|e| Error::from(LazyImageError::Generic { message: e }))?;
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {
             inputs,
@@ -452,21 +451,21 @@ impl ImageEngine {
     fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
         if self.decoded.is_none() {
             let source = self.source.as_ref()
-                .ok_or_else(|| Error::from_reason("image source already consumed"))?;
+                .ok_or_else(|| Error::from(LazyImageError::source_consumed()))?;
             
             let img = image::load_from_memory(source)
-                .map_err(|e| Error::from_reason(format!("failed to decode: {e}")))?;
+                .map_err(|e| Error::from(LazyImageError::decode_failed(&format!("{e}"))))?;
             
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();
-            check_dimensions(w, h)?;
+            check_dimensions(w, h).map_err(|e| Error::from(e))?;
             
             self.decoded = Some(img);
         }
         
         // Safe: we just set it above, use ok_or for safety
         self.decoded.as_ref()
-            .ok_or_else(|| Error::from_reason("decode failed unexpectedly"))
+            .ok_or_else(|| Error::from(LazyImageError::Generic { message: "decode failed unexpectedly".to_string() }))
     }
 }
 
@@ -475,17 +474,17 @@ impl ImageEngine {
 // =============================================================================
 
 pub struct EncodeTask {
-    source: Option<Arc<Vec<u8>>>,
-    decoded: Option<DynamicImage>,
-    ops: Vec<Operation>,
-    format: OutputFormat,
-    icc_profile: Option<Arc<Vec<u8>>>,
+    pub source: Option<Arc<Vec<u8>>>,
+    pub decoded: Option<DynamicImage>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
 }
 
 impl EncodeTask {
     /// Decode image from source bytes
     /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
-    fn decode(&self) -> Result<DynamicImage> {
+    pub fn decode(&self) -> Result<DynamicImage> {
         // Prefer already decoded image (already validated)
         // Use Cow to avoid unnecessary clone when possible
         if let Some(ref img) = self.decoded {
@@ -495,27 +494,27 @@ impl EncodeTask {
         }
 
         let source = self.source.as_ref()
-            .ok_or_else(|| Error::from_reason("no image source"))?;
+            .ok_or_else(|| Error::from(LazyImageError::Generic { message: "no image source".to_string() }))?;
 
         // Check magic bytes for JPEG (0xFF 0xD8)
         let img = if source.len() >= 2 && source[0] == 0xFF && source[1] == 0xD8 {
             // JPEG detected - use mozjpeg for TURBO speed
-            Self::decode_jpeg_mozjpeg(source)?
+            Self::decode_jpeg_mozjpeg(source).map_err(|e| Error::from(e))?
         } else {
             // PNG, WebP, etc - use image crate
             image::load_from_memory(source)
-                .map_err(|e| Error::from_reason(format!("decode failed: {e}")))?
+                .map_err(|e| Error::from(LazyImageError::decode_failed(&format!("{e}"))))?
         };
 
         // Security check: reject decompression bombs
         let (w, h) = img.dimensions();
-        check_dimensions(w, h)?;
+        check_dimensions(w, h).map_err(|e| Error::from(e))?;
 
         Ok(img)
     }
     /// Decode JPEG using mozjpeg (backed by libjpeg-turbo)
     /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
-    fn decode_jpeg_mozjpeg(data: &[u8]) -> Result<DynamicImage> {
+    fn decode_jpeg_mozjpeg(data: &[u8]) -> crate::error::Result<DynamicImage> {
         let result = panic::catch_unwind(|| {
             let decompress = Decompress::new_mem(data)
                 .map_err(|e| format!("mozjpeg decompress init failed: {e:?}"))?;
@@ -551,8 +550,8 @@ impl EncodeTask {
 
         match result {
             Ok(Ok(img)) => Ok(img),
-            Ok(Err(e)) => Err(Error::from_reason(e)),
-            Err(_) => Err(Error::from_reason("mozjpeg panicked during decode")),
+            Ok(Err(e)) => Err(LazyImageError::Generic { message: e }),
+            Err(_) => Err(LazyImageError::internal_panic("mozjpeg panicked during decode")),
         }
     }
 
@@ -633,7 +632,7 @@ impl EncodeTask {
     }
 
     /// Apply all queued operations
-    fn apply_ops(mut img: DynamicImage, ops: &[Operation]) -> Result<DynamicImage> {
+    pub fn apply_ops(mut img: DynamicImage, ops: &[Operation]) -> crate::error::Result<DynamicImage> {
         // Optimize operations first
         let optimized_ops = Self::optimize_ops(ops);
 
@@ -660,10 +659,7 @@ impl EncodeTask {
                     let img_w = img.width();
                     let img_h = img.height();
                     if *x + *width > img_w || *y + *height > img_h {
-                        return Err(Error::from_reason(format!(
-                            "crop bounds ({}+{}, {}+{}) exceed image dimensions ({}x{})",
-                            x, width, y, height, img_w, img_h
-                        )));
+                        return Err(LazyImageError::invalid_crop_bounds(*x, *y, *width, *height, img_w, img_h));
                     }
                     img.crop_imm(*x, *y, *width, *height)
                 }
@@ -678,10 +674,7 @@ impl EncodeTask {
                         -270 => img.rotate90(),
                         0 => img, // No-op for 0 degrees
                         _ => {
-                            return Err(Error::from_reason(format!(
-                                "unsupported rotation angle: {}. Only 0, 90, 180, 270 (and negatives) are supported",
-                                degrees
-                            )));
+                            return Err(LazyImageError::invalid_rotation_angle(*degrees));
                         }
                     }
                 }
@@ -709,9 +702,7 @@ impl EncodeTask {
                             }
                         }
                         crate::ops::ColorSpace::DisplayP3 | crate::ops::ColorSpace::AdobeRgb => {
-                            return Err(Error::from_reason(format!(
-                                "color space {:?} is not yet implemented", target
-                            )));
+                            return Err(LazyImageError::Generic { message: format!("color space {:?} is not yet implemented", target) });
                         }
                     }
                 }
@@ -719,7 +710,7 @@ impl EncodeTask {
         }
         Ok(img)
     }
-    fn fast_resize(img: &DynamicImage, dst_width: u32, dst_height: u32) -> std::result::Result<DynamicImage, String> {
+    pub fn fast_resize(img: &DynamicImage, dst_width: u32, dst_height: u32) -> std::result::Result<DynamicImage, String> {
         let src_width = img.width();
         let src_height = img.height();
 
@@ -763,7 +754,7 @@ impl EncodeTask {
     }
 
     /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings
-    fn encode_jpeg(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_jpeg(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> crate::error::Result<Vec<u8>> {
         let rgb = img.to_rgb8();
         let (w, h) = rgb.dimensions();
         let pixels = rgb.into_raw();
@@ -845,8 +836,8 @@ impl EncodeTask {
 
         let encoded = match result {
             Ok(Ok(data)) => data,
-            Ok(Err(e)) => return Err(Error::from_reason(e)),
-            Err(_) => return Err(Error::from_reason("mozjpeg panicked during encoding")),
+            Ok(Err(e)) => return Err(LazyImageError::Generic { message: e }),
+            Err(_) => return Err(LazyImageError::internal_panic("mozjpeg panicked during encoding")),
         };
 
         // Embed ICC profile using img-parts if present
@@ -858,12 +849,12 @@ impl EncodeTask {
     }
 
     /// Embed ICC profile into JPEG using img-parts
-    fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> Result<Vec<u8>> {
+    fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> crate::error::Result<Vec<u8>> {
         use img_parts::jpeg::{Jpeg, JpegSegment};
         use img_parts::Bytes;
 
         let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data))
-            .map_err(|e| Error::from_reason(format!("failed to parse JPEG for ICC: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to parse JPEG for ICC: {e}") })?;
 
         // Build ICC marker: "ICC_PROFILE\0" + chunk_num + total_chunks + data
         // For simplicity, we embed as a single chunk (works for profiles < 64KB)
@@ -887,16 +878,16 @@ impl EncodeTask {
         let mut output = Vec::new();
         jpeg.encoder()
             .write_to(&mut output)
-            .map_err(|e| Error::from_reason(format!("failed to write JPEG with ICC: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to write JPEG with ICC: {e}") })?;
 
         Ok(output)
     }
 
     /// Encode to PNG using image crate
-    fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> crate::error::Result<Vec<u8>> {
         let mut buf = Vec::new();
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
-            .map_err(|e| Error::from_reason(format!("PNG encode failed: {e}")))?;
+            .map_err(|e| LazyImageError::encode_failed("png", format!("{e}")))?;
 
         // Embed ICC profile if present
         if let Some(icc_data) = icc {
@@ -907,7 +898,7 @@ impl EncodeTask {
     }
 
     /// Embed ICC profile into PNG using img-parts
-    fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> Result<Vec<u8>> {
+    fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> crate::error::Result<Vec<u8>> {
         use img_parts::png::Png;
         use img_parts::{Bytes, ImageICC};
         use flate2::write::ZlibEncoder;
@@ -915,7 +906,7 @@ impl EncodeTask {
         use std::io::Write;
 
         let mut png = Png::from_bytes(Bytes::from(png_data))
-            .map_err(|e| Error::from_reason(format!("failed to parse PNG for ICC: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to parse PNG for ICC: {e}") })?;
 
         // iCCP chunk format: profile_name (null-terminated) + compression_method (0) + compressed_data
         let profile_name = b"ICC\0"; // Short name
@@ -924,9 +915,9 @@ impl EncodeTask {
         // Compress ICC data
         let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
         encoder.write_all(icc)
-            .map_err(|e| Error::from_reason(format!("failed to compress ICC: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to compress ICC: {e}") })?;
         let compressed = encoder.finish()
-            .map_err(|e| Error::from_reason(format!("failed to finish ICC compression: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to finish ICC compression: {e}") })?;
 
         let mut chunk_data = Vec::with_capacity(profile_name.len() + 1 + compressed.len());
         chunk_data.extend_from_slice(profile_name);
@@ -940,13 +931,13 @@ impl EncodeTask {
         let mut output = Vec::new();
         png.encoder()
             .write_to(&mut output)
-            .map_err(|e| Error::from_reason(format!("failed to write PNG with ICC: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to write PNG with ICC: {e}") })?;
 
         Ok(output)
     }
 
     /// Encode to WebP with optimized settings
-    fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> crate::error::Result<Vec<u8>> {
         // Use RGB instead of RGBA for smaller files (unless alpha is needed)
         let rgb = img.to_rgb8();
         let (w, h) = rgb.dimensions();
@@ -955,7 +946,7 @@ impl EncodeTask {
         
         // Create WebPConfig with enhanced preprocessing for better compression
         let mut config = webp::WebPConfig::new()
-            .map_err(|_| Error::from_reason("failed to create WebPConfig"))?;
+            .map_err(|_| LazyImageError::Generic { message: "failed to create WebPConfig".to_string() })?;
         
         let settings = QualitySettings::new(quality);
         config.quality = settings.quality;
@@ -968,7 +959,7 @@ impl EncodeTask {
         config.filter_sharpness = settings.webp_filter_sharpness();
         
         let mem = encoder.encode_advanced(&config)
-            .map_err(|e| Error::from_reason(format!("WebP encode failed: {e:?}")))?;
+            .map_err(|e| LazyImageError::encode_failed("webp", format!("{e:?}")))?;
         
         let encoded = mem.to_vec();
 
@@ -981,12 +972,12 @@ impl EncodeTask {
     }
 
     /// Embed ICC profile into WebP using img-parts
-    fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> Result<Vec<u8>> {
+    fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> crate::error::Result<Vec<u8>> {
         use img_parts::webp::WebP;
         use img_parts::Bytes;
 
         let mut webp = WebP::from_bytes(Bytes::from(webp_data))
-            .map_err(|e| Error::from_reason(format!("failed to parse WebP for ICC: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to parse WebP for ICC: {e}") })?;
 
         // Set the ICCP chunk directly
         webp.set_icc_profile(Some(Bytes::from(icc.to_vec())));
@@ -995,7 +986,7 @@ impl EncodeTask {
         let mut output = Vec::new();
         webp.encoder()
             .write_to(&mut output)
-            .map_err(|e| Error::from_reason(format!("failed to write WebP with ICC: {e}")))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to write WebP with ICC: {e}") })?;
 
         Ok(output)
     }
@@ -1004,7 +995,7 @@ impl EncodeTask {
     /// 
     /// Note: ICC profile embedding is not currently supported by ravif.
     /// AVIF files will use sRGB color space by default.
-    fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Result<Vec<u8>> {
+    pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> crate::error::Result<Vec<u8>> {
         let rgba = img.to_rgba8();
         let (width, height) = rgba.dimensions();
         let pixels = rgba.as_raw();
@@ -1034,7 +1025,7 @@ impl EncodeTask {
         }
 
         let result = encoder.encode_rgba(img_ref)
-            .map_err(|e| Error::from_reason(format!("AVIF encode failed: {e}")))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", format!("{e}")))?;
 
         Ok(result.avif_file)
     }
@@ -1051,7 +1042,7 @@ impl EncodeTask {
 
         // 2. Apply operations
         let start_process = std::time::Instant::now();
-        let processed = Self::apply_ops(img, &self.ops)?;
+        let processed = Self::apply_ops(img, &self.ops).map_err(|e| Error::from(e))?;
         if let Some(m) = metrics.as_deref_mut() {
             m.process_time = start_process.elapsed().as_secs_f64() * 1000.0;
         }
@@ -1060,11 +1051,11 @@ impl EncodeTask {
         let start_encode = std::time::Instant::now();
         let icc = self.icc_profile.as_ref().map(|v| v.as_slice());
         let result = match &self.format {
-            OutputFormat::Jpeg { quality } => Self::encode_jpeg(&processed, *quality, icc),
-            OutputFormat::Png => Self::encode_png(&processed, icc),
-            OutputFormat::WebP { quality } => Self::encode_webp(&processed, *quality, icc),
-            OutputFormat::Avif { quality } => Self::encode_avif(&processed, *quality, icc),
-        }?;
+            OutputFormat::Jpeg { quality } => Self::encode_jpeg(&processed, *quality, icc).map_err(|e| Error::from(e))?,
+            OutputFormat::Png => Self::encode_png(&processed, icc).map_err(|e| Error::from(e))?,
+            OutputFormat::WebP { quality } => Self::encode_webp(&processed, *quality, icc).map_err(|e| Error::from(e))?,
+            OutputFormat::Avif { quality } => Self::encode_avif(&processed, *quality, icc).map_err(|e| Error::from(e))?,
+        };
         
         if let Some(m) = metrics {
             m.encode_time = start_encode.elapsed().as_secs_f64() * 1000.0;
@@ -1169,27 +1160,27 @@ impl Task for WriteFileTask {
         // then rename on success. tempfile automatically cleans up on drop.
         let output_dir = std::path::Path::new(&self.output_path)
             .parent()
-            .ok_or_else(|| Error::from_reason("output path has no parent directory"))?;
+            .ok_or_else(|| LazyImageError::Generic { message: "output path has no parent directory".to_string() })?;
         
         // Create temp file in the same directory as the target file
         // This ensures rename() works (cross-filesystem rename can fail)
         let mut temp_file = NamedTempFile::new_in(output_dir)
-            .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to create temp file: {}", e) })?;
         
         // Check for overflow: NAPI requires u32, but we can't handle >4GB files
         let bytes_written = data.len()
             .try_into()
-            .map_err(|_| Error::from_reason("file size exceeds 4GB limit (u32::MAX)"))?;
+            .map_err(|_| LazyImageError::Generic { message: "file size exceeds 4GB limit (u32::MAX)".to_string() })?;
         temp_file.write_all(&data)
-            .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to write data: {}", e) })?;
         
         // Ensure data is flushed to disk
         temp_file.as_file_mut().sync_all()
-            .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to sync file: {}", e) })?;
         
         // Atomic rename: tempfile handles cleanup automatically if this fails
         temp_file.persist(&self.output_path)
-            .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
+            .map_err(|e| LazyImageError::Generic { message: format!("failed to rename temp file: {}", e) })?;
         
         Ok(bytes_written)
     }
@@ -1218,7 +1209,7 @@ impl Task for BatchTask {
 
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir)
-                .map_err(|e| Error::from_reason(format!("failed to create output dir: {}", e)))?;
+                .map_err(|e| LazyImageError::Generic { message: format!("failed to create output dir: {}", e) })?;
         }
 
         // Helper closure to process a single image
@@ -1226,9 +1217,9 @@ impl Task for BatchTask {
         let format = &self.format;
         let output_dir = &self.output_dir;
         let process_one = |input_path: &String| -> BatchResult {
-            let result = (|| -> Result<String> {
+            let result = (|| -> std::result::Result<String, LazyImageError> {
                 let data = fs::read(input_path)
-                    .map_err(|e| Error::from_reason(format!("failed to read file: {}", e)))?;
+                    .map_err(|e| LazyImageError::file_read_failed(input_path, &e))?;
                 
                 let icc_profile = extract_icc_profile(&data).map(Arc::new);
 
@@ -1236,7 +1227,7 @@ impl Task for BatchTask {
                     EncodeTask::decode_jpeg_mozjpeg(&data)?
                 } else {
                     image::load_from_memory(&data)
-                        .map_err(|e| Error::from_reason(format!("decode failed: {e}")))?
+                        .map_err(|e| LazyImageError::decode_failed(&format!("{e}")))?
                 };
                 
                 let (w, h) = img.dimensions();
@@ -1254,7 +1245,7 @@ impl Task for BatchTask {
 
                 let filename = Path::new(input_path)
                     .file_name()
-                    .ok_or_else(|| Error::from_reason("invalid filename"))?;
+                    .ok_or_else(|| LazyImageError::Generic { message: "invalid filename".to_string() })?;
                 
                 let extension = match format {
                     OutputFormat::Jpeg { .. } => "jpg",
@@ -1271,17 +1262,17 @@ impl Task for BatchTask {
                 use tempfile::NamedTempFile;
                 
                 let mut temp_file = NamedTempFile::new_in(output_dir)
-                    .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
+                    .map_err(|e| LazyImageError::Generic { message: format!("failed to create temp file: {}", e) })?;
                 
                 temp_file.write_all(&encoded)
-                    .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
+                    .map_err(|e| LazyImageError::Generic { message: format!("failed to write data: {}", e) })?;
                 
                 temp_file.as_file_mut().sync_all()
-                    .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
+                    .map_err(|e| LazyImageError::Generic { message: format!("failed to sync file: {}", e) })?;
                 
                 // Atomic rename
                 temp_file.persist(&output_path)
-                    .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
+                    .map_err(|e| LazyImageError::Generic { message: format!("failed to rename temp file: {}", e) })?;
                 
                 Ok(output_path.to_string_lossy().to_string())
             })();
@@ -1312,12 +1303,12 @@ impl Task for BatchTask {
             // Safe cast: concurrency is u32, usize is at least u32 on modern systems
             let num_threads = self.concurrency as usize;
             if num_threads == 0 || num_threads > 1024 {
-                return Err(Error::from_reason(format!("invalid concurrency value: {} (must be 1-1024)", self.concurrency)));
+                return Err(Error::from(LazyImageError::Generic { message: format!("invalid concurrency value: {} (must be 1-1024)", self.concurrency) }));
             }
             let pool = ThreadPoolBuilder::new()
                 .num_threads(num_threads)
                 .build()
-                .map_err(|e| Error::from_reason(format!("failed to create thread pool: {}", e)))?;
+                .map_err(|e| Error::from(LazyImageError::Generic { message: format!("failed to create thread pool: {}", e) }))?;
             
             pool.install(|| {
                 self.inputs.par_iter().map(process_one).collect()
@@ -1340,7 +1331,7 @@ impl Task for BatchTask {
 // =============================================================================
 
 /// Calculate resize dimensions maintaining aspect ratio
-fn calc_resize_dimensions(
+pub fn calc_resize_dimensions(
     orig_w: u32,
     orig_h: u32,
     target_w: Option<u32>,
@@ -1364,19 +1355,13 @@ fn calc_resize_dimensions(
 /// Supports JPEG (APP2 marker), PNG (iCCP chunk), and WebP (ICCP chunk).
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
-fn check_dimensions(width: u32, height: u32) -> Result<()> {
+pub fn check_dimensions(width: u32, height: u32) -> crate::error::Result<()> {
     if width > MAX_DIMENSION || height > MAX_DIMENSION {
-        return Err(Error::from_reason(format!(
-            "image too large: {}x{} exceeds max dimension {}", 
-            width, height, MAX_DIMENSION
-        )));
+        return Err(LazyImageError::dimension_exceeds_limit(width.max(height), MAX_DIMENSION));
     }
     let pixels = width as u64 * height as u64;
     if pixels > MAX_PIXELS {
-        return Err(Error::from_reason(format!(
-            "image too large: {} pixels exceeds max {}", 
-            pixels, MAX_PIXELS
-        )));
+        return Err(LazyImageError::pixel_count_exceeds_limit(pixels, MAX_PIXELS));
     }
     Ok(())
 }
