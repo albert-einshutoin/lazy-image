@@ -191,6 +191,13 @@ pub enum LazyImageError {
         code: &'static str,
         message: String,
     },
+
+    // 汎用エラー（mainブランチから追加）
+    #[error("[{code}] {message}")]
+    Generic {
+        code: &'static str,
+        message: String,
+    },
 }
 
 // コンストラクタヘルパー
@@ -323,6 +330,13 @@ impl LazyImageError {
         }
     }
 
+    pub fn generic(message: impl Into<String>) -> Self {
+        Self::Generic {
+            code: ErrorCode::UnexpectedState.as_str(),
+            message: message.into(),
+        }
+    }
+
     /// エラーコードを取得
     pub fn code(&self) -> &'static str {
         match self {
@@ -342,6 +356,7 @@ impl LazyImageError {
             Self::InvalidPreset { code, .. } => code,
             Self::SourceConsumed { code } => code,
             Self::InternalPanic { code, .. } => code,
+            Self::Generic { code, .. } => code,
         }
     }
 }
