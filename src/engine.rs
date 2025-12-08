@@ -73,6 +73,7 @@ impl QualitySettings {
 }
 
 
+use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat, PresetConfig};
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
@@ -140,7 +141,7 @@ impl ImageEngine {
         use std::fs;
 
         let data = fs::read(&path)
-            .map_err(|e| Error::from_reason(format!("failed to read file '{}': {}", path, e)))?;
+            .map_err(|e| napi::Error::from(LazyImageError::file_read_failed(&path, e)))?;
 
         // Extract ICC profile before any processing
         let icc_profile = extract_icc_profile(&data).map(Arc::new);
@@ -234,7 +235,7 @@ impl ImageEngine {
             "srgb" => crate::ops::ColorSpace::Srgb,
             "p3" | "display-p3" => crate::ops::ColorSpace::DisplayP3,
             "adobergb" => crate::ops::ColorSpace::AdobeRgb,
-            _ => return Err(Error::from_reason(format!("unsupported color space: {}", color_space))),
+            _ => return Err(napi::Error::from(LazyImageError::unsupported_color_space(&color_space))),
         };
         self.ops.push(Operation::ColorSpace { target });
         Ok(this)
@@ -256,9 +257,7 @@ impl ImageEngine {
     #[napi]
     pub fn preset(&mut self, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
         let config = PresetConfig::get(&name)
-            .ok_or_else(|| Error::from_reason(format!(
-                "unknown preset: '{}'. Available: thumbnail, avatar, hero, social", name
-            )))?;
+            .ok_or_else(|| napi::Error::from(LazyImageError::invalid_preset(&name)))?;
         
         // Apply resize operation
         self.ops.push(Operation::Resize { 
@@ -289,6 +288,9 @@ impl ImageEngine {
     /// Encode to buffer asynchronously.
     /// format: "jpeg", "jpg", "png", "webp"
     /// quality: 1-100 (default 80, ignored for PNG)
+    /// 
+    /// **Non-destructive**: This method can be called multiple times on the same engine instance.
+    /// The source data is cloned internally, allowing multiple format outputs.
     #[napi(ts_return_type = "Promise<Buffer>")]
     pub fn to_buffer(
         &mut self,
@@ -296,13 +298,13 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        // Take ownership of source data
-        let source = self.source.take();
-        let decoded = self.decoded.take();
-        let ops = std::mem::take(&mut self.ops);
-        let icc_profile = self.icc_profile.take();
+        // Clone source data (non-destructive: allows multiple calls)
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(EncodeTask {
             source,
@@ -315,6 +317,9 @@ impl ImageEngine {
 
     /// Encode to buffer asynchronously with performance metrics.
     /// Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
+    /// 
+    /// **Non-destructive**: This method can be called multiple times on the same engine instance.
+    /// The source data is cloned internally, allowing multiple format outputs.
     #[napi(ts_return_type = "Promise<OutputWithMetrics>")]
     pub fn to_buffer_with_metrics(
         &mut self,
@@ -322,12 +327,13 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        let source = self.source.take();
-        let decoded = self.decoded.take();
-        let ops = std::mem::take(&mut self.ops);
-        let icc_profile = self.icc_profile.take();
+        // Clone source data (non-destructive: allows multiple calls)
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
             source,
@@ -342,6 +348,9 @@ impl ImageEngine {
     /// **Memory-efficient**: Combined with fromPath(), this enables
     /// full file-to-file processing without touching Node.js heap.
     /// 
+    /// **Non-destructive**: This method can be called multiple times on the same engine instance.
+    /// The source data is cloned internally, allowing multiple format outputs.
+    /// 
     /// Returns the number of bytes written.
     #[napi(js_name = "toFile", ts_return_type = "Promise<number>")]
     pub fn to_file(
@@ -351,13 +360,13 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        // Take ownership of source data
-        let source = self.source.take();
-        let decoded = self.decoded.take();
-        let ops = std::mem::take(&mut self.ops);
-        let icc_profile = self.icc_profile.take();
+        // Clone source data (non-destructive: allows multiple calls)
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(WriteFileTask {
             source,
@@ -405,7 +414,7 @@ impl ImageEngine {
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(Error::from_reason)?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {
             inputs,
@@ -452,10 +461,10 @@ impl ImageEngine {
     fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
         if self.decoded.is_none() {
             let source = self.source.as_ref()
-                .ok_or_else(|| Error::from_reason("image source already consumed"))?;
+                .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
             
             let img = image::load_from_memory(source)
-                .map_err(|e| Error::from_reason(format!("failed to decode: {e}")))?;
+                .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to decode: {e}"))))?;
             
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();
@@ -466,7 +475,7 @@ impl ImageEngine {
         
         // Safe: we just set it above, use ok_or for safety
         self.decoded.as_ref()
-            .ok_or_else(|| Error::from_reason("decode failed unexpectedly"))
+            .ok_or_else(|| napi::Error::from(LazyImageError::internal_panic("decode failed unexpectedly")))
     }
 }
 
@@ -495,7 +504,7 @@ impl EncodeTask {
         }
 
         let source = self.source.as_ref()
-            .ok_or_else(|| Error::from_reason("no image source"))?;
+            .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
 
         // Check magic bytes for JPEG (0xFF 0xD8)
         let img = if source.len() >= 2 && source[0] == 0xFF && source[1] == 0xD8 {
@@ -504,7 +513,7 @@ impl EncodeTask {
         } else {
             // PNG, WebP, etc - use image crate
             image::load_from_memory(source)
-                .map_err(|e| Error::from_reason(format!("decode failed: {e}")))?
+                .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("decode failed: {e}"))))?
         };
 
         // Security check: reject decompression bombs
@@ -551,8 +560,8 @@ impl EncodeTask {
 
         match result {
             Ok(Ok(img)) => Ok(img),
-            Ok(Err(e)) => Err(Error::from_reason(e)),
-            Err(_) => Err(Error::from_reason("mozjpeg panicked during decode")),
+            Ok(Err(e)) => Err(napi::Error::from(LazyImageError::decode_failed(e))),
+            Err(_) => Err(napi::Error::from(LazyImageError::internal_panic("mozjpeg panicked during decode"))),
         }
     }
 
@@ -660,9 +669,8 @@ impl EncodeTask {
                     let img_w = img.width();
                     let img_h = img.height();
                     if *x + *width > img_w || *y + *height > img_h {
-                        return Err(Error::from_reason(format!(
-                            "crop bounds ({}+{}, {}+{}) exceed image dimensions ({}x{})",
-                            x, width, y, height, img_w, img_h
+                        return Err(napi::Error::from(LazyImageError::invalid_crop_bounds(
+                            *x, *y, *width, *height, img_w, img_h
                         )));
                     }
                     img.crop_imm(*x, *y, *width, *height)
@@ -678,10 +686,7 @@ impl EncodeTask {
                         -270 => img.rotate90(),
                         0 => img, // No-op for 0 degrees
                         _ => {
-                            return Err(Error::from_reason(format!(
-                                "unsupported rotation angle: {}. Only 0, 90, 180, 270 (and negatives) are supported",
-                                degrees
-                            )));
+                            return Err(napi::Error::from(LazyImageError::invalid_rotation_angle(*degrees)));
                         }
                     }
                 }
@@ -709,9 +714,7 @@ impl EncodeTask {
                             }
                         }
                         crate::ops::ColorSpace::DisplayP3 | crate::ops::ColorSpace::AdobeRgb => {
-                            return Err(Error::from_reason(format!(
-                                "color space {:?} is not yet implemented", target
-                            )));
+                            return Err(napi::Error::from(LazyImageError::unsupported_color_space(format!("{:?}", target))));
                         }
                     }
                 }
@@ -845,8 +848,8 @@ impl EncodeTask {
 
         let encoded = match result {
             Ok(Ok(data)) => data,
-            Ok(Err(e)) => return Err(Error::from_reason(e)),
-            Err(_) => return Err(Error::from_reason("mozjpeg panicked during encoding")),
+            Ok(Err(e)) => return Err(napi::Error::from(LazyImageError::encode_failed("jpeg", e))),
+            Err(_) => return Err(napi::Error::from(LazyImageError::internal_panic("mozjpeg panicked during encoding"))),
         };
 
         // Embed ICC profile using img-parts if present
@@ -863,7 +866,7 @@ impl EncodeTask {
         use img_parts::Bytes;
 
         let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data))
-            .map_err(|e| Error::from_reason(format!("failed to parse JPEG for ICC: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to parse JPEG for ICC: {e}"))))?;
 
         // Build ICC marker: "ICC_PROFILE\0" + chunk_num + total_chunks + data
         // For simplicity, we embed as a single chunk (works for profiles < 64KB)
@@ -887,7 +890,7 @@ impl EncodeTask {
         let mut output = Vec::new();
         jpeg.encoder()
             .write_to(&mut output)
-            .map_err(|e| Error::from_reason(format!("failed to write JPEG with ICC: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("jpeg", format!("failed to write JPEG with ICC: {e}"))))?;
 
         Ok(output)
     }
@@ -896,7 +899,7 @@ impl EncodeTask {
     pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> Result<Vec<u8>> {
         let mut buf = Vec::new();
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
-            .map_err(|e| Error::from_reason(format!("PNG encode failed: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("png", format!("PNG encode failed: {e}"))))?;
 
         // Embed ICC profile if present
         if let Some(icc_data) = icc {
@@ -915,7 +918,7 @@ impl EncodeTask {
         use std::io::Write;
 
         let mut png = Png::from_bytes(Bytes::from(png_data))
-            .map_err(|e| Error::from_reason(format!("failed to parse PNG for ICC: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to parse PNG for ICC: {e}"))))?;
 
         // iCCP chunk format: profile_name (null-terminated) + compression_method (0) + compressed_data
         let profile_name = b"ICC\0"; // Short name
@@ -924,9 +927,9 @@ impl EncodeTask {
         // Compress ICC data
         let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
         encoder.write_all(icc)
-            .map_err(|e| Error::from_reason(format!("failed to compress ICC: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("png", format!("failed to compress ICC: {e}"))))?;
         let compressed = encoder.finish()
-            .map_err(|e| Error::from_reason(format!("failed to finish ICC compression: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("png", format!("failed to finish ICC compression: {e}"))))?;
 
         let mut chunk_data = Vec::with_capacity(profile_name.len() + 1 + compressed.len());
         chunk_data.extend_from_slice(profile_name);
@@ -940,7 +943,7 @@ impl EncodeTask {
         let mut output = Vec::new();
         png.encoder()
             .write_to(&mut output)
-            .map_err(|e| Error::from_reason(format!("failed to write PNG with ICC: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("png", format!("failed to write PNG with ICC: {e}"))))?;
 
         Ok(output)
     }
@@ -955,7 +958,7 @@ impl EncodeTask {
         
         // Create WebPConfig with enhanced preprocessing for better compression
         let mut config = webp::WebPConfig::new()
-            .map_err(|_| Error::from_reason("failed to create WebPConfig"))?;
+            .map_err(|_| napi::Error::from(LazyImageError::internal_panic("failed to create WebPConfig")))?;
         
         let settings = QualitySettings::new(quality);
         config.quality = settings.quality;
@@ -968,7 +971,7 @@ impl EncodeTask {
         config.filter_sharpness = settings.webp_filter_sharpness();
         
         let mem = encoder.encode_advanced(&config)
-            .map_err(|e| Error::from_reason(format!("WebP encode failed: {e:?}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("webp", format!("WebP encode failed: {e:?}"))))?;
         
         let encoded = mem.to_vec();
 
@@ -986,7 +989,7 @@ impl EncodeTask {
         use img_parts::Bytes;
 
         let mut webp = WebP::from_bytes(Bytes::from(webp_data))
-            .map_err(|e| Error::from_reason(format!("failed to parse WebP for ICC: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to parse WebP for ICC: {e}"))))?;
 
         // Set the ICCP chunk directly
         webp.set_icc_profile(Some(Bytes::from(icc.to_vec())));
@@ -995,7 +998,7 @@ impl EncodeTask {
         let mut output = Vec::new();
         webp.encoder()
             .write_to(&mut output)
-            .map_err(|e| Error::from_reason(format!("failed to write WebP with ICC: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("webp", format!("failed to write WebP with ICC: {e}"))))?;
 
         Ok(output)
     }
@@ -1034,7 +1037,7 @@ impl EncodeTask {
         }
 
         let result = encoder.encode_rgba(img_ref)
-            .map_err(|e| Error::from_reason(format!("AVIF encode failed: {e}")))?;
+            .map_err(|e| napi::Error::from(LazyImageError::encode_failed("avif", format!("AVIF encode failed: {e}"))))?;
 
         Ok(result.avif_file)
     }
@@ -1108,11 +1111,11 @@ impl Task for EncodeWithMetricsTask {
     fn compute(&mut self) -> Result<Self::Output> {
         //Reuse EncodeTask logic
         let mut task = EncodeTask {
-            source: self.source.take(),
-            decoded: self.decoded.take(),
-            ops: std::mem::take(&mut self.ops),
+            source: self.source.clone(),
+            decoded: self.decoded.clone(),
+            ops: self.ops.clone(),
             format: self.format.clone(),
-            icc_profile: self.icc_profile.take(),
+            icc_profile: self.icc_profile.clone(),
         };
         
         use crate::ProcessingMetrics;
@@ -1155,11 +1158,11 @@ impl Task for WriteFileTask {
 
         // Create EncodeTask and use its process_and_encode method
         let mut encode_task = EncodeTask {
-            source: self.source.take(),
-            decoded: self.decoded.take(),
-            ops: std::mem::take(&mut self.ops),
+            source: self.source.clone(),
+            decoded: self.decoded.clone(),
+            ops: self.ops.clone(),
             format: self.format.clone(),
-            icc_profile: self.icc_profile.take(),
+            icc_profile: self.icc_profile.clone(),
         };
 
         // Process image using shared logic
@@ -1169,27 +1172,31 @@ impl Task for WriteFileTask {
         // then rename on success. tempfile automatically cleans up on drop.
         let output_dir = std::path::Path::new(&self.output_path)
             .parent()
-            .ok_or_else(|| Error::from_reason("output path has no parent directory"))?;
+            .ok_or_else(|| napi::Error::from(LazyImageError::internal_panic("output path has no parent directory")))?;
         
         // Create temp file in the same directory as the target file
         // This ensures rename() works (cross-filesystem rename can fail)
         let mut temp_file = NamedTempFile::new_in(output_dir)
-            .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
+            .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&output_dir.to_string_lossy().to_string(), e)))?;
         
+        let temp_path = temp_file.path().to_path_buf();
         // Check for overflow: NAPI requires u32, but we can't handle >4GB files
         let bytes_written = data.len()
             .try_into()
-            .map_err(|_| Error::from_reason("file size exceeds 4GB limit (u32::MAX)"))?;
+            .map_err(|_| napi::Error::from(LazyImageError::internal_panic("file size exceeds 4GB limit (u32::MAX)")))?;
         temp_file.write_all(&data)
-            .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
+            .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&temp_path.display().to_string(), e)))?;
         
         // Ensure data is flushed to disk
         temp_file.as_file_mut().sync_all()
-            .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
+            .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&temp_path.display().to_string(), e)))?;
         
         // Atomic rename: tempfile handles cleanup automatically if this fails
         temp_file.persist(&self.output_path)
-            .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
+            .map_err(|e| {
+                let io_error = std::io::Error::new(std::io::ErrorKind::Other, format!("failed to persist file: {}", e));
+                napi::Error::from(LazyImageError::file_write_failed(&self.output_path, io_error))
+            })?;
         
         Ok(bytes_written)
     }
@@ -1218,7 +1225,7 @@ impl Task for BatchTask {
 
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir)
-                .map_err(|e| Error::from_reason(format!("failed to create output dir: {}", e)))?;
+                .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&self.output_dir.clone(), e)))?;
         }
 
         // Helper closure to process a single image
@@ -1228,7 +1235,7 @@ impl Task for BatchTask {
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> Result<String> {
                 let data = fs::read(input_path)
-                    .map_err(|e| Error::from_reason(format!("failed to read file: {}", e)))?;
+                    .map_err(|e| napi::Error::from(LazyImageError::file_read_failed(input_path, e)))?;
                 
                 let icc_profile = extract_icc_profile(&data).map(Arc::new);
 
@@ -1236,7 +1243,7 @@ impl Task for BatchTask {
                     EncodeTask::decode_jpeg_mozjpeg(&data)?
                 } else {
                     image::load_from_memory(&data)
-                        .map_err(|e| Error::from_reason(format!("decode failed: {e}")))?
+                        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("decode failed: {e}"))))?
                 };
                 
                 let (w, h) = img.dimensions();
@@ -1254,7 +1261,7 @@ impl Task for BatchTask {
 
                 let filename = Path::new(input_path)
                     .file_name()
-                    .ok_or_else(|| Error::from_reason("invalid filename"))?;
+                    .ok_or_else(|| napi::Error::from(LazyImageError::internal_panic("invalid filename")))?;
                 
                 let extension = match format {
                     OutputFormat::Jpeg { .. } => "jpg",
@@ -1271,17 +1278,21 @@ impl Task for BatchTask {
                 use tempfile::NamedTempFile;
                 
                 let mut temp_file = NamedTempFile::new_in(output_dir)
-                    .map_err(|e| Error::from_reason(format!("failed to create temp file: {}", e)))?;
+                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(output_dir, e)))?;
                 
+                let temp_path = temp_file.path().to_path_buf();
                 temp_file.write_all(&encoded)
-                    .map_err(|e| Error::from_reason(format!("failed to write data: {}", e)))?;
+                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&temp_path.display().to_string(), e)))?;
                 
                 temp_file.as_file_mut().sync_all()
-                    .map_err(|e| Error::from_reason(format!("failed to sync file: {}", e)))?;
+                    .map_err(|e| napi::Error::from(LazyImageError::file_write_failed(&temp_path.display().to_string(), e)))?;
                 
                 // Atomic rename
                 temp_file.persist(&output_path)
-                    .map_err(|e| Error::from_reason(format!("failed to rename temp file: {}", e)))?;
+                    .map_err(|e| {
+                        let io_error = std::io::Error::new(std::io::ErrorKind::Other, format!("failed to persist file: {}", e));
+                        napi::Error::from(LazyImageError::file_write_failed(&output_path.display().to_string(), io_error))
+                    })?;
                 
                 Ok(output_path.to_string_lossy().to_string())
             })();
@@ -1312,12 +1323,12 @@ impl Task for BatchTask {
             // Safe cast: concurrency is u32, usize is at least u32 on modern systems
             let num_threads = self.concurrency as usize;
             if num_threads == 0 || num_threads > 1024 {
-                return Err(Error::from_reason(format!("invalid concurrency value: {} (must be 1-1024)", self.concurrency)));
+                return Err(napi::Error::from(LazyImageError::internal_panic(format!("invalid concurrency value: {} (must be 1-1024)", self.concurrency))));
             }
             let pool = ThreadPoolBuilder::new()
                 .num_threads(num_threads)
                 .build()
-                .map_err(|e| Error::from_reason(format!("failed to create thread pool: {}", e)))?;
+                .map_err(|e| napi::Error::from(LazyImageError::internal_panic(format!("failed to create thread pool: {}", e))))?;
             
             pool.install(|| {
                 self.inputs.par_iter().map(process_one).collect()
@@ -1366,15 +1377,13 @@ pub fn calc_resize_dimensions(
 /// Returns an error if the image is too large (potential decompression bomb).
 pub fn check_dimensions(width: u32, height: u32) -> Result<()> {
     if width > MAX_DIMENSION || height > MAX_DIMENSION {
-        return Err(Error::from_reason(format!(
-            "image too large: {}x{} exceeds max dimension {}", 
-            width, height, MAX_DIMENSION
+        return Err(napi::Error::from(LazyImageError::dimension_exceeds_limit(
+            width.max(height), MAX_DIMENSION
         )));
     }
     let pixels = width as u64 * height as u64;
     if pixels > MAX_PIXELS {
-        return Err(Error::from_reason(format!(
-            "image too large: {} pixels exceeds max {}", 
+        return Err(napi::Error::from(LazyImageError::pixel_count_exceeds_limit(
             pixels, MAX_PIXELS
         )));
     }

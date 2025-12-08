@@ -367,8 +367,8 @@ export declare class ImageEngine {
    * @throws If format is unsupported or encoding fails
    * 
    * @remarks
-   * **Warning**: This method consumes the image source. For multi-output
-   * scenarios, use {@link ImageEngine.clone} first.
+   * **Non-destructive**: This method can be called multiple times on the same engine instance.
+   * The source data is cloned internally, allowing multiple format outputs.
    * 
    * @example
    * ```typescript
@@ -391,6 +391,10 @@ export declare class ImageEngine {
    * @param quality - Quality level 1-100
    * @returns Promise resolving to encoded data and metrics
    * 
+   * @remarks
+   * **Non-destructive**: This method can be called multiple times on the same engine instance.
+   * The source data is cloned internally, allowing multiple format outputs.
+   * 
    * @example
    * ```typescript
    * const { data, metrics } = await engine.toBufferWithMetrics('jpeg', 80);
@@ -410,6 +414,10 @@ export declare class ImageEngine {
    * @param quality - Quality level 1-100
    * @returns Promise resolving to number of bytes written
    * @throws If encoding fails or file cannot be written
+   * 
+   * @remarks
+   * **Non-destructive**: This method can be called multiple times on the same engine instance.
+   * The source data is cloned internally, allowing multiple format outputs.
    * 
    * @example
    * ```typescript
