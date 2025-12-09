@@ -58,6 +58,24 @@ AVIF vs sharp AVIF: -46.2% smaller (and 1.08x faster!)
 
 ---
 
+## ⚠️ Limitations
+
+Before choosing lazy-image, please understand these limitations:
+
+| Limitation | Details |
+|------------|---------|
+| **16-bit images** | Converted to 8-bit during processing (by design for web optimization) |
+| **AVIF ICC profiles** | Not preserved (ravif encoder limitation) - use JPEG/WebP for color-critical work |
+| **Rotation angles** | Only 90°, 180°, 270° supported (no arbitrary angles) |
+| **No filters** | No blur, sharpen, or artistic effects (out of scope) |
+| **No animation** | GIF/APNG animation not supported |
+| **Processing speed** | Slower than sharp for JPEG/WebP (prioritizes compression over speed) |
+
+> **Note**: These limitations are intentional - lazy-image focuses on **file size optimization**, not feature completeness.
+> See [docs/ROADMAP.md](./docs/ROADMAP.md) for the full project scope.
+
+---
+
 ## 📦 Installation
 
 ```bash
