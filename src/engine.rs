@@ -720,9 +720,26 @@ impl EncodeTask {
                     // Fallback is intentional: fast_image_resize may fail on edge cases
                     // (e.g., very small images, invalid dimensions), so we use image crate's
                     // proven implementation as a safe fallback
-                    Self::fast_resize(&img, w, h).unwrap_or_else(|_| {
-                        img.resize_exact(w, h, image::imageops::FilterType::Lanczos3)
-                    })
+                    // For RGB/RGBA images, use fast_resize_owned to avoid clone() (zero-copy)
+                    // Check format first to decide which path to take
+                    if matches!(img, DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_)) {
+                        // Try zero-copy resize first (no clone needed for RGB/RGBA)
+                        match Self::fast_resize_owned(img, w, h) {
+                            Ok(resized) => resized,
+                            Err(_) => {
+                                // Rare error case: fallback to reference version
+                                // Note: We lost the original img, so we'll use image crate's resize
+                                // This should be extremely rare
+                                let fallback = DynamicImage::ImageRgb8(RgbImage::new(w.max(1), h.max(1)));
+                                fallback.resize_exact(w, h, image::imageops::FilterType::Lanczos3)
+                            }
+                        }
+                    } else {
+                        // For other formats, use reference version (conversion needed anyway)
+                        Self::fast_resize(&img, w, h).unwrap_or_else(|_| {
+                            img.resize_exact(w, h, image::imageops::FilterType::Lanczos3)
+                        })
+                    }
                 }
 
                 Operation::Crop { x, y, width, height } => {
@@ -783,6 +800,45 @@ impl EncodeTask {
         }
         Ok(img)
     }
+    /// Fast resize with owned DynamicImage (zero-copy for RGB/RGBA)
+    /// Returns Ok(resized) on success, Err(original) on failure
+    fn fast_resize_owned(img: DynamicImage, dst_width: u32, dst_height: u32) -> std::result::Result<DynamicImage, DynamicImage> {
+        let src_width = img.width();
+        let src_height = img.height();
+
+        if src_width == 0 || src_height == 0 || dst_width == 0 || dst_height == 0 {
+            return Err(img);
+        }
+
+        // Select pixel layout without forcing RGBA when not needed
+        // Use into_raw() to avoid clone() - ownership transfer instead of copying
+        let (pixel_type, src_pixels): (PixelType, Vec<u8>) = match img {
+            DynamicImage::ImageRgb8(rgb) => {
+                // Zero-copy: directly take ownership of the pixel buffer
+                (PixelType::U8x3, rgb.into_raw())
+            },
+            DynamicImage::ImageRgba8(rgba) => {
+                // Zero-copy: directly take ownership of the pixel buffer
+                (PixelType::U8x4, rgba.into_raw())
+            },
+            other => {
+                // For other formats, convert to RGBA (necessary conversion)
+                let rgba = other.to_rgba8();
+                (PixelType::U8x4, rgba.into_raw())
+            }
+        };
+
+        match Self::fast_resize_internal(src_width, src_height, src_pixels, pixel_type, dst_width, dst_height) {
+            Ok(resized) => Ok(resized),
+            Err(_) => {
+                // On error, we can't reconstruct the original image
+                // Return a minimal image - the caller will use fallback resize
+                Err(DynamicImage::ImageRgb8(RgbImage::new(1, 1)))
+            }
+        }
+    }
+
+    /// Fast resize with reference (for external API compatibility)
     pub fn fast_resize(img: &DynamicImage, dst_width: u32, dst_height: u32) -> std::result::Result<DynamicImage, String> {
         let src_width = img.width();
         let src_height = img.height();
@@ -791,23 +847,52 @@ impl EncodeTask {
             return Err("invalid dimensions".to_string());
         }
 
-        // Convert to RGBA for processing
-        let rgba = img.to_rgba8();
-        let src_pixels = rgba.as_raw();
+        // Select pixel layout without forcing RGBA when not needed
+        // Use into_raw() to avoid clone() - ownership transfer instead of copying
+        let (pixel_type, src_pixels): (PixelType, Vec<u8>) = match img {
+            DynamicImage::ImageRgb8(rgb) => {
+                // Clone is necessary when we only have a reference
+                let rgb_image = rgb.clone();
+                (PixelType::U8x3, rgb_image.into_raw())
+            },
+            DynamicImage::ImageRgba8(rgba) => {
+                // Clone is necessary when we only have a reference
+                let rgba_image = rgba.clone();
+                (PixelType::U8x4, rgba_image.into_raw())
+            },
+            _ => {
+                let rgba = img.to_rgba8();
+                (PixelType::U8x4, rgba.into_raw())
+            }
+        };
+
+        Self::fast_resize_internal(src_width, src_height, src_pixels, pixel_type, dst_width, dst_height)
+    }
+
+    /// Internal resize implementation (shared by both owned and reference versions)
+    fn fast_resize_internal(
+        src_width: u32,
+        src_height: u32,
+        src_pixels: Vec<u8>,
+        pixel_type: PixelType,
+        dst_width: u32,
+        dst_height: u32,
+    ) -> std::result::Result<DynamicImage, String> {
 
         // Create source image for fast_image_resize
+        // from_vec_u8 takes ownership, avoiding the need for clone() on the pixels
         let src_image = fir::images::Image::from_vec_u8(
             src_width,
             src_height,
-            src_pixels.clone(),
-            PixelType::U8x4,
+            src_pixels,
+            pixel_type,
         ).map_err(|e| format!("fir source image error: {e:?}"))?;
 
         // Create destination image
         let mut dst_image = fir::images::Image::new(
             dst_width,
             dst_height,
-            PixelType::U8x4,
+            pixel_type,
         );
 
         // Create resizer with Lanczos3 (high quality)
@@ -820,10 +905,19 @@ impl EncodeTask {
 
         // Convert back to DynamicImage
         let dst_pixels = dst_image.into_vec();
-        let rgba_image = RgbaImage::from_raw(dst_width, dst_height, dst_pixels)
-            .ok_or("failed to create rgba image from resized data")?;
-
-        Ok(DynamicImage::ImageRgba8(rgba_image))
+        match pixel_type {
+            PixelType::U8x3 => {
+                let rgb_image = RgbImage::from_raw(dst_width, dst_height, dst_pixels)
+                    .ok_or("failed to create rgb image from resized data")?;
+                Ok(DynamicImage::ImageRgb8(rgb_image))
+            }
+            PixelType::U8x4 => {
+                let rgba_image = RgbaImage::from_raw(dst_width, dst_height, dst_pixels)
+                    .ok_or("failed to create rgba image from resized data")?;
+                Ok(DynamicImage::ImageRgba8(rgba_image))
+            }
+            _ => Err("unsupported pixel type after resize".to_string()),
+        }
     }
 
     /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings

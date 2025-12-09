@@ -26,10 +26,10 @@
 
 | Format | lazy-image | sharp | Speed Ratio |
 |--------|-----------|-------|-------------|
-| **AVIF** | 348ms | 377ms | **1.08x faster** ⚡ |
-| **JPEG** | 355ms | 187ms | 0.53x slower 🐢 |
-| **WebP** | 428ms | 174ms | 0.41x slower 🐢 |
-| **Complex Pipeline** | 304ms | 175ms | 0.58x slower 🐢 |
+| **AVIF** | 346ms | 381ms | **1.10x faster** ⚡ |
+| **JPEG** | 325ms | 185ms | 0.57x slower 🐢 |
+| **WebP** | 429ms | 171ms | 0.40x slower 🐢 |
+| **Complex Pipeline** | 293ms | 176ms | 0.60x slower 🐢 |
 
 > *Tested with 23MB PNG input, resize to 800px, quality 60-80*
 
@@ -38,10 +38,10 @@
 ```
 AVIF vs JPEG: -14.9% smaller
 AVIF vs WebP: -32.8% smaller
-AVIF vs sharp AVIF: -46.2% smaller (and 1.08x faster!)
+AVIF vs sharp AVIF: -46.2% smaller (and 1.10x faster!)
 ```
 
-**Translation**: If you serve 1 billion images/month and switch to AVIF, you save **~300GB of bandwidth per month** compared to WebP. lazy-image's AVIF encoder produces **46% smaller files** than sharp's AVIF implementation while being **8% faster**.
+**Translation**: If you serve 1 billion images/month and switch to AVIF, you save **~300GB of bandwidth per month** compared to WebP. lazy-image's AVIF encoder produces **46% smaller files** than sharp's AVIF implementation while being **10% faster**.
 
 ---
 
