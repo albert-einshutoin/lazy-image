@@ -962,18 +962,21 @@ impl EncodeTask {
             // 5. Enhanced Trellis quantization: Better rate-distortion optimization
             //    This is mozjpeg's secret sauce - it tries multiple quantization
             //    strategies and picks the best one for file size vs quality
-            //    Note: This is enabled by default in mozjpeg, but we ensure it's on
+            //    Trellis quantization is automatically enabled when optimize_coding is true (set above)
+            //    This ensures consistent behavior and optimal compression
             
             // 6. Adaptive smoothing: Reduces high-frequency noise for better compression
             //    Higher quality = less smoothing, lower quality = more smoothing
+            //    Enhanced smoothing for low quality (60 and below) to reduce block noise
+            //    while maintaining compression ratio (good trade-off for web use)
             let smoothing = if quality_f32 >= 90.0 {
                 0 // No smoothing for high quality
             } else if quality_f32 >= 70.0 {
                 5 // Minimal smoothing
-            } else if quality_f32 >= 50.0 {
+            } else if quality_f32 >= 60.0 {
                 10 // Moderate smoothing
             } else {
-                15 // More smoothing for lower quality
+                18 // Enhanced smoothing for lower quality (was 15, now 18 for better block noise reduction)
             };
             comp.set_smoothing_factor(smoothing);
             
