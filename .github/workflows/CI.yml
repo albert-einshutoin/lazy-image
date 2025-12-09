@@ -110,6 +110,12 @@ jobs:
       - name: Run Rust tests (release mode, without NAPI features)
         run: cargo test --no-default-features --release
 
+      - name: Run Rust tests (with all features)
+        run: cargo test --all-features --no-fail-fast
+
+      - name: Run Rust tests (release mode, with all features)
+        run: cargo test --all-features --release
+
   test:
     name: Test
     needs: build
