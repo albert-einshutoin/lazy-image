@@ -112,6 +112,15 @@ If the answer to any of these is “no”, the feature is rejected.
   - Consider streaming/chunked processing for very large images (if justified)
 - **Why**: Current "full decode → full hold → process → re-encode" model can fail under memory pressure
 
+#### API Design Decisions
+- **A-001: toBuffer()非破壊化検討** ✅ **完了**
+  - ADR-001を作成し、非破壊化を決定
+  - 選択肢1（現状維持）、選択肢2（非破壊化）、選択肢3（両方提供）を比較
+  - 選択肢2（非破壊化）を採用：`take()`を`clone()`に変更
+  - メモリ効率への影響は限定的（`Arc`により参照カウントのみ増加）
+  - 詳細は `docs/ADR-001-toBuffer-destructive-behavior.md` を参照
+- **Why**: v1.0前に重要なAPI設計判断を確定させる必要がある
+
 ### 1.0
 - API surface freeze (no breaking changes)
 - Stability across platforms (macOS/Win/Linux)
