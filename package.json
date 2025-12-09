@@ -29,6 +29,7 @@
     "test": "node test/basic.test.js && node test/edge-cases.test.js",
     "test:basic": "node test/basic.test.js",
     "test:edge": "node test/edge-cases.test.js",
+    "version": "node scripts/sync-version.js",
     "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
