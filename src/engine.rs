@@ -964,6 +964,8 @@ impl EncodeTask {
             //    strategies and picks the best one for file size vs quality
             //    Trellis quantization is automatically enabled when optimize_coding is true (set above)
             //    This ensures consistent behavior and optimal compression
+            //    Note: set_trellis_quantization() method is not available in mozjpeg 0.10 API,
+            //    but Trellis quantization is guaranteed to be enabled via set_optimize_coding(true)
             
             // 6. Adaptive smoothing: Reduces high-frequency noise for better compression
             //    Higher quality = less smoothing, lower quality = more smoothing
