@@ -49,8 +49,8 @@ tempfile = "3.10"
 # Parallel processing for batch operations
 rayon = "1.8"
 
-# Error handling (used when NAPI feature is disabled)
-anyhow = "1.0"
+# Error handling
+thiserror = "1.0"
 
 [dev-dependencies]
 criterion = "0.5"
