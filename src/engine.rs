@@ -19,6 +19,19 @@ pub const MAX_DIMENSION: u32 = 32768;
 /// 100 megapixels = 400MB uncompressed RGBA. Beyond this is likely malicious.
 const MAX_PIXELS: u64 = 100_000_000;
 
+// =============================================================================
+// THREAD POOL CONFIGURATION
+// =============================================================================
+
+/// Default libuv thread pool size (Node.js default)
+const DEFAULT_UV_THREADPOOL_SIZE: usize = 4;
+
+/// Maximum allowed concurrency value for processBatch()
+const MAX_CONCURRENCY: usize = 1024;
+
+/// Minimum number of rayon threads to ensure at least some parallelism
+const MIN_RAYON_THREADS: usize = 1;
+
 
 // Quality configuration helper
 struct QualitySettings {
@@ -1377,8 +1390,8 @@ impl Task for BatchTask {
             // Use custom thread pool with specified concurrency
             // Safe cast: concurrency is u32, usize is at least u32 on modern systems
             let threads = self.concurrency as usize;
-            if threads == 0 || threads > 1024 {
-                return Err(napi::Error::from(LazyImageError::internal_panic(format!("invalid concurrency value: {} (must be 1-1024)", self.concurrency))));
+            if threads == 0 || threads > MAX_CONCURRENCY {
+                return Err(napi::Error::from(LazyImageError::internal_panic(format!("invalid concurrency value: {} (must be 1-{})", self.concurrency, MAX_CONCURRENCY))));
             }
             threads
         } else {
@@ -1387,11 +1400,17 @@ impl Task for BatchTask {
             let uv_threadpool_size: usize = env::var("UV_THREADPOOL_SIZE")
                 .ok()
                 .and_then(|v| v.parse().ok())
-                .unwrap_or(4);
+                .unwrap_or(DEFAULT_UV_THREADPOOL_SIZE);
             
             // Reserve threads for libuv, use remaining for rayon
-            // Ensure at least 1 thread for rayon
-            cpu_count.saturating_sub(uv_threadpool_size).max(1)
+            // Ensure at least MIN_RAYON_THREADS thread for rayon
+            let threads = cpu_count.saturating_sub(uv_threadpool_size).max(MIN_RAYON_THREADS);
+            
+            // Debug logging (uncomment if log/tracing crate is added)
+            // debug!("Auto-calculated rayon threads: {} (CPU: {}, UV: {})", 
+            //        threads, cpu_count, uv_threadpool_size);
+            
+            threads
         };
 
         let pool = ThreadPoolBuilder::new()

@@ -236,7 +236,7 @@ await engine.processBatch(files, outDir, 'webp', 80, 4);
 
 ~~When using both libuv and rayon threads heavily, scheduling may become unpredictable.~~
 
-**Status**: ✅ **Fixed in v0.7.9+**
+**Status**: ✅ **Fixed in v0.7.8+**
 
 The default behavior of `processBatch()` now automatically balances thread pools to prevent oversubscription. Manual coordination is no longer required for most use cases.
 
