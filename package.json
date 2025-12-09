@@ -19,8 +19,11 @@
     "napi",
     "optimization"
   ],
-  "author": "",
+  "author": "albert-einshutoin",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/albert-einshutoin/lazy-image/issues"
+  },
   "scripts": {
     "build": "napi build --platform --release",
     "test": "node test/basic.test.js && node test/edge-cases.test.js",
