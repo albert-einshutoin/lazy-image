@@ -19,5 +19,21 @@ Thumbs.db
 # IDE
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
+
+# Build artifacts
+npm/
+artifacts/
+
+# Test artifacts and temporary files
+test_*/
+test_concurrency/
+test_concurrency_check/
+test_batch_high_concurrency/
+test_fixtures/
+
+# Internal documentation (not for public)
+OSS_REVIEW.md
+test/TEST_REVIEW.md
