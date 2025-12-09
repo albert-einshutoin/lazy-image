@@ -9,6 +9,7 @@
 // - Lazy pipeline execution
 // - Non-blocking async API
 
+#[cfg(feature = "napi")]
 #[macro_use]
 extern crate napi_derive;
 
@@ -16,14 +17,19 @@ pub mod engine;
 pub mod error;
 pub mod ops;
 
+#[cfg(feature = "napi")]
 use image::io::Reader as ImageReader;
+#[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
+#[cfg(feature = "napi")]
 use std::io::Cursor;
 
 // Re-export the engine for NAPI
+#[cfg(feature = "napi")]
 pub use engine::ImageEngine;
 use error::LazyImageError;
 
+#[cfg(feature = "napi")]
 /// Image metadata returned by inspect()
 #[napi(object)]
 pub struct ImageMetadata {
@@ -35,6 +41,7 @@ pub struct ImageMetadata {
     pub format: Option<String>,
 }
 
+#[cfg(feature = "napi")]
 /// Inspect image metadata WITHOUT decoding pixels.
 /// This reads only the header bytes - extremely fast (<1ms).
 /// 
@@ -63,6 +70,7 @@ pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
     })
 }
 
+#[cfg(feature = "napi")]
 /// Inspect image metadata from a file path WITHOUT loading into Node.js heap.
 /// **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
 /// This is the recommended way for server-side metadata inspection.
@@ -93,12 +101,14 @@ pub fn inspect_file(path: String) -> Result<ImageMetadata> {
     })
 }
 
+#[cfg(feature = "napi")]
 /// Get library version
 #[napi]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
+#[cfg(feature = "napi")]
 /// Get supported input formats
 #[napi]
 pub fn supported_input_formats() -> Vec<String> {
@@ -110,6 +120,7 @@ pub fn supported_input_formats() -> Vec<String> {
     ]
 }
 
+#[cfg(feature = "napi")]
 /// Get supported output formats
 #[napi]
 pub fn supported_output_formats() -> Vec<String> {
@@ -123,6 +134,7 @@ pub fn supported_output_formats() -> Vec<String> {
 }
 
 /// Processing metrics for performance monitoring
+#[cfg(feature = "napi")]
 #[napi(object)]
 #[derive(Default)]
 pub struct ProcessingMetrics {
@@ -136,6 +148,20 @@ pub struct ProcessingMetrics {
     pub memory_peak: u32,
 }
 
+#[cfg(not(feature = "napi"))]
+#[derive(Default)]
+pub struct ProcessingMetrics {
+    /// Time taken to decode the image (milliseconds)
+    pub decode_time: f64,
+    /// Time taken to apply all operations (milliseconds)
+    pub process_time: f64,
+    /// Time taken to encode the image (milliseconds)
+    pub encode_time: f64,
+    /// Peak memory usage during processing (bytes, as u32 for NAPI compatibility)
+    pub memory_peak: u32,
+}
+
+#[cfg(feature = "napi")]
 #[napi(object)]
 pub struct OutputWithMetrics {
     pub data: napi::JsBuffer,

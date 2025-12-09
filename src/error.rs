@@ -362,6 +362,7 @@ impl LazyImageError {
 }
 
 // NAPIエラーへの変換
+#[cfg(feature = "napi")]
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
         napi::Error::from_reason(err.to_string())
