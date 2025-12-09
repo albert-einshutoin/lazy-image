@@ -37,4 +37,5 @@ test_fixtures/
 # Internal documentation (not for public)
 OSS_REVIEW.md
 OSS_CHECKLIST.md
+TEST_QUALITY_REVIEW.md
 test/TEST_REVIEW.md
