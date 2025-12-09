@@ -2712,4 +2712,110 @@ mod tests {
             assert_eq!(resized.dimensions(), (50, 50));
         }
     }
+
+    mod non_destructive_tests {
+        use super::*;
+        use std::sync::Arc;
+
+        #[test]
+        fn test_source_preserved_after_to_buffer() {
+            let jpeg_data = create_minimal_jpeg();
+            let mut engine = ImageEngine {
+                source: Some(Arc::new(jpeg_data.clone())),
+                decoded: None,
+                ops: vec![],
+                icc_profile: None,
+            };
+
+            // First call to to_buffer should preserve source
+            let task1 = engine.to_buffer("jpeg".to_string(), Some(80));
+            assert!(task1.is_ok());
+            assert!(engine.source.is_some(), "Source should be preserved after first to_buffer call");
+            assert_eq!(
+                engine.source.as_ref().unwrap().as_slice(),
+                jpeg_data.as_slice(),
+                "Source data should remain unchanged"
+            );
+
+            // Second call should also preserve source
+            let task2 = engine.to_buffer("jpeg".to_string(), Some(80));
+            assert!(task2.is_ok());
+            assert!(engine.source.is_some(), "Source should be preserved after second to_buffer call");
+            assert_eq!(
+                engine.source.as_ref().unwrap().as_slice(),
+                jpeg_data.as_slice(),
+                "Source data should remain unchanged after multiple calls"
+            );
+        }
+
+        #[test]
+        fn test_decoded_preserved_after_to_buffer() {
+            let img = create_test_image(100, 100);
+            let mut engine = ImageEngine {
+                source: Some(Arc::new(create_minimal_jpeg())),
+                decoded: Some(img.clone()),
+                ops: vec![],
+                icc_profile: None,
+            };
+
+            // First call should preserve decoded image
+            let task1 = engine.to_buffer("jpeg".to_string(), Some(80));
+            assert!(task1.is_ok());
+            assert!(engine.decoded.is_some(), "Decoded image should be preserved after first to_buffer call");
+            assert_eq!(
+                engine.decoded.as_ref().unwrap().dimensions(),
+                img.dimensions(),
+                "Decoded image dimensions should remain unchanged"
+            );
+
+            // Second call should also preserve decoded image
+            let task2 = engine.to_buffer("jpeg".to_string(), Some(80));
+            assert!(task2.is_ok());
+            assert!(engine.decoded.is_some(), "Decoded image should be preserved after second to_buffer call");
+        }
+
+        #[test]
+        fn test_ops_preserved_after_to_buffer() {
+            let jpeg_data = create_minimal_jpeg();
+            let ops = vec![Operation::Resize {
+                width: Some(200),
+                height: None,
+            }];
+            let mut engine = ImageEngine {
+                source: Some(Arc::new(jpeg_data)),
+                decoded: None,
+                ops: ops.clone(),
+                icc_profile: None,
+            };
+
+            // Call to_buffer should preserve ops
+            let task = engine.to_buffer("jpeg".to_string(), Some(80));
+            assert!(task.is_ok());
+            assert_eq!(engine.ops.len(), ops.len(), "Operations should be preserved");
+        }
+
+        #[test]
+        fn test_multiple_format_outputs() {
+            let jpeg_data = create_minimal_jpeg();
+            let mut engine = ImageEngine {
+                source: Some(Arc::new(jpeg_data.clone())),
+                decoded: None,
+                ops: vec![],
+                icc_profile: None,
+            };
+
+            // Multiple format outputs should all work
+            let jpeg_task = engine.to_buffer("jpeg".to_string(), Some(80));
+            assert!(jpeg_task.is_ok());
+            assert!(engine.source.is_some());
+
+            let webp_task = engine.to_buffer("webp".to_string(), Some(80));
+            assert!(webp_task.is_ok());
+            assert!(engine.source.is_some());
+
+            let png_task = engine.to_buffer("png".to_string(), None);
+            assert!(png_task.is_ok());
+            assert!(engine.source.is_some(), "Source should be preserved after multiple format outputs");
+        }
+    }
 }
