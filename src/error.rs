@@ -4,16 +4,22 @@
 // Uses thiserror for type-safe error handling with error codes
 
 use thiserror::Error;
+#[cfg(feature = "napi")]
+use napi::bindgen_prelude::*;
+#[cfg(feature = "napi")]
+use napi_derive::napi;
 
-/// lazy-image エラーコード体系
-/// E1xx: 入力エラー
-/// E2xx: 処理エラー
-/// E3xx: 出力エラー
-/// E4xx: 設定エラー
-/// E9xx: 内部エラー
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// lazy-image Error Codes
+/// E1xx: Input Errors
+/// E2xx: Processing Errors
+/// E3xx: Output Errors
+/// E4xx: Configuration Errors
+/// E9xx: Internal Errors
+#[cfg(feature = "napi")]
+#[napi]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ErrorCode {
-    // 入力エラー (E1xx)
+    // Input Errors (E1xx)
     FileNotFound = 100,
     FileReadFailed = 101,
     InvalidImageFormat = 110,
@@ -24,29 +30,66 @@ pub enum ErrorCode {
     CorruptedImage = 130,
     DecodeFailed = 131,
 
-    // 処理エラー (E2xx)
+    // Processing Errors (E2xx)
     InvalidCropBounds = 200,
     InvalidRotationAngle = 201,
     InvalidResizeDimensions = 202,
     UnsupportedColorSpace = 210,
     OperationFailed = 299,
 
-    // 出力エラー (E3xx)
+    // Output Errors (E3xx)
     EncodeFailed = 300,
     FileWriteFailed = 301,
     OutputPathInvalid = 302,
 
-    // 設定エラー (E4xx)
+    // Configuration Errors (E4xx)
     InvalidQuality = 400,
     InvalidPreset = 401,
 
-    // 内部エラー (E9xx)
+    // Internal Errors (E9xx)
+    SourceConsumed = 900,
+    InternalPanic = 901,
+    UnexpectedState = 999,
+}
+
+#[cfg(not(feature = "napi"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ErrorCode {
+    // Input Errors (E1xx)
+    FileNotFound = 100,
+    FileReadFailed = 101,
+    InvalidImageFormat = 110,
+    UnsupportedFormat = 111,
+    ImageTooLarge = 120,
+    DimensionExceedsLimit = 121,
+    PixelCountExceedsLimit = 122,
+    CorruptedImage = 130,
+    DecodeFailed = 131,
+
+    // Processing Errors (E2xx)
+    InvalidCropBounds = 200,
+    InvalidRotationAngle = 201,
+    InvalidResizeDimensions = 202,
+    UnsupportedColorSpace = 210,
+    OperationFailed = 299,
+
+    // Output Errors (E3xx)
+    EncodeFailed = 300,
+    FileWriteFailed = 301,
+    OutputPathInvalid = 302,
+
+    // Configuration Errors (E4xx)
+    InvalidQuality = 400,
+    InvalidPreset = 401,
+
+    // Internal Errors (E9xx)
     SourceConsumed = 900,
     InternalPanic = 901,
     UnexpectedState = 999,
 }
 
 impl ErrorCode {
+    /// Get error code as string (e.g., "E100")
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::FileNotFound => "E100",
@@ -73,20 +116,31 @@ impl ErrorCode {
             Self::UnexpectedState => "E999",
         }
     }
+
+    /// Get numeric error code value
+    pub fn as_u32(&self) -> u32 {
+        *self as u32
+    }
+}
+
+impl std::fmt::Display for ErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
 }
 
 #[derive(Debug, Error)]
 pub enum LazyImageError {
-    // ファイルI/Oエラー
+    // File I/O Errors
     #[error("[{code}] File not found: {path}")]
     FileNotFound {
-        code: &'static str,
+        code: ErrorCode,
         path: String,
     },
 
     #[error("[{code}] Failed to read file '{path}': {source}")]
     FileReadFailed {
-        code: &'static str,
+        code: ErrorCode,
         path: String,
         #[source]
         source: std::io::Error,
@@ -94,49 +148,49 @@ pub enum LazyImageError {
 
     #[error("[{code}] Failed to write file '{path}': {source}")]
     FileWriteFailed {
-        code: &'static str,
+        code: ErrorCode,
         path: String,
         #[source]
         source: std::io::Error,
     },
 
-    // デコードエラー
+    // Decode Errors
     #[error("[{code}] Unsupported image format: {format}")]
     UnsupportedFormat {
-        code: &'static str,
+        code: ErrorCode,
         format: String,
     },
 
     #[error("[{code}] Failed to decode image: {message}")]
     DecodeFailed {
-        code: &'static str,
+        code: ErrorCode,
         message: String,
     },
 
     #[error("[{code}] Corrupted image data")]
     CorruptedImage {
-        code: &'static str,
+        code: ErrorCode,
     },
 
-    // サイズ制限エラー
+    // Size Limit Errors
     #[error("[{code}] Image dimension {dimension} exceeds maximum {max}")]
     DimensionExceedsLimit {
-        code: &'static str,
+        code: ErrorCode,
         dimension: u32,
         max: u32,
     },
 
     #[error("[{code}] Image pixel count {pixels} exceeds maximum {max}")]
     PixelCountExceedsLimit {
-        code: &'static str,
+        code: ErrorCode,
         pixels: u64,
         max: u64,
     },
 
-    // 操作エラー
+    // Operation Errors
     #[error("[{code}] Crop bounds ({x}+{width}, {y}+{height}) exceed image dimensions ({img_width}x{img_height})")]
     InvalidCropBounds {
-        code: &'static str,
+        code: ErrorCode,
         x: u32,
         y: u32,
         width: u32,
@@ -147,71 +201,71 @@ pub enum LazyImageError {
 
     #[error("[{code}] Unsupported rotation angle: {degrees}. Only 0, 90, 180, 270 (and negatives) are supported")]
     InvalidRotationAngle {
-        code: &'static str,
+        code: ErrorCode,
         degrees: i32,
     },
 
     #[error("[{code}] Invalid resize dimensions: width={width:?}, height={height:?}")]
     InvalidResizeDimensions {
-        code: &'static str,
+        code: ErrorCode,
         width: Option<u32>,
         height: Option<u32>,
     },
 
     #[error("[{code}] Unsupported color space: {color_space}")]
     UnsupportedColorSpace {
-        code: &'static str,
+        code: ErrorCode,
         color_space: String,
     },
 
-    // エンコードエラー
+    // Encode Errors
     #[error("[{code}] Failed to encode as {format}: {message}")]
     EncodeFailed {
-        code: &'static str,
+        code: ErrorCode,
         format: String,
         message: String,
     },
 
-    // 設定エラー
+    // Configuration Errors
     #[error("[{code}] Unknown preset: '{name}'. Available: thumbnail, avatar, hero, social")]
     InvalidPreset {
-        code: &'static str,
+        code: ErrorCode,
         name: String,
     },
 
-    // 状態エラー
+    // State Errors
     #[error("[{code}] Image source already consumed. Use clone() for multi-output scenarios")]
     SourceConsumed {
-        code: &'static str,
+        code: ErrorCode,
     },
 
-    // 内部エラー
+    // Internal Errors
     #[error("[{code}] Internal error: {message}")]
     InternalPanic {
-        code: &'static str,
+        code: ErrorCode,
         message: String,
     },
 
-    // 汎用エラー（mainブランチから追加）
+    // Generic Error
     #[error("[{code}] {message}")]
     Generic {
-        code: &'static str,
+        code: ErrorCode,
         message: String,
     },
 }
 
-// コンストラクタヘルパー
+// Constructor Helpers
 impl LazyImageError {
     pub fn file_not_found(path: impl Into<String>) -> Self {
         Self::FileNotFound {
-            code: ErrorCode::FileNotFound.as_str(),
+            code: ErrorCode::FileNotFound,
             path: path.into(),
         }
     }
 
     pub fn file_read_failed(path: impl Into<String>, source: std::io::Error) -> Self {
         Self::FileReadFailed {
-            code: ErrorCode::FileReadFailed.as_str(),
+            code: ErrorCode::FileReadFailed,
             path: path.into(),
             source,
         }
@@ -219,7 +273,7 @@ impl LazyImageError {
 
     pub fn file_write_failed(path: impl Into<String>, source: std::io::Error) -> Self {
         Self::FileWriteFailed {
-            code: ErrorCode::FileWriteFailed.as_str(),
+            code: ErrorCode::FileWriteFailed,
             path: path.into(),
             source,
         }
@@ -227,27 +281,27 @@ impl LazyImageError {
 
     pub fn unsupported_format(format: impl Into<String>) -> Self {
         Self::UnsupportedFormat {
-            code: ErrorCode::UnsupportedFormat.as_str(),
+            code: ErrorCode::UnsupportedFormat,
             format: format.into(),
         }
     }
 
     pub fn decode_failed(message: impl Into<String>) -> Self {
         Self::DecodeFailed {
-            code: ErrorCode::DecodeFailed.as_str(),
+            code: ErrorCode::DecodeFailed,
             message: message.into(),
         }
     }
 
     pub fn corrupted_image() -> Self {
         Self::CorruptedImage {
-            code: ErrorCode::CorruptedImage.as_str(),
+            code: ErrorCode::CorruptedImage,
         }
     }
 
     pub fn dimension_exceeds_limit(dimension: u32, max: u32) -> Self {
         Self::DimensionExceedsLimit {
-            code: ErrorCode::DimensionExceedsLimit.as_str(),
+            code: ErrorCode::DimensionExceedsLimit,
             dimension,
             max,
         }
@@ -255,7 +309,7 @@ impl LazyImageError {
 
     pub fn pixel_count_exceeds_limit(pixels: u64, max: u64) -> Self {
         Self::PixelCountExceedsLimit {
-            code: ErrorCode::PixelCountExceedsLimit.as_str(),
+            code: ErrorCode::PixelCountExceedsLimit,
             pixels,
             max,
         }
@@ -270,7 +324,7 @@ impl LazyImageError {
         img_height: u32,
     ) -> Self {
         Self::InvalidCropBounds {
-            code: ErrorCode::InvalidCropBounds.as_str(),
+            code: ErrorCode::InvalidCropBounds,
             x,
             y,
             width,
@@ -282,14 +336,14 @@ impl LazyImageError {
 
     pub fn invalid_rotation_angle(degrees: i32) -> Self {
         Self::InvalidRotationAngle {
-            code: ErrorCode::InvalidRotationAngle.as_str(),
+            code: ErrorCode::InvalidRotationAngle,
             degrees,
         }
     }
 
     pub fn invalid_resize_dimensions(width: Option<u32>, height: Option<u32>) -> Self {
         Self::InvalidResizeDimensions {
-            code: ErrorCode::InvalidResizeDimensions.as_str(),
+            code: ErrorCode::InvalidResizeDimensions,
             width,
             height,
         }
@@ -297,14 +351,14 @@ impl LazyImageError {
 
     pub fn unsupported_color_space(color_space: impl Into<String>) -> Self {
         Self::UnsupportedColorSpace {
-            code: ErrorCode::UnsupportedColorSpace.as_str(),
+            code: ErrorCode::UnsupportedColorSpace,
             color_space: color_space.into(),
         }
     }
 
     pub fn encode_failed(format: impl Into<String>, message: impl Into<String>) -> Self {
         Self::EncodeFailed {
-            code: ErrorCode::EncodeFailed.as_str(),
+            code: ErrorCode::EncodeFailed,
             format: format.into(),
             message: message.into(),
         }
@@ -312,62 +366,99 @@ impl LazyImageError {
 
     pub fn invalid_preset(name: impl Into<String>) -> Self {
         Self::InvalidPreset {
-            code: ErrorCode::InvalidPreset.as_str(),
+            code: ErrorCode::InvalidPreset,
             name: name.into(),
         }
     }
 
     pub fn source_consumed() -> Self {
         Self::SourceConsumed {
-            code: ErrorCode::SourceConsumed.as_str(),
+            code: ErrorCode::SourceConsumed,
         }
     }
 
     pub fn internal_panic(message: impl Into<String>) -> Self {
         Self::InternalPanic {
-            code: ErrorCode::InternalPanic.as_str(),
+            code: ErrorCode::InternalPanic,
             message: message.into(),
         }
     }
 
     pub fn generic(message: impl Into<String>) -> Self {
         Self::Generic {
-            code: ErrorCode::UnexpectedState.as_str(),
+            code: ErrorCode::UnexpectedState,
             message: message.into(),
         }
     }
 
-    /// エラーコードを取得
-    pub fn code(&self) -> &'static str {
+    /// Get the error code
+    pub fn code(&self) -> ErrorCode {
         match self {
-            Self::FileNotFound { code, .. } => code,
-            Self::FileReadFailed { code, .. } => code,
-            Self::FileWriteFailed { code, .. } => code,
-            Self::UnsupportedFormat { code, .. } => code,
-            Self::DecodeFailed { code, .. } => code,
-            Self::CorruptedImage { code } => code,
-            Self::DimensionExceedsLimit { code, .. } => code,
-            Self::PixelCountExceedsLimit { code, .. } => code,
-            Self::InvalidCropBounds { code, .. } => code,
-            Self::InvalidRotationAngle { code, .. } => code,
-            Self::InvalidResizeDimensions { code, .. } => code,
-            Self::UnsupportedColorSpace { code, .. } => code,
-            Self::EncodeFailed { code, .. } => code,
-            Self::InvalidPreset { code, .. } => code,
-            Self::SourceConsumed { code } => code,
-            Self::InternalPanic { code, .. } => code,
-            Self::Generic { code, .. } => code,
+            Self::FileNotFound { code, .. } => *code,
+            Self::FileReadFailed { code, .. } => *code,
+            Self::FileWriteFailed { code, .. } => *code,
+            Self::UnsupportedFormat { code, .. } => *code,
+            Self::DecodeFailed { code, .. } => *code,
+            Self::CorruptedImage { code } => *code,
+            Self::DimensionExceedsLimit { code, .. } => *code,
+            Self::PixelCountExceedsLimit { code, .. } => *code,
+            Self::InvalidCropBounds { code, .. } => *code,
+            Self::InvalidRotationAngle { code, .. } => *code,
+            Self::InvalidResizeDimensions { code, .. } => *code,
+            Self::UnsupportedColorSpace { code, .. } => *code,
+            Self::EncodeFailed { code, .. } => *code,
+            Self::InvalidPreset { code, .. } => *code,
+            Self::SourceConsumed { code } => *code,
+            Self::InternalPanic { code, .. } => *code,
+            Self::Generic { code, .. } => *code,
         }
+    }
+
+    /// Get error code as string (for backward compatibility)
+    pub fn code_str(&self) -> &'static str {
+        self.code().as_str()
     }
 }
 
-// NAPIエラーへの変換
+// Conversion to NAPI Error
 #[cfg(feature = "napi")]
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
-        napi::Error::from_reason(err.to_string())
+        let error_code = err.code();
+        let status = match error_code {
+            // Input/Argument Errors -> InvalidArg
+            ErrorCode::UnsupportedFormat
+            | ErrorCode::DimensionExceedsLimit
+            | ErrorCode::PixelCountExceedsLimit
+            | ErrorCode::InvalidCropBounds
+            | ErrorCode::InvalidRotationAngle
+            | ErrorCode::InvalidResizeDimensions
+            | ErrorCode::UnsupportedColorSpace
+            | ErrorCode::InvalidPreset
+            | ErrorCode::InvalidQuality => Status::InvalidArg,
+
+            // I/O and System Errors -> GenericFailure
+            ErrorCode::FileNotFound
+            | ErrorCode::FileReadFailed
+            | ErrorCode::FileWriteFailed => Status::GenericFailure,
+
+            // Processing/Internal Errors -> GenericFailure
+            ErrorCode::DecodeFailed
+            | ErrorCode::CorruptedImage
+            | ErrorCode::EncodeFailed
+            | ErrorCode::SourceConsumed
+            | ErrorCode::InternalPanic
+            | ErrorCode::UnexpectedState
+            | ErrorCode::OperationFailed
+            | ErrorCode::InvalidImageFormat
+            | ErrorCode::ImageTooLarge
+            | ErrorCode::OutputPathInvalid => Status::GenericFailure,
+        };
+
+        // Create error with code information
+        napi::Error::new(status, err.to_string())
     }
 }
 
-// Result型エイリアス
+// Result type alias
 pub type Result<T> = std::result::Result<T, LazyImageError>;
