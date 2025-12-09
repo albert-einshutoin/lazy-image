@@ -10,45 +10,154 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
 /// lazy-image Error Codes
-/// E1xx: Input Errors
-/// E2xx: Processing Errors
-/// E3xx: Output Errors
-/// E4xx: Configuration Errors
-/// E9xx: Internal Errors
+///
+/// Error codes are organized by category:
+/// - **E1xx**: Input Errors - Issues with input files or data
+/// - **E2xx**: Processing Errors - Issues during image processing operations
+/// - **E3xx**: Output Errors - Issues when writing or encoding output
+/// - **E4xx**: Configuration Errors - Invalid parameters or settings
+/// - **E9xx**: Internal Errors - Unexpected internal state or bugs
+///
+/// Each error code is type-safe and can be used programmatically.
 #[cfg(feature = "napi")]
 #[napi]
 #[derive(Debug, PartialEq, Eq)]
 pub enum ErrorCode {
     // Input Errors (E1xx)
+    /// **E100**: File not found
+    ///
+    /// The specified file path does not exist.
+    /// **Recoverable**: Yes - Check the file path and permissions.
     FileNotFound = 100,
+
+    /// **E101**: Failed to read file
+    ///
+    /// An I/O error occurred while reading the file.
+    /// **Recoverable**: Yes - Check file permissions and disk space.
     FileReadFailed = 101,
+
+    /// **E110**: Invalid image format
+    ///
+    /// The file format is not recognized or is invalid.
+    /// **Recoverable**: No - The file is corrupted or not an image.
     InvalidImageFormat = 110,
+
+    /// **E111**: Unsupported image format
+    ///
+    /// The image format is recognized but not supported by lazy-image.
+    /// **Recoverable**: No - Convert to a supported format (JPEG, PNG, WebP).
     UnsupportedFormat = 111,
+
+    /// **E120**: Image too large
+    ///
+    /// The image exceeds size limits (file size or memory constraints).
+    /// **Recoverable**: No - Resize or compress the image before processing.
     ImageTooLarge = 120,
+
+    /// **E121**: Dimension exceeds limit
+    ///
+    /// Image width or height exceeds the maximum allowed dimension.
+    /// **Recoverable**: Yes - Resize the image to fit within limits.
     DimensionExceedsLimit = 121,
+
+    /// **E122**: Pixel count exceeds limit
+    ///
+    /// Total pixel count (width × height) exceeds the maximum allowed.
+    /// **Recoverable**: Yes - Resize the image to reduce pixel count.
     PixelCountExceedsLimit = 122,
+
+    /// **E130**: Corrupted image data
+    ///
+    /// The image file is corrupted or contains invalid data.
+    /// **Recoverable**: No - The file needs to be repaired or recreated.
     CorruptedImage = 130,
+
+    /// **E131**: Failed to decode image
+    ///
+    /// An error occurred during image decoding (format-specific issue).
+    /// **Recoverable**: No - Check if the file is a valid image.
     DecodeFailed = 131,
 
     // Processing Errors (E2xx)
+    /// **E200**: Invalid crop bounds
+    ///
+    /// Crop coordinates exceed image dimensions.
+    /// **Recoverable**: Yes - Adjust crop coordinates to fit within image bounds.
     InvalidCropBounds = 200,
+
+    /// **E201**: Invalid rotation angle
+    ///
+    /// Rotation angle is not a multiple of 90 degrees.
+    /// **Recoverable**: Yes - Use 0, 90, 180, or 270 degrees (or negatives).
     InvalidRotationAngle = 201,
+
+    /// **E202**: Invalid resize dimensions
+    ///
+    /// Resize dimensions are invalid (e.g., both width and height are None).
+    /// **Recoverable**: Yes - Provide at least one valid dimension.
     InvalidResizeDimensions = 202,
+
+    /// **E210**: Unsupported color space
+    ///
+    /// The requested color space conversion is not supported.
+    /// **Recoverable**: No - Use a supported color space.
     UnsupportedColorSpace = 210,
+
+    /// **E299**: Operation failed
+    ///
+    /// A general processing operation failed.
+    /// **Recoverable**: Depends on the specific operation.
     OperationFailed = 299,
 
     // Output Errors (E3xx)
+    /// **E300**: Failed to encode image
+    ///
+    /// An error occurred during image encoding (format-specific issue).
+    /// **Recoverable**: No - Check encoding parameters and try a different format.
     EncodeFailed = 300,
+
+    /// **E301**: Failed to write file
+    ///
+    /// An I/O error occurred while writing the output file.
+    /// **Recoverable**: Yes - Check disk space and write permissions.
     FileWriteFailed = 301,
+
+    /// **E302**: Output path invalid
+    ///
+    /// The output file path is invalid or inaccessible.
+    /// **Recoverable**: Yes - Provide a valid output path.
     OutputPathInvalid = 302,
 
     // Configuration Errors (E4xx)
+    /// **E400**: Invalid quality value
+    ///
+    /// Quality parameter is out of valid range (typically 1-100).
+    /// **Recoverable**: Yes - Use a quality value within the valid range.
     InvalidQuality = 400,
+
+    /// **E401**: Invalid preset name
+    ///
+    /// The specified preset name is not recognized.
+    /// **Recoverable**: Yes - Use a valid preset: thumbnail, avatar, hero, or social.
     InvalidPreset = 401,
 
     // Internal Errors (E9xx)
+    /// **E900**: Source already consumed
+    ///
+    /// Image source has already been consumed and cannot be reused.
+    /// **Recoverable**: Yes - Use `clone()` for multi-output scenarios.
     SourceConsumed = 900,
+
+    /// **E901**: Internal panic
+    ///
+    /// An unexpected internal error occurred (likely a bug).
+    /// **Recoverable**: No - Report this as a bug.
     InternalPanic = 901,
+
+    /// **E999**: Unexpected state
+    ///
+    /// The library is in an unexpected internal state.
+    /// **Recoverable**: No - Report this as a bug.
     UnexpectedState = 999,
 }
 
@@ -56,35 +165,57 @@ pub enum ErrorCode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ErrorCode {
     // Input Errors (E1xx)
+    /// **E100**: File not found
     FileNotFound = 100,
+    /// **E101**: Failed to read file
     FileReadFailed = 101,
+    /// **E110**: Invalid image format
     InvalidImageFormat = 110,
+    /// **E111**: Unsupported image format
     UnsupportedFormat = 111,
+    /// **E120**: Image too large
     ImageTooLarge = 120,
+    /// **E121**: Dimension exceeds limit
     DimensionExceedsLimit = 121,
+    /// **E122**: Pixel count exceeds limit
     PixelCountExceedsLimit = 122,
+    /// **E130**: Corrupted image data
     CorruptedImage = 130,
+    /// **E131**: Failed to decode image
     DecodeFailed = 131,
 
     // Processing Errors (E2xx)
+    /// **E200**: Invalid crop bounds
     InvalidCropBounds = 200,
+    /// **E201**: Invalid rotation angle
     InvalidRotationAngle = 201,
+    /// **E202**: Invalid resize dimensions
     InvalidResizeDimensions = 202,
+    /// **E210**: Unsupported color space
     UnsupportedColorSpace = 210,
+    /// **E299**: Operation failed
     OperationFailed = 299,
 
     // Output Errors (E3xx)
+    /// **E300**: Failed to encode image
     EncodeFailed = 300,
+    /// **E301**: Failed to write file
     FileWriteFailed = 301,
+    /// **E302**: Output path invalid
     OutputPathInvalid = 302,
 
     // Configuration Errors (E4xx)
+    /// **E400**: Invalid quality value
     InvalidQuality = 400,
+    /// **E401**: Invalid preset name
     InvalidPreset = 401,
 
     // Internal Errors (E9xx)
+    /// **E900**: Source already consumed
     SourceConsumed = 900,
+    /// **E901**: Internal panic
     InternalPanic = 901,
+    /// **E999**: Unexpected state
     UnexpectedState = 999,
 }
 
@@ -120,6 +251,49 @@ impl ErrorCode {
     /// Get numeric error code value
     pub fn as_u32(&self) -> u32 {
         *self as u32
+    }
+
+    /// Returns `true` if this error is recoverable (user can fix it)
+    ///
+    /// Recoverable errors are those that users can address by:
+    /// - Fixing input parameters
+    /// - Adjusting configuration
+    /// - Correcting file paths or permissions
+    ///
+    /// Non-recoverable errors typically indicate:
+    /// - Corrupted data
+    /// - Internal bugs
+    /// - Unsupported formats
+    pub fn is_recoverable(&self) -> bool {
+        matches!(
+            self,
+            Self::FileNotFound
+                | Self::FileReadFailed
+                | Self::FileWriteFailed
+                | Self::DimensionExceedsLimit
+                | Self::PixelCountExceedsLimit
+                | Self::InvalidCropBounds
+                | Self::InvalidRotationAngle
+                | Self::InvalidResizeDimensions
+                | Self::InvalidPreset
+                | Self::InvalidQuality
+                | Self::OutputPathInvalid
+                | Self::SourceConsumed
+        )
+    }
+
+    /// Get the error category as a string
+    ///
+    /// Returns the category prefix (E1xx, E2xx, etc.) for this error code.
+    pub fn category(&self) -> &'static str {
+        match self.as_u32() {
+            100..=199 => "E1xx: Input Errors",
+            200..=299 => "E2xx: Processing Errors",
+            300..=399 => "E3xx: Output Errors",
+            400..=499 => "E4xx: Configuration Errors",
+            900..=999 => "E9xx: Internal Errors",
+            _ => "Unknown",
+        }
     }
 }
 
@@ -462,3 +636,119 @@ impl From<LazyImageError> for napi::Error {
 
 // Result type alias
 pub type Result<T> = std::result::Result<T, LazyImageError>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_code_display() {
+        assert_eq!(ErrorCode::FileNotFound.as_str(), "E100");
+        assert_eq!(ErrorCode::DecodeFailed.as_str(), "E131");
+        assert_eq!(ErrorCode::InvalidCropBounds.as_str(), "E200");
+        assert_eq!(ErrorCode::EncodeFailed.as_str(), "E300");
+        assert_eq!(ErrorCode::InvalidPreset.as_str(), "E401");
+        assert_eq!(ErrorCode::InternalPanic.as_str(), "E901");
+    }
+
+    #[test]
+    fn test_error_code_numeric() {
+        assert_eq!(ErrorCode::FileNotFound.as_u32(), 100);
+        assert_eq!(ErrorCode::DecodeFailed.as_u32(), 131);
+        assert_eq!(ErrorCode::InvalidCropBounds.as_u32(), 200);
+        assert_eq!(ErrorCode::EncodeFailed.as_u32(), 300);
+        assert_eq!(ErrorCode::InvalidPreset.as_u32(), 401);
+        assert_eq!(ErrorCode::InternalPanic.as_u32(), 901);
+    }
+
+    #[test]
+    fn test_error_code_recoverable() {
+        // Recoverable errors
+        assert!(ErrorCode::FileNotFound.is_recoverable());
+        assert!(ErrorCode::FileReadFailed.is_recoverable());
+        assert!(ErrorCode::FileWriteFailed.is_recoverable());
+        assert!(ErrorCode::DimensionExceedsLimit.is_recoverable());
+        assert!(ErrorCode::PixelCountExceedsLimit.is_recoverable());
+        assert!(ErrorCode::InvalidCropBounds.is_recoverable());
+        assert!(ErrorCode::InvalidRotationAngle.is_recoverable());
+        assert!(ErrorCode::InvalidResizeDimensions.is_recoverable());
+        assert!(ErrorCode::InvalidPreset.is_recoverable());
+        assert!(ErrorCode::InvalidQuality.is_recoverable());
+        assert!(ErrorCode::OutputPathInvalid.is_recoverable());
+        assert!(ErrorCode::SourceConsumed.is_recoverable());
+
+        // Non-recoverable errors
+        assert!(!ErrorCode::InvalidImageFormat.is_recoverable());
+        assert!(!ErrorCode::UnsupportedFormat.is_recoverable());
+        assert!(!ErrorCode::ImageTooLarge.is_recoverable());
+        assert!(!ErrorCode::CorruptedImage.is_recoverable());
+        assert!(!ErrorCode::DecodeFailed.is_recoverable());
+        assert!(!ErrorCode::UnsupportedColorSpace.is_recoverable());
+        assert!(!ErrorCode::OperationFailed.is_recoverable());
+        assert!(!ErrorCode::EncodeFailed.is_recoverable());
+        assert!(!ErrorCode::InternalPanic.is_recoverable());
+        assert!(!ErrorCode::UnexpectedState.is_recoverable());
+    }
+
+    #[test]
+    fn test_error_code_category() {
+        assert_eq!(ErrorCode::FileNotFound.category(), "E1xx: Input Errors");
+        assert_eq!(ErrorCode::InvalidCropBounds.category(), "E2xx: Processing Errors");
+        assert_eq!(ErrorCode::EncodeFailed.category(), "E3xx: Output Errors");
+        assert_eq!(ErrorCode::InvalidPreset.category(), "E4xx: Configuration Errors");
+        assert_eq!(ErrorCode::InternalPanic.category(), "E9xx: Internal Errors");
+    }
+
+    #[test]
+    fn test_error_code_display_trait() {
+        assert_eq!(format!("{}", ErrorCode::FileNotFound), "E100");
+        assert_eq!(format!("{}", ErrorCode::DecodeFailed), "E131");
+    }
+
+    #[test]
+    fn test_lazy_image_error_code() {
+        let err = LazyImageError::file_not_found("/path/to/file.jpg");
+        assert_eq!(err.code(), ErrorCode::FileNotFound);
+        assert_eq!(err.code_str(), "E100");
+    }
+
+    #[test]
+    fn test_lazy_image_error_display() {
+        let err = LazyImageError::file_not_found("/path/to/file.jpg");
+        let msg = err.to_string();
+        assert!(msg.contains("E100"));
+        assert!(msg.contains("/path/to/file.jpg"));
+    }
+
+    #[test]
+    fn test_lazy_image_error_with_source() {
+        let io_err = std::io::Error::new(std::io::ErrorKind::NotFound, "test");
+        let err = LazyImageError::file_read_failed("/path/to/file.jpg", io_err);
+        assert_eq!(err.code(), ErrorCode::FileReadFailed);
+        let msg = err.to_string();
+        assert!(msg.contains("E101"));
+        assert!(msg.contains("/path/to/file.jpg"));
+    }
+
+    #[test]
+    fn test_all_error_constructors() {
+        // Test all constructor helpers
+        let _ = LazyImageError::file_not_found("test.jpg");
+        let _ = LazyImageError::file_read_failed("test.jpg", std::io::Error::from(std::io::ErrorKind::NotFound));
+        let _ = LazyImageError::file_write_failed("test.jpg", std::io::Error::from(std::io::ErrorKind::PermissionDenied));
+        let _ = LazyImageError::unsupported_format("gif");
+        let _ = LazyImageError::decode_failed("test");
+        let _ = LazyImageError::corrupted_image();
+        let _ = LazyImageError::dimension_exceeds_limit(10000, 8000);
+        let _ = LazyImageError::pixel_count_exceeds_limit(1000000000, 100000000);
+        let _ = LazyImageError::invalid_crop_bounds(100, 100, 500, 500, 200, 200);
+        let _ = LazyImageError::invalid_rotation_angle(45);
+        let _ = LazyImageError::invalid_resize_dimensions(None, None);
+        let _ = LazyImageError::unsupported_color_space("CMYK");
+        let _ = LazyImageError::encode_failed("jpeg", "test");
+        let _ = LazyImageError::invalid_preset("unknown");
+        let _ = LazyImageError::source_consumed();
+        let _ = LazyImageError::internal_panic("test");
+        let _ = LazyImageError::generic("test");
+    }
+}
