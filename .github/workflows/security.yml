@@ -4,7 +4,27 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
+      - 'SECURITY.md'
+      - 'CHANGELOG.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'OSS_*.md'
+      - 'TEST_*.md'
+      - 'SHARP_COMPARISON.md'
   pull_request:
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
+      - 'SECURITY.md'
+      - 'CHANGELOG.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'OSS_*.md'
+      - 'TEST_*.md'
+      - 'SHARP_COMPARISON.md'
   schedule:
     - cron: '0 0 * * 0'  # 毎週日曜0時
   workflow_dispatch:
