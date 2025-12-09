@@ -791,23 +791,32 @@ impl EncodeTask {
             return Err("invalid dimensions".to_string());
         }
 
-        // Convert to RGBA for processing
-        let rgba = img.to_rgba8();
-        let src_pixels = rgba.as_raw();
+        // Select pixel layout without forcing RGBA when not needed
+        let mut _converted_rgba: Option<RgbaImage> = None;
+        let (pixel_type, src_pixels): (PixelType, &[u8]) = match img {
+            DynamicImage::ImageRgb8(rgb) => (PixelType::U8x3, rgb.as_raw()),
+            DynamicImage::ImageRgba8(rgba) => (PixelType::U8x4, rgba.as_raw()),
+            _ => {
+                let rgba = img.to_rgba8();
+                _converted_rgba = Some(rgba);
+                let buffer = _converted_rgba.as_ref().expect("rgba buffer must exist");
+                (PixelType::U8x4, buffer.as_raw())
+            }
+        };
 
         // Create source image for fast_image_resize
-        let src_image = fir::images::Image::from_vec_u8(
+        let src_image = fir::images::Image::from_slice_u8(
             src_width,
             src_height,
-            src_pixels.clone(),
-            PixelType::U8x4,
+            src_pixels,
+            pixel_type,
         ).map_err(|e| format!("fir source image error: {e:?}"))?;
 
         // Create destination image
         let mut dst_image = fir::images::Image::new(
             dst_width,
             dst_height,
-            PixelType::U8x4,
+            pixel_type,
         );
 
         // Create resizer with Lanczos3 (high quality)
@@ -820,10 +829,19 @@ impl EncodeTask {
 
         // Convert back to DynamicImage
         let dst_pixels = dst_image.into_vec();
-        let rgba_image = RgbaImage::from_raw(dst_width, dst_height, dst_pixels)
-            .ok_or("failed to create rgba image from resized data")?;
-
-        Ok(DynamicImage::ImageRgba8(rgba_image))
+        match pixel_type {
+            PixelType::U8x3 => {
+                let rgb_image = RgbImage::from_raw(dst_width, dst_height, dst_pixels)
+                    .ok_or("failed to create rgb image from resized data")?;
+                Ok(DynamicImage::ImageRgb8(rgb_image))
+            }
+            PixelType::U8x4 => {
+                let rgba_image = RgbaImage::from_raw(dst_width, dst_height, dst_pixels)
+                    .ok_or("failed to create rgba image from resized data")?;
+                Ok(DynamicImage::ImageRgba8(rgba_image))
+            }
+            _ => Err("unsupported pixel type after resize".to_string()),
+        }
     }
 
     /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings
