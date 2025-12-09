@@ -313,6 +313,73 @@ async function runTests() {
         }
     });
 
+    // Thread pool coordination test (v0.7.8+)
+    await asyncTest('processBatch with default concurrency (auto-calculated) works', async () => {
+        const engine = ImageEngine.from(buffer).resize(100);
+        const testDir = path.join(__dirname, 'test_batch_auto');
+        try {
+            // Test with concurrency=0 (default, auto-calculated)
+            // This should automatically balance threads with libuv
+            const results = await engine.processBatch(
+                [TEST_IMAGE, TEST_IMAGE],
+                testDir,
+                'jpeg',
+                80,
+                0  // auto-calculate based on UV_THREADPOOL_SIZE
+            );
+            assert(results.length === 2, 'should process 2 images');
+            assert(results.every(r => r.success), 'all should succeed');
+        } finally {
+            // Cleanup
+            if (fs.existsSync(testDir)) {
+                fs.readdirSync(testDir).forEach(file => {
+                    fs.unlinkSync(path.join(testDir, file));
+                });
+                fs.rmdirSync(testDir);
+            }
+        }
+    });
+
+    // Thread pool coordination test with UV_THREADPOOL_SIZE (v0.7.8+)
+    await asyncTest('processBatch respects UV_THREADPOOL_SIZE env var', async () => {
+        const engine = ImageEngine.from(buffer).resize(100);
+        const testDir = path.join(__dirname, 'test_batch_uv_env');
+        
+        // Save original UV_THREADPOOL_SIZE
+        const originalUvSize = process.env.UV_THREADPOOL_SIZE;
+        
+        try {
+            // Set UV_THREADPOOL_SIZE to a specific value
+            process.env.UV_THREADPOOL_SIZE = '8';
+            
+            // Test with concurrency=0 (should read UV_THREADPOOL_SIZE)
+            const results = await engine.processBatch(
+                [TEST_IMAGE, TEST_IMAGE],
+                testDir,
+                'jpeg',
+                80,
+                0  // auto-calculate, should use UV_THREADPOOL_SIZE=8
+            );
+            assert(results.length === 2, 'should process 2 images');
+            assert(results.every(r => r.success), 'all should succeed');
+        } finally {
+            // Restore original value
+            if (originalUvSize !== undefined) {
+                process.env.UV_THREADPOOL_SIZE = originalUvSize;
+            } else {
+                delete process.env.UV_THREADPOOL_SIZE;
+            }
+            
+            // Cleanup
+            if (fs.existsSync(testDir)) {
+                fs.readdirSync(testDir).forEach(file => {
+                    fs.unlinkSync(path.join(testDir, file));
+                });
+                fs.rmdirSync(testDir);
+            }
+        }
+    });
+
     // Summary
     console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
     process.exit(failed > 0 ? 1 : 0);
