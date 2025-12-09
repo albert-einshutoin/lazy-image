@@ -5,6 +5,7 @@
 > Smaller files. Better quality. Memory-efficient. Powered by Rust + mozjpeg + AVIF.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
+[![codecov](https://codecov.io/gh/albert-einshutoin/lazy-image/branch/main/graph/badge.svg)](https://codecov.io/gh/albert-einshutoin/lazy-image)
 
 ---
 
