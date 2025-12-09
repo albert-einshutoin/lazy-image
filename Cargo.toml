@@ -18,7 +18,7 @@ napi = { version = "2.14", features = ["async"], optional = true }
 napi-derive = { version = "2.14", optional = true }
 
 # Image decoding/encoding
-image = { version = "0.24", default-features = false, features = [
+image = { version = "0.25", default-features = false, features = [
     "jpeg",
     "png",
     "webp",
