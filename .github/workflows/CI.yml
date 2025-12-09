@@ -91,6 +91,25 @@ jobs:
           path: "*.node"
           if-no-files-found: error
 
+  test-rust:
+    name: Rust Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Run Rust tests (without NAPI features)
+        run: cargo test --no-default-features --no-fail-fast
+
+      - name: Run Rust tests (release mode, without NAPI features)
+        run: cargo test --no-default-features --release
+
   test:
     name: Test
     needs: build
