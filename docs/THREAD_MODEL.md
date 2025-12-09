@@ -53,16 +53,20 @@ node your-app.js
 `processBatch()` uses rayon for parallel execution:
 
 ```javascript
-// Default: uses all CPU cores
+// Default: automatically calculates safe thread count
+// Prevents oversubscription by reserving threads for libuv
 const results = await engine.processBatch(files, outDir, 'webp', 80);
 
-// Limit concurrency (memory-constrained environments)
+// Limit concurrency explicitly (memory-constrained environments)
 const results = await engine.processBatch(files, outDir, 'webp', 80, 4);
 ```
 
 **Concurrency parameter**:
-- `0` or `undefined`: Use all CPU cores (default)
-- `1-1024`: Use specified number of workers
+- `0` or `undefined`: Automatically calculates safe thread count (default)
+  - Reads `UV_THREADPOOL_SIZE` environment variable (default: 4)
+  - Sets rayon threads to `CPU_COUNT - UV_THREADPOOL_SIZE`
+  - Ensures total threads don't exceed CPU cores, preventing resource contention
+- `1-1024`: Use specified number of workers (manual control)
 
 ## Memory Considerations
 
@@ -170,10 +174,11 @@ await ImageEngine.from(buffer).toBuffer('jpeg', 80);
 ### 2. Control Batch Concurrency
 
 ```javascript
-// ✅ Good: Explicit concurrency control
+// ✅ Good: Explicit concurrency control (recommended for production)
 await engine.processBatch(files, outDir, 'webp', 80, 4);
 
-// ⚠️ Risky: Default may overwhelm memory
+// ✅ Also Good: Default now automatically balances threads
+// Safe for most use cases, but explicit is better in containers
 await engine.processBatch(manyLargeFiles, outDir, 'webp', 80);
 ```
 
@@ -191,16 +196,53 @@ function logMemory() {
 }
 ```
 
+## Thread Pool Coordination
+
+### Automatic Thread Pool Balancing
+
+To prevent resource exhaustion and server crashes, `processBatch()` automatically coordinates thread pools when `concurrency=0` (default):
+
+1. **Reads `UV_THREADPOOL_SIZE`** environment variable (default: 4)
+2. **Calculates safe rayon thread count**: `CPU_COUNT - UV_THREADPOOL_SIZE`
+3. **Ensures minimum**: At least 1 thread for rayon, even on small systems
+
+**Example on 8-core system**:
+- `UV_THREADPOOL_SIZE=4` (default)
+- Rayon threads: `8 - 4 = 4`
+- Total threads: 8 (matches CPU count) ✅
+
+**Example on 4-core system**:
+- `UV_THREADPOOL_SIZE=4` (default)
+- Rayon threads: `4 - 4 = 0` → clamped to `1`
+- Total threads: 5 (slight oversubscription, but safe)
+
+### Manual Thread Pool Control
+
+For fine-grained control, set environment variables:
+
+```bash
+# Set libuv pool size (must be set before Node.js starts)
+export UV_THREADPOOL_SIZE=8
+
+# Explicitly set concurrency in code
+await engine.processBatch(files, outDir, 'webp', 80, 4);
+```
+
+**Best Practice**: In production, explicitly set `concurrency` parameter rather than relying on defaults, especially in containerized environments.
+
 ## Known Issues
 
-### Dual Thread Pool Interaction
+### Dual Thread Pool Interaction (Resolved)
 
-When using both libuv and rayon threads heavily, scheduling may become unpredictable.
+~~When using both libuv and rayon threads heavily, scheduling may become unpredictable.~~
 
-**Mitigation**:
-- For batch processing, prefer `processBatch()` (pure rayon)
-- Avoid parallel `Promise.all()` with many `toBuffer()` calls
-- Use explicit concurrency limits
+**Status**: ✅ **Fixed in v0.7.9+**
+
+The default behavior of `processBatch()` now automatically balances thread pools to prevent oversubscription. Manual coordination is no longer required for most use cases.
+
+**Remaining considerations**:
+- For batch processing, prefer `processBatch()` (pure rayon) over parallel `Promise.all()` with many `toBuffer()` calls
+- In containerized environments, still recommend explicit `concurrency` parameter
 
 ## References
 

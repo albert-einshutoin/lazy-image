@@ -88,6 +88,7 @@ use std::result::Result;
 use ravif::{Encoder as AvifEncoder, Img};
 use rayon::prelude::*;
 use rgb::FromSlice;
+use num_cpus;
 use std::io::Cursor;
 use std::panic;
 use std::sync::Arc;
@@ -1273,6 +1274,7 @@ impl Task for BatchTask {
         use std::fs;
         use std::path::Path;
         use rayon::ThreadPoolBuilder;
+        use std::env;
 
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir)
@@ -1369,25 +1371,37 @@ impl Task for BatchTask {
         };
 
         // Configure thread pool for concurrency control
-        let results: Vec<BatchResult> = if self.concurrency > 0 {
+        // When concurrency=0, automatically calculate safe thread count to prevent
+        // resource contention with libuv thread pool
+        let num_threads = if self.concurrency > 0 {
             // Use custom thread pool with specified concurrency
             // Safe cast: concurrency is u32, usize is at least u32 on modern systems
-            let num_threads = self.concurrency as usize;
-            if num_threads == 0 || num_threads > 1024 {
+            let threads = self.concurrency as usize;
+            if threads == 0 || threads > 1024 {
                 return Err(napi::Error::from(LazyImageError::internal_panic(format!("invalid concurrency value: {} (must be 1-1024)", self.concurrency))));
             }
-            let pool = ThreadPoolBuilder::new()
-                .num_threads(num_threads)
-                .build()
-                .map_err(|e| napi::Error::from(LazyImageError::internal_panic(format!("failed to create thread pool: {}", e))))?;
-            
-            pool.install(|| {
-                self.inputs.par_iter().map(process_one).collect()
-            })
+            threads
         } else {
-            // Use default thread pool (CPU cores)
-            self.inputs.par_iter().map(process_one).collect()
+            // Calculate safe default: reserve threads for libuv to prevent oversubscription
+            let cpu_count = num_cpus::get();
+            let uv_threadpool_size: usize = env::var("UV_THREADPOOL_SIZE")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(4);
+            
+            // Reserve threads for libuv, use remaining for rayon
+            // Ensure at least 1 thread for rayon
+            cpu_count.saturating_sub(uv_threadpool_size).max(1)
         };
+
+        let pool = ThreadPoolBuilder::new()
+            .num_threads(num_threads)
+            .build()
+            .map_err(|e| napi::Error::from(LazyImageError::internal_panic(format!("failed to create thread pool: {}", e))))?;
+        
+        let results: Vec<BatchResult> = pool.install(|| {
+            self.inputs.par_iter().map(process_one).collect()
+        });
 
         Ok(results)
     }
