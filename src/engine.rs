@@ -792,20 +792,25 @@ impl EncodeTask {
         }
 
         // Select pixel layout without forcing RGBA when not needed
-        let mut _converted_rgba: Option<RgbaImage> = None;
-        let (pixel_type, src_pixels): (PixelType, &[u8]) = match img {
-            DynamicImage::ImageRgb8(rgb) => (PixelType::U8x3, rgb.as_raw()),
-            DynamicImage::ImageRgba8(rgba) => (PixelType::U8x4, rgba.as_raw()),
+        // Use into_raw() to avoid clone() - ownership transfer instead of copying
+        let (pixel_type, src_pixels): (PixelType, Vec<u8>) = match img {
+            DynamicImage::ImageRgb8(rgb) => {
+                let rgb_image = rgb.clone(); // Need to clone the image to get ownership
+                (PixelType::U8x3, rgb_image.into_raw())
+            },
+            DynamicImage::ImageRgba8(rgba) => {
+                let rgba_image = rgba.clone(); // Need to clone the image to get ownership
+                (PixelType::U8x4, rgba_image.into_raw())
+            },
             _ => {
                 let rgba = img.to_rgba8();
-                _converted_rgba = Some(rgba);
-                let buffer = _converted_rgba.as_ref().expect("rgba buffer must exist");
-                (PixelType::U8x4, buffer.as_raw())
+                (PixelType::U8x4, rgba.into_raw())
             }
         };
 
         // Create source image for fast_image_resize
-        let src_image = fir::images::Image::from_slice_u8(
+        // from_vec_u8 takes ownership, avoiding the need for clone() on the pixels
+        let src_image = fir::images::Image::from_vec_u8(
             src_width,
             src_height,
             src_pixels,
