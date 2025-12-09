@@ -435,6 +435,100 @@ interface BatchResult {
 
 ---
 
+## ⚠️ Error Handling
+
+lazy-image uses a structured error code system for type-safe error handling. All errors include detailed context and are categorized for easy programmatic handling.
+
+### Error Code System
+
+Errors are organized into categories:
+
+| Category | Range | Description |
+|----------|-------|-------------|
+| **E1xx** | 100-199 | Input Errors - Issues with input files or data |
+| **E2xx** | 200-299 | Processing Errors - Issues during image processing operations |
+| **E3xx** | 300-399 | Output Errors - Issues when writing or encoding output |
+| **E4xx** | 400-499 | Configuration Errors - Invalid parameters or settings |
+| **E9xx** | 900-999 | Internal Errors - Unexpected internal state or bugs |
+
+### Common Error Codes
+
+| Code | Name | Recoverable | Description |
+|------|------|-------------|-------------|
+| **E100** | FileNotFound | ✅ Yes | File path does not exist |
+| **E101** | FileReadFailed | ✅ Yes | I/O error reading file |
+| **E111** | UnsupportedFormat | ❌ No | Image format not supported |
+| **E121** | DimensionExceedsLimit | ✅ Yes | Image dimension too large |
+| **E200** | InvalidCropBounds | ✅ Yes | Crop coordinates exceed image bounds |
+| **E201** | InvalidRotationAngle | ✅ Yes | Rotation angle not multiple of 90° |
+| **E300** | EncodeFailed | ❌ No | Failed to encode image |
+| **E301** | FileWriteFailed | ✅ Yes | I/O error writing file |
+| **E401** | InvalidPreset | ✅ Yes | Unknown preset name |
+
+> 📖 **Full Reference**: See [docs/ERROR_CODES.md](./docs/ERROR_CODES.md) for complete error code documentation.
+
+### Handling Errors
+
+#### JavaScript/TypeScript
+
+```javascript
+try {
+  const result = await ImageEngine.fromFile('input.jpg')
+    .resize(800)
+    .toBuffer('jpeg', 85);
+} catch (error) {
+  // Error message includes error code: "[E100] File not found: input.jpg"
+  const errorCode = error.message.match(/\[E\d+\]/)?.[0];
+  
+  if (errorCode === '[E100]') {
+    console.error('File not found - check the path');
+  } else if (errorCode === '[E200]') {
+    console.error('Invalid crop bounds - adjust coordinates');
+  } else {
+    console.error('Error:', error.message);
+  }
+}
+```
+
+#### Rust
+
+```rust
+use lazy_image::error::{ErrorCode, LazyImageError};
+
+match result {
+    Ok(data) => println!("Success!"),
+    Err(err) => {
+        match err.code() {
+            ErrorCode::FileNotFound => {
+                eprintln!("File not found: {}", err);
+            }
+            ErrorCode::InvalidCropBounds => {
+                eprintln!("Invalid crop bounds: {}", err);
+            }
+            _ => {
+                eprintln!("Error {}: {}", err.code(), err);
+            }
+        }
+        
+        // Check if error is recoverable
+        if err.code().is_recoverable() {
+            // User can fix this - retry with corrected input
+        } else {
+            // Non-recoverable - log and report
+        }
+    }
+}
+```
+
+### Error Recovery
+
+Errors marked as **Recoverable** can be handled programmatically:
+
+- ✅ **Recoverable errors**: User can fix (invalid parameters, file paths, etc.)
+- ❌ **Non-recoverable errors**: Indicate corrupted data, bugs, or unsupported formats
+
+Use `ErrorCode::is_recoverable()` to check if an error can be handled programmatically.
+
 ## 🏎️ Performance Notes
 
 ### Memory Efficiency
