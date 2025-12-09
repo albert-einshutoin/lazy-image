@@ -104,11 +104,11 @@ jobs:
       - name: Install NASM
         run: sudo apt-get update && sudo apt-get install -y nasm
 
-      - name: Run Rust tests
-        run: cargo test --all-features --no-fail-fast
+      - name: Run Rust tests (without NAPI features)
+        run: cargo test --no-default-features --no-fail-fast
 
-      - name: Run Rust tests (release mode)
-        run: cargo test --all-features --release
+      - name: Run Rust tests (release mode, without NAPI features)
+        run: cargo test --no-default-features --release
 
   test:
     name: Test
