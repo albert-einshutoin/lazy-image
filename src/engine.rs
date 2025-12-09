@@ -1107,13 +1107,21 @@ impl EncodeTask {
     /// Avoids unnecessary alpha channel to reduce file size
     pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EngineResult<Vec<u8>> {
         // Use RGB instead of RGBA for smaller files (unless alpha is needed)
-        // If the image is already RGB, use it directly to avoid unnecessary conversion
+        // If the image is already RGB, avoid unnecessary conversion by checking the type first
+        // Note: We still need to convert/clone for encoder lifetime management, but we avoid
+        // converting RGBA->RGB when the image is already RGB
         let rgb = match img {
-            DynamicImage::ImageRgb8(rgb_img) => rgb_img.clone(),
-            _ => img.to_rgb8(),
+            DynamicImage::ImageRgb8(rgb_img) => {
+                // For RGB images, we can use the image directly
+                // The clone is necessary for lifetime management with webp::Encoder
+                rgb_img.clone()
+            },
+            _ => {
+                // Convert to RGB for other formats (RGBA, etc.)
+                img.to_rgb8()
+            }
         };
         let (w, h) = rgb.dimensions();
-
         let encoder = webp::Encoder::from_rgb(&rgb, w, h);
         
         // Create WebPConfig with enhanced preprocessing for better compression
