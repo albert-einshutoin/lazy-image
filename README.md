@@ -458,16 +458,27 @@ const result = await ImageEngine.fromPath('huge-image.tiff')
 
 ### Color Management
 
-ICC color profiles are automatically:
-- **Extracted** from input images (JPEG, PNG, WebP)
-- **Preserved** through the processing pipeline
-- **Embedded** in output images
+ICC color profiles are automatically extracted and embedded during processing.
 
-This ensures photos from iPhones (P3 color space) or professional cameras (Adobe RGB) maintain their intended colors.
+| Format | ICC Profile Support | Notes |
+|--------|---------------------|-------|
+| JPEG   | ✅ Full support | Extracted and embedded |
+| PNG    | ✅ Full support | Via iCCP chunk |
+| WebP   | ✅ Full support | Via ICCP chunk |
+| AVIF   | ⚠️ **Not supported** | **See warning below** |
 
-
-> **Note**: AVIF format does not currently preserve ICC profiles (ravif limitation).
-> AVIF output assumes sRGB color space. Use JPEG or PNG for color-critical workflows.
+> ⚠️ **Important: AVIF Color Space Limitation**
+> 
+> **AVIF format does NOT preserve ICC color profiles** due to a limitation in the ravif encoder.
+> 
+> **Impact:**
+> - Images with Display P3, Adobe RGB, or other wide-gamut profiles will be converted to sRGB
+> - Color accuracy may be affected for professional photography workflows
+> 
+> **Recommendation:**
+> - Use **JPEG or WebP** for color-critical applications
+> - AVIF is safe for images already in sRGB color space
+> - For maximum compatibility, convert to sRGB before AVIF encoding
 ### Supported Platforms
 
 | Platform | Architecture | Status |
