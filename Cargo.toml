@@ -53,6 +53,12 @@ num_cpus = "1.16"
 # Error handling
 thiserror = "1.0"
 
+# Global state management
+once_cell = "1.19"
+
+# Compile-time assertions for safety verification
+static_assertions = "1.1"
+
 [dev-dependencies]
 criterion = "0.5"
 

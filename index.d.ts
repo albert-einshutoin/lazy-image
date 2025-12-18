@@ -5,489 +5,365 @@
 
 /**
  * Supported output formats for image encoding.
- * @see {@link ImageEngine.toBuffer}
  */
 export type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif';
 
 /**
  * Supported input formats for image decoding.
  */
-export type InputFormat = 'jpeg' | 'jpg' | 'png' | 'webp';
+export type InputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif' | 'gif' | 'tiff' | 'bmp';
 
 /**
- * Image dimensions.
+ * Preset names for common image optimization scenarios.
  */
+export type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social';
+
 export interface Dimensions {
-  /** Image width in pixels */
-  width: number;
-  /** Image height in pixels */
-  height: number;
+  width: number
+  height: number
 }
-
-/**
- * Result of applying a preset.
- * Use with {@link ImageEngine.toBuffer} or {@link ImageEngine.toFile}.
- * 
- * @example
- * ```typescript
- * const preset = engine.preset('thumbnail');
- * const buffer = await engine.toBuffer(preset.format, preset.quality);
- * ```
- */
+/** Result of applying a preset, contains recommended output settings */
 export interface PresetResult {
   /** Recommended output format */
-  format: OutputFormat;
-  /** 
-   * Recommended quality (1-100).
-   * `undefined` for PNG (lossless).
-   */
-  quality?: number;
-  /** Target width in pixels. `undefined` if aspect ratio is preserved. */
-  width?: number;
-  /** Target height in pixels. `undefined` if aspect ratio is preserved. */
-  height?: number;
+  format: OutputFormat
+  /** Recommended quality (None for PNG) */
+  quality?: number
+  /** Target width (None if aspect ratio preserved) */
+  width?: number
+  /** Target height (None if aspect ratio preserved) */
+  height?: number
 }
-
-/**
- * Result of batch processing operation.
- */
 export interface BatchResult {
-  /** Source file path */
-  source: string;
-  /** Whether the processing succeeded */
-  success: boolean;
-  /** Error message if failed */
-  error?: string;
-  /** Output file path if succeeded */
-  outputPath?: string;
+  source: string
+  success: boolean
+  error?: string
+  outputPath?: string
 }
-
 /**
- * Image metadata returned by {@link inspect} and {@link inspectFile}.
+ * lazy-image Error Codes
+ *
+ * Error codes are organized by category:
+ * - **E1xx**: Input Errors - Issues with input files or data
+ * - **E2xx**: Processing Errors - Issues during image processing operations
+ * - **E3xx**: Output Errors - Issues when writing or encoding output
+ * - **E4xx**: Configuration Errors - Invalid parameters or settings
+ * - **E9xx**: Internal Errors - Unexpected internal state or bugs
+ *
+ * Each error code is type-safe and can be used programmatically.
  */
+export const enum ErrorCode {
+  /**
+   * **E100**: File not found
+   *
+   * The specified file path does not exist.
+   * **Recoverable**: Yes - Check the file path and permissions.
+   */
+  FileNotFound = 100,
+  /**
+   * **E101**: Failed to read file
+   *
+   * An I/O error occurred while reading the file.
+   * **Recoverable**: Yes - Check file permissions and disk space.
+   */
+  FileReadFailed = 101,
+  /**
+   * **E110**: Invalid image format
+   *
+   * The file format is not recognized or is invalid.
+   * **Recoverable**: No - The file is corrupted or not an image.
+   */
+  InvalidImageFormat = 110,
+  /**
+   * **E111**: Unsupported image format
+   *
+   * The image format is recognized but not supported by lazy-image.
+   * **Recoverable**: No - Convert to a supported format (JPEG, PNG, WebP).
+   */
+  UnsupportedFormat = 111,
+  /**
+   * **E120**: Image too large
+   *
+   * The image exceeds size limits (file size or memory constraints).
+   * **Recoverable**: No - Resize or compress the image before processing.
+   */
+  ImageTooLarge = 120,
+  /**
+   * **E121**: Dimension exceeds limit
+   *
+   * Image width or height exceeds the maximum allowed dimension.
+   * **Recoverable**: Yes - Resize the image to fit within limits.
+   */
+  DimensionExceedsLimit = 121,
+  /**
+   * **E122**: Pixel count exceeds limit
+   *
+   * Total pixel count (width × height) exceeds the maximum allowed.
+   * **Recoverable**: Yes - Resize the image to reduce pixel count.
+   */
+  PixelCountExceedsLimit = 122,
+  /**
+   * **E130**: Corrupted image data
+   *
+   * The image file is corrupted or contains invalid data.
+   * **Recoverable**: No - The file needs to be repaired or recreated.
+   */
+  CorruptedImage = 130,
+  /**
+   * **E131**: Failed to decode image
+   *
+   * An error occurred during image decoding (format-specific issue).
+   * **Recoverable**: No - Check if the file is a valid image.
+   */
+  DecodeFailed = 131,
+  /**
+   * **E200**: Invalid crop bounds
+   *
+   * Crop coordinates exceed image dimensions.
+   * **Recoverable**: Yes - Adjust crop coordinates to fit within image bounds.
+   */
+  InvalidCropBounds = 200,
+  /**
+   * **E201**: Invalid rotation angle
+   *
+   * Rotation angle is not a multiple of 90 degrees.
+   * **Recoverable**: Yes - Use 0, 90, 180, or 270 degrees (or negatives).
+   */
+  InvalidRotationAngle = 201,
+  /**
+   * **E202**: Invalid resize dimensions
+   *
+   * Resize dimensions are invalid (e.g., both width and height are None).
+   * **Recoverable**: Yes - Provide at least one valid dimension.
+   */
+  InvalidResizeDimensions = 202,
+  /**
+   * **E210**: Unsupported color space
+   *
+   * The requested color space conversion is not supported.
+   * **Recoverable**: No - Use a supported color space.
+   */
+  UnsupportedColorSpace = 210,
+  /**
+   * **E299**: Operation failed
+   *
+   * A general processing operation failed.
+   * **Recoverable**: Depends on the specific operation.
+   */
+  OperationFailed = 299,
+  /**
+   * **E300**: Failed to encode image
+   *
+   * An error occurred during image encoding (format-specific issue).
+   * **Recoverable**: No - Check encoding parameters and try a different format.
+   */
+  EncodeFailed = 300,
+  /**
+   * **E301**: Failed to write file
+   *
+   * An I/O error occurred while writing the output file.
+   * **Recoverable**: Yes - Check disk space and write permissions.
+   */
+  FileWriteFailed = 301,
+  /**
+   * **E302**: Output path invalid
+   *
+   * The output file path is invalid or inaccessible.
+   * **Recoverable**: Yes - Provide a valid output path.
+   */
+  OutputPathInvalid = 302,
+  /**
+   * **E400**: Invalid quality value
+   *
+   * Quality parameter is out of valid range (typically 1-100).
+   * **Recoverable**: Yes - Use a quality value within the valid range.
+   */
+  InvalidQuality = 400,
+  /**
+   * **E401**: Invalid preset name
+   *
+   * The specified preset name is not recognized.
+   * **Recoverable**: Yes - Use a valid preset: thumbnail, avatar, hero, or social.
+   */
+  InvalidPreset = 401,
+  /**
+   * **E900**: Source already consumed
+   *
+   * Image source has already been consumed and cannot be reused.
+   * **Recoverable**: Yes - Use `clone()` for multi-output scenarios.
+   */
+  SourceConsumed = 900,
+  /**
+   * **E901**: Internal panic
+   *
+   * An unexpected internal error occurred (likely a bug).
+   * **Recoverable**: No - Report this as a bug.
+   */
+  InternalPanic = 901,
+  /**
+   * **E999**: Unexpected state
+   *
+   * The library is in an unexpected internal state.
+   * **Recoverable**: No - Report this as a bug.
+   */
+  UnexpectedState = 999
+}
+/** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
-  width: number;
+  width: number
   /** Image height in pixels */
-  height: number;
-  /** 
-   * Detected format.
-   * `null` if format could not be determined.
-   */
-  format: InputFormat | null;
+  height: number
+  /** Detected format (jpeg, png, webp, gif, etc.) */
+  format?: InputFormat | null
 }
-
-/**
- * Performance metrics for image processing.
- * Returned by {@link ImageEngine.toBufferWithMetrics}.
- */
-export interface ProcessingMetrics {
-  /** Time taken to decode the image (milliseconds) */
-  decodeTime: number;
-  /** Time taken to apply all operations (milliseconds) */
-  processTime: number;
-  /** Time taken to encode the image (milliseconds) */
-  encodeTime: number;
-  /** Peak memory usage during processing (bytes) */
-  memoryPeak: number;
-}
-
-/**
- * Output with performance metrics.
- * Returned by {@link ImageEngine.toBufferWithMetrics}.
- */
-export interface OutputWithMetrics {
-  /** Encoded image data */
-  data: Buffer;
-  /** Performance metrics */
-  metrics: ProcessingMetrics;
-}
-
 /**
  * Inspect image metadata WITHOUT decoding pixels.
- * Reads only header bytes - extremely fast (<1ms).
- * 
+ * This reads only the header bytes - extremely fast (<1ms).
+ *
  * Use this to check dimensions before processing, or to reject
  * images that are too large without wasting CPU on decoding.
- * 
- * @param buffer - Image data as Buffer
- * @returns Image metadata (width, height, format)
- * @throws If the buffer is not a valid image
- * 
- * @example
- * ```typescript
- * const meta = inspect(buffer);
- * if (meta.width > 4000) {
- *   throw new Error('Image too large');
- * }
- * ```
  */
-export declare function inspect(buffer: Buffer): ImageMetadata;
-
+export declare function inspect(buffer: Buffer): ImageMetadata
 /**
  * Inspect image metadata from a file path WITHOUT loading into Node.js heap.
- * 
  * **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
  * This is the recommended way for server-side metadata inspection.
- * 
- * @param path - Path to the image file
- * @returns Image metadata (width, height, format)
- * @throws If the file does not exist or is not a valid image
- * 
- * @example
- * ```typescript
- * const meta = inspectFile('/path/to/image.jpg');
- * console.log(`Image: ${meta.width}x${meta.height}, format: ${meta.format}`);
- * ```
  */
-export declare function inspectFile(path: string): ImageMetadata;
-
-/**
- * Get library version.
- * @returns Semantic version string (e.g., "0.7.8")
- */
-export declare function version(): string;
-
-/**
- * Get supported input formats.
- * @returns Array of supported format strings
- */
-export declare function supportedInputFormats(): InputFormat[];
-
-/**
- * Get supported output formats.
- * @returns Array of supported format strings
- */
-export declare function supportedOutputFormats(): OutputFormat[];
-
+export declare function inspectFile(path: string): ImageMetadata
+/** Get library version */
+export declare function version(): string
+/** Get supported input formats */
+export declare function supportedInputFormats(): Array<InputFormat>
+/** Get supported output formats */
+export declare function supportedOutputFormats(): Array<OutputFormat>
+/** Processing metrics for performance monitoring */
+export interface ProcessingMetrics {
+  /** Time taken to decode the image (milliseconds) */
+  decodeTime: number
+  /** Time taken to apply all operations (milliseconds) */
+  processTime: number
+  /** Time taken to encode the image (milliseconds) */
+  encodeTime: number
+  /** Peak memory usage during processing (bytes, as u32 for NAPI compatibility) */
+  memoryPeak: number
+}
+export interface OutputWithMetrics {
+  data: Buffer
+  metrics: ProcessingMetrics
+}
 /**
  * The main image processing engine.
- * 
- * Provides a fluent API for image manipulation with lazy evaluation.
- * Operations are queued and executed only when output is requested.
- * 
- * @example Basic usage
- * ```typescript
+ *
+ * Usage:
+ * ```js
  * const result = await ImageEngine.from(buffer)
  *   .resize(800)
  *   .rotate(90)
  *   .grayscale()
  *   .toBuffer('jpeg', 75);
  * ```
- * 
- * @example Multi-output with clone
- * ```typescript
- * const engine = ImageEngine.from(buffer).resize(800);
- * const [jpeg, webp] = await Promise.all([
- *   engine.clone().toBuffer('jpeg', 85),
- *   engine.clone().toBuffer('webp', 80),
- * ]);
- * ```
- * 
- * @example Memory-efficient file processing
- * ```typescript
- * const bytesWritten = await ImageEngine.fromPath('input.jpg')
- *   .resize(800)
- *   .toFile('output.jpg', 'jpeg', 80);
- * ```
  */
 export declare class ImageEngine {
   /**
-   * Create engine from a Buffer.
-   * Decoding is lazy - happens only when needed.
-   * 
-   * @param buffer - Image data as Buffer
-   * @returns New ImageEngine instance
-   * 
-   * @remarks
-   * This loads the buffer into Node.js heap. For large images or
-   * server-side processing, prefer {@link ImageEngine.fromPath}.
+   * Create engine from a buffer. Decoding is lazy.
+   * Extracts ICC profile from the source image if present.
    */
-  static from(buffer: Buffer): ImageEngine;
-
+  static from(buffer: Buffer): ImageEngine
   /**
    * Create engine from a file path.
-   * 
    * **Memory-efficient**: Reads directly into Rust heap, bypassing Node.js V8 heap.
    * This is the recommended way for server-side processing of large images.
-   * 
-   * @param path - Path to the image file
-   * @returns New ImageEngine instance
-   * @throws If the file does not exist or cannot be read
    */
-  static fromPath(path: string): ImageEngine;
-
+  static fromPath(path: string): ImageEngine
+  /** Create a clone of this engine (for multi-output scenarios) */
+  clone(): ImageEngine
+  /** Resize image. Width or height can be null to maintain aspect ratio. */
+  resize(width?: number | undefined | null, height?: number | undefined | null): ImageEngine
+  /** Crop a region from the image. */
+  crop(x: number, y: number, width: number, height: number): ImageEngine
+  /** Rotate by degrees (90, 180, 270 only) */
+  rotate(degrees: number): ImageEngine
+  /** Flip horizontally */
+  flipH(): ImageEngine
+  /** Flip vertically */
+  flipV(): ImageEngine
+  /** Convert to grayscale */
+  grayscale(): ImageEngine
+  /** Adjust brightness (-100 to 100) */
+  brightness(value: number): ImageEngine
+  /** Adjust contrast (-100 to 100) */
+  contrast(value: number): ImageEngine
   /**
-   * Create a clone of this engine.
-   * 
-   * Use this for multi-output scenarios where you need to encode
-   * the same processed image in multiple formats.
-   * 
-   * @returns Cloned ImageEngine instance
-   * 
-   * @example
-   * ```typescript
-   * const engine = ImageEngine.from(buffer).resize(800);
-   * const jpeg = await engine.clone().toBuffer('jpeg');
-   * const webp = await engine.clone().toBuffer('webp');
-   * ```
+   * Ensure the image is in RGB/RGBA format (pixel format conversion, not color space transformation)
+   * Note: This does NOT perform ICC color profile conversion - it only ensures the pixel format.
+   * For true color space conversion with ICC profiles, use a dedicated color management library.
    */
-  clone(): ImageEngine;
-
+  ensureRgb(): ImageEngine
   /**
-   * Resize image.
-   * 
-   * If only width is specified, height is calculated to maintain aspect ratio.
-   * If only height is specified, width is calculated to maintain aspect ratio.
-   * If both are specified, image is resized to exact dimensions.
-   * 
-   * @param width - Target width in pixels. `null` to auto-calculate.
-   * @param height - Target height in pixels. `null` to auto-calculate.
-   * @returns `this` for method chaining
-   * 
-   * @example
-   * ```typescript
-   * // Resize to width 800, auto height
-   * engine.resize(800, null);
-   * 
-   * // Resize to exact 800x600
-   * engine.resize(800, 600);
-   * ```
+   * Legacy method - use ensureRgb() instead
+   *
+   * **Deprecated**: This method is deprecated and will be removed in v1.0.
+   * Use `ensureRgb()` for pixel format conversion instead.
+   *
+   * Note: This method does NOT perform true color space conversion with ICC profiles.
+   * It only ensures the pixel format is RGB/RGBA.
    */
-  resize(width?: number | null, height?: number | null): ImageEngine;
-
-  /**
-   * Crop a region from the image.
-   * 
-   * @param x - Left offset in pixels
-   * @param y - Top offset in pixels
-   * @param width - Crop width in pixels
-   * @param height - Crop height in pixels
-   * @returns `this` for method chaining
-   * @throws If crop bounds exceed image dimensions
-   */
-  crop(x: number, y: number, width: number, height: number): ImageEngine;
-
-  /**
-   * Rotate image by specified degrees.
-   * 
-   * @param degrees - Rotation angle. Only 0, 90, 180, 270 (and negatives) are supported.
-   * @returns `this` for method chaining
-   * @throws If degrees is not a supported angle
-   */
-  rotate(degrees: number): ImageEngine;
-
-  /**
-   * Flip image horizontally (mirror).
-   * @returns `this` for method chaining
-   */
-  flipH(): ImageEngine;
-
-  /**
-   * Flip image vertically.
-   * @returns `this` for method chaining
-   */
-  flipV(): ImageEngine;
-
-  /**
-   * Convert image to grayscale.
-   * @returns `this` for method chaining
-   */
-  grayscale(): ImageEngine;
-
-  /**
-   * Adjust image brightness.
-   * 
-   * @param value - Brightness adjustment (-100 to 100).
-   *   - Negative values darken the image
-   *   - Positive values brighten the image
-   *   - 0 has no effect
-   * @returns `this` for method chaining
-   */
-  brightness(value: number): ImageEngine;
-
-  /**
-   * Adjust image contrast.
-   * 
-   * @param value - Contrast adjustment (-100 to 100).
-   *   - Negative values decrease contrast
-   *   - Positive values increase contrast
-   *   - 0 has no effect
-   * @returns `this` for method chaining
-   */
-  contrast(value: number): ImageEngine;
-
-  /**
-   * Convert to specific color space.
-   * 
-   * @param colorSpace - Target color space. Currently only `'srgb'` is fully supported.
-   * @returns `this` for method chaining
-   * @throws If color space is not supported
-   */
-  toColorspace(colorSpace: 'srgb' | 'p3' | 'adobergb'): ImageEngine;
-
+  toColorspace(colorSpace: string): ImageEngine
   /**
    * Apply a built-in preset for common use cases.
-   * 
-   * This method applies resize operations and returns recommended
-   * output settings for the preset.
-   * 
-   * **Available presets:**
-   * 
-   * - `thumbnail`: 150x150, WebP q75 (gallery thumbnails)
-   * - `avatar`: 200x200, WebP q80 (profile pictures)
-   * - `hero`: 1920 width, JPEG q85 (hero images, banners)
-   * - `social`: 1200x630, JPEG q80 (OGP/Twitter cards)
-   * 
-   * @param name - Preset name
-   * @returns Preset configuration for use with toBuffer/toFile
-   * @throws If preset name is unknown
-   * 
-   * @example
-   * ```typescript
-   * const preset = engine.preset('thumbnail');
-   * const buffer = await engine.toBuffer(preset.format, preset.quality);
-   * ```
+   *
+   * Available presets:
+   * - "thumbnail": 150x150, WebP quality 75 (gallery thumbnails)
+   * - "avatar": 200x200, WebP quality 80 (profile pictures)
+   * - "hero": 1920 width, JPEG quality 85 (hero images, banners)
+   * - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
+   *
+   * Returns the preset configuration for use with toBuffer/toFile.
    */
-  preset(name: 'thumbnail' | 'avatar' | 'hero' | 'social'): PresetResult;
-
+  preset(name: PresetName): PresetResult
   /**
-   * Encode image to Buffer.
-   * 
-   * **Default quality by format:**
-   * 
-   * - JPEG: 85 (high quality, balanced file size)
-   * - WebP: 80 (optimal for WebP compression)
-   * - AVIF: 60 (AVIF's high efficiency means lower values still look great)
-   * - PNG: N/A (lossless, quality parameter ignored)
-   * 
-   * @param format - Output format: `'jpeg'`, `'jpg'`, `'png'`, `'webp'`, or `'avif'`
-   * @param quality - Quality level 1-100. Uses format-specific default if omitted.
-   * @returns Promise resolving to encoded image Buffer
-   * @throws If format is unsupported or encoding fails
-   * 
-   * @remarks
+   * Encode to buffer asynchronously.
+   * format: "jpeg", "jpg", "png", "webp"
+   * quality: 1-100 (default 80, ignored for PNG)
+   *
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
-   * 
-   * @example
-   * ```typescript
-   * // Use default quality (85 for JPEG)
-   * const jpeg = await engine.toBuffer('jpeg');
-   * 
-   * // Specify custom quality
-   * const webp = await engine.toBuffer('webp', 90);
-   * ```
    */
-  toBuffer(format: OutputFormat, quality?: number | null): Promise<Buffer>;
-
+  toBuffer(format: OutputFormat, quality?: number | null): Promise<Buffer>
   /**
-   * Encode image to Buffer with performance metrics.
-   * 
-   * Same as {@link ImageEngine.toBuffer}, but also returns timing
-   * and memory usage information.
-   * 
-   * @param format - Output format
-   * @param quality - Quality level 1-100
-   * @returns Promise resolving to encoded data and metrics
-   * 
-   * @remarks
+   * Encode to buffer asynchronously with performance metrics.
+   * Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
+   *
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
-   * 
-   * @example
-   * ```typescript
-   * const { data, metrics } = await engine.toBufferWithMetrics('jpeg', 80);
-   * console.log(`Encode time: ${metrics.encodeTime}ms`);
-   * ```
    */
-  toBufferWithMetrics(format: OutputFormat, quality?: number | null): Promise<OutputWithMetrics>;
-
+  toBufferWithMetrics(format: OutputFormat, quality?: number | null): Promise<OutputWithMetrics>
   /**
-   * Encode and write directly to a file.
-   * 
-   * **Memory-efficient**: Combined with {@link ImageEngine.fromPath}, this enables
+   * Encode and write directly to a file asynchronously.
+   * **Memory-efficient**: Combined with fromPath(), this enables
    * full file-to-file processing without touching Node.js heap.
-   * 
-   * @param path - Output file path
-   * @param format - Output format
-   * @param quality - Quality level 1-100
-   * @returns Promise resolving to number of bytes written
-   * @throws If encoding fails or file cannot be written
-   * 
-   * @remarks
+   *
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
-   * 
-   * @example
-   * ```typescript
-   * const bytes = await ImageEngine.fromPath('input.png')
-   *   .resize(800)
-   *   .toFile('output.jpg', 'jpeg', 80);
-   * console.log(`Wrote ${bytes} bytes`);
-   * ```
+   *
+   * Returns the number of bytes written.
    */
-  toFile(path: string, format: OutputFormat, quality?: number | null): Promise<number>;
-
-  /**
-   * Get image dimensions.
-   * 
-   * @returns Image dimensions
-   * @remarks This decodes the image if not already decoded.
-   */
-  dimensions(): Dimensions;
-
+  toFile(path: string, format: OutputFormat, quality?: number | null): Promise<number>
+  /** Get image dimensions (decodes image if needed) */
+  dimensions(): Dimensions
   /**
    * Check if an ICC color profile was extracted from the source image.
-   * 
-   * @returns Profile size in bytes, or `null` if no profile exists
-   * 
-   * @example
-   * ```typescript
-   * const iccSize = engine.hasIccProfile();
-   * if (iccSize) {
-   *   console.log(`ICC profile: ${iccSize} bytes`);
-   * }
-   * ```
+   * Returns the profile size in bytes, or null if no profile exists.
    */
-  hasIccProfile(): number | null;
-
+  hasIccProfile(): number | null
   /**
    * Process multiple images in parallel with the same operations.
-   * 
-   * @param inputs - Array of input file paths
-   * @param outputDir - Directory to write processed images
-   * @param format - Output format
-   * @param quality - Quality level 1-100 (uses format default if omitted)
-   * @param concurrency - Number of parallel workers. 
-   *   - `0` or `undefined`: Use CPU core count (default)
-   *   - `1-1024`: Use specified number of workers
-   * @returns Promise resolving to array of results
-   * 
-   * @example
-   * ```typescript
-   * const engine = ImageEngine.from(buffer).resize(800);
-   * const results = await engine.processBatch(
-   *   ['img1.jpg', 'img2.jpg', 'img3.jpg'],
-   *   './output',
-   *   'webp',
-   *   80,
-   *   4  // Use 4 parallel workers
-   * );
-   * results.forEach(r => {
-   *   if (r.success) {
-   *     console.log(`✅ ${r.source} → ${r.outputPath}`);
-   *   } else {
-   *     console.log(`❌ ${r.source}: ${r.error}`);
-   *   }
-   * });
-   * ```
+   *
+   * - inputs: Array of input file paths
+   * - output_dir: Directory to write processed images
+   * - format: Output format ("jpeg", "png", "webp", "avif")
+   * - quality: Optional quality (1-100, uses format-specific default if None)
+   * - concurrency: Optional number of parallel workers (default: CPU core count)
    */
-  processBatch(
-    inputs: string[],
-    outputDir: string,
-    format: OutputFormat,
-    quality?: number | null,
-    concurrency?: number | null
-  ): Promise<BatchResult[]>;
+  processBatch(inputs: Array<string>, outputDir: string, format: OutputFormat, quality?: number | null, concurrency?: number | null): Promise<BatchResult[]>
 }
