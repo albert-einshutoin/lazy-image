@@ -3,7 +3,7 @@
  * Uses embedded base64 to avoid external dependencies.
  */
 const fs = require('fs');
-const path = require('path');
+const { resolveFixture } = require('./paths');
 
 // 1x1 white JPEG (valid JFIF) and PNG
 const JPEG_BASE64 =
@@ -13,7 +13,7 @@ const PNG_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMBgX9n1r0AAAAASUVORK5CYII=';
 
 function writeFixture(filename, base64) {
-  const outputPath = path.join(__dirname, '..', filename);
+  const outputPath = resolveFixture(filename);
   const buffer = Buffer.from(base64, 'base64');
   fs.writeFileSync(outputPath, buffer);
   console.log(`Created ${filename}: ${buffer.length} bytes`);
@@ -27,3 +27,5 @@ function main() {
 if (require.main === module) {
   main();
 }
+
+module.exports = { main, writeFixture };

@@ -26,16 +26,24 @@
   },
   "scripts": {
     "build": "napi build --platform --release",
-    "test": "node test/basic.test.js && node test/edge-cases.test.js",
-    "test:basic": "node test/basic.test.js",
-    "test:edge": "node test/edge-cases.test.js",
+    "test": "npm run test:js && npm run test:rust",
+    "test:js": "npm run test:js:specs && npm run test:js:type-safety",
+    "test:js:specs": "node test/js/run-specs.js",
+    "test:js:type-safety": "node test/js/type-safety/runtime-type-safety.test.js",
+    "test:types": "tsc --noEmit test/js/type-safety/typescript-typecheck.test.ts",
+    "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
+    "test:bench:compare": "node test/js/benchmarks/sharp-comparison.bench.js",
+    "test:bench:verify": "node test/js/benchmarks/readme-verification.bench.js",
+    "test:bench:smoke": "node test/js/benchmarks/pipeline-smoke.bench.js",
+    "test:rust": "cargo test --all",
     "version": "node scripts/sync-version.js",
     "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.0",
     "@types/node": "^25.0.2",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "typescript": "^5.6.3"
   },
   "napi": {
     "name": "lazy-image",

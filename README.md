@@ -634,7 +634,11 @@ npm install
 npm run build
 
 # Run tests
-npm test
+npm run test:js       # JavaScript specs (custom runner)
+npm run test:types    # TypeScript 型チェック
+npm run test:bench    # ベンチマークスクリプト
+npm run test:rust     # Cargo tests
+npm test              # JS + Rust をまとめて実行
 ```
 
 ### Requirements
