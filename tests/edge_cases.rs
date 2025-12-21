@@ -13,34 +13,6 @@ fn create_test_image(width: u32, height: u32) -> DynamicImage {
     }))
 }
 
-// Helper to create minimal valid JPEG bytes
-fn create_minimal_jpeg() -> Vec<u8> {
-    let img = create_test_image(1, 1);
-    let rgb = img.to_rgb8();
-    let (w, h) = rgb.dimensions();
-    let pixels = rgb.into_raw();
-
-    use mozjpeg::ColorSpace;
-    use mozjpeg::Compress;
-
-    let mut comp = Compress::new(ColorSpace::JCS_RGB);
-    comp.set_size(w as usize, h as usize);
-    comp.set_quality(80.0);
-    comp.set_color_space(ColorSpace::JCS_YCbCr);
-    comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
-
-    let mut output = Vec::new();
-    {
-        let mut writer = comp.start_compress(&mut output).unwrap();
-        let stride = w as usize * 3;
-        for row in pixels.chunks(stride) {
-            writer.write_scanlines(row).unwrap();
-        }
-        writer.finish().unwrap();
-    }
-    output
-}
-
 // Helper to create valid JPEG of specified size
 fn create_valid_jpeg(width: u32, height: u32) -> Vec<u8> {
     let img = create_test_image(width, height);
@@ -287,7 +259,6 @@ mod corrupted_image_tests {
 }
 
 mod non_image_tests {
-    use super::*;
     use lazy_image::engine::EncodeTask;
     use std::sync::Arc;
 

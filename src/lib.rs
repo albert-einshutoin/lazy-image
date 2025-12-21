@@ -18,7 +18,7 @@ pub mod error;
 pub mod ops;
 
 #[cfg(feature = "napi")]
-use image::io::Reader as ImageReader;
+use image::ImageReader;
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]

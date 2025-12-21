@@ -66,6 +66,7 @@ const MAX_PIXELS: u64 = 100_000_000;
 // =============================================================================
 
 /// Default libuv thread pool size (Node.js default)
+#[allow(dead_code)]
 const DEFAULT_UV_THREADPOOL_SIZE: usize = 4;
 
 /// Maximum allowed concurrency value for processBatch()
