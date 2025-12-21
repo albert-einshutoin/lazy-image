@@ -3,11 +3,11 @@
 // Unified error handling for lazy-image
 // Uses thiserror for type-safe error handling with error codes
 
-use thiserror::Error;
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
 use napi_derive::napi;
+use thiserror::Error;
 
 /// lazy-image Error Codes
 ///
@@ -307,10 +307,7 @@ impl std::fmt::Display for ErrorCode {
 pub enum LazyImageError {
     // File I/O Errors
     #[error("[{code}] File not found: {path}")]
-    FileNotFound {
-        code: ErrorCode,
-        path: String,
-    },
+    FileNotFound { code: ErrorCode, path: String },
 
     #[error("[{code}] Failed to read file '{path}': {source}")]
     FileReadFailed {
@@ -330,21 +327,13 @@ pub enum LazyImageError {
 
     // Decode Errors
     #[error("[{code}] Unsupported image format: {format}")]
-    UnsupportedFormat {
-        code: ErrorCode,
-        format: String,
-    },
+    UnsupportedFormat { code: ErrorCode, format: String },
 
     #[error("[{code}] Failed to decode image: {message}")]
-    DecodeFailed {
-        code: ErrorCode,
-        message: String,
-    },
+    DecodeFailed { code: ErrorCode, message: String },
 
     #[error("[{code}] Corrupted image data")]
-    CorruptedImage {
-        code: ErrorCode,
-    },
+    CorruptedImage { code: ErrorCode },
 
     // Size Limit Errors
     #[error("[{code}] Image dimension {dimension} exceeds maximum {max}")]
@@ -374,16 +363,23 @@ pub enum LazyImageError {
     },
 
     #[error("[{code}] Unsupported rotation angle: {degrees}. Only 0, 90, 180, 270 (and negatives) are supported")]
-    InvalidRotationAngle {
-        code: ErrorCode,
-        degrees: i32,
-    },
+    InvalidRotationAngle { code: ErrorCode, degrees: i32 },
 
     #[error("[{code}] Invalid resize dimensions: width={width:?}, height={height:?}")]
     InvalidResizeDimensions {
         code: ErrorCode,
         width: Option<u32>,
         height: Option<u32>,
+    },
+
+    #[error("[{code}] Resize failed ({source_width}x{source_height} -> {target_width}x{target_height}): {message}")]
+    ResizeFailed {
+        code: ErrorCode,
+        source_width: u32,
+        source_height: u32,
+        target_width: u32,
+        target_height: u32,
+        message: String,
     },
 
     #[error("[{code}] Unsupported color space: {color_space}")]
@@ -402,30 +398,19 @@ pub enum LazyImageError {
 
     // Configuration Errors
     #[error("[{code}] Unknown preset: '{name}'. Available: thumbnail, avatar, hero, social")]
-    InvalidPreset {
-        code: ErrorCode,
-        name: String,
-    },
+    InvalidPreset { code: ErrorCode, name: String },
 
     // State Errors
     #[error("[{code}] Image source already consumed. Use clone() for multi-output scenarios")]
-    SourceConsumed {
-        code: ErrorCode,
-    },
+    SourceConsumed { code: ErrorCode },
 
     // Internal Errors
     #[error("[{code}] Internal error: {message}")]
-    InternalPanic {
-        code: ErrorCode,
-        message: String,
-    },
+    InternalPanic { code: ErrorCode, message: String },
 
     // Generic Error
     #[error("[{code}] {message}")]
-    Generic {
-        code: ErrorCode,
-        message: String,
-    },
+    Generic { code: ErrorCode, message: String },
 }
 
 // Constructor Helpers
@@ -523,6 +508,21 @@ impl LazyImageError {
         }
     }
 
+    pub fn resize_failed(
+        source_dims: (u32, u32),
+        target_dims: (u32, u32),
+        message: impl Into<String>,
+    ) -> Self {
+        Self::ResizeFailed {
+            code: ErrorCode::OperationFailed,
+            source_width: source_dims.0,
+            source_height: source_dims.1,
+            target_width: target_dims.0,
+            target_height: target_dims.1,
+            message: message.into(),
+        }
+    }
+
     pub fn unsupported_color_space(color_space: impl Into<String>) -> Self {
         Self::UnsupportedColorSpace {
             code: ErrorCode::UnsupportedColorSpace,
@@ -579,6 +579,7 @@ impl LazyImageError {
             Self::InvalidCropBounds { code, .. } => *code,
             Self::InvalidRotationAngle { code, .. } => *code,
             Self::InvalidResizeDimensions { code, .. } => *code,
+            Self::ResizeFailed { code, .. } => *code,
             Self::UnsupportedColorSpace { code, .. } => *code,
             Self::EncodeFailed { code, .. } => *code,
             Self::InvalidPreset { code, .. } => *code,
@@ -612,9 +613,9 @@ impl From<LazyImageError> for napi::Error {
             | ErrorCode::InvalidQuality => Status::InvalidArg,
 
             // I/O and System Errors -> GenericFailure
-            ErrorCode::FileNotFound
-            | ErrorCode::FileReadFailed
-            | ErrorCode::FileWriteFailed => Status::GenericFailure,
+            ErrorCode::FileNotFound | ErrorCode::FileReadFailed | ErrorCode::FileWriteFailed => {
+                Status::GenericFailure
+            }
 
             // Processing/Internal Errors -> GenericFailure
             ErrorCode::DecodeFailed
@@ -693,9 +694,15 @@ mod tests {
     #[test]
     fn test_error_code_category() {
         assert_eq!(ErrorCode::FileNotFound.category(), "E1xx: Input Errors");
-        assert_eq!(ErrorCode::InvalidCropBounds.category(), "E2xx: Processing Errors");
+        assert_eq!(
+            ErrorCode::InvalidCropBounds.category(),
+            "E2xx: Processing Errors"
+        );
         assert_eq!(ErrorCode::EncodeFailed.category(), "E3xx: Output Errors");
-        assert_eq!(ErrorCode::InvalidPreset.category(), "E4xx: Configuration Errors");
+        assert_eq!(
+            ErrorCode::InvalidPreset.category(),
+            "E4xx: Configuration Errors"
+        );
         assert_eq!(ErrorCode::InternalPanic.category(), "E9xx: Internal Errors");
     }
 
@@ -734,8 +741,14 @@ mod tests {
     fn test_all_error_constructors() {
         // Test all constructor helpers
         let _ = LazyImageError::file_not_found("test.jpg");
-        let _ = LazyImageError::file_read_failed("test.jpg", std::io::Error::from(std::io::ErrorKind::NotFound));
-        let _ = LazyImageError::file_write_failed("test.jpg", std::io::Error::from(std::io::ErrorKind::PermissionDenied));
+        let _ = LazyImageError::file_read_failed(
+            "test.jpg",
+            std::io::Error::from(std::io::ErrorKind::NotFound),
+        );
+        let _ = LazyImageError::file_write_failed(
+            "test.jpg",
+            std::io::Error::from(std::io::ErrorKind::PermissionDenied),
+        );
         let _ = LazyImageError::unsupported_format("gif");
         let _ = LazyImageError::decode_failed("test");
         let _ = LazyImageError::corrupted_image();
@@ -744,6 +757,7 @@ mod tests {
         let _ = LazyImageError::invalid_crop_bounds(100, 100, 500, 500, 200, 200);
         let _ = LazyImageError::invalid_rotation_angle(45);
         let _ = LazyImageError::invalid_resize_dimensions(None, None);
+        let _ = LazyImageError::resize_failed((100, 100), (50, 50), "test");
         let _ = LazyImageError::unsupported_color_space("CMYK");
         let _ = LazyImageError::encode_failed("jpeg", "test");
         let _ = LazyImageError::invalid_preset("unknown");

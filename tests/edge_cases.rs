@@ -3,8 +3,8 @@
 // Edge case tests for lazy-image
 // Tests boundary values, invalid inputs, and error handling
 
-use lazy_image::engine::{check_dimensions, calc_resize_dimensions, EncodeTask};
 use image::{DynamicImage, GenericImageView, RgbImage};
+use lazy_image::engine::{calc_resize_dimensions, check_dimensions, EncodeTask};
 
 // Helper function to create test images
 fn create_test_image(width: u32, height: u32) -> DynamicImage {
@@ -20,8 +20,8 @@ fn create_minimal_jpeg() -> Vec<u8> {
     let (w, h) = rgb.dimensions();
     let pixels = rgb.into_raw();
 
-    use mozjpeg::Compress;
     use mozjpeg::ColorSpace;
+    use mozjpeg::Compress;
 
     let mut comp = Compress::new(ColorSpace::JCS_RGB);
     comp.set_size(w as usize, h as usize);
@@ -48,8 +48,8 @@ fn create_valid_jpeg(width: u32, height: u32) -> Vec<u8> {
     let (w, h) = rgb.dimensions();
     let pixels = rgb.into_raw();
 
-    use mozjpeg::Compress;
     use mozjpeg::ColorSpace;
+    use mozjpeg::Compress;
 
     let mut comp = Compress::new(ColorSpace::JCS_RGB);
     comp.set_size(w as usize, h as usize);
@@ -210,8 +210,8 @@ mod large_image_tests {
 
 mod corrupted_image_tests {
     use super::*;
-    use std::sync::Arc;
     use lazy_image::engine::EncodeTask;
+    use std::sync::Arc;
 
     #[test]
     fn test_jpeg_header_only() {
@@ -288,8 +288,8 @@ mod corrupted_image_tests {
 
 mod non_image_tests {
     use super::*;
-    use std::sync::Arc;
     use lazy_image::engine::EncodeTask;
+    use std::sync::Arc;
 
     #[test]
     fn test_text_file() {
@@ -412,7 +412,11 @@ mod zero_dimension_tests {
             let resized = result.unwrap();
             // 0幅は無効なので、エラーになるか、または1にクランプされる可能性がある
             // 実際の動作に依存する
-            eprintln!("Warning: Resize to 0 width succeeded, result: {}x{}", resized.width(), resized.height());
+            eprintln!(
+                "Warning: Resize to 0 width succeeded, result: {}x{}",
+                resized.width(),
+                resized.height()
+            );
         }
     }
 
@@ -428,7 +432,11 @@ mod zero_dimension_tests {
         // 少なくともpanicしないことを確認
         if result.is_ok() {
             let resized = result.unwrap();
-            eprintln!("Warning: Resize to 0 height succeeded, result: {}x{}", resized.width(), resized.height());
+            eprintln!(
+                "Warning: Resize to 0 height succeeded, result: {}x{}",
+                resized.width(),
+                resized.height()
+            );
         }
     }
 
@@ -493,12 +501,10 @@ mod extreme_aspect_ratio_tests {
             height: None,
         }];
         let result = EncodeTask::apply_ops(img, &ops);
-        assert!(result.is_ok());
-        let resized = result.unwrap();
-        assert_eq!(resized.width(), 100);
-        // アスペクト比が維持される（1000:1 = 100:0.1 → 0に丸められる可能性があるが、少なくとも1以上）
-        // 実際の動作に依存する
-        eprintln!("Resized from 1000x1 to {}x{}", resized.width(), resized.height());
+        assert!(
+            result.is_err(),
+            "Expect resize to report error for extreme aspect ratio producing zero height"
+        );
     }
 
     #[test]
@@ -512,11 +518,9 @@ mod extreme_aspect_ratio_tests {
             height: Some(100),
         }];
         let result = EncodeTask::apply_ops(img, &ops);
-        assert!(result.is_ok());
-        let resized = result.unwrap();
-        assert_eq!(resized.height(), 100);
-        // アスペクト比が維持される（1:1000 = 0.1:100 → 0に丸められる可能性があるが、少なくとも1以上）
-        eprintln!("Resized from 1x1000 to {}x{}", resized.width(), resized.height());
+        assert!(
+            result.is_err(),
+            "Expect resize to report error for extreme aspect ratio producing zero width"
+        );
     }
 }
-
