@@ -45,3 +45,13 @@ TEST_COMPLETENESS_ANALYSIS.md
 PERFORMANCE_ANALYSIS.md
 IMPROVEMENT_EFFECTS.md
 BENCHMARK_COMPARISON_RESULTS.md
+BENCHMARK_REPORT.md
+BENCHMARK_VERIFICATION_REPORT.md
+CLAUDE.md
+
+# Test artifacts and temporary test files
+output/
+test_38kb_input.jpg
+test_92kb_input.avif
+type-safety-test.js
+typescript-test.ts

@@ -15,6 +15,44 @@
 /// This is the same limit used by libvips/sharp.
 pub const MAX_DIMENSION: u32 = 32768;
 
+// Global thread pool for batch processing
+// 
+// IMPORTANT: This pool is initialized once on first use.
+// Changes to UV_THREADPOOL_SIZE environment variable after initialization
+// will NOT be reflected. Set the environment variable before importing the module.
+//
+// Default UV_THREADPOOL_SIZE: 4 (Node.js default)
+// Thread calculation: max(1, CPU_COUNT - UV_THREADPOOL_SIZE)
+//
+// For testing: Use explicit concurrency parameter in processBatch() or
+// set UV_THREADPOOL_SIZE before first batch operation.
+use once_cell::sync::Lazy;
+static GLOBAL_THREAD_POOL: Lazy<ThreadPool> = Lazy::new(|| {
+    let cpu_count = num_cpus::get();
+    
+    // Check for UV_THREADPOOL_SIZE environment variable
+    // Default: 4 (Node.js/libuv default threadpool size)
+    // NOTE: This is read only once during initialization
+    let uv_threadpool_size = std::env::var("UV_THREADPOOL_SIZE")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(4);
+    
+    // Reserve threads for libuv, but ensure we have at least MIN_RAYON_THREADS
+    let num_threads = cpu_count.saturating_sub(uv_threadpool_size).max(MIN_RAYON_THREADS);
+    
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build()
+        .unwrap_or_else(|e| {
+            // Fallback: create a minimal thread pool if the preferred configuration fails
+            rayon::ThreadPoolBuilder::new()
+                .num_threads(MIN_RAYON_THREADS)
+                .build()
+                .expect(&format!("Failed to create fallback thread pool with {} threads: {}", MIN_RAYON_THREADS, e))
+        })
+});
+
 /// Maximum allowed total pixels (width * height).
 /// 100 megapixels = 400MB uncompressed RGBA. Beyond this is likely malicious.
 const MAX_PIXELS: u64 = 100_000_000;
@@ -100,6 +138,8 @@ use napi::{Env, JsBuffer, Task};
 use std::result::Result;
 use ravif::{Encoder as AvifEncoder, Img};
 use rayon::prelude::*;
+use rayon::ThreadPool;
+use static_assertions;
 use rgb::FromSlice;
 use num_cpus;
 use std::io::Cursor;
@@ -263,18 +303,45 @@ impl ImageEngine {
         this
     }
 
-    /// Convert to specific color space (e.g. 'srgb')
-    /// Currently ensures the image is in RGB/RGBA format.
+    /// Ensure the image is in RGB/RGBA format (pixel format conversion, not color space transformation)
+    /// Note: This does NOT perform ICC color profile conversion - it only ensures the pixel format.
+    /// For true color space conversion with ICC profiles, use a dedicated color management library.
+    #[napi(js_name = "ensureRgb")]
+    pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
+        // Only support sRGB format assurance for now
+        // DisplayP3 and AdobeRGB would require ICC color management
+        self.ops.push(Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb });
+        Ok(this)
+    }
+
+    /// Legacy method - use ensureRgb() instead
+    /// 
+    /// **Deprecated**: This method is deprecated and will be removed in v1.0.
+    /// Use `ensureRgb()` for pixel format conversion instead.
+    /// 
+    /// Note: This method does NOT perform true color space conversion with ICC profiles.
+    /// It only ensures the pixel format is RGB/RGBA.
     #[napi(js_name = "toColorspace")]
     pub fn to_color_space(&mut self, this: Reference<ImageEngine>, color_space: String) -> Result<Reference<ImageEngine>> {
-        let target = match color_space.to_lowercase().as_str() {
-            "srgb" => crate::ops::ColorSpace::Srgb,
-            "p3" | "display-p3" => crate::ops::ColorSpace::DisplayP3,
-            "adobergb" => crate::ops::ColorSpace::AdobeRgb,
-            _ => return Err(napi::Error::from(LazyImageError::unsupported_color_space(&color_space))),
-        };
-        self.ops.push(Operation::ColorSpace { target });
-        Ok(this)
+        // Deprecation warning will be handled by JavaScript wrapper in index.js
+        
+        match color_space.to_lowercase().as_str() {
+            "srgb" => {
+                // Still works, but deprecated
+                self.ops.push(Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb });
+                Ok(this)
+            },
+            "p3" | "display-p3" | "adobergb" => {
+                Err(napi::Error::from(LazyImageError::unsupported_color_space(&format!(
+                    "Color space '{}' is not supported. Use ensureRgb() for pixel format conversion.", 
+                    color_space
+                ))))
+            },
+            _ => Err(napi::Error::from(LazyImageError::unsupported_color_space(&format!(
+                "Unknown color space '{}'. Supported: 'srgb'. Use ensureRgb() instead.", 
+                color_space
+            )))),
+        }
     }
 
     // =========================================================================
@@ -606,10 +673,39 @@ impl EncodeTask {
             let pixels: Vec<[u8; 3]> = decompress.read_scanlines()
                 .map_err(|e| format!("mozjpeg: failed to read scanlines: {e:?}"))?;
             
-            // Flatten the Vec<[u8; 3]> to Vec<u8>
-            let flat_pixels: Vec<u8> = pixels.into_iter()
-                .flat_map(|rgb| rgb.into_iter())
-                .collect();
+            // Zero-copy conversion from Vec<[u8; 3]> to Vec<u8>
+            // Safety invariants:
+            // 1. [u8; 3] has alignment of 1 (same as u8)
+            // 2. [u8; 3] has size 3, which matches 3 * size_of::<u8>()
+            // 3. Memory layout is identical: [u8; 3] is 3 consecutive u8s
+            let flat_pixels: Vec<u8> = {
+                // Check for potential overflow before multiplication
+                let len = pixels.len();
+                let cap = pixels.capacity();
+                
+                // Safety: Check for overflow
+                let flat_len = len.checked_mul(3)
+                    .ok_or_else(|| format!("pixel count overflow: {} * 3 (image too large for zero-copy conversion)", len))?;
+                let flat_cap = cap.checked_mul(3)
+                    .ok_or_else(|| format!("capacity overflow: {} * 3 (memory allocation too large for zero-copy conversion)", cap))?;
+                
+                // Verify alignment (should always be 1 for u8, but be explicit)
+                static_assertions::const_assert_eq!(std::mem::align_of::<[u8; 3]>(), 1);
+                static_assertions::const_assert_eq!(std::mem::align_of::<u8>(), 1);
+                
+                // Verify size relationship
+                static_assertions::const_assert_eq!(std::mem::size_of::<[u8; 3]>(), 3 * std::mem::size_of::<u8>());
+                
+                let ptr = pixels.as_ptr() as *mut u8;
+                std::mem::forget(pixels); // Prevent double-free
+                
+                // Safety:
+                // 1. ptr is valid (from Vec<[u8; 3]>)
+                // 2. len and cap are checked for overflow
+                // 3. Alignment is 1 for both types (verified at compile time)
+                // 4. Memory layout is identical (verified at compile time)
+                unsafe { Vec::from_raw_parts(ptr, flat_len, flat_cap) }
+            };
             
             // Create DynamicImage from raw RGB data
             // Safe cast: we validated dimensions above
@@ -1420,8 +1516,6 @@ impl Task for BatchTask {
     fn compute(&mut self) -> Result<Self::Output> {
         use std::fs;
         use std::path::Path;
-        use rayon::ThreadPoolBuilder;
-        use std::env;
 
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir)
@@ -1517,44 +1611,39 @@ impl Task for BatchTask {
             }
         };
 
-        // Configure thread pool for concurrency control
-        // When concurrency=0, automatically calculate safe thread count to prevent
-        // resource contention with libuv thread pool
-        let num_threads = if self.concurrency > 0 {
-            // Use custom thread pool with specified concurrency
-            // Safe cast: concurrency is u32, usize is at least u32 on modern systems
-            let threads = self.concurrency as usize;
-            if threads == 0 || threads > MAX_CONCURRENCY {
-                return Err(napi::Error::from(LazyImageError::internal_panic(format!("invalid concurrency value: {} (must be 1-{})", self.concurrency, MAX_CONCURRENCY))));
-            }
-            threads
-        } else {
-            // Calculate safe default: reserve threads for libuv to prevent oversubscription
-            let cpu_count = num_cpus::get();
-            let uv_threadpool_size: usize = env::var("UV_THREADPOOL_SIZE")
-                .ok()
-                .and_then(|v| v.parse().ok())
-                .unwrap_or(DEFAULT_UV_THREADPOOL_SIZE);
-            
-            // Reserve threads for libuv, use remaining for rayon
-            // Ensure at least MIN_RAYON_THREADS thread for rayon
-            let threads = cpu_count.saturating_sub(uv_threadpool_size).max(MIN_RAYON_THREADS);
-            
-            // Debug logging (uncomment if log/tracing crate is added)
-            // debug!("Auto-calculated rayon threads: {} (CPU: {}, UV: {})", 
-            //        threads, cpu_count, uv_threadpool_size);
-            
-            threads
-        };
+        // Validate concurrency parameter
+        // concurrency = 0 means "use default" (CPU cores - UV_THREADPOOL_SIZE)
+        // concurrency = 1..MAX_CONCURRENCY means "use specified number of threads"
+        if self.concurrency > MAX_CONCURRENCY as u32 {
+            return Err(napi::Error::from(LazyImageError::internal_panic(
+                format!("invalid concurrency value: {} (must be 0 or 1-{})",
+                        self.concurrency, MAX_CONCURRENCY)
+            )));
+        }
 
-        let pool = ThreadPoolBuilder::new()
-            .num_threads(num_threads)
-            .build()
-            .map_err(|e| napi::Error::from(LazyImageError::internal_panic(format!("failed to create thread pool: {}", e))))?;
-        
-        let results: Vec<BatchResult> = pool.install(|| {
-            self.inputs.par_iter().map(process_one).collect()
-        });
+        // Use global thread pool for better performance
+        let results: Vec<BatchResult> = if self.concurrency == 0 {
+            // Use global thread pool with default concurrency
+            // (automatically calculated based on CPU count and UV_THREADPOOL_SIZE)
+            GLOBAL_THREAD_POOL.install(|| {
+                self.inputs.par_iter().map(process_one).collect()
+            })
+        } else {
+            // For custom concurrency, create a temporary pool with specified threads
+            // Note: This creates a new pool per request, which is acceptable
+            // for custom concurrency requirements
+            use rayon::ThreadPoolBuilder;
+            let pool = ThreadPoolBuilder::new()
+                .num_threads(self.concurrency as usize)
+                .build()
+                .map_err(|e| napi::Error::from(LazyImageError::internal_panic(
+                    format!("failed to create thread pool: {}", e)
+                )))?;
+            
+            pool.install(|| {
+                self.inputs.par_iter().map(process_one).collect()
+            })
+        };
 
         Ok(results)
     }
