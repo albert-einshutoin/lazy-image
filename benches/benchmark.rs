@@ -17,4 +17,3 @@ fn fibonacci(n: u64) -> u64 {
 
 criterion_group!(benches, criterion_benchmark);
 criterion_main!(benches);
-

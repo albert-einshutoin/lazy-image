@@ -10,10 +10,18 @@
 #[derive(Clone, Debug)]
 pub enum Operation {
     /// Resize with optional width/height (maintains aspect ratio if one is None)
-    Resize { width: Option<u32>, height: Option<u32> },
+    Resize {
+        width: Option<u32>,
+        height: Option<u32>,
+    },
 
     /// Crop a region from the image
-    Crop { x: u32, y: u32, width: u32, height: u32 },
+    Crop {
+        x: u32,
+        y: u32,
+        width: u32,
+        height: u32,
+    },
 
     /// Rotate by 90, 180, or 270 degrees
     Rotate { degrees: i32 },
@@ -44,7 +52,6 @@ pub enum ColorSpace {
     AdobeRgb,  // Placeholder
 }
 
-
 /// Output format for encoding
 #[derive(Clone, Debug)]
 pub enum OutputFormat {
@@ -56,12 +63,12 @@ pub enum OutputFormat {
 
 impl OutputFormat {
     /// Create OutputFormat from string with format-specific default quality.
-    /// 
+    ///
     /// Default quality by format (when quality is None):
     /// - JPEG: 85 (high quality, balanced file size)
     /// - WebP: 80 (optimal for WebP's compression characteristics)
     /// - AVIF: 60 (AVIF's high compression efficiency means lower quality still looks great)
-    /// 
+    ///
     /// These defaults are chosen based on each format's characteristics and real-world usage.
     pub fn from_str(format: &str, quality: Option<u8>) -> Result<Self, String> {
         match format.to_lowercase().as_str() {
@@ -102,7 +109,11 @@ pub struct PresetConfig {
 impl PresetConfig {
     /// Create a new preset configuration
     pub fn new(width: Option<u32>, height: Option<u32>, format: OutputFormat) -> Self {
-        Self { width, height, format }
+        Self {
+            width,
+            height,
+            format,
+        }
     }
 
     /// Get the built-in preset by name
@@ -316,7 +327,7 @@ mod tests {
             assert!(PresetConfig::get("THUMBNAIL").is_some());
             assert!(PresetConfig::get("Thumbnail").is_some());
             assert!(PresetConfig::get("ThUmBnAiL").is_some());
-            
+
             let preset = PresetConfig::get("THUMBNAIL").unwrap();
             assert_eq!(preset.width, Some(150));
             assert_eq!(preset.height, Some(150));
@@ -326,7 +337,7 @@ mod tests {
         fn test_case_insensitive_avatar() {
             assert!(PresetConfig::get("AVATAR").is_some());
             assert!(PresetConfig::get("Avatar").is_some());
-            
+
             let preset = PresetConfig::get("AVATAR").unwrap();
             assert_eq!(preset.width, Some(200));
             assert_eq!(preset.height, Some(200));
@@ -336,7 +347,7 @@ mod tests {
         fn test_case_insensitive_hero() {
             assert!(PresetConfig::get("HERO").is_some());
             assert!(PresetConfig::get("Hero").is_some());
-            
+
             let preset = PresetConfig::get("HERO").unwrap();
             assert_eq!(preset.width, Some(1920));
             assert_eq!(preset.height, None);
@@ -346,7 +357,7 @@ mod tests {
         fn test_case_insensitive_social() {
             assert!(PresetConfig::get("SOCIAL").is_some());
             assert!(PresetConfig::get("Social").is_some());
-            
+
             let preset = PresetConfig::get("SOCIAL").unwrap();
             assert_eq!(preset.width, Some(1200));
             assert_eq!(preset.height, Some(630));
@@ -362,11 +373,8 @@ mod tests {
 
         #[test]
         fn test_preset_new() {
-            let preset = PresetConfig::new(
-                Some(800),
-                Some(600),
-                OutputFormat::Jpeg { quality: 90 },
-            );
+            let preset =
+                PresetConfig::new(Some(800), Some(600), OutputFormat::Jpeg { quality: 90 });
             assert_eq!(preset.width, Some(800));
             assert_eq!(preset.height, Some(600));
             assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 90 }));
@@ -374,11 +382,7 @@ mod tests {
 
         #[test]
         fn test_preset_new_with_none() {
-            let preset = PresetConfig::new(
-                Some(1920),
-                None,
-                OutputFormat::WebP { quality: 80 },
-            );
+            let preset = PresetConfig::new(Some(1920), None, OutputFormat::WebP { quality: 80 });
             assert_eq!(preset.width, Some(1920));
             assert_eq!(preset.height, None);
             assert!(matches!(preset.format, OutputFormat::WebP { quality: 80 }));

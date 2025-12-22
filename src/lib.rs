@@ -4,7 +4,7 @@
 //
 // Design goals:
 // - Faster than sharp
-// - Smaller output than sharp  
+// - Smaller output than sharp
 // - Better quality than sharp
 // - Lazy pipeline execution
 // - Non-blocking async API
@@ -18,7 +18,7 @@ pub mod error;
 pub mod ops;
 
 #[cfg(feature = "napi")]
-use image::io::Reader as ImageReader;
+use image::ImageReader;
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
@@ -45,25 +45,31 @@ pub struct ImageMetadata {
 #[cfg(feature = "napi")]
 /// Inspect image metadata WITHOUT decoding pixels.
 /// This reads only the header bytes - extremely fast (<1ms).
-/// 
+///
 /// Use this to check dimensions before processing, or to reject
 /// images that are too large without wasting CPU on decoding.
 #[napi]
 pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
     let cursor = Cursor::new(buffer.as_ref());
-    
+
     let reader = ImageReader::new(cursor)
         .with_guessed_format()
-        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read image header: {e}"))))?;
-    
+        .map_err(|e| {
+            napi::Error::from(LazyImageError::decode_failed(format!(
+                "failed to read image header: {e}"
+            )))
+        })?;
+
     // Get format from header (no decoding)
     let format = reader.format().map(|f| format!("{:?}", f).to_lowercase());
-    
+
     // Get dimensions from header (minimal decoding - just reads header bytes)
-    let (width, height) = reader
-        .into_dimensions()
-        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read dimensions: {e}"))))?;
-    
+    let (width, height) = reader.into_dimensions().map_err(|e| {
+        napi::Error::from(LazyImageError::decode_failed(format!(
+            "failed to read dimensions: {e}"
+        )))
+    })?;
+
     Ok(ImageMetadata {
         width,
         height,
@@ -82,19 +88,25 @@ pub fn inspect_file(path: String) -> Result<ImageMetadata> {
 
     let file = File::open(&path)
         .map_err(|e| napi::Error::from(LazyImageError::file_read_failed(&path, e)))?;
-    
+
     let reader = ImageReader::new(BufReader::new(file))
         .with_guessed_format()
-        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read image header: {e}"))))?;
-    
+        .map_err(|e| {
+            napi::Error::from(LazyImageError::decode_failed(format!(
+                "failed to read image header: {e}"
+            )))
+        })?;
+
     // Get format from header (no decoding)
     let format = reader.format().map(|f| format!("{:?}", f).to_lowercase());
-    
+
     // Get dimensions from header (minimal decoding - just reads header bytes)
-    let (width, height) = reader
-        .into_dimensions()
-        .map_err(|e| napi::Error::from(LazyImageError::decode_failed(format!("failed to read dimensions: {e}"))))?;
-    
+    let (width, height) = reader.into_dimensions().map_err(|e| {
+        napi::Error::from(LazyImageError::decode_failed(format!(
+            "failed to read dimensions: {e}"
+        )))
+    })?;
+
     Ok(ImageMetadata {
         width,
         height,
@@ -168,4 +180,3 @@ pub struct OutputWithMetrics {
     pub data: napi::JsBuffer,
     pub metrics: ProcessingMetrics,
 }
-
