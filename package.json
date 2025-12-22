@@ -35,7 +35,7 @@
     "test:bench:compare": "node test/js/benchmarks/sharp-comparison.bench.js",
     "test:bench:verify": "node test/js/benchmarks/readme-verification.bench.js",
     "test:bench:smoke": "node test/js/benchmarks/pipeline-smoke.bench.js",
-    "test:rust": "cargo test --all",
+    "test:rust": "cargo test --no-default-features",
     "version": "node scripts/sync-version.js",
     "prepublishOnly": "napi prepublish --skip-gh-release"
   },
