@@ -125,6 +125,7 @@ We monitor security advisories for all dependencies and update promptly when vul
 ## Contact
 
 For security-related inquiries:
-- GitHub Security Advisories: [Report a vulnerability](https://github.com/albert-einshutoin/lazy-image/security/advisories/new)
+- **Email**: einstein.4s.1110@gmail.com (preferred for sensitive reports)
+- **GitHub Security Advisories**: [Report a vulnerability](https://github.com/albert-einshutoin/lazy-image/security/advisories/new)
 
 Thank you for helping keep lazy-image secure! 🔒
