@@ -6,9 +6,10 @@
  * - Quality 60-80
  */
 
-const { ImageEngine } = require('../index');
 const fs = require('fs');
 const path = require('path');
+const { resolveFixture, resolveRoot, TEST_DIR } = require('../helpers/paths');
+const { ImageEngine } = require(resolveRoot('index'));
 
 // Check if sharp is available
 let sharp;
@@ -20,8 +21,8 @@ try {
     process.exit(1);
 }
 
-const TEST_IMAGE = path.join(__dirname, '..', 'test_input.png');
-const OUTPUT_DIR = path.join(__dirname, 'benchmark_output');
+const TEST_IMAGE = resolveFixture('test_input.png');
+const OUTPUT_DIR = path.join(TEST_DIR, 'output', 'benchmarks', 'sharp-comparison');
 
 // Ensure output directory exists
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -235,4 +236,3 @@ runBenchmark()
         cleanup();
         process.exit(1);
     });
-

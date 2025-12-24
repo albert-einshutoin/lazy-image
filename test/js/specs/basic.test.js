@@ -3,12 +3,13 @@
  * Run with: node test/basic.test.js
  */
 
-const { ImageEngine, inspect, inspectFile } = require('../index');
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const { resolveRoot, resolveFixture } = require('../helpers/paths');
+const { ImageEngine, inspect, inspectFile } = require(resolveRoot('index'));
 
-const TEST_IMAGE = path.join(__dirname, '..', 'test_input.jpg');
+const TEST_IMAGE = resolveFixture('test_input.jpg');
 
 let passed = 0;
 let failed = 0;
@@ -389,4 +390,3 @@ runTests().catch(e => {
     console.error('Test runner error:', e);
     process.exit(1);
 });
-

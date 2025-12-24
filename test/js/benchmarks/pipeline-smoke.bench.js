@@ -1,7 +1,8 @@
-// test.js - Benchmark lazy-image vs sharp
+// pipeline-smoke.bench.js - quick benchmark between lazy-image and sharp
 const fs = require('fs');
 const path = require('path');
-const { ImageEngine, version, supportedOutputFormats } = require('./index');
+const { resolveFixture, resolveRoot, TEST_DIR } = require('../helpers/paths');
+const { ImageEngine, version, supportedOutputFormats } = require(resolveRoot('index'));
 
 // Optional: compare with sharp if installed
 let sharp = null;
@@ -25,10 +26,15 @@ async function main() {
   console.log(`Supported formats: ${supportedOutputFormats().join(', ')}`);
   console.log('='.repeat(60));
 
-  const inputPath = path.join(__dirname, 'test_input.png');
+  const inputPath = resolveFixture('test_input.png');
   if (!fs.existsSync(inputPath)) {
     console.error('❌ test_input.png not found');
     process.exit(1);
+  }
+
+  const outputDir = path.join(TEST_DIR, 'output', 'benchmarks', 'pipeline-smoke');
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
   }
 
   const inputBuf = fs.readFileSync(inputPath);
@@ -48,7 +54,7 @@ async function main() {
       .toBuffer('jpeg', 75);
   });
 
-  fs.writeFileSync(path.join(__dirname, 'out_rust.jpg'), rustJpeg.result);
+  fs.writeFileSync(path.join(outputDir, 'out_rust.jpg'), rustJpeg.result);
   console.log(`  lazy-image: ${rustJpeg.ms.toFixed(1)}ms, ${rustJpeg.result.length} bytes`);
 
   // Sharp comparison
@@ -60,7 +66,7 @@ async function main() {
         .toBuffer();
     });
 
-    fs.writeFileSync(path.join(__dirname, 'out_sharp.jpg'), sharpJpeg.result);
+    fs.writeFileSync(path.join(outputDir, 'out_sharp.jpg'), sharpJpeg.result);
     console.log(`  sharp:      ${sharpJpeg.ms.toFixed(1)}ms, ${sharpJpeg.result.length} bytes`);
 
     const diff = rustJpeg.result.length - sharpJpeg.result.length;
@@ -85,7 +91,7 @@ async function main() {
       .toBuffer('webp', 80);
   });
 
-  fs.writeFileSync(path.join(__dirname, 'out_rust.webp'), rustWebp.result);
+  fs.writeFileSync(path.join(outputDir, 'out_rust.webp'), rustWebp.result);
   console.log(`  lazy-image: ${rustWebp.ms.toFixed(1)}ms, ${rustWebp.result.length} bytes`);
 
   if (sharp) {
@@ -96,7 +102,7 @@ async function main() {
         .toBuffer();
     });
 
-    fs.writeFileSync(path.join(__dirname, 'out_sharp.webp'), sharpWebp.result);
+    fs.writeFileSync(path.join(outputDir, 'out_sharp.webp'), sharpWebp.result);
     console.log(`  sharp:      ${sharpWebp.ms.toFixed(1)}ms, ${sharpWebp.result.length} bytes`);
   }
 
@@ -116,7 +122,7 @@ async function main() {
       .toBuffer('jpeg', 80);
   });
 
-  fs.writeFileSync(path.join(__dirname, 'out_complex.jpg'), rustComplex.result);
+  fs.writeFileSync(path.join(outputDir, 'out_complex.jpg'), rustComplex.result);
   console.log(`  lazy-image: ${rustComplex.ms.toFixed(1)}ms, ${rustComplex.result.length} bytes`);
 
   if (sharp) {
@@ -129,7 +135,7 @@ async function main() {
         .toBuffer();
     });
 
-    fs.writeFileSync(path.join(__dirname, 'out_complex_sharp.jpg'), sharpComplex.result);
+    fs.writeFileSync(path.join(outputDir, 'out_complex_sharp.jpg'), sharpComplex.result);
     console.log(`  sharp:      ${sharpComplex.ms.toFixed(1)}ms, ${sharpComplex.result.length} bytes`);
   }
 
