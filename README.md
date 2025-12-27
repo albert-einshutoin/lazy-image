@@ -37,6 +37,27 @@
 
 > *Tested with 23MB PNG input, resize to 800px, quality 60-80*
 
+<details>
+<summary>📋 Benchmark Test Environment (Click to expand)</summary>
+
+| Item | Version/Spec |
+|------|--------------|
+| **Node.js** | v22.x |
+| **sharp** | 0.34.x |
+| **Test Image** | 6000×4000 PNG (23MB) |
+| **Output Size** | 800px width (auto height) |
+| **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
+| **Platform** | macOS (Apple Silicon) |
+
+**How to reproduce:**
+```bash
+npm run test:bench:compare
+```
+
+> **Note**: Benchmark results may vary depending on the hardware, Node.js version, and sharp version. These results are for reference only.
+
+</details>
+
 ### AVIF: The Ultimate Compression
 
 ```
