@@ -176,6 +176,7 @@ use rgb::FromSlice;
 use static_assertions;
 use std::io::Cursor;
 use std::panic;
+use std::path::PathBuf;
 #[cfg(not(feature = "napi"))]
 use std::result::Result;
 use std::sync::Arc;
@@ -218,6 +219,42 @@ impl ResizeError {
     }
 }
 
+// =============================================================================
+// TRUE LAZY LOADING - Source enum for deferred file reading
+// =============================================================================
+
+/// Image source - supports both in-memory data and file paths (lazy loading)
+#[derive(Clone, Debug)]
+pub enum Source {
+    /// In-memory image data (from Buffer)
+    Memory(Arc<Vec<u8>>),
+    /// File path for lazy loading (data is read only when needed)
+    Path(PathBuf),
+}
+
+impl Source {
+    /// Load the actual bytes from the source
+    fn load(&self) -> std::result::Result<Arc<Vec<u8>>, LazyImageError> {
+        match self {
+            Source::Memory(data) => Ok(data.clone()),
+            Source::Path(path) => {
+                let data = std::fs::read(path).map_err(|e| {
+                    LazyImageError::file_read_failed(path.to_string_lossy().to_string(), e)
+                })?;
+                Ok(Arc::new(data))
+            }
+        }
+    }
+
+    /// Get path if this is a Path source
+    fn as_path(&self) -> Option<&PathBuf> {
+        match self {
+            Source::Path(p) => Some(p),
+            Source::Memory(_) => None,
+        }
+    }
+}
+
 /// The main image processing engine.
 ///
 /// Usage:
@@ -230,8 +267,10 @@ impl ResizeError {
 /// ```
 #[cfg_attr(feature = "napi", napi)]
 pub struct ImageEngine {
-    /// Raw source bytes - we delay decoding until compute()
-    source: Option<Arc<Vec<u8>>>,
+    /// Image source - supports lazy loading from file path
+    source: Option<Source>,
+    /// Cached raw bytes (loaded on demand for Path sources)
+    source_bytes: Option<Arc<Vec<u8>>>,
     /// Decoded image (populated after first decode or on sync operations)
     decoded: Option<DynamicImage>,
     /// Queued operations
@@ -255,9 +294,11 @@ impl ImageEngine {
 
         // Extract ICC profile before any processing
         let icc_profile = extract_icc_profile(&data).map(Arc::new);
+        let source_bytes = Arc::new(data);
 
         ImageEngine {
-            source: Some(Arc::new(data)),
+            source: Some(Source::Memory(source_bytes.clone())),
+            source_bytes: Some(source_bytes),
             decoded: None,
             ops: Vec::new(),
             icc_profile,
@@ -265,23 +306,22 @@ impl ImageEngine {
     }
 
     /// Create engine from a file path.
-    /// **Memory-efficient**: Reads directly into Rust heap, bypassing Node.js V8 heap.
+    /// **TRUE LAZY LOADING**: Only stores the path - file is NOT read until needed.
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
     pub fn from_path(path: String) -> Result<Self> {
-        use std::fs;
-
-        let data = fs::read(&path)
-            .map_err(|e| napi::Error::from(LazyImageError::file_read_failed(&path, e)))?;
-
-        // Extract ICC profile before any processing
-        let icc_profile = extract_icc_profile(&data).map(Arc::new);
+        // Validate that the file exists (fast check, no read)
+        let path_buf = PathBuf::from(&path);
+        if !path_buf.exists() {
+            return Err(napi::Error::from(LazyImageError::file_not_found(&path)));
+        }
 
         Ok(ImageEngine {
-            source: Some(Arc::new(data)),
+            source: Some(Source::Path(path_buf)),
+            source_bytes: None, // Will be loaded on demand
             decoded: None,
             ops: Vec::new(),
-            icc_profile,
+            icc_profile: None, // Will be extracted when bytes are loaded
         })
     }
 
@@ -290,6 +330,7 @@ impl ImageEngine {
     pub fn clone_engine(&self) -> Result<ImageEngine> {
         Ok(ImageEngine {
             source: self.source.clone(),
+            source_bytes: self.source_bytes.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
             icc_profile: self.icc_profile.clone(),
@@ -485,14 +526,14 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        // Clone source data (non-destructive: allows multiple calls)
-        let source = self.source.clone();
+        // Lazy load: ensure source bytes are loaded before creating the task
+        let source = self.ensure_source_bytes()?.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(EncodeTask {
-            source,
+            source: Some(source),
             decoded,
             ops,
             format: output_format,
@@ -514,14 +555,14 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        // Clone source data (non-destructive: allows multiple calls)
-        let source = self.source.clone();
+        // Lazy load: ensure source bytes are loaded before creating the task
+        let source = self.ensure_source_bytes()?.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
-            source,
+            source: Some(source),
             decoded,
             ops,
             format: output_format,
@@ -547,14 +588,14 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
 
-        // Clone source data (non-destructive: allows multiple calls)
-        let source = self.source.clone();
+        // Lazy load: ensure source bytes are loaded before creating the task
+        let source = self.ensure_source_bytes()?.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
 
         Ok(AsyncTask::new(WriteFileTask {
-            source,
+            source: Some(source),
             decoded,
             ops,
             format: output_format,
@@ -567,15 +608,74 @@ impl ImageEngine {
     // SYNC UTILITIES
     // =========================================================================
 
-    /// Get image dimensions (decodes image if needed)
+    /// Get image dimensions WITHOUT full decoding.
+    /// For file paths, reads only the header bytes (extremely fast).
+    /// For in-memory buffers, uses header-only parsing.
     #[napi]
     pub fn dimensions(&mut self) -> Result<Dimensions> {
-        let img = self.ensure_decoded()?;
-        let (w, h) = img.dimensions();
-        Ok(Dimensions {
-            width: w,
-            height: h,
-        })
+        use image::ImageReader;
+
+        // If already decoded, use that
+        if let Some(ref img) = self.decoded {
+            let (w, h) = img.dimensions();
+            return Ok(Dimensions { width: w, height: h });
+        }
+
+        // Try to read dimensions from header only (no full decode)
+        let source = self
+            .source
+            .as_ref()
+            .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
+
+        match source {
+            Source::Path(path) => {
+                // For file paths, read header directly from file (very fast)
+                use std::fs::File;
+                use std::io::BufReader;
+
+                let file = File::open(path).map_err(|e| {
+                    napi::Error::from(LazyImageError::file_read_failed(
+                        path.to_string_lossy().to_string(),
+                        e,
+                    ))
+                })?;
+
+                let reader = ImageReader::new(BufReader::new(file))
+                    .with_guessed_format()
+                    .map_err(|e| {
+                        napi::Error::from(LazyImageError::decode_failed(format!(
+                            "failed to read image header: {e}"
+                        )))
+                    })?;
+
+                let (width, height) = reader.into_dimensions().map_err(|e| {
+                    napi::Error::from(LazyImageError::decode_failed(format!(
+                        "failed to read dimensions: {e}"
+                    )))
+                })?;
+
+                Ok(Dimensions { width, height })
+            }
+            Source::Memory(data) => {
+                // For in-memory data, use cursor
+                let cursor = Cursor::new(data.as_ref());
+                let reader = ImageReader::new(cursor)
+                    .with_guessed_format()
+                    .map_err(|e| {
+                        napi::Error::from(LazyImageError::decode_failed(format!(
+                            "failed to read image header: {e}"
+                        )))
+                    })?;
+
+                let (width, height) = reader.into_dimensions().map_err(|e| {
+                    napi::Error::from(LazyImageError::decode_failed(format!(
+                        "failed to read dimensions: {e}"
+                    )))
+                })?;
+
+                Ok(Dimensions { width, height })
+            }
+        }
     }
 
     /// Check if an ICC color profile was extracted from the source image.
@@ -649,15 +749,37 @@ pub struct BatchResult {
 // =============================================================================
 
 impl ImageEngine {
+    /// Ensure source bytes are loaded (lazy loading for Path sources)
     #[cfg(feature = "napi")]
-    fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
-        if self.decoded.is_none() {
+    fn ensure_source_bytes(&mut self) -> Result<&Arc<Vec<u8>>> {
+        if self.source_bytes.is_none() {
             let source = self
                 .source
                 .as_ref()
                 .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
 
-            let img = image::load_from_memory(source).map_err(|e| {
+            let bytes = source.load().map_err(|e| napi::Error::from(e))?;
+
+            // Extract ICC profile now that we have the bytes
+            if self.icc_profile.is_none() {
+                self.icc_profile = extract_icc_profile(&bytes).map(Arc::new);
+            }
+
+            self.source_bytes = Some(bytes);
+        }
+
+        self.source_bytes.as_ref().ok_or_else(|| {
+            napi::Error::from(LazyImageError::internal_panic("source bytes load failed"))
+        })
+    }
+
+    #[cfg(feature = "napi")]
+    fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
+        if self.decoded.is_none() {
+            // First ensure we have the source bytes loaded
+            let source = self.ensure_source_bytes()?.clone();
+
+            let img = image::load_from_memory(&source).map_err(|e| {
                 napi::Error::from(LazyImageError::decode_failed(format!(
                     "failed to decode: {e}"
                 )))
@@ -676,15 +798,37 @@ impl ImageEngine {
         })
     }
 
+    /// Ensure source bytes are loaded (lazy loading for Path sources)
     #[cfg(not(feature = "napi"))]
-    fn ensure_decoded(&mut self) -> std::result::Result<&DynamicImage, LazyImageError> {
-        if self.decoded.is_none() {
+    fn ensure_source_bytes(&mut self) -> std::result::Result<&Arc<Vec<u8>>, LazyImageError> {
+        if self.source_bytes.is_none() {
             let source = self
                 .source
                 .as_ref()
                 .ok_or_else(|| LazyImageError::source_consumed())?;
 
-            let img = image::load_from_memory(source)
+            let bytes = source.load()?;
+
+            // Extract ICC profile now that we have the bytes
+            if self.icc_profile.is_none() {
+                self.icc_profile = extract_icc_profile(&bytes).map(Arc::new);
+            }
+
+            self.source_bytes = Some(bytes);
+        }
+
+        self.source_bytes
+            .as_ref()
+            .ok_or_else(|| LazyImageError::internal_panic("source bytes load failed"))
+    }
+
+    #[cfg(not(feature = "napi"))]
+    fn ensure_decoded(&mut self) -> std::result::Result<&DynamicImage, LazyImageError> {
+        if self.decoded.is_none() {
+            // First ensure we have the source bytes loaded
+            let source = self.ensure_source_bytes()?.clone();
+
+            let img = image::load_from_memory(&source)
                 .map_err(|e| LazyImageError::decode_failed(format!("failed to decode: {e}")))?;
 
             // Security check: reject decompression bombs
