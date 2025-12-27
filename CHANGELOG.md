@@ -12,32 +12,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.7.8] - 2024-12-XX
+## [0.7.9] - 2025-12-09
+
+### Changed
+- Documentation and project improvements
+
+## [0.7.8] - 2025-12-01
 
 ### Changed
 - CI/CD improvements: skip napi prepublish auto-publish, use manual package generation
 
-## [0.7.7] - 2024-12-XX
+## [0.7.7] - 2025-12-01
 
 ### Changed
 - CI/CD improvements for more reliable platform package publishing
 
-## [0.7.6] - 2024-12-XX
+## [0.7.6] - 2025-11-30
 
 ### Fixed
 - Fixed napi prepublish: create skeleton package.json for each platform before running prepublish
 
-## [0.7.5] - 2024-12-XX
+## [0.7.5] - 2025-11-30
 
 ### Fixed
 - Fixed platform-specific package publishing (robust CI/CD workflow)
 
-## [0.7.4] - 2024-12-XX
+## [0.7.4] - 2025-11-30
 
 ### Fixed
 - Fixed platform-specific package publishing (CI/CD improvements)
 
-## [0.7.3] - 2024-11-XX
+## [0.7.3] - 2025-11-30
 
 ### Added
 - Batch processing concurrency control (limit parallel workers)
@@ -45,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `processBatch()` now accepts optional `concurrency` parameter
 
-## [0.7.2] - 2024-11-XX
+## [0.7.2] - 2025-11-30
 
 ### Added
 - Format-specific default quality settings
@@ -56,19 +61,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Quality parameter is now optional in `toBuffer()`, `toFile()`, `toBufferWithMetrics()`
 
-## [0.7.1] - 2024-11-XX
+## [0.7.1] - 2025-11-30
 
 ### Changed
 - Platform-specific packages (reduced download from 42MB to ~6-9MB)
 - Only download binary for current platform
 
-## [0.7.0] - 2024-11-XX
+## [0.7.0] - 2025-11-30
 
 ### Added
 - Built-in presets: `thumbnail`, `avatar`, `hero`, `social`
 - `preset()` method returns recommended output settings
 
-## [0.6.0] - 2024-10-XX
+## [0.6.0] - 2025-11-30
 
 ### Added
 - Performance metrics with `toBufferWithMetrics()`
@@ -76,7 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Color space API with `toColorspace()`
 - Adaptive encoder settings based on quality level
 
-## [0.5.0] - 2024-10-XX
+## [0.5.0] - 2025-11-28
 
 ### Added
 - Memory-efficient file I/O
@@ -87,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Recommended API for server-side processing now uses file-based methods
 
-## [0.4.0] - 2024-09-XX
+## [0.4.0] - 2025-11-28
 
 ### Added
 - ICC color profile preservation
@@ -98,13 +103,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 - AVIF format does not currently preserve ICC profiles (ravif limitation)
 
-## [0.3.1] - 2024-09-XX
+## [0.3.1] - 2025-11-28
 
 ### Added
 - Fast metadata inspection with `inspect()` function
 - Header-only parsing for instant dimension checks
 
-## [0.3.0] - 2024-08-XX
+## [0.3.0] - 2025-11-28
 
 ### Added
 - AVIF format support via ravif encoder
@@ -114,13 +119,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AVIF produces 30% smaller files than WebP
 - lazy-image's AVIF is 46% smaller than sharp's AVIF
 
-## [0.2.0] - 2024-08-XX
+## [0.2.0] - 2025-11-28
 
 ### Added
 - Cross-platform CI/CD pipeline
 - Support for macOS (Intel + Apple Silicon), Windows, Linux (glibc + musl)
 
-## [0.1.0] - 2024-07-XX
+## [0.1.0] - 2025-11-28
 
 ### Added
 - Initial release
@@ -135,7 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.8...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.9...HEAD
+[0.7.9]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.5...v0.7.6
