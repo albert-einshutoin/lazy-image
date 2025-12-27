@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+- `toColorspace()` method: Strengthened deprecation warning. **Will be removed in v1.0**. This method only ensures RGB/RGBA format, not true color space conversion.
+
 ### Added
 - This CHANGELOG file to track project changes
 

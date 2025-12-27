@@ -370,7 +370,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.grayscale()` | Convert to grayscale |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
-| `.toColorspace(space)` | Convert to color space (`'srgb'`) |
+| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
 | `.preset(name)` | Apply preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) |
 
 ### Output
