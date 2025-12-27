@@ -5,7 +5,11 @@
 > Smaller files. Better quality. Memory-efficient. Powered by Rust + mozjpeg + AVIF.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
+[![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
+[![Node.js CI](https://github.com/albert-einshutoin/lazy-image/actions/workflows/CI.yml/badge.svg)](https://github.com/albert-einshutoin/lazy-image/actions/workflows/CI.yml)
 [![codecov](https://codecov.io/gh/albert-einshutoin/lazy-image/branch/main/graph/badge.svg)](https://codecov.io/gh/albert-einshutoin/lazy-image)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
 
 ---
 
@@ -32,6 +36,27 @@
 | **Complex Pipeline** | 293ms | 176ms | 0.60x slower 🐢 |
 
 > *Tested with 23MB PNG input, resize to 800px, quality 60-80*
+
+<details>
+<summary>📋 Benchmark Test Environment (Click to expand)</summary>
+
+| Item | Version/Spec |
+|------|--------------|
+| **Node.js** | v22.x |
+| **sharp** | 0.34.x |
+| **Test Image** | 6000×4000 PNG (23MB) |
+| **Output Size** | 800px width (auto height) |
+| **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
+| **Platform** | macOS (Apple Silicon) |
+
+**How to reproduce:**
+```bash
+npm run test:bench:compare
+```
+
+> **Note**: Benchmark results may vary depending on the hardware, Node.js version, and sharp version. These results are for reference only.
+
+</details>
 
 ### AVIF: The Ultimate Compression
 
@@ -370,7 +395,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.grayscale()` | Convert to grayscale |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
-| `.toColorspace(space)` | Convert to color space (`'srgb'`) |
+| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
 | `.preset(name)` | Apply preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) |
 
 ### Output

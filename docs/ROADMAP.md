@@ -69,50 +69,56 @@ If the answer to any of these is “no”, the feature is rejected.
 ### 0.8.x (Production Readiness)
 **Goal: Fix architectural issues and improve production reliability**
 
-#### Error Handling Overhaul
+#### Error Handling Overhaul ✅ **完了**
 - Replace string-based errors with structured error types
   - `DecodeError`, `EncodeError`, `InvalidICCProfile`, `DimensionTooLarge`, `UnimplementedFormat`
   - Error codes and proper error classification
   - Better error messages with context
+- **Status**: Implemented in v0.7.x - Error code system (E1xx-E9xx) with categorized errors
 - **Why**: Current `Error::from_reason()` approach loses type safety and makes error handling difficult
 
-#### Documentation & Transparency
+#### Documentation & Transparency ✅ **完了**
 - Explicitly document input format limitations
   - 16bit images are converted to 8bit (by design, not a bug)
   - Clear limitations section in README
+- **Status**: README now includes Limitations section, ERROR_CODES.md documented
 - **Why**: Users need to know limitations upfront, not discover them at runtime
 
-#### Thread Model Safety
+#### Thread Model Safety ✅ **完了**
 - Fix dual thread pool issue (libuv + rayon)
   - Design clear thread usage strategy
   - Default concurrency = CPU cores
   - For batch processing: use rayon threads exclusively, minimize libuv usage
   - Document thread model and Docker/CPU-limited environment behavior
+- **Status**: Documented in `docs/THREAD_MODEL.md`, concurrency control added in v0.7.3
 - **Why**: Current model can cause unpredictable scheduling and thread saturation under load
 
-#### Encoder Parameter Control
+#### Encoder Parameter Control ❌ **未着手**
 - Improve quality-to-encoder-parameters mapping
   - JPEG: SSIM-based quality adjustment
   - WebP: image complexity-aware method optimization
   - AVIF: content-adaptive encoding
 - Move beyond "fixed threshold" approach
+- **Status**: Not started - requires significant research and implementation effort
 - **Why**: Single quality parameter is insufficient for optimal compression across formats
 
-#### API Consistency & Maintainability
+#### API Consistency & Maintainability ✅ **完了**
 - Improve internal Rust API consistency
   - Standardize error handling patterns
   - Improve code organization for maintainability
   - Better separation of concerns
+- **Status**: Error handling standardized, code organization improved
 - **Why**: Current implementation works but is hard to maintain and debug
 
-#### Memory Efficiency for Large Images
+#### Memory Efficiency for Large Images ❌ **未着手**
 - Address memory pressure in high-concurrency scenarios
   - 50MP × 10 parallel processing on 4-8GB RAM servers
   - Improve memory usage patterns
   - Consider streaming/chunked processing for very large images (if justified)
+- **Status**: Not started - current implementation works for typical web image sizes
 - **Why**: Current "full decode → full hold → process → re-encode" model can fail under memory pressure
 
-#### API Design Decisions
+#### API Design Decisions ✅ **完了**
 - **A-001: toBuffer()非破壊化検討** ✅ **完了**
   - ADR-001を作成し、非破壊化を決定
   - 選択肢1（現状維持）、選択肢2（非破壊化）、選択肢3（両方提供）を比較
