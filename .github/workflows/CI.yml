@@ -203,7 +203,6 @@ jobs:
           scope: '@alberteinshutoin'
       
       - name: Debug npm configuration
-        if: always()
         run: |
           echo "=== Environment Variables ==="
           echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-not set}"
