@@ -188,7 +188,6 @@ use ravif::{Encoder as AvifEncoder, Img};
 use rayon::prelude::*;
 use rayon::ThreadPool;
 use rgb::FromSlice;
-use static_assertions;
 use std::borrow::Cow;
 use std::io::Cursor;
 use std::panic;
@@ -949,46 +948,10 @@ impl EncodeTask {
                 .read_scanlines()
                 .map_err(|e| format!("mozjpeg: failed to read scanlines: {e:?}"))?;
 
-            // Zero-copy conversion from Vec<[u8; 3]> to Vec<u8>
-            // Safety invariants:
-            // 1. [u8; 3] has alignment of 1 (same as u8)
-            // 2. [u8; 3] has size 3, which matches 3 * size_of::<u8>()
-            // 3. Memory layout is identical: [u8; 3] is 3 consecutive u8s
-            let flat_pixels: Vec<u8> = {
-                // Check for potential overflow before multiplication
-                let len = pixels.len();
-                let cap = pixels.capacity();
-
-                // Safety: Check for overflow
-                let flat_len = len.checked_mul(3).ok_or_else(|| {
-                    format!(
-                        "pixel count overflow: {} * 3 (image too large for zero-copy conversion)",
-                        len
-                    )
-                })?;
-                let flat_cap = cap.checked_mul(3)
-                    .ok_or_else(|| format!("capacity overflow: {} * 3 (memory allocation too large for zero-copy conversion)", cap))?;
-
-                // Verify alignment (should always be 1 for u8, but be explicit)
-                static_assertions::const_assert_eq!(std::mem::align_of::<[u8; 3]>(), 1);
-                static_assertions::const_assert_eq!(std::mem::align_of::<u8>(), 1);
-
-                // Verify size relationship
-                static_assertions::const_assert_eq!(
-                    std::mem::size_of::<[u8; 3]>(),
-                    3 * std::mem::size_of::<u8>()
-                );
-
-                let ptr = pixels.as_ptr() as *mut u8;
-                std::mem::forget(pixels); // Prevent double-free
-
-                // Safety:
-                // 1. ptr is valid (from Vec<[u8; 3]>)
-                // 2. len and cap are checked for overflow
-                // 3. Alignment is 1 for both types (verified at compile time)
-                // 4. Memory layout is identical (verified at compile time)
-                unsafe { Vec::from_raw_parts(ptr, flat_len, flat_cap) }
-            };
+            // Safe conversion from Vec<[u8; 3]> to Vec<u8>
+            // Previously used unsafe Vec::from_raw_parts, now using safe iterator approach.
+            // The compiler can optimize this into an efficient memory operation.
+            let flat_pixels: Vec<u8> = pixels.into_iter().flatten().collect();
 
             // Create DynamicImage from raw RGB data
             // Safe cast: we validated dimensions above
