@@ -27,7 +27,6 @@ use std::io::Cursor;
 // Re-export the engine for NAPI
 #[cfg(feature = "napi")]
 pub use engine::ImageEngine;
-pub use error::ErrorCode;
 use error::LazyImageError;
 
 #[cfg(feature = "napi")]
