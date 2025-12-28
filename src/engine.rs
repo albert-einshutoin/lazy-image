@@ -288,7 +288,8 @@ pub struct ImageEngine {
     /// Cached raw bytes (loaded on demand for Path sources)
     source_bytes: Option<Arc<Vec<u8>>>,
     /// Decoded image (populated after first decode or on sync operations)
-    /// Uses Arc for Copy-on-Write semantics - cloning is cheap until mutation
+    /// Uses Arc to share decoded image between engines. Combined with Cow<DynamicImage>
+    /// in apply_ops, this enables true Copy-on-Write: no deep copy until mutation.
     decoded: Option<Arc<DynamicImage>>,
     /// Queued operations
     ops: Vec<Operation>,
@@ -806,7 +807,7 @@ impl ImageEngine {
             let (w, h) = img.dimensions();
             check_dimensions(w, h)?;
 
-            // Wrap in Arc for Copy-on-Write semantics
+            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
             self.decoded = Some(Arc::new(img));
         }
 
@@ -857,7 +858,7 @@ impl ImageEngine {
             let (w, h) = img.dimensions();
             check_dimensions(w, h)?;
 
-            // Wrap in Arc for Copy-on-Write semantics
+            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
             self.decoded = Some(Arc::new(img));
         }
 
@@ -876,7 +877,8 @@ impl ImageEngine {
 
 pub struct EncodeTask {
     pub source: Option<Arc<Vec<u8>>>,
-    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    /// Decoded image wrapped in Arc. decode() returns Cow::Borrowed pointing here,
+    /// enabling true Copy-on-Write in apply_ops (no deep copy for format-only conversion).
     pub decoded: Option<Arc<DynamicImage>>,
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
@@ -1718,7 +1720,7 @@ impl Task for EncodeTask {
 
 pub struct EncodeWithMetricsTask {
     source: Option<Arc<Vec<u8>>>,
-    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     decoded: Option<Arc<DynamicImage>>,
     ops: Vec<Operation>,
     format: OutputFormat,
@@ -1763,7 +1765,7 @@ impl Task for EncodeWithMetricsTask {
 
 pub struct WriteFileTask {
     source: Option<Arc<Vec<u8>>>,
-    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     decoded: Option<Arc<DynamicImage>>,
     ops: Vec<Operation>,
     format: OutputFormat,
