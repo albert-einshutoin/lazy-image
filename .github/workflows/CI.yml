@@ -202,73 +202,9 @@ jobs:
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
       
-      - name: Debug npm configuration
-        run: |
-          echo "=== Environment Variables ==="
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-not set}"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+set (masked)}"
-          echo ""
-          echo "=== Checking .npmrc ==="
-          if [ -f ~/.npmrc ]; then
-            echo ".npmrc exists at ~/.npmrc"
-            echo "File size: $(wc -l < ~/.npmrc) lines"
-            # Show structure without sensitive data
-            cat ~/.npmrc | sed 's/\(.*authToken.*\)=.*/\1=***MASKED***/' | sed 's/\(.*_authToken.*\)=.*/\1=***MASKED***/' || true
-          else
-            echo "❌ .npmrc does not exist at ~/.npmrc"
-          fi
-          echo ""
-          echo "=== Checking project .npmrc ==="
-          if [ -f .npmrc ]; then
-            echo ".npmrc exists in project root"
-            cat .npmrc | sed 's/\(.*authToken.*\)=.*/\1=***MASKED***/' | sed 's/\(.*_authToken.*\)=.*/\1=***MASKED***/' || true
-          else
-            echo "No project .npmrc"
-          fi
-          echo ""
-          echo "=== npm config list ==="
-          npm config list || true
-          echo ""
-          echo "=== npm config get registry ==="
-          npm config get registry || true
-          echo ""
-          echo "=== npm config get @alberteinshutoin:registry ==="
-          npm config get @alberteinshutoin:registry || true
-          echo ""
-          echo "=== Checking for auth tokens in config ==="
-          npm config list | grep -i auth || echo "No auth config found"
-      
-      - name: Verify npm authentication
-        run: |
-          echo "Verifying npm authentication..."
-          echo ""
-          echo "=== Attempting npm whoami ==="
-          if npm whoami; then
-            echo "✅ npm authentication successful"
-          else
-            echo "❌ npm authentication failed"
-            echo ""
-            echo "=== Troubleshooting Information ==="
-            echo "This might indicate:"
-            echo "1. Trusted Publisher is not configured in npm for @alberteinshutoin/lazy-image"
-            echo "2. OIDC token was not generated correctly by setup-node@v4"
-            echo "3. Scope or registry configuration is incorrect"
-            echo ""
-            echo "=== Required npm Trusted Publisher Settings ==="
-            echo "For package: @alberteinshutoin/lazy-image"
-            echo "- Publisher: GitHub Actions"
-            echo "- Organization or user: albert-einshutoin"
-            echo "- Repository: lazy-image"
-            echo "- Workflow filename: CI.yml"
-            echo ""
-            echo "Note: Each platform package also needs Trusted Publisher configuration:"
-            echo "- @alberteinshutoin/lazy-image-darwin-x64"
-            echo "- @alberteinshutoin/lazy-image-darwin-arm64"
-            echo "- @alberteinshutoin/lazy-image-win32-x64-msvc"
-            echo "- @alberteinshutoin/lazy-image-linux-x64-gnu"
-            echo "- @alberteinshutoin/lazy-image-linux-x64-musl"
-            exit 1
-          fi
+      # Note: OIDC authentication only works during npm publish
+      # npm whoami will not work with OIDC - this is expected behavior
+      # See: https://docs.npmjs.com/trusted-publishers#limitations-and-future-improvements
 
       - name: Install dependencies
         run: npm ci
