@@ -202,11 +202,36 @@ jobs:
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
       
+      - name: Debug npm configuration
+        run: |
+          echo "=== Checking .npmrc ==="
+          if [ -f ~/.npmrc ]; then
+            echo ".npmrc exists"
+            # Mask sensitive information
+            cat ~/.npmrc | sed 's/\(.*authToken.*\)=.*/\1=***MASKED***/' || true
+          else
+            echo ".npmrc does not exist"
+          fi
+          echo ""
+          echo "=== Checking project .npmrc ==="
+          if [ -f .npmrc ]; then
+            cat .npmrc | sed 's/\(.*authToken.*\)=.*/\1=***MASKED***/' || true
+          else
+            echo "No project .npmrc"
+          fi
+          echo ""
+          echo "=== npm config list ==="
+          npm config list || true
+      
       - name: Verify npm authentication
         run: |
           echo "Verifying npm authentication..."
           npm whoami || {
             echo "❌ npm authentication failed"
+            echo "This might indicate:"
+            echo "1. Trusted Publisher is not configured in npm"
+            echo "2. OIDC token was not generated correctly"
+            echo "3. Scope or registry configuration is incorrect"
             exit 1
           }
           echo "✅ npm authentication successful"
