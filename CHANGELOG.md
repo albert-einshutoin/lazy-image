@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.8.0] - 2025-12-28
+
+### Changed
+- Updated benchmark results with latest comparison against sharp v0.34.x
+- README.md benchmark section now reflects current performance characteristics
+- Improved benchmark test image (66MB PNG with complex patterns)
+
 ### Deprecated
 - `toColorspace()` method: Strengthened deprecation warning. **Will be removed in v1.0**. This method only ensures RGB/RGBA format, not true color space conversion.
-
-### Added
-- This CHANGELOG file to track project changes
 
 ---
 
@@ -143,7 +149,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.9...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.9...v0.8.0
 [0.7.9]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.6...v0.7.7
