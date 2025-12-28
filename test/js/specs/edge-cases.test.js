@@ -101,8 +101,13 @@ async function runTests() {
             await ImageEngine.fromPath('/nonexistent/path/image.jpg').toBuffer('jpeg', 80);
         } catch (e) {
             threw = true;
-            assert(e.message.includes('failed to read') || e.message.includes('No such file'), 
-                'should mention file read failure');
+            // True lazy loading: file existence is checked at fromPath() time
+            // so error message can be "File not found" instead of "failed to read"
+            assert(
+                e.message.includes('failed to read') || 
+                e.message.includes('No such file') ||
+                e.message.includes('File not found'), 
+                'should mention file read failure or file not found');
         }
         assert(threw, 'should throw error for non-existent file');
     });
