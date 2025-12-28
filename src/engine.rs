@@ -248,7 +248,8 @@ pub struct ImageEngine {
     /// Raw source bytes - we delay decoding until compute()
     source: Option<Arc<Vec<u8>>>,
     /// Decoded image (populated after first decode or on sync operations)
-    decoded: Option<DynamicImage>,
+    /// Uses Arc for Copy-on-Write semantics - cloning is cheap until mutation
+    decoded: Option<Arc<DynamicImage>>,
     /// Queued operations
     ops: Vec<Operation>,
     /// ICC color profile extracted from source image
@@ -664,6 +665,8 @@ pub struct BatchResult {
 // =============================================================================
 
 impl ImageEngine {
+    /// Ensure the image is decoded, using Arc for Copy-on-Write semantics.
+    /// The Arc allows cheap cloning - actual data copy only happens on mutation.
     #[cfg(feature = "napi")]
     fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
         if self.decoded.is_none() {
@@ -682,13 +685,18 @@ impl ImageEngine {
             let (w, h) = img.dimensions();
             check_dimensions(w, h)?;
 
-            self.decoded = Some(img);
+            // Wrap in Arc for Copy-on-Write semantics
+            self.decoded = Some(Arc::new(img));
         }
 
         // Safe: we just set it above, use ok_or for safety
-        self.decoded.as_ref().ok_or_else(|| {
-            napi::Error::from(LazyImageError::internal_panic("decode failed unexpectedly"))
-        })
+        // Return reference to inner DynamicImage
+        self.decoded
+            .as_ref()
+            .map(|arc| arc.as_ref())
+            .ok_or_else(|| {
+                napi::Error::from(LazyImageError::internal_panic("decode failed unexpectedly"))
+            })
     }
 
     #[cfg(not(feature = "napi"))]
@@ -706,12 +714,15 @@ impl ImageEngine {
             let (w, h) = img.dimensions();
             check_dimensions(w, h)?;
 
-            self.decoded = Some(img);
+            // Wrap in Arc for Copy-on-Write semantics
+            self.decoded = Some(Arc::new(img));
         }
 
         // Safe: we just set it above, use ok_or for safety
+        // Return reference to inner DynamicImage
         self.decoded
             .as_ref()
+            .map(|arc| arc.as_ref())
             .ok_or_else(|| LazyImageError::internal_panic("decode failed unexpectedly"))
     }
 }
@@ -722,7 +733,8 @@ impl ImageEngine {
 
 pub struct EncodeTask {
     pub source: Option<Arc<Vec<u8>>>,
-    pub decoded: Option<DynamicImage>,
+    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    pub decoded: Option<Arc<DynamicImage>>,
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
@@ -731,13 +743,17 @@ pub struct EncodeTask {
 impl EncodeTask {
     /// Decode image from source bytes
     /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
+    ///
+    /// **Copy-on-Write**: If decoded image is already available in Arc,
+    /// we clone the inner DynamicImage only when needed for processing.
     pub fn decode(&self) -> EngineResult<DynamicImage> {
         // Prefer already decoded image (already validated)
-        // Use Cow to avoid unnecessary clone when possible
-        if let Some(ref img) = self.decoded {
-            // We need to return owned value, but this is only called once per task
-            // so the clone cost is acceptable
-            return Ok(img.clone());
+        // Arc enables cheap sharing - we only clone the inner image when we need to mutate
+        if let Some(ref img_arc) = self.decoded {
+            // Clone the inner DynamicImage from Arc
+            // This is the "copy" part of Copy-on-Write - happens only when we need owned data
+            // Use as_ref() to get &DynamicImage, then clone() to get owned DynamicImage
+            return Ok(img_arc.as_ref().clone());
         }
 
         let source = self
@@ -1545,7 +1561,8 @@ impl Task for EncodeTask {
 
 pub struct EncodeWithMetricsTask {
     source: Option<Arc<Vec<u8>>>,
-    decoded: Option<DynamicImage>,
+    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    decoded: Option<Arc<DynamicImage>>,
     ops: Vec<Operation>,
     format: OutputFormat,
     icc_profile: Option<Arc<Vec<u8>>>,
@@ -1589,7 +1606,8 @@ impl Task for EncodeWithMetricsTask {
 
 pub struct WriteFileTask {
     source: Option<Arc<Vec<u8>>>,
-    decoded: Option<DynamicImage>,
+    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    decoded: Option<Arc<DynamicImage>>,
     ops: Vec<Operation>,
     format: OutputFormat,
     icc_profile: Option<Arc<Vec<u8>>>,
@@ -3264,7 +3282,7 @@ mod tests {
             let img = create_test_image(100, 100);
             let task = EncodeTask {
                 source: None,
-                decoded: Some(img.clone()),
+                decoded: Some(Arc::new(img.clone())),
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
