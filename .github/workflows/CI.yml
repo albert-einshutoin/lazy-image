@@ -205,8 +205,17 @@ jobs:
       - name: Configure npm for OIDC
         run: |
           # OIDC認証を使用する場合、always-authをtrueに設定する必要がある
-          npm config set always-auth true
-          echo "✅ Configured npm for OIDC authentication"
+          # .npmrcファイルに直接追加する
+          NPMRC_PATH=$(npm config get userconfig)
+          if [ -f "$NPMRC_PATH" ]; then
+            # 既存のalways-auth設定を削除
+            sed -i '/always-auth/d' "$NPMRC_PATH"
+            # always-auth=trueを追加
+            echo "always-auth=true" >> "$NPMRC_PATH"
+            echo "✅ Added always-auth=true to $NPMRC_PATH"
+          else
+            echo "⚠️  .npmrc file not found at $NPMRC_PATH"
+          fi
       
       - name: Debug npm configuration
         run: |
