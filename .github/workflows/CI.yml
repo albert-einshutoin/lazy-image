@@ -202,6 +202,12 @@ jobs:
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
       
+      - name: Configure npm for OIDC
+        run: |
+          # OIDC認証を使用する場合、always-authをtrueに設定する必要がある
+          npm config set always-auth true
+          echo "✅ Configured npm for OIDC authentication"
+      
       - name: Debug npm configuration
         run: |
           echo "=== Environment Variables ==="
