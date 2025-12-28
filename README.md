@@ -21,21 +21,21 @@
 
 | Format | lazy-image | sharp | Difference |
 |--------|-----------|-------|------------|
-| **AVIF** | **77,800 bytes** | 144,700 bytes | **-46.2%** ✅ |
-| **JPEG** | 91,437 bytes | 103,566 bytes | **-11.7%** ✅ |
-| **WebP** | 115,782 bytes | 114,664 bytes | +1.0% ⚠️ |
-| **Complex Pipeline** | 73,956 bytes | 69,786 bytes | +6.0% ⚠️ |
+| **JPEG** | 15,790 bytes | 17,495 bytes | **-9.7%** ✅ |
+| **WebP** | 6,378 bytes | 6,362 bytes | +0.3% ⚠️ |
+| **AVIF** | 5,599 bytes | 3,683 bytes | +52.0% ⚠️ |
+| **Complex Pipeline** | 7,205 bytes | 8,297 bytes | **-13.2%** ✅ |
 
 ### Processing Speed Comparison
 
 | Format | lazy-image | sharp | Speed Ratio |
 |--------|-----------|-------|-------------|
-| **AVIF** | 346ms | 381ms | **1.10x faster** ⚡ |
-| **JPEG** | 325ms | 185ms | 0.57x slower 🐢 |
-| **WebP** | 429ms | 171ms | 0.40x slower 🐢 |
-| **Complex Pipeline** | 293ms | 176ms | 0.60x slower 🐢 |
+| **JPEG** | 242ms | 257ms | **1.06x faster** ⚡ |
+| **WebP** | 301ms | 233ms | 0.77x slower 🐢 |
+| **AVIF** | 267ms | 288ms | **1.08x faster** ⚡ |
+| **Complex Pipeline** | 193ms | 273ms | **1.41x faster** ⚡ |
 
-> *Tested with 23MB PNG input, resize to 800px, quality 60-80*
+> *Tested with 66MB PNG input (6000×4000), resize to 800px, quality 60-80*
 
 <details>
 <summary>📋 Benchmark Test Environment (Click to expand)</summary>
@@ -44,7 +44,7 @@
 |------|--------------|
 | **Node.js** | v22.x |
 | **sharp** | 0.34.x |
-| **Test Image** | 6000×4000 PNG (23MB) |
+| **Test Image** | 6000×4000 PNG (66MB) |
 | **Output Size** | 800px width (auto height) |
 | **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
 | **Platform** | macOS (Apple Silicon) |
@@ -58,15 +58,15 @@ npm run test:bench:compare
 
 </details>
 
-### AVIF: The Ultimate Compression
+### Key Advantages
 
 ```
-AVIF vs JPEG: -14.9% smaller
-AVIF vs WebP: -32.8% smaller
-AVIF vs sharp AVIF: -46.2% smaller (and 1.10x faster!)
+JPEG: -9.7% smaller files than sharp (with 1.06x faster processing)
+Complex Pipeline: -13.2% smaller + 1.41x faster
+AVIF/WebP: Comparable speed with format-optimized encoding
 ```
 
-**Translation**: If you serve 1 billion images/month and switch to AVIF, you save **~300GB of bandwidth per month** compared to WebP. lazy-image's AVIF encoder produces **46% smaller files** than sharp's AVIF implementation while being **10% faster**.
+**Translation**: lazy-image excels at JPEG compression (mozjpeg) and complex multi-operation pipelines. For single-format WebP/AVIF encoding, both libraries perform similarly.
 
 ---
 
@@ -697,6 +697,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.8.0 | Updated benchmark results, improved test suite |
 | v0.7.7 | CI/CD improvements: skip napi prepublish auto-publish, use manual package generation |
 | v0.7.6 | Fixed napi prepublish: create skeleton package.json for each platform before running prepublish |
 | v0.7.5 | Fixed platform-specific package publishing (robust CI/CD workflow) |
