@@ -64,6 +64,7 @@ npm run test:bench:compare
 JPEG: -9.7% smaller files than sharp (with 1.06x faster processing)
 Complex Pipeline: -13.2% smaller + 1.41x faster
 AVIF/WebP: Comparable speed with format-optimized encoding
+Memory: Zero-copy architecture for format conversions
 ```
 
 **Translation**: lazy-image excels at JPEG compression (mozjpeg) and complex multi-operation pipelines. For single-format WebP/AVIF encoding, both libraries perform similarly.
@@ -95,7 +96,7 @@ Before choosing lazy-image, please understand these limitations:
 | **Rotation angles** | Only 90°, 180°, 270° supported (no arbitrary angles) |
 | **No filters** | No blur, sharpen, or artistic effects (out of scope) |
 | **No animation** | GIF/APNG animation not supported |
-| **Processing speed** | Slower than sharp for JPEG/WebP (prioritizes compression over speed) |
+| **Processing speed** | Comparable to sharp (faster for JPEG/AVIF, slightly slower for WebP due to max compression settings) |
 
 > **Note**: These limitations are intentional - lazy-image focuses on **file size optimization**, not feature completeness.
 > See [docs/ROADMAP.md](./docs/ROADMAP.md) for the full project scope.
@@ -593,6 +594,14 @@ const result = await ImageEngine.fromPath('huge-image.tiff')
 3. **ravif** - Pure Rust AVIF encoder, AV1-based compression
 4. **Chroma subsampling** (4:2:0) forced for web-optimal output
 5. **Smoothing/preprocessing** applied before encoding
+
+### Memory Management (Zero-Copy Architecture)
+
+lazy-image implements a **Copy-on-Write (CoW)** architecture to minimize memory usage:
+
+1. **True Lazy Loading**: `fromPath()` creates a lightweight reference. File I/O only occurs when `toBuffer()`/`toFile()` is called.
+2. **Zero-Copy Conversions**: For format conversions (e.g., PNG → WebP) without pixel manipulation (resize/crop), **no pixel buffer allocation or copy occurs**. The engine reuses the decoded buffer directly.
+3. **Smart Cloning**: `.clone()` operations are instant and memory-free until a destructive operation is applied.
 
 ### Color Management
 
