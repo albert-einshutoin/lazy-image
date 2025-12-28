@@ -201,6 +201,7 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
+          always-auth: true
       
       - name: Debug npm configuration
         run: |
