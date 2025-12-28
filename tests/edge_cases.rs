@@ -5,6 +5,7 @@
 
 use image::{DynamicImage, GenericImageView, RgbImage};
 use lazy_image::engine::{calc_resize_dimensions, check_dimensions, EncodeTask};
+use std::borrow::Cow;
 
 // Helper function to create test images
 fn create_test_image(width: u32, height: u32) -> DynamicImage {
@@ -52,7 +53,7 @@ mod minimal_image_tests {
             width: Some(100),
             height: Some(100),
         }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
         let resized = result.unwrap();
         assert_eq!(resized.dimensions(), (100, 100));
@@ -62,7 +63,7 @@ mod minimal_image_tests {
     fn test_1x1_rotate() {
         let img = create_test_image(1, 1);
         let ops = vec![Operation::Rotate { degrees: 90 }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
         // 1x1の回転はサイズが変わらない
         let rotated = result.unwrap();
@@ -73,7 +74,7 @@ mod minimal_image_tests {
     fn test_1x1_grayscale() {
         let img = create_test_image(1, 1);
         let ops = vec![Operation::Grayscale];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
     }
 
@@ -375,7 +376,7 @@ mod zero_dimension_tests {
             width: Some(0),
             height: Some(50),
         }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         // 0幅へのリサイズはfast_resizeでエラーになる可能性がある
         // または、image crateのresizeでエラーになる
         // 少なくともpanicしないことを確認
@@ -398,7 +399,7 @@ mod zero_dimension_tests {
             width: Some(50),
             height: Some(0),
         }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         // 0高さへのリサイズはエラーになる可能性がある
         // 少なくともpanicしないことを確認
         if result.is_ok() {
@@ -420,7 +421,7 @@ mod zero_dimension_tests {
             width: 0,
             height: 50,
         }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         // 0幅のクロップはエラーであるべき
         // ただし、image crateの動作に依存する可能性がある
         if result.is_ok() {
@@ -437,7 +438,7 @@ mod zero_dimension_tests {
             width: 50,
             height: 0,
         }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         // 0高さのクロップはエラーであるべき
         // ただし、image crateの動作に依存する可能性がある
         if result.is_ok() {
@@ -471,7 +472,7 @@ mod extreme_aspect_ratio_tests {
             width: Some(100),
             height: None,
         }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         assert!(
             result.is_err(),
             "Expect resize to report error for extreme aspect ratio producing zero height"
@@ -488,7 +489,7 @@ mod extreme_aspect_ratio_tests {
             width: None,
             height: Some(100),
         }];
-        let result = EncodeTask::apply_ops(img, &ops);
+        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
         assert!(
             result.is_err(),
             "Expect resize to report error for extreme aspect ratio producing zero width"

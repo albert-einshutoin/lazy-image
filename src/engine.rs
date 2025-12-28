@@ -188,7 +188,7 @@ use ravif::{Encoder as AvifEncoder, Img};
 use rayon::prelude::*;
 use rayon::ThreadPool;
 use rgb::FromSlice;
-use static_assertions;
+use std::borrow::Cow;
 use std::io::Cursor;
 use std::panic;
 use std::path::PathBuf;
@@ -287,7 +287,8 @@ pub struct ImageEngine {
     /// Cached raw bytes (loaded on demand for Path sources)
     source_bytes: Option<Arc<Vec<u8>>>,
     /// Decoded image (populated after first decode or on sync operations)
-    /// Uses Arc for Copy-on-Write semantics - cloning is cheap until mutation
+    /// Uses Arc to share decoded image between engines. Combined with Cow<DynamicImage>
+    /// in apply_ops, this enables true Copy-on-Write: no deep copy until mutation.
     decoded: Option<Arc<DynamicImage>>,
     /// Queued operations
     ops: Vec<Operation>,
@@ -805,7 +806,7 @@ impl ImageEngine {
             let (w, h) = img.dimensions();
             check_dimensions(w, h)?;
 
-            // Wrap in Arc for Copy-on-Write semantics
+            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
             self.decoded = Some(Arc::new(img));
         }
 
@@ -856,7 +857,7 @@ impl ImageEngine {
             let (w, h) = img.dimensions();
             check_dimensions(w, h)?;
 
-            // Wrap in Arc for Copy-on-Write semantics
+            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
             self.decoded = Some(Arc::new(img));
         }
 
@@ -875,7 +876,8 @@ impl ImageEngine {
 
 pub struct EncodeTask {
     pub source: Option<Arc<Vec<u8>>>,
-    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    /// Decoded image wrapped in Arc. decode() returns Cow::Borrowed pointing here,
+    /// enabling true Copy-on-Write in apply_ops (no deep copy for format-only conversion).
     pub decoded: Option<Arc<DynamicImage>>,
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
@@ -886,16 +888,14 @@ impl EncodeTask {
     /// Decode image from source bytes
     /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
     ///
-    /// **Copy-on-Write**: If decoded image is already available in Arc,
-    /// we clone the inner DynamicImage only when needed for processing.
-    pub fn decode(&self) -> EngineResult<DynamicImage> {
+    /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
+    /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
+    /// when no mutation is needed (e.g., format conversion only).
+    pub fn decode(&self) -> EngineResult<Cow<'_, DynamicImage>> {
         // Prefer already decoded image (already validated)
-        // Arc enables cheap sharing - we only clone the inner image when we need to mutate
+        // Return borrowed reference - no deep copy until mutation is needed
         if let Some(ref img_arc) = self.decoded {
-            // Clone the inner DynamicImage from Arc
-            // This is the "copy" part of Copy-on-Write - happens only when we need owned data
-            // Use as_ref() to get &DynamicImage, then clone() to get owned DynamicImage
-            return Ok(img_arc.as_ref().clone());
+            return Ok(Cow::Borrowed(img_arc.as_ref()));
         }
 
         let source = self
@@ -918,7 +918,7 @@ impl EncodeTask {
         let (w, h) = img.dimensions();
         check_dimensions(w, h)?;
 
-        Ok(img)
+        Ok(Cow::Owned(img))
     }
     /// Decode JPEG using mozjpeg (backed by libjpeg-turbo)
     /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
@@ -948,46 +948,10 @@ impl EncodeTask {
                 .read_scanlines()
                 .map_err(|e| format!("mozjpeg: failed to read scanlines: {e:?}"))?;
 
-            // Zero-copy conversion from Vec<[u8; 3]> to Vec<u8>
-            // Safety invariants:
-            // 1. [u8; 3] has alignment of 1 (same as u8)
-            // 2. [u8; 3] has size 3, which matches 3 * size_of::<u8>()
-            // 3. Memory layout is identical: [u8; 3] is 3 consecutive u8s
-            let flat_pixels: Vec<u8> = {
-                // Check for potential overflow before multiplication
-                let len = pixels.len();
-                let cap = pixels.capacity();
-
-                // Safety: Check for overflow
-                let flat_len = len.checked_mul(3).ok_or_else(|| {
-                    format!(
-                        "pixel count overflow: {} * 3 (image too large for zero-copy conversion)",
-                        len
-                    )
-                })?;
-                let flat_cap = cap.checked_mul(3)
-                    .ok_or_else(|| format!("capacity overflow: {} * 3 (memory allocation too large for zero-copy conversion)", cap))?;
-
-                // Verify alignment (should always be 1 for u8, but be explicit)
-                static_assertions::const_assert_eq!(std::mem::align_of::<[u8; 3]>(), 1);
-                static_assertions::const_assert_eq!(std::mem::align_of::<u8>(), 1);
-
-                // Verify size relationship
-                static_assertions::const_assert_eq!(
-                    std::mem::size_of::<[u8; 3]>(),
-                    3 * std::mem::size_of::<u8>()
-                );
-
-                let ptr = pixels.as_ptr() as *mut u8;
-                std::mem::forget(pixels); // Prevent double-free
-
-                // Safety:
-                // 1. ptr is valid (from Vec<[u8; 3]>)
-                // 2. len and cap are checked for overflow
-                // 3. Alignment is 1 for both types (verified at compile time)
-                // 4. Memory layout is identical (verified at compile time)
-                unsafe { Vec::from_raw_parts(ptr, flat_len, flat_cap) }
-            };
+            // Safe conversion from Vec<[u8; 3]> to Vec<u8>
+            // Previously used unsafe Vec::from_raw_parts, now using safe iterator approach.
+            // The compiler can optimize this into an efficient memory operation.
+            let flat_pixels: Vec<u8> = pixels.into_iter().flatten().collect();
 
             // Create DynamicImage from raw RGB data
             // Safe cast: we validated dimensions above
@@ -1109,10 +1073,26 @@ impl EncodeTask {
         optimized
     }
 
-    /// Apply all queued operations
-    pub fn apply_ops(mut img: DynamicImage, ops: &[Operation]) -> EngineResult<DynamicImage> {
+    /// Apply all queued operations using Copy-on-Write semantics
+    ///
+    /// **True Copy-on-Write**: If no operations are queued (format conversion only),
+    /// returns `Cow::Borrowed` - no pixel data is copied. Deep copy only happens
+    /// when actual image manipulation (resize, crop, etc.) is required.
+    pub fn apply_ops<'a>(
+        img: Cow<'a, DynamicImage>,
+        ops: &[Operation],
+    ) -> EngineResult<Cow<'a, DynamicImage>> {
         // Optimize operations first
         let optimized_ops = Self::optimize_ops(ops);
+
+        // No operations = no copy needed (format conversion only path)
+        if optimized_ops.is_empty() {
+            return Ok(img);
+        }
+
+        // Operations exist - we need owned data to mutate
+        // This is where the "copy" in Copy-on-Write happens
+        let mut img = img.into_owned();
 
         for op in &optimized_ops {
             img = match op {
@@ -1206,7 +1186,7 @@ impl EncodeTask {
                 }
             };
         }
-        Ok(img)
+        Ok(Cow::Owned(img))
     }
 
     /// Fast resize with owned DynamicImage (zero-copy for RGB/RGBA)
@@ -1703,7 +1683,7 @@ impl Task for EncodeTask {
 
 pub struct EncodeWithMetricsTask {
     source: Option<Arc<Vec<u8>>>,
-    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     decoded: Option<Arc<DynamicImage>>,
     ops: Vec<Operation>,
     format: OutputFormat,
@@ -1748,7 +1728,7 @@ impl Task for EncodeWithMetricsTask {
 
 pub struct WriteFileTask {
     source: Option<Arc<Vec<u8>>>,
-    /// Decoded image - uses Arc for Copy-on-Write (cheap clone until mutation)
+    /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     decoded: Option<Arc<DynamicImage>>,
     ops: Vec<Operation>,
     format: OutputFormat,
@@ -1890,7 +1870,7 @@ impl Task for BatchTask {
                 let (w, h) = img.dimensions();
                 check_dimensions(w, h)?;
 
-                let processed = EncodeTask::apply_ops(img, ops)?;
+                let processed = EncodeTask::apply_ops(Cow::Owned(img), ops)?;
 
                 let icc = icc_profile.as_ref().map(|v| v.as_slice());
                 let encoded = match format {
@@ -2895,7 +2875,7 @@ mod tests {
                 width: Some(50),
                 height: Some(50),
             }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 50));
         }
 
@@ -2906,7 +2886,7 @@ mod tests {
                 width: Some(50),
                 height: None,
             }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
         }
 
@@ -2917,7 +2897,7 @@ mod tests {
                 width: None,
                 height: Some(25),
             }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
         }
 
@@ -2930,7 +2910,7 @@ mod tests {
                 width: 50,
                 height: 50,
             }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 50));
         }
 
@@ -2943,7 +2923,7 @@ mod tests {
                 width: 50,
                 height: 50,
             }];
-            let result = EncodeTask::apply_ops(img, &ops);
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
             assert!(result.is_err());
             assert!(result.unwrap_err().to_string().contains("Crop bounds"));
         }
@@ -2957,7 +2937,7 @@ mod tests {
                 width: 50,
                 height: 50,
             }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 50));
         }
 
@@ -2970,7 +2950,7 @@ mod tests {
                 width: 100,
                 height: 100,
             }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 100));
         }
 
@@ -2978,7 +2958,7 @@ mod tests {
         fn test_rotate_90() {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 90 }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 100)); // 幅と高さが入れ替わる
         }
 
@@ -2986,7 +2966,7 @@ mod tests {
         fn test_rotate_180() {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 180 }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 50)); // サイズは変わらない
         }
 
@@ -2994,7 +2974,7 @@ mod tests {
         fn test_rotate_270() {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 270 }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 100));
         }
 
@@ -3002,7 +2982,7 @@ mod tests {
         fn test_rotate_neg90() {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: -90 }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 100));
         }
 
@@ -3010,7 +2990,7 @@ mod tests {
         fn test_rotate_0() {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 0 }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 50));
         }
 
@@ -3018,7 +2998,7 @@ mod tests {
         fn test_rotate_invalid_angle() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::Rotate { degrees: 45 }];
-            let result = EncodeTask::apply_ops(img, &ops);
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
             assert!(result.is_err());
             assert!(result
                 .unwrap_err()
@@ -3030,7 +3010,7 @@ mod tests {
         fn test_flip_h() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::FlipH];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 100));
         }
 
@@ -3038,7 +3018,7 @@ mod tests {
         fn test_flip_v() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::FlipV];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 100));
         }
 
@@ -3046,16 +3026,16 @@ mod tests {
         fn test_grayscale_reduces_channels() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::Grayscale];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             // グレースケール後はLuma8形式
-            assert!(matches!(result, DynamicImage::ImageLuma8(_)));
+            assert!(matches!(*result, DynamicImage::ImageLuma8(_)));
         }
 
         #[test]
         fn test_brightness() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::Brightness { value: 50 }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 100));
         }
 
@@ -3063,7 +3043,7 @@ mod tests {
         fn test_contrast() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::Contrast { value: 50 }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 100));
         }
 
@@ -3073,7 +3053,7 @@ mod tests {
             let ops = vec![Operation::ColorSpace {
                 target: crate::ops::ColorSpace::Srgb,
             }];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 100));
         }
 
@@ -3088,17 +3068,17 @@ mod tests {
                 Operation::Rotate { degrees: 90 },
                 Operation::Grayscale,
             ];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             // 200x100 → resize → 100x50 → rotate90 → 50x100
             assert_eq!(result.dimensions(), (50, 100));
-            assert!(matches!(result, DynamicImage::ImageLuma8(_)));
+            assert!(matches!(*result, DynamicImage::ImageLuma8(_)));
         }
 
         #[test]
         fn test_empty_operations() {
             let img = create_test_image(100, 100);
             let ops = vec![];
-            let result = EncodeTask::apply_ops(img, &ops).unwrap();
+            let result = EncodeTask::apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (100, 100));
         }
     }
