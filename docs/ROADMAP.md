@@ -69,7 +69,7 @@ If the answer to any of these is “no”, the feature is rejected.
 ### 0.8.x (Production Readiness)
 **Goal: Fix architectural issues and improve production reliability**
 
-#### Error Handling Overhaul ✅ **完了**
+#### Error Handling Overhaul ✅ **Completed**
 - Replace string-based errors with structured error types
   - `DecodeError`, `EncodeError`, `InvalidICCProfile`, `DimensionTooLarge`, `UnimplementedFormat`
   - Error codes and proper error classification
@@ -77,14 +77,14 @@ If the answer to any of these is “no”, the feature is rejected.
 - **Status**: Implemented in v0.7.x - Error code system (E1xx-E9xx) with categorized errors
 - **Why**: Current `Error::from_reason()` approach loses type safety and makes error handling difficult
 
-#### Documentation & Transparency ✅ **完了**
+#### Documentation & Transparency ✅ **Completed**
 - Explicitly document input format limitations
   - 16bit images are converted to 8bit (by design, not a bug)
   - Clear limitations section in README
 - **Status**: README now includes Limitations section, ERROR_CODES.md documented
 - **Why**: Users need to know limitations upfront, not discover them at runtime
 
-#### Thread Model Safety ✅ **完了**
+#### Thread Model Safety ✅ **Completed**
 - Fix dual thread pool issue (libuv + rayon)
   - Design clear thread usage strategy
   - Default concurrency = CPU cores
@@ -93,7 +93,7 @@ If the answer to any of these is “no”, the feature is rejected.
 - **Status**: Documented in `docs/THREAD_MODEL.md`, concurrency control added in v0.7.3
 - **Why**: Current model can cause unpredictable scheduling and thread saturation under load
 
-#### Encoder Parameter Control ❌ **未着手**
+#### Encoder Parameter Control ❌ **Not Started**
 - Improve quality-to-encoder-parameters mapping
   - JPEG: SSIM-based quality adjustment
   - WebP: image complexity-aware method optimization
@@ -102,7 +102,7 @@ If the answer to any of these is “no”, the feature is rejected.
 - **Status**: Not started - requires significant research and implementation effort
 - **Why**: Single quality parameter is insufficient for optimal compression across formats
 
-#### API Consistency & Maintainability ✅ **完了**
+#### API Consistency & Maintainability ✅ **Completed**
 - Improve internal Rust API consistency
   - Standardize error handling patterns
   - Improve code organization for maintainability
@@ -110,7 +110,7 @@ If the answer to any of these is “no”, the feature is rejected.
 - **Status**: Error handling standardized, code organization improved
 - **Why**: Current implementation works but is hard to maintain and debug
 
-#### Memory Efficiency for Large Images ❌ **未着手**
+#### Memory Efficiency for Large Images ❌ **Not Started**
 - Address memory pressure in high-concurrency scenarios
   - 50MP × 10 parallel processing on 4-8GB RAM servers
   - Improve memory usage patterns
@@ -118,14 +118,14 @@ If the answer to any of these is “no”, the feature is rejected.
 - **Status**: Not started - current implementation works for typical web image sizes
 - **Why**: Current "full decode → full hold → process → re-encode" model can fail under memory pressure
 
-#### API Design Decisions ✅ **完了**
-- **A-001: toBuffer()非破壊化検討** ✅ **完了**
-  - ADR-001を作成し、非破壊化を決定
-  - 選択肢1（現状維持）、選択肢2（非破壊化）、選択肢3（両方提供）を比較
-  - 選択肢2（非破壊化）を採用：`take()`を`clone()`に変更
-  - メモリ効率への影響は限定的（`Arc`により参照カウントのみ増加）
-  - 詳細は `docs/ADR-001-toBuffer-destructive-behavior.md` を参照
-- **Why**: v1.0前に重要なAPI設計判断を確定させる必要がある
+#### API Design Decisions ✅ **Completed**
+- **A-001: toBuffer() Non-destructive Behavior Review** ✅ **Completed**
+  - Created ADR-001 and decided on non-destructive behavior
+  - Compared Option 1 (maintain status quo), Option 2 (non-destructive), Option 3 (provide both)
+  - Adopted Option 2 (non-destructive): Changed `take()` to `clone()`
+  - Memory efficiency impact is limited (only reference count increases via `Arc`)
+  - See `docs/ADR-001-toBuffer-destructive-behavior.md` for details
+- **Why**: Need to finalize important API design decisions before v1.0
 
 ### 1.0
 - API surface freeze (no breaking changes)
