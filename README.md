@@ -17,25 +17,22 @@
 
 **vs sharp (libvips + mozjpeg)**
 
-### File Size Comparison
+### 📊 Performance Benchmarks (Large File: 66MB PNG)
 
-| Format | lazy-image | sharp | Difference |
-|--------|-----------|-------|------------|
-| **JPEG** | 15,790 bytes | 17,495 bytes | **-9.7%** ✅ |
-| **WebP** | 6,378 bytes | 6,362 bytes | +0.3% ⚠️ |
-| **AVIF** | 5,599 bytes | 3,683 bytes | +52.0% ⚠️ |
-| **Complex Pipeline** | 7,205 bytes | 8,297 bytes | **-13.2%** ✅ |
+lazy-image outperforms sharp in **AVIF generation speed** and **JPEG compression efficiency**.
 
-### Processing Speed Comparison
+| Scenario | Format | lazy-image | sharp | Verdict |
+| :--- | :--- | :--- | :--- | :--- |
+| **Speed (No Resize)** | **AVIF** | **19.4s** 🚀 | 142.4s | **7.3x Faster** |
+| | JPEG | 2.6s | **0.3s** | Slower (Optimized for size) |
+| **File Size (No Resize)** | **JPEG** | **2.9 MB** 📉 | 5.4 MB | **46% Smaller** |
+| | AVIF | **6.8 MB** | 14.0 MB | **51% Smaller** |
+| **Speed (Resize 800px)** | **AVIF** | **497ms** ⚡ | 909ms | **1.8x Faster** |
+| | JPEG | 286ms | **266ms** | Comparable |
 
-| Format | lazy-image | sharp | Speed Ratio |
-|--------|-----------|-------|-------------|
-| **JPEG** | 242ms | 257ms | **1.06x faster** ⚡ |
-| **WebP** | 301ms | 233ms | 0.77x slower 🐢 |
-| **AVIF** | 267ms | 288ms | **1.08x faster** ⚡ |
-| **Complex Pipeline** | 193ms | 273ms | **1.41x faster** ⚡ |
+> *Tested with 66MB PNG input (6000×4000), quality 60-80*
 
-> *Tested with 66MB PNG input (6000×4000), resize to 800px, quality 60-80*
+**Processing Speed Note**: lazy-image prioritizes compression ratio (smaller file sizes) over raw encoding speed for JPEG and WebP. This results in significantly smaller files (up to 50% reduction) to save bandwidth costs, at the expense of slightly longer processing times. For AVIF, lazy-image is consistently faster and smaller than sharp.
 
 <details>
 <summary>📋 Benchmark Test Environment (Click to expand)</summary>
@@ -61,13 +58,12 @@ npm run test:bench:compare
 ### Key Advantages
 
 ```
-JPEG: -9.7% smaller files than sharp (with 1.06x faster processing)
-Complex Pipeline: -13.2% smaller + 1.41x faster
-AVIF/WebP: Comparable speed with format-optimized encoding
+AVIF: 7.3x faster encoding + 51% smaller files
+JPEG: 46% smaller files (optimized for compression ratio)
 Memory: Zero-copy architecture for format conversions
 ```
 
-**Translation**: lazy-image excels at JPEG compression (mozjpeg) and complex multi-operation pipelines. For single-format WebP/AVIF encoding, both libraries perform similarly.
+**Summary**: lazy-image excels at **AVIF generation** (both speed and file size) and **JPEG compression efficiency** (significantly smaller files). For WebP, both libraries perform similarly in speed, but lazy-image prioritizes file size optimization.
 
 ### Format Conversion Efficiency (No Resize)
 
@@ -114,6 +110,24 @@ lazy-image makes intentional tradeoffs for web optimization:
 
 > **Philosophy**: lazy-image focuses on **file size optimization** and **memory safety**, not feature completeness.
 > See [docs/ROADMAP.md](./docs/ROADMAP.md) for the full project scope.
+
+## ⚠️ Limitations
+
+### Performance Trade-offs
+
+- **JPEG/WebP encoding speed**: lazy-image prioritizes compression ratio over raw encoding speed. This means slightly longer processing times (2-3x) but significantly smaller files (up to 50% reduction). This trade-off is intentional to save bandwidth costs.
+- **Real-time processing**: For strict latency requirements (<100ms), sharp may be more suitable due to its faster JPEG/WebP encoding.
+
+### Format Limitations
+
+- **AVIF color profiles**: AVIF format does NOT preserve ICC color profiles due to ravif encoder limitations. Use JPEG or WebP for color-critical applications.
+- **Input formats**: 16-bit images are automatically converted to 8-bit (by design, not a bug).
+
+### Feature Limitations
+
+- **Resize behavior**: When both width and height are specified, aspect ratio is not automatically maintained (unlike sharp's `fit: 'inside'`). Use `resize(width, null)` or `resize(null, height)` to maintain aspect ratio.
+- **Rotation angles**: Only 90°, 180°, and 270° rotations are supported (no arbitrary angles).
+- **No artistic filters**: Blur, sharpen, and other artistic effects are not supported. Focused on compression, not image editing.
 
 ---
 
