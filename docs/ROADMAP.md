@@ -1,151 +1,220 @@
-# lazy-image Roadmap
-
-lazy-image is a **web image optimization engine**, not a general-purpose image editor.  
-This roadmap defines **what we build**, **what we reject**, and **how decisions are made**.
+Here is the updated `ROADMAP.md` organized by OSS standards.
+It strictly separates "Completed" from "Planned" tasks, details specific goals for upcoming versions, and is divided into English (top) and Japanese (bottom) sections.
 
 ---
 
-## 1. Project Direction (What lazy-image IS)
+# 🗺️ lazy-image Roadmap
 
-lazy-image focuses on:
+> **Vision:** To be the most efficient, secure, and portable image processing engine for the cloud age.
 
-- **Web-first formats:** JPEG / WebP / AVIF  
-- **Basic geometric operations:** resize, crop, rotate, flip  
-- **Color correctness:** ICC handling, safe defaults  
-- **Memory efficiency:** file-based I/O, minimal V8 heap usage  
-- **Small, stable API:** `from → pipeline → toBuffer/toFile`
+This document outlines the development status and future direction of `lazy-image`. We follow Semantic Versioning.
 
-The goal is simple:
+## ✅ Completion Status Checklist
 
-> **Produce the smallest, highest-quality web images safely and fast,  
-> with a minimal and predictable API.**
+### 🏗️ Architecture & Core (v0.8.x - Completed)
 
----
+* [x] **True Lazy Loading**: Defer file I/O until necessary (`fromPath`).
+* [x] **Zero-Copy Architecture**: Prevent pixel copying during format conversion.
+* [x] **Thread Safety**: Fix libuv/rayon thread pool conflicts.
+* [x] **Structured Error Handling**: Replace string errors with typed `ErrorCode`.
+* [x] **Non-destructive API**: Implement `clone()` behavior for `toBuffer` (ADR-001).
 
-## 2. Non-Goals (What lazy-image will NOT become)
+### ⚡ Optimization & Efficiency (v0.9.x - In Progress)
 
-To avoid feature bloat, lazy-image will **not** add:
+* [ ] **WebP Speed Tuning**: Optimize default parameters (Method 6 → 4) to match `sharp`.
+* [ ] **Strip Metadata by Default**: Remove Exif/XMP for security and smaller file sizes.
+* [ ] **Binary Size Reduction**: Enable LTO and strip symbols for faster cold starts.
+* [ ] **Documentation Update**: Publish "True Benchmarks" (AVIF speed / JPEG size).
 
-- ❌ Text rendering, drawing, canvas primitives  
-- ❌ Heavy editing filters (blur, sharpen, artistic effects)  
-- ❌ GIF/APNG animation or video processing  
-- ❌ Full feature parity with sharp/jimp  
-- ❌ Real-time <10ms image mutation at high concurrency  
+### 🛡️ Reliability & Stability (v1.0.0 - Planned)
 
-If a feature moves lazy-image toward “Photoshop-in-Node”,  
-it will not be accepted.
-
----
-
-## 3. Feature Acceptance Rules (Decision Framework)
-
-New features must meet **all** of these conditions:
-
-1. **Directly improves web image optimization**  
-   (file size, quality, memory, pipeline performance)
-
-2. **Fits the minimal API philosophy**  
-   (no complex abstractions, no feature creep)
-
-3. **Does not compromise speed or memory usage**
-
-4. **Has a real-world use case in web delivery**  
-   (CDN, upload pipeline, build-time optimization)
-
-5. **Does not push lazy-image toward sharp/jimp territory**  
-   (canvas, filters, rich graphics = reject)
-
-If the answer to any of these is “no”, the feature is rejected.
+* [ ] **Fuzzing Tests**: Implement `cargo-fuzz` to prevent crashes from malformed inputs.
+* [ ] **Memory Leak Detection**: CI integration with Valgrind/Sanitizers.
+* [ ] **API Freeze**: Final review of TypeScript definitions and public Rust API.
 
 ---
 
-## 4. High-Level Roadmap
+## 📅 Detailed Version Roadmap
 
-### 0.7.x
-- Built-in presets (thumbnail / avatar / hero / social-card)
-- More consistent defaults for JPEG/WebP/AVIF
-- Improved batch processing (concurrency tuning, better output)
+### v0.9.0 - "The Optimizer" (Next Release)
 
-### 0.8.x (Production Readiness)
-**Goal: Fix architectural issues and improve production reliability**
+**Focus:** Winning the benchmarks in all categories (Speed & Size).
 
-#### Error Handling Overhaul ✅ **Completed**
-- Replace string-based errors with structured error types
-  - `DecodeError`, `EncodeError`, `InvalidICCProfile`, `DimensionTooLarge`, `UnimplementedFormat`
-  - Error codes and proper error classification
-  - Better error messages with context
-- **Status**: Implemented in v0.7.x - Error code system (E1xx-E9xx) with categorized errors
-- **Why**: Current `Error::from_reason()` approach loses type safety and makes error handling difficult
+* **Performance: WebP Optimization**
+* **Goal:** Eliminate the "5x slower than sharp" bottleneck.
+* **Task:** Change default WebP `method` from 6 to 4.
+* **Task:** Disable heavy preprocessing by default.
 
-#### Documentation & Transparency ✅ **Completed**
-- Explicitly document input format limitations
-  - 16bit images are converted to 8bit (by design, not a bug)
-  - Clear limitations section in README
-- **Status**: README now includes Limitations section, ERROR_CODES.md documented
-- **Why**: Users need to know limitations upfront, not discover them at runtime
 
-#### Thread Model Safety ✅ **Completed**
-- Fix dual thread pool issue (libuv + rayon)
-  - Design clear thread usage strategy
-  - Default concurrency = CPU cores
-  - For batch processing: use rayon threads exclusively, minimize libuv usage
-  - Document thread model and Docker/CPU-limited environment behavior
-- **Status**: Documented in `docs/THREAD_MODEL.md`, concurrency control added in v0.7.3
-- **Why**: Current model can cause unpredictable scheduling and thread saturation under load
+* **Efficiency: Secure-by-Default Metadata**
+* **Goal:** Ensure output files are smaller than `sharp`'s and privacy-safe.
+* **Task:** Implement logic to strip Exif, XMP, and Comments during encoding.
+* **Task:** Add `.keepMetadata()` API for opt-in preservation.
 
-#### Encoder Parameter Control ❌ **Not Started**
-- Improve quality-to-encoder-parameters mapping
-  - JPEG: SSIM-based quality adjustment
-  - WebP: image complexity-aware method optimization
-  - AVIF: content-adaptive encoding
-- Move beyond "fixed threshold" approach
-- **Status**: Not started - requires significant research and implementation effort
-- **Why**: Single quality parameter is insufficient for optimal compression across formats
 
-#### API Consistency & Maintainability ✅ **Completed**
-- Improve internal Rust API consistency
-  - Standardize error handling patterns
-  - Improve code organization for maintainability
-  - Better separation of concerns
-- **Status**: Error handling standardized, code organization improved
-- **Why**: Current implementation works but is hard to maintain and debug
+* **Deployment: Binary Minimization**
+* **Goal:** Reduce binary size from ~9MB to <7MB for AWS Lambda.
+* **Task:** Configure `Cargo.toml` with `lto = "fat"`, `strip = "symbols"`, `codegen-units = 1`.
 
-#### Memory Efficiency for Large Images ❌ **Not Started**
-- Address memory pressure in high-concurrency scenarios
-  - 50MP × 10 parallel processing on 4-8GB RAM servers
-  - Improve memory usage patterns
-  - Consider streaming/chunked processing for very large images (if justified)
-- **Status**: Not started - current implementation works for typical web image sizes
-- **Why**: Current "full decode → full hold → process → re-encode" model can fail under memory pressure
 
-#### API Design Decisions ✅ **Completed**
-- **A-001: toBuffer() Non-destructive Behavior Review** ✅ **Completed**
-  - Created ADR-001 and decided on non-destructive behavior
-  - Compared Option 1 (maintain status quo), Option 2 (non-destructive), Option 3 (provide both)
-  - Adopted Option 2 (non-destructive): Changed `take()` to `clone()`
-  - Memory efficiency impact is limited (only reference count increases via `Arc`)
-  - See `docs/ADR-001-toBuffer-destructive-behavior.md` for details
-- **Why**: Need to finalize important API design decisions before v1.0
 
-### 1.0
-- API surface freeze (no breaking changes)
-- Stability across platforms (macOS/Win/Linux)
-- Deployment guides (Docker, Lambda)
+### v1.0.0 - "Production Ready" (Stable)
 
-### Post-1.0 (Optional, only if justified by rules above)
-- Smarter encoder strategies  
-- Higher-level helpers for responsive images
+**Focus:** proving reliability for enterprise adoption.
+
+* **Security: Automated Fuzzing**
+* **Goal:** Zero panic/crashes on corrupted inputs.
+* **Task:** Create fuzz targets for the decoder pipeline.
+
+
+* **Stability: Long-running Tests**
+* **Goal:** Prove memory safety across NAPI boundaries over time.
+* **Task:** Add memory leak check jobs to GitHub Actions.
+
+
+* **API: Final Freeze**
+* **Goal:** Guarantee no breaking changes for v1.x lifecycle.
+* **Task:** Audit `index.d.ts` and verify all public interfaces.
+
+
+
+### v1.x - "Serverless Native" (Future)
+
+**Focus:** Advanced cloud-native features.
+
+* **Smart Concurrency (Auto Memory Cap)**
+* **Goal:** Prevent OOM kills in constrained containers (e.g., 512MB limit).
+* **Task:** Detect container memory limits and auto-adjust thread pool size.
+
+
+* **Telemetry Hooks**
+* **Task:** Expose detailed metrics (CPU time, Peak RAM) per request.
+
+
+
+### v2.0 - "Universal Engine" (Long Term)
+
+**Focus:** Beyond Node.js.
+
+* **WebAssembly (Wasm) Support**: Support for Cloudflare Workers and Browsers.
+* **Streaming API**: Native support for Web Streams API.
 
 ---
 
-## 5. Contribution Notes
+## 🚫 Non-Goals (What we reject)
 
-Before proposing a feature:
+To maintain focus and stability, the following features are explicitly **out of scope**:
 
-- Describe the **use case**, not the API.
-- Confirm it matches the **Feature Acceptance Rules**.
-- If unsure, open an issue titled **“Proposal: <feature> (use case only)”**.
+1. **Drawing / Compositing**: Text rendering, watermarks, shapes.
+2. **Complex Filters**: Blur, sharpen, embossing, artistic effects.
+3. **Animation**: GIF/APNG creation or editing.
+4. **Legacy Support**: No support for 32-bit OS or EOL Node.js versions.
 
-lazy-image succeeds by staying focused.  
-Everything else belongs in a separate library.
+---
 
+# 🗺️ lazy-image ロードマップ
+
+> **ビジョン:** クラウド時代における、最も効率的で、安全で、ポータブルな画像処理エンジンとなること。
+
+本ドキュメントは `lazy-image` の開発状況と将来の方向性を定義します。本プロジェクトはセマンティックバージョニングに従います。
+
+## ✅ 達成状況チェックリスト
+
+### 🏗️ アーキテクチャとコア (v0.8.x - 完了)
+
+* [x] **真の遅延読み込み (True Lazy)**: `fromPath` によるファイルIOの遅延化。
+* [x] **ゼロコピー・アーキテクチャ**: フォーマット変換時のピクセルコピー回避。
+* [x] **スレッド安全性**: libuv/rayon スレッドプールの競合解消。
+* [x] **構造化エラーハンドリング**: 文字列エラーの撤廃と `ErrorCode` の導入。
+* [x] **非破壊API**: `toBuffer` の `clone()` 挙動の確定 (ADR-001)。
+
+### ⚡ 最適化と効率性 (v0.9.x - 進行中)
+
+* [ ] **WebP 速度チューニング**: デフォルト設定を最適化し `sharp` と同等の速度へ。
+* [ ] **メタデータ削除のデフォルト化**: Exif/XMPを削除し、セキュリティとサイズを改善。
+* [ ] **バイナリサイズ削減**: LTO有効化によるコールドスタート高速化。
+* [ ] **ドキュメント更新**: 「真実のベンチマーク」（AVIF速度/JPEGサイズ）の公開。
+
+### 🛡️ 信頼性と安定性 (v1.0.0 - 計画中)
+
+* [ ] **ファジングテスト**: 不正な入力データによるクラッシュ防止。
+* [ ] **メモリリーク検知**: Valgrind/Sanitizer によるCIテスト導入。
+* [ ] **API 凍結**: TypeScript定義とRust公開APIの最終確定。
+
+---
+
+## 📅 バージョン別詳細ロードマップ
+
+### v0.9.0 - "The Optimizer" (次回リリース)
+
+**目標:** ベンチマークにおける弱点（WebPの速度・ファイルサイズ）を完全に克服する。
+
+* **Performance: WebP 最適化**
+* **ゴール:** 「sharpより5倍遅い」状態の解消。
+* **タスク:** デフォルトの `method` を 6 から 4 へ変更。
+* **タスク:** 重い前処理（preprocessing）をデフォルトで無効化。
+
+
+* **Efficiency: セキュア・デフォルト (メタデータ削除)**
+* **ゴール:** `sharp` よりも出力ファイルを小さくし、プライバシーを保護する。
+* **タスク:** エンコード時に Exif, XMP, Comments を自動削除するロジックの実装。
+* **タスク:** `.keepMetadata()` API（オプトイン機能）の追加。
+
+
+* **Deployment: バイナリ最小化**
+* **ゴール:** AWS Lambda 向けにバイナリサイズを ~9MB から 7MB以下へ。
+* **タスク:** `Cargo.toml` にて `lto = "fat"`, `strip = "symbols"` 等を適用。
+
+
+
+### v1.0.0 - "Production Ready" (安定版)
+
+**目標:** 企業採用に耐えうる「信頼性」の証明。
+
+* **Security: 自動ファジング**
+* **ゴール:** 破損した画像によるパニック発生率ゼロ。
+* **タスク:** デコーダーに対する `cargo-fuzz` ターゲットの作成。
+
+
+* **Stability: 長時間稼働テスト**
+* **ゴール:** NAPI境界におけるメモリ安全性の証明。
+* **タスク:** GitHub Actions にメモリリーク検知ジョブを追加。
+
+
+* **API: 完全凍結**
+* **ゴール:** v1.x 系における破壊的変更なしの保証。
+* **タスク:** `index.d.ts` の全監査とインターフェース確定。
+
+
+
+### v1.x - "Serverless Native" (将来)
+
+**目標:** クラウドネイティブ機能の強化。
+
+* **スマート・コンカレンシー (自動メモリ制御)**
+* **ゴール:** 低メモリコンテナ（例: 512MB）での OOM Kill 回避。
+* **タスク:** コンテナのメモリ制限を検知し、スレッドプールサイズを自動調整。
+
+
+* **テレメトリー**
+* **タスク:** リクエストごとのCPU時間やピークメモリ使用量の取得API。
+
+
+
+### v2.0 - "Universal Engine" (長期)
+
+**目標:** Node.js の枠を超える。
+
+* **WebAssembly (Wasm) 対応**: Cloudflare Workers やブラウザでの動作。
+* **ストリーミング API**: Web Streams API のネイティブサポート。
+
+---
+
+## 🚫 やらないこと (Non-Goals)
+
+プロジェクトの焦点と安定性を維持するため、以下の機能は明確に**スコープ外**とします。
+
+1. **描画・合成**: テキスト描画、ウォーターマーク、図形描画など。
+2. **複雑なフィルタ**: ぼかし、シャープネス、エンボス加工など。
+3. **動画・アニメーション**: GIF/APNG の作成や編集。
+4. **レガシーサポート**: 32bit OS や EOL を迎えた Node.js のサポート。
