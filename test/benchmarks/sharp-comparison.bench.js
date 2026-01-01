@@ -21,7 +21,7 @@ try {
     process.exit(1);
 }
 
-const TEST_IMAGE = resolveFixture('test_input.png');
+const TEST_IMAGE = resolveFixture('test_50MB.png');
 const OUTPUT_DIR = resolveTemp('benchmarks', 'sharp-comparison');
 
 // Ensure output directory exists
