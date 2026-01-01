@@ -1,9 +1,9 @@
 /**
  * Benchmark verification: Compare actual results with README.md values
  * Tests multiple input files:
- * - test_input.png (23MB) - original benchmark
- * - test_38kb_input.jpg - additional test
- * - test_92kb_input.avif - additional test
+ * - test_50MB.png - large PNG for benchmarks
+ * - test_100KB.jpg - medium JPEG for benchmarks
+ * - test_100KB.avif - medium AVIF for benchmarks
  */
 
 const fs = require('fs');
@@ -21,21 +21,17 @@ try {
     process.exit(1);
 }
 
-// Test input files
+// Test input files - using new test fixtures
 const TEST_FILES = [
-    { path: resolveFixture('test_input.png'), name: 'test_input.png (23MB PNG)' },
-    { path: resolveFixture('test_38kb_input.jpg'), name: 'test_38kb_input.jpg (38KB JPEG)' },
-    { path: resolveFixture('test_92kb_input.avif'), name: 'test_92kb_input.avif (92KB AVIF)' },
+    { path: resolveFixture('test_50MB.png'), name: 'test_50MB.png (50MB PNG)' },
+    { path: resolveFixture('test_100KB.jpg'), name: 'test_100KB.jpg (100KB JPEG)' },
+    { path: resolveFixture('test_100KB.avif'), name: 'test_100KB.avif (100KB AVIF)' },
 ];
 
-// README.md expected values (for test_input.png only)
+// README.md expected values - disabled for new test fixtures
+// Note: New test fixtures have different sizes, so expected values need to be updated
 const README_VALUES = {
-    'test_input.png': {
-        avif: { lazy: 77800, sharp: 144700, lazyTime: 346, sharpTime: 381 },
-        jpeg: { lazy: 91437, sharp: 103566, lazyTime: 325, sharpTime: 185 },
-        webp: { lazy: 115782, sharp: 114664, lazyTime: 429, sharpTime: 171 },
-        complex: { lazy: 73956, sharp: 69786, lazyTime: 293, sharpTime: 176 },
-    }
+    // Values will be updated based on actual benchmark results with new fixtures
 };
 
 const OUTPUT_DIR = resolveTemp('benchmarks', 'readme-verification');
@@ -296,12 +292,15 @@ async function runAllBenchmarks() {
         }
     }
     
-    // Summary for test_input.png (README comparison)
+    // Summary for test_50MB.png (README comparison)
+    // Note: README values are disabled for new test fixtures
+    // Uncomment and update README_VALUES when new baseline is established
+    /*
     console.log('\n' + '='.repeat(80));
-    console.log('📊 Summary: README.md Verification (test_input.png)');
+    console.log('📊 Summary: README.md Verification (test_50MB.png)');
     console.log('='.repeat(80));
     
-    const pngResults = allResults.find(r => r.fileName.includes('test_input.png'));
+    const pngResults = allResults.find(r => r.fileName.includes('test_50MB.png'));
     if (pngResults) {
         console.log('\n### File Size Comparison\n');
         console.log('| Format | lazy-image (Actual) | README Value | Match | Difference |');
@@ -309,7 +308,7 @@ async function runAllBenchmarks() {
         
         for (const result of pngResults.results) {
             if (result.readmeComparison) {
-                const expected = README_VALUES['test_input.png'][result.format.toLowerCase().replace(' ', '')];
+                const expected = README_VALUES['test_50MB.png']?.[result.format.toLowerCase().replace(' ', '')];
                 if (expected) {
                     const match = result.readmeComparison.sizeMatch ? '✅' : '⚠️';
                     const diff = result.readmeComparison.sizeDiff || 'N/A';
@@ -324,7 +323,7 @@ async function runAllBenchmarks() {
         
         for (const result of pngResults.results) {
             if (result.readmeComparison) {
-                const expected = README_VALUES['test_input.png'][result.format.toLowerCase().replace(' ', '')];
+                const expected = README_VALUES['test_50MB.png']?.[result.format.toLowerCase().replace(' ', '')];
                 if (expected) {
                     const match = result.readmeComparison.timeMatch ? '✅' : '⚠️';
                     const diff = result.readmeComparison.timeDiff || 'N/A';
@@ -333,6 +332,7 @@ async function runAllBenchmarks() {
             }
         }
     }
+    */
     
     // Summary for all files
     console.log('\n' + '='.repeat(80));
