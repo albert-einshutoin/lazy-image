@@ -1995,6 +1995,10 @@ impl Task for BatchTask {
 // =============================================================================
 
 /// Calculate resize dimensions maintaining aspect ratio
+///
+/// When both width and height are specified, the image is resized to fit
+/// inside the specified dimensions while maintaining aspect ratio (like
+/// sharp's `{ fit: 'inside' }` option).
 pub fn calc_resize_dimensions(
     orig_w: u32,
     orig_h: u32,
@@ -2002,7 +2006,21 @@ pub fn calc_resize_dimensions(
     target_h: Option<u32>,
 ) -> (u32, u32) {
     match (target_w, target_h) {
-        (Some(w), Some(h)) => (w, h),
+        (Some(w), Some(h)) => {
+            // Maintain aspect ratio while fitting inside the specified dimensions
+            let orig_ratio = orig_w as f64 / orig_h as f64;
+            let target_ratio = w as f64 / h as f64;
+
+            if orig_ratio > target_ratio {
+                // Original image is wider → fit to width
+                let ratio = w as f64 / orig_w as f64;
+                (w, (orig_h as f64 * ratio).round() as u32)
+            } else {
+                // Original image is taller → fit to height
+                let ratio = h as f64 / orig_h as f64;
+                ((orig_w as f64 * ratio).round() as u32, h)
+            }
+        }
         (Some(w), None) => {
             let ratio = w as f64 / orig_w as f64;
             (w, (orig_h as f64 * ratio).round() as u32)
@@ -2388,6 +2406,34 @@ mod tests {
             let (w, h) = calc_resize_dimensions(100, 100, Some(50), None);
             assert_eq!(w, 50);
             assert_eq!(h, 50);
+        }
+
+        #[test]
+        fn test_both_dimensions_wide_image_fits_inside() {
+            // 横長画像（6000×4000）を800×600にリサイズ
+            // アスペクト比: 6000/4000 = 1.5 > 800/600 = 1.333...
+            // → 幅に合わせて800×533になるべき
+            let (w, h) = calc_resize_dimensions(6000, 4000, Some(800), Some(600));
+            assert_eq!(w, 800);
+            assert_eq!(h, 533); // 4000 * (800/6000) = 533.33... → 533
+        }
+
+        #[test]
+        fn test_both_dimensions_tall_image_fits_inside() {
+            // 縦長画像（4000×6000）を800×600にリサイズ
+            // アスペクト比: 4000/6000 = 0.666... < 800/600 = 1.333...
+            // → 高さに合わせて400×600になるべき
+            let (w, h) = calc_resize_dimensions(4000, 6000, Some(800), Some(600));
+            assert_eq!(w, 400); // 4000 * (600/6000) = 400
+            assert_eq!(h, 600);
+        }
+
+        #[test]
+        fn test_both_dimensions_same_aspect_ratio() {
+            // 同じアスペクト比の場合は指定サイズそのまま
+            // 1000:500 = 2:1, 800:400 = 2:1
+            let (w, h) = calc_resize_dimensions(1000, 500, Some(800), Some(400));
+            assert_eq!((w, h), (800, 400));
         }
     }
 
