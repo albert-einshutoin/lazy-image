@@ -285,6 +285,9 @@ pub struct ImageEngine {
     ops: Vec<Operation>,
     /// ICC color profile extracted from source image
     icc_profile: Option<Arc<Vec<u8>>>,
+    /// Whether to preserve metadata (Exif, ICC, XMP) in output.
+    /// Default is false (strip all) for security and smaller file sizes.
+    keep_metadata: bool,
 }
 
 #[cfg(feature = "napi")]
@@ -310,6 +313,7 @@ impl ImageEngine {
             decoded: None,
             ops: Vec::new(),
             icc_profile,
+            keep_metadata: false, // Strip metadata by default for security & smaller files
         }
     }
 
@@ -330,6 +334,7 @@ impl ImageEngine {
             decoded: None,
             ops: Vec::new(),
             icc_profile: None, // Will be extracted when bytes are loaded
+            keep_metadata: false, // Strip metadata by default for security & smaller files
         })
     }
 
@@ -342,6 +347,7 @@ impl ImageEngine {
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
             icc_profile: self.icc_profile.clone(),
+            keep_metadata: self.keep_metadata,
         })
     }
 
@@ -405,6 +411,15 @@ impl ImageEngine {
     #[napi]
     pub fn grayscale(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
         self.ops.push(Operation::Grayscale);
+        this
+    }
+
+    /// Preserve metadata (Exif, ICC profile, XMP) in output.
+    /// By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
+    /// Call this method to keep metadata for photography sites or when color accuracy is important.
+    #[napi(js_name = "keepMetadata")]
+    pub fn keep_metadata(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
+        self.keep_metadata = true;
         this
     }
 
@@ -540,12 +555,15 @@ impl ImageEngine {
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
 
+        let keep_metadata = self.keep_metadata;
+
         Ok(AsyncTask::new(EncodeTask {
             source: Some(source),
             decoded,
             ops,
             format: output_format,
             icc_profile,
+            keep_metadata,
         }))
     }
 
@@ -568,6 +586,7 @@ impl ImageEngine {
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
+        let keep_metadata = self.keep_metadata;
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
             source: Some(source),
@@ -575,6 +594,7 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            keep_metadata,
         }))
     }
 
@@ -601,6 +621,7 @@ impl ImageEngine {
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
+        let keep_metadata = self.keep_metadata;
 
         Ok(AsyncTask::new(WriteFileTask {
             source: Some(source),
@@ -608,6 +629,7 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            keep_metadata,
             output_path: path,
         }))
     }
@@ -873,6 +895,8 @@ pub struct EncodeTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    /// Whether to preserve metadata in output (default: false for security & smaller files)
+    pub keep_metadata: bool,
 }
 
 impl EncodeTask {
@@ -1635,9 +1659,13 @@ impl EncodeTask {
             m.process_time = start_process.elapsed().as_secs_f64() * 1000.0;
         }
 
-        // 3. Encode with ICC profile preservation
+        // 3. Encode - only preserve ICC profile if keep_metadata is true
         let start_encode = std::time::Instant::now();
-        let icc = self.icc_profile.as_ref().map(|v| v.as_slice());
+        let icc = if self.keep_metadata {
+            self.icc_profile.as_ref().map(|v| v.as_slice())
+        } else {
+            None // Strip metadata by default for security & smaller files
+        };
         let result = match &self.format {
             OutputFormat::Jpeg { quality } => Self::encode_jpeg(&processed, *quality, icc),
             OutputFormat::Png => Self::encode_png(&processed, icc),
@@ -1679,6 +1707,7 @@ pub struct EncodeWithMetricsTask {
     ops: Vec<Operation>,
     format: OutputFormat,
     icc_profile: Option<Arc<Vec<u8>>>,
+    keep_metadata: bool,
 }
 
 #[cfg(feature = "napi")]
@@ -1695,6 +1724,7 @@ impl Task for EncodeWithMetricsTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            keep_metadata: self.keep_metadata,
         };
 
         use crate::ProcessingMetrics;
@@ -1724,6 +1754,7 @@ pub struct WriteFileTask {
     ops: Vec<Operation>,
     format: OutputFormat,
     icc_profile: Option<Arc<Vec<u8>>>,
+    keep_metadata: bool,
     output_path: String,
 }
 
@@ -1744,6 +1775,7 @@ impl Task for WriteFileTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            keep_metadata: self.keep_metadata,
         };
 
         // Process image using shared logic
@@ -3428,6 +3460,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                keep_metadata: false,
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -3445,6 +3478,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                keep_metadata: false,
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -3460,6 +3494,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                keep_metadata: false,
             };
             let result = task.decode();
             assert!(result.is_err());
