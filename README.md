@@ -420,7 +420,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 
 | Method | Description |
 |--------|-------------|
-| `.resize(width?, height?)` | Resize image (maintains aspect ratio if one is null) |
+| `.resize(width?, height?)` | Resize image (always maintains aspect ratio; fits inside specified dimensions when both are given) |
 | `.crop(x, y, width, height)` | Crop a region |
 | `.rotate(degrees)` | Rotate (90, 180, 270) |
 | `.flipH()` | Flip horizontally |
