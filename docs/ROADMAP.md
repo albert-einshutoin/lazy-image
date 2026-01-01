@@ -19,9 +19,11 @@ This document outlines the development status and future direction of `lazy-imag
 * [x] **Structured Error Handling**: Replace string errors with typed `ErrorCode`.
 * [x] **Non-destructive API**: Implement `clone()` behavior for `toBuffer` (ADR-001).
 
-### ⚡ Optimization & Efficiency (v0.9.x - In Progress)
+### ⚡ Optimization & Efficiency (v0.8.x - Completed)
 
-* [ ] **WebP Speed Tuning**: Optimize default parameters (Method 6 → 4) to match `sharp`.
+* [x] **WebP Speed Tuning**: Optimize default parameters (Method 6 → 4) to match `sharp`. ✅ **Completed in v0.8.1**
+
+### ⚡ Optimization & Efficiency (v0.9.x - In Progress)
 * [ ] **Strip Metadata by Default**: Remove Exif/XMP for security and smaller file sizes.
 * [ ] **Binary Size Reduction**: Enable LTO and strip symbols for faster cold starts.
 * [ ] **Documentation Update**: Publish "True Benchmarks" (AVIF speed / JPEG size).
@@ -36,14 +38,19 @@ This document outlines the development status and future direction of `lazy-imag
 
 ## 📅 Detailed Version Roadmap
 
+### v0.8.1 - "WebP Speed Optimization" (Released 2026-01-01)
+
+**Focus:** WebP encoding performance parity with sharp.
+
+* **Performance: WebP Optimization** ✅
+* **Goal:** Eliminate the "5x slower than sharp" bottleneck. ✅ **Achieved**
+* **Task:** Change default WebP `method` from 6 to 4. ✅ **Completed**
+* **Task:** Disable heavy preprocessing by default. ✅ **Completed**
+* **Result:** ~4x speed improvement, now matches sharp's performance while maintaining quality parity.
+
 ### v0.9.0 - "The Optimizer" (Next Release)
 
 **Focus:** Winning the benchmarks in all categories (Speed & Size).
-
-* **Performance: WebP Optimization**
-* **Goal:** Eliminate the "5x slower than sharp" bottleneck.
-* **Task:** Change default WebP `method` from 6 to 4.
-* **Task:** Disable heavy preprocessing by default.
 
 
 * **Efficiency: Secure-by-Default Metadata**
