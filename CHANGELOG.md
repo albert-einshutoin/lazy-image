@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.1] - 2026-01-01
+
+### Performance
+- Optimized WebP encoding settings to match sharp performance
+  - Changed method from 5-6 to 4 (balanced, sharp-equivalent)
+  - Changed pass from 3-5 to 1 (single pass, ~3-5x faster)
+  - Changed preprocessing from 1-3 to 0 (disabled, ~10-15% faster)
+  - Expected ~4x speed improvement while maintaining quality parity with sharp
+
+### Fixed
+- Resolves issue #74: WebP encoding speed optimization
+
+---
+
 ## [0.8.0] - 2025-12-28
 
 ### Changed

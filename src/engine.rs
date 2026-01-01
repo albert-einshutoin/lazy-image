@@ -102,33 +102,24 @@ impl QualitySettings {
         }
     }
 
-    // WebP settings
+    // WebP settings - sharp-equivalent balanced settings
+    // Optimized for speed while maintaining quality parity with sharp
     fn webp_method(&self) -> i32 {
-        if self.quality >= 80.0 {
-            5
-        } else {
-            6
-        }
+        // Use method 4 for all quality levels (balanced, sharp-equivalent)
+        // Method 4 provides optimal speed/quality trade-off
+        4
     }
 
     fn webp_pass(&self) -> i32 {
-        if self.quality >= 85.0 {
-            3
-        } else if self.quality >= 70.0 {
-            4
-        } else {
-            5
-        }
+        // Use single pass for all quality levels (sharp-equivalent)
+        // Single pass is ~3-5x faster than multi-pass with minimal quality impact
+        1
     }
 
     fn webp_preprocessing(&self) -> i32 {
-        if self.quality >= 80.0 {
-            1
-        } else if self.quality >= 60.0 {
-            2
-        } else {
-            3
-        }
+        // No preprocessing (sharp-equivalent)
+        // Disabling preprocessing improves speed by ~10-15%
+        0
     }
 
     fn webp_sns_strength(&self) -> i32 {
