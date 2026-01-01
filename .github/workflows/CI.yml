@@ -137,7 +137,7 @@ jobs:
           path: .
 
       - name: Create test image
-        run: node test/create-test-image.js
+        run: node test/helpers/create-test-image.js
 
       - name: Test
         run: npm test

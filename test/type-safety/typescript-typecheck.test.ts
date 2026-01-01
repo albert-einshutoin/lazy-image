@@ -3,10 +3,10 @@
  * 型定義が正しく動作するかを確認
  */
 import * as path from 'path';
-import { ImageEngine, OutputFormat, InputFormat, PresetName, ImageMetadata, PresetResult } from '../../../index';
+import { ImageEngine, OutputFormat, InputFormat, PresetName, ImageMetadata, PresetResult } from '../../index';
 
 async function testTypeSafety() {
-    const imagePath = path.resolve(__dirname, '../../fixtures/test_input.jpg');
+    const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
     
     // 型安全なOutputFormat使用例
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];
@@ -38,14 +38,14 @@ async function testTypeSafety() {
     }
     
     // メタデータ取得も型安全
-    const metadata: ImageMetadata = await import('../../../index').then(m => m.inspectFile(imagePath));
+    const metadata: ImageMetadata = await import('../../index').then(m => m.inspectFile(imagePath));
     console.log(`Image: ${metadata.width}x${metadata.height}, format: ${metadata.format}`);
     
     // バッチ処理も型安全
     const batchEngine = ImageEngine.fromPath(imagePath).resize(200, 200);
     const batchResults = await batchEngine.processBatch(
         [imagePath], 
-        './output', 
+        path.resolve(__dirname, '../../.tmp/type-safety-batch'), 
         'jpeg', // OutputFormat型として扱われる
         85, 
         2

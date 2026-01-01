@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const { resolveRoot, resolveFixture } = require('../helpers/paths');
+const { resolveRoot, resolveFixture, resolveTemp } = require('../helpers/paths');
 const { ImageEngine, inspect, inspectFile } = require(resolveRoot('index'));
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
@@ -241,7 +241,7 @@ async function runTests() {
     // ========================================================================
     
     await asyncTest('toFile() handles non-existent parent directory', async () => {
-        const testDir = path.join(__dirname, 'nonexistent_dir');
+        const testDir = resolveTemp('nonexistent_dir');
         const outPath = path.join(testDir, 'test_output.jpg');
         let threw = false;
         try {
@@ -264,7 +264,7 @@ async function runTests() {
     
     await asyncTest('processBatch handles empty input array', async () => {
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = path.join(__dirname, 'test_batch_empty');
+        const testDir = resolveTemp('test_batch_empty');
         try {
             const results = await engine.processBatch([], testDir, 'jpeg', 80, 1);
             assert(Array.isArray(results), 'should return array');
@@ -285,7 +285,7 @@ async function runTests() {
     
     await asyncTest('processBatch handles invalid concurrency (0)', async () => {
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = path.join(__dirname, 'test_batch_concurrency');
+        const testDir = resolveTemp('test_batch_concurrency');
         let threw = false;
         try {
             // Concurrency 0 should use default (CPU cores), but we test edge case
@@ -311,7 +311,7 @@ async function runTests() {
     
     await asyncTest('processBatch handles very high concurrency', async () => {
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = path.join(__dirname, 'test_batch_high_concurrency');
+        const testDir = resolveTemp('test_batch_high_concurrency');
         let threw = false;
         let errorMsg = '';
         try {

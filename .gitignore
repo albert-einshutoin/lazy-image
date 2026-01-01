@@ -5,12 +5,16 @@
 node_modules/
 *.node
 
-# Test outputs
+# Test outputs and temporary files (Unified)
+.tmp/
+*.tmp
 out_*.jpg
 out_*.webp
 out_*.png
-test_input.jpg
-test_input.png
+
+# Test output directories
+test/**/output/
+!test/fixtures/
 
 # OS
 .DS_Store
@@ -26,13 +30,6 @@ Thumbs.db
 # Build artifacts
 npm/
 artifacts/
-
-# Test artifacts and temporary files
-test_*/
-test_concurrency/
-test_concurrency_check/
-test_batch_high_concurrency/
-test_fixtures/
 
 # Internal documentation (not for public)
 OSS_REVIEW.md
@@ -50,16 +47,3 @@ BENCHMARK_VERIFICATION_REPORT.md
 CLAUDE.md
 RELEASE_READINESS.md
 SHARP_COMPARISON.md
-
-# Test NAPI directory
-test_napi/
-
-# Test output directories
-test/output/
-
-# Test artifacts and temporary test files
-output/
-test_38kb_input.jpg
-test_92kb_input.avif
-type-safety-test.js
-typescript-test.ts

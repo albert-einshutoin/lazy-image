@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const { resolveRoot, resolveFixture } = require('../helpers/paths');
+const { resolveRoot, resolveFixture, resolveTemp } = require('../helpers/paths');
 const { ImageEngine, inspect, inspectFile } = require(resolveRoot('index'));
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
@@ -141,8 +141,8 @@ async function runTests() {
 
     await asyncTest('toFile() is non-destructive', async () => {
         const engine = ImageEngine.fromPath(TEST_IMAGE).resize(100);
-        const outPath1 = path.join(__dirname, 'test_output1.jpg');
-        const outPath2 = path.join(__dirname, 'test_output2.webp');
+        const outPath1 = resolveTemp('test_output1.jpg');
+        const outPath2 = resolveTemp('test_output2.webp');
         try {
             // First call
             const bytes1 = await engine.toFile(outPath1, 'jpeg', 80);
@@ -166,7 +166,7 @@ async function runTests() {
     });
 
     await asyncTest('toFile() works', async () => {
-        const outPath = path.join(__dirname, 'test_output.jpg');
+        const outPath = resolveTemp('test_output.jpg');
         const bytes = await ImageEngine.fromPath(TEST_IMAGE)
             .resize(100)
             .toFile(outPath, 'jpeg', 80);
@@ -291,7 +291,7 @@ async function runTests() {
     // Batch processing concurrency test (v0.7.3+)
     await asyncTest('processBatch with concurrency control works', async () => {
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = path.join(__dirname, 'test_batch_output');
+        const testDir = resolveTemp('test_batch_output');
         try {
             // Test with custom concurrency (2 workers)
             const results = await engine.processBatch(
@@ -317,7 +317,7 @@ async function runTests() {
     // Thread pool coordination test (v0.7.8+)
     await asyncTest('processBatch with default concurrency (auto-calculated) works', async () => {
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = path.join(__dirname, 'test_batch_auto');
+        const testDir = resolveTemp('test_batch_auto');
         try {
             // Test with concurrency=0 (default, auto-calculated)
             // This should automatically balance threads with libuv
@@ -344,7 +344,7 @@ async function runTests() {
     // Thread pool coordination test with UV_THREADPOOL_SIZE (v0.7.8+)
     await asyncTest('processBatch respects UV_THREADPOOL_SIZE env var', async () => {
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = path.join(__dirname, 'test_batch_uv_env');
+        const testDir = resolveTemp('test_batch_uv_env');
         
         // Save original UV_THREADPOOL_SIZE
         const originalUvSize = process.env.UV_THREADPOOL_SIZE;

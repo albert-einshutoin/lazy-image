@@ -8,7 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveFixture, resolveRoot, TEST_DIR } = require('../helpers/paths');
+const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 const { ImageEngine } = require(resolveRoot('index'));
 
 // Check if sharp is available
@@ -38,7 +38,7 @@ const README_VALUES = {
     }
 };
 
-const OUTPUT_DIR = path.join(TEST_DIR, 'output', 'benchmarks', 'readme-verification');
+const OUTPUT_DIR = resolveTemp('benchmarks', 'readme-verification');
 
 // Ensure output directory exists
 if (!fs.existsSync(OUTPUT_DIR)) {
