@@ -182,6 +182,9 @@ jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write  # Required for OIDC authentication
     needs:
       - build
       - test
@@ -197,18 +200,11 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org
+          scope: '@alberteinshutoin'
       
-      - name: Verify npm authentication
-        run: |
-          echo "Verifying npm authentication..."
-          npm whoami || {
-            echo "❌ npm authentication failed"
-            echo "Please check that NPM_TOKEN secret is set correctly"
-            exit 1
-          }
-          echo "✅ npm authentication successful"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Note: OIDC authentication only works during npm publish
+      # npm whoami will not work with OIDC - this is expected behavior
+      # See: https://docs.npmjs.com/trusted-publishers#limitations-and-future-improvements
 
       - name: Install dependencies
         run: npm ci
@@ -403,7 +399,7 @@ jobs:
                 echo "⚠️  Warning: publishConfig not found in package.json"
               fi
               
-              # Try to publish
+              # Try to publish with provenance (works with OIDC or NPM_TOKEN)
               if npm publish --access public --provenance 2>&1; then
                 echo "✅ Successfully published $pkg_name"
                 published=$((published + 1))
@@ -412,9 +408,10 @@ jobs:
                 echo "❌ Failed to publish $pkg_name (exit code: $publish_error)"
                 echo ""
                 echo "Common causes:"
-                echo "1. NPM_TOKEN does not have permission to publish to @alberteinshutoin scope"
-                echo "2. Package already exists (check npm registry)"
-                echo "3. Invalid package.json"
+                echo "1. For new packages: NPM_TOKEN secret is required for initial publish"
+                echo "2. For existing packages: Trusted Publisher must be configured in npm"
+                echo "3. Package already exists with same version (check npm registry)"
+                echo "4. Invalid package.json"
                 echo ""
                 failed=$((failed + 1))
                 failed_packages+=("$pkg_name")
@@ -438,9 +435,9 @@ jobs:
             echo "❌ Some packages failed to publish"
             echo ""
             echo "Troubleshooting steps:"
-            echo "1. Verify NPM_TOKEN has 'Read and Write' permissions"
-            echo "2. Check if you have access to @alberteinshutoin scope"
-            echo "3. If scope is an organization, ensure you're a member"
+            echo "1. For NEW packages: Set NPM_TOKEN secret in GitHub repository settings"
+            echo "2. For existing packages: Configure Trusted Publisher in npm"
+            echo "3. Check if you have access to @alberteinshutoin scope"
             echo "4. Try publishing manually: cd npm/<platform> && npm publish --access public"
             exit 1
           fi

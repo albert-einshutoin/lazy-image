@@ -48,6 +48,14 @@ BENCHMARK_COMPARISON_RESULTS.md
 BENCHMARK_REPORT.md
 BENCHMARK_VERIFICATION_REPORT.md
 CLAUDE.md
+RELEASE_READINESS.md
+SHARP_COMPARISON.md
+
+# Test NAPI directory
+test_napi/
+
+# Test output directories
+test/output/
 
 # Test artifacts and temporary test files
 output/
