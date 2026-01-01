@@ -1,7 +1,7 @@
 // pipeline-smoke.bench.js - quick benchmark between lazy-image and sharp
 const fs = require('fs');
 const path = require('path');
-const { resolveFixture, resolveRoot, TEST_DIR } = require('../helpers/paths');
+const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 const { ImageEngine, version, supportedOutputFormats } = require(resolveRoot('index'));
 
 // Optional: compare with sharp if installed
@@ -32,7 +32,7 @@ async function main() {
     process.exit(1);
   }
 
-  const outputDir = path.join(TEST_DIR, 'output', 'benchmarks', 'pipeline-smoke');
+  const outputDir = resolveTemp('benchmarks', 'pipeline-smoke');
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
