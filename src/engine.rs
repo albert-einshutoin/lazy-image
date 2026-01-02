@@ -170,6 +170,8 @@ impl QualitySettings {
 
 use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat};
+#[cfg(feature = "napi")]
+use crate::ops::PresetConfig;
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
@@ -812,6 +814,7 @@ impl ImageEngine {
     }
 
     #[cfg(feature = "napi")]
+    #[allow(dead_code)]
     fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
         if self.decoded.is_none() {
             // First ensure we have the source bytes loaded
