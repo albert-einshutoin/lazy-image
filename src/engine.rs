@@ -40,7 +40,9 @@ pub const MAX_DIMENSION: u32 = 32768;
 // - Global pool: ~0.5ms overhead for 100 items
 // - New pool per call: ~5-10ms overhead (10-20x slower)
 //
+#[cfg(feature = "napi")]
 use once_cell::sync::Lazy;
+#[cfg(feature = "napi")]
 static GLOBAL_THREAD_POOL: Lazy<ThreadPool> = Lazy::new(|| {
     let cpu_count = num_cpus::get();
 
@@ -85,9 +87,11 @@ const MAX_PIXELS: u64 = 100_000_000;
 const DEFAULT_UV_THREADPOOL_SIZE: usize = 4;
 
 /// Maximum allowed concurrency value for processBatch()
+#[cfg(feature = "napi")]
 const MAX_CONCURRENCY: usize = 1024;
 
 /// Minimum number of rayon threads to ensure at least some parallelism
+#[cfg(feature = "napi")]
 const MIN_RAYON_THREADS: usize = 1;
 
 // Quality configuration helper
@@ -165,7 +169,9 @@ impl QualitySettings {
 }
 
 use crate::error::LazyImageError;
-use crate::ops::{Operation, OutputFormat, PresetConfig};
+use crate::ops::{Operation, OutputFormat};
+#[cfg(feature = "napi")]
+use crate::ops::PresetConfig;
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
@@ -174,17 +180,18 @@ use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
 use napi::{Env, JsBuffer, Task};
+#[cfg(feature = "napi")]
 use num_cpus;
 use ravif::{Encoder as AvifEncoder, Img};
+#[cfg(feature = "napi")]
 use rayon::prelude::*;
+#[cfg(feature = "napi")]
 use rayon::ThreadPool;
 use rgb::FromSlice;
 use std::borrow::Cow;
 use std::io::Cursor;
 use std::panic;
 use std::path::PathBuf;
-#[cfg(not(feature = "napi"))]
-use std::result::Result;
 use std::sync::Arc;
 
 // Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
@@ -240,6 +247,7 @@ pub enum Source {
 
 impl Source {
     /// Load the actual bytes from the source
+    #[allow(dead_code)]
     fn load(&self) -> std::result::Result<Arc<Vec<u8>>, LazyImageError> {
         match self {
             Source::Memory(data) => Ok(data.clone()),
@@ -253,6 +261,7 @@ impl Source {
     }
 
     /// Get path if this is a Path source
+    #[allow(dead_code)]
     fn as_path(&self) -> Option<&PathBuf> {
         match self {
             Source::Path(p) => Some(p),
@@ -272,6 +281,7 @@ impl Source {
 ///   .toBuffer('jpeg', 75);
 /// ```
 #[cfg_attr(feature = "napi", napi)]
+#[allow(dead_code)]
 pub struct ImageEngine {
     /// Image source - supports lazy loading from file path
     source: Option<Source>,
@@ -804,6 +814,7 @@ impl ImageEngine {
     }
 
     #[cfg(feature = "napi")]
+    #[allow(dead_code)]
     fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
         if self.decoded.is_none() {
             // First ensure we have the source bytes loaded
@@ -835,6 +846,7 @@ impl ImageEngine {
 
     /// Ensure source bytes are loaded (lazy loading for Path sources)
     #[cfg(not(feature = "napi"))]
+    #[allow(dead_code)]
     fn ensure_source_bytes(&mut self) -> std::result::Result<&Arc<Vec<u8>>, LazyImageError> {
         if self.source_bytes.is_none() {
             let source = self
@@ -858,6 +870,7 @@ impl ImageEngine {
     }
 
     #[cfg(not(feature = "napi"))]
+    #[allow(dead_code)]
     fn ensure_decoded(&mut self) -> std::result::Result<&DynamicImage, LazyImageError> {
         if self.decoded.is_none() {
             // First ensure we have the source bytes loaded
@@ -1641,6 +1654,7 @@ impl EncodeTask {
 
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
+    #[allow(dead_code)]
     fn process_and_encode(
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
@@ -1700,6 +1714,7 @@ impl Task for EncodeTask {
     }
 }
 
+#[allow(dead_code)]
 pub struct EncodeWithMetricsTask {
     source: Option<Arc<Vec<u8>>>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
@@ -1747,6 +1762,7 @@ impl Task for EncodeWithMetricsTask {
 // WRITE FILE TASK - File output without touching Node.js heap
 // =============================================================================
 
+#[allow(dead_code)]
 pub struct WriteFileTask {
     source: Option<Arc<Vec<u8>>>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
@@ -1841,6 +1857,7 @@ impl Task for WriteFileTask {
     }
 }
 
+#[allow(dead_code)]
 pub struct BatchTask {
     inputs: Vec<String>,
     output_dir: String,
@@ -2104,6 +2121,7 @@ pub fn check_dimensions(width: u32, height: u32) -> std::result::Result<(), Lazy
 }
 /// Validate ICC profile header
 /// ICC profiles must start with a 128-byte header containing specific fields
+#[allow(dead_code)]
 fn validate_icc_profile(icc_data: &[u8]) -> bool {
     // Minimum ICC profile size is 128 bytes (header)
     if icc_data.len() < 128 {
@@ -2162,6 +2180,7 @@ fn validate_icc_profile(icc_data: &[u8]) -> bool {
     true
 }
 
+#[allow(dead_code)]
 fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
     // Check magic bytes to determine format
     if data.len() < 12 {
@@ -2191,18 +2210,21 @@ fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
 }
 
 /// Extract ICC profile from JPEG data
+#[allow(dead_code)]
 fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
     let jpeg = Jpeg::from_bytes(data.to_vec().into()).ok()?;
     jpeg.icc_profile().map(|icc| icc.to_vec())
 }
 
 /// Extract ICC profile from PNG data
+#[allow(dead_code)]
 fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
     let png = Png::from_bytes(data.to_vec().into()).ok()?;
     png.icc_profile().map(|icc| icc.to_vec())
 }
 
 /// Extract ICC profile from WebP data
+#[allow(dead_code)]
 fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
     use img_parts::webp::WebP;
     let webp = WebP::from_bytes(data.to_vec().into()).ok()?;
