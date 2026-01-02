@@ -196,6 +196,7 @@ mod corrupted_image_tests {
             ops: vec![],
             format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
             icc_profile: None,
+            keep_metadata: false,
         };
         let result = task.decode();
         assert!(result.is_err());
@@ -215,6 +216,7 @@ mod corrupted_image_tests {
             ops: vec![],
             format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
             icc_profile: None,
+            keep_metadata: false,
         };
         let result = task.decode();
         // 切断されたJPEGは通常エラーになるが、image crateが部分的にデコードできる場合もある
@@ -238,6 +240,7 @@ mod corrupted_image_tests {
             ops: vec![],
             format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
             icc_profile: None,
+            keep_metadata: false,
         };
         let result = task.decode();
         // PNGとして解析を試みるが、実際はJPEGなので失敗する可能性が高い
@@ -253,6 +256,7 @@ mod corrupted_image_tests {
             ops: vec![],
             format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
             icc_profile: None,
+            keep_metadata: false,
         };
         let result = task.decode();
         assert!(result.is_err());
@@ -272,6 +276,7 @@ mod non_image_tests {
             ops: vec![],
             format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
             icc_profile: None,
+            keep_metadata: false,
         };
         let result = task.decode();
         assert!(result.is_err());
@@ -286,6 +291,7 @@ mod non_image_tests {
             ops: vec![],
             format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
             icc_profile: None,
+            keep_metadata: false,
         };
         let result = task.decode();
         assert!(result.is_err());

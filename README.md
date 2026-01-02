@@ -420,12 +420,13 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 
 | Method | Description |
 |--------|-------------|
-| `.resize(width?, height?)` | Resize image (maintains aspect ratio if one is null) |
+| `.resize(width?, height?)` | Resize image (always maintains aspect ratio; fits inside specified dimensions when both are given) |
 | `.crop(x, y, width, height)` | Crop a region |
 | `.rotate(degrees)` | Rotate (90, 180, 270) |
 | `.flipH()` | Flip horizontally |
 | `.flipV()` | Flip vertically |
 | `.grayscale()` | Convert to grayscale |
+| `.keepMetadata()` | Preserve Exif/ICC/XMP metadata (stripped by default for security & smaller files) |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
