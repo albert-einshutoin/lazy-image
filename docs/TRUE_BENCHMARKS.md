@@ -9,7 +9,7 @@ This document provides comprehensive benchmark documentation showing the actual 
 
 All benchmarks use images from `test/fixtures/*` directory:
 
-- **Large test image**: `test/fixtures/test_50MB.png` (4.5MB PNG, 5000×5000 pixels)
+- **Large test image**: `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000 pixels)
 - **Small test images**: Various sizes in `test/fixtures/` for different scenarios
 
 ### Benchmark Configuration
@@ -18,7 +18,7 @@ All benchmarks use images from `test/fixtures/*` directory:
 |------|--------------|
 | **Node.js** | v22.x |
 | **sharp** | 0.34.x |
-| **Test Images** | `test/fixtures/*` (test_50MB.png: 4.5MB, 5000×5000, test_100KB.*, etc.) |
+| **Test Images** | `test/fixtures/*` (test_4.5MB_5000x5000.png: 4.5MB, 5000×5000, test_100KB_*, etc.) |
 | **Output Size** | 800px width (auto height) |
 | **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
 | **Platform** | macOS (Apple Silicon) |
@@ -73,12 +73,12 @@ lazy-image uses **ravif**, a pure Rust AVIF encoder based on AV1 compression. Th
 const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 
 // Fast AVIF encoding
-const avifBuffer = await ImageEngine.fromPath('test/fixtures/test_50MB.png')
+const avifBuffer = await ImageEngine.fromPath('test/fixtures/test_4.5MB_5000x5000.png')
   .resize(800, null)
   .toBuffer('avif', 60); // Quality 60, optimized speed
 
 // Compare with sharp (slower)
-// const sharpAvif = await sharp('test/fixtures/test_50MB.png')
+// const sharpAvif = await sharp('test/fixtures/test_4.5MB_5000x5000.png')
 //   .resize(800)
 //   .avif({ quality: 60 })
 //   .toBuffer();
@@ -162,7 +162,7 @@ lazy-image uses **mozjpeg** (Mozilla's JPEG encoder) with aggressive web optimiz
 const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 
 // Optimized JPEG with mozjpeg
-const jpegBuffer = await ImageEngine.fromPath('test/fixtures/test_50MB.png')
+const jpegBuffer = await ImageEngine.fromPath('test/fixtures/test_4.5MB_5000x5000.png')
   .resize(800, null)
   .toBuffer('jpeg', 80); // Quality 80, mozjpeg optimization
 
@@ -183,7 +183,7 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 | **PNG → JPEG** | 668ms | 681ms | **1.02x faster** ⚡ | **-17.0%** ✅ |
 | **PNG → WebP** | 6,777ms | 975ms | 0.14x slower 🐢 | **-0.7%** ✅ |
 
-> *Pure format conversion without pixel manipulation. 4.5MB PNG (5000×5000) input from `test/fixtures/test_50MB.png`.*
+> *Pure format conversion without pixel manipulation. 4.5MB PNG (5000×5000) input from `test/fixtures/test_4.5MB_5000x5000.png`.*
 
 > *\* WebP encoding optimized in v0.8.1: settings adjusted (method 4, single pass) to improve speed. Performance benchmarks pending verification.*
 
@@ -215,8 +215,8 @@ Memory: Zero-copy architecture for format conversions
 ### Test Images
 
 All benchmarks use images from `test/fixtures/*` directory:
-- `test/fixtures/test_50MB.png` - Large PNG (4.5MB, 5000×5000) for performance tests
-- `test/fixtures/test_100KB.*` - Medium-sized images for various format tests
+- `test/fixtures/test_4.5MB_5000x5000.png` - Large PNG (4.5MB, 5000×5000) for performance tests
+- `test/fixtures/test_100KB_*` - Medium-sized images for various format tests (100KB_1188x1188.png, 100KB_1057x1057.jpg, 90KB_1471x1471.webp, 95KB.avif)
 - Other test fixtures for specific scenarios
 
 ### Test Procedure

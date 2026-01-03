@@ -23,7 +23,7 @@ try {
     process.exit(1);
 }
 
-const TEST_IMAGE = resolveFixture('test_50MB.png');
+const TEST_IMAGE = resolveFixture('test_4.5MB_5000x5000.png');
 const OUTPUT_DIR = resolveTemp('benchmarks', 'convert-only');
 
 // Ensure output directory exists

@@ -1,7 +1,7 @@
 /**
  * Benchmark comparison: lazy-image vs sharp
  * Based on README.md benchmark conditions:
- * - test/fixtures/test_50MB.png (50MB PNG input)
+ * - test/fixtures/test_4.5MB_5000x5000.png (4.5MB PNG input, 5000×5000 pixels)
  * - Resize to 800px (width, auto height)
  * - Quality 60-80
  */
@@ -21,7 +21,7 @@ try {
     process.exit(1);
 }
 
-const TEST_IMAGE = resolveFixture('test_50MB.png');
+const TEST_IMAGE = resolveFixture('test_4.5MB_5000x5000.png');
 const OUTPUT_DIR = resolveTemp('benchmarks', 'sharp-comparison');
 
 // Ensure output directory exists

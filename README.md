@@ -32,7 +32,7 @@ lazy-image outperforms sharp in **AVIF generation speed** and **JPEG compression
 | **Speed (Resize 800px)** | **AVIF** | **497ms** ⚡ | 909ms | **1.8x Faster** |
 | | JPEG | 286ms | **266ms** | Comparable |
 
-> *Tested with `test/fixtures/test_50MB.png` (50MB PNG, 6000×4000), quality 60-80*
+> *Tested with `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000), quality 60-80*
 
 **Processing Speed Note**: lazy-image prioritizes compression ratio (smaller file sizes) over raw encoding speed for JPEG. This results in significantly smaller files (up to 50% reduction) to save bandwidth costs, at the expense of slightly longer processing times. For WebP (v0.8.1+), lazy-image now matches sharp's encoding speed while maintaining quality parity. For AVIF, lazy-image is consistently faster and smaller than sharp.
 
@@ -43,7 +43,7 @@ lazy-image outperforms sharp in **AVIF generation speed** and **JPEG compression
 |------|--------------|
 | **Node.js** | v22.x |
 | **sharp** | 0.34.x |
-| **Test Image** | `test/fixtures/test_50MB.png` (50MB PNG, 6000×4000) |
+| **Test Image** | `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000) |
 | **Output Size** | 800px width (auto height) |
 | **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
 | **Platform** | macOS (Apple Silicon) |
@@ -78,7 +78,7 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 | **PNG → JPEG** | 1,622ms | 3,386ms | **2.09x faster** ⚡ | **-27.5%** ✅ |
 | **PNG → WebP** | 9,682ms* | 2,548ms | 0.26x slower 🐢 | +2.9% |
 
-> *Pure format conversion without pixel manipulation. 50MB PNG (6000×4000) input from `test/fixtures/test_50MB.png`.*
+> *Pure format conversion without pixel manipulation. 4.5MB PNG (5000×5000) input from `test/fixtures/test_4.5MB_5000x5000.png`.*
 > 
 > *\* WebP encoding optimized in v0.8.1: settings adjusted (method 4, single pass) to improve speed. Performance benchmarks pending verification.*
 
