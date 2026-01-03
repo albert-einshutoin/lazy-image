@@ -26,9 +26,9 @@ async function main() {
   console.log(`Supported formats: ${supportedOutputFormats().join(', ')}`);
   console.log('='.repeat(60));
 
-  const inputPath = resolveFixture('test_100KB.png');
+  const inputPath = resolveFixture('test_100KB_1188x1188.png');
   if (!fs.existsSync(inputPath)) {
-    console.error('❌ test_100KB.png not found');
+    console.error('❌ test_100KB_1188x1188.png not found');
     process.exit(1);
   }
 

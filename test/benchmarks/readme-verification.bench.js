@@ -1,9 +1,9 @@
 /**
  * Benchmark verification: Compare actual results with README.md values
  * Tests multiple input files:
- * - test_50MB.png - large PNG for benchmarks
- * - test_100KB.jpg - medium JPEG for benchmarks
- * - test_100KB.avif - medium AVIF for benchmarks
+ * - test_4.5MB_5000x5000.png - large PNG for benchmarks (4.5MB, 5000×5000)
+ * - test_100KB_1057x1057.jpg - medium JPEG for benchmarks (100KB, 1057×1057)
+ * - test_95KB.avif - medium AVIF for benchmarks (95KB)
  */
 
 const fs = require('fs');
@@ -23,9 +23,9 @@ try {
 
 // Test input files - using new test fixtures
 const TEST_FILES = [
-    { path: resolveFixture('test_50MB.png'), name: 'test_50MB.png (50MB PNG)' },
-    { path: resolveFixture('test_100KB.jpg'), name: 'test_100KB.jpg (100KB JPEG)' },
-    { path: resolveFixture('test_100KB.avif'), name: 'test_100KB.avif (100KB AVIF)' },
+    { path: resolveFixture('test_4.5MB_5000x5000.png'), name: 'test_4.5MB_5000x5000.png (4.5MB PNG, 5000×5000)' },
+    { path: resolveFixture('test_100KB_1057x1057.jpg'), name: 'test_100KB_1057x1057.jpg (100KB JPEG, 1057×1057)' },
+    { path: resolveFixture('test_95KB.avif'), name: 'test_95KB.avif (95KB AVIF)' },
 ];
 
 // README.md expected values - disabled for new test fixtures
@@ -292,12 +292,12 @@ async function runAllBenchmarks() {
         }
     }
     
-    // Summary for test_50MB.png (README comparison)
+    // Summary for test_4.5MB_5000x5000.png (README comparison)
     // Note: README values are disabled for new test fixtures
     // Uncomment and update README_VALUES when new baseline is established
     /*
     console.log('\n' + '='.repeat(80));
-    console.log('📊 Summary: README.md Verification (test_50MB.png)');
+    console.log('📊 Summary: README.md Verification (test_4.5MB_5000x5000.png)');
     console.log('='.repeat(80));
     
     const pngResults = allResults.find(r => r.fileName.includes('test_50MB.png'));
@@ -308,7 +308,7 @@ async function runAllBenchmarks() {
         
         for (const result of pngResults.results) {
             if (result.readmeComparison) {
-                const expected = README_VALUES['test_50MB.png']?.[result.format.toLowerCase().replace(' ', '')];
+                const expected = README_VALUES['test_4.5MB_5000x5000.png']?.[result.format.toLowerCase().replace(' ', '')];
                 if (expected) {
                     const match = result.readmeComparison.sizeMatch ? '✅' : '⚠️';
                     const diff = result.readmeComparison.sizeDiff || 'N/A';
@@ -323,7 +323,7 @@ async function runAllBenchmarks() {
         
         for (const result of pngResults.results) {
             if (result.readmeComparison) {
-                const expected = README_VALUES['test_50MB.png']?.[result.format.toLowerCase().replace(' ', '')];
+                const expected = README_VALUES['test_4.5MB_5000x5000.png']?.[result.format.toLowerCase().replace(' ', '')];
                 if (expected) {
                     const match = result.readmeComparison.timeMatch ? '✅' : '⚠️';
                     const diff = result.readmeComparison.timeDiff || 'N/A';
