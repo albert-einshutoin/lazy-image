@@ -1,7 +1,7 @@
 /**
  * Benchmark comparison: lazy-image vs sharp
  * Based on README.md benchmark conditions:
- * - 23MB PNG input
+ * - test/fixtures/test_50MB.png (50MB PNG input)
  * - Resize to 800px (width, auto height)
  * - Quality 60-80
  */
