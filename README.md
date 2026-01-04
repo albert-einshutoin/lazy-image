@@ -1,6 +1,6 @@
 # lazy-image 🦀
 
-<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/239496c7-ad7f-4649-b130-8ed0a65481f7" />
+<img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/239496c7-ad7f-4649-b130-8ed0a65481f7" />
 
 > **Next-generation image processing engine for Node.js**
 > 
