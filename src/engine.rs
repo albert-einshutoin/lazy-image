@@ -172,7 +172,7 @@ use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat};
 #[cfg(feature = "napi")]
 use crate::ops::PresetConfig;
-use fast_image_resize::{self as fir, PixelType, ResizeOptions};
+use fast_image_resize::{self as fir, MulDiv, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
 use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
@@ -2285,11 +2285,19 @@ fn fast_resize_internal_impl(
 ) -> std::result::Result<DynamicImage, String> {
     // Create source image for fast_image_resize
     // from_vec_u8 takes ownership, avoiding the need for clone() on the pixels
-    let src_image = fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type)
+    let mut src_image = fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type)
         .map_err(|e| format!("fir source image error: {e:?}"))?;
 
     // Create destination image
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);
+
+    // Premultiplied Alpha conversion for RGBA images to prevent black fringing
+    let mul_div = MulDiv::default();
+    if pixel_type == PixelType::U8x4 {
+        mul_div
+            .multiply_alpha_inplace(&mut src_image)
+            .map_err(|e| format!("failed to premultiply alpha: {e}"))?;
+    }
 
     // Create resizer with Lanczos3 (high quality)
     let mut resizer = fir::Resizer::new();
@@ -2300,6 +2308,13 @@ fn fast_resize_internal_impl(
     resizer
         .resize(&src_image, &mut dst_image, &options)
         .map_err(|e| format!("fir resize error: {e:?}"))?;
+
+    // Unpremultiplied Alpha conversion for RGBA images
+    if pixel_type == PixelType::U8x4 {
+        mul_div
+            .divide_alpha_inplace(&mut dst_image)
+            .map_err(|e| format!("failed to unpremultiply alpha: {e}"))?;
+    }
 
     // Convert back to DynamicImage
     let dst_pixels = dst_image.into_vec();
