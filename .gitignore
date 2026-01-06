@@ -31,6 +31,11 @@ Thumbs.db
 npm/
 artifacts/
 
+# Coverage reports (generated files)
+coverage/
+*.lcov
+rust-coverage.lcov
+
 # Internal documentation (not for public)
 OSS_REVIEW.md
 OSS_CHECKLIST.md
