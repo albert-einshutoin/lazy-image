@@ -37,7 +37,6 @@ coverage/
 rust-coverage.lcov
 
 # Internal documentation (not for public)
-COVERAGE_REPORT.md
 OSS_REVIEW.md
 OSS_CHECKLIST.md
 TEST_QUALITY_REVIEW.md
