@@ -182,12 +182,11 @@ use napi::bindgen_prelude::*;
 use napi::{Env, JsBuffer, Task};
 #[cfg(feature = "napi")]
 use num_cpus;
-use ravif::{Encoder as AvifEncoder, Img};
+use rav1e::prelude::*;
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 #[cfg(feature = "napi")]
 use rayon::ThreadPool;
-use rgb::FromSlice;
 use std::borrow::Cow;
 use std::io::Cursor;
 use std::panic;
@@ -1590,66 +1589,145 @@ impl EncodeTask {
     /// Encode to AVIF - next-gen format, even smaller than WebP
     /// Avoids unnecessary alpha channel to reduce file size
     ///
-    /// Note: ICC profile embedding is not currently supported by ravif.
-    /// AVIF files will use sRGB color space by default.
+    /// Uses rav1e for AV1 encoding and avif-serialize for container building.
+    /// ICC profiles are now properly embedded using avif-serialize.
     pub fn encode_avif(
         img: &DynamicImage,
         quality: u8,
         icc: Option<&[u8]>,
     ) -> EngineResult<Vec<u8>> {
         let settings = QualitySettings::new(quality);
-        let encoder = AvifEncoder::new()
-            .with_quality(settings.quality)
-            .with_speed(settings.avif_speed());
+        let (width, height) = img.dimensions();
+        let width = width as usize;
+        let height = height as usize;
 
-        // Note: ravif 0.11 doesn't have native ICC embedding API
-        // AVIF files assume sRGB by default, which is acceptable for web use
-        // TODO: Consider using libavif bindings for full ICC support in the future
+        // Convert quality (0-100) to quantizer (0-255, lower = higher quality)
+        // AVIF quality mapping: 100 -> 0, 0 -> 255
+        let quantizer = ((100.0 - settings.quality) * 2.55) as usize;
 
-        // Warn if ICC profile is present but cannot be embedded
-        if icc.is_some() {
-            // In a production environment, you might want to log this
-            // For now, we silently proceed with sRGB assumption
-            // The ICC profile information is lost in AVIF output
-        }
+        // Create encoder config
+        // rav1e 0.8 API: Use Config::new().with_encoder_config() to create Config
+        let mut enc_config = EncoderConfig::with_speed_preset(settings.avif_speed());
+        enc_config.width = width;
+        enc_config.height = height;
+        enc_config.quantizer = quantizer;
+        enc_config.still_picture = true;
 
-        // Use RGB if the image is RGB to avoid unnecessary alpha channel
-        // This reduces file size by 5-10% for opaque images
-        let result = match img {
+        let cfg = Config::new().with_encoder_config(enc_config);
+
+        // Create encoder context
+        // rav1e 0.8 API: Config has new_context() method
+        let mut ctx: Context<u8> = cfg.new_context().map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "avif",
+                format!("Failed to create AV1 encoder context: {e}"),
+            ))
+        })?;
+
+        // Prepare image data and encode
+        let (_has_alpha, frame) = match img {
             DynamicImage::ImageRgb8(rgb_img) => {
-                let (width, height) = rgb_img.dimensions();
                 let pixels = rgb_img.as_raw();
+                let mut frame = ctx.new_frame();
+                
+                // Convert RGB to YUV420
+                let mut y_data = vec![0u8; width * height];
+                let mut u_data = vec![0u8; (width / 2) * (height / 2)];
+                let mut v_data = vec![0u8; (width / 2) * (height / 2)];
 
-                // Try to use RGB encoding if supported by ravif
-                // If not supported, fall back to RGBA
-                let img_ref = Img::new(pixels.as_rgb(), width as usize, height as usize);
+                // RGB to YUV conversion
+                for y in 0..height {
+                    for x in 0..width {
+                        let idx = (y * width + x) * 3;
+                        let r = pixels[idx] as f32;
+                        let g = pixels[idx + 1] as f32;
+                        let b = pixels[idx + 2] as f32;
 
-                // ravif 0.12 supports encode_rgb for RGB images
-                encoder.encode_rgb(img_ref).map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("AVIF encode failed: {e}"),
-                    ))
-                })?
+                        let y_val = (0.299 * r + 0.587 * g + 0.114 * b) as u8;
+                        y_data[y * width + x] = y_val;
+
+                        if x % 2 == 0 && y % 2 == 0 {
+                            let u_val = ((-0.169 * r - 0.331 * g + 0.5 * b) + 128.0) as u8;
+                            let v_val = ((0.5 * r - 0.419 * g - 0.081 * b) + 128.0) as u8;
+                            let uv_idx = (y / 2) * (width / 2) + (x / 2);
+                            u_data[uv_idx] = u_val;
+                            v_data[uv_idx] = v_val;
+                        }
+                    }
+                }
+
+                // Copy data to frame planes using copy_from_raw_u8
+                frame.planes[0].copy_from_raw_u8(&y_data, width, 1);
+                frame.planes[1].copy_from_raw_u8(&u_data, width / 2, 1);
+                frame.planes[2].copy_from_raw_u8(&v_data, width / 2, 1);
+
+                (false, frame)
             }
             _ => {
-                // For RGBA or other formats, convert to RGBA
                 let rgba = img.to_rgba8();
-                let (width, height) = rgba.dimensions();
                 let pixels = rgba.as_raw();
+                let mut frame = ctx.new_frame();
+                
+                // Convert RGBA to YUV420 with alpha
+                let mut y_data = vec![0u8; width * height];
+                let mut u_data = vec![0u8; (width / 2) * (height / 2)];
+                let mut v_data = vec![0u8; (width / 2) * (height / 2)];
+                let mut a_data = vec![0u8; width * height];
 
-                let img_ref = Img::new(pixels.as_rgba(), width as usize, height as usize);
+                for y in 0..height {
+                    for x in 0..width {
+                        let idx = (y * width + x) * 4;
+                        let r = pixels[idx] as f32;
+                        let g = pixels[idx + 1] as f32;
+                        let b = pixels[idx + 2] as f32;
+                        let a = pixels[idx + 3];
 
-                encoder.encode_rgba(img_ref).map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("AVIF encode failed: {e}"),
-                    ))
-                })?
+                        let y_val = (0.299 * r + 0.587 * g + 0.114 * b) as u8;
+                        y_data[y * width + x] = y_val;
+                        a_data[y * width + x] = a;
+
+                        if x % 2 == 0 && y % 2 == 0 {
+                            let u_val = ((-0.169 * r - 0.331 * g + 0.5 * b) + 128.0) as u8;
+                            let v_val = ((0.5 * r - 0.419 * g - 0.081 * b) + 128.0) as u8;
+                            let uv_idx = (y / 2) * (width / 2) + (x / 2);
+                            u_data[uv_idx] = u_val;
+                            v_data[uv_idx] = v_val;
+                        }
+                    }
+                }
+
+                // Copy data to frame planes using copy_from_raw_u8
+                frame.planes[0].copy_from_raw_u8(&y_data, width, 1);
+                frame.planes[1].copy_from_raw_u8(&u_data, width / 2, 1);
+                frame.planes[2].copy_from_raw_u8(&v_data, width / 2, 1);
+                frame.planes[3].copy_from_raw_u8(&a_data, width, 1);
+
+                (true, frame)
             }
         };
 
-        Ok(result.avif_file)
+        // Send frame to encoder
+        ctx.send_frame(frame).map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "avif",
+                format!("Failed to send frame to encoder: {e}"),
+            ))
+        })?;
+
+        // Flush encoder - flush() returns () not Result
+        ctx.flush();
+
+        // Collect encoded packets
+        let mut av1_data = Vec::new();
+        while let Ok(packet) = ctx.receive_packet() {
+            av1_data.extend_from_slice(&packet.data);
+        }
+
+        // Build AVIF container with avif-serialize
+        // avif-serialize::serialize_to_vec(data, icc, width, height, depth) -> Vec<u8>
+        let output = avif_serialize::serialize_to_vec(&av1_data, icc, width as u32, height as u32, 8);
+
+        Ok(output)
     }
 
     /// Process image: decode → apply ops → encode

@@ -34,7 +34,8 @@ mozjpeg = "0.10"
 webp = "0.3"
 
 # AVIF encoding - next-gen format, even smaller than WebP
-ravif = "0.12"
+rav1e = "0.8"
+avif-serialize = "0.8"
 rgb = "0.8"
 
 # ICC profile extraction from image containers
