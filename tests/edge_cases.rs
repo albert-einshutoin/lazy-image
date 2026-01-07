@@ -355,12 +355,12 @@ mod quality_boundary_tests {
     }
 
     #[test]
-    #[should_panic(expected = "quality >= 1")]
     fn test_quality_avif_0() {
         let img = create_test_image(100, 100);
-        // AVIFはquality=0を受け入れない（ravifの実装が1-100を要求）
-        // アサーションでpanicすることを確認
-        let _result = EncodeTask::encode_avif(&img, 0, None);
+        // AVIFはquality=0も受け入れる（rav1eの実装では品質0も有効）
+        // 品質0は最低品質（最大圧縮）を意味する
+        let result = EncodeTask::encode_avif(&img, 0, None);
+        assert!(result.is_ok(), "AVIF encoding with quality=0 should succeed");
     }
 
     #[test]
