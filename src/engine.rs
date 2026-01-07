@@ -154,16 +154,18 @@ impl QualitySettings {
         }
     }
 
-    // AVIF settings
-    fn avif_speed(&self) -> u8 {
+    // AVIF settings for libavif encoder
+    // libavif speed: 0 (slowest/best) to 10 (fastest/worst)
+    // We invert our quality-based logic: high quality -> slower speed
+    fn avif_speed(&self) -> i32 {
         if self.quality >= 85.0 {
-            7
+            4 // Slower for higher quality
         } else if self.quality >= 70.0 {
-            6
-        } else if self.quality >= 50.0 {
             5
+        } else if self.quality >= 50.0 {
+            6
         } else {
-            4
+            7 // Faster for lower quality
         }
     }
 }
@@ -182,7 +184,7 @@ use napi::bindgen_prelude::*;
 use napi::{Env, JsBuffer, Task};
 #[cfg(feature = "napi")]
 use num_cpus;
-use rav1e::prelude::*;
+use libavif_sys::*;
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 #[cfg(feature = "napi")]
@@ -1586,201 +1588,189 @@ impl EncodeTask {
         Ok(output)
     }
 
-    /// Encode to AVIF - next-gen format, even smaller than WebP
-    /// Avoids unnecessary alpha channel to reduce file size
+    /// Encode to AVIF format using libavif (AOMedia reference implementation).
     ///
-    /// Uses rav1e for AV1 encoding and avif-serialize for container building.
-    /// ICC profiles are now properly embedded using avif-serialize.
+    /// This implementation properly supports:
+    /// - ICC profile embedding via avifImageSetProfileICC
+    /// - Accurate RGB-to-YUV conversion with proper color matrix
+    /// - Alpha channel handling with separate quality control
     pub fn encode_avif(
         img: &DynamicImage,
         quality: u8,
-        _icc: Option<&[u8]>,
+        icc: Option<&[u8]>,
     ) -> EngineResult<Vec<u8>> {
         let settings = QualitySettings::new(quality);
         let (width, height) = img.dimensions();
-        let width = width as usize;
-        let height = height as usize;
 
-        // Convert quality (0-100) to quantizer (0-255, lower = higher quality)
-        // AVIF quality mapping: 100 -> 0, 0 -> 255
-        let quantizer = ((100.0 - settings.quality) * 2.55) as usize;
+        // Determine if image has alpha
+        let has_alpha = img.color().has_alpha();
 
-        // Create encoder config
-        // rav1e 0.8 API: Use Config::new().with_encoder_config() to create Config
-        let mut enc_config = EncoderConfig::with_speed_preset(settings.avif_speed());
-        enc_config.width = width;
-        enc_config.height = height;
-        enc_config.quantizer = quantizer;
-        enc_config.still_picture = true;
+        // Get RGBA pixels (libavif handles RGB to YUV conversion internally)
+        let rgba = img.to_rgba8();
+        let pixels = rgba.as_raw();
 
-        let cfg = Config::new().with_encoder_config(enc_config);
+        unsafe {
+            // Create avifImage
+            let avif_image = avifImageCreate(
+                width,
+                height,
+                8, // 8-bit depth
+                AVIF_PIXEL_FORMAT_YUV420,
+            );
 
-        // Create encoder context
-        // rav1e 0.8 API: Config has new_context() method
-        let mut ctx: Context<u8> = cfg.new_context().map_err(|e| {
-            to_engine_error(LazyImageError::encode_failed(
-                "avif",
-                format!("Failed to create AV1 encoder context: {e}"),
-            ))
-        })?;
+            if avif_image.is_null() {
+                return Err(to_engine_error(LazyImageError::encode_failed(
+                    "avif",
+                    "Failed to create AVIF image",
+                )));
+            }
 
-        // Prepare image data and encode color channels
-        let (_has_alpha, alpha_data) = match img {
-            DynamicImage::ImageRgb8(rgb_img) => {
-                let pixels = rgb_img.as_raw();
-                let mut frame = ctx.new_frame();
-                
-                // Convert RGB to YUV420
-                // For 4:2:0 chroma subsampling, chroma planes are ceil(width/2) × ceil(height/2)
-                let chroma_width = (width + 1) / 2;  // ceil(width/2)
-                let chroma_height = (height + 1) / 2;  // ceil(height/2)
-                let mut y_data = vec![0u8; width * height];
-                let mut u_data = vec![0u8; chroma_width * chroma_height];
-                let mut v_data = vec![0u8; chroma_width * chroma_height];
-
-                // RGB to YUV conversion
-                for y in 0..height {
-                    for x in 0..width {
-                        let idx = (y * width + x) * 3;
-                        let r = pixels[idx] as f32;
-                        let g = pixels[idx + 1] as f32;
-                        let b = pixels[idx + 2] as f32;
-
-                        let y_val = (0.299 * r + 0.587 * g + 0.114 * b) as u8;
-                        y_data[y * width + x] = y_val;
-
-                        if x % 2 == 0 && y % 2 == 0 {
-                            let u_val = ((-0.169 * r - 0.331 * g + 0.5 * b) + 128.0) as u8;
-                            let v_val = ((0.5 * r - 0.419 * g - 0.081 * b) + 128.0) as u8;
-                            let uv_idx = (y / 2) * chroma_width + (x / 2);
-                            u_data[uv_idx] = u_val;
-                            v_data[uv_idx] = v_val;
+            // Set up RAII-style cleanup using a guard
+            struct AvifImageGuard(*mut avifImage);
+            impl Drop for AvifImageGuard {
+                fn drop(&mut self) {
+                    unsafe {
+                        if !self.0.is_null() {
+                            avifImageDestroy(self.0);
                         }
                     }
                 }
-
-                // Copy data to frame planes using copy_from_raw_u8
-                frame.planes[0].copy_from_raw_u8(&y_data, width, 1);
-                frame.planes[1].copy_from_raw_u8(&u_data, chroma_width, 1);
-                frame.planes[2].copy_from_raw_u8(&v_data, chroma_width, 1);
-
-                // Send frame to encoder
-                ctx.send_frame(frame).map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("Failed to send frame to encoder: {e}"),
-                    ))
-                })?;
-
-                (false, None)
             }
-            _ => {
-                let rgba = img.to_rgba8();
-                let pixels = rgba.as_raw();
-                let mut frame = ctx.new_frame();
-                
-                // Convert RGBA to YUV420 (color channels only)
-                // For 4:2:0 chroma subsampling, chroma planes are ceil(width/2) × ceil(height/2)
-                let chroma_width = (width + 1) / 2;  // ceil(width/2)
-                let chroma_height = (height + 1) / 2;  // ceil(height/2)
-                let mut y_data = vec![0u8; width * height];
-                let mut u_data = vec![0u8; chroma_width * chroma_height];
-                let mut v_data = vec![0u8; chroma_width * chroma_height];
-                let mut a_data = vec![0u8; width * height];
+            let _image_guard = AvifImageGuard(avif_image);
 
-                for y in 0..height {
-                    for x in 0..width {
-                        let idx = (y * width + x) * 4;
-                        let r = pixels[idx] as f32;
-                        let g = pixels[idx + 1] as f32;
-                        let b = pixels[idx + 2] as f32;
-                        let a = pixels[idx + 3];
+            // Set color properties
+            (*avif_image).colorPrimaries = AVIF_COLOR_PRIMARIES_BT709 as u16;
+            (*avif_image).transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB as u16;
+            (*avif_image).matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT601 as u16;
+            (*avif_image).yuvRange = AVIF_RANGE_FULL;
 
-                        let y_val = (0.299 * r + 0.587 * g + 0.114 * b) as u8;
-                        y_data[y * width + x] = y_val;
-                        a_data[y * width + x] = a;
+            // Set ICC profile if provided
+            if let Some(icc_data) = icc {
+                let result = avifImageSetProfileICC(
+                    avif_image,
+                    icc_data.as_ptr(),
+                    icc_data.len(),
+                );
+                if result != AVIF_RESULT_OK {
+                    return Err(to_engine_error(LazyImageError::encode_failed(
+                        "avif",
+                        format!("Failed to set ICC profile: {:?}", result),
+                    )));
+                }
+            }
 
-                        if x % 2 == 0 && y % 2 == 0 {
-                            let u_val = ((-0.169 * r - 0.331 * g + 0.5 * b) + 128.0) as u8;
-                            let v_val = ((0.5 * r - 0.419 * g - 0.081 * b) + 128.0) as u8;
-                            let uv_idx = (y / 2) * chroma_width + (x / 2);
-                            u_data[uv_idx] = u_val;
-                            v_data[uv_idx] = v_val;
+            // Create and configure RGB image structure
+            let mut rgb: avifRGBImage = std::mem::zeroed();
+            avifRGBImageSetDefaults(&mut rgb, avif_image);
+
+            rgb.format = AVIF_RGB_FORMAT_RGBA;
+            rgb.depth = 8;
+            rgb.pixels = pixels.as_ptr() as *mut u8;
+            rgb.rowBytes = (width * 4) as u32;
+
+            // Allocate YUV planes in the image
+            let alloc_result = avifImageAllocatePlanes(avif_image, AVIF_PLANES_YUV);
+            if alloc_result != AVIF_RESULT_OK {
+                return Err(to_engine_error(LazyImageError::encode_failed(
+                    "avif",
+                    format!("Failed to allocate YUV planes: {:?}", alloc_result),
+                )));
+            }
+
+            // Convert RGB to YUV using libavif's optimized conversion
+            let convert_result = avifImageRGBToYUV(avif_image, &rgb);
+            if convert_result != AVIF_RESULT_OK {
+                return Err(to_engine_error(LazyImageError::encode_failed(
+                    "avif",
+                    format!("Failed to convert RGB to YUV: {:?}", convert_result),
+                )));
+            }
+
+            // Handle alpha channel if present
+            if has_alpha {
+                let alloc_alpha_result = avifImageAllocatePlanes(avif_image, AVIF_PLANES_A);
+                if alloc_alpha_result != AVIF_RESULT_OK {
+                    return Err(to_engine_error(LazyImageError::encode_failed(
+                        "avif",
+                        format!("Failed to allocate alpha plane: {:?}", alloc_alpha_result),
+                    )));
+                }
+
+                // Copy alpha channel data
+                let alpha_plane = (*avif_image).alphaPlane;
+                let alpha_row_bytes = (*avif_image).alphaRowBytes as usize;
+                for y in 0..height as usize {
+                    for x in 0..width as usize {
+                        let src_idx = (y * width as usize + x) * 4 + 3; // Alpha is 4th component
+                        let dst_idx = y * alpha_row_bytes + x;
+                        *alpha_plane.add(dst_idx) = pixels[src_idx];
+                    }
+                }
+            }
+
+            // Create encoder
+            let encoder = avifEncoderCreate();
+            if encoder.is_null() {
+                return Err(to_engine_error(LazyImageError::encode_failed(
+                    "avif",
+                    "Failed to create AVIF encoder",
+                )));
+            }
+
+            // Set up encoder cleanup guard
+            struct AvifEncoderGuard(*mut avifEncoder);
+            impl Drop for AvifEncoderGuard {
+                fn drop(&mut self) {
+                    unsafe {
+                        if !self.0.is_null() {
+                            avifEncoderDestroy(self.0);
                         }
                     }
                 }
-
-                // Copy color data to frame planes
-                frame.planes[0].copy_from_raw_u8(&y_data, width, 1);
-                frame.planes[1].copy_from_raw_u8(&u_data, chroma_width, 1);
-                frame.planes[2].copy_from_raw_u8(&v_data, chroma_width, 1);
-
-                // Send color frame to encoder
-                ctx.send_frame(frame).map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("Failed to send frame to encoder: {e}"),
-                    ))
-                })?;
-
-                // Encode alpha channel separately (monochrome YUV400)
-                let mut alpha_enc_config = EncoderConfig::with_speed_preset(settings.avif_speed());
-                alpha_enc_config.width = width;
-                alpha_enc_config.height = height;
-                alpha_enc_config.quantizer = quantizer;
-                alpha_enc_config.still_picture = true;
-                alpha_enc_config.chroma_sampling = rav1e::color::ChromaSampling::Cs400; // Monochrome for alpha
-
-                let alpha_cfg = Config::new().with_encoder_config(alpha_enc_config);
-                let mut alpha_ctx: Context<u8> = alpha_cfg.new_context().map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("Failed to create alpha encoder context: {e}"),
-                    ))
-                })?;
-
-                let mut alpha_frame = alpha_ctx.new_frame();
-                alpha_frame.planes[0].copy_from_raw_u8(&a_data, width, 1);
-
-                alpha_ctx.send_frame(alpha_frame).map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("Failed to send alpha frame to encoder: {e}"),
-                    ))
-                })?;
-
-                alpha_ctx.flush();
-
-                let mut alpha_av1_data = Vec::new();
-                while let Ok(packet) = alpha_ctx.receive_packet() {
-                    alpha_av1_data.extend_from_slice(&packet.data);
-                }
-
-                (true, Some(alpha_av1_data))
             }
-        };
+            let _encoder_guard = AvifEncoderGuard(encoder);
 
-        // Flush color encoder - flush() returns () not Result
-        ctx.flush();
+            // Configure encoder
+            // libavif quality: 0 (worst) to 100 (lossless),
+            // but internally uses quantizer where lower = better
+            // quality maps to: minQuantizer and maxQuantizer
+            (*encoder).quality = quality as i32;
+            (*encoder).qualityAlpha = quality as i32;
+            (*encoder).speed = settings.avif_speed();
+            (*encoder).maxThreads = 0; // 0 = use all available threads
 
-        // Collect encoded packets for color channels
-        let mut av1_data = Vec::new();
-        while let Ok(packet) = ctx.receive_packet() {
-            av1_data.extend_from_slice(&packet.data);
+            // Encode the image
+            let mut output: avifRWData = std::mem::zeroed();
+
+            let add_result = avifEncoderAddImage(
+                encoder,
+                avif_image,
+                1, // duration (1 for still image)
+                AVIF_ADD_IMAGE_FLAG_SINGLE,
+            );
+            if add_result != AVIF_RESULT_OK {
+                return Err(to_engine_error(LazyImageError::encode_failed(
+                    "avif",
+                    format!("Failed to add image to encoder: {:?}", add_result),
+                )));
+            }
+
+            let finish_result = avifEncoderFinish(encoder, &mut output);
+            if finish_result != AVIF_RESULT_OK {
+                return Err(to_engine_error(LazyImageError::encode_failed(
+                    "avif",
+                    format!("Failed to finish encoding: {:?}", finish_result),
+                )));
+            }
+
+            // Copy output data
+            let encoded_data = std::slice::from_raw_parts(output.data, output.size).to_vec();
+
+            // Free output data
+            avifRWDataFree(&mut output);
+
+            Ok(encoded_data)
         }
-
-        // Build AVIF container with avif-serialize
-        // Note: avif-serialize doesn't directly support ICC profiles in serialize_to_vec
-        // ICC profiles should be embedded in the colr box, but avif-serialize handles this automatically
-        // based on the AV1 sequence header. For explicit ICC embedding, we would need to use
-        // Aviffy builder with set_exif() or other methods, but that's beyond the scope of
-        // the basic serialize_to_vec function.
-        // 
-        // The ICC profile is passed as a parameter but avif-serialize's serialize_to_vec
-        // doesn't use it directly. The AV1 encoder should preserve color information.
-        let output = avif_serialize::serialize_to_vec(&av1_data, alpha_data.as_deref(), width as u32, height as u32, 8);
-
-        Ok(output)
     }
 
     /// Process image: decode → apply ops → encode
@@ -2327,6 +2317,9 @@ fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
     } else if &data[0..4] == b"RIFF" && data.len() >= 12 && &data[8..12] == b"WEBP" {
         // WebP: starts with "RIFF" then 4 bytes size then "WEBP"
         extract_icc_from_webp(data)?
+    } else if is_avif_data(data) {
+        // AVIF: ISOBMFF-based format with 'ftyp' box containing 'avif' brand
+        extract_icc_from_avif(data)?
     } else {
         return None;
     };
@@ -2338,6 +2331,47 @@ fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
         // Invalid ICC profile - skip it
         None
     }
+}
+
+/// Check if data is AVIF format (ISOBMFF with 'avif' brand)
+#[allow(dead_code)]
+fn is_avif_data(data: &[u8]) -> bool {
+    // AVIF files are ISOBMFF containers
+    // They start with a 'ftyp' box containing 'avif' or 'avis' brand
+    if data.len() < 12 {
+        return false;
+    }
+
+    // Check for 'ftyp' box (first 4 bytes are size, next 4 are 'ftyp')
+    if &data[4..8] != b"ftyp" {
+        return false;
+    }
+
+    // Look for 'avif' or 'avis' brand in ftyp box
+    let ftyp_size = u32::from_be_bytes([data[0], data[1], data[2], data[3]]) as usize;
+    if ftyp_size > data.len() || ftyp_size < 12 {
+        return false;
+    }
+
+    // Check major brand (bytes 8-11)
+    let major_brand = &data[8..12];
+    if major_brand == b"avif" || major_brand == b"avis" {
+        return true;
+    }
+
+    // Check compatible brands (starting at byte 16)
+    if ftyp_size >= 20 {
+        let mut offset = 16;
+        while offset + 4 <= ftyp_size {
+            let brand = &data[offset..offset + 4];
+            if brand == b"avif" || brand == b"avis" {
+                return true;
+            }
+            offset += 4;
+        }
+    }
+
+    false
 }
 
 /// Extract ICC profile from JPEG data
@@ -2360,6 +2394,64 @@ fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
     use img_parts::webp::WebP;
     let webp = WebP::from_bytes(data.to_vec().into()).ok()?;
     webp.icc_profile().map(|icc| icc.to_vec())
+}
+
+/// Extract ICC profile from AVIF data using libavif
+#[allow(dead_code)]
+fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
+    unsafe {
+        // Create decoder
+        let decoder = avifDecoderCreate();
+        if decoder.is_null() {
+            return None;
+        }
+
+        // Set up RAII cleanup
+        struct AvifDecoderGuard(*mut avifDecoder);
+        impl Drop for AvifDecoderGuard {
+            fn drop(&mut self) {
+                unsafe {
+                    if !self.0.is_null() {
+                        avifDecoderDestroy(self.0);
+                    }
+                }
+            }
+        }
+        let _decoder_guard = AvifDecoderGuard(decoder);
+
+        // Set decode data
+        let result = avifDecoderSetIOMemory(decoder, data.as_ptr(), data.len());
+        if result != AVIF_RESULT_OK {
+            return None;
+        }
+
+        // Parse the image (header only)
+        let result = avifDecoderParse(decoder);
+        if result != AVIF_RESULT_OK {
+            return None;
+        }
+
+        // Get the image
+        let image = (*decoder).image;
+        if image.is_null() {
+            return None;
+        }
+
+        // Check if ICC profile exists
+        let icc_size = (*image).icc.size;
+        if icc_size == 0 {
+            return None;
+        }
+
+        // Copy ICC profile data
+        let icc_ptr = (*image).icc.data;
+        if icc_ptr.is_null() {
+            return None;
+        }
+
+        let icc_data = std::slice::from_raw_parts(icc_ptr, icc_size).to_vec();
+        Some(icc_data)
+    }
 }
 
 // =============================================================================
@@ -3059,19 +3151,33 @@ mod tests {
             use super::*;
 
             #[test]
-            fn test_avif_loses_icc_profile() {
-                // AVIFはICCを保持しないことを明示的にテスト
-                // これはドキュメント化された制限事項
+            fn test_avif_preserves_icc_profile() {
+                // libavif implementation now properly embeds ICC profiles
                 let icc = create_minimal_srgb_icc();
                 let img = create_test_image(100, 100);
                 let avif = EncodeTask::encode_avif(&img, 60, Some(&icc)).unwrap();
 
-                // AVIFからはICCが抽出できないことを確認
-                // （現在のravif実装の制限）
+                // Verify AVIF data is valid
+                assert!(is_avif_data(&avif), "Output should be valid AVIF");
+
+                // Extract ICC profile from AVIF
                 let extracted = extract_icc_profile(&avif);
                 assert!(
-                    extracted.is_none(),
-                    "AVIF should not preserve ICC profile (known limitation)"
+                    extracted.is_some(),
+                    "AVIF should now preserve ICC profile with libavif"
+                );
+
+                // Verify extracted ICC matches original
+                let extracted_icc = extracted.unwrap();
+                assert_eq!(
+                    extracted_icc.len(),
+                    icc.len(),
+                    "Extracted ICC size should match original"
+                );
+                assert_eq!(
+                    &extracted_icc[..],
+                    &icc[..],
+                    "Extracted ICC data should match original"
                 );
             }
 
@@ -3081,8 +3187,24 @@ mod tests {
                 let icc = create_minimal_srgb_icc();
                 let img = create_test_image(100, 100);
                 let result = EncodeTask::encode_avif(&img, 60, Some(&icc));
-                // エラーにならずにエンコードできる（ICCは無視される）
-                assert!(result.is_ok());
+                assert!(result.is_ok(), "AVIF encoding with ICC should succeed");
+            }
+
+            #[test]
+            fn test_avif_encoding_without_icc() {
+                // ICC無しでもエンコードできることを確認
+                let img = create_test_image(100, 100);
+                let avif = EncodeTask::encode_avif(&img, 60, None).unwrap();
+
+                // Verify AVIF data is valid
+                assert!(is_avif_data(&avif), "Output should be valid AVIF");
+
+                // Should not have ICC profile
+                let extracted = extract_icc_profile(&avif);
+                assert!(
+                    extracted.is_none(),
+                    "AVIF without ICC should not have ICC profile"
+                );
             }
         }
     }
