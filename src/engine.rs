@@ -182,7 +182,6 @@ use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
 use napi::{Env, JsBuffer, JsFunction, JsObject, Task};
-#[cfg(feature = "napi")]
 use num_cpus;
 use libavif_sys::*;
 #[cfg(feature = "napi")]
@@ -190,6 +189,7 @@ use rayon::prelude::*;
 #[cfg(feature = "napi")]
 use rayon::ThreadPool;
 use std::borrow::Cow;
+use std::cmp;
 use std::io::Cursor;
 use std::panic;
 use std::path::PathBuf;
@@ -1760,7 +1760,11 @@ impl EncodeTask {
             (*encoder).quality = quality as i32;
             (*encoder).qualityAlpha = quality as i32;
             (*encoder).speed = settings.avif_speed();
-            (*encoder).maxThreads = 0; // 0 = use all available threads
+            // libavif requires maxThreads >= 2 for multi-threading; cap at 8 to avoid runaway thread counts
+            let cpu_threads = num_cpus::get();
+            let capped = cmp::min(8, cpu_threads);
+            let encoder_threads = cmp::max(2, capped) as i32;
+            (*encoder).maxThreads = encoder_threads;
 
             // Encode出力を管理するRAIIガード
             struct AvifRwDataGuard(avifRWData);
