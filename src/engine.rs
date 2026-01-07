@@ -774,6 +774,7 @@ impl ImageEngine {
             ops,
             format: output_format,
             concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
+            keep_metadata: self.keep_metadata,
         }))
     }
 }
@@ -2025,6 +2026,7 @@ pub struct BatchTask {
     ops: Vec<Operation>,
     format: OutputFormat,
     concurrency: u32,
+    keep_metadata: bool,
 }
 
 #[cfg(feature = "napi")]
@@ -2050,13 +2052,18 @@ impl Task for BatchTask {
         let ops = &self.ops;
         let format = &self.format;
         let output_dir = &self.output_dir;
+        let keep_metadata = self.keep_metadata;
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> Result<String> {
                 let data = fs::read(input_path).map_err(|e| {
                     napi::Error::from(LazyImageError::file_read_failed(input_path, e))
                 })?;
 
-                let icc_profile = extract_icc_profile(&data).map(Arc::new);
+                let icc_profile = if keep_metadata {
+                    extract_icc_profile(&data).map(Arc::new)
+                } else {
+                    None
+                };
 
                 let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
                     EncodeTask::decode_jpeg_mozjpeg(&data)?
@@ -2073,7 +2080,12 @@ impl Task for BatchTask {
 
                 let processed = EncodeTask::apply_ops(Cow::Owned(img), ops)?;
 
-                let icc = icc_profile.as_ref().map(|v| v.as_slice());
+                // Encode - only preserve ICC profile if keep_metadata is true
+                let icc = if keep_metadata {
+                    icc_profile.as_ref().map(|v| v.as_slice())
+                } else {
+                    None // Strip metadata by default for security & smaller files
+                };
                 let encoded = match format {
                     OutputFormat::Jpeg { quality } => {
                         EncodeTask::encode_jpeg(&processed, *quality, icc)?
