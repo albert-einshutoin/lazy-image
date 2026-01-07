@@ -1739,8 +1739,23 @@ impl EncodeTask {
             (*encoder).speed = settings.avif_speed();
             (*encoder).maxThreads = 0; // 0 = use all available threads
 
+            // Encode出力を管理するRAIIガード
+            struct AvifRwDataGuard(avifRWData);
+            impl AvifRwDataGuard {
+                fn new() -> Self {
+                    unsafe { Self(std::mem::zeroed()) }
+                }
+            }
+            impl Drop for AvifRwDataGuard {
+                fn drop(&mut self) {
+                    unsafe {
+                        avifRWDataFree(&mut self.0);
+                    }
+                }
+            }
+
             // Encode the image
-            let mut output: avifRWData = std::mem::zeroed();
+            let mut output = AvifRwDataGuard::new();
 
             let add_result = avifEncoderAddImage(
                 encoder,
@@ -1755,7 +1770,7 @@ impl EncodeTask {
                 )));
             }
 
-            let finish_result = avifEncoderFinish(encoder, &mut output);
+            let finish_result = avifEncoderFinish(encoder, &mut output.0);
             if finish_result != AVIF_RESULT_OK {
                 return Err(to_engine_error(LazyImageError::encode_failed(
                     "avif",
@@ -1764,10 +1779,8 @@ impl EncodeTask {
             }
 
             // Copy output data
-            let encoded_data = std::slice::from_raw_parts(output.data, output.size).to_vec();
-
-            // Free output data
-            avifRWDataFree(&mut output);
+            let encoded_data =
+                std::slice::from_raw_parts(output.0.data, output.0.size).to_vec();
 
             Ok(encoded_data)
         }
