@@ -1288,97 +1288,123 @@ impl EncodeTask {
         let (w, h) = rgb.dimensions();
         let pixels = rgb.into_raw();
 
-        // mozjpeg can panic internally, so we catch it
-        let result = panic::catch_unwind(|| -> std::result::Result<Vec<u8>, String> {
-            let mut comp = Compress::new(ColorSpace::JCS_RGB);
+        // 1. 事前検証 (パニック要因の排除)
+        // 画像サイズの妥当性チェック
+        if w == 0 || h == 0 {
+            return Err(to_engine_error(LazyImageError::internal_panic(
+                "Invalid image dimensions: width or height is zero",
+            )));
+        }
 
-            comp.set_size(w as usize, h as usize);
+        // MAX_DIMENSIONチェック（プロジェクト全体の一貫性のため）
+        if w > MAX_DIMENSION || h > MAX_DIMENSION {
+            return Err(to_engine_error(LazyImageError::dimension_exceeds_limit(
+                w.max(h),
+                MAX_DIMENSION,
+            )));
+        }
 
-            // Output color space: YCbCr (standard for JPEG)
-            comp.set_color_space(ColorSpace::JCS_YCbCr);
+        // バッファサイズの整合性チェック（非常に重要）
+        let expected_len = (w as usize) * (h as usize) * 3;
+        if pixels.len() != expected_len {
+            return Err(to_engine_error(LazyImageError::corrupted_image()));
+        }
 
-            // Quality setting with fine-grained control
-            // Convert 0-100 to mozjpeg's quality scale (0.0-100.0)
-            let quality_f32 = quality as f32;
-            comp.set_quality(quality_f32);
+        // 2. エンコード (catch_unwind は削除)
+        // ここでパニックが起きるなら、それはライブラリのバグなのでクラッシュさせるべき（Fail Fast）
+        let mut comp = Compress::new(ColorSpace::JCS_RGB);
 
-            // =========================================================
-            // RUTHLESS WEB OPTIMIZATION SETTINGS (Enhanced)
-            // =========================================================
+        comp.set_size(w as usize, h as usize);
 
-            // 1. Chroma Subsampling: Force 4:2:0 (same as sharp default)
-            //    (2,2) means 2x2 pixel blocks for Cb and Cr channels
-            //    This halves chroma resolution - imperceptible for photos
-            comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
+        // Output color space: YCbCr (standard for JPEG)
+        comp.set_color_space(ColorSpace::JCS_YCbCr);
 
-            // 2. Progressive mode: Better compression + progressive loading
-            comp.set_progressive_mode();
+        // Quality setting with fine-grained control
+        // Convert 0-100 to mozjpeg's quality scale (0.0-100.0)
+        let quality_f32 = quality as f32;
+        comp.set_quality(quality_f32);
 
-            // 3. Optimize Huffman tables: Custom tables per image
-            comp.set_optimize_coding(true);
+        // =========================================================
+        // RUTHLESS WEB OPTIMIZATION SETTINGS (Enhanced)
+        // =========================================================
 
-            // 4. Optimize scan order: Better progressive compression
-            comp.set_optimize_scans(true);
-            comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
+        // 1. Chroma Subsampling: Force 4:2:0 (same as sharp default)
+        //    (2,2) means 2x2 pixel blocks for Cb and Cr channels
+        //    This halves chroma resolution - imperceptible for photos
+        comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
 
-            // 5. Enhanced Trellis quantization: Better rate-distortion optimization
-            //    This is mozjpeg's secret sauce - it tries multiple quantization
-            //    strategies and picks the best one for file size vs quality
-            //    Trellis quantization is automatically enabled when optimize_coding is true (set above)
-            //    This ensures consistent behavior and optimal compression
-            //    Note: set_trellis_quantization() method is not available in mozjpeg 0.10 API,
-            //    but Trellis quantization is guaranteed to be enabled via set_optimize_coding(true)
+        // 2. Progressive mode: Better compression + progressive loading
+        comp.set_progressive_mode();
 
-            // 6. Adaptive smoothing: Reduces high-frequency noise for better compression
-            //    Higher quality = less smoothing, lower quality = more smoothing
-            //    Enhanced smoothing for low quality (60 and below) to reduce block noise
-            //    while maintaining compression ratio (good trade-off for web use)
-            let smoothing = if quality_f32 >= 90.0 {
-                0 // No smoothing for high quality
-            } else if quality_f32 >= 70.0 {
-                5 // Minimal smoothing
-            } else if quality_f32 >= 60.0 {
-                10 // Moderate smoothing
-            } else {
-                18 // Enhanced smoothing for lower quality (was 15, now 18 for better block noise reduction)
-            };
-            comp.set_smoothing_factor(smoothing);
+        // 3. Optimize Huffman tables: Custom tables per image
+        comp.set_optimize_coding(true);
 
-            // 7. Quantization table optimization
-            //    mozjpeg automatically optimizes quantization tables when optimize_coding is true
+        // 4. Optimize scan order: Better progressive compression
+        comp.set_optimize_scans(true);
+        comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
 
-            // Estimate output size: ~10% of raw size for typical JPEG compression
-            let estimated_size = (w as usize * h as usize * 3 / 10).max(4096);
-            let mut output = Vec::with_capacity(estimated_size);
+        // 5. Enhanced Trellis quantization: Better rate-distortion optimization
+        //    This is mozjpeg's secret sauce - it tries multiple quantization
+        //    strategies and picks the best one for file size vs quality
+        //    Trellis quantization is automatically enabled when optimize_coding is true (set above)
+        //    This ensures consistent behavior and optimal compression
+        //    Note: set_trellis_quantization() method is not available in mozjpeg 0.10 API,
+        //    but Trellis quantization is guaranteed to be enabled via set_optimize_coding(true)
 
-            {
-                let mut writer = comp
-                    .start_compress(&mut output)
-                    .map_err(|e| format!("mozjpeg: failed to start compress: {e:?}"))?;
+        // 6. Adaptive smoothing: Reduces high-frequency noise for better compression
+        //    Higher quality = less smoothing, lower quality = more smoothing
+        //    Enhanced smoothing for low quality (60 and below) to reduce block noise
+        //    while maintaining compression ratio (good trade-off for web use)
+        let smoothing = if quality_f32 >= 90.0 {
+            0 // No smoothing for high quality
+        } else if quality_f32 >= 70.0 {
+            5 // Minimal smoothing
+        } else if quality_f32 >= 60.0 {
+            10 // Moderate smoothing
+        } else {
+            18 // Enhanced smoothing for lower quality (was 15, now 18 for better block noise reduction)
+        };
+        comp.set_smoothing_factor(smoothing);
 
-                let stride = w as usize * 3;
-                for row in pixels.chunks(stride) {
-                    writer
-                        .write_scanlines(row)
-                        .map_err(|e| format!("mozjpeg: failed to write scanlines: {e:?}"))?;
-                }
+        // 7. Quantization table optimization
+        //    mozjpeg automatically optimizes quantization tables when optimize_coding is true
 
+        // Estimate output size: ~10% of raw size for typical JPEG compression
+        let estimated_size = (w as usize * h as usize * 3 / 10).max(4096);
+        let mut output = Vec::with_capacity(estimated_size);
+
+        let encoded = {
+            let mut writer = comp
+                .start_compress(&mut output)
+                .map_err(|e| {
+                    to_engine_error(LazyImageError::encode_failed(
+                        "jpeg",
+                        format!("mozjpeg: failed to start compress: {e:?}"),
+                    ))
+                })?;
+
+            let stride = w as usize * 3;
+            for row in pixels.chunks(stride) {
                 writer
-                    .finish()
-                    .map_err(|e| format!("mozjpeg: failed to finish: {e:?}"))?;
+                    .write_scanlines(row)
+                    .map_err(|e| {
+                        to_engine_error(LazyImageError::encode_failed(
+                            "jpeg",
+                            format!("mozjpeg: failed to write scanlines: {e:?}"),
+                        ))
+                    })?;
             }
 
-            Ok(output)
-        });
+            writer
+                .finish()
+                .map_err(|e| {
+                    to_engine_error(LazyImageError::encode_failed(
+                        "jpeg",
+                        format!("mozjpeg: failed to finish: {e:?}"),
+                    ))
+                })?;
 
-        let encoded = match result {
-            Ok(Ok(data)) => data,
-            Ok(Err(e)) => return Err(to_engine_error(LazyImageError::encode_failed("jpeg", e))),
-            Err(_) => {
-                return Err(to_engine_error(LazyImageError::internal_panic(
-                    "mozjpeg panicked during encoding",
-                )))
-            }
+            output
         };
 
         // Embed ICC profile using img-parts if present
