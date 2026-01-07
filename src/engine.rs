@@ -181,7 +181,7 @@ use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
-use napi::{Env, JsBuffer, Task};
+use napi::{Env, JsBuffer, JsFunction, JsObject, Task};
 #[cfg(feature = "napi")]
 use num_cpus;
 use libavif_sys::*;
@@ -467,6 +467,28 @@ impl ImageEngine {
         Ok(this)
     }
 
+    #[cfg(feature = "napi")]
+    fn emit_to_color_space_deprecation_warning(env: &Env) {
+        const WARNING_MESSAGE: &str =
+            "lazy-image: toColorspace() is deprecated and will be removed in v1.0. Use ensureRgb().";
+
+        let warn_result = (|| {
+            let global = env.get_global()?;
+            let console: JsObject = global.get_named_property("console")?;
+            let warn: JsFunction = console.get_named_property("warn")?;
+            let message = env.create_string(WARNING_MESSAGE)?.into_unknown();
+            warn.call(Some(&console), &[message])?;
+            Ok::<(), napi::Error>(())
+        })();
+
+        if let Err(err) = warn_result {
+            eprintln!(
+                "lazy-image warning: {} (failed to forward warning to JS: {})",
+                WARNING_MESSAGE, err
+            );
+        }
+    }
+
     /// Legacy method - use ensureRgb() instead
     ///
     /// **Deprecated**: This method is deprecated and will be removed in v1.0.
@@ -477,10 +499,11 @@ impl ImageEngine {
     #[napi(js_name = "toColorspace")]
     pub fn to_color_space(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
         color_space: String,
     ) -> Result<Reference<ImageEngine>> {
-        // Deprecation warning will be handled by JavaScript wrapper in index.js
+        Self::emit_to_color_space_deprecation_warning(&env);
 
         match color_space.to_lowercase().as_str() {
             "srgb" => {
@@ -1641,7 +1664,7 @@ impl EncodeTask {
             // Set color properties
             (*avif_image).colorPrimaries = AVIF_COLOR_PRIMARIES_BT709 as u16;
             (*avif_image).transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB as u16;
-            (*avif_image).matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT601 as u16;
+            (*avif_image).matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709 as u16;
             (*avif_image).yuvRange = AVIF_RANGE_FULL;
 
             // Set ICC profile if provided

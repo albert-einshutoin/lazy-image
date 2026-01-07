@@ -1,67 +1,57 @@
-/**
- * Deprecation warning test for toColorspace method
- */
-
+const assert = require('assert');
 const { resolveFixture, resolveRoot } = require('../helpers/paths');
 const { ImageEngine } = require(resolveRoot('index'));
 
 async function testDeprecationWarning() {
     console.log('⚠️  Deprecation Warning Test');
     console.log('==========================\n');
-    
-    // Create a test image
-    const testImagePath = resolveFixture('test_input.jpg');
-    
-    console.log('✅ Testing toColorspace() deprecation warning:');
-    
+
+    const originalWarn = console.warn;
+    const capturedWarnings = [];
+    console.warn = (...args) => {
+        capturedWarnings.push(args.join(' '));
+        return originalWarn.apply(console, args);
+    };
+
     try {
+        const testImagePath = resolveFixture('test_input.jpg');
         const engine = ImageEngine.fromPath(testImagePath);
-        
-        // This should trigger the deprecation warning
-        console.log('  Calling toColorspace("srgb") - should show warning...');
-        const result = engine.toColorspace('srgb');
-        
-        console.log('  ✅ Method call succeeded (backward compatibility maintained)');
-        
-        // Test with invalid color space to verify error messages
-        console.log('\n  Testing error message improvements:');
-        try {
-            engine.toColorspace('p3');
-            console.log('  ❌ Should not reach here - p3 should be rejected');
-        } catch (e) {
-            console.log('  ✅ P3 correctly rejected:', e.message);
-        }
-        
-        try {
-            engine.toColorspace('invalid');
-            console.log('  ❌ Should not reach here - invalid should be rejected');
-        } catch (e) {
-            console.log('  ✅ Invalid colorspace correctly rejected:', e.message);
-        }
-        
-    } catch (e) {
-        console.log(`  ❌ Unexpected error: ${e.message}`);
+
+        console.log('Calling toColorspace("srgb") to ensure warning is emitted...');
+        engine.toColorspace('srgb');
+
+        const warningFound = capturedWarnings.some(message =>
+            message.includes('toColorspace() is deprecated')
+        );
+        assert.ok(warningFound, 'Expected toColorspace() deprecation warning');
+
+        console.log('Verifying unsupported color space errors still behave correctly...');
+        assert.throws(
+            () => engine.toColorspace('p3'),
+            /Color space 'p3' is not supported/,
+            'Expected P3 to be rejected with helpful error'
+        );
+
+        assert.throws(
+            () => engine.toColorspace('invalid'),
+            /Unknown color space 'invalid'/,
+            'Expected invalid color space to be rejected'
+        );
+
+        console.log('\n✅ Deprecation warning emitted and errors verified');
+    } catch (error) {
+        console.error('❌ Deprecation warning test failed:', error);
+        process.exitCode = 1;
+    } finally {
+        console.warn = originalWarn;
     }
-    
-    console.log('\n📋 Deprecation Implementation Summary:');
-    console.log('1. ✅ JavaScript wrapper shows deprecation warning');
-    console.log('2. ✅ Backward compatibility maintained for "srgb"');
-    console.log('3. ✅ Clear error messages for unsupported color spaces');
-    console.log('4. ✅ Migration path clearly communicated (use ensureRgb())');
-    
-    console.log('\n🔄 Migration Guide:');
-    console.log('Before: engine.toColorspace("srgb")');
-    console.log('After:  engine.ensureRgb()');
-    console.log('');
-    console.log('Benefits of ensureRgb():');
-    console.log('- Clearer naming (pixel format vs color space)');
-    console.log('- No confusion about ICC color management');
-    console.log('- Better performance (no string parsing)');
-    console.log('- Future-proof API design');
 }
 
 if (require.main === module) {
-    testDeprecationWarning().catch(console.error);
+    testDeprecationWarning().catch(error => {
+        console.error(error);
+        process.exit(1);
+    });
 }
 
 module.exports = { testDeprecationWarning };
