@@ -93,7 +93,11 @@ jobs:
 
   test-rust:
     name: Rust Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.host }}
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [ubuntu-latest, macos-14]
 
     steps:
       - uses: actions/checkout@v4
@@ -101,8 +105,13 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install NASM
+      - name: Install NASM (Linux)
+        if: matrix.host == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install NASM (macOS)
+        if: matrix.host == 'macos-14'
+        run: brew install nasm
 
       - name: Run Rust tests (without NAPI features)
         run: cargo test --no-default-features --no-fail-fast
