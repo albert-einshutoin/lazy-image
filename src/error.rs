@@ -59,7 +59,9 @@ pub enum LazyImageError {
         img_height: u32,
     },
 
-    #[error("Unsupported rotation angle: {degrees}. Only 0, 90, 180, 270 (and negatives) are supported")]
+    #[error(
+        "Unsupported rotation angle: {degrees}. Only 0, 90, 180, 270 (and negatives) are supported"
+    )]
     InvalidRotationAngle { degrees: i32 },
 
     #[error("Invalid resize dimensions: width={width:?}, height={height:?}")]

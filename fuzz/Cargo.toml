@@ -1,0 +1,30 @@
+[package]
+name = "lazy-image-fuzz"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1", features = ["derive"] }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+
+[dependencies.lazy-image]
+path = ".."
+default-features = false
+features = ["fuzzing"]
+
+[[bin]]
+name = "decode_from_buffer"
+path = "fuzz_targets/decode_from_buffer.rs"
+
+[[bin]]
+name = "pipeline_ops"
+path = "fuzz_targets/pipeline_ops.rs"
+
+[[bin]]
+name = "inspect_header"
+path = "fuzz_targets/inspect_header.rs"
