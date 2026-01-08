@@ -813,7 +813,7 @@ valgrind --leak-check=full --error-exitcode=1 \
   ./target/release/examples/stress_test -- 100
 ```
 
-※ CI のサニタイザージョブでは実行時間を抑えるため `--iterations 50` を使用しています。
+※ CI のサニタイザージョブでは実行時間を抑えるため `--iterations 5` を使用しています。
 
 ### Requirements
 

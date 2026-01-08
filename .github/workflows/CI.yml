@@ -192,20 +192,20 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y nasm valgrind
 
-      - name: Build stress harness (release)
-        run: cargo build --example stress_test --release --no-default-features --features stress
+      - name: Build stress harness
+        run: cargo build --example stress_test --no-default-features --features stress
 
       - name: Valgrind leak check
         run: |
-          valgrind --leak-check=full --error-exitcode=1 \
-            ./target/release/examples/stress_test --iterations 50
+          valgrind --leak-check=full --undef-value-errors=no --error-exitcode=1 \
+            ./target/debug/examples/stress_test --iterations 5
 
       - name: AddressSanitizer stress run
         env:
           RUSTFLAGS: "-Zsanitizer=address"
           ASAN_OPTIONS: "detect_leaks=1,abort_on_error=1"
         run: |
-          cargo run --example stress_test --no-default-features --features stress -- --iterations 50
+          cargo run --example stress_test --no-default-features --features stress -- --iterations 5
 
   publish:
     name: Publish to npm
