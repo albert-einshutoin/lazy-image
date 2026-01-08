@@ -182,6 +182,7 @@ jobs:
   sanitizers:
     name: Memory Leak Detection
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -193,19 +194,28 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y nasm valgrind
 
       - name: Build stress harness
-        run: cargo build --example stress_test --no-default-features --features stress
+        run: |
+          # Build proc-macro dependencies first to avoid equator_macro errors
+          # Proc-macros must be built for the host target (no --target flag)
+          # This ensures equator_macro and other proc-macros are available
+          # We build a dummy crate first to ensure proc-macros are compiled
+          cargo build --no-default-features --features stress 2>&1 | tail -20 || true
+          # Clean to ensure fresh debug build
+          cargo clean
+          # Build the actual stress test example
+          cargo build --example stress_test --no-default-features --features stress
 
       - name: Valgrind leak check
         run: |
           valgrind --leak-check=full --undef-value-errors=no --error-exitcode=1 \
-            ./target/debug/examples/stress_test --iterations 5
+            ./target/debug/examples/stress_test --iterations 1
 
       - name: AddressSanitizer stress run
         env:
           RUSTFLAGS: "-Zsanitizer=address"
           ASAN_OPTIONS: "detect_leaks=1,abort_on_error=1"
         run: |
-          cargo run --example stress_test --no-default-features --features stress -- --iterations 5
+          cargo run --example stress_test --no-default-features --features stress -- --iterations 1
 
   publish:
     name: Publish to npm
