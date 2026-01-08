@@ -183,7 +183,6 @@ use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
 use napi::{Env, JsBuffer, JsFunction, JsObject, Task};
-use num_cpus;
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 #[cfg(feature = "napi")]
@@ -1781,7 +1780,9 @@ impl EncodeTask {
             (*encoder).qualityAlpha = quality as i32;
             (*encoder).speed = settings.avif_speed();
             // libavif requires maxThreads >= 2 for multi-threading; cap at 8 to avoid runaway thread counts
-            let cpu_threads = num_cpus::get();
+            let cpu_threads = std::thread::available_parallelism()
+                .map(|n| n.get())
+                .unwrap_or(2);
             let capped = cmp::min(8, cpu_threads);
             let encoder_threads = cmp::max(2, capped) as i32;
             (*encoder).maxThreads = encoder_threads;
