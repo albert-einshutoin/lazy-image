@@ -26,14 +26,12 @@ pub const MAX_DIMENSION: u32 = 32768;
 // 3. **Predictable performance**: Consistent thread count based on CPU cores
 //
 // **Thread Count Calculation**:
-// - Reads UV_THREADPOOL_SIZE from environment (default: 4, Node.js default)
-// - Reserves those threads for libuv I/O operations
-// - Uses remaining CPU cores for image processing
-// - Formula: max(1, CPU_COUNT - UV_THREADPOOL_SIZE)
+// - Uses std::thread::available_parallelism() to respect cgroup/CPU quota
+// - Reserves UV_THREADPOOL_SIZE threads for libuv (defaults to 4) to avoid oversubscription
+// - Fallback is MIN_RAYON_THREADS when detection fails
 //
 // **IMPORTANT**:
 // - Pool is initialized lazily on first use
-// - Environment variables must be set BEFORE first batch operation
 // - Changes after initialization have NO effect
 //
 // **Benchmark Results** (see benches/benchmark.rs):
@@ -44,19 +42,13 @@ pub const MAX_DIMENSION: u32 = 32768;
 use once_cell::sync::Lazy;
 #[cfg(feature = "napi")]
 static GLOBAL_THREAD_POOL: Lazy<ThreadPool> = Lazy::new(|| {
-    let cpu_count = num_cpus::get();
+    let detected_parallelism = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(MIN_RAYON_THREADS);
 
-    // Check for UV_THREADPOOL_SIZE environment variable
-    // Default: 4 (Node.js/libuv default threadpool size)
-    // NOTE: This is read only once during initialization
-    let uv_threadpool_size = std::env::var("UV_THREADPOOL_SIZE")
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(4);
-
-    // Reserve threads for libuv, but ensure we have at least MIN_RAYON_THREADS
-    let num_threads = cpu_count
-        .saturating_sub(uv_threadpool_size)
+    let uv_reserve = reserved_libuv_threads();
+    let num_threads = detected_parallelism
+        .saturating_sub(uv_reserve)
         .max(MIN_RAYON_THREADS);
 
     rayon::ThreadPoolBuilder::new()
@@ -83,8 +75,8 @@ const MAX_PIXELS: u64 = 100_000_000;
 // =============================================================================
 
 /// Default libuv thread pool size (Node.js default)
-#[allow(dead_code)]
-const DEFAULT_UV_THREADPOOL_SIZE: usize = 4;
+#[cfg(feature = "napi")]
+const DEFAULT_LIBUV_THREADPOOL_SIZE: usize = 4;
 
 /// Maximum allowed concurrency value for processBatch()
 #[cfg(feature = "napi")]
@@ -93,6 +85,14 @@ const MAX_CONCURRENCY: usize = 1024;
 /// Minimum number of rayon threads to ensure at least some parallelism
 #[cfg(feature = "napi")]
 const MIN_RAYON_THREADS: usize = 1;
+
+#[cfg(feature = "napi")]
+fn reserved_libuv_threads() -> usize {
+    std::env::var("UV_THREADPOOL_SIZE")
+        .ok()
+        .and_then(|raw| raw.parse::<usize>().ok())
+        .unwrap_or(DEFAULT_LIBUV_THREADPOOL_SIZE)
+}
 
 // Quality configuration helper
 struct QualitySettings {
@@ -171,19 +171,19 @@ impl QualitySettings {
 }
 
 use crate::error::LazyImageError;
-use crate::ops::{Operation, OutputFormat};
 #[cfg(feature = "napi")]
 use crate::ops::PresetConfig;
+use crate::ops::{Operation, OutputFormat};
 use fast_image_resize::{self as fir, MulDiv, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
+use libavif_sys::*;
 use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
 use napi::{Env, JsBuffer, JsFunction, JsObject, Task};
 use num_cpus;
-use libavif_sys::*;
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 #[cfg(feature = "napi")]
@@ -344,7 +344,7 @@ impl ImageEngine {
             source_bytes: None, // Will be loaded on demand
             decoded: None,
             ops: Vec::new(),
-            icc_profile: None, // Will be extracted when bytes are loaded
+            icc_profile: None,    // Will be extracted when bytes are loaded
             keep_metadata: false, // Strip metadata by default for security & smaller files
         })
     }
@@ -682,7 +682,10 @@ impl ImageEngine {
         // If already decoded, use that
         if let Some(ref img) = self.decoded {
             let (w, h) = img.dimensions();
-            return Ok(Dimensions { width: w, height: h });
+            return Ok(Dimensions {
+                width: w,
+                height: h,
+            });
         }
 
         // Try to read dimensions from header only (no full decode)
@@ -1399,35 +1402,29 @@ impl EncodeTask {
         let mut output = Vec::with_capacity(estimated_size);
 
         let encoded = {
-            let mut writer = comp
-                .start_compress(&mut output)
-                .map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "jpeg",
-                        format!("mozjpeg: failed to start compress: {e:?}"),
-                    ))
-                })?;
+            let mut writer = comp.start_compress(&mut output).map_err(|e| {
+                to_engine_error(LazyImageError::encode_failed(
+                    "jpeg",
+                    format!("mozjpeg: failed to start compress: {e:?}"),
+                ))
+            })?;
 
             let stride = w as usize * 3;
             for row in pixels.chunks(stride) {
-                writer
-                    .write_scanlines(row)
-                    .map_err(|e| {
-                        to_engine_error(LazyImageError::encode_failed(
-                            "jpeg",
-                            format!("mozjpeg: failed to write scanlines: {e:?}"),
-                        ))
-                    })?;
-            }
-
-            writer
-                .finish()
-                .map_err(|e| {
+                writer.write_scanlines(row).map_err(|e| {
                     to_engine_error(LazyImageError::encode_failed(
                         "jpeg",
-                        format!("mozjpeg: failed to finish: {e:?}"),
+                        format!("mozjpeg: failed to write scanlines: {e:?}"),
                     ))
                 })?;
+            }
+
+            writer.finish().map_err(|e| {
+                to_engine_error(LazyImageError::encode_failed(
+                    "jpeg",
+                    format!("mozjpeg: failed to finish: {e:?}"),
+                ))
+            })?;
 
             output
         };
@@ -1696,11 +1693,7 @@ impl EncodeTask {
 
             // Set ICC profile if provided
             if let Some(icc_data) = icc {
-                let result = avifImageSetProfileICC(
-                    avif_image,
-                    icc_data.as_ptr(),
-                    icc_data.len(),
-                );
+                let result = avifImageSetProfileICC(avif_image, icc_data.as_ptr(), icc_data.len());
                 if result != AVIF_RESULT_OK {
                     return Err(to_engine_error(LazyImageError::encode_failed(
                         "avif",
@@ -1833,8 +1826,7 @@ impl EncodeTask {
             }
 
             // Copy output data
-            let encoded_data =
-                std::slice::from_raw_parts(output.0.data, output.0.size).to_vec();
+            let encoded_data = std::slice::from_raw_parts(output.0.data, output.0.size).to_vec();
 
             Ok(encoded_data)
         }
@@ -2198,7 +2190,7 @@ impl Task for BatchTask {
         };
 
         // Validate concurrency parameter
-        // concurrency = 0 means "use default" (CPU cores - UV_THREADPOOL_SIZE)
+        // concurrency = 0 means "use default" (auto-detected via available_parallelism)
         // concurrency = 1..MAX_CONCURRENCY means "use specified number of threads"
         if self.concurrency > MAX_CONCURRENCY as u32 {
             return Err(napi::Error::from(LazyImageError::internal_panic(format!(
@@ -2210,7 +2202,7 @@ impl Task for BatchTask {
         // Use global thread pool for better performance
         let results: Vec<BatchResult> = if self.concurrency == 0 {
             // Use global thread pool with default concurrency
-            // (automatically calculated based on CPU count and UV_THREADPOOL_SIZE)
+            // (automatically calculated from available_parallelism)
             GLOBAL_THREAD_POOL.install(|| self.inputs.par_iter().map(process_one).collect())
         } else {
             // For custom concurrency, create a temporary pool with specified threads
@@ -2586,8 +2578,9 @@ fn fast_resize_internal_impl(
 ) -> std::result::Result<DynamicImage, String> {
     // Create source image for fast_image_resize
     // from_vec_u8 takes ownership, avoiding the need for clone() on the pixels
-    let mut src_image = fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type)
-        .map_err(|e| format!("fir source image error: {e:?}"))?;
+    let mut src_image =
+        fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type)
+            .map_err(|e| format!("fir source image error: {e:?}"))?;
 
     // Create destination image
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);

@@ -18,7 +18,7 @@ lazy-image uses two thread pools:
 │            (Bridges JS async to Rust threads)                │
 ├─────────────────────────────────────────────────────────────┤
 │   libuv Thread Pool        │      rayon Thread Pool         │
-│   (UV_THREADPOOL_SIZE)     │      (num_cpus::get())         │
+│   (UV_THREADPOOL_SIZE)     │      (available_parallelism)   │
 │   - File I/O               │      - Batch processing        │
 │   - DNS lookups            │      - Parallel image work     │
 │   - crypto                 │                                │
@@ -61,11 +61,11 @@ const results = await engine.processBatch(files, outDir, 'webp', 80);
 const results = await engine.processBatch(files, outDir, 'webp', 80, 4);
 ```
 
-**Concurrency parameter**:
-- `0` or `undefined`: Automatically calculates safe thread count (default)
-  - Reads `UV_THREADPOOL_SIZE` environment variable (default: 4)
-  - Sets rayon threads to `CPU_COUNT - UV_THREADPOOL_SIZE`
-  - Ensures total threads don't exceed CPU cores, preventing resource contention
+- **Concurrency parameter**:
+- `0` or `undefined`: Automatically detects a safe thread count using
+  `std::thread::available_parallelism()` (respects cgroup / CPU quotas), then
+  subtracts `UV_THREADPOOL_SIZE` (default 4) so rayon + libuv stay within the
+  quota. Detection always leaves at least one rayon worker.
 - `1-1024`: Use specified number of workers (manual control)
 
 ## Memory Considerations
@@ -111,9 +111,9 @@ Peak Memory ≈ 96 MB × 4 = ~400 MB
 In containerized environments, Node.js and Rust may see different CPU counts:
 
 - **Node.js** (via `os.cpus().length`): May see host CPUs, not container limit
-- **rayon** (via `num_cpus`): May see host CPUs, not container limit
+- **rayon** (via `std::thread::available_parallelism()`): ✅ Respects cgroup/CPU quota automatically
 
-**Solution**: Always specify concurrency explicitly in containers:
+**Note**: While `processBatch()` with default concurrency (`concurrency=0`) automatically respects cgroup limits, you can still specify concurrency explicitly for fine-grained control:
 
 ```javascript
 // In Docker/Kubernetes, don't rely on defaults
@@ -134,7 +134,6 @@ services:
           cpus: '4'
           memory: 2G
     environment:
-      - UV_THREADPOOL_SIZE=8
       - CONCURRENCY=4
 ```
 
@@ -150,8 +149,6 @@ spec:
         cpu: "4"
         memory: "2Gi"
     env:
-    - name: UV_THREADPOOL_SIZE
-      value: "8"
     - name: CONCURRENCY
       value: "4"
 ```
@@ -200,21 +197,25 @@ function logMemory() {
 
 ### Automatic Thread Pool Balancing
 
-To prevent resource exhaustion and server crashes, `processBatch()` automatically coordinates thread pools when `concurrency=0` (default):
+To prevent resource exhaustion and server crashes, `processBatch()` automatically
+detects a safe thread count when `concurrency=0` (default):
 
-1. **Reads `UV_THREADPOOL_SIZE`** environment variable (default: 4)
-2. **Calculates safe rayon thread count**: `CPU_COUNT - UV_THREADPOOL_SIZE`
-3. **Ensures minimum**: At least 1 thread for rayon, even on small systems
+1. **Queries `std::thread::available_parallelism()`** – respects cgroup/CPU quota
+2. **Reserves `UV_THREADPOOL_SIZE` threads** (default 4) for libuv, subtracting
+   that from the rayon pool size. This keeps total active threads within quota.
+3. **Falls back** to at least one rayon worker if detection fails or the reserve
+   would drop the pool to zero.
 
-**Example on 8-core system**:
-- `UV_THREADPOOL_SIZE=4` (default)
-- Rayon threads: `8 - 4 = 4`
-- Total threads: 8 (matches CPU count) ✅
+**Example on 8-core host limited to 6 CPUs via cgroup**:
+- `available_parallelism()` returns 6
+- Reserve: `UV_THREADPOOL_SIZE=4`
+- Rayon threads: `max(1, 6 - 4) = 2` → 4 libuv + 2 rayon = 6 total ✅
 
-**Example on 4-core system**:
-- `UV_THREADPOOL_SIZE=4` (default)
-- Rayon threads: `4 - 4 = 0` → clamped to `1`
-- Total threads: 5 (slight oversubscription, but safe)
+**Example on tiny container (quota = 1 CPU)**:
+- `available_parallelism()` returns 1
+- Reserve 4 threads but clamp result to minimum 1
+- Rayon threads: 1 (minimum) → libuv threads may oversubscribe slightly but IO
+  rarely saturates CPU in such constrained environments
 
 ### Manual Thread Pool Control
 
@@ -228,7 +229,7 @@ export UV_THREADPOOL_SIZE=8
 await engine.processBatch(files, outDir, 'webp', 80, 4);
 ```
 
-**Best Practice**: In production, explicitly set `concurrency` parameter rather than relying on defaults, especially in containerized environments.
+**Best Practice**: The default behavior (`concurrency=0`) automatically respects cgroup/CPU quotas, making it safe for most containerized environments. However, for fine-grained control or memory-constrained environments, explicitly setting `concurrency` is still recommended.
 
 ## Known Issues
 
