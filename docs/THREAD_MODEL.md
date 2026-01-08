@@ -61,10 +61,11 @@ const results = await engine.processBatch(files, outDir, 'webp', 80);
 const results = await engine.processBatch(files, outDir, 'webp', 80, 4);
 ```
 
-**Concurrency parameter**:
-- `0` or `undefined`: Automatically detects safe thread count using
-  `std::thread::available_parallelism()` (respects cgroup / CPU quotas) with a
-  minimum of 1 worker.
+- **Concurrency parameter**:
+- `0` or `undefined`: Automatically detects a safe thread count using
+  `std::thread::available_parallelism()` (respects cgroup / CPU quotas), then
+  subtracts `UV_THREADPOOL_SIZE` (default 4) so rayon + libuv stay within the
+  quota. Detection always leaves at least one rayon worker.
 - `1-1024`: Use specified number of workers (manual control)
 
 ## Memory Considerations
@@ -200,18 +201,21 @@ To prevent resource exhaustion and server crashes, `processBatch()` automaticall
 detects a safe thread count when `concurrency=0` (default):
 
 1. **Queries `std::thread::available_parallelism()`** – respects cgroup/CPU quota
-2. **Falls back** to at least one worker if detection fails
-3. **Applies** a global rayon pool initialized once with this value
+2. **Reserves `UV_THREADPOOL_SIZE` threads** (default 4) for libuv, subtracting
+   that from the rayon pool size. This keeps total active threads within quota.
+3. **Falls back** to at least one rayon worker if detection fails or the reserve
+   would drop the pool to zero.
 
 **Example on 8-core host limited to 6 CPUs via cgroup**:
 - `available_parallelism()` returns 6
-- Rayon threads: 6
-- Total threads: 6 (matches container quota) ✅
+- Reserve: `UV_THREADPOOL_SIZE=4`
+- Rayon threads: `max(1, 6 - 4) = 2` → 4 libuv + 2 rayon = 6 total ✅
 
 **Example on tiny container (quota = 1 CPU)**:
 - `available_parallelism()` returns 1
-- Rayon threads: 1 (minimum)
-- Total threads: 1
+- Reserve 4 threads but clamp result to minimum 1
+- Rayon threads: 1 (minimum) → libuv threads may oversubscribe slightly but IO
+  rarely saturates CPU in such constrained environments
 
 ### Manual Thread Pool Control
 
