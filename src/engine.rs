@@ -1834,6 +1834,7 @@ impl EncodeTask {
 
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
+    #[cfg_attr(not(any(feature = "napi", feature = "stress")), allow(dead_code))]
     fn process_and_encode(
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,

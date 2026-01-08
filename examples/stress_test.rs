@@ -1,5 +1,3 @@
-#![cfg(feature = "stress")]
-
 use lazy_image::engine::run_stress_iteration;
 
 const SAMPLE_JPEG: &[u8] = include_bytes!("../test/fixtures/test_input.jpg");
@@ -38,11 +36,6 @@ fn main() {
 
 fn run_or_fail(label: &str, iteration: usize, data: &[u8]) {
     if let Err(err) = run_stress_iteration(data) {
-        panic!(
-            "{} stress iteration {} failed: {}",
-            label,
-            iteration,
-            err
-        );
+        panic!("{} stress iteration {} failed: {}", label, iteration, err);
     }
 }
