@@ -23,21 +23,17 @@ fn bench_thread_pool_overhead(c: &mut Criterion) {
 
     for size in workload_sizes {
         // Benchmark: Using rayon's global pool (default behavior)
-        group.bench_with_input(
-            BenchmarkId::new("global_pool", size),
-            &size,
-            |b, &size| {
-                b.iter(|| {
-                    let counter = AtomicUsize::new(0);
-                    (0..size).into_par_iter().for_each(|_| {
-                        // Simulate light work
-                        counter.fetch_add(1, Ordering::Relaxed);
-                        black_box(fibonacci(10));
-                    });
-                    counter.load(Ordering::Relaxed)
+        group.bench_with_input(BenchmarkId::new("global_pool", size), &size, |b, &size| {
+            b.iter(|| {
+                let counter = AtomicUsize::new(0);
+                (0..size).into_par_iter().for_each(|_| {
+                    // Simulate light work
+                    counter.fetch_add(1, Ordering::Relaxed);
+                    black_box(fibonacci(10));
                 });
-            },
-        );
+                counter.load(Ordering::Relaxed)
+            });
+        });
 
         // Benchmark: Creating a new pool per operation (what we want to avoid)
         group.bench_with_input(
@@ -76,20 +72,16 @@ fn bench_parallel_vs_sequential(c: &mut Criterion) {
 
     for size in workload_sizes {
         // Sequential processing
-        group.bench_with_input(
-            BenchmarkId::new("sequential", size),
-            &size,
-            |b, &size| {
-                b.iter(|| {
-                    let mut results = Vec::with_capacity(size);
-                    for i in 0..size {
-                        results.push(black_box(fibonacci(15)));
-                        black_box(i);
-                    }
-                    results
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("sequential", size), &size, |b, &size| {
+            b.iter(|| {
+                let mut results = Vec::with_capacity(size);
+                for i in 0..size {
+                    results.push(black_box(fibonacci(15)));
+                    black_box(i);
+                }
+                results
+            });
+        });
 
         // Parallel processing with rayon
         group.bench_with_input(BenchmarkId::new("parallel", size), &size, |b, &size| {
