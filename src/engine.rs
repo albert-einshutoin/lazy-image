@@ -26,14 +26,12 @@ pub const MAX_DIMENSION: u32 = 32768;
 // 3. **Predictable performance**: Consistent thread count based on CPU cores
 //
 // **Thread Count Calculation**:
-// - Reads UV_THREADPOOL_SIZE from environment (default: 4, Node.js default)
-// - Reserves those threads for libuv I/O operations
-// - Uses remaining CPU cores for image processing
-// - Formula: max(1, CPU_COUNT - UV_THREADPOOL_SIZE)
+// - Uses std::thread::available_parallelism() to respect cgroup/CPU quota
+// - Fallback is MIN_RAYON_THREADS when detection fails
+// - Does not depend on environment variables (fully automatic)
 //
 // **IMPORTANT**:
 // - Pool is initialized lazily on first use
-// - Environment variables must be set BEFORE first batch operation
 // - Changes after initialization have NO effect
 //
 // **Benchmark Results** (see benches/benchmark.rs):
@@ -44,23 +42,12 @@ pub const MAX_DIMENSION: u32 = 32768;
 use once_cell::sync::Lazy;
 #[cfg(feature = "napi")]
 static GLOBAL_THREAD_POOL: Lazy<ThreadPool> = Lazy::new(|| {
-    let cpu_count = num_cpus::get();
-
-    // Check for UV_THREADPOOL_SIZE environment variable
-    // Default: 4 (Node.js/libuv default threadpool size)
-    // NOTE: This is read only once during initialization
-    let uv_threadpool_size = std::env::var("UV_THREADPOOL_SIZE")
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(4);
-
-    // Reserve threads for libuv, but ensure we have at least MIN_RAYON_THREADS
-    let num_threads = cpu_count
-        .saturating_sub(uv_threadpool_size)
-        .max(MIN_RAYON_THREADS);
+    let detected_parallelism = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(MIN_RAYON_THREADS);
 
     rayon::ThreadPoolBuilder::new()
-        .num_threads(num_threads)
+        .num_threads(detected_parallelism.max(MIN_RAYON_THREADS))
         .build()
         .unwrap_or_else(|e| {
             // Fallback: create a minimal thread pool if the preferred configuration fails
@@ -81,10 +68,6 @@ const MAX_PIXELS: u64 = 100_000_000;
 // =============================================================================
 // THREAD POOL CONFIGURATION
 // =============================================================================
-
-/// Default libuv thread pool size (Node.js default)
-#[allow(dead_code)]
-const DEFAULT_UV_THREADPOOL_SIZE: usize = 4;
 
 /// Maximum allowed concurrency value for processBatch()
 #[cfg(feature = "napi")]
@@ -2198,7 +2181,7 @@ impl Task for BatchTask {
         };
 
         // Validate concurrency parameter
-        // concurrency = 0 means "use default" (CPU cores - UV_THREADPOOL_SIZE)
+        // concurrency = 0 means "use default" (auto-detected via available_parallelism)
         // concurrency = 1..MAX_CONCURRENCY means "use specified number of threads"
         if self.concurrency > MAX_CONCURRENCY as u32 {
             return Err(napi::Error::from(LazyImageError::internal_panic(format!(
@@ -2210,7 +2193,7 @@ impl Task for BatchTask {
         // Use global thread pool for better performance
         let results: Vec<BatchResult> = if self.concurrency == 0 {
             // Use global thread pool with default concurrency
-            // (automatically calculated based on CPU count and UV_THREADPOOL_SIZE)
+            // (automatically calculated from available_parallelism)
             GLOBAL_THREAD_POOL.install(|| self.inputs.par_iter().map(process_one).collect())
         } else {
             // For custom concurrency, create a temporary pool with specified threads
