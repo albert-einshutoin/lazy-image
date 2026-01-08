@@ -12,6 +12,7 @@ crate-type = ["cdylib", "rlib"]
 default = ["napi"]
 napi = ["dep:napi", "dep:napi-derive"]
 fuzzing = []
+stress = []
 
 [dependencies]
 # NAPI binding (optional - only needed for Node.js bindings)

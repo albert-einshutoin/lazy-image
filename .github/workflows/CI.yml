@@ -179,6 +179,34 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  sanitizers:
+    name: Memory Leak Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (nightly)
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y nasm valgrind
+
+      - name: Build stress harness (release)
+        run: cargo build --example stress_test --release --no-default-features --features stress
+
+      - name: Valgrind leak check
+        run: |
+          valgrind --leak-check=full --error-exitcode=1 \
+            ./target/release/examples/stress_test --iterations 50
+
+      - name: AddressSanitizer stress run
+        env:
+          RUSTFLAGS: "-Zsanitizer=address"
+          ASAN_OPTIONS: "detect_leaks=1,abort_on_error=1"
+        run: |
+          cargo run --example stress_test --no-default-features --features stress -- --iterations 50
+
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest

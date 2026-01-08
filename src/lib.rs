@@ -39,7 +39,9 @@ pub struct InspectMetadata {
 }
 
 #[cfg(any(feature = "napi", feature = "fuzzing"))]
-fn read_inspect_metadata<R: BufRead + Seek>(reader: R) -> std::result::Result<InspectMetadata, LazyImageError> {
+fn read_inspect_metadata<R: BufRead + Seek>(
+    reader: R,
+) -> std::result::Result<InspectMetadata, LazyImageError> {
     let reader = ImageReader::new(reader)
         .with_guessed_format()
         .map_err(|e| LazyImageError::decode_failed(format!("failed to read image header: {e}")))?;
@@ -57,12 +59,16 @@ fn read_inspect_metadata<R: BufRead + Seek>(reader: R) -> std::result::Result<In
 }
 
 #[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_bytes(data: &[u8]) -> std::result::Result<InspectMetadata, LazyImageError> {
+pub fn inspect_header_from_bytes(
+    data: &[u8],
+) -> std::result::Result<InspectMetadata, LazyImageError> {
     read_inspect_metadata(Cursor::new(data))
 }
 
 #[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_path(path: &str) -> std::result::Result<InspectMetadata, LazyImageError> {
+pub fn inspect_header_from_path(
+    path: &str,
+) -> std::result::Result<InspectMetadata, LazyImageError> {
     use std::fs::File;
 
     let file = File::open(path).map_err(|e| LazyImageError::file_read_failed(path, e))?;
