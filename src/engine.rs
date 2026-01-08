@@ -171,19 +171,19 @@ impl QualitySettings {
 }
 
 use crate::error::LazyImageError;
-use crate::ops::{Operation, OutputFormat};
 #[cfg(feature = "napi")]
 use crate::ops::PresetConfig;
+use crate::ops::{Operation, OutputFormat};
 use fast_image_resize::{self as fir, MulDiv, PixelType, ResizeOptions};
 use image::{DynamicImage, GenericImageView, ImageFormat, RgbImage, RgbaImage};
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
+use libavif_sys::*;
 use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
 use napi::{Env, JsBuffer, JsFunction, JsObject, Task};
 use num_cpus;
-use libavif_sys::*;
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 #[cfg(feature = "napi")]
@@ -344,7 +344,7 @@ impl ImageEngine {
             source_bytes: None, // Will be loaded on demand
             decoded: None,
             ops: Vec::new(),
-            icc_profile: None, // Will be extracted when bytes are loaded
+            icc_profile: None,    // Will be extracted when bytes are loaded
             keep_metadata: false, // Strip metadata by default for security & smaller files
         })
     }
@@ -682,7 +682,10 @@ impl ImageEngine {
         // If already decoded, use that
         if let Some(ref img) = self.decoded {
             let (w, h) = img.dimensions();
-            return Ok(Dimensions { width: w, height: h });
+            return Ok(Dimensions {
+                width: w,
+                height: h,
+            });
         }
 
         // Try to read dimensions from header only (no full decode)
@@ -1399,35 +1402,29 @@ impl EncodeTask {
         let mut output = Vec::with_capacity(estimated_size);
 
         let encoded = {
-            let mut writer = comp
-                .start_compress(&mut output)
-                .map_err(|e| {
-                    to_engine_error(LazyImageError::encode_failed(
-                        "jpeg",
-                        format!("mozjpeg: failed to start compress: {e:?}"),
-                    ))
-                })?;
+            let mut writer = comp.start_compress(&mut output).map_err(|e| {
+                to_engine_error(LazyImageError::encode_failed(
+                    "jpeg",
+                    format!("mozjpeg: failed to start compress: {e:?}"),
+                ))
+            })?;
 
             let stride = w as usize * 3;
             for row in pixels.chunks(stride) {
-                writer
-                    .write_scanlines(row)
-                    .map_err(|e| {
-                        to_engine_error(LazyImageError::encode_failed(
-                            "jpeg",
-                            format!("mozjpeg: failed to write scanlines: {e:?}"),
-                        ))
-                    })?;
-            }
-
-            writer
-                .finish()
-                .map_err(|e| {
+                writer.write_scanlines(row).map_err(|e| {
                     to_engine_error(LazyImageError::encode_failed(
                         "jpeg",
-                        format!("mozjpeg: failed to finish: {e:?}"),
+                        format!("mozjpeg: failed to write scanlines: {e:?}"),
                     ))
                 })?;
+            }
+
+            writer.finish().map_err(|e| {
+                to_engine_error(LazyImageError::encode_failed(
+                    "jpeg",
+                    format!("mozjpeg: failed to finish: {e:?}"),
+                ))
+            })?;
 
             output
         };
@@ -1696,11 +1693,7 @@ impl EncodeTask {
 
             // Set ICC profile if provided
             if let Some(icc_data) = icc {
-                let result = avifImageSetProfileICC(
-                    avif_image,
-                    icc_data.as_ptr(),
-                    icc_data.len(),
-                );
+                let result = avifImageSetProfileICC(avif_image, icc_data.as_ptr(), icc_data.len());
                 if result != AVIF_RESULT_OK {
                     return Err(to_engine_error(LazyImageError::encode_failed(
                         "avif",
@@ -1833,8 +1826,7 @@ impl EncodeTask {
             }
 
             // Copy output data
-            let encoded_data =
-                std::slice::from_raw_parts(output.0.data, output.0.size).to_vec();
+            let encoded_data = std::slice::from_raw_parts(output.0.data, output.0.size).to_vec();
 
             Ok(encoded_data)
         }
@@ -2586,8 +2578,9 @@ fn fast_resize_internal_impl(
 ) -> std::result::Result<DynamicImage, String> {
     // Create source image for fast_image_resize
     // from_vec_u8 takes ownership, avoiding the need for clone() on the pixels
-    let mut src_image = fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type)
-        .map_err(|e| format!("fir source image error: {e:?}"))?;
+    let mut src_image =
+        fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type)
+            .map_err(|e| format!("fir source image error: {e:?}"))?;
 
     // Create destination image
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);

@@ -360,7 +360,10 @@ mod quality_boundary_tests {
         // AVIFはquality=0も受け入れる（rav1eの実装では品質0も有効）
         // 品質0は最低品質（最大圧縮）を意味する
         let result = EncodeTask::encode_avif(&img, 0, None);
-        assert!(result.is_ok(), "AVIF encoding with quality=0 should succeed");
+        assert!(
+            result.is_ok(),
+            "AVIF encoding with quality=0 should succeed"
+        );
     }
 
     #[test]
