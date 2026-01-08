@@ -310,25 +310,9 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { ImageEngine, ErrorCode, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
-
-// Add deprecation warning for toColorspace method
-// DEPRECATED: toColorspace() will be removed in v1.0
-const originalToColorspace = ImageEngine.prototype.toColorspace;
-if (originalToColorspace) {
-  ImageEngine.prototype.toColorspace = function(colorSpace) {
-    console.warn(
-      '[lazy-image] ⚠️ DEPRECATION WARNING: toColorspace() is deprecated and will be REMOVED in v1.0. ' +
-      'This method does NOT perform true color space conversion with ICC profiles - ' +
-      'it only ensures RGB/RGBA pixel format. ' +
-      'Please update your code before upgrading to v1.0.'
-    );
-    return originalToColorspace.call(this, colorSpace);
-  };
-}
+const { ImageEngine, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
 module.exports.ImageEngine = ImageEngine
-module.exports.ErrorCode = ErrorCode
 module.exports.inspect = inspect
 module.exports.inspectFile = inspectFile
 module.exports.version = version
