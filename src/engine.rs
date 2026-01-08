@@ -2578,10 +2578,29 @@ fn fast_resize_internal_impl(
     dst_height: u32,
 ) -> std::result::Result<DynamicImage, String> {
     // Create source image for fast_image_resize
-    // from_vec_u8 takes ownership, avoiding the need for clone() on the pixels
-    let mut src_image =
-        fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type)
-            .map_err(|e| format!("fir source image error: {e:?}"))?;
+    // Handle alignment issues: if from_vec_u8 fails due to alignment,
+    // fallback to creating an aligned buffer and copying the data
+    // We need to clone src_pixels first to preserve it for fallback
+    let src_pixels_clone = src_pixels.clone();
+    let mut src_image = match fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type) {
+        Ok(img) => img,
+        Err(e) => {
+            // Check if error is related to buffer alignment/size
+            // If so, create an aligned buffer and copy the data
+            let error_str = format!("{e:?}");
+            if error_str.contains("alignment") || error_str.contains("Alignment") || 
+               error_str.contains("InvalidBuffer") || error_str.contains("buffer") ||
+               error_str.contains("InvalidBufferSize") || error_str.contains("InvalidBufferAlignment") {
+                // Fallback: create aligned image and copy pixels
+                let mut aligned_image = fir::images::Image::new(src_width, src_height, pixel_type);
+                // Copy pixels from the cloned buffer to the aligned image
+                aligned_image.buffer_mut().copy_from_slice(&src_pixels_clone);
+                aligned_image
+            } else {
+                return Err(format!("fir source image error: {e:?}"));
+            }
+        }
+    };
 
     // Create destination image
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);
