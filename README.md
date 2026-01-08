@@ -786,6 +786,12 @@ npm run test:rust     # Cargo tests
 npm test              # JS + Rust をまとめて実行
 ```
 
+### Fuzzing
+
+セキュリティクリティカルな入口 (`inspect`, decoder) については `cargo-fuzz` による
+自動テストを用意しています。セットアップと実行方法は [FUZZING.md](./FUZZING.md)
+を参照してください。
+
 ### Requirements
 
 - Node.js 18+

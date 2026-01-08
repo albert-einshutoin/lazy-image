@@ -76,12 +76,11 @@ RustとJavaScriptの両方のテストカバレッジを測定しました。
 
 ### テスト統計
 
-- **統合テストファイル**: 7個
+- **統合テストファイル**: 6個
   - `basic.test.js`: 30テスト
   - `edge-cases.test.js`: 30テスト
   - `concurrency-validation.test.js`
   - `deprecation-warning.test.js`
-  - `thread-pool-env.test.js`
   - `type-improvements.test.js`
   - `zero-copy-safety.test.js`
 - **すべてのテスト**: ✅ パス
@@ -125,4 +124,3 @@ npx c8 --reporter=text --reporter=html node test/integration/run.js
 
 - **Rust**: 約79-86%のカバレッジを達成。主要な機能は十分にテストされている
 - **JavaScript**: バインディングファイルのため低カバレッジは正常。統合テストで機能は十分に検証されている
-
