@@ -179,43 +179,38 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  sanitizers:
-    name: Memory Leak Detection
+  leak-detection:
+    name: Memory Leak Detection (ASan)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust (nightly)
         uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y nasm valgrind
+        run: sudo apt-get update && sudo apt-get install -y nasm
 
-      - name: Build stress harness
-        run: |
-          # Build proc-macro dependencies first to avoid equator_macro errors
-          # Proc-macros must be built for the host target (no --target flag)
-          # This ensures equator_macro and other proc-macros are available
-          # We build a dummy crate first to ensure proc-macros are compiled
-          cargo build --no-default-features --features stress 2>&1 | tail -20 || true
-          # Clean to ensure fresh debug build
-          cargo clean
-          # Build the actual stress test example
-          cargo build --example stress_test --no-default-features --features stress
-
-      - name: Valgrind leak check
-        run: |
-          valgrind --leak-check=full --undef-value-errors=no --error-exitcode=1 \
-            ./target/debug/examples/stress_test --iterations 1
-
-      - name: AddressSanitizer stress run
+      - name: Run Stress Test with AddressSanitizer
         env:
+          # ASan (AddressSanitizer) と LSan (LeakSanitizer) を有効化
           RUSTFLAGS: "-Zsanitizer=address"
-          ASAN_OPTIONS: "detect_leaks=1,abort_on_error=1"
+          # リーク検知を有効化し、エラー時は即座に失敗させる
+          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
+          # スタックトレースを読みやすくする
+          RUST_BACKTRACE: 1
         run: |
-          cargo run --example stress_test --no-default-features --features stress -- --iterations 1
+          # --release をつけると最適化されて速くなるが、デバッグ情報が消える場合がある。
+          # ここでは debug ビルドのままで良い（ASanが正確に働くため）。
+          # targetを指定して、Sanitizerが確実にリンクされるようにする。
+          cargo run --example stress_test \
+            --target x86_64-unknown-linux-gnu \
+            --no-default-features --features stress \
+            -- --iterations 5
 
   publish:
     name: Publish to npm
