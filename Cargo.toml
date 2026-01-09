@@ -12,6 +12,11 @@ crate-type = ["cdylib", "rlib"]
 default = ["napi"]
 napi = ["dep:napi", "dep:napi-derive"]
 fuzzing = []
+stress = []
+
+[[example]]
+name = "stress_test"
+required-features = ["stress"]
 
 [dependencies]
 # NAPI binding (optional - only needed for Node.js bindings)
@@ -63,6 +68,11 @@ criterion = "0.5"
 [[bench]]
 name = "benchmark"
 harness = false
+
+# 【重要】依存関係（mozjpeg, ravif等）はデバッグビルド時も最適化する
+# これがないと、ASanテスト中の画像処理が激重でタイムアウトする
+[profile.dev.package."*"]
+opt-level = 3
 
 [profile.release]
 lto = true

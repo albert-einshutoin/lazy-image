@@ -792,6 +792,27 @@ npm test              # JS + Rust をまとめて実行
 自動テストを用意しています。セットアップと実行方法は [FUZZING.md](./FUZZING.md)
 を参照してください。
 
+### Memory Leak Detection
+
+Rust だけで動作するストレステスト (`examples/stress_test.rs`) を用意し、AddressSanitizer でメモリリーク検知を行えます。
+
+```bash
+# 通常実行（デフォルト 200 ループ）
+cargo run --example stress_test --no-default-features --features stress
+
+# ループ回数を指定
+cargo run --example stress_test --no-default-features --features stress -- 500
+
+# AddressSanitizer を利用（推奨）
+RUSTFLAGS="-Zsanitizer=address" \
+  ASAN_OPTIONS="detect_leaks=1:abort_on_error=1:symbolize=1" \
+  cargo +nightly run --example stress_test --no-default-features --features stress -- 5
+```
+
+**Note:** CI では AddressSanitizer を使用しています。Valgrind は遅いため非推奨です。
+
+※ CI のサニタイザージョブでは実行時間を抑えるため `--iterations 5` を使用しています。
+
 ### Requirements
 
 - Node.js 18+
