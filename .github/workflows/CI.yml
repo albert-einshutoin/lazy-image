@@ -189,13 +189,11 @@ jobs:
 
       - name: Install Rust (nightly)
         uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rust-src
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y nasm
 
-      # ビルドキャッシュを追加（これが最も重要）
+      # Cache Cargo dependencies to speed up builds
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -204,11 +202,11 @@ jobs:
       - name: Run Stress Test with AddressSanitizer
         env:
           RUSTFLAGS: "-Zsanitizer=address"
-          # リークを検知したら即終了、シンボル情報を表示
+          # Enable leak detection, abort on error, and symbolize stack traces
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
           RUST_BACKTRACE: 1
         run: |
-          # 依存関係のコンパイルを最適化するためにCargo.tomlの設定を利用
+          # Run stress test with optimized dependencies (see Cargo.toml profile.dev.package)
           cargo run --example stress_test \
             --target x86_64-unknown-linux-gnu \
             --no-default-features --features stress \
