@@ -69,6 +69,11 @@ criterion = "0.5"
 name = "benchmark"
 harness = false
 
+# 【重要】依存関係（mozjpeg, ravif等）はデバッグビルド時も最適化する
+# これがないと、ASanテスト中の画像処理が激重でタイムアウトする
+[profile.dev.package."*"]
+opt-level = 3
+
 [profile.release]
 lto = true
 codegen-units = 1
