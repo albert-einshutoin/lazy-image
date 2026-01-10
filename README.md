@@ -21,68 +21,91 @@
 
 > 📖 **For comprehensive benchmark documentation**, see [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md) - detailed analysis of AVIF speed advantages and JPEG size optimization.
 
-### 📊 Performance Benchmarks (Large File: 50MB PNG)
+> 🐳 **Benchmark Environment**: These results are measured in a **Docker environment** to ensure consistent, reproducible conditions that closely match production server environments. You can run the same benchmarks yourself using the [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) repository.
+
+### 📊 Performance Benchmarks (Large File: 4.5MB PNG)
 
 lazy-image outperforms sharp in **AVIF generation speed** and **JPEG compression efficiency**.
 
 | Scenario | Format | lazy-image | sharp | Verdict |
 | :--- | :--- | :--- | :--- | :--- |
-| **Speed (No Resize)** | **AVIF** | **19.4s** 🚀 | 142.4s | **7.3x Faster** |
-| | JPEG | 2.6s | **0.3s** | Slower (Optimized for size) |
-| **File Size (No Resize)** | **JPEG** | **2.9 MB** 📉 | 5.4 MB | **46% Smaller** |
-| | AVIF | **6.8 MB** | 14.0 MB | **51% Smaller** |
-| **Speed (Resize 800px)** | **AVIF** | **497ms** ⚡ | 909ms | **1.8x Faster** |
-| | JPEG | 286ms | **266ms** | Comparable |
+| **Speed (No Resize)** | **AVIF** | **10,013ms** 🚀 | 63,544ms | **6.3x Faster** |
+| | JPEG | 1,120ms | **127ms** | Slower (Optimized for size) |
+| | WebP | 5,891ms | **1,559ms** | Slower |
+| **File Size (No Resize)** | **JPEG** | **1.2 MB** 📉 | 1.6 MB | **-25.0%** ✅ |
+| | **AVIF** | **744.8 KB** 📉 | 1.2 MB | **-37.9%** ✅ |
+| | WebP | 1.1 MB | **1.1 MB** | Comparable |
+| **Speed (Resize 800×600)** | **AVIF** | **382ms** ⚡ | 818ms | **2.1x Faster** |
+| | JPEG | 95ms | **71ms** | Slower (Optimized for size) |
+| | WebP | 237ms | **94ms** | Slower |
+| **File Size (Resize 800×600)** | **JPEG** | **30.8 KB** 📉 | 28.6 KB | +7.7% |
+| | **AVIF** | **23.8 KB** 📉 | 13.5 KB | +76.3% |
+| | WebP | 31.7 KB | **17.5 KB** | +81.1% |
 
-> *Tested with `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000), quality 60-80*
+> *Tested with `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000), quality: JPEG 80, WebP 80, AVIF 60. Resize to 800×600 (fit inside).*
 
-**Processing Speed Note**: lazy-image prioritizes compression ratio (smaller file sizes) over raw encoding speed for JPEG. This results in significantly smaller files (up to 50% reduction) to save bandwidth costs, at the expense of slightly longer processing times. For WebP (v0.8.1+), lazy-image now matches sharp's encoding speed while maintaining quality parity. For AVIF, lazy-image is consistently faster and smaller than sharp.
+**Processing Speed Note**: lazy-image prioritizes compression ratio (smaller file sizes) over raw encoding speed for JPEG. This results in significantly smaller files (20-25% reduction) to save bandwidth costs, at the expense of longer processing times. For WebP (v0.8.1+), encoding speed has been optimized (method 4, single pass) but is still slower than sharp. **For AVIF, lazy-image is consistently faster (6.3x for large files) and produces smaller files (38% reduction) than sharp**, making it ideal for next-generation image formats.
 
 <details>
 <summary>📋 Benchmark Test Environment (Click to expand)</summary>
 
 | Item | Version/Spec |
 |------|--------------|
+| **Environment** | Docker (Docker Compose) |
 | **Node.js** | v22.x |
 | **sharp** | 0.34.x |
 | **Test Image** | `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000) |
-| **Output Size** | 800px width (auto height) |
+| **Output Size** | 800×600 (fit inside, aspect ratio maintained) |
 | **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
-| **Platform** | macOS (Apple Silicon) |
+| **Platform** | Docker container (Linux) |
 
 **How to reproduce:**
+
+**Option 1: Docker environment (recommended - matches production conditions)**
+```bash
+# Clone the benchmark repository
+git clone https://github.com/albert-einshutoin/lazy-image-test.git
+cd lazy-image-test/backend
+npm install
+cd ..
+docker-compose up --build
+
+# Then POST an image to http://localhost:4000/api/benchmark
+```
+
+**Option 2: Local benchmark scripts**
 ```bash
 npm run test:bench:compare
 ```
 
-> **Note**: Benchmark results may vary depending on the hardware, Node.js version, and sharp version. These results are for reference only.
+> **Note**: Benchmark results may vary depending on the hardware, Node.js version, and sharp version. Docker environment results are more representative of production server conditions. For detailed benchmark specifications, see [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test).
 
 </details>
 
 ### Key Advantages
 
 ```
-AVIF: 7.3x faster encoding + 51% smaller files
-JPEG: 46% smaller files (optimized for compression ratio)
-WebP: Sharp-equivalent speed (v0.8.1+ optimized)
+AVIF: 6.3x faster encoding (large files) + 38% smaller files
+JPEG: 20-25% smaller files (optimized for compression ratio)
+WebP: Optimized in v0.8.1+ (method 4, single pass)
 Memory: Zero-copy architecture for format conversions
 ```
 
-**Summary**: lazy-image excels at **AVIF generation** (both speed and file size) and **JPEG compression efficiency** (significantly smaller files). For WebP (v0.8.1+), lazy-image matches sharp's encoding speed while maintaining quality parity.
+**Summary**: lazy-image excels at **AVIF generation** (both speed and file size) - **6.3x faster** than sharp for large files with **38% smaller** output. For JPEG, lazy-image produces **20-25% smaller files** at the cost of longer processing times. For WebP (v0.8.1+), encoding speed has been optimized but is still slower than sharp.
 
 ### Format Conversion Efficiency (No Resize)
 
-When converting formats without resizing, lazy-image's CoW architecture delivers exceptional performance:
+When converting formats without resizing, lazy-image's CoW architecture delivers exceptional performance for AVIF:
 
 | Conversion | lazy-image | sharp | Speed | File Size |
 |------------|------------|-------|-------|-----------|
-| **PNG → AVIF** | 4,773ms | 11,652ms | **2.44x faster** ⚡ | **-51.5%** ✅ |
-| **PNG → JPEG** | 1,622ms | 3,386ms | **2.09x faster** ⚡ | **-27.5%** ✅ |
-| **PNG → WebP** | 9,682ms* | 2,548ms | 0.26x slower 🐢 | +2.9% |
+| **PNG → AVIF** | 10,013ms | 63,544ms | **6.3x faster** ⚡ | **-37.9%** ✅ |
+| **PNG → JPEG** | 1,120ms | **127ms** | 0.11x slower 🐢 | **-25.0%** ✅ |
+| **PNG → WebP** | 5,891ms | **1,559ms** | 0.26x slower 🐢 | Comparable |
 
 > *Pure format conversion without pixel manipulation. 4.5MB PNG (5000×5000) input from `test/fixtures/test_4.5MB_5000x5000.png`.*
 > 
-> *\* WebP encoding optimized in v0.8.1: settings adjusted (method 4, single pass) to improve speed. Performance benchmarks pending verification.*
+> *\* WebP encoding optimized in v0.8.1: settings adjusted (method 4, single pass) to improve speed. AVIF shows the strongest performance advantage - lazy-image is 6.3x faster than sharp for large files.*
 
 **Why the difference?** lazy-image's zero-copy architecture avoids intermediate buffer allocations during format conversion, making it ideal for batch processing pipelines.
 
@@ -123,7 +146,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 ### Performance Trade-offs
 
 - **JPEG encoding speed**: lazy-image prioritizes compression ratio over raw encoding speed. This means slightly longer processing times (2-3x) but significantly smaller files (up to 50% reduction). This trade-off is intentional to save bandwidth costs.
-- **WebP encoding speed**: In v0.8.1+, WebP encoding speed matches sharp's performance while maintaining quality parity.
+- **WebP encoding speed**: In v0.8.1+, WebP encoding speed has been optimized (method 4, single pass) but may still be slower than sharp in some scenarios.
 - **Real-time processing**: For strict latency requirements (<100ms), sharp may be more suitable due to its faster JPEG encoding.
 
 ### Format Limitations
@@ -785,6 +808,10 @@ npm run test:bench    # ベンチマークスクリプト
 npm run test:rust     # Cargo tests
 npm test              # JS + Rust をまとめて実行
 ```
+
+### Benchmark Testing
+
+For production-like benchmark testing, see the [Benchmark Test Environment](#-benchmark-results) section above, which includes instructions for using the [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) Docker environment.
 
 ### Fuzzing
 
