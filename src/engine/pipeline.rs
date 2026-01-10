@@ -276,20 +276,11 @@ pub fn apply_ops<'a>(
                 img.adjust_contrast(*value as f32)
             }
 
-            Operation::ColorSpace { target } => {
-                match target {
-                    crate::ops::ColorSpace::Srgb => {
-                        // Ensure RGB8/RGBA8 format
-                        match img {
-                            DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
-                            _ => DynamicImage::ImageRgb8(img.to_rgb8()),
-                        }
-                    }
-                    crate::ops::ColorSpace::DisplayP3 | crate::ops::ColorSpace::AdobeRgb => {
-                        return Err(to_pipeline_error(LazyImageError::unsupported_color_space(
-                            format!("{:?}", target),
-                        )));
-                    }
+            Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb } => {
+                // Ensure RGB8/RGBA8 format (pixel format normalization, not color space conversion)
+                match img {
+                    DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                    _ => DynamicImage::ImageRgb8(img.to_rgb8()),
                 }
             }
         };
