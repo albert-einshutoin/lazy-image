@@ -132,7 +132,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 | Design Choice | Rationale |
 |---------------|-----------|
 | **8-bit output** | Web browsers don't benefit from 16-bit; reduces file size |
-| **AVIF without ICC** | ravif encoder limitation; use JPEG/WebP for color-critical work |
+| **AVIF with ICC** | Full ICC profile support via libavif |
 | **Fixed rotation angles** | 90°/180°/270° covers 99% of use cases; simpler implementation |
 | **No artistic filters** | Focused scope: compression, not image editing |
 | **No animation** | Static image optimization only; use ffmpeg for video/GIF |
@@ -151,7 +151,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 
 ### Format Limitations
 
-- **AVIF color profiles**: AVIF format does NOT preserve ICC color profiles due to ravif encoder limitations. Use JPEG or WebP for color-critical applications.
+- **AVIF color profiles**: AVIF format fully supports ICC color profiles via libavif. All formats (JPEG/PNG/WebP/AVIF) preserve color accuracy.
 - **Input formats**: 16-bit images are automatically converted to 8-bit (by design, not a bug).
 
 ### Feature Limitations
@@ -746,20 +746,7 @@ ICC color profiles are automatically extracted and embedded during processing.
 | JPEG   | ✅ Full support | Extracted and embedded |
 | PNG    | ✅ Full support | Via iCCP chunk |
 | WebP   | ✅ Full support | Via ICCP chunk |
-| AVIF   | ⚠️ **Not supported** | **See warning below** |
-
-> ⚠️ **Important: AVIF Color Space Limitation**
-> 
-> **AVIF format does NOT preserve ICC color profiles** due to a limitation in the ravif encoder.
-> 
-> **Impact:**
-> - Images with Display P3, Adobe RGB, or other wide-gamut profiles will be converted to sRGB
-> - Color accuracy may be affected for professional photography workflows
-> 
-> **Recommendation:**
-> - Use **JPEG or WebP** for color-critical applications
-> - AVIF is safe for images already in sRGB color space
-> - For maximum compatibility, convert to sRGB before AVIF encoding
+| AVIF   | ✅ Full support | Via libavif ICC profile embedding |
 ### Supported Platforms
 
 | Platform | Architecture | Status |

@@ -13,6 +13,7 @@
 #[macro_use]
 extern crate napi_derive;
 
+pub mod codecs;
 pub mod engine;
 pub mod error;
 pub mod ops;

@@ -41,15 +41,15 @@ pub enum Operation {
     /// Grayscale conversion
     Grayscale,
 
-    /// Color space conversion (currently supports basic RGB/RGBA assurance)
+    /// Ensure RGB/RGBA pixel format (not true color space conversion)
+    /// This operation only normalizes pixel format, not color space transformation.
     ColorSpace { target: ColorSpace },
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ColorSpace {
+    /// sRGB format (RGB/RGBA pixel format normalization)
     Srgb,
-    DisplayP3, // Placeholder
-    AdobeRgb,  // Placeholder
 }
 
 /// Output format for encoding

@@ -58,11 +58,7 @@ fn seeds_to_ops(seeds: Vec<OperationSeed>) -> Vec<Operation> {
                 value: seed.b.clamp(-200, 200),
             },
             _ => Operation::ColorSpace {
-                target: if seed.a % 2 == 0 {
-                    ColorSpace::Srgb
-                } else {
-                    ColorSpace::DisplayP3
-                },
+                target: ColorSpace::Srgb,
             },
         })
         .collect()
