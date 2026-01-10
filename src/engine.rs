@@ -183,7 +183,7 @@ use mozjpeg::{ColorSpace, Compress, Decompress, ScanMode};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
-use napi::{Env, JsBuffer, JsFunction, JsObject, Task};
+use napi::{Env, JsBuffer, Task};
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 #[cfg(feature = "napi")]
@@ -459,69 +459,12 @@ impl ImageEngine {
     /// For true color space conversion with ICC profiles, use a dedicated color management library.
     #[napi(js_name = "ensureRgb")]
     pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
-        // Only support sRGB format assurance for now
-        // DisplayP3 and AdobeRGB would require ICC color management
+        // Ensure RGB/RGBA pixel format (pixel format normalization, not color space conversion)
+        // For true color space conversion with ICC profiles, use a dedicated color management library.
         self.ops.push(Operation::ColorSpace {
             target: crate::ops::ColorSpace::Srgb,
         });
         Ok(this)
-    }
-
-    #[cfg(feature = "napi")]
-    fn emit_to_color_space_deprecation_warning(env: &Env) {
-        const WARNING_MESSAGE: &str =
-            "lazy-image: toColorspace() is deprecated and will be removed in v1.0. Use ensureRgb().";
-
-        let warn_result = (|| {
-            let global = env.get_global()?;
-            let console: JsObject = global.get_named_property("console")?;
-            let warn: JsFunction = console.get_named_property("warn")?;
-            let message = env.create_string(WARNING_MESSAGE)?.into_unknown();
-            warn.call(Some(&console), &[message])?;
-            Ok::<(), napi::Error>(())
-        })();
-
-        if let Err(err) = warn_result {
-            eprintln!(
-                "lazy-image warning: {} (failed to forward warning to JS: {})",
-                WARNING_MESSAGE, err
-            );
-        }
-    }
-
-    /// Legacy method - use ensureRgb() instead
-    ///
-    /// **Deprecated**: This method is deprecated and will be removed in v1.0.
-    /// Use `ensureRgb()` for pixel format conversion instead.
-    ///
-    /// Note: This method does NOT perform true color space conversion with ICC profiles.
-    /// It only ensures the pixel format is RGB/RGBA.
-    #[napi(js_name = "toColorspace")]
-    pub fn to_color_space(
-        &mut self,
-        env: Env,
-        this: Reference<ImageEngine>,
-        color_space: String,
-    ) -> Result<Reference<ImageEngine>> {
-        Self::emit_to_color_space_deprecation_warning(&env);
-
-        match color_space.to_lowercase().as_str() {
-            "srgb" => {
-                // Still works, but deprecated
-                self.ops.push(Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb });
-                Ok(this)
-            },
-            "p3" | "display-p3" | "adobergb" => {
-                Err(napi::Error::from(LazyImageError::unsupported_color_space(&format!(
-                    "Color space '{}' is not supported. Use ensureRgb() for pixel format conversion.", 
-                    color_space
-                ))))
-            },
-            _ => Err(napi::Error::from(LazyImageError::unsupported_color_space(&format!(
-                "Unknown color space '{}'. Supported: 'srgb'. Use ensureRgb() instead.", 
-                color_space
-            )))),
-        }
     }
 
     // =========================================================================
@@ -1219,20 +1162,11 @@ impl EncodeTask {
                     img.adjust_contrast(*value as f32)
                 }
 
-                Operation::ColorSpace { target } => {
-                    match target {
-                        crate::ops::ColorSpace::Srgb => {
-                            // Ensure RGB8/RGBA8 format
-                            match img {
-                                DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
-                                _ => DynamicImage::ImageRgb8(img.to_rgb8()),
-                            }
-                        }
-                        crate::ops::ColorSpace::DisplayP3 | crate::ops::ColorSpace::AdobeRgb => {
-                            return Err(to_engine_error(LazyImageError::unsupported_color_space(
-                                format!("{:?}", target),
-                            )));
-                        }
+                Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb } => {
+                    // Ensure RGB8/RGBA8 format (pixel format normalization, not color space conversion)
+                    match img {
+                        DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                        _ => DynamicImage::ImageRgb8(img.to_rgb8()),
                     }
                 }
             };
