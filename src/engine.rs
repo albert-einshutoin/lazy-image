@@ -1153,29 +1153,24 @@ impl EncodeTask {
             img = match op {
                 Operation::Resize { width, height } => {
                     let (w, h) = calc_resize_dimensions(img.width(), img.height(), *width, *height);
-                    // Use SIMD-accelerated fast_image_resize with fallback to image crate
-                    // Fallback is intentional: fast_image_resize may fail on edge cases
-                    // (e.g., very small images, invalid dimensions), so we use image crate's
-                    // proven implementation as a safe fallback
-                    // For RGB/RGBA images, use fast_resize_owned to avoid clone() (zero-copy)
-                    // Check format first to decide which path to take
-                    if matches!(
-                        img,
-                        DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_)
-                    ) {
-                        // Try zero-copy resize first (no clone needed for RGB/RGBA)
-                        match Self::fast_resize_owned(img, w, h) {
-                            Ok(resized) => resized,
-                            Err(err) => {
-                                return Err(to_engine_error(err.into_lazy_image_error()));
-                            }
-                        }
-                    } else {
-                        // For other formats, use reference version (conversion needed anyway)
-                        Self::fast_resize(&img, w, h).unwrap_or_else(|_| {
-                            img.resize_exact(w, h, image::imageops::FilterType::Lanczos3)
-                        })
-                    }
+                    // Use SIMD-accelerated fast_image_resize with data normalization
+                    // Always use fast_resize_owned for consistent performance
+                    // For non-RGB/RGBA formats, normalize to RGBA8 before resizing
+                    let src_image = match img {
+                        DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                        // Normalize unsupported formats to RGBA8 to ensure fast path
+                        // This conversion cost is acceptable compared to slow fallback
+                        _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                    };
+                    // fast_resize_owned should always succeed after normalization
+                    // If it fails, it's an internal error (algorithm failure)
+                    Self::fast_resize_owned(src_image, w, h)
+                        .map_err(|err| {
+                            to_engine_error(LazyImageError::internal_panic(format!(
+                                "Resize algorithm failure: {}",
+                                err.into_lazy_image_error()
+                            )))
+                        })?
                 }
 
                 Operation::Crop {
