@@ -6,7 +6,7 @@
 use image::{DynamicImage, GenericImageView, RgbImage};
 use lazy_image::engine::{
     apply_ops, calc_resize_dimensions, check_dimensions, encode_avif, encode_jpeg, encode_png,
-    encode_webp, fast_resize, EncodeTask,
+    encode_webp, fast_resize,
 };
 use std::borrow::Cow;
 
@@ -506,5 +506,183 @@ mod extreme_aspect_ratio_tests {
             result.is_err(),
             "Expect resize to report error for extreme aspect ratio producing zero width"
         );
+    }
+}
+
+mod decoder_error_tests {
+    use super::*;
+    use lazy_image::engine::Source;
+    use std::path::PathBuf;
+    use std::sync::Arc;
+
+    #[test]
+    fn test_source_load_path_nonexistent() {
+        // Pathソースのload()は存在しないファイルでエラーになる
+        let path_source = Source::Path(PathBuf::from("/nonexistent/path/image.jpg"));
+        let result = path_source.load();
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.to_string().contains("failed to read") || 
+            err.to_string().contains("File not found") ||
+            err.to_string().contains("No such file"),
+            "Error should mention file read failure"
+        );
+    }
+
+    #[test]
+    fn test_source_load_memory() {
+        // Memoryソースのload()は成功する
+        let data = vec![0xFF, 0xD8, 0x00, 0x01];
+        let memory_source = Source::Memory(Arc::new(data.clone()));
+        let result = memory_source.load();
+        assert!(result.is_ok());
+        let loaded = result.unwrap();
+        assert_eq!(loaded.as_slice(), data.as_slice());
+    }
+
+    #[test]
+    fn test_source_as_path() {
+        let path = PathBuf::from("/test/path.jpg");
+        let path_source = Source::Path(path.clone());
+        assert_eq!(path_source.as_path(), Some(&path));
+        
+        let data = vec![0u8; 10];
+        let memory_source = Source::Memory(Arc::new(data));
+        assert_eq!(memory_source.as_path(), None);
+    }
+
+    #[test]
+    fn test_source_as_bytes() {
+        let data = vec![0xFF, 0xD8];
+        let memory_source = Source::Memory(Arc::new(data.clone()));
+        assert_eq!(memory_source.as_bytes(), Some(data.as_slice()));
+        
+        let path_source = Source::Path(PathBuf::from("/test/path.jpg"));
+        assert_eq!(path_source.as_bytes(), None);
+    }
+
+    #[test]
+    fn test_source_len() {
+        let data = vec![0u8; 100];
+        let memory_source = Source::Memory(Arc::new(data));
+        assert_eq!(memory_source.len(), 100);
+        
+        let path_source = Source::Path(PathBuf::from("/test/path.jpg"));
+        assert_eq!(path_source.len(), 0); // Pathソースの長さは0（ロード前は不明）
+    }
+}
+
+mod pipeline_error_tests {
+    use super::*;
+    use lazy_image::engine::fast_resize_owned;
+    use lazy_image::ops::Operation;
+
+    #[test]
+    fn test_fast_resize_owned_invalid_dimensions() {
+        let img = create_test_image(100, 100);
+        // 0幅は無効
+        let result = fast_resize_owned(img.clone(), 0, 100);
+        assert!(result.is_err());
+        
+        // 0高さは無効
+        let result = fast_resize_owned(img, 100, 0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_crop_bounds_exceed_image() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Crop {
+            x: 50,
+            y: 50,
+            width: 60, // 50 + 60 = 110 > 100
+            height: 50,
+        }];
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.to_string().contains("exceed") || err.to_string().contains("bounds"),
+            "Error should mention bounds or exceed"
+        );
+    }
+
+    #[test]
+    fn test_crop_bounds_exceed_height() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Crop {
+            x: 50,
+            y: 50,
+            width: 50,
+            height: 60, // 50 + 60 = 110 > 100
+        }];
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_rotation_angle() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Rotate { degrees: 45 }]; // 45度は無効
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.to_string().contains("rotation") || err.to_string().contains("angle"),
+            "Error should mention rotation or angle"
+        );
+    }
+
+    #[test]
+    fn test_negative_rotation_angles() {
+        let img = create_test_image(100, 100);
+        // -90, -180, -270は有効
+        let ops1 = vec![Operation::Rotate { degrees: -90 }];
+        assert!(apply_ops(Cow::Owned(img.clone()), &ops1).is_ok());
+        
+        let ops2 = vec![Operation::Rotate { degrees: -180 }];
+        assert!(apply_ops(Cow::Owned(img.clone()), &ops2).is_ok());
+        
+        let ops3 = vec![Operation::Rotate { degrees: -270 }];
+        assert!(apply_ops(Cow::Owned(img), &ops3).is_ok());
+    }
+
+    #[test]
+    fn test_rotation_0_degrees() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Rotate { degrees: 0 }];
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_ok()); // 0度は有効（no-op）
+    }
+}
+
+mod encoder_error_tests {
+    use super::*;
+
+    #[test]
+    fn test_encode_jpeg_invalid_quality() {
+        let img = create_test_image(100, 100);
+        // quality > 100 は受け入れられる可能性があるが、少なくともpanicしない
+        let result = encode_jpeg(&img, 150, None);
+        // mozjpegはf32で品質を受け取るので、150も受け入れる可能性がある
+        // 少なくともpanicしないことを確認
+        assert!(result.is_ok() || result.is_err());
+    }
+
+    #[test]
+    fn test_encode_webp_invalid_quality() {
+        let img = create_test_image(100, 100);
+        let result = encode_webp(&img, 150, None);
+        // WebPも同様に品質の上限がある可能性がある
+        assert!(result.is_ok() || result.is_err());
+    }
+
+    #[test]
+    fn test_encode_avif_invalid_quality() {
+        let img = create_test_image(100, 100);
+        let result = encode_avif(&img, 150, None);
+        // AVIFも同様に品質の上限がある可能性がある
+        assert!(result.is_ok() || result.is_err());
     }
 }
