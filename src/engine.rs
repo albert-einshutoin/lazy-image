@@ -903,6 +903,9 @@ impl Task for EncodeTask {
     }
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        // create_buffer_with_dataは既にExternal Bufferを使用してゼロコピーを実現している
+        // 4KB以上のバッファでは特に効果的（Electron環境ではフォールバックでコピーが発生する可能性あり）
+        // 小さなバッファでもオーバーヘッドは許容範囲内
         env.create_buffer_with_data(output).map(|b| b.into_raw())
     }
 }
@@ -943,7 +946,9 @@ impl Task for EncodeWithMetricsTask {
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
         let (data, metrics) = output;
+        // create_buffer_with_dataは既にExternal Bufferを使用してゼロコピーを実現している
         let js_buffer = env.create_buffer_with_data(data)?.into_raw();
+
         Ok(crate::OutputWithMetrics {
             data: js_buffer,
             metrics,
