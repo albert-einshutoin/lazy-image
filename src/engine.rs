@@ -170,6 +170,7 @@ impl QualitySettings {
     }
 }
 
+use crate::codecs::avif_safe::{create_rgb_image, SafeAvifEncoder, SafeAvifImage, SafeAvifRwData};
 use crate::error::LazyImageError;
 #[cfg(feature = "napi")]
 use crate::ops::PresetConfig;
@@ -1640,6 +1641,9 @@ impl EncodeTask {
     /// - ICC profile embedding via avifImageSetProfileICC
     /// - Accurate RGB-to-YUV conversion with proper color matrix
     /// - Alpha channel handling with separate quality control
+    ///
+    /// This function uses safe abstractions from `codecs::avif_safe` to minimize
+    /// unsafe blocks and improve memory safety.
     pub fn encode_avif(
         img: &DynamicImage,
         quality: u8,
@@ -1655,92 +1659,46 @@ impl EncodeTask {
         let rgba = img.to_rgba8();
         let pixels = rgba.as_raw();
 
-        unsafe {
-            // Create avifImage
-            let avif_image = avifImageCreate(
-                width,
-                height,
-                8, // 8-bit depth
-                AVIF_PIXEL_FORMAT_YUV420,
-            );
+        // Create AVIF image using safe wrapper
+        let mut avif_image = SafeAvifImage::new(
+            width,
+            height,
+            8, // 8-bit depth
+            AVIF_PIXEL_FORMAT_YUV420,
+        )
+        .map_err(to_engine_error)?;
 
-            if avif_image.is_null() {
-                return Err(to_engine_error(LazyImageError::encode_failed(
-                    "avif",
-                    "Failed to create AVIF image",
-                )));
-            }
+        // Set color properties
+        avif_image.set_color_properties(
+            AVIF_COLOR_PRIMARIES_BT709 as u16,
+            AVIF_TRANSFER_CHARACTERISTICS_SRGB as u16,
+            AVIF_MATRIX_COEFFICIENTS_BT709 as u16,
+            AVIF_RANGE_FULL,
+        );
 
-            // Set up RAII-style cleanup using a guard
-            struct AvifImageGuard(*mut avifImage);
-            impl Drop for AvifImageGuard {
-                fn drop(&mut self) {
-                    unsafe {
-                        if !self.0.is_null() {
-                            avifImageDestroy(self.0);
-                        }
-                    }
-                }
-            }
-            let _image_guard = AvifImageGuard(avif_image);
+        // Set ICC profile if provided
+        if let Some(icc_data) = icc {
+            avif_image.set_icc_profile(icc_data).map_err(to_engine_error)?;
+        }
 
-            // Set color properties
-            (*avif_image).colorPrimaries = AVIF_COLOR_PRIMARIES_BT709 as u16;
-            (*avif_image).transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB as u16;
-            (*avif_image).matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709 as u16;
-            (*avif_image).yuvRange = AVIF_RANGE_FULL;
+        // Create and configure RGB image structure
+        let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height);
 
-            // Set ICC profile if provided
-            if let Some(icc_data) = icc {
-                let result = avifImageSetProfileICC(avif_image, icc_data.as_ptr(), icc_data.len());
-                if result != AVIF_RESULT_OK {
-                    return Err(to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("Failed to set ICC profile: {:?}", result),
-                    )));
-                }
-            }
+        // Allocate YUV planes in the image
+        avif_image.allocate_planes(AVIF_PLANES_YUV).map_err(to_engine_error)?;
 
-            // Create and configure RGB image structure
-            let mut rgb: avifRGBImage = std::mem::zeroed();
-            avifRGBImageSetDefaults(&mut rgb, avif_image);
+        // Convert RGB to YUV using libavif's optimized conversion
+        avif_image.rgb_to_yuv(&rgb).map_err(to_engine_error)?;
 
-            rgb.format = AVIF_RGB_FORMAT_RGBA;
-            rgb.depth = 8;
-            rgb.pixels = pixels.as_ptr() as *mut u8;
-            rgb.rowBytes = (width * 4) as u32;
+        // Handle alpha channel if present
+        if has_alpha {
+            avif_image.allocate_planes(AVIF_PLANES_A).map_err(to_engine_error)?;
 
-            // Allocate YUV planes in the image
-            let alloc_result = avifImageAllocatePlanes(avif_image, AVIF_PLANES_YUV);
-            if alloc_result != AVIF_RESULT_OK {
-                return Err(to_engine_error(LazyImageError::encode_failed(
-                    "avif",
-                    format!("Failed to allocate YUV planes: {:?}", alloc_result),
-                )));
-            }
-
-            // Convert RGB to YUV using libavif's optimized conversion
-            let convert_result = avifImageRGBToYUV(avif_image, &rgb);
-            if convert_result != AVIF_RESULT_OK {
-                return Err(to_engine_error(LazyImageError::encode_failed(
-                    "avif",
-                    format!("Failed to convert RGB to YUV: {:?}", convert_result),
-                )));
-            }
-
-            // Handle alpha channel if present
-            if has_alpha {
-                let alloc_alpha_result = avifImageAllocatePlanes(avif_image, AVIF_PLANES_A);
-                if alloc_alpha_result != AVIF_RESULT_OK {
-                    return Err(to_engine_error(LazyImageError::encode_failed(
-                        "avif",
-                        format!("Failed to allocate alpha plane: {:?}", alloc_alpha_result),
-                    )));
-                }
-
-                // Copy alpha channel data
-                let alpha_plane = (*avif_image).alphaPlane;
-                let alpha_row_bytes = (*avif_image).alphaRowBytes as usize;
+            // Copy alpha channel data
+            // This is the only place where we need unsafe access to the alpha plane
+            unsafe {
+                let alpha_plane = avif_image.alpha_plane_mut();
+                let alpha_row_bytes = avif_image.alpha_row_bytes();
                 for y in 0..height as usize {
                     for x in 0..width as usize {
                         let src_idx = (y * width as usize + x) * 4 + 3; // Alpha is 4th component
@@ -1749,88 +1707,39 @@ impl EncodeTask {
                     }
                 }
             }
-
-            // Create encoder
-            let encoder = avifEncoderCreate();
-            if encoder.is_null() {
-                return Err(to_engine_error(LazyImageError::encode_failed(
-                    "avif",
-                    "Failed to create AVIF encoder",
-                )));
-            }
-
-            // Set up encoder cleanup guard
-            struct AvifEncoderGuard(*mut avifEncoder);
-            impl Drop for AvifEncoderGuard {
-                fn drop(&mut self) {
-                    unsafe {
-                        if !self.0.is_null() {
-                            avifEncoderDestroy(self.0);
-                        }
-                    }
-                }
-            }
-            let _encoder_guard = AvifEncoderGuard(encoder);
-
-            // Configure encoder
-            // libavif quality: 0 (worst) to 100 (lossless),
-            // but internally uses quantizer where lower = better
-            // quality maps to: minQuantizer and maxQuantizer
-            (*encoder).quality = quality as i32;
-            (*encoder).qualityAlpha = quality as i32;
-            (*encoder).speed = settings.avif_speed();
-            // libavif requires maxThreads >= 2 for multi-threading; cap at 8 to avoid runaway thread counts
-            let cpu_threads = std::thread::available_parallelism()
-                .map(|n| n.get())
-                .unwrap_or(2);
-            let capped = cmp::min(8, cpu_threads);
-            let encoder_threads = cmp::max(2, capped) as i32;
-            (*encoder).maxThreads = encoder_threads;
-
-            // Encode出力を管理するRAIIガード
-            struct AvifRwDataGuard(avifRWData);
-            impl AvifRwDataGuard {
-                fn new() -> Self {
-                    unsafe { Self(std::mem::zeroed()) }
-                }
-            }
-            impl Drop for AvifRwDataGuard {
-                fn drop(&mut self) {
-                    unsafe {
-                        avifRWDataFree(&mut self.0);
-                    }
-                }
-            }
-
-            // Encode the image
-            let mut output = AvifRwDataGuard::new();
-
-            let add_result = avifEncoderAddImage(
-                encoder,
-                avif_image,
-                1, // duration (1 for still image)
-                AVIF_ADD_IMAGE_FLAG_SINGLE,
-            );
-            if add_result != AVIF_RESULT_OK {
-                return Err(to_engine_error(LazyImageError::encode_failed(
-                    "avif",
-                    format!("Failed to add image to encoder: {:?}", add_result),
-                )));
-            }
-
-            let finish_result = avifEncoderFinish(encoder, &mut output.0);
-            if finish_result != AVIF_RESULT_OK {
-                return Err(to_engine_error(LazyImageError::encode_failed(
-                    "avif",
-                    format!("Failed to finish encoding: {:?}", finish_result),
-                )));
-            }
-
-            // Copy output data
-            let encoded_data = std::slice::from_raw_parts(output.0.data, output.0.size).to_vec();
-
-            Ok(encoded_data)
         }
+
+        // Create encoder using safe wrapper
+        let mut encoder = SafeAvifEncoder::new().map_err(to_engine_error)?;
+
+        // Configure encoder
+        // libavif quality: 0 (worst) to 100 (lossless),
+        // but internally uses quantizer where lower = better
+        // quality maps to: minQuantizer and maxQuantizer
+        // libavif requires maxThreads >= 2 for multi-threading; cap at 8 to avoid runaway thread counts
+        let cpu_threads = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(2);
+        let capped = cmp::min(8, cpu_threads);
+        let encoder_threads = cmp::max(2, capped) as i32;
+
+        encoder.configure(quality, quality, settings.avif_speed(), encoder_threads);
+
+        // Create output buffer using safe wrapper
+        let mut output = SafeAvifRwData::new();
+
+        // Add image to encoder
+        encoder
+            .add_image(&mut avif_image, 1, AVIF_ADD_IMAGE_FLAG_SINGLE)
+            .map_err(to_engine_error)?;
+
+        // Finish encoding
+        encoder.finish(&mut output).map_err(to_engine_error)?;
+
+        // Copy output data
+        let encoded_data = output.to_vec();
+
+        Ok(encoded_data)
     }
 
     /// Process image: decode → apply ops → encode
