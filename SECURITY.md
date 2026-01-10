@@ -23,6 +23,8 @@ lazy-image implements several security measures to protect against common vulner
 - Core processing is written in Rust, providing memory safety guarantees
 - Panic handling prevents crashes from propagating to Node.js
 - File-based I/O (`fromPath`/`toFile`) bypasses V8 heap, reducing memory pressure
+- Automated leak detection: CI runs AddressSanitizer and Valgrind against the
+  Rust-only stress harness (`examples/stress_test.rs`) to catch regressions
 
 ### Input Validation
 

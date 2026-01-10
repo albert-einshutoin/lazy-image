@@ -1835,7 +1835,7 @@ impl EncodeTask {
 
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
-    #[allow(dead_code)]
+    #[cfg_attr(not(any(feature = "napi", feature = "stress")), allow(dead_code))]
     fn process_and_encode(
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
@@ -1878,6 +1878,47 @@ impl EncodeTask {
 
         Ok(result)
     }
+}
+
+#[cfg(feature = "stress")]
+pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
+    use crate::ops::{Operation, OutputFormat};
+
+    let operations: Vec<Operation> = vec![
+        Operation::Resize {
+            width: Some(1200),
+            height: Some(800),
+        },
+        Operation::Rotate { degrees: 90 },
+        Operation::Brightness { value: 12 },
+        Operation::Contrast { value: -6 },
+        Operation::Grayscale,
+    ];
+
+    let formats = [
+        OutputFormat::Jpeg { quality: 82 },
+        OutputFormat::Png,
+        OutputFormat::WebP { quality: 74 },
+        OutputFormat::Avif { quality: 60 },
+    ];
+
+    let source = Arc::new(data.to_vec());
+
+    for format in formats.into_iter() {
+        let mut task = EncodeTask {
+            source: Some(source.clone()),
+            decoded: None,
+            ops: operations.clone(),
+            format,
+            icc_profile: None,
+            keep_metadata: false,
+        };
+
+        // stress harness only needs to ensure the pipeline runs without leaking; drop the result
+        let _encoded = task.process_and_encode(None)?;
+    }
+
+    Ok(())
 }
 
 #[cfg(feature = "napi")]
