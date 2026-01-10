@@ -4,12 +4,16 @@
 // このテストは`cargo test --features napi`で実行される
 //
 // 注意: このテストファイルはNAPI機能が有効化されている場合のみコンパイルされる
+//
+// CIでの実行について:
+// - このテストはNode.jsランタイムが必要なため、通常のcargo testでは実行できません
+// - NAPI機能はJavaScript統合テスト（test/integration/*.test.js）でカバーされています
+// - ローカル開発環境でNode.jsがインストールされている場合のみ実行可能です
 
 #[cfg(feature = "napi")]
 mod napi_feature_tests {
     use lazy_image::engine::ImageEngine;
     use lazy_image::inspect_header_from_bytes;
-    use std::sync::Arc;
 
     // テスト用の最小JPEGデータを作成
     fn create_minimal_jpeg() -> Vec<u8> {
