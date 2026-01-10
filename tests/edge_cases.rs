@@ -663,26 +663,44 @@ mod encoder_error_tests {
     #[test]
     fn test_encode_jpeg_invalid_quality() {
         let img = create_test_image(100, 100);
-        // quality > 100 は受け入れられる可能性があるが、少なくともpanicしない
+        // quality > 100 でもpanicしないことを確認
+        // mozjpegはf32で品質を受け取るので、100を超える値も受け入れる可能性がある
+        // 実際の動作: 品質値が100を超えても成功する（mozjpegが内部で処理）
         let result = encode_jpeg(&img, 150, None);
-        // mozjpegはf32で品質を受け取るので、150も受け入れる可能性がある
-        // 少なくともpanicしないことを確認
-        assert!(result.is_ok() || result.is_err());
+        assert!(result.is_ok(), "encode_jpeg should accept quality > 100");
     }
 
     #[test]
     fn test_encode_webp_invalid_quality() {
         let img = create_test_image(100, 100);
+        // quality > 100 でもpanicしないことを確認
+        // WebPエンコーダーは品質値が100を超えるとエラーを返す可能性がある
         let result = encode_webp(&img, 150, None);
-        // WebPも同様に品質の上限がある可能性がある
-        assert!(result.is_ok() || result.is_err());
+        // WebPの実装では品質値が100を超えるとエラーになる可能性がある
+        // 少なくともpanicしないことを確認（エラーでもOK）
+        // 実際の動作: 品質値が100を超えるとエラーを返す
+        if result.is_err() {
+            // エラーメッセージを確認（panicではないことを確認）
+            let err = result.unwrap_err();
+            assert!(
+                err.to_string().contains("webp") || err.to_string().contains("encode") || err.to_string().contains("quality"),
+                "Error should be related to WebP encoding, got: {}",
+                err
+            );
+        } else {
+            // 成功する場合もある（実装に依存）
+            assert!(result.is_ok());
+        }
     }
 
     #[test]
     fn test_encode_avif_invalid_quality() {
         let img = create_test_image(100, 100);
+        // quality > 100 でもpanicしないことを確認
+        // AVIFエンコーダーは品質値をそのまま受け取る可能性がある
         let result = encode_avif(&img, 150, None);
-        // AVIFも同様に品質の上限がある可能性がある
-        assert!(result.is_ok() || result.is_err());
+        // AVIFの実装に依存するが、少なくともpanicしないことを確認
+        // 実際の動作を確認するため、成功することを期待
+        assert!(result.is_ok(), "encode_avif should accept quality > 100");
     }
 }
