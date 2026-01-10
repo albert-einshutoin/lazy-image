@@ -4,7 +4,10 @@
 // Tests boundary values, invalid inputs, and error handling
 
 use image::{DynamicImage, GenericImageView, RgbImage};
-use lazy_image::engine::{calc_resize_dimensions, check_dimensions, EncodeTask};
+use lazy_image::engine::{
+    apply_ops, calc_resize_dimensions, check_dimensions, encode_avif, encode_jpeg, encode_png,
+    encode_webp, fast_resize, EncodeTask,
+};
 use std::borrow::Cow;
 
 // Helper function to create test images
@@ -53,7 +56,7 @@ mod minimal_image_tests {
             width: Some(100),
             height: Some(100),
         }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
         let resized = result.unwrap();
         assert_eq!(resized.dimensions(), (100, 100));
@@ -63,7 +66,7 @@ mod minimal_image_tests {
     fn test_1x1_rotate() {
         let img = create_test_image(1, 1);
         let ops = vec![Operation::Rotate { degrees: 90 }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
         // 1x1の回転はサイズが変わらない
         let rotated = result.unwrap();
@@ -74,14 +77,14 @@ mod minimal_image_tests {
     fn test_1x1_grayscale() {
         let img = create_test_image(1, 1);
         let ops = vec![Operation::Grayscale];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_1x1_encode_jpeg() {
         let img = create_test_image(1, 1);
-        let result = EncodeTask::encode_jpeg(&img, 80, None);
+        let result = encode_jpeg(&img, 80, None);
         assert!(result.is_ok());
         let encoded = result.unwrap();
         // JPEGマジックバイト確認
@@ -91,7 +94,7 @@ mod minimal_image_tests {
     #[test]
     fn test_1x1_encode_png() {
         let img = create_test_image(1, 1);
-        let result = EncodeTask::encode_png(&img, None);
+        let result = encode_png(&img, None);
         assert!(result.is_ok());
         let encoded = result.unwrap();
         // PNGマジックバイト確認
@@ -104,7 +107,7 @@ mod minimal_image_tests {
     #[test]
     fn test_1x1_encode_webp() {
         let img = create_test_image(1, 1);
-        let result = EncodeTask::encode_webp(&img, 80, None);
+        let result = encode_webp(&img, 80, None);
         assert!(result.is_ok());
         let encoded = result.unwrap();
         assert_eq!(&encoded[0..4], b"RIFF");
@@ -306,7 +309,7 @@ mod quality_boundary_tests {
         let img = create_test_image(100, 100);
         // quality=0は意味があるか？多くのエンコーダは1以上を期待
         // 少なくともpanicしないことを確認
-        let result = EncodeTask::encode_jpeg(&img, 0, None);
+        let result = encode_jpeg(&img, 0, None);
         // mozjpegは0を受け入れる可能性がある
         assert!(result.is_ok() || result.is_err());
     }
@@ -314,7 +317,7 @@ mod quality_boundary_tests {
     #[test]
     fn test_quality_1() {
         let img = create_test_image(100, 100);
-        let result = EncodeTask::encode_jpeg(&img, 1, None);
+        let result = encode_jpeg(&img, 1, None);
         assert!(result.is_ok());
         let encoded = result.unwrap();
         assert_eq!(&encoded[0..2], &[0xFF, 0xD8]);
@@ -323,7 +326,7 @@ mod quality_boundary_tests {
     #[test]
     fn test_quality_100() {
         let img = create_test_image(100, 100);
-        let result = EncodeTask::encode_jpeg(&img, 100, None);
+        let result = encode_jpeg(&img, 100, None);
         assert!(result.is_ok());
         let encoded = result.unwrap();
         assert_eq!(&encoded[0..2], &[0xFF, 0xD8]);
@@ -334,7 +337,7 @@ mod quality_boundary_tests {
         let img = create_test_image(100, 100);
         // quality > 100 の処理：クランプされるか、エラーか
         // mozjpegはf32で品質を受け取るので、101も受け入れる可能性がある
-        let result = EncodeTask::encode_jpeg(&img, 101, None);
+        let result = encode_jpeg(&img, 101, None);
         // panicしないことが最低限の要件
         assert!(result.is_ok() || result.is_err());
     }
@@ -342,7 +345,7 @@ mod quality_boundary_tests {
     #[test]
     fn test_quality_webp_0() {
         let img = create_test_image(100, 100);
-        let result = EncodeTask::encode_webp(&img, 0, None);
+        let result = encode_webp(&img, 0, None);
         // WebPは0を受け入れる可能性がある
         assert!(result.is_ok() || result.is_err());
     }
@@ -350,7 +353,7 @@ mod quality_boundary_tests {
     #[test]
     fn test_quality_webp_100() {
         let img = create_test_image(100, 100);
-        let result = EncodeTask::encode_webp(&img, 100, None);
+        let result = encode_webp(&img, 100, None);
         assert!(result.is_ok());
     }
 
@@ -359,7 +362,7 @@ mod quality_boundary_tests {
         let img = create_test_image(100, 100);
         // AVIFはquality=0も受け入れる（rav1eの実装では品質0も有効）
         // 品質0は最低品質（最大圧縮）を意味する
-        let result = EncodeTask::encode_avif(&img, 0, None);
+        let result = encode_avif(&img, 0, None);
         assert!(
             result.is_ok(),
             "AVIF encoding with quality=0 should succeed"
@@ -369,7 +372,7 @@ mod quality_boundary_tests {
     #[test]
     fn test_quality_avif_100() {
         let img = create_test_image(100, 100);
-        let result = EncodeTask::encode_avif(&img, 100, None);
+        let result = encode_avif(&img, 100, None);
         assert!(result.is_ok());
     }
 }
@@ -385,7 +388,7 @@ mod zero_dimension_tests {
             width: Some(0),
             height: Some(50),
         }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         // 0幅へのリサイズはfast_resizeでエラーになる可能性がある
         // または、image crateのresizeでエラーになる
         // 少なくともpanicしないことを確認
@@ -408,7 +411,7 @@ mod zero_dimension_tests {
             width: Some(50),
             height: Some(0),
         }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         // 0高さへのリサイズはエラーになる可能性がある
         // 少なくともpanicしないことを確認
         if result.is_ok() {
@@ -430,7 +433,7 @@ mod zero_dimension_tests {
             width: 0,
             height: 50,
         }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         // 0幅のクロップはエラーであるべき
         // ただし、image crateの動作に依存する可能性がある
         if result.is_ok() {
@@ -447,7 +450,7 @@ mod zero_dimension_tests {
             width: 50,
             height: 0,
         }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         // 0高さのクロップはエラーであるべき
         // ただし、image crateの動作に依存する可能性がある
         if result.is_ok() {
@@ -458,11 +461,11 @@ mod zero_dimension_tests {
     #[test]
     fn test_fast_resize_zero_dimensions() {
         let img = create_test_image(100, 100);
-        let result = EncodeTask::fast_resize(&img, 0, 100);
+        let result = fast_resize(&img, 0, 100);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("invalid dimensions"));
 
-        let result = EncodeTask::fast_resize(&img, 100, 0);
+        let result = fast_resize(&img, 100, 0);
         assert!(result.is_err());
     }
 }
@@ -481,7 +484,7 @@ mod extreme_aspect_ratio_tests {
             width: Some(100),
             height: None,
         }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         assert!(
             result.is_err(),
             "Expect resize to report error for extreme aspect ratio producing zero height"
@@ -498,7 +501,7 @@ mod extreme_aspect_ratio_tests {
             width: None,
             height: Some(100),
         }];
-        let result = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+        let result = apply_ops(Cow::Owned(img), &ops);
         assert!(
             result.is_err(),
             "Expect resize to report error for extreme aspect ratio producing zero width"
