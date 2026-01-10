@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.8.1"
+version = "0.8.2"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
@@ -54,7 +54,6 @@ tempfile = "3.10"
 
 # Parallel processing for batch operations
 rayon = "1.8"
-num_cpus = "1.16"
 
 # Error handling
 thiserror = "1.0"

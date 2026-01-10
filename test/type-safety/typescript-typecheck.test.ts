@@ -19,6 +19,9 @@ async function testTypeSafety() {
         const result = await engine.resize(400, 300).toBuffer(format, 80);
         console.log(`✅ ${format}: ${result.length} bytes`);
     }
+
+    // 大文字フォーマットも許容
+    await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);
     
     // プリセットも型安全
     const validPresets: PresetName[] = ['thumbnail', 'avatar', 'hero', 'social'];
@@ -36,6 +39,9 @@ async function testTypeSafety() {
         const buffer = await engine.toBuffer(preset.format, preset.quality || undefined);
         console.log(`✅ ${presetName}: ${buffer.length} bytes`);
     }
+
+    // 大文字プリセットも許容
+    ImageEngine.fromPath(imagePath).preset('Avatar');
     
     // メタデータ取得も型安全
     const metadata: ImageMetadata = await import('../../index').then(m => m.inspectFile(imagePath));

@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.2] - 2026-01-08
+
+### Changed
+- Updated benchmark results in README.md with actual Docker environment data
+  - AVIF: 6.3x faster than sharp (was 1.70x) for large files
+  - JPEG: 20-25% smaller files (was 46%)
+  - Added WebP benchmark results
+  - Clarified resize method: 800×600 (fit inside) instead of 800px width
+- Added reference to [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) Docker repository for reproducible benchmarks
+
+### Added
+- Type-safe API definitions for API freeze preparation (#84)
+  - `InputFormat`, `OutputFormat`, `PresetName` type definitions
+  - Case-insensitive input support for better developer experience
+- Cross-platform CI testing: Rust tests now run on both Ubuntu and macOS
+
+### Fixed
+- Fixed alignment error handling for fast_image_resize v5 (#109)
+- Removed unnecessary `num_cpus` dependency, using standard library instead (#110)
+
+### Improved
+- CI: Rust tests now use matrix strategy (ubuntu-latest + macos-14) for better cross-platform coverage
+
+---
+
 ## [0.8.1] - 2026-01-01
 
 ### Performance
