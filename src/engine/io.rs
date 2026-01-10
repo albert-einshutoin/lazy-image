@@ -4,7 +4,6 @@
 
 use crate::error::LazyImageError;
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
-#[cfg(feature = "napi")]
 use libavif_sys::*;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -210,7 +209,7 @@ pub(crate) fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
 }
 
 /// Extract ICC profile from AVIF data using libavif
-#[cfg(feature = "napi")]
+/// libavif-sys is always available (not dependent on napi feature)
 fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
     unsafe {
         // Create decoder
@@ -265,10 +264,4 @@ fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
         let icc_data = std::slice::from_raw_parts(icc_ptr, icc_size).to_vec();
         Some(icc_data)
     }
-}
-
-#[cfg(not(feature = "napi"))]
-fn extract_icc_from_avif(_data: &[u8]) -> Option<Vec<u8>> {
-    // AVIF ICC extraction requires libavif which is only available with napi feature
-    None
 }

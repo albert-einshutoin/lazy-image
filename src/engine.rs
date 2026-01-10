@@ -1857,10 +1857,9 @@ mod tests {
             use crate::engine::io::is_avif_data;
 
             #[test]
-            #[cfg(feature = "napi")]
             fn test_avif_preserves_icc_profile() {
                 // libavif implementation now properly embeds ICC profiles
-                // This test requires napi feature for ICC extraction
+                // libavif-sys is always available (not dependent on napi feature)
                 let icc = create_minimal_srgb_icc();
                 let img = create_test_image(100, 100);
                 let avif = encode_avif(&img, 60, Some(&icc)).unwrap();
