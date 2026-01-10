@@ -126,7 +126,7 @@ use image::{DynamicImage, GenericImageView};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
-use napi::{Env, JsBuffer, JsFunction, JsObject, Task};
+use napi::{Env, JsBuffer, Task};
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 #[cfg(feature = "napi")]
@@ -341,69 +341,12 @@ impl ImageEngine {
     /// For true color space conversion with ICC profiles, use a dedicated color management library.
     #[napi(js_name = "ensureRgb")]
     pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
-        // Only support sRGB format assurance for now
-        // DisplayP3 and AdobeRGB would require ICC color management
+        // Ensure RGB/RGBA pixel format (pixel format normalization, not color space conversion)
+        // For true color space conversion with ICC profiles, use a dedicated color management library.
         self.ops.push(Operation::ColorSpace {
             target: crate::ops::ColorSpace::Srgb,
         });
         Ok(this)
-    }
-
-    #[cfg(feature = "napi")]
-    fn emit_to_color_space_deprecation_warning(env: &Env) {
-        const WARNING_MESSAGE: &str =
-            "lazy-image: toColorspace() is deprecated and will be removed in v1.0. Use ensureRgb().";
-
-        let warn_result = (|| {
-            let global = env.get_global()?;
-            let console: JsObject = global.get_named_property("console")?;
-            let warn: JsFunction = console.get_named_property("warn")?;
-            let message = env.create_string(WARNING_MESSAGE)?.into_unknown();
-            warn.call(Some(&console), &[message])?;
-            Ok::<(), napi::Error>(())
-        })();
-
-        if let Err(err) = warn_result {
-            eprintln!(
-                "lazy-image warning: {} (failed to forward warning to JS: {})",
-                WARNING_MESSAGE, err
-            );
-        }
-    }
-
-    /// Legacy method - use ensureRgb() instead
-    ///
-    /// **Deprecated**: This method is deprecated and will be removed in v1.0.
-    /// Use `ensureRgb()` for pixel format conversion instead.
-    ///
-    /// Note: This method does NOT perform true color space conversion with ICC profiles.
-    /// It only ensures the pixel format is RGB/RGBA.
-    #[napi(js_name = "toColorspace")]
-    pub fn to_color_space(
-        &mut self,
-        env: Env,
-        this: Reference<ImageEngine>,
-        color_space: String,
-    ) -> Result<Reference<ImageEngine>> {
-        Self::emit_to_color_space_deprecation_warning(&env);
-
-        match color_space.to_lowercase().as_str() {
-            "srgb" => {
-                // Still works, but deprecated
-                self.ops.push(Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb });
-                Ok(this)
-            },
-            "p3" | "display-p3" | "adobergb" => {
-                Err(napi::Error::from(LazyImageError::unsupported_color_space(&format!(
-                    "Color space '{}' is not supported. Use ensureRgb() for pixel format conversion.", 
-                    color_space
-                ))))
-            },
-            _ => Err(napi::Error::from(LazyImageError::unsupported_color_space(&format!(
-                "Unknown color space '{}'. Supported: 'srgb'. Use ensureRgb() instead.", 
-                color_space
-            )))),
-        }
     }
 
     // =========================================================================
@@ -860,6 +803,755 @@ impl EncodeTask {
 
         Ok(Cow::Owned(img))
     }
+        let result = panic::catch_unwind(|| {
+            let decompress = Decompress::new_mem(data)
+                .map_err(|e| format!("mozjpeg decompress init failed: {e:?}"))?;
+
+            // Get image info
+            let mut decompress = decompress
+                .rgb()
+                .map_err(|e| format!("mozjpeg rgb conversion failed: {e:?}"))?;
+
+            let width = decompress.width();
+            let height = decompress.height();
+
+            // Validate dimensions before casting (mozjpeg returns usize)
+            if width > MAX_DIMENSION as usize || height > MAX_DIMENSION as usize {
+                return Err(format!(
+                    "image dimensions {}x{} exceed max {}",
+                    width, height, MAX_DIMENSION
+                ));
+            }
+
+            // Read all scanlines
+            let pixels: Vec<[u8; 3]> = decompress
+                .read_scanlines()
+                .map_err(|e| format!("mozjpeg: failed to read scanlines: {e:?}"))?;
+
+            // Safe conversion from Vec<[u8; 3]> to Vec<u8>
+            // Previously used unsafe Vec::from_raw_parts, now using safe iterator approach.
+            // The compiler can optimize this into an efficient memory operation.
+            let flat_pixels: Vec<u8> = pixels.into_iter().flatten().collect();
+
+            // Create DynamicImage from raw RGB data
+            // Safe cast: we validated dimensions above
+            let rgb_image = RgbImage::from_raw(width as u32, height as u32, flat_pixels)
+                .ok_or_else(|| "mozjpeg: failed to create image from raw data".to_string())?;
+
+            Ok::<DynamicImage, String>(DynamicImage::ImageRgb8(rgb_image))
+        });
+
+        match result {
+            Ok(Ok(img)) => Ok(img),
+            Ok(Err(e)) => Err(to_engine_error(LazyImageError::decode_failed(e))),
+            Err(_) => Err(to_engine_error(LazyImageError::internal_panic(
+                "mozjpeg panicked during decode",
+            ))),
+        }
+    }
+
+    /// Optimize operations by combining consecutive resize/crop operations
+    fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
+        if ops.len() < 2 {
+            return ops.to_vec();
+        }
+
+        let mut optimized = Vec::new();
+        let mut i = 0;
+
+        while i < ops.len() {
+            let current = &ops[i];
+
+            // Try to combine consecutive resize operations
+            if let Operation::Resize {
+                width: w1,
+                height: h1,
+            } = current
+            {
+                let mut final_width = *w1;
+                let mut final_height = *h1;
+                let mut j = i + 1;
+
+                // Combine all consecutive resize operations
+                while j < ops.len() {
+                    if let Operation::Resize {
+                        width: w2,
+                        height: h2,
+                    } = &ops[j]
+                    {
+                        // If both dimensions are specified, use the last one
+                        // Otherwise, maintain aspect ratio from the first resize
+                        if w2.is_some() && h2.is_some() {
+                            final_width = *w2;
+                            final_height = *h2;
+                        } else if w2.is_some() {
+                            final_width = *w2;
+                            final_height = None;
+                        } else if h2.is_some() {
+                            final_width = None;
+                            final_height = *h2;
+                        }
+                        j += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                if j > i + 1 {
+                    // Combined multiple resizes into one
+                    optimized.push(Operation::Resize {
+                        width: final_width,
+                        height: final_height,
+                    });
+                    i = j;
+                    continue;
+                }
+            }
+
+            // Try to optimize crop + resize or resize + crop
+            if i + 1 < ops.len() {
+                match (&ops[i], &ops[i + 1]) {
+                    // Crop then resize: optimize by calculating final dimensions
+                    (
+                        Operation::Crop {
+                            x,
+                            y,
+                            width: cw,
+                            height: ch,
+                        },
+                        Operation::Resize {
+                            width: rw,
+                            height: rh,
+                        },
+                    ) => {
+                        let (final_w, final_h) = calc_resize_dimensions(*cw, *ch, *rw, *rh);
+                        optimized.push(Operation::Crop {
+                            x: *x,
+                            y: *y,
+                            width: *cw,
+                            height: *ch,
+                        });
+                        optimized.push(Operation::Resize {
+                            width: Some(final_w),
+                            height: Some(final_h),
+                        });
+                        i += 2;
+                        continue;
+                    }
+                    // Resize then crop: keep both but order is already optimal
+                    (Operation::Resize { .. }, Operation::Crop { .. }) => {
+                        // Keep both operations, but we could optimize further if needed
+                    }
+                    _ => {}
+                }
+            }
+
+            optimized.push(current.clone());
+            i += 1;
+        }
+
+        optimized
+    }
+
+    /// Apply all queued operations using Copy-on-Write semantics
+    ///
+    /// **True Copy-on-Write**: If no operations are queued (format conversion only),
+    /// returns `Cow::Borrowed` - no pixel data is copied. Deep copy only happens
+    /// when actual image manipulation (resize, crop, etc.) is required.
+    pub fn apply_ops<'a>(
+        img: Cow<'a, DynamicImage>,
+        ops: &[Operation],
+    ) -> EngineResult<Cow<'a, DynamicImage>> {
+        // Optimize operations first
+        let optimized_ops = Self::optimize_ops(ops);
+
+        // No operations = no copy needed (format conversion only path)
+        if optimized_ops.is_empty() {
+            return Ok(img);
+        }
+
+        // Operations exist - we need owned data to mutate
+        // This is where the "copy" in Copy-on-Write happens
+        let mut img = img.into_owned();
+
+        for op in &optimized_ops {
+            img = match op {
+                Operation::Resize { width, height } => {
+                    let (w, h) = calc_resize_dimensions(img.width(), img.height(), *width, *height);
+                    // Use SIMD-accelerated fast_image_resize with data normalization
+                    // Always use fast_resize_owned for consistent performance
+                    // For non-RGB/RGBA formats, normalize to RGBA8 before resizing
+                    let src_image = match img {
+                        DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                        // Normalize unsupported formats to RGBA8 to ensure fast path
+                        // This conversion cost is acceptable compared to slow fallback
+                        _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                    };
+                    // fast_resize_owned should always succeed after normalization
+                    // If it fails, it's an internal error (algorithm failure)
+                    Self::fast_resize_owned(src_image, w, h)
+                        .map_err(|err| {
+                            to_engine_error(LazyImageError::internal_panic(format!(
+                                "Resize algorithm failure: {}",
+                                err.into_lazy_image_error()
+                            )))
+                        })?
+                }
+
+                Operation::Crop {
+                    x,
+                    y,
+                    width,
+                    height,
+                } => {
+                    // Validate crop bounds
+                    let img_w = img.width();
+                    let img_h = img.height();
+                    if *x + *width > img_w || *y + *height > img_h {
+                        return Err(to_engine_error(LazyImageError::invalid_crop_bounds(
+                            *x, *y, *width, *height, img_w, img_h,
+                        )));
+                    }
+                    img.crop_imm(*x, *y, *width, *height)
+                }
+
+                Operation::Rotate { degrees } => {
+                    match degrees {
+                        90 => img.rotate90(),
+                        180 => img.rotate180(),
+                        270 => img.rotate270(),
+                        -90 => img.rotate270(),
+                        -180 => img.rotate180(),
+                        -270 => img.rotate90(),
+                        0 => img, // No-op for 0 degrees
+                        _ => {
+                            return Err(to_engine_error(LazyImageError::invalid_rotation_angle(
+                                *degrees,
+                            )));
+                        }
+                    }
+                }
+
+                Operation::FlipH => img.fliph(),
+                Operation::FlipV => img.flipv(),
+                Operation::Grayscale => DynamicImage::ImageLuma8(img.to_luma8()),
+
+                Operation::Brightness { value } => img.brighten(*value),
+
+                Operation::Contrast { value } => {
+                    // image crate expects f32, convert from our -100..100 scale
+                    img.adjust_contrast(*value as f32)
+                }
+
+                Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb } => {
+                    // Ensure RGB8/RGBA8 format (pixel format normalization, not color space conversion)
+                    match img {
+                        DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                        _ => DynamicImage::ImageRgb8(img.to_rgb8()),
+                    }
+                }
+            };
+        }
+        Ok(Cow::Owned(img))
+    }
+
+    /// Fast resize with owned DynamicImage (zero-copy for RGB/RGBA)
+    /// Returns Ok(resized) on success, Err(resize_error) on failure
+    pub(crate) fn fast_resize_owned(
+        img: DynamicImage,
+        dst_width: u32,
+        dst_height: u32,
+    ) -> std::result::Result<DynamicImage, ResizeError> {
+        fast_resize_owned_impl(img, dst_width, dst_height)
+    }
+
+    /// Fast resize with reference (for external API compatibility)
+    pub fn fast_resize(
+        img: &DynamicImage,
+        dst_width: u32,
+        dst_height: u32,
+    ) -> std::result::Result<DynamicImage, String> {
+        let src_width = img.width();
+        let src_height = img.height();
+
+        if src_width == 0 || src_height == 0 || dst_width == 0 || dst_height == 0 {
+            return Err("invalid dimensions".to_string());
+        }
+
+        // Select pixel layout without forcing RGBA when not needed
+        // Use into_raw() to avoid clone() - ownership transfer instead of copying
+        let (pixel_type, src_pixels): (PixelType, Vec<u8>) = match img {
+            DynamicImage::ImageRgb8(rgb) => {
+                // Clone is necessary when we only have a reference
+                let rgb_image = rgb.clone();
+                (PixelType::U8x3, rgb_image.into_raw())
+            }
+            DynamicImage::ImageRgba8(rgba) => {
+                // Clone is necessary when we only have a reference
+                let rgba_image = rgba.clone();
+                (PixelType::U8x4, rgba_image.into_raw())
+            }
+            _ => {
+                let rgba = img.to_rgba8();
+                (PixelType::U8x4, rgba.into_raw())
+            }
+        };
+
+        Self::fast_resize_internal(
+            src_width, src_height, src_pixels, pixel_type, dst_width, dst_height,
+        )
+    }
+
+    /// Internal resize implementation (shared by both owned and reference versions)
+    pub(crate) fn fast_resize_internal(
+        src_width: u32,
+        src_height: u32,
+        src_pixels: Vec<u8>,
+        pixel_type: PixelType,
+        dst_width: u32,
+        dst_height: u32,
+    ) -> std::result::Result<DynamicImage, String> {
+        fast_resize_internal_impl(
+            src_width, src_height, src_pixels, pixel_type, dst_width, dst_height,
+        )
+    }
+
+    /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings
+    pub fn encode_jpeg(
+        img: &DynamicImage,
+        quality: u8,
+        icc: Option<&[u8]>,
+    ) -> EngineResult<Vec<u8>> {
+        let rgb = img.to_rgb8();
+        let (w, h) = rgb.dimensions();
+        let pixels = rgb.into_raw();
+
+        // 1. 事前検証 (パニック要因の排除)
+        // 画像サイズの妥当性チェック
+        if w == 0 || h == 0 {
+            return Err(to_engine_error(LazyImageError::internal_panic(
+                "Invalid image dimensions: width or height is zero",
+            )));
+        }
+
+        // MAX_DIMENSIONチェック（プロジェクト全体の一貫性のため）
+        if w > MAX_DIMENSION || h > MAX_DIMENSION {
+            return Err(to_engine_error(LazyImageError::dimension_exceeds_limit(
+                w.max(h),
+                MAX_DIMENSION,
+            )));
+        }
+
+        // バッファサイズの整合性チェック（非常に重要）
+        let expected_len = (w as usize) * (h as usize) * 3;
+        if pixels.len() != expected_len {
+            return Err(to_engine_error(LazyImageError::corrupted_image()));
+        }
+
+        // 2. エンコード (catch_unwind は削除)
+        // ここでパニックが起きるなら、それはライブラリのバグなのでクラッシュさせるべき（Fail Fast）
+        let mut comp = Compress::new(ColorSpace::JCS_RGB);
+
+        comp.set_size(w as usize, h as usize);
+
+        // Output color space: YCbCr (standard for JPEG)
+        comp.set_color_space(ColorSpace::JCS_YCbCr);
+
+        // Quality setting with fine-grained control
+        // Convert 0-100 to mozjpeg's quality scale (0.0-100.0)
+        let quality_f32 = quality as f32;
+        comp.set_quality(quality_f32);
+
+        // =========================================================
+        // RUTHLESS WEB OPTIMIZATION SETTINGS (Enhanced)
+        // =========================================================
+
+        // 1. Chroma Subsampling: Force 4:2:0 (same as sharp default)
+        //    (2,2) means 2x2 pixel blocks for Cb and Cr channels
+        //    This halves chroma resolution - imperceptible for photos
+        comp.set_chroma_sampling_pixel_sizes((2, 2), (2, 2));
+
+        // 2. Progressive mode: Better compression + progressive loading
+        comp.set_progressive_mode();
+
+        // 3. Optimize Huffman tables: Custom tables per image
+        comp.set_optimize_coding(true);
+
+        // 4. Optimize scan order: Better progressive compression
+        comp.set_optimize_scans(true);
+        comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
+
+        // 5. Enhanced Trellis quantization: Better rate-distortion optimization
+        //    This is mozjpeg's secret sauce - it tries multiple quantization
+        //    strategies and picks the best one for file size vs quality
+        //    Trellis quantization is automatically enabled when optimize_coding is true (set above)
+        //    This ensures consistent behavior and optimal compression
+        //    Note: set_trellis_quantization() method is not available in mozjpeg 0.10 API,
+        //    but Trellis quantization is guaranteed to be enabled via set_optimize_coding(true)
+
+        // 6. Adaptive smoothing: Reduces high-frequency noise for better compression
+        //    Higher quality = less smoothing, lower quality = more smoothing
+        //    Enhanced smoothing for low quality (60 and below) to reduce block noise
+        //    while maintaining compression ratio (good trade-off for web use)
+        let smoothing = if quality_f32 >= 90.0 {
+            0 // No smoothing for high quality
+        } else if quality_f32 >= 70.0 {
+            5 // Minimal smoothing
+        } else if quality_f32 >= 60.0 {
+            10 // Moderate smoothing
+        } else {
+            18 // Enhanced smoothing for lower quality (was 15, now 18 for better block noise reduction)
+        };
+        comp.set_smoothing_factor(smoothing);
+
+        // 7. Quantization table optimization
+        //    mozjpeg automatically optimizes quantization tables when optimize_coding is true
+
+        // Estimate output size: ~10% of raw size for typical JPEG compression
+        let estimated_size = (w as usize * h as usize * 3 / 10).max(4096);
+        let mut output = Vec::with_capacity(estimated_size);
+
+        let encoded = {
+            let mut writer = comp.start_compress(&mut output).map_err(|e| {
+                to_engine_error(LazyImageError::encode_failed(
+                    "jpeg",
+                    format!("mozjpeg: failed to start compress: {e:?}"),
+                ))
+            })?;
+
+            let stride = w as usize * 3;
+            for row in pixels.chunks(stride) {
+                writer.write_scanlines(row).map_err(|e| {
+                    to_engine_error(LazyImageError::encode_failed(
+                        "jpeg",
+                        format!("mozjpeg: failed to write scanlines: {e:?}"),
+                    ))
+                })?;
+            }
+
+            writer.finish().map_err(|e| {
+                to_engine_error(LazyImageError::encode_failed(
+                    "jpeg",
+                    format!("mozjpeg: failed to finish: {e:?}"),
+                ))
+            })?;
+
+            output
+        };
+
+        // Embed ICC profile using img-parts if present
+        if let Some(icc_data) = icc {
+            Self::embed_icc_jpeg(encoded, icc_data)
+        } else {
+            Ok(encoded)
+        }
+    }
+
+    /// Embed ICC profile into JPEG using img-parts
+    fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EngineResult<Vec<u8>> {
+        use img_parts::jpeg::{Jpeg, JpegSegment};
+        use img_parts::Bytes;
+
+        let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
+            to_engine_error(LazyImageError::decode_failed(format!(
+                "failed to parse JPEG for ICC: {e}"
+            )))
+        })?;
+
+        // Build ICC marker: "ICC_PROFILE\0" + chunk_num + total_chunks + data
+        // For simplicity, we embed as a single chunk (works for profiles < 64KB)
+        let mut marker_data = Vec::with_capacity(14 + icc.len());
+        marker_data.extend_from_slice(b"ICC_PROFILE\0");
+        marker_data.push(1); // Chunk number
+        marker_data.push(1); // Total chunks
+        marker_data.extend_from_slice(icc);
+
+        // Create APP2 segment
+        let segment = JpegSegment::new_with_contents(
+            img_parts::jpeg::markers::APP2,
+            Bytes::from(marker_data),
+        );
+
+        // Insert after SOI (before other segments)
+        let segments = jpeg.segments_mut();
+        segments.insert(0, segment);
+
+        // Encode back
+        let mut output = Vec::new();
+        jpeg.encoder().write_to(&mut output).map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "jpeg",
+                format!("failed to write JPEG with ICC: {e}"),
+            ))
+        })?;
+
+        Ok(output)
+    }
+
+    /// Encode to PNG using image crate
+    pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EngineResult<Vec<u8>> {
+        let mut buf = Vec::new();
+        img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
+            .map_err(|e| {
+                to_engine_error(LazyImageError::encode_failed(
+                    "png",
+                    format!("PNG encode failed: {e}"),
+                ))
+            })?;
+
+        // Embed ICC profile if present
+        if let Some(icc_data) = icc {
+            Self::embed_icc_png(buf, icc_data)
+        } else {
+            Ok(buf)
+        }
+    }
+
+    /// Embed ICC profile into PNG using img-parts
+    fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EngineResult<Vec<u8>> {
+        use flate2::write::ZlibEncoder;
+        use flate2::Compression;
+        use img_parts::png::Png;
+        use img_parts::{Bytes, ImageICC};
+        use std::io::Write;
+
+        let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
+            to_engine_error(LazyImageError::decode_failed(format!(
+                "failed to parse PNG for ICC: {e}"
+            )))
+        })?;
+
+        // iCCP chunk format: profile_name (null-terminated) + compression_method (0) + compressed_data
+        let profile_name = b"ICC\0"; // Short name
+        let compression_method = 0u8; // zlib
+
+        // Compress ICC data
+        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(icc).map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "png",
+                format!("failed to compress ICC: {e}"),
+            ))
+        })?;
+        let compressed = encoder.finish().map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "png",
+                format!("failed to finish ICC compression: {e}"),
+            ))
+        })?;
+
+        let mut chunk_data = Vec::with_capacity(profile_name.len() + 1 + compressed.len());
+        chunk_data.extend_from_slice(profile_name);
+        chunk_data.push(compression_method);
+        chunk_data.extend_from_slice(&compressed);
+
+        // Use img-parts' ICC API
+        png.set_icc_profile(Some(Bytes::from(chunk_data)));
+
+        // Encode back
+        let mut output = Vec::new();
+        png.encoder().write_to(&mut output).map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "png",
+                format!("failed to write PNG with ICC: {e}"),
+            ))
+        })?;
+
+        Ok(output)
+    }
+
+    /// Encode to WebP with optimized settings
+    /// Avoids unnecessary alpha channel to reduce file size
+    pub fn encode_webp(
+        img: &DynamicImage,
+        quality: u8,
+        icc: Option<&[u8]>,
+    ) -> EngineResult<Vec<u8>> {
+        // Use RGB instead of RGBA for smaller files (unless alpha is needed)
+        // If the image is already RGB, avoid unnecessary conversion by checking the type first
+        // Note: We still need to convert/clone for encoder lifetime management, but we avoid
+        // converting RGBA->RGB when the image is already RGB
+        let rgb = match img {
+            DynamicImage::ImageRgb8(rgb_img) => {
+                // For RGB images, we can use the image directly
+                // The clone is necessary for lifetime management with webp::Encoder
+                rgb_img.clone()
+            }
+            _ => {
+                // Convert to RGB for other formats (RGBA, etc.)
+                img.to_rgb8()
+            }
+        };
+        let (w, h) = rgb.dimensions();
+        let encoder = webp::Encoder::from_rgb(&rgb, w, h);
+
+        // Create WebPConfig with enhanced preprocessing for better compression
+        let mut config = webp::WebPConfig::new().map_err(|_| {
+            to_engine_error(LazyImageError::internal_panic(
+                "failed to create WebPConfig",
+            ))
+        })?;
+
+        let settings = QualitySettings::new(quality);
+        config.quality = settings.quality;
+        config.method = settings.webp_method();
+        config.pass = settings.webp_pass();
+        config.preprocessing = settings.webp_preprocessing();
+        config.sns_strength = settings.webp_sns_strength();
+        config.autofilter = 1;
+        config.filter_strength = settings.webp_filter_strength();
+        config.filter_sharpness = settings.webp_filter_sharpness();
+
+        let mem = encoder.encode_advanced(&config).map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "webp",
+                format!("WebP encode failed: {e:?}"),
+            ))
+        })?;
+
+        let encoded = mem.to_vec();
+
+        // Embed ICC profile if present
+        if let Some(icc_data) = icc {
+            Self::embed_icc_webp(encoded, icc_data)
+        } else {
+            Ok(encoded)
+        }
+    }
+
+    /// Embed ICC profile into WebP using img-parts
+    fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EngineResult<Vec<u8>> {
+        use img_parts::webp::WebP;
+        use img_parts::Bytes;
+
+        let mut webp = WebP::from_bytes(Bytes::from(webp_data)).map_err(|e| {
+            to_engine_error(LazyImageError::decode_failed(format!(
+                "failed to parse WebP for ICC: {e}"
+            )))
+        })?;
+
+        // Set the ICCP chunk directly
+        webp.set_icc_profile(Some(Bytes::from(icc.to_vec())));
+
+        // Encode back
+        let mut output = Vec::new();
+        webp.encoder().write_to(&mut output).map_err(|e| {
+            to_engine_error(LazyImageError::encode_failed(
+                "webp",
+                format!("failed to write WebP with ICC: {e}"),
+            ))
+        })?;
+
+        Ok(output)
+    }
+
+    /// Encode to AVIF format using libavif (AOMedia reference implementation).
+    ///
+    /// This implementation properly supports:
+    /// - ICC profile embedding via avifImageSetProfileICC
+    /// - Accurate RGB-to-YUV conversion with proper color matrix
+    /// - Alpha channel handling with separate quality control
+    ///
+    /// This function uses safe abstractions from `codecs::avif_safe` to minimize
+    /// unsafe blocks and improve memory safety.
+    pub fn encode_avif(
+        img: &DynamicImage,
+        quality: u8,
+        icc: Option<&[u8]>,
+    ) -> EngineResult<Vec<u8>> {
+        let settings = QualitySettings::new(quality);
+        let (width, height) = img.dimensions();
+
+        // Determine if image has alpha
+        let has_alpha = img.color().has_alpha();
+
+        // Get RGBA pixels (libavif handles RGB to YUV conversion internally)
+        let rgba = img.to_rgba8();
+        let pixels = rgba.as_raw();
+
+        // Create AVIF image using safe wrapper
+        let mut avif_image = SafeAvifImage::new(
+            width,
+            height,
+            8, // 8-bit depth
+            AVIF_PIXEL_FORMAT_YUV420,
+        )
+        .map_err(to_engine_error)?;
+
+        // Set color properties
+        avif_image.set_color_properties(
+            AVIF_COLOR_PRIMARIES_BT709 as u16,
+            AVIF_TRANSFER_CHARACTERISTICS_SRGB as u16,
+            AVIF_MATRIX_COEFFICIENTS_BT709 as u16,
+            AVIF_RANGE_FULL,
+        );
+
+        // Set ICC profile if provided
+        if let Some(icc_data) = icc {
+            avif_image.set_icc_profile(icc_data).map_err(to_engine_error)?;
+        }
+
+        // Create and configure RGB image structure
+        let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height);
+
+        // Allocate YUV planes in the image
+        avif_image.allocate_planes(AVIF_PLANES_YUV).map_err(to_engine_error)?;
+
+        // Convert RGB to YUV using libavif's optimized conversion
+        avif_image.rgb_to_yuv(&rgb).map_err(to_engine_error)?;
+
+        // Handle alpha channel if present
+        if has_alpha {
+            avif_image.allocate_planes(AVIF_PLANES_A).map_err(to_engine_error)?;
+
+            // Copy alpha channel data
+            // This is the only place where we need unsafe access to the alpha plane
+            unsafe {
+                let alpha_plane = avif_image.alpha_plane_mut();
+                let alpha_row_bytes = avif_image.alpha_row_bytes();
+                for y in 0..height as usize {
+                    for x in 0..width as usize {
+                        let src_idx = (y * width as usize + x) * 4 + 3; // Alpha is 4th component
+                        let dst_idx = y * alpha_row_bytes + x;
+                        *alpha_plane.add(dst_idx) = pixels[src_idx];
+                    }
+                }
+            }
+        }
+
+        // Create encoder using safe wrapper
+        let mut encoder = SafeAvifEncoder::new().map_err(to_engine_error)?;
+
+        // Configure encoder
+        // libavif quality: 0 (worst) to 100 (lossless),
+        // but internally uses quantizer where lower = better
+        // quality maps to: minQuantizer and maxQuantizer
+        // libavif requires maxThreads >= 2 for multi-threading; cap at 8 to avoid runaway thread counts
+        let cpu_threads = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(2);
+        let capped = cmp::min(8, cpu_threads);
+        let encoder_threads = cmp::max(2, capped) as i32;
+
+        encoder.configure(quality, quality, settings.avif_speed(), encoder_threads);
+
+        // Create output buffer using safe wrapper
+        let mut output = SafeAvifRwData::new();
+
+        // Add image to encoder
+        encoder
+            .add_image(&mut avif_image, 1, AVIF_ADD_IMAGE_FLAG_SINGLE)
+            .map_err(to_engine_error)?;
+
+        // Finish encoding
+        encoder.finish(&mut output).map_err(to_engine_error)?;
+
+        // Copy output data
+        let encoded_data = output.to_vec();
+
+        Ok(encoded_data)
+    }
+>>>>>>> origin/develop
 
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
