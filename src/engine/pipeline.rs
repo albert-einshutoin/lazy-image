@@ -220,15 +220,11 @@ pub fn apply_ops<'a>(
                     // This conversion cost is acceptable compared to slow fallback
                     _ => DynamicImage::ImageRgba8(img.to_rgba8()),
                 };
-                // fast_resize_owned should always succeed after normalization
-                // If it fails, it's an internal error (algorithm failure)
+                // fast_resize_owned returns ResizeError which can represent both
+                // user input errors (e.g., invalid dimensions) and internal failures
+                // Convert directly to LazyImageError to preserve error type information
                 fast_resize_owned(src_image, w, h)
-                    .map_err(|err| {
-                        to_pipeline_error(LazyImageError::internal_panic(format!(
-                            "Resize algorithm failure: {}",
-                            err.into_lazy_image_error()
-                        )))
-                    })?
+                    .map_err(|err| to_pipeline_error(err.into_lazy_image_error()))?
             }
 
             Operation::Crop {
