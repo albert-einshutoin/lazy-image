@@ -2,9 +2,10 @@
 //
 // Decoder operations: JPEG (mozjpeg), PNG, WebP, etc.
 
-use crate::engine::io::Source;
 use crate::error::LazyImageError;
-use image::{DynamicImage, GenericImageView, RgbImage};
+use image::{DynamicImage, RgbImage};
+#[cfg(test)]
+use image::GenericImageView;
 use mozjpeg::Decompress;
 use std::panic;
 
@@ -29,34 +30,8 @@ fn to_decoder_error(err: LazyImageError) -> LazyImageError {
     err
 }
 
-/// Decode image from source bytes
-pub fn decode(source: &Source) -> DecoderResult<DynamicImage> {
-    let bytes = match source {
-        Source::Memory(data) => data.as_slice(),
-        Source::Path(_) => {
-            return Err(to_decoder_error(LazyImageError::internal_panic(
-                "decode called with Path source - must load bytes first",
-            )));
-        }
-    };
-
-    // Check magic bytes for JPEG (0xFF 0xD8)
-    let img = if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
-        // JPEG detected - use mozjpeg for TURBO speed
-        decode_jpeg_mozjpeg(bytes)?
-    } else {
-        // PNG, WebP, etc - use image crate
-        image::load_from_memory(bytes).map_err(|e| {
-            to_decoder_error(LazyImageError::decode_failed(format!("decode failed: {e}")))
-        })?
-    };
-
-    // Security check: reject decompression bombs
-    let (w, h) = img.dimensions();
-    check_dimensions(w, h)?;
-
-    Ok(img)
-}
+// decode() function removed - it was unused.
+// tasks.rs::EncodeTask::decode() and stress.rs::run_stress_iteration() have their own implementations.
 
 /// Decode JPEG using mozjpeg (backed by libjpeg-turbo)
 /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
@@ -110,37 +85,18 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
 
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
-#[cfg(feature = "napi")]
-pub fn check_dimensions(width: u32, height: u32) -> Result<()> {
+pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
     use super::MAX_PIXELS;
     if width > MAX_DIMENSION || height > MAX_DIMENSION {
-        return Err(napi::Error::from(LazyImageError::dimension_exceeds_limit(
+        return Err(to_decoder_error(LazyImageError::dimension_exceeds_limit(
             width.max(height),
             MAX_DIMENSION,
         )));
     }
     let pixels = width as u64 * height as u64;
     if pixels > MAX_PIXELS {
-        return Err(napi::Error::from(
+        return Err(to_decoder_error(
             LazyImageError::pixel_count_exceeds_limit(pixels, MAX_PIXELS),
-        ));
-    }
-    Ok(())
-}
-
-#[cfg(not(feature = "napi"))]
-pub fn check_dimensions(width: u32, height: u32) -> std::result::Result<(), LazyImageError> {
-    use super::MAX_PIXELS;
-    if width > MAX_DIMENSION || height > MAX_DIMENSION {
-        return Err(LazyImageError::dimension_exceeds_limit(
-            width.max(height),
-            MAX_DIMENSION,
-        ));
-    }
-    let pixels = width as u64 * height as u64;
-    if pixels > MAX_PIXELS {
-        return Err(LazyImageError::pixel_count_exceeds_limit(
-            pixels, MAX_PIXELS,
         ));
     }
     Ok(())
