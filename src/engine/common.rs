@@ -17,19 +17,9 @@ pub type EngineResult<T> = Result<T>;
 #[cfg(not(feature = "napi"))]
 pub type EngineResult<T> = std::result::Result<T, LazyImageError>;
 
-/// Convert any error to LazyImageError.
-/// This helper handles both napi::Error (when NAPI is enabled) and LazyImageError.
-#[cfg(feature = "napi")]
-pub fn to_engine_error(err: impl std::error::Error) -> LazyImageError {
-    // If it's already a LazyImageError wrapped in napi::Error, extract it
-    // Otherwise, convert the error message to LazyImageError
-    LazyImageError::decode_failed(err.to_string())
-}
-
-#[cfg(not(feature = "napi"))]
-pub fn to_engine_error(err: LazyImageError) -> LazyImageError {
-    err
-}
+// to_engine_error removed - it was unused.
+// Each module (decoder, encoder, pipeline, tasks) has its own error conversion helper
+// that matches its specific Result type (DecoderResult, EncoderResult, etc.).
 
 /// Convert a Result that may be napi::Result or std::result::Result to EngineResult.
 /// This macro helps eliminate duplicate cfg blocks in stress.rs.
