@@ -188,14 +188,28 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
 
 /// Apply all queued operations using Copy-on-Write semantics
 ///
+/// **Design Philosophy**: This function embodies the boundary between
+/// "immutable engine" and "disposable task":
+/// - The engine is immutable: operations are queued but not executed until `toBuffer()` is called
+/// - Tasks are disposable: each `toBuffer()` call creates a new task that owns a clone of operations
+/// - This function is called within a task context, where `ops` is already cloned from the engine
+///
 /// **True Copy-on-Write**: If no operations are queued (format conversion only),
 /// returns `Cow::Borrowed` - no pixel data is copied. Deep copy only happens
 /// when actual image manipulation (resize, crop, etc.) is required.
+///
+/// **Operation Cloning**: The `ops` parameter is cloned internally via `optimize_ops()`.
+/// This is intentional and low-cost (operations are small structs), ensuring that:
+/// - The original engine's operation queue remains unchanged
+/// - Each task can optimize operations independently
+/// - The design maintains clear separation between immutable engine state and task execution
 pub fn apply_ops<'a>(
     img: Cow<'a, DynamicImage>,
     ops: &[Operation],
 ) -> PipelineResult<Cow<'a, DynamicImage>> {
     // Optimize operations first
+    // Note: This clones ops internally, which is intentional for the immutable engine design.
+    // The clone cost is low (ops are small structs) and ensures task isolation.
     let optimized_ops = optimize_ops(ops);
 
     // No operations = no copy needed (format conversion only path)
