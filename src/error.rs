@@ -5,6 +5,7 @@
 
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
+use std::borrow::Cow;
 use thiserror::Error;
 
 /// lazy-image error types
@@ -15,28 +16,28 @@ use thiserror::Error;
 pub enum LazyImageError {
     // File I/O Errors
     #[error("File not found: {path}")]
-    FileNotFound { path: String },
+    FileNotFound { path: Cow<'static, str> },
 
     #[error("Failed to read file '{path}': {source}")]
     FileReadFailed {
-        path: String,
+        path: Cow<'static, str>,
         #[source]
         source: std::io::Error,
     },
 
     #[error("Failed to write file '{path}': {source}")]
     FileWriteFailed {
-        path: String,
+        path: Cow<'static, str>,
         #[source]
         source: std::io::Error,
     },
 
     // Decode Errors
     #[error("Unsupported image format: {format}")]
-    UnsupportedFormat { format: String },
+    UnsupportedFormat { format: Cow<'static, str> },
 
     #[error("Failed to decode image: {message}")]
-    DecodeFailed { message: String },
+    DecodeFailed { message: Cow<'static, str> },
 
     #[error("Corrupted image data")]
     CorruptedImage,
@@ -76,19 +77,22 @@ pub enum LazyImageError {
         source_height: u32,
         target_width: u32,
         target_height: u32,
-        message: String,
+        message: Cow<'static, str>,
     },
 
     #[error("Unsupported color space: {color_space}")]
-    UnsupportedColorSpace { color_space: String },
+    UnsupportedColorSpace { color_space: Cow<'static, str> },
 
     // Encode Errors
     #[error("Failed to encode as {format}: {message}")]
-    EncodeFailed { format: String, message: String },
+    EncodeFailed {
+        format: Cow<'static, str>,
+        message: Cow<'static, str>,
+    },
 
     // Configuration Errors
     #[error("Unknown preset: '{name}'. Available: thumbnail, avatar, hero, social")]
-    InvalidPreset { name: String },
+    InvalidPreset { name: Cow<'static, str> },
 
     // State Errors
     #[error("Image source already consumed. Use clone() for multi-output scenarios")]
@@ -96,40 +100,42 @@ pub enum LazyImageError {
 
     // Internal Errors
     #[error("Internal error: {message}")]
-    InternalPanic { message: String },
+    InternalPanic { message: Cow<'static, str> },
 
     // Generic Error
     #[error("{message}")]
-    Generic { message: String },
+    Generic { message: Cow<'static, str> },
 }
 
 // Constructor Helpers
 impl LazyImageError {
-    pub fn file_not_found(path: impl Into<String>) -> Self {
-        Self::FileNotFound { path: path.into() }
+    pub fn file_not_found(path: impl Into<Cow<'static, str>>) -> Self {
+        Self::FileNotFound {
+            path: path.into(),
+        }
     }
 
-    pub fn file_read_failed(path: impl Into<String>, source: std::io::Error) -> Self {
+    pub fn file_read_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
         Self::FileReadFailed {
             path: path.into(),
             source,
         }
     }
 
-    pub fn file_write_failed(path: impl Into<String>, source: std::io::Error) -> Self {
+    pub fn file_write_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
         Self::FileWriteFailed {
             path: path.into(),
             source,
         }
     }
 
-    pub fn unsupported_format(format: impl Into<String>) -> Self {
+    pub fn unsupported_format(format: impl Into<Cow<'static, str>>) -> Self {
         Self::UnsupportedFormat {
             format: format.into(),
         }
     }
 
-    pub fn decode_failed(message: impl Into<String>) -> Self {
+    pub fn decode_failed(message: impl Into<Cow<'static, str>>) -> Self {
         Self::DecodeFailed {
             message: message.into(),
         }
@@ -176,7 +182,7 @@ impl LazyImageError {
     pub fn resize_failed(
         source_dims: (u32, u32),
         target_dims: (u32, u32),
-        message: impl Into<String>,
+        message: impl Into<Cow<'static, str>>,
     ) -> Self {
         Self::ResizeFailed {
             source_width: source_dims.0,
@@ -187,34 +193,39 @@ impl LazyImageError {
         }
     }
 
-    pub fn unsupported_color_space(color_space: impl Into<String>) -> Self {
+    pub fn unsupported_color_space(color_space: impl Into<Cow<'static, str>>) -> Self {
         Self::UnsupportedColorSpace {
             color_space: color_space.into(),
         }
     }
 
-    pub fn encode_failed(format: impl Into<String>, message: impl Into<String>) -> Self {
+    pub fn encode_failed(
+        format: impl Into<Cow<'static, str>>,
+        message: impl Into<Cow<'static, str>>,
+    ) -> Self {
         Self::EncodeFailed {
             format: format.into(),
             message: message.into(),
         }
     }
 
-    pub fn invalid_preset(name: impl Into<String>) -> Self {
-        Self::InvalidPreset { name: name.into() }
+    pub fn invalid_preset(name: impl Into<Cow<'static, str>>) -> Self {
+        Self::InvalidPreset {
+            name: name.into(),
+        }
     }
 
     pub fn source_consumed() -> Self {
         Self::SourceConsumed
     }
 
-    pub fn internal_panic(message: impl Into<String>) -> Self {
+    pub fn internal_panic(message: impl Into<Cow<'static, str>>) -> Self {
         Self::InternalPanic {
             message: message.into(),
         }
     }
 
-    pub fn generic(message: impl Into<String>) -> Self {
+    pub fn generic(message: impl Into<Cow<'static, str>>) -> Self {
         Self::Generic {
             message: message.into(),
         }

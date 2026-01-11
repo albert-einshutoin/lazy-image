@@ -603,7 +603,6 @@ dependencies = [
  "mozjpeg",
  "napi",
  "napi-derive",
- "once_cell",
  "rayon",
  "tempfile",
  "thiserror 1.0.69",

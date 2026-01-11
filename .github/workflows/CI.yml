@@ -119,6 +119,10 @@ jobs:
       - name: Run Rust tests (release mode, without NAPI features)
         run: cargo test --no-default-features --release
 
+      # Note: NAPI tests require Node.js runtime and cannot be run with cargo test alone.
+      # NAPI functionality is tested via JavaScript integration tests in the 'test' job.
+      # The napi_tests.rs file exists for local development with Node.js installed.
+
   test:
     name: Test
     needs: build

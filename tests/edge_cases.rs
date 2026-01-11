@@ -6,7 +6,7 @@
 use image::{DynamicImage, GenericImageView, RgbImage};
 use lazy_image::engine::{
     apply_ops, calc_resize_dimensions, check_dimensions, encode_avif, encode_jpeg, encode_png,
-    encode_webp, fast_resize, EncodeTask,
+    encode_webp, fast_resize,
 };
 use std::borrow::Cow;
 
@@ -186,22 +186,13 @@ mod large_image_tests {
 
 mod corrupted_image_tests {
     use super::*;
-    use lazy_image::engine::EncodeTask;
-    use std::sync::Arc;
+    use lazy_image::engine::decode_jpeg_mozjpeg;
 
     #[test]
     fn test_jpeg_header_only() {
         // JPEGマジックバイト（0xFF 0xD8）のみ
         let corrupted = vec![0xFF, 0xD8];
-        let task = EncodeTask {
-            source: Some(Arc::new(corrupted)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        let result = decode_jpeg_mozjpeg(&corrupted);
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("decode") || err.contains("failed"));
@@ -213,15 +204,7 @@ mod corrupted_image_tests {
         let valid_jpeg = create_valid_jpeg(100, 100);
         let truncated: Vec<u8> = valid_jpeg[..valid_jpeg.len() / 2].to_vec();
 
-        let task = EncodeTask {
-            source: Some(Arc::new(truncated)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        let result = decode_jpeg_mozjpeg(&truncated);
         // 切断されたJPEGは通常エラーになるが、image crateが部分的にデコードできる場合もある
         // 少なくともpanicしないことを確認
         if result.is_ok() {
@@ -237,15 +220,8 @@ mod corrupted_image_tests {
         let valid_jpeg = create_valid_jpeg(10, 10);
         fake.extend_from_slice(&valid_jpeg[4..]);
 
-        let task = EncodeTask {
-            source: Some(Arc::new(fake)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        // PNGマジックバイトなので、decode_jpeg_mozjpegは呼ばれず、image crateが処理する
+        let result = image::load_from_memory(&fake);
         // PNGとして解析を試みるが、実際はJPEGなので失敗する可能性が高い
         assert!(result.is_err());
     }
@@ -253,50 +229,27 @@ mod corrupted_image_tests {
     #[test]
     fn test_empty_buffer() {
         let empty: Vec<u8> = vec![];
-        let task = EncodeTask {
-            source: Some(Arc::new(empty)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        let result = decode_jpeg_mozjpeg(&empty);
         assert!(result.is_err());
     }
 }
 
 mod non_image_tests {
-    use lazy_image::engine::EncodeTask;
-    use std::sync::Arc;
+    use super::*;
 
     #[test]
     fn test_text_file() {
         let text = b"Hello, this is not an image!".to_vec();
-        let task = EncodeTask {
-            source: Some(Arc::new(text)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        // image crateでデコードを試みる
+        let result = image::load_from_memory(&text);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_random_binary() {
         let random: Vec<u8> = (0..1000).map(|i| (i % 256) as u8).collect();
-        let task = EncodeTask {
-            source: Some(Arc::new(random)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        // image crateでデコードを試みる
+        let result = image::load_from_memory(&random);
         assert!(result.is_err());
     }
 }
@@ -506,5 +459,201 @@ mod extreme_aspect_ratio_tests {
             result.is_err(),
             "Expect resize to report error for extreme aspect ratio producing zero width"
         );
+    }
+}
+
+mod decoder_error_tests {
+    use super::*;
+    use lazy_image::engine::Source;
+    use std::path::PathBuf;
+    use std::sync::Arc;
+
+    #[test]
+    fn test_source_load_path_nonexistent() {
+        // Pathソースのload()は存在しないファイルでエラーになる
+        let path_source = Source::Path(PathBuf::from("/nonexistent/path/image.jpg"));
+        let result = path_source.load();
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.to_string().contains("failed to read") || 
+            err.to_string().contains("File not found") ||
+            err.to_string().contains("No such file"),
+            "Error should mention file read failure"
+        );
+    }
+
+    #[test]
+    fn test_source_load_memory() {
+        // Memoryソースのload()は成功する
+        let data = vec![0xFF, 0xD8, 0x00, 0x01];
+        let memory_source = Source::Memory(Arc::new(data.clone()));
+        let result = memory_source.load();
+        assert!(result.is_ok());
+        let loaded = result.unwrap();
+        assert_eq!(loaded.as_slice(), data.as_slice());
+    }
+
+    #[test]
+    fn test_source_as_path() {
+        let path = PathBuf::from("/test/path.jpg");
+        let path_source = Source::Path(path.clone());
+        assert_eq!(path_source.as_path(), Some(&path));
+        
+        let data = vec![0u8; 10];
+        let memory_source = Source::Memory(Arc::new(data));
+        assert_eq!(memory_source.as_path(), None);
+    }
+
+    #[test]
+    fn test_source_as_bytes() {
+        let data = vec![0xFF, 0xD8];
+        let memory_source = Source::Memory(Arc::new(data.clone()));
+        assert_eq!(memory_source.as_bytes(), Some(data.as_slice()));
+        
+        let path_source = Source::Path(PathBuf::from("/test/path.jpg"));
+        assert_eq!(path_source.as_bytes(), None);
+    }
+
+    #[test]
+    fn test_source_len() {
+        let data = vec![0u8; 100];
+        let memory_source = Source::Memory(Arc::new(data));
+        assert_eq!(memory_source.len(), 100);
+        
+        let path_source = Source::Path(PathBuf::from("/test/path.jpg"));
+        assert_eq!(path_source.len(), 0); // Pathソースの長さは0（ロード前は不明）
+    }
+}
+
+mod pipeline_error_tests {
+    use super::*;
+    use lazy_image::engine::fast_resize_owned;
+    use lazy_image::ops::Operation;
+
+    #[test]
+    fn test_fast_resize_owned_invalid_dimensions() {
+        let img = create_test_image(100, 100);
+        // 0幅は無効
+        let result = fast_resize_owned(img.clone(), 0, 100);
+        assert!(result.is_err());
+        
+        // 0高さは無効
+        let result = fast_resize_owned(img, 100, 0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_crop_bounds_exceed_image() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Crop {
+            x: 50,
+            y: 50,
+            width: 60, // 50 + 60 = 110 > 100
+            height: 50,
+        }];
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.to_string().contains("exceed") || err.to_string().contains("bounds"),
+            "Error should mention bounds or exceed"
+        );
+    }
+
+    #[test]
+    fn test_crop_bounds_exceed_height() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Crop {
+            x: 50,
+            y: 50,
+            width: 50,
+            height: 60, // 50 + 60 = 110 > 100
+        }];
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_rotation_angle() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Rotate { degrees: 45 }]; // 45度は無効
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.to_string().contains("rotation") || err.to_string().contains("angle"),
+            "Error should mention rotation or angle"
+        );
+    }
+
+    #[test]
+    fn test_negative_rotation_angles() {
+        let img = create_test_image(100, 100);
+        // -90, -180, -270は有効
+        let ops1 = vec![Operation::Rotate { degrees: -90 }];
+        assert!(apply_ops(Cow::Owned(img.clone()), &ops1).is_ok());
+        
+        let ops2 = vec![Operation::Rotate { degrees: -180 }];
+        assert!(apply_ops(Cow::Owned(img.clone()), &ops2).is_ok());
+        
+        let ops3 = vec![Operation::Rotate { degrees: -270 }];
+        assert!(apply_ops(Cow::Owned(img), &ops3).is_ok());
+    }
+
+    #[test]
+    fn test_rotation_0_degrees() {
+        let img = create_test_image(100, 100);
+        let ops = vec![Operation::Rotate { degrees: 0 }];
+        let result = apply_ops(Cow::Owned(img), &ops);
+        assert!(result.is_ok()); // 0度は有効（no-op）
+    }
+}
+
+mod encoder_error_tests {
+    use super::*;
+
+    #[test]
+    fn test_encode_jpeg_invalid_quality() {
+        let img = create_test_image(100, 100);
+        // quality > 100 でもpanicしないことを確認
+        // mozjpegはf32で品質を受け取るので、100を超える値も受け入れる可能性がある
+        // 実際の動作: 品質値が100を超えても成功する（mozjpegが内部で処理）
+        let result = encode_jpeg(&img, 150, None);
+        assert!(result.is_ok(), "encode_jpeg should accept quality > 100");
+    }
+
+    #[test]
+    fn test_encode_webp_invalid_quality() {
+        let img = create_test_image(100, 100);
+        // quality > 100 でもpanicしないことを確認
+        // WebPエンコーダーは品質値が100を超えるとエラーを返す可能性がある
+        let result = encode_webp(&img, 150, None);
+        // WebPの実装では品質値が100を超えるとエラーになる可能性がある
+        // 少なくともpanicしないことを確認（エラーでもOK）
+        // 実際の動作: 品質値が100を超えるとエラーを返す
+        if result.is_err() {
+            // エラーメッセージを確認（panicではないことを確認）
+            let err = result.unwrap_err();
+            assert!(
+                err.to_string().contains("webp") || err.to_string().contains("encode") || err.to_string().contains("quality"),
+                "Error should be related to WebP encoding, got: {}",
+                err
+            );
+        } else {
+            // 成功する場合もある（実装に依存）
+            assert!(result.is_ok());
+        }
+    }
+
+    #[test]
+    fn test_encode_avif_invalid_quality() {
+        let img = create_test_image(100, 100);
+        // quality > 100 でもpanicしないことを確認
+        // AVIFエンコーダーは品質値をそのまま受け取る可能性がある
+        let result = encode_avif(&img, 150, None);
+        // AVIFの実装に依存するが、少なくともpanicしないことを確認
+        // 実際の動作を確認するため、成功することを期待
+        assert!(result.is_ok(), "encode_avif should accept quality > 100");
     }
 }

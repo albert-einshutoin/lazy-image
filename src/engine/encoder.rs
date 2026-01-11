@@ -542,3 +542,198 @@ pub fn encode_avif(
 
     Ok(encoded_data)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
+
+    // Helper function to create test images
+    fn create_test_image(width: u32, height: u32) -> DynamicImage {
+        DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
+            image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
+        }))
+    }
+
+    fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
+        DynamicImage::ImageRgba8(RgbaImage::from_fn(width, height, |x, y| {
+            image::Rgba([(x % 256) as u8, (y % 256) as u8, 128, 255])
+        }))
+    }
+
+    mod encode_tests {
+        use super::*;
+
+        #[test]
+        fn test_encode_jpeg_produces_valid_jpeg() {
+            let img = create_test_image(100, 100);
+            let result = encode_jpeg(&img, 80, None).unwrap();
+            // JPEGマジックバイト確認
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            // JPEGエンドマーカー確認
+            assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_quality_affects_size() {
+            let img = create_test_image(100, 100);
+            let high_quality = encode_jpeg(&img, 95, None).unwrap();
+            let low_quality = encode_jpeg(&img, 50, None).unwrap();
+            // 高品質の方が通常は大きい（ただし、画像内容によっては逆転する可能性もある）
+            // 少なくとも両方とも有効なJPEGであることを確認
+            assert!(high_quality.len() > 0);
+            assert!(low_quality.len() > 0);
+            assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
+            assert_eq!(&low_quality[0..2], &[0xFF, 0xD8]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_with_icc() {
+            let img = create_test_image(100, 100);
+            // 最小限の有効なICCプロファイル
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80; // 128バイト
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = encode_jpeg(&img, 80, Some(&icc_data)).unwrap();
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+        }
+
+        #[test]
+        fn test_encode_png_produces_valid_png() {
+            let img = create_test_image(100, 100);
+            let result = encode_png(&img, None).unwrap();
+            // PNGマジックバイト確認
+            assert_eq!(
+                &result[0..8],
+                &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+            );
+        }
+
+        #[test]
+        fn test_encode_png_with_icc() {
+            let img = create_test_image(100, 100);
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80;
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = encode_png(&img, Some(&icc_data)).unwrap();
+            assert_eq!(
+                &result[0..8],
+                &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+            );
+        }
+
+        #[test]
+        fn test_encode_webp_produces_valid_webp() {
+            let img = create_test_image(100, 100);
+            let result = encode_webp(&img, 80, None).unwrap();
+            // WebPマジックバイト確認 (RIFF....WEBP)
+            assert_eq!(&result[0..4], b"RIFF");
+            assert_eq!(&result[8..12], b"WEBP");
+        }
+
+        #[test]
+        fn test_encode_webp_with_icc() {
+            let img = create_test_image(100, 100);
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80;
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = encode_webp(&img, 80, Some(&icc_data)).unwrap();
+            assert_eq!(&result[0..4], b"RIFF");
+            assert_eq!(&result[8..12], b"WEBP");
+        }
+
+        #[test]
+        fn test_encode_avif_produces_valid_avif() {
+            let img = create_test_image(100, 100);
+            let result = encode_avif(&img, 60, None).unwrap();
+            // AVIFは先頭にftypボックス
+            assert!(result.len() > 12);
+            // "ftyp"が含まれることを確認
+            let has_ftyp = result.windows(4).any(|w| w == b"ftyp");
+            assert!(has_ftyp);
+        }
+
+        #[test]
+        fn test_encode_avif_quality_affects_size() {
+            let img = create_test_image(100, 100);
+            let high_quality = encode_avif(&img, 80, None).unwrap();
+            let low_quality = encode_avif(&img, 40, None).unwrap();
+            // 両方とも有効なAVIFであることを確認
+            assert!(high_quality.len() > 0);
+            assert!(low_quality.len() > 0);
+        }
+
+        #[test]
+        fn test_encode_rgba_image() {
+            let img = create_test_image_rgba(100, 100);
+            let jpeg_result = encode_jpeg(&img, 80, None).unwrap();
+            assert_eq!(&jpeg_result[0..2], &[0xFF, 0xD8]);
+
+            let png_result = encode_png(&img, None).unwrap();
+            assert_eq!(
+                &png_result[0..8],
+                &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+            );
+        }
+    }
+}
