@@ -365,7 +365,7 @@ impl ImageEngine {
     #[napi]
     pub fn preset(&mut self, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
         let config = PresetConfig::get(&name)
-            .ok_or_else(|| napi::Error::from(LazyImageError::invalid_preset(name.clone())))?;
+            .ok_or_else(|| napi::Error::from(LazyImageError::invalid_preset(name)))?;
 
         // Apply resize operation
         self.ops.push(Operation::Resize {
@@ -406,7 +406,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
         // Lazy load: ensure source bytes are loaded before creating the task
         let source = self.ensure_source_bytes()?.clone();
@@ -438,7 +438,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
         // Lazy load: ensure source bytes are loaded before creating the task
         let source = self.ensure_source_bytes()?.clone();
@@ -473,7 +473,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
         // Lazy load: ensure source bytes are loaded before creating the task
         let source = self.ensure_source_bytes()?.clone();
@@ -594,7 +594,7 @@ impl ImageEngine {
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {
             inputs,
