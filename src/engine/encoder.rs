@@ -114,9 +114,15 @@ pub fn encode_jpeg(
     quality: u8,
     icc: Option<&[u8]>,
 ) -> EncoderResult<Vec<u8>> {
-    let rgb = img.to_rgb8();
+    use std::borrow::Cow;
+
+    // Zero-copy optimization: avoid conversion if already RGB8
+    let rgb: Cow<'_, image::RgbImage> = match img {
+        DynamicImage::ImageRgb8(rgb_img) => Cow::Borrowed(rgb_img),
+        _ => Cow::Owned(img.to_rgb8()),
+    };
     let (w, h) = rgb.dimensions();
-    let pixels = rgb.into_raw();
+    let pixels: &[u8] = rgb.as_raw();
 
     // 1. 事前検証 (パニック要因の排除)
     // 画像サイズの妥当性チェック
@@ -355,20 +361,12 @@ pub fn encode_webp(
     quality: u8,
     icc: Option<&[u8]>,
 ) -> EncoderResult<Vec<u8>> {
-    // Use RGB instead of RGBA for smaller files (unless alpha is needed)
-    // If the image is already RGB, avoid unnecessary conversion by checking the type first
-    // Note: We still need to convert/clone for encoder lifetime management, but we avoid
-    // converting RGBA->RGB when the image is already RGB
-    let rgb = match img {
-        DynamicImage::ImageRgb8(rgb_img) => {
-            // For RGB images, we can use the image directly
-            // The clone is necessary for lifetime management with webp::Encoder
-            rgb_img.clone()
-        }
-        _ => {
-            // Convert to RGB for other formats (RGBA, etc.)
-            img.to_rgb8()
-        }
+    use std::borrow::Cow;
+
+    // Zero-copy optimization: avoid conversion if already RGB8
+    let rgb: Cow<'_, image::RgbImage> = match img {
+        DynamicImage::ImageRgb8(rgb_img) => Cow::Borrowed(rgb_img),
+        _ => Cow::Owned(img.to_rgb8()),
     };
     let (w, h) = rgb.dimensions();
     let encoder = webp::Encoder::from_rgb(&rgb, w, h);
@@ -447,14 +445,19 @@ pub fn encode_avif(
     quality: u8,
     icc: Option<&[u8]>,
 ) -> EncoderResult<Vec<u8>> {
+    use std::borrow::Cow;
+
     let settings = QualitySettings::new(quality);
     let (width, height) = img.dimensions();
 
     // Determine if image has alpha
     let has_alpha = img.color().has_alpha();
 
-    // Get RGBA pixels (libavif handles RGB to YUV conversion internally)
-    let rgba = img.to_rgba8();
+    // Zero-copy optimization: avoid conversion if already RGBA8
+    let rgba: Cow<'_, image::RgbaImage> = match img {
+        DynamicImage::ImageRgba8(rgba_img) => Cow::Borrowed(rgba_img),
+        _ => Cow::Owned(img.to_rgba8()),
+    };
     let pixels = rgba.as_raw();
 
     // Create AVIF image using safe wrapper

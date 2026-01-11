@@ -191,20 +191,26 @@ pub(crate) fn is_avif_data(data: &[u8]) -> bool {
 
 /// Extract ICC profile from JPEG data
 pub(crate) fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
-    let jpeg = Jpeg::from_bytes(data.to_vec().into()).ok()?;
+    use img_parts::Bytes;
+    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
+    let jpeg = Jpeg::from_bytes(Bytes::copy_from_slice(data)).ok()?;
     jpeg.icc_profile().map(|icc| icc.to_vec())
 }
 
 /// Extract ICC profile from PNG data
 pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
-    let png = Png::from_bytes(data.to_vec().into()).ok()?;
+    use img_parts::Bytes;
+    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
+    let png = Png::from_bytes(Bytes::copy_from_slice(data)).ok()?;
     png.icc_profile().map(|icc| icc.to_vec())
 }
 
 /// Extract ICC profile from WebP data
 pub(crate) fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
     use img_parts::webp::WebP;
-    let webp = WebP::from_bytes(data.to_vec().into()).ok()?;
+    use img_parts::Bytes;
+    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
+    let webp = WebP::from_bytes(Bytes::copy_from_slice(data)).ok()?;
     webp.icc_profile().map(|icc| icc.to_vec())
 }
 
