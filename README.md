@@ -441,7 +441,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | Method | Description |
 |--------|-------------|
 | `ImageEngine.from(buffer)` | Create engine from a Buffer (loads into V8 heap) |
-| `ImageEngine.fromPath(path)` | **Recommended**: Create engine from file path (bypasses V8 heap) |
+| `ImageEngine.fromPath(path)` | **Recommended**: Create engine from file path (bypasses V8 heap). Uses memory mapping for zero-copy access. **Note**: On Windows, memory-mapped files cannot be deleted while mapped. This is a platform limitation. |
 
 ### Pipeline Operations (chainable)
 

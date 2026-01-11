@@ -68,7 +68,7 @@ impl ImageEngine {
 
         ImageEngine {
             source: Some(Source::Memory(source_bytes.clone())),
-            source_bytes: Some(source_bytes),
+            source_bytes: None, // Not needed - use source.as_bytes() directly for consistency
             decoded: None,
             ops: Vec::new(),
             icc_profile,
@@ -100,9 +100,11 @@ impl ImageEngine {
         // Safety: We assume the file won't be modified externally during processing.
         // This is a common assumption in image processing libraries.
         // For production use, consider adding file locking (flock) if needed.
+        // Note: On Windows, memory-mapped files cannot be deleted while mapped.
+        // This is a platform limitation that should be documented for users.
         let mmap = unsafe {
             Mmap::map(&file).map_err(|e| {
-                napi::Error::from(LazyImageError::file_read_failed(path.clone(), e))
+                napi::Error::from(LazyImageError::mmap_failed(path.clone(), e))
             })?
         };
 
