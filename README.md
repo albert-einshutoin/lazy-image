@@ -380,12 +380,14 @@ console.log(metrics);
 ```javascript
 // Process multiple images in parallel with the same operations
 // Note: Create an engine just to define operations - no source image needed
+// processBatch uses zero-copy memory mapping (same as fromPath) for efficient batch processing
 const engine = ImageEngine.fromPath('dummy.jpg') // or use any existing image
   .resize(800)
   .grayscale();
 
 // Apply the same operations to multiple files
 // Default: uses all CPU cores for parallel processing
+// Each file is memory-mapped for zero-copy access (bypasses Node.js heap)
 const results = await engine.processBatch(
   ['img1.jpg', 'img2.jpg', 'img3.jpg'],
   './output',
@@ -734,8 +736,9 @@ If you process untrusted images (user avatars, uploads, etc.):
 lazy-image implements a **Copy-on-Write (CoW)** architecture to minimize memory usage:
 
 1. **True Lazy Loading**: `fromPath()` creates a lightweight reference. File I/O only occurs when `toBuffer()`/`toFile()` is called.
-2. **Zero-Copy Conversions**: For format conversions (e.g., PNG → WebP) without pixel manipulation (resize/crop), **no pixel buffer allocation or copy occurs**. The engine reuses the decoded buffer directly.
-3. **Smart Cloning**: `.clone()` operations are instant and memory-free until a destructive operation is applied.
+2. **Zero-Copy Memory Mapping**: Both `fromPath()` and `processBatch()` use memory mapping (mmap) for zero-copy file access. This bypasses the Node.js heap entirely, making it ideal for processing large images in memory-constrained environments.
+3. **Zero-Copy Conversions**: For format conversions (e.g., PNG → WebP) without pixel manipulation (resize/crop), **no pixel buffer allocation or copy occurs**. The engine reuses the decoded buffer directly.
+4. **Smart Cloning**: `.clone()` operations are instant and memory-free until a destructive operation is applied.
 
 ### Color Management
 
@@ -858,6 +861,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.8.3 | Documentation: Updated README.md to document zero-copy memory mapping for processBatch() |
 | v0.8.1 | WebP encoding optimization: ~4x speed improvement (method 4, single pass) to match sharp performance |
 | v0.8.0 | Updated benchmark results, improved test suite |
 | v0.7.7 | CI/CD improvements: skip napi prepublish auto-publish, use manual package generation |

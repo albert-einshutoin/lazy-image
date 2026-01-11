@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.3] - 2026-01-12
+
+### Documentation
+- Updated README.md to document zero-copy memory mapping for `processBatch()`
+  - Added clarification that `processBatch()` uses memory mapping (mmap) for zero-copy file access
+  - Updated Memory Management section to explicitly mention both `fromPath()` and `processBatch()` use zero-copy memory mapping
+  - This makes it clear that batch processing bypasses the Node.js heap entirely, ideal for memory-constrained environments
+
+---
+
 ## [0.8.2] - 2026-01-08
 
 ### Changed
