@@ -595,6 +595,28 @@ impl ImageEngine {
         self.decoded
             .as_ref()
             .map(|arc| arc.as_ref())
-            .ok_or_else(|| LazyImageError::internal_panic("decode failed unexpectedly"))
+            .ok_or_else(||             LazyImageError::internal_panic("decode failed unexpectedly"))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::engine::pipeline::fast_resize_owned;
+    use image::{DynamicImage, GenericImageView, RgbImage};
+
+    fn create_test_image(width: u32, height: u32) -> DynamicImage {
+        DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
+            image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
+        }))
+    }
+
+    #[test]
+    fn fast_resize_owned_returns_error_instead_of_dummy_image() {
+        let img = create_test_image(1, 1);
+        let err = fast_resize_owned(img, 0, 10).expect_err("expected resize failure");
+        assert_eq!(err.source_dims, (1, 1));
+        assert_eq!(err.target_dims, (0, 10));
+        assert!(err.reason.contains("invalid dimensions"));
     }
 }
