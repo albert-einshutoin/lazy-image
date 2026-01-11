@@ -33,6 +33,8 @@ mod io;
 mod pipeline;
 #[cfg(feature = "napi")]
 mod pool;
+#[cfg(feature = "stress")]
+mod stress;
 #[cfg(feature = "napi")]
 mod tasks;
 
@@ -51,7 +53,7 @@ pub use tasks::BatchResult;
 
 // Stress test function re-export
 #[cfg(feature = "stress")]
-pub use tasks::run_stress_iteration;
+pub use stress::run_stress_iteration;
 
 // Tests have been distributed to their respective modules:
 // - engine/pipeline.rs: resize_calc_tests, apply_ops_tests, optimize_ops_tests, fast_resize_tests
