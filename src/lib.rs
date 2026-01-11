@@ -72,7 +72,7 @@ pub fn inspect_header_from_path(
 ) -> std::result::Result<InspectMetadata, LazyImageError> {
     use std::fs::File;
 
-    let file = File::open(path).map_err(|e| LazyImageError::file_read_failed(path, e))?;
+    let file = File::open(path).map_err(|e| LazyImageError::file_read_failed(path.to_string(), e))?;
     read_inspect_metadata(BufReader::new(file))
 }
 
