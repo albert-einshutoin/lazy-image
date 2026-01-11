@@ -8,7 +8,6 @@ use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
 use crate::engine::pipeline::apply_ops;
 use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat};
-use image::DynamicImage;
 use std::borrow::Cow;
 
 // Type alias for Result - use standard Result when napi is disabled
