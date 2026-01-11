@@ -218,7 +218,7 @@ impl ImageEngine {
         // Validate that the file exists (fast check, no read)
         let path_buf = PathBuf::from(&path);
         if !path_buf.exists() {
-            return Err(napi::Error::from(LazyImageError::file_not_found(&path)));
+            return Err(napi::Error::from(LazyImageError::file_not_found(path)));
         }
 
         Ok(ImageEngine {
@@ -365,7 +365,7 @@ impl ImageEngine {
     #[napi]
     pub fn preset(&mut self, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
         let config = PresetConfig::get(&name)
-            .ok_or_else(|| napi::Error::from(LazyImageError::invalid_preset(&name)))?;
+            .ok_or_else(|| napi::Error::from(LazyImageError::invalid_preset(name.clone())))?;
 
         // Apply resize operation
         self.ops.push(Operation::Resize {
@@ -406,7 +406,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
 
         // Lazy load: ensure source bytes are loaded before creating the task
         let source = self.ensure_source_bytes()?.clone();
@@ -438,7 +438,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
 
         // Lazy load: ensure source bytes are loaded before creating the task
         let source = self.ensure_source_bytes()?.clone();
@@ -473,7 +473,7 @@ impl ImageEngine {
         quality: Option<u8>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
 
         // Lazy load: ensure source bytes are loaded before creating the task
         let source = self.ensure_source_bytes()?.clone();
@@ -594,7 +594,7 @@ impl ImageEngine {
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
         let output_format = OutputFormat::from_str(&format, quality)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(&format)))?;
+            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format.clone())))?;
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {
             inputs,
@@ -1004,7 +1004,7 @@ impl Task for WriteFileTask {
         // This ensures rename() works (cross-filesystem rename can fail)
         let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
             napi::Error::from(LazyImageError::file_write_failed(
-                &output_dir.to_string_lossy().to_string(),
+                output_dir.to_string_lossy().to_string(),
                 e,
             ))
         })?;
@@ -1018,7 +1018,7 @@ impl Task for WriteFileTask {
         })?;
         temp_file.write_all(&data).map_err(|e| {
             napi::Error::from(LazyImageError::file_write_failed(
-                &temp_path.display().to_string(),
+                temp_path.display().to_string(),
                 e,
             ))
         })?;
@@ -1026,7 +1026,7 @@ impl Task for WriteFileTask {
         // Ensure data is flushed to disk
         temp_file.as_file_mut().sync_all().map_err(|e| {
             napi::Error::from(LazyImageError::file_write_failed(
-                &temp_path.display().to_string(),
+                temp_path.display().to_string(),
                 e,
             ))
         })?;
@@ -1038,7 +1038,7 @@ impl Task for WriteFileTask {
                 format!("failed to persist file: {}", e),
             );
             napi::Error::from(LazyImageError::file_write_failed(
-                &self.output_path,
+                self.output_path.clone(),
                 io_error,
             ))
         })?;
@@ -1073,7 +1073,7 @@ impl Task for BatchTask {
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir).map_err(|e| {
                 napi::Error::from(LazyImageError::file_write_failed(
-                    &self.output_dir.clone(),
+                    self.output_dir.clone(),
                     e,
                 ))
             })?;
@@ -1087,7 +1087,7 @@ impl Task for BatchTask {
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> Result<String> {
                 let data = fs::read(input_path).map_err(|e| {
-                    napi::Error::from(LazyImageError::file_read_failed(input_path, e))
+                    napi::Error::from(LazyImageError::file_read_failed(input_path.clone(), e))
                 })?;
 
                 let icc_profile = if keep_metadata {
@@ -1149,20 +1149,20 @@ impl Task for BatchTask {
                 use tempfile::NamedTempFile;
 
                 let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
-                    napi::Error::from(LazyImageError::file_write_failed(output_dir, e))
+                    napi::Error::from(LazyImageError::file_write_failed(output_dir.to_string(), e))
                 })?;
 
                 let temp_path = temp_file.path().to_path_buf();
                 temp_file.write_all(&encoded).map_err(|e| {
                     napi::Error::from(LazyImageError::file_write_failed(
-                        &temp_path.display().to_string(),
+                        temp_path.display().to_string(),
                         e,
                     ))
                 })?;
 
                 temp_file.as_file_mut().sync_all().map_err(|e| {
                     napi::Error::from(LazyImageError::file_write_failed(
-                        &temp_path.display().to_string(),
+                        temp_path.display().to_string(),
                         e,
                     ))
                 })?;
@@ -1174,7 +1174,7 @@ impl Task for BatchTask {
                         format!("failed to persist file: {}", e),
                     );
                     napi::Error::from(LazyImageError::file_write_failed(
-                        &output_path.display().to_string(),
+                        output_path.display().to_string(),
                         io_error,
                     ))
                 })?;
