@@ -5,7 +5,7 @@
 
 use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg};
 use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
-use crate::engine::io::extract_icc_profile;
+use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
 use crate::engine::pool;
 use crate::error::LazyImageError;
@@ -48,7 +48,7 @@ pub struct BatchResult {
 }
 
 pub(crate) struct EncodeTask {
-    pub source: Option<Arc<Vec<u8>>>,
+    pub source: Option<Source>,
     /// Decoded image wrapped in Arc. decode() returns Cow::Borrowed pointing here,
     /// enabling true Copy-on-Write in apply_ops (no deep copy for format-only conversion).
     pub decoded: Option<Arc<DynamicImage>>,
@@ -73,12 +73,16 @@ impl EncodeTask {
             return Ok(Cow::Borrowed(img_arc.as_ref()));
         }
 
-        // For EncodeTask, source is Option<Arc<Vec<u8>>>, not Source enum
+        // Get bytes from source - zero-copy for Memory and Mapped sources
         let bytes = self
             .source
             .as_ref()
-            .ok_or_else(|| to_engine_error(LazyImageError::source_consumed()))?
-            .as_slice();
+            .and_then(|s| s.as_bytes())
+            .ok_or_else(|| {
+                // For Path sources, we need to load them first
+                // This should not happen in normal flow as Path sources are converted to Mapped in from_path
+                to_engine_error(LazyImageError::source_consumed())
+            })?;
 
         // Check magic bytes for JPEG (0xFF 0xD8)
         let img = if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
@@ -163,7 +167,7 @@ impl Task for EncodeTask {
 }
 
 pub(crate) struct EncodeWithMetricsTask {
-    pub source: Option<Arc<Vec<u8>>>,
+    pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
     pub ops: Vec<Operation>,
@@ -206,7 +210,7 @@ impl Task for EncodeWithMetricsTask {
 }
 
 pub(crate) struct WriteFileTask {
-    pub source: Option<Arc<Vec<u8>>>,
+    pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
     pub ops: Vec<Operation>,

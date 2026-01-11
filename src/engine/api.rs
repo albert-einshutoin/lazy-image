@@ -298,8 +298,8 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
-        // Lazy load: ensure source bytes are loaded before creating the task
-        let source = self.ensure_source_bytes()?.clone();
+        // Use source directly - zero-copy for Memory and Mapped sources
+        let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
@@ -307,7 +307,7 @@ impl ImageEngine {
         let keep_metadata = self.keep_metadata;
 
         Ok(AsyncTask::new(EncodeTask {
-            source: Some(source),
+            source,
             decoded,
             ops,
             format: output_format,
@@ -330,15 +330,15 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
-        // Lazy load: ensure source bytes are loaded before creating the task
-        let source = self.ensure_source_bytes()?.clone();
+        // Use source directly - zero-copy for Memory and Mapped sources
+        let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
         let keep_metadata = self.keep_metadata;
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
-            source: Some(source),
+            source,
             decoded,
             ops,
             format: output_format,
@@ -365,15 +365,15 @@ impl ImageEngine {
         let output_format = OutputFormat::from_str(&format, quality)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
-        // Lazy load: ensure source bytes are loaded before creating the task
-        let source = self.ensure_source_bytes()?.clone();
+        // Use source directly - zero-copy for Memory and Mapped sources
+        let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
         let icc_profile = self.icc_profile.clone();
         let keep_metadata = self.keep_metadata;
 
         Ok(AsyncTask::new(WriteFileTask {
-            source: Some(source),
+            source,
             decoded,
             ops,
             format: output_format,
@@ -407,72 +407,53 @@ impl ImageEngine {
             .as_ref()
             .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
 
-        match source {
-            Source::Path(path) => {
-                // For file paths, read header directly from file (very fast)
-                use std::fs::File;
-
-                let file = File::open(path).map_err(|e| {
-                    napi::Error::from(LazyImageError::file_read_failed(
-                        path.to_string_lossy().to_string(),
-                        e,
-                    ))
-                })?;
-
-                let reader = ImageReader::new(BufReader::new(file))
-                    .with_guessed_format()
-                    .map_err(|e| {
-                        napi::Error::from(LazyImageError::decode_failed(format!(
-                            "failed to read image header: {e}"
-                        )))
-                    })?;
-
-                let (width, height) = reader.into_dimensions().map_err(|e| {
+        // Use as_bytes() to get zero-copy access for Memory and Mapped sources
+        if let Some(bytes) = source.as_bytes() {
+            // For in-memory or memory-mapped data, use cursor
+            let cursor = Cursor::new(bytes);
+            let reader = ImageReader::new(cursor)
+                .with_guessed_format()
+                .map_err(|e| {
                     napi::Error::from(LazyImageError::decode_failed(format!(
-                        "failed to read dimensions: {e}"
+                        "failed to read image header: {e}"
                     )))
                 })?;
 
-                Ok(Dimensions { width, height })
-            }
-            Source::Memory(data) => {
-                // For in-memory data, use cursor
-                let cursor = Cursor::new(data.as_ref());
-                let reader = ImageReader::new(cursor)
-                    .with_guessed_format()
-                    .map_err(|e| {
-                        napi::Error::from(LazyImageError::decode_failed(format!(
-                            "failed to read image header: {e}"
-                        )))
-                    })?;
+            let (width, height) = reader.into_dimensions().map_err(|e| {
+                napi::Error::from(LazyImageError::decode_failed(format!(
+                    "failed to read dimensions: {e}"
+                )))
+            })?;
 
-                let (width, height) = reader.into_dimensions().map_err(|e| {
+            Ok(Dimensions { width, height })
+        } else if let Source::Path(path) = source {
+            // For file paths, read header directly from file (very fast)
+            use std::fs::File;
+
+            let file = File::open(path).map_err(|e| {
+                napi::Error::from(LazyImageError::file_read_failed(
+                    path.to_string_lossy().to_string(),
+                    e,
+                ))
+            })?;
+
+            let reader = ImageReader::new(BufReader::new(file))
+                .with_guessed_format()
+                .map_err(|e| {
                     napi::Error::from(LazyImageError::decode_failed(format!(
-                        "failed to read dimensions: {e}"
+                        "failed to read image header: {e}"
                     )))
                 })?;
 
-                Ok(Dimensions { width, height })
-            }
-            Source::Mapped(mmap) => {
-                // For memory-mapped data, use cursor
-                let cursor = Cursor::new(mmap.as_ref());
-                let reader = ImageReader::new(cursor)
-                    .with_guessed_format()
-                    .map_err(|e| {
-                        napi::Error::from(LazyImageError::decode_failed(format!(
-                            "failed to read image header: {e}"
-                        )))
-                    })?;
+            let (width, height) = reader.into_dimensions().map_err(|e| {
+                napi::Error::from(LazyImageError::decode_failed(format!(
+                    "failed to read dimensions: {e}"
+                )))
+            })?;
 
-                let (width, height) = reader.into_dimensions().map_err(|e| {
-                    napi::Error::from(LazyImageError::decode_failed(format!(
-                        "failed to read dimensions: {e}"
-                    )))
-                })?;
-
-                Ok(Dimensions { width, height })
-            }
+            Ok(Dimensions { width, height })
+        } else {
+            Err(napi::Error::from(LazyImageError::source_consumed()))
         }
     }
 
@@ -539,39 +520,65 @@ pub struct PresetResult {
 // =============================================================================
 
 impl ImageEngine {
-    /// Ensure source bytes are loaded (lazy loading for Path sources)
-    /// For Mapped sources, converts to Vec<u8> for compatibility with existing code
+    /// Get source as a byte slice - zero-copy for Memory and Mapped sources
+    /// For Path sources, loads the file first (only when needed)
     #[cfg(feature = "napi")]
-    fn ensure_source_bytes(&mut self) -> Result<&Arc<Vec<u8>>> {
-        if self.source_bytes.is_none() {
-            let source = self
-                .source
-                .as_ref()
-                .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
-
-            let bytes = source.load().map_err(|e| napi::Error::from(e))?;
-
-            // Extract ICC profile now that we have the bytes
-            if self.icc_profile.is_none() {
-                self.icc_profile = extract_icc_profile(&bytes).map(Arc::new);
+    fn ensure_source_slice(&mut self) -> Result<&[u8]> {
+        // First, try to get bytes directly (zero-copy for Memory and Mapped)
+        // We need to handle Path sources separately to avoid borrow checker issues
+        let is_path = matches!(self.source, Some(Source::Path(_)));
+        
+        if !is_path {
+            // For Memory and Mapped sources, get bytes directly
+            if let Some(source) = &self.source {
+                if let Some(bytes) = source.as_bytes() {
+                    // Extract ICC profile if not already extracted
+                    if self.icc_profile.is_none() {
+                        self.icc_profile = extract_icc_profile(bytes).map(Arc::new);
+                    }
+                    return Ok(bytes);
+                }
             }
-
-            self.source_bytes = Some(bytes);
+            return Err(napi::Error::from(LazyImageError::source_consumed()));
         }
 
-        self.source_bytes.as_ref().ok_or_else(|| {
-            napi::Error::from(LazyImageError::internal_panic("source bytes load failed"))
-        })
+        // For Path sources, we need to load them
+        // This should rarely happen as from_path now uses Mapped
+        let path = match self.source.take() {
+            Some(Source::Path(p)) => p,
+            _ => return Err(napi::Error::from(LazyImageError::source_consumed())),
+        };
+
+        let data = std::fs::read(&path).map_err(|e| {
+            napi::Error::from(LazyImageError::file_read_failed(
+                path.to_string_lossy().to_string(),
+                e,
+            ))
+        })?;
+
+        // Extract ICC profile
+        if self.icc_profile.is_none() {
+            self.icc_profile = extract_icc_profile(&data).map(Arc::new);
+        }
+
+        // Convert to Memory source for future use
+        // Note: This is a fallback - from_path should use Mapped directly
+        let data_arc = Arc::new(data);
+        self.source_bytes = Some(data_arc.clone());
+        self.source = Some(Source::Memory(data_arc));
+        
+        // Now return reference from source_bytes
+        Ok(self.source_bytes.as_ref().unwrap().as_slice())
     }
 
     #[cfg(feature = "napi")]
     #[allow(dead_code)]
     fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
         if self.decoded.is_none() {
-            // First ensure we have the source bytes loaded
-            let source = self.ensure_source_bytes()?.clone();
+            // Get source bytes as slice - zero-copy for Memory and Mapped
+            let bytes = self.ensure_source_slice()?;
 
-            let img = image::load_from_memory(&source).map_err(|e| {
+            let img = image::load_from_memory(bytes).map_err(|e| {
                 napi::Error::from(LazyImageError::decode_failed(format!(
                     "failed to decode: {e}"
                 )))

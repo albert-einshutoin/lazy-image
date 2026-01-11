@@ -22,11 +22,15 @@ pub enum Source {
 
 impl Source {
     /// Load the actual bytes from the source
+    /// Note: For Mapped sources, this converts to Vec<u8> (defeats zero-copy).
+    /// Prefer using as_bytes() for zero-copy access when possible.
     pub fn load(&self) -> std::result::Result<Arc<Vec<u8>>, LazyImageError> {
         match self {
             Source::Memory(data) => Ok(data.clone()),
             Source::Mapped(mmap) => {
-                // Convert memory-mapped data to Vec<u8>
+                // WARNING: This defeats zero-copy by converting to Vec<u8>
+                // This method should only be used for Path sources or legacy code paths
+                // For zero-copy access, use as_bytes() instead
                 Ok(Arc::new(mmap.as_ref().to_vec()))
             }
             Source::Path(path) => {
