@@ -7,6 +7,7 @@ use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg};
 use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
+#[cfg(feature = "napi")]
 use crate::engine::pool;
 use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat};

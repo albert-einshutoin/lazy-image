@@ -7,6 +7,7 @@
 // Source is used via Source::Memory and Source::Mapped
 #[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
+#[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask};
 use crate::error::LazyImageError;

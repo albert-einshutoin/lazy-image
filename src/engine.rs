@@ -68,7 +68,11 @@ pub use tasks::BatchResult;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ops::{Operation, OutputFormat};
+    use crate::engine::tasks::EncodeTask;
     use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
+    use std::borrow::Cow;
+    use std::sync::Arc;
 
     // Helper function to create test images
     fn create_test_image(width: u32, height: u32) -> DynamicImage {
@@ -1247,8 +1251,9 @@ mod tests {
         fn test_decode_with_image_crate() {
             // PNGデータでdecode()がimage crateを使うことを確認
             let png_data = create_minimal_png();
+            use crate::engine::io::Source;
             let task = EncodeTask {
-                source: Some(Arc::new(png_data)),
+                source: Some(Source::Memory(Arc::new(png_data))),
                 decoded: None,
                 ops: vec![],
                 format: OutputFormat::Png,
