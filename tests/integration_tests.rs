@@ -77,7 +77,7 @@ mod tests {
         let icc_size = engine.has_icc_profile();
         // PNG created from scratch typically doesn't have ICC profile
         // This test verifies the method works without panicking
-        assert!(icc_size.is_none() || icc_size.is_some());
+        assert!(icc_size.is_none(), "PNG created from scratch should not have ICC profile");
     }
 
     // Note: Methods requiring Reference (resize, crop, rotate, flip_h, flip_v,

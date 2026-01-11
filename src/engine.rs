@@ -25,6 +25,7 @@ pub const MAX_PIXELS: u64 = 100_000_000;
 // =============================================================================
 
 // Import decomposed modules
+mod common;
 #[cfg(feature = "napi")]
 mod api;
 mod decoder;
