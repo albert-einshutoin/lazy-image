@@ -2,7 +2,6 @@
 //
 // Decoder operations: JPEG (mozjpeg), PNG, WebP, etc.
 
-use crate::engine::io::Source;
 use crate::error::LazyImageError;
 use image::{DynamicImage, RgbImage};
 #[cfg(test)]
