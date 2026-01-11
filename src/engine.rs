@@ -54,6 +54,10 @@ pub use pool::{get_pool, MAX_CONCURRENCY};
 pub use api::{Dimensions, PresetResult};
 #[cfg(feature = "napi")]
 pub use tasks::BatchResult;
+
+// Re-export stress test function
+#[cfg(feature = "stress")]
+pub use stress::run_stress_iteration;
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
