@@ -29,6 +29,8 @@ mod decoder;
 mod encoder;
 mod io;
 mod pipeline;
+#[cfg(feature = "napi")]
+mod pool;
 
 // Re-export commonly used types and functions
 pub use decoder::{check_dimensions, decode_jpeg_mozjpeg};
@@ -39,83 +41,7 @@ pub use pipeline::{
     optimize_ops, ResizeError,
 };
 
-// =============================================================================
-// GLOBAL THREAD POOL FOR BATCH PROCESSING
-// =============================================================================
-//
-// **Architecture Decision**: We use a single global thread pool for all batch
-// operations instead of creating a new pool per request. This provides:
-//
-// 1. **Zero allocation overhead**: No pool creation cost per batch
-// 2. **Better resource utilization**: Threads are reused across operations
-// 3. **Predictable performance**: Consistent thread count based on CPU cores
-//
-// **Thread Count Calculation**:
-// - Uses std::thread::available_parallelism() to respect cgroup/CPU quota
-// - Reserves UV_THREADPOOL_SIZE threads for libuv (defaults to 4) to avoid oversubscription
-// - Fallback is MIN_RAYON_THREADS when detection fails
-//
-// **IMPORTANT**:
-// - Pool is initialized lazily on first use
-// - Changes after initialization have NO effect
-//
-// **Benchmark Results** (see benches/benchmark.rs):
-// - Global pool: ~0.5ms overhead for 100 items
-// - New pool per call: ~5-10ms overhead (10-20x slower)
-//
-#[cfg(feature = "napi")]
-use once_cell::sync::Lazy;
-#[cfg(feature = "napi")]
-static GLOBAL_THREAD_POOL: Lazy<ThreadPool> = Lazy::new(|| {
-    let detected_parallelism = std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(MIN_RAYON_THREADS);
-
-    let uv_reserve = reserved_libuv_threads();
-    let num_threads = detected_parallelism
-        .saturating_sub(uv_reserve)
-        .max(MIN_RAYON_THREADS);
-
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(num_threads)
-        .build()
-        .unwrap_or_else(|e| {
-            // Fallback: create a minimal thread pool if the preferred configuration fails
-            rayon::ThreadPoolBuilder::new()
-                .num_threads(MIN_RAYON_THREADS)
-                .build()
-                .expect(&format!(
-                    "Failed to create fallback thread pool with {} threads: {}",
-                    MIN_RAYON_THREADS, e
-                ))
-        })
-});
-
-// MAX_PIXELS is now exported from engine module
-
-// =============================================================================
-// THREAD POOL CONFIGURATION
-// =============================================================================
-
-/// Default libuv thread pool size (Node.js default)
-#[cfg(feature = "napi")]
-const DEFAULT_LIBUV_THREADPOOL_SIZE: usize = 4;
-
-/// Maximum allowed concurrency value for processBatch()
-#[cfg(feature = "napi")]
-const MAX_CONCURRENCY: usize = 1024;
-
-/// Minimum number of rayon threads to ensure at least some parallelism
-#[cfg(feature = "napi")]
-const MIN_RAYON_THREADS: usize = 1;
-
-#[cfg(feature = "napi")]
-fn reserved_libuv_threads() -> usize {
-    std::env::var("UV_THREADPOOL_SIZE")
-        .ok()
-        .and_then(|raw| raw.parse::<usize>().ok())
-        .unwrap_or(DEFAULT_LIBUV_THREADPOOL_SIZE)
-}
+// Thread pool management is now in engine/pool.rs
 
 // Use local modules (imported above)
 use crate::error::LazyImageError;
@@ -129,8 +55,6 @@ use napi::bindgen_prelude::*;
 use napi::{Env, JsBuffer, Task};
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
-#[cfg(feature = "napi")]
-use rayon::ThreadPool;
 use std::borrow::Cow;
 use std::io::Cursor;
 use std::path::PathBuf;
@@ -1205,10 +1129,10 @@ impl Task for BatchTask {
         // Validate concurrency parameter
         // concurrency = 0 means "use default" (auto-detected via available_parallelism)
         // concurrency = 1..MAX_CONCURRENCY means "use specified number of threads"
-        if self.concurrency > MAX_CONCURRENCY as u32 {
+        if self.concurrency > crate::engine::pool::MAX_CONCURRENCY as u32 {
             return Err(napi::Error::from(LazyImageError::internal_panic(format!(
                 "invalid concurrency value: {} (must be 0 or 1-{})",
-                self.concurrency, MAX_CONCURRENCY
+                self.concurrency, crate::engine::pool::MAX_CONCURRENCY
             ))));
         }
 
@@ -1216,7 +1140,7 @@ impl Task for BatchTask {
         let results: Vec<BatchResult> = if self.concurrency == 0 {
             // Use global thread pool with default concurrency
             // (automatically calculated from available_parallelism)
-            GLOBAL_THREAD_POOL.install(|| self.inputs.par_iter().map(process_one).collect())
+            crate::engine::pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
         } else {
             // For custom concurrency, create a temporary pool with specified threads
             // Note: This creates a new pool per request, which is acceptable
