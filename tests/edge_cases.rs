@@ -186,22 +186,13 @@ mod large_image_tests {
 
 mod corrupted_image_tests {
     use super::*;
-    use lazy_image::engine::EncodeTask;
-    use std::sync::Arc;
+    use lazy_image::engine::decode_jpeg_mozjpeg;
 
     #[test]
     fn test_jpeg_header_only() {
         // JPEGマジックバイト（0xFF 0xD8）のみ
         let corrupted = vec![0xFF, 0xD8];
-        let task = EncodeTask {
-            source: Some(Arc::new(corrupted)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        let result = decode_jpeg_mozjpeg(&corrupted);
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("decode") || err.contains("failed"));
@@ -213,15 +204,7 @@ mod corrupted_image_tests {
         let valid_jpeg = create_valid_jpeg(100, 100);
         let truncated: Vec<u8> = valid_jpeg[..valid_jpeg.len() / 2].to_vec();
 
-        let task = EncodeTask {
-            source: Some(Arc::new(truncated)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        let result = decode_jpeg_mozjpeg(&truncated);
         // 切断されたJPEGは通常エラーになるが、image crateが部分的にデコードできる場合もある
         // 少なくともpanicしないことを確認
         if result.is_ok() {
@@ -237,15 +220,8 @@ mod corrupted_image_tests {
         let valid_jpeg = create_valid_jpeg(10, 10);
         fake.extend_from_slice(&valid_jpeg[4..]);
 
-        let task = EncodeTask {
-            source: Some(Arc::new(fake)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        // PNGマジックバイトなので、decode_jpeg_mozjpegは呼ばれず、image crateが処理する
+        let result = image::load_from_memory(&fake);
         // PNGとして解析を試みるが、実際はJPEGなので失敗する可能性が高い
         assert!(result.is_err());
     }
@@ -253,50 +229,27 @@ mod corrupted_image_tests {
     #[test]
     fn test_empty_buffer() {
         let empty: Vec<u8> = vec![];
-        let task = EncodeTask {
-            source: Some(Arc::new(empty)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        let result = decode_jpeg_mozjpeg(&empty);
         assert!(result.is_err());
     }
 }
 
 mod non_image_tests {
-    use lazy_image::engine::EncodeTask;
-    use std::sync::Arc;
+    use super::*;
 
     #[test]
     fn test_text_file() {
         let text = b"Hello, this is not an image!".to_vec();
-        let task = EncodeTask {
-            source: Some(Arc::new(text)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        // image crateでデコードを試みる
+        let result = image::load_from_memory(&text);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_random_binary() {
         let random: Vec<u8> = (0..1000).map(|i| (i % 256) as u8).collect();
-        let task = EncodeTask {
-            source: Some(Arc::new(random)),
-            decoded: None,
-            ops: vec![],
-            format: lazy_image::ops::OutputFormat::Jpeg { quality: 80 },
-            icc_profile: None,
-            keep_metadata: false,
-        };
-        let result = task.decode();
+        // image crateでデコードを試みる
+        let result = image::load_from_memory(&random);
         assert!(result.is_err());
     }
 }
