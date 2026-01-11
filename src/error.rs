@@ -231,30 +231,6 @@ impl LazyImageError {
         }
     }
 
-    // Static string literal helpers (zero-allocation for static strings)
-    // These are convenience methods for when you have a static string literal.
-    // They are optional since impl Into<Cow<'static, str>> already handles &'static str,
-    // but they make the intent explicit and can help with code clarity.
-
-    pub fn decode_failed_static(msg: &'static str) -> Self {
-        Self::DecodeFailed {
-            message: Cow::Borrowed(msg),
-        }
-    }
-
-    pub fn internal_panic_static(msg: &'static str) -> Self {
-        Self::InternalPanic {
-            message: Cow::Borrowed(msg),
-        }
-    }
-
-    pub fn encode_failed_static(format: &'static str, message: &'static str) -> Self {
-        Self::EncodeFailed {
-            format: Cow::Borrowed(format),
-            message: Cow::Borrowed(message),
-        }
-    }
-
     /// Check if this error is recoverable (user can fix it)
     pub fn is_recoverable(&self) -> bool {
         matches!(
