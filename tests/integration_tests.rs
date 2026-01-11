@@ -32,7 +32,7 @@ mod tests {
         let engine = ImageEngine::from(buffer);
         
         // Verify engine is created successfully
-        // We can verify by checking that dimensions() works (requires source_bytes to be loaded)
+        // We can verify by checking that dimensions() works (uses source.as_bytes() for zero-copy access)
         let mut engine_for_dims = engine;
         let dims = engine_for_dims.dimensions().unwrap();
         assert_eq!(dims.width, 100);

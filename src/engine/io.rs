@@ -6,57 +6,38 @@ use crate::error::LazyImageError;
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
 use libavif_sys::*;
 use memmap2::Mmap;
-use std::path::PathBuf;
 use std::sync::Arc;
 
-/// Image source - supports both in-memory data, memory-mapped files, and file paths (lazy loading)
+/// Image source - supports both in-memory data and memory-mapped files
 #[derive(Clone, Debug)]
 pub enum Source {
     /// In-memory image data (from Buffer)
     Memory(Arc<Vec<u8>>),
     /// Memory-mapped file (zero-copy access)
     Mapped(Arc<Mmap>),
-    /// File path for lazy loading (data is read only when needed)
-    Path(PathBuf),
 }
 
 impl Source {
     /// Load the actual bytes from the source
     /// Note: For Mapped sources, this converts to Vec<u8> (defeats zero-copy).
     /// Prefer using as_bytes() for zero-copy access when possible.
+    #[deprecated(note = "Use as_bytes() for zero-copy access. This method defeats zero-copy by converting Mapped to Vec<u8>.")]
     pub fn load(&self) -> std::result::Result<Arc<Vec<u8>>, LazyImageError> {
         match self {
             Source::Memory(data) => Ok(data.clone()),
             Source::Mapped(mmap) => {
                 // WARNING: This defeats zero-copy by converting to Vec<u8>
-                // This method should only be used for Path sources or legacy code paths
                 // For zero-copy access, use as_bytes() instead
                 Ok(Arc::new(mmap.as_ref().to_vec()))
             }
-            Source::Path(path) => {
-                let data = std::fs::read(path).map_err(|e| {
-                    LazyImageError::file_read_failed(path.to_string_lossy().to_string(), e)
-                })?;
-                Ok(Arc::new(data))
-            }
         }
     }
 
-    /// Get path if this is a Path source
-    pub fn as_path(&self) -> Option<&PathBuf> {
-        match self {
-            Source::Path(p) => Some(p),
-            Source::Memory(_) | Source::Mapped(_) => None,
-        }
-    }
-
-    /// Get the bytes directly - works for both Memory and Mapped sources
-    /// Returns None only for Path sources (which need to be loaded first)
+    /// Get the bytes directly - zero-copy for both Memory and Mapped sources
     pub fn as_bytes(&self) -> Option<&[u8]> {
         match self {
             Source::Memory(data) => Some(data.as_slice()),
             Source::Mapped(mmap) => Some(mmap.as_ref()),
-            Source::Path(_) => None,
         }
     }
 
@@ -65,7 +46,6 @@ impl Source {
         match self {
             Source::Memory(data) => data.len(),
             Source::Mapped(mmap) => mmap.len(),
-            Source::Path(_) => 0, // Unknown until loaded
         }
     }
 }
