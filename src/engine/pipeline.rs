@@ -5,8 +5,12 @@
 use crate::error::LazyImageError;
 use crate::ops::Operation;
 use fast_image_resize::{self as fir, MulDiv, PixelType, ResizeOptions};
-use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
+use image::{DynamicImage, RgbImage, RgbaImage};
 use std::borrow::Cow;
+
+// GenericImageView is used in tests via dimensions() method
+#[cfg(test)]
+use image::GenericImageView;
 
 // Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
 #[cfg(feature = "napi")]

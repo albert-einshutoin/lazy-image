@@ -3,7 +3,11 @@
 // ImageEngine structure and NAPI implementation.
 // This is the main public API for the image processing engine.
 
+// BatchResult is used in ts_return_type attribute (line 446) - compiler can't detect this
+// Source is used via Source::Memory and Source::Path (lines 66, 87, 383, 410)
+#[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
+#[allow(unused_imports)]
 use crate::engine::tasks::{BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask};
 use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat, PresetConfig};

@@ -4,7 +4,9 @@
 
 use crate::engine::io::Source;
 use crate::error::LazyImageError;
-use image::{DynamicImage, GenericImageView, RgbImage};
+use image::{DynamicImage, RgbImage};
+#[cfg(test)]
+use image::GenericImageView;
 use mozjpeg::Decompress;
 use std::panic;
 
