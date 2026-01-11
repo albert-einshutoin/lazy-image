@@ -3,6 +3,8 @@
 // Common utilities shared across engine modules.
 // Provides unified error handling and type aliases.
 
+// LazyImageError is used in EngineResult type alias when NAPI is disabled
+#[cfg(not(feature = "napi"))]
 use crate::error::LazyImageError;
 
 #[cfg(feature = "napi")]
