@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.4] - 2026-01-12
+
+### Added
+- Zero-copy memory mapping implementation (#128)
+  - `fromPath()` now uses memory mapping (mmap) for zero-copy file access
+  - `processBatch()` uses memory mapping for efficient batch processing
+  - Bypasses Node.js heap entirely, ideal for processing large images in memory-constrained environments
+  - Added `MmapFailed` error type for accurate error reporting
+
+### Changed
+- Improved zero-copy implementation: eliminated unnecessary buffer copies for memory-mapped sources
+- Updated `BatchTask` to use memory mapping instead of `fs::read` for zero-copy access
+- Enhanced documentation in README.md with detailed zero-copy memory mapping information
+- Added Windows file locking notes in README.md (memory-mapped files cannot be deleted while mapped on Windows)
+
+### Fixed
+- Fixed issue where `Source::load()` was converting Mapped→Vec, defeating zero-copy purpose
+- Removed dead code: `Source::Path` variant and `source_bytes` field
+
+---
+
 ## [0.8.3] - 2026-01-12
 
 ### Documentation
