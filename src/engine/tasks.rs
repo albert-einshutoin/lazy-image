@@ -5,7 +5,7 @@
 
 use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg};
 use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
-use crate::engine::io::extract_icc_profile;
+use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
 use crate::engine::pool;
 use crate::error::LazyImageError;
@@ -48,7 +48,7 @@ pub struct BatchResult {
 }
 
 pub(crate) struct EncodeTask {
-    pub source: Option<Arc<Vec<u8>>>,
+    pub source: Option<Source>,
     /// Decoded image wrapped in Arc. decode() returns Cow::Borrowed pointing here,
     /// enabling true Copy-on-Write in apply_ops (no deep copy for format-only conversion).
     pub decoded: Option<Arc<DynamicImage>>,
@@ -73,12 +73,23 @@ impl EncodeTask {
             return Ok(Cow::Borrowed(img_arc.as_ref()));
         }
 
-        // For EncodeTask, source is Option<Arc<Vec<u8>>>, not Source enum
-        let bytes = self
-            .source
-            .as_ref()
-            .ok_or_else(|| to_engine_error(LazyImageError::source_consumed()))?
-            .as_slice();
+        // Get bytes from source - zero-copy for Memory and Mapped sources
+        let bytes = match self.source.as_ref() {
+            Some(source) => {
+                if let Some(bytes) = source.as_bytes() {
+                    bytes
+                } else {
+                    // Path sources require loading first - this should not happen in normal flow
+                    // as from_path() converts Path to Mapped. If this occurs, it's a programming error.
+                    return Err(to_engine_error(LazyImageError::decode_failed(
+                        "Path source requires loading first. Use Mapped source (from_path) instead.".to_string(),
+                    )));
+                }
+            }
+            None => {
+                return Err(to_engine_error(LazyImageError::source_consumed()));
+            }
+        };
 
         // Check magic bytes for JPEG (0xFF 0xD8)
         let img = if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
@@ -163,7 +174,7 @@ impl Task for EncodeTask {
 }
 
 pub(crate) struct EncodeWithMetricsTask {
-    pub source: Option<Arc<Vec<u8>>>,
+    pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
     pub ops: Vec<Operation>,
@@ -206,7 +217,7 @@ impl Task for EncodeWithMetricsTask {
 }
 
 pub(crate) struct WriteFileTask {
-    pub source: Option<Arc<Vec<u8>>>,
+    pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
     pub ops: Vec<Operation>,
@@ -334,20 +345,36 @@ impl Task for BatchTask {
         let keep_metadata = self.keep_metadata;
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> Result<String> {
-                let data = fs::read(input_path).map_err(|e| {
+                // Use memory mapping for zero-copy access (same as from_path)
+                use std::fs::File;
+                use memmap2::Mmap;
+                use std::sync::Arc;
+
+                let file = File::open(input_path).map_err(|e| {
                     napi::Error::from(LazyImageError::file_read_failed(input_path.clone(), e))
                 })?;
 
+                // Safety: We assume the file won't be modified externally during processing.
+                // This is a common assumption in image processing libraries.
+                // Note: On Windows, memory-mapped files cannot be deleted while mapped.
+                let mmap = unsafe {
+                    Mmap::map(&file).map_err(|e| {
+                        napi::Error::from(LazyImageError::mmap_failed(input_path.clone(), e))
+                    })?
+                };
+                let mmap_arc = Arc::new(mmap);
+                let data = mmap_arc.as_ref();
+
                 let icc_profile = if keep_metadata {
-                    extract_icc_profile(&data).map(Arc::new)
+                    extract_icc_profile(data).map(Arc::new)
                 } else {
                     None
                 };
 
                 let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
-                    decode_jpeg_mozjpeg(&data)?
+                    decode_jpeg_mozjpeg(data)?
                 } else {
-                    image::load_from_memory(&data).map_err(|e| {
+                    image::load_from_memory(data).map_err(|e| {
                         napi::Error::from(LazyImageError::decode_failed(format!(
                             "decode failed: {e}"
                         )))

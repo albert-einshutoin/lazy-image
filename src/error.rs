@@ -25,6 +25,13 @@ pub enum LazyImageError {
         source: std::io::Error,
     },
 
+    #[error("Failed to memory-map file '{path}': {source}")]
+    MmapFailed {
+        path: Cow<'static, str>,
+        #[source]
+        source: std::io::Error,
+    },
+
     #[error("Failed to write file '{path}': {source}")]
     FileWriteFailed {
         path: Cow<'static, str>,
@@ -117,6 +124,13 @@ impl LazyImageError {
 
     pub fn file_read_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
         Self::FileReadFailed {
+            path: path.into(),
+            source,
+        }
+    }
+
+    pub fn mmap_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
+        Self::MmapFailed {
             path: path.into(),
             source,
         }

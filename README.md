@@ -441,7 +441,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | Method | Description |
 |--------|-------------|
 | `ImageEngine.from(buffer)` | Create engine from a Buffer (loads into V8 heap) |
-| `ImageEngine.fromPath(path)` | **Recommended**: Create engine from file path (bypasses V8 heap) |
+| `ImageEngine.fromPath(path)` | **Recommended**: Create engine from file path (bypasses V8 heap). Uses memory mapping for zero-copy access. **Note**: On Windows, memory-mapped files cannot be deleted while mapped. This is a platform limitation. |
 
 ### Pipeline Operations (chainable)
 
@@ -747,6 +747,37 @@ ICC color profiles are automatically extracted and embedded during processing.
 | PNG    | ✅ Full support | Via iCCP chunk |
 | WebP   | ✅ Full support | Via ICCP chunk |
 | AVIF   | ✅ Full support | Via libavif ICC profile embedding |
+
+### Platform Notes
+
+#### Windows File Locking
+
+**Important**: On Windows, memory-mapped files cannot be deleted while they are mapped. This is a platform limitation of Windows' memory mapping implementation.
+
+**Impact**: If you use `fromPath()` to process a file and then try to delete or replace that file while the `ImageEngine` instance is still in scope, the operation will fail on Windows.
+
+**Workaround**: 
+- Ensure the `ImageEngine` instance is dropped before attempting to delete/replace the file
+- Use `from()` with a Buffer if you need to delete the source file immediately after processing
+- For batch processing, process files sequentially or ensure engines are dropped before file cleanup
+
+**Example**:
+```javascript
+// ✅ GOOD: Engine is dropped before file deletion
+{
+  const engine = ImageEngine.fromPath('input.jpg');
+  await engine.resize(800).toFile('output.jpg', 'jpeg', 80);
+} // Engine dropped here
+fs.unlinkSync('input.jpg'); // Safe on all platforms
+
+// ❌ BAD: File deletion while engine exists (fails on Windows)
+const engine = ImageEngine.fromPath('input.jpg');
+await engine.resize(800).toFile('output.jpg', 'jpeg', 80);
+fs.unlinkSync('input.jpg'); // May fail on Windows
+```
+
+This limitation does not affect Linux or macOS.
+
 ### Supported Platforms
 
 | Platform | Architecture | Status |
