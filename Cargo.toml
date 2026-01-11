@@ -55,6 +55,9 @@ tempfile = "3.10"
 # Parallel processing for batch operations
 rayon = "1.8"
 
+# Memory mapping for zero-copy file access
+memmap2 = "0.9"
+
 # Error handling
 thiserror = "1.0"
 

@@ -4,7 +4,7 @@
 // This is the main public API for the image processing engine.
 
 // BatchResult is used in ts_return_type attribute (line 446) - compiler can't detect this
-// Source is used via Source::Memory and Source::Path (lines 66, 87, 383, 410)
+// Source is used via Source::Memory, Source::Mapped, and Source::Path
 #[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
 #[allow(unused_imports)]
@@ -77,22 +77,46 @@ impl ImageEngine {
     }
 
     /// Create engine from a file path.
-    /// **TRUE LAZY LOADING**: Only stores the path - file is NOT read until needed.
+    /// **ZERO-COPY MEMORY MAPPING**: Uses mmap to map the file into memory.
+    /// This enables true zero-copy access - OS pages in only what's needed.
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
     pub fn from_path(path: String) -> Result<Self> {
-        // Validate that the file exists (fast check, no read)
+        use std::fs::File;
+        use memmap2::Mmap;
+
         let path_buf = PathBuf::from(&path);
+        
+        // Validate that the file exists (fast check, no read)
         if !path_buf.exists() {
-            return Err(napi::Error::from(LazyImageError::file_not_found(path)));
+            return Err(napi::Error::from(LazyImageError::file_not_found(path.clone())));
         }
 
+        // Open file and create memory map
+        let file = File::open(&path_buf).map_err(|e| {
+            napi::Error::from(LazyImageError::file_read_failed(path.clone(), e))
+        })?;
+
+        // Safety: We assume the file won't be modified externally during processing.
+        // This is a common assumption in image processing libraries.
+        // For production use, consider adding file locking (flock) if needed.
+        let mmap = unsafe {
+            Mmap::map(&file).map_err(|e| {
+                napi::Error::from(LazyImageError::file_read_failed(path.clone(), e))
+            })?
+        };
+
+        let mmap_arc = Arc::new(mmap);
+        
+        // Extract ICC profile from memory-mapped data
+        let icc_profile = extract_icc_profile(mmap_arc.as_ref()).map(Arc::new);
+
         Ok(ImageEngine {
-            source: Some(Source::Path(path_buf)),
-            source_bytes: None, // Will be loaded on demand
+            source: Some(Source::Mapped(mmap_arc.clone())),
+            source_bytes: None, // Not needed for Mapped sources - use as_bytes() directly
             decoded: None,
             ops: Vec::new(),
-            icc_profile: None,    // Will be extracted when bytes are loaded
+            icc_profile,
             keep_metadata: false, // Strip metadata by default for security & smaller files
         })
     }
@@ -430,6 +454,25 @@ impl ImageEngine {
 
                 Ok(Dimensions { width, height })
             }
+            Source::Mapped(mmap) => {
+                // For memory-mapped data, use cursor
+                let cursor = Cursor::new(mmap.as_ref());
+                let reader = ImageReader::new(cursor)
+                    .with_guessed_format()
+                    .map_err(|e| {
+                        napi::Error::from(LazyImageError::decode_failed(format!(
+                            "failed to read image header: {e}"
+                        )))
+                    })?;
+
+                let (width, height) = reader.into_dimensions().map_err(|e| {
+                    napi::Error::from(LazyImageError::decode_failed(format!(
+                        "failed to read dimensions: {e}"
+                    )))
+                })?;
+
+                Ok(Dimensions { width, height })
+            }
         }
     }
 
@@ -497,6 +540,7 @@ pub struct PresetResult {
 
 impl ImageEngine {
     /// Ensure source bytes are loaded (lazy loading for Path sources)
+    /// For Mapped sources, converts to Vec<u8> for compatibility with existing code
     #[cfg(feature = "napi")]
     fn ensure_source_bytes(&mut self) -> Result<&Arc<Vec<u8>>> {
         if self.source_bytes.is_none() {

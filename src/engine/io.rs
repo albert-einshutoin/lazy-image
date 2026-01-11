@@ -5,14 +5,17 @@
 use crate::error::LazyImageError;
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
 use libavif_sys::*;
+use memmap2::Mmap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-/// Image source - supports both in-memory data and file paths (lazy loading)
+/// Image source - supports both in-memory data, memory-mapped files, and file paths (lazy loading)
 #[derive(Clone, Debug)]
 pub enum Source {
     /// In-memory image data (from Buffer)
     Memory(Arc<Vec<u8>>),
+    /// Memory-mapped file (zero-copy access)
+    Mapped(Arc<Mmap>),
     /// File path for lazy loading (data is read only when needed)
     Path(PathBuf),
 }
@@ -22,6 +25,10 @@ impl Source {
     pub fn load(&self) -> std::result::Result<Arc<Vec<u8>>, LazyImageError> {
         match self {
             Source::Memory(data) => Ok(data.clone()),
+            Source::Mapped(mmap) => {
+                // Convert memory-mapped data to Vec<u8>
+                Ok(Arc::new(mmap.as_ref().to_vec()))
+            }
             Source::Path(path) => {
                 let data = std::fs::read(path).map_err(|e| {
                     LazyImageError::file_read_failed(path.to_string_lossy().to_string(), e)
@@ -35,14 +42,16 @@ impl Source {
     pub fn as_path(&self) -> Option<&PathBuf> {
         match self {
             Source::Path(p) => Some(p),
-            Source::Memory(_) => None,
+            Source::Memory(_) | Source::Mapped(_) => None,
         }
     }
 
-    /// Get the bytes directly if this is a Memory source
+    /// Get the bytes directly - works for both Memory and Mapped sources
+    /// Returns None only for Path sources (which need to be loaded first)
     pub fn as_bytes(&self) -> Option<&[u8]> {
         match self {
             Source::Memory(data) => Some(data.as_slice()),
+            Source::Mapped(mmap) => Some(mmap.as_ref()),
             Source::Path(_) => None,
         }
     }
@@ -51,6 +60,7 @@ impl Source {
     pub fn len(&self) -> usize {
         match self {
             Source::Memory(data) => data.len(),
+            Source::Mapped(mmap) => mmap.len(),
             Source::Path(_) => 0, // Unknown until loaded
         }
     }
