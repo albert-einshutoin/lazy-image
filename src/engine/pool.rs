@@ -33,7 +33,7 @@ const DEFAULT_LIBUV_THREADPOOL_SIZE: usize = 4;
 
 /// Maximum allowed concurrency value for processBatch()
 #[cfg(feature = "napi")]
-pub(crate) const MAX_CONCURRENCY: usize = 1024;
+pub const MAX_CONCURRENCY: usize = 1024;
 
 /// Minimum number of rayon threads to ensure at least some parallelism
 #[cfg(feature = "napi")]
@@ -43,7 +43,7 @@ const MIN_RAYON_THREADS: usize = 1;
 pub(crate) static GLOBAL_THREAD_POOL: OnceLock<ThreadPool> = OnceLock::new();
 
 #[cfg(feature = "napi")]
-pub(crate) fn get_pool() -> &'static ThreadPool {
+pub fn get_pool() -> &'static ThreadPool {
     GLOBAL_THREAD_POOL.get_or_init(|| {
         let detected_parallelism = std::thread::available_parallelism()
             .map(|n| n.get())
