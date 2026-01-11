@@ -465,44 +465,16 @@ mod extreme_aspect_ratio_tests {
 mod decoder_error_tests {
     use super::*;
     use lazy_image::engine::Source;
-    use std::path::PathBuf;
     use std::sync::Arc;
 
     #[test]
-    fn test_source_load_path_nonexistent() {
-        // Pathソースのload()は存在しないファイルでエラーになる
-        let path_source = Source::Path(PathBuf::from("/nonexistent/path/image.jpg"));
-        let result = path_source.load();
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert!(
-            err.to_string().contains("failed to read") || 
-            err.to_string().contains("File not found") ||
-            err.to_string().contains("No such file"),
-            "Error should mention file read failure"
-        );
-    }
-
-    #[test]
-    fn test_source_load_memory() {
-        // Memoryソースのload()は成功する
+    fn test_source_as_bytes_memory() {
+        // Memoryソースのas_bytes()は成功する（zero-copy）
         let data = vec![0xFF, 0xD8, 0x00, 0x01];
         let memory_source = Source::Memory(Arc::new(data.clone()));
-        let result = memory_source.load();
-        assert!(result.is_ok());
-        let loaded = result.unwrap();
-        assert_eq!(loaded.as_slice(), data.as_slice());
-    }
-
-    #[test]
-    fn test_source_as_path() {
-        let path = PathBuf::from("/test/path.jpg");
-        let path_source = Source::Path(path.clone());
-        assert_eq!(path_source.as_path(), Some(&path));
-        
-        let data = vec![0u8; 10];
-        let memory_source = Source::Memory(Arc::new(data));
-        assert_eq!(memory_source.as_path(), None);
+        let bytes = memory_source.as_bytes();
+        assert!(bytes.is_some());
+        assert_eq!(bytes.unwrap(), data.as_slice());
     }
 
     #[test]
@@ -510,9 +482,6 @@ mod decoder_error_tests {
         let data = vec![0xFF, 0xD8];
         let memory_source = Source::Memory(Arc::new(data.clone()));
         assert_eq!(memory_source.as_bytes(), Some(data.as_slice()));
-        
-        let path_source = Source::Path(PathBuf::from("/test/path.jpg"));
-        assert_eq!(path_source.as_bytes(), None);
     }
 
     #[test]
@@ -520,9 +489,6 @@ mod decoder_error_tests {
         let data = vec![0u8; 100];
         let memory_source = Source::Memory(Arc::new(data));
         assert_eq!(memory_source.len(), 100);
-        
-        let path_source = Source::Path(PathBuf::from("/test/path.jpg"));
-        assert_eq!(path_source.len(), 0); // Pathソースの長さは0（ロード前は不明）
     }
 }
 
