@@ -58,9 +58,6 @@ rayon = "1.8"
 # Error handling
 thiserror = "1.0"
 
-# Global state management
-once_cell = "1.19"
-
 [dev-dependencies]
 criterion = "0.5"
 
