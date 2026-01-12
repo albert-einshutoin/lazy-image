@@ -892,6 +892,7 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.8.5 | Fixed CI compilation errors and improved --no-default-features build support |
 | v0.8.4 | Zero-copy memory mapping implementation: fromPath() and processBatch() use mmap for zero-copy file access |
 | v0.8.3 | Documentation: Updated README.md to document zero-copy memory mapping for processBatch() |
 | v0.8.1 | WebP encoding optimization: ~4x speed improvement (method 4, single pass) to match sharp performance |
