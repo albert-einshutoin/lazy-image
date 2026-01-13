@@ -44,23 +44,19 @@ pub fn detect_available_memory() -> Option<u64> {
 #[cfg(feature = "napi")]
 fn detect_cgroup_v2_memory() -> Option<u64> {
     // cgroup v2 path: /sys/fs/cgroup/memory.max
-    let paths = [
-        "/sys/fs/cgroup/memory.max",
-        "/sys/fs/cgroup/memory/memory.max",
-    ];
+    // Note: cgroup v2 uses a unified hierarchy, so the path structure is different from v1
+    let path = "/sys/fs/cgroup/memory.max";
 
-    for path in &paths {
-        if let Ok(content) = fs::read_to_string(path) {
-            let trimmed = content.trim();
-            // "max" means no limit
-            if trimmed == "max" {
-                return None; // No limit, fall back to system memory
-            }
+    if let Ok(content) = fs::read_to_string(path) {
+        let trimmed = content.trim();
+        // "max" means no limit
+        if trimmed == "max" {
+            return None; // No limit, fall back to system memory
+        }
 
-            if let Ok(memory) = trimmed.parse::<u64>() {
-                // cgroup v2 uses bytes
-                return Some(memory);
-            }
+        if let Ok(memory) = trimmed.parse::<u64>() {
+            // cgroup v2 uses bytes
+            return Some(memory);
         }
     }
 
@@ -70,23 +66,19 @@ fn detect_cgroup_v2_memory() -> Option<u64> {
 /// Detects memory limit from cgroup v1
 #[cfg(feature = "napi")]
 fn detect_cgroup_v1_memory() -> Option<u64> {
-    // cgroup v1 paths
-    let paths = [
-        "/sys/fs/cgroup/memory/memory.limit_in_bytes",
-        "/sys/fs/cgroup/memory/memory.max_usage_in_bytes",
-    ];
+    // cgroup v1 path: /sys/fs/cgroup/memory/memory.limit_in_bytes
+    // Note: memory.max_usage_in_bytes is the maximum usage, not the limit, so we don't use it
+    let path = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
 
-    for path in &paths {
-        if let Ok(content) = fs::read_to_string(path) {
-            let trimmed = content.trim();
-            if let Ok(memory) = trimmed.parse::<u64>() {
-                // Very large values (like 2^63-1) usually mean "no limit"
-                if memory > 1_000_000_000_000_000 {
-                    return None; // No limit, fall back to system memory
-                }
-                // cgroup v1 uses bytes
-                return Some(memory);
+    if let Ok(content) = fs::read_to_string(path) {
+        let trimmed = content.trim();
+        if let Ok(memory) = trimmed.parse::<u64>() {
+            // Very large values (like 2^63-1) usually mean "no limit"
+            if memory > 1_000_000_000_000_000 {
+                return None; // No limit, fall back to system memory
             }
+            // cgroup v1 uses bytes
+            return Some(memory);
         }
     }
 
