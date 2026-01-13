@@ -50,10 +50,11 @@ async function testTypeSafety() {
     // バッチ処理も型安全
     const batchEngine = ImageEngine.fromPath(imagePath).resize(200, 200);
     const batchResults = await batchEngine.processBatch(
-        [imagePath], 
-        path.resolve(__dirname, '../../.tmp/type-safety-batch'), 
+        [imagePath],
+        path.resolve(__dirname, '../../.tmp/type-safety-batch'),
         'jpeg', // OutputFormat型として扱われる
-        85, 
+        85,
+        undefined, // fastMode (optional)
         2
     );
     

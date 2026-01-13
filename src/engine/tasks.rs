@@ -4,7 +4,7 @@
 // These tasks run in background threads and don't block Node.js main thread.
 
 use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg};
-use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
+use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "napi")]
@@ -139,7 +139,9 @@ impl EncodeTask {
             None // Strip metadata by default for security & smaller files
         };
         let result = match &self.format {
-            OutputFormat::Jpeg { quality } => encode_jpeg(&processed, *quality, icc),
+            OutputFormat::Jpeg { quality, fast_mode } => {
+                encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)
+            }
             OutputFormat::Png => encode_png(&processed, icc),
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
@@ -394,8 +396,8 @@ impl Task for BatchTask {
                     None // Strip metadata by default for security & smaller files
                 };
                 let encoded = match format {
-                    OutputFormat::Jpeg { quality } => {
-                        encode_jpeg(&processed, *quality, icc)?
+                    OutputFormat::Jpeg { quality, fast_mode } => {
+                        encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)?
                     }
                     OutputFormat::Png => encode_png(&processed, icc)?,
                     OutputFormat::WebP { quality } => {

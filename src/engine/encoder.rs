@@ -33,14 +33,26 @@ fn to_encoder_error(err: LazyImageError) -> LazyImageError {
 }
 
 // Quality configuration helper
+#[derive(Debug, Clone, Copy)]
 pub struct QualitySettings {
     quality: f32,
+    #[allow(dead_code)] // Reserved for future use (e.g., WebP/AVIF fast mode)
+    fast_mode: bool, // Fast mode flag for JPEG encoding
 }
 
 impl QualitySettings {
     pub fn new(quality: u8) -> Self {
         Self {
             quality: quality as f32,
+            fast_mode: false, // Default: high quality mode
+        }
+    }
+
+    /// Create with fast mode option
+    pub fn with_fast_mode(quality: u8, fast_mode: bool) -> Self {
+        Self {
+            quality: quality as f32,
+            fast_mode,
         }
     }
 
@@ -94,25 +106,46 @@ impl QualitySettings {
 
     // AVIF settings for libavif encoder
     // libavif speed: 0 (slowest/best) to 10 (fastest/worst)
-    // We invert our quality-based logic: high quality -> slower speed
+    // Updated to match Sharp's speed settings for better performance
+    // Sharpに速度で追いつくためのアグレッシブな設定変更
     pub fn avif_speed(&self) -> i32 {
         if self.quality >= 85.0 {
-            4 // Slower for higher quality
+            6 // High quality, slightly slower (was 4) - 2段階高速化
         } else if self.quality >= 70.0 {
-            5
+            7 // Good balance (was 5) - 2段階高速化
         } else if self.quality >= 50.0 {
-            6
+            8 // Fast (was 6) - 2段階高速化
         } else {
-            7 // Faster for lower quality
+            9 // Fastest useful (was 7) - 2段階高速化
         }
     }
 }
 
 /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings
+/// 
+/// This function uses high-quality settings by default. For faster encoding
+/// (matching Sharp's speed), use `encode_jpeg_with_settings` with `fast_mode: true`.
 pub fn encode_jpeg(
     img: &DynamicImage,
     quality: u8,
     icc: Option<&[u8]>,
+) -> EncoderResult<Vec<u8>> {
+    encode_jpeg_with_settings(img, quality, icc, false)
+}
+
+/// Encode to JPEG with explicit fast mode control
+/// 
+/// # Arguments
+/// * `img` - Image to encode
+/// * `quality` - Quality (0-100)
+/// * `icc` - Optional ICC profile
+/// * `fast_mode` - If true, disables expensive optimizations for faster encoding
+///                 (matches Sharp/libjpeg-turbo defaults)
+pub fn encode_jpeg_with_settings(
+    img: &DynamicImage,
+    quality: u8,
+    icc: Option<&[u8]>,
+    fast_mode: bool,
 ) -> EncoderResult<Vec<u8>> {
     use std::borrow::Cow;
 
@@ -172,12 +205,21 @@ pub fn encode_jpeg(
     // 2. Progressive mode: Better compression + progressive loading
     comp.set_progressive_mode();
 
-    // 3. Optimize Huffman tables: Custom tables per image
-    comp.set_optimize_coding(true);
+    // 3. & 4. Optimize Huffman tables and scan order
+    // Fast mode: Sharp (libjpeg-turbo defaults) に近い設定
+    if fast_mode {
+        // Disable expensive optimizations for faster encoding
+        comp.set_optimize_coding(false); 
+        comp.set_optimize_scans(false);
+    } else {
+        // 既存の高品質設定 (mozjpeg defaults)
+        // Optimize Huffman tables: Custom tables per image
+        comp.set_optimize_coding(true);
 
-    // 4. Optimize scan order: Better progressive compression
-    comp.set_optimize_scans(true);
-    comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
+        // Optimize scan order: Better progressive compression
+        comp.set_optimize_scans(true);
+        comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
+    }
 
     // 5. Enhanced Trellis quantization: Better rate-distortion optimization
     //    This is mozjpeg's secret sauce - it tries multiple quantization
@@ -616,6 +658,75 @@ mod tests {
 
             let result = encode_jpeg(&img, 80, Some(&icc_data)).unwrap();
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_fast_mode_produces_valid_jpeg() {
+            let img = create_test_image(100, 100);
+            let result = encode_jpeg_with_settings(&img, 80, None, true).unwrap();
+            // JPEGマジックバイト確認
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            // JPEGエンドマーカー確認
+            assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_fast_mode_vs_default_size_difference() {
+            let img = create_test_image(500, 500); // Larger image for more noticeable difference
+            let fast_result = encode_jpeg_with_settings(&img, 80, None, true).unwrap();
+            let default_result = encode_jpeg_with_settings(&img, 80, None, false).unwrap();
+            
+            // Both should be valid JPEGs
+            assert_eq!(&fast_result[0..2], &[0xFF, 0xD8]);
+            assert_eq!(&default_result[0..2], &[0xFF, 0xD8]);
+            
+            // Fast mode typically produces slightly larger files (5-10% increase)
+            // but should still be reasonable
+            assert!(fast_result.len() > 0);
+            assert!(default_result.len() > 0);
+            // Fast mode file size should be within reasonable range (not 10x larger)
+            assert!(fast_result.len() < default_result.len() * 2);
+        }
+
+        #[test]
+        fn test_encode_jpeg_fast_mode_with_icc() {
+            let img = create_test_image(100, 100);
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80;
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = encode_jpeg_with_settings(&img, 80, Some(&icc_data), true).unwrap();
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_fast_mode_quality_consistency() {
+            let img = create_test_image(200, 200);
+            // Test that fast mode works with different quality levels
+            for quality in [50, 75, 90] {
+                let result = encode_jpeg_with_settings(&img, quality, None, true).unwrap();
+                assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+                assert!(result.len() > 0);
+            }
         }
 
         #[test]

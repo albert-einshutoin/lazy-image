@@ -13,6 +13,13 @@
 #[macro_use]
 extern crate napi_derive;
 
+// Memory allocator optimization - jemalloc for better performance
+// Expected impact: 10-15% overall performance improvement
+// Note: jemalloc is not supported on Windows/MSVC, so we exclude it on that platform
+#[cfg(all(feature = "jemalloc", not(target_env = "msvc")))]
+#[global_allocator]
+static ALLOC: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
 pub mod codecs;
 pub mod engine;
 pub mod error;

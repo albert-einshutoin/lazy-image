@@ -6,7 +6,7 @@
 use crate::convert_result;
 use crate::engine::common::EngineResult;
 use crate::engine::decoder::decode_jpeg_mozjpeg;
-use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
+use crate::engine::encoder::{encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::pipeline::apply_ops;
 use crate::ops::{Operation, OutputFormat};
 use std::borrow::Cow;
@@ -36,7 +36,7 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
     ];
 
     let formats = [
-        OutputFormat::Jpeg { quality: 82 },
+        OutputFormat::Jpeg { quality: 82, fast_mode: false },
         OutputFormat::Png,
         OutputFormat::WebP { quality: 74 },
         OutputFormat::Avif { quality: 60 },
@@ -59,8 +59,8 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
 
         // Encode to the target format
         let _encoded = match format {
-            OutputFormat::Jpeg { quality } => {
-                convert_result!(encode_jpeg(&processed, quality, None))
+            OutputFormat::Jpeg { quality, fast_mode } => {
+                convert_result!(encode_jpeg_with_settings(&processed, quality, None, fast_mode))
             }
             OutputFormat::Png => {
                 convert_result!(encode_png(&processed, None))
