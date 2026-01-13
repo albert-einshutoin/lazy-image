@@ -151,9 +151,10 @@ export declare class ImageEngine {
   /** Convert to grayscale */
   grayscale(): ImageEngine
   /**
-   * Preserve metadata (Exif, ICC profile, XMP) in output.
+   * Preserve ICC profile in output.
+   * Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
    * By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
-   * Call this method to keep metadata for photography sites or when color accuracy is important.
+   * Call this method to keep ICC profile when color accuracy is important.
    */
   keepMetadata(): ImageEngine
   /** Adjust brightness (-100 to 100) */

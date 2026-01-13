@@ -110,7 +110,8 @@ pub(crate) struct EncodeTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
-    /// Whether to preserve metadata in output (default: false for security & smaller files)
+    /// Whether to preserve ICC profile in output (default: false for security & smaller files)
+    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     pub keep_metadata: bool,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]

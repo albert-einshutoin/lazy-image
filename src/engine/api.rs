@@ -43,7 +43,8 @@ pub struct ImageEngine {
     pub(crate) ops: Vec<Operation>,
     /// ICC color profile extracted from source image
     pub(crate) icc_profile: Option<Arc<Vec<u8>>>,
-    /// Whether to preserve metadata (Exif, ICC, XMP) in output.
+    /// Whether to preserve ICC profile in output.
+    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// Default is false (strip all) for security and smaller file sizes.
     pub(crate) keep_metadata: bool,
 }
@@ -203,9 +204,10 @@ impl ImageEngine {
         this
     }
 
-    /// Preserve metadata (Exif, ICC profile, XMP) in output.
+    /// Preserve ICC profile in output.
+    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
-    /// Call this method to keep metadata for photography sites or when color accuracy is important.
+    /// Call this method to keep ICC profile when color accuracy is important.
     #[napi(js_name = "keepMetadata")]
     pub fn keep_metadata(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
         self.keep_metadata = true;
