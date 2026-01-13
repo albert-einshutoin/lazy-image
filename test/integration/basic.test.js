@@ -11,6 +11,11 @@ const { ImageEngine, ErrorCategory, getErrorCategory, inspect, inspectFile } = r
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
 
+function assertCategory(category, expected, message) {
+    assert.notStrictEqual(category, null, 'error.category should be set');
+    assert.strictEqual(category, expected, message);
+}
+
 let passed = 0;
 let failed = 0;
 
@@ -246,13 +251,11 @@ async function runTests() {
             assert.fail('should have thrown an error');
         } catch (e) {
             const category = getErrorCategory(e);
-            // Note: category may be null if error.code is not set (when create_napi_error_with_code() is not used)
-            // This is expected until all error sites are updated to use create_napi_error_with_code()
-            if (category !== null) {
-                assert.strictEqual(category, ErrorCategory.UserError, 'invalid rotation should be UserError');
-            }
+            assertCategory(category, ErrorCategory.UserError, 'invalid rotation should be UserError');
             assert(e.message, 'error should have message field');
             // Error message should NOT have prefix (backward compatibility)
+            // Check for both possible prefix formats
+            assert(!e.message.startsWith('LAZY_IMAGE_USER_ERROR:UserError:'), 'message should NOT have LAZY_IMAGE_USER_ERROR:UserError: prefix');
             assert(!e.message.startsWith('UserError:'), 'message should NOT have UserError: prefix');
         }
     });
@@ -263,10 +266,9 @@ async function runTests() {
             assert.fail('should have thrown an error');
         } catch (e) {
             const category = getErrorCategory(e);
-            if (category !== null) {
-                assert.strictEqual(category, ErrorCategory.UserError, 'invalid crop bounds should be UserError');
-            }
+            assertCategory(category, ErrorCategory.UserError, 'invalid crop bounds should be UserError');
             // Error message should NOT have prefix
+            assert(!e.message.startsWith('LAZY_IMAGE_USER_ERROR:UserError:'), 'message should NOT have LAZY_IMAGE_USER_ERROR:UserError: prefix');
             assert(!e.message.startsWith('UserError:'), 'message should NOT have UserError: prefix');
         }
     });
@@ -277,10 +279,9 @@ async function runTests() {
             assert.fail('should have thrown an error');
         } catch (e) {
             const category = getErrorCategory(e);
-            if (category !== null) {
-                assert.strictEqual(category, ErrorCategory.CodecError, 'invalid format should be CodecError');
-            }
+            assertCategory(category, ErrorCategory.CodecError, 'invalid format should be CodecError');
             // Error message should NOT have prefix
+            assert(!e.message.startsWith('LAZY_IMAGE_CODEC_ERROR:CodecError:'), 'message should NOT have LAZY_IMAGE_CODEC_ERROR:CodecError: prefix');
             assert(!e.message.startsWith('CodecError:'), 'message should NOT have CodecError: prefix');
         }
     });
@@ -291,7 +292,7 @@ async function runTests() {
             assert.fail('should have thrown an error');
         } catch (e) {
             const category = getErrorCategory(e);
-            assert.strictEqual(category, ErrorCategory.UserError, 'file not found should be UserError');
+            assertCategory(category, ErrorCategory.UserError, 'file not found should be UserError');
         }
     });
 
@@ -305,6 +306,42 @@ async function runTests() {
         assert.strictEqual(getErrorCategory(null), null);
         assert.strictEqual(getErrorCategory(undefined), null);
     });
+
+    await asyncTest('error category: ResourceLimit for file write error', async () => {
+        // 書き込み権限のないディレクトリに書き込もうとする
+        // 実際のテストでは、権限エラーが発生する可能性がある
+        // このテストは、エラーが発生した場合にResourceLimitカテゴリが設定されることを確認する
+        try {
+            // 存在しない親ディレクトリへの書き込みを試みる
+            await ImageEngine.from(buffer)
+                .resize(100, 100)
+                .toFile('/nonexistent/directory/output.jpg', 'jpeg', 80);
+            // エラーが発生しない場合もある（環境による）
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.ResourceLimit, 'file write error should be ResourceLimit');
+        }
+    });
+
+    await asyncTest('processBatch error results expose category', async () => {
+        const engine = ImageEngine.from(buffer).resize(100);
+        const tempDir = resolveTemp('batch_error_meta');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        const invalidPath = '/nonexistent/batch-input.jpg';
+        const results = await engine.processBatch([invalidPath], tempDir, 'jpeg', 80, undefined, 1);
+        assert.strictEqual(results.length, 1, 'should return one result');
+        const result = results[0];
+        assert.strictEqual(result.success, false, 'result should be marked as failure');
+        assert.strictEqual(result.errorCode, 'LAZY_IMAGE_USER_ERROR', 'error code should be set');
+        assert.strictEqual(result.errorCategory, ErrorCategory.UserError, 'error category should be UserError');
+        assert(result.error && result.error.includes(invalidPath), 'error message should include source path');
+    });
+
+    // Note: InternalBugカテゴリのテストは、実際の内部エラーを発生させるのが困難なため、
+    // 実装上の問題が発生した場合にのみテスト可能です。
+    // 通常の使用では、InternalBugエラーは発生しないはずです。
 
     // Preset tests
     await asyncTest('preset("thumbnail") works', async () => {

@@ -23,6 +23,8 @@ export interface BatchResult {
   success: boolean
   error?: string
   outputPath?: string
+  errorCode?: string
+  errorCategory?: ErrorCategory
 }
 /**
  * Error taxonomy for proper error handling in JavaScript
@@ -33,7 +35,7 @@ export interface BatchResult {
  * - ResourceLimit: Memory/time/dimension limits
  * - InternalBug: Library bugs (should not happen)
  */
-export const enum ErrorCategory {
+export enum ErrorCategory {
   /** Invalid input, recoverable by user */
   UserError = 0,
   /** Format/encoding issues */
@@ -66,6 +68,11 @@ export declare function inspect(buffer: Buffer): ImageMetadata
  * This is the recommended way for server-side metadata inspection.
  */
 export declare function inspectFile(path: string): ImageMetadata
+/**
+ * Extract ErrorCategory from an error object created by lazy-image.
+ * Returns null when the error is not from lazy-image.
+ */
+export declare function getErrorCategory(error: unknown): ErrorCategory | null
 /** Get library version */
 export declare function version(): string
 /** Get supported input formats */

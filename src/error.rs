@@ -24,6 +24,7 @@ use thiserror::Error;
 #[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "napi", napi)]
 #[cfg_attr(not(feature = "napi"), derive(Clone, Copy))]
+#[repr(u32)]
 pub enum ErrorCategory {
     /// Invalid input, recoverable by user
     UserError,
@@ -139,6 +140,54 @@ pub enum LazyImageError {
     // Generic Error
     #[error("{message}")]
     Generic { message: Cow<'static, str> },
+}
+
+impl Clone for LazyImageError {
+    fn clone(&self) -> Self {
+        match self {
+            Self::FileNotFound { path } => Self::FileNotFound { path: path.clone() },
+            Self::FileReadFailed { path, source } => Self::FileReadFailed {
+                path: path.clone(),
+                source: std::io::Error::new(source.kind(), source.to_string()),
+            },
+            Self::MmapFailed { path, source } => Self::MmapFailed {
+                path: path.clone(),
+                source: std::io::Error::new(source.kind(), source.to_string()),
+            },
+            Self::FileWriteFailed { path, source } => Self::FileWriteFailed {
+                path: path.clone(),
+                source: std::io::Error::new(source.kind(), source.to_string()),
+            },
+            Self::UnsupportedFormat { format } => Self::UnsupportedFormat { format: format.clone() },
+            Self::DecodeFailed { message } => Self::DecodeFailed { message: message.clone() },
+            Self::CorruptedImage => Self::CorruptedImage,
+            Self::DimensionExceedsLimit { dimension, max } => Self::DimensionExceedsLimit { dimension: *dimension, max: *max },
+            Self::PixelCountExceedsLimit { pixels, max } => Self::PixelCountExceedsLimit { pixels: *pixels, max: *max },
+            Self::InvalidCropBounds { x, y, width, height, img_width, img_height } => Self::InvalidCropBounds {
+                x: *x,
+                y: *y,
+                width: *width,
+                height: *height,
+                img_width: *img_width,
+                img_height: *img_height,
+            },
+            Self::InvalidRotationAngle { degrees } => Self::InvalidRotationAngle { degrees: *degrees },
+            Self::InvalidResizeDimensions { width, height } => Self::InvalidResizeDimensions { width: *width, height: *height },
+            Self::ResizeFailed { source_width, source_height, target_width, target_height, message } => Self::ResizeFailed {
+                source_width: *source_width,
+                source_height: *source_height,
+                target_width: *target_width,
+                target_height: *target_height,
+                message: message.clone(),
+            },
+            Self::UnsupportedColorSpace { color_space } => Self::UnsupportedColorSpace { color_space: color_space.clone() },
+            Self::EncodeFailed { format, message } => Self::EncodeFailed { format: format.clone(), message: message.clone() },
+            Self::InvalidPreset { name } => Self::InvalidPreset { name: name.clone() },
+            Self::SourceConsumed => Self::SourceConsumed,
+            Self::InternalPanic { message } => Self::InternalPanic { message: message.clone() },
+            Self::Generic { message } => Self::Generic { message: message.clone() },
+        }
+    }
 }
 
 // Constructor Helpers
@@ -340,6 +389,9 @@ pub fn create_napi_error_with_code(
     let category = err.category();
 
     // Create error object with original message (no prefix to avoid breaking changes)
+    // Use create_error with message string directly to avoid Status prefix in message
+    let err_msg = err.to_string();
+    // Create error with clean message (Status will be added by napi::Error::new, but we'll override it)
     let mut error_obj = env.create_error(napi::Error::new(
         match category {
             ErrorCategory::UserError => Status::InvalidArg,
@@ -347,35 +399,42 @@ pub fn create_napi_error_with_code(
             ErrorCategory::ResourceLimit => Status::GenericFailure,
             ErrorCategory::InternalBug => Status::GenericFailure,
         },
-        err.to_string(),
+        err_msg.clone(),
     ))?;
     
+    // Override message property to ensure clean message (without Status prefix)
+    // napi::Error::new() may include Status in message, so we set message property directly
+    error_obj.set_named_property("message", env.create_string(&err_msg)?)?;
+    
     // Add error.code property (standard pattern, like sharp uses)
-    let code_str = match category {
-        ErrorCategory::UserError => "LAZY_IMAGE_USER_ERROR",
-        ErrorCategory::CodecError => "LAZY_IMAGE_CODEC_ERROR",
-        ErrorCategory::ResourceLimit => "LAZY_IMAGE_RESOURCE_LIMIT",
-        ErrorCategory::InternalBug => "LAZY_IMAGE_INTERNAL_BUG",
-    };
-    let code_value = env.create_string(code_str)?;
+    let code_value = env.create_string(category.code())?;
     error_obj.set_named_property("code", code_value)?;
     
     // Add error.category property (ErrorCategory enum value as number)
-    let category_num = match category {
-        ErrorCategory::UserError => 0,
-        ErrorCategory::CodecError => 1,
-        ErrorCategory::ResourceLimit => 2,
-        ErrorCategory::InternalBug => 3,
-    };
-    let category_value = env.create_uint32(category_num)?;
+    // Use #[repr(u32)] to get the enum value directly
+    let category_value = env.create_uint32(category as u32)?;
     error_obj.set_named_property("category", category_value)?;
     
     Ok(error_obj)
 }
 
-// Conversion to NAPI Error (fallback for code that doesn't have Env)
-// Note: This sets error.reason with code information for getErrorCategory() to parse.
-// For better error handling, use create_napi_error_with_code() when Env is available.
+
+/// Helper function to convert LazyImageError to napi::Error with code/category
+/// The returned napi::Error references a JsError object which already includes
+/// the structured properties, so callers can simply `return Err(...)`.
+#[cfg(feature = "napi")]
+pub fn napi_error_with_code(
+    env: &Env,
+    err: LazyImageError,
+) -> napi::Result<napi::Error> {
+    let error_obj = create_napi_error_with_code(env, err)?;
+    let js_unknown = error_obj.into_unknown();
+    Ok(napi::Error::from(js_unknown))
+}
+
+// Conversion to NAPI Error (fallback - should not be used when Env is available)
+// Note: This creates a basic error without error.code/category properties.
+// Use create_napi_error_with_code() or napi_error_with_code() when Env is available for proper error handling.
 #[cfg(feature = "napi")]
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
@@ -387,24 +446,15 @@ impl From<LazyImageError> for napi::Error {
             ErrorCategory::InternalBug => Status::GenericFailure,
         };
 
-        // Create error with original message (no prefix to avoid breaking changes)
-        let original_message = err.to_string();
-        let mut napi_err = napi::Error::new(status, original_message.clone());
-        
-        // Set error.reason with code information for getErrorCategory() to parse
-        // Format: "CODE:CategoryName:OriginalMessage" (e.g., "LAZY_IMAGE_USER_ERROR:UserError:Unsupported rotation angle...")
-        // Note: reason is used as error.message in JavaScript, so we include the original message
-        let code_str = match category {
-            ErrorCategory::UserError => "LAZY_IMAGE_USER_ERROR",
-            ErrorCategory::CodecError => "LAZY_IMAGE_CODEC_ERROR",
-            ErrorCategory::ResourceLimit => "LAZY_IMAGE_RESOURCE_LIMIT",
-            ErrorCategory::InternalBug => "LAZY_IMAGE_INTERNAL_BUG",
-        };
-        napi_err.reason = format!("{}:{}:{}", code_str, category.as_str(), original_message);
-        
-        napi_err
+        // Create error with original message only (no prefix)
+        napi::Error::new(status, err.to_string())
     }
 }
+
+// Note: From<napi::Error> for LazyImageError is no longer needed
+// because decoder.rs and pipeline.rs now return LazyImageError directly
+// instead of napi::Error. This preserves error taxonomy (CodecError, ResourceLimit, etc.)
+// instead of converting everything to generic InternalBug errors.
 
 #[cfg(feature = "napi")]
 impl ErrorCategory {
@@ -415,6 +465,16 @@ impl ErrorCategory {
             ErrorCategory::CodecError => "CodecError",
             ErrorCategory::ResourceLimit => "ResourceLimit",
             ErrorCategory::InternalBug => "InternalBug",
+        }
+    }
+
+    /// Get the LAZY_IMAGE_* error code string for this category
+    pub fn code(&self) -> &'static str {
+        match self {
+            ErrorCategory::UserError => "LAZY_IMAGE_USER_ERROR",
+            ErrorCategory::CodecError => "LAZY_IMAGE_CODEC_ERROR",
+            ErrorCategory::ResourceLimit => "LAZY_IMAGE_RESOURCE_LIMIT",
+            ErrorCategory::InternalBug => "LAZY_IMAGE_INTERNAL_BUG",
         }
     }
 }

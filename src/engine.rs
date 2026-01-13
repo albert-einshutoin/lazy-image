@@ -1264,6 +1264,8 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 keep_metadata: false,
+                #[cfg(feature = "napi")]
+                last_error: None,
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -1282,6 +1284,8 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 keep_metadata: false,
+                #[cfg(feature = "napi")]
+                last_error: None,
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -1297,6 +1301,8 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                #[cfg(feature = "napi")]
+                last_error: None,
                 keep_metadata: false,
             };
             let result = task.decode();

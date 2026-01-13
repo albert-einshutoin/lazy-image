@@ -46,7 +46,17 @@ try {
 }
 ```
 
-**Note**: The `error.code` property is set when errors are created using `create_napi_error_with_code()`. Currently, not all error sites use this function, so `getErrorCategory()` may return `null` for some errors. This will be addressed in future updates.
+### Batch Processing Error Metadata
+
+`ImageEngine.processBatch()` returns an array of `BatchResult` objects. Each failed entry now includes:
+
+- `error` – Human-readable message with source context
+- `errorCode` – `LAZY_IMAGE_*` code (same as synchronous errors)
+- `errorCategory` – `ErrorCategory` enum value
+
+This makes it possible to inspect per-file failures without parsing strings.
+
+**Note**: The `error.code` and `error.category` properties are set when errors are created using `create_napi_error_with_code()`. All error paths in lazy-image now use this function, so `getErrorCategory()` will return the appropriate category for all lazy-image errors.
 
 ### Error Category Classification
 
@@ -478,4 +488,3 @@ if err.code().is_recoverable() {
 3. **Log non-recoverable errors** - Report bugs with full context
 4. **Use error codes for monitoring** - Track error rates by code
 5. **Document error handling** - Make error handling part of your API documentation
-

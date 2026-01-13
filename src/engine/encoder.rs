@@ -13,24 +13,10 @@ use std::io::Cursor;
 
 use crate::engine::MAX_DIMENSION;
 
-// Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
-#[cfg(feature = "napi")]
-use napi::bindgen_prelude::*;
-#[cfg(feature = "napi")]
-type EncoderResult<T> = Result<T>;
-#[cfg(not(feature = "napi"))]
+// Type alias for Result - always use LazyImageError to preserve error taxonomy
+// This ensures that encode errors are properly classified (CodecError, etc.)
+// rather than being converted to generic InternalBug errors.
 type EncoderResult<T> = std::result::Result<T, LazyImageError>;
-
-// Helper function to convert LazyImageError to the appropriate error type
-#[cfg(feature = "napi")]
-fn to_encoder_error(err: LazyImageError) -> napi::Error {
-    napi::Error::from(err)
-}
-
-#[cfg(not(feature = "napi"))]
-fn to_encoder_error(err: LazyImageError) -> LazyImageError {
-    err
-}
 
 // Quality configuration helper
 #[derive(Debug, Clone, Copy)]
@@ -160,23 +146,23 @@ pub fn encode_jpeg_with_settings(
     // 1. 事前検証 (パニック要因の排除)
     // 画像サイズの妥当性チェック
     if w == 0 || h == 0 {
-        return Err(to_encoder_error(LazyImageError::internal_panic(
+        return Err(LazyImageError::internal_panic(
             "Invalid image dimensions: width or height is zero",
-        )));
+        ));
     }
 
     // MAX_DIMENSIONチェック（プロジェクト全体の一貫性のため）
     if w > MAX_DIMENSION || h > MAX_DIMENSION {
-        return Err(to_encoder_error(LazyImageError::dimension_exceeds_limit(
+        return Err(LazyImageError::dimension_exceeds_limit(
             w.max(h),
             MAX_DIMENSION,
-        )));
+        ));
     }
 
     // バッファサイズの整合性チェック（非常に重要）
     let expected_len = (w as usize) * (h as usize) * 3;
     if pixels.len() != expected_len {
-        return Err(to_encoder_error(LazyImageError::corrupted_image()));
+        return Err(LazyImageError::corrupted_image());
     }
 
     // 2. エンコード (catch_unwind は削除)
@@ -253,27 +239,27 @@ pub fn encode_jpeg_with_settings(
 
     let encoded = {
         let mut writer = comp.start_compress(&mut output).map_err(|e| {
-            to_encoder_error(LazyImageError::encode_failed(
+            LazyImageError::encode_failed(
                 "jpeg",
                 format!("mozjpeg: failed to start compress: {e:?}"),
-            ))
+            )
         })?;
 
         let stride = w as usize * 3;
         for row in pixels.chunks(stride) {
             writer.write_scanlines(row).map_err(|e| {
-                to_encoder_error(LazyImageError::encode_failed(
+                LazyImageError::encode_failed(
                     "jpeg",
                     format!("mozjpeg: failed to write scanlines: {e:?}"),
-                ))
+                )
             })?;
         }
 
         writer.finish().map_err(|e| {
-            to_encoder_error(LazyImageError::encode_failed(
+            LazyImageError::encode_failed(
                 "jpeg",
                 format!("mozjpeg: failed to finish: {e:?}"),
-            ))
+            )
         })?;
 
         output
@@ -293,9 +279,9 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     use img_parts::Bytes;
 
     let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
-        to_encoder_error(LazyImageError::decode_failed(format!(
+        LazyImageError::decode_failed(format!(
             "failed to parse JPEG for ICC: {e}"
-        )))
+        ))
     })?;
 
     // Build ICC marker: "ICC_PROFILE\0" + chunk_num + total_chunks + data
@@ -316,10 +302,10 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     // Encode back
     let mut output = Vec::new();
     jpeg.encoder().write_to(&mut output).map_err(|e| {
-        to_encoder_error(LazyImageError::encode_failed(
+        LazyImageError::encode_failed(
             "jpeg",
             format!("failed to write JPEG with ICC: {e}"),
-        ))
+        )
     })?;
 
     Ok(output)
@@ -330,10 +316,10 @@ pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u
     let mut buf = Vec::new();
     img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
         .map_err(|e| {
-            to_encoder_error(LazyImageError::encode_failed(
+            LazyImageError::encode_failed(
                 "png",
                 format!("PNG encode failed: {e}"),
-            ))
+            )
         })?;
 
     // Embed ICC profile if present
@@ -352,9 +338,9 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
     use std::io::Write;
 
     let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
-        to_encoder_error(LazyImageError::decode_failed(format!(
+        LazyImageError::decode_failed(format!(
             "failed to parse PNG for ICC: {e}"
-        )))
+        ))
     })?;
 
     // iCCP chunk format: profile_name (null-terminated) + compression_method (0) + compressed_data
@@ -364,16 +350,16 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
     // Compress ICC data
     let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
     encoder.write_all(icc).map_err(|e| {
-        to_encoder_error(LazyImageError::encode_failed(
+        LazyImageError::encode_failed(
             "png",
             format!("failed to compress ICC: {e}"),
-        ))
+        )
     })?;
     let compressed = encoder.finish().map_err(|e| {
-        to_encoder_error(LazyImageError::encode_failed(
+        LazyImageError::encode_failed(
             "png",
             format!("failed to finish ICC compression: {e}"),
-        ))
+        )
     })?;
 
     let mut chunk_data = Vec::with_capacity(profile_name.len() + 1 + compressed.len());
@@ -387,10 +373,10 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
     // Encode back
     let mut output = Vec::new();
     png.encoder().write_to(&mut output).map_err(|e| {
-        to_encoder_error(LazyImageError::encode_failed(
+        LazyImageError::encode_failed(
             "png",
             format!("failed to write PNG with ICC: {e}"),
-        ))
+        )
     })?;
 
     Ok(output)
@@ -415,9 +401,9 @@ pub fn encode_webp(
 
     // Create WebPConfig with enhanced preprocessing for better compression
     let mut config = webp::WebPConfig::new().map_err(|_| {
-        to_encoder_error(LazyImageError::internal_panic(
+        LazyImageError::internal_panic(
             "failed to create WebPConfig",
-        ))
+        )
     })?;
 
     let settings = QualitySettings::new(quality);
@@ -431,10 +417,10 @@ pub fn encode_webp(
     config.filter_sharpness = settings.webp_filter_sharpness();
 
     let mem = encoder.encode_advanced(&config).map_err(|e| {
-        to_encoder_error(LazyImageError::encode_failed(
+        LazyImageError::encode_failed(
             "webp",
             format!("WebP encode failed: {e:?}"),
-        ))
+        )
     })?;
 
     let encoded = mem.to_vec();
@@ -453,9 +439,9 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     use img_parts::Bytes;
 
     let mut webp = WebP::from_bytes(Bytes::from(webp_data)).map_err(|e| {
-        to_encoder_error(LazyImageError::decode_failed(format!(
+        LazyImageError::decode_failed(format!(
             "failed to parse WebP for ICC: {e}"
-        )))
+        ))
     })?;
 
     // Set the ICCP chunk directly
@@ -464,10 +450,10 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     // Encode back
     let mut output = Vec::new();
     webp.encoder().write_to(&mut output).map_err(|e| {
-        to_encoder_error(LazyImageError::encode_failed(
+        LazyImageError::encode_failed(
             "webp",
             format!("failed to write WebP with ICC: {e}"),
-        ))
+        )
     })?;
 
     Ok(output)
@@ -509,7 +495,7 @@ pub fn encode_avif(
         8, // 8-bit depth
         AVIF_PIXEL_FORMAT_YUV420,
     )
-    .map_err(to_encoder_error)?;
+    .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Set color properties
     avif_image.set_color_properties(
@@ -521,21 +507,21 @@ pub fn encode_avif(
 
     // Set ICC profile if provided
     if let Some(icc_data) = icc {
-        avif_image.set_icc_profile(icc_data).map_err(to_encoder_error)?;
+        avif_image.set_icc_profile(icc_data).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
     }
 
     // Create and configure RGB image structure
     let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height);
 
     // Allocate YUV planes in the image
-    avif_image.allocate_planes(AVIF_PLANES_YUV).map_err(to_encoder_error)?;
+    avif_image.allocate_planes(AVIF_PLANES_YUV).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Convert RGB to YUV using libavif's optimized conversion
-    avif_image.rgb_to_yuv(&rgb).map_err(to_encoder_error)?;
+    avif_image.rgb_to_yuv(&rgb).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Handle alpha channel if present
     if has_alpha {
-        avif_image.allocate_planes(AVIF_PLANES_A).map_err(to_encoder_error)?;
+        avif_image.allocate_planes(AVIF_PLANES_A).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
         // Copy alpha channel data
         // This is the only place where we need unsafe access to the alpha plane
@@ -553,7 +539,7 @@ pub fn encode_avif(
     }
 
     // Create encoder using safe wrapper
-    let mut encoder = SafeAvifEncoder::new().map_err(to_encoder_error)?;
+    let mut encoder = SafeAvifEncoder::new().map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Configure encoder
     // libavif quality: 0 (worst) to 100 (lossless),
@@ -574,10 +560,10 @@ pub fn encode_avif(
     // Add image to encoder
     encoder
         .add_image(&mut avif_image, 1, AVIF_ADD_IMAGE_FLAG_SINGLE)
-        .map_err(to_encoder_error)?;
+        .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Finish encoding
-    encoder.finish(&mut output).map_err(to_encoder_error)?;
+    encoder.finish(&mut output).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Copy output data
     let encoded_data = output.to_vec();

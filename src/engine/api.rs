@@ -79,7 +79,7 @@ impl ImageEngine {
     /// This enables true zero-copy access - OS pages in only what's needed.
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
-    pub fn from_path(path: String) -> Result<Self> {
+    pub fn from_path(env: Env, path: String) -> Result<Self> {
         use std::fs::File;
         use memmap2::Mmap;
 
@@ -87,13 +87,17 @@ impl ImageEngine {
         
         // Validate that the file exists (fast check, no read)
         if !path_buf.exists() {
-            return Err(napi::Error::from(LazyImageError::file_not_found(path.clone())));
+            return Err(crate::error::napi_error_with_code(&env, LazyImageError::file_not_found(path.clone()))?);
         }
 
         // Open file and create memory map
-        let file = File::open(&path_buf).map_err(|e| {
-            napi::Error::from(LazyImageError::file_read_failed(path.clone(), e))
-        })?;
+        let file = match File::open(&path_buf) {
+            Ok(file) => file,
+            Err(e) => {
+                let lazy_err = LazyImageError::file_read_failed(path.clone(), e);
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Safety: We assume the file won't be modified externally during processing.
         // This is a common assumption in image processing libraries.
@@ -101,9 +105,13 @@ impl ImageEngine {
         // Note: On Windows, memory-mapped files cannot be deleted while mapped.
         // This is a platform limitation that should be documented for users.
         let mmap = unsafe {
-            Mmap::map(&file).map_err(|e| {
-                napi::Error::from(LazyImageError::mmap_failed(path.clone(), e))
-            })?
+            match Mmap::map(&file) {
+                Ok(mmap) => mmap,
+                Err(e) => {
+                    let lazy_err = LazyImageError::mmap_failed(path.clone(), e);
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            }
         };
 
         let mmap_arc = Arc::new(mmap);
@@ -251,9 +259,14 @@ impl ImageEngine {
     ///
     /// Returns the preset configuration for use with toBuffer/toFile.
     #[napi]
-    pub fn preset(&mut self, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
-        let config = PresetConfig::get(&name)
-            .ok_or_else(|| napi::Error::from(LazyImageError::invalid_preset(name)))?;
+    pub fn preset(&mut self, env: Env, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
+        let config = match PresetConfig::get(&name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Apply resize operation
         self.ops.push(Operation::Resize {
@@ -291,13 +304,19 @@ impl ImageEngine {
     #[napi(ts_return_type = "Promise<Buffer>")]
     pub fn to_buffer(
         &mut self,
+        env: Env,
         format: String,
         quality: Option<u8>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Use source directly - zero-copy for Memory and Mapped sources
         let source = self.source.clone();
@@ -314,6 +333,8 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
 
@@ -325,13 +346,19 @@ impl ImageEngine {
     #[napi(ts_return_type = "Promise<OutputWithMetrics>")]
     pub fn to_buffer_with_metrics(
         &mut self,
+        env: Env,
         format: String,
         quality: Option<u8>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Use source directly - zero-copy for Memory and Mapped sources
         let source = self.source.clone();
@@ -347,6 +374,8 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
 
@@ -361,14 +390,20 @@ impl ImageEngine {
     #[napi(js_name = "toFile", ts_return_type = "Promise<number>")]
     pub fn to_file(
         &mut self,
+        env: Env,
         path: String,
         format: String,
         quality: Option<u8>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Use source directly - zero-copy for Memory and Mapped sources
         let source = self.source.clone();
@@ -385,6 +420,8 @@ impl ImageEngine {
             icc_profile,
             keep_metadata,
             output_path: path,
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
 
@@ -396,7 +433,7 @@ impl ImageEngine {
     /// For file paths, reads only the header bytes (extremely fast).
     /// For in-memory buffers, uses header-only parsing.
     #[napi]
-    pub fn dimensions(&mut self) -> Result<Dimensions> {
+    pub fn dimensions(&mut self, env: Env) -> Result<Dimensions> {
         // If already decoded, use that
         if let Some(ref img) = self.decoded {
             let (w, h) = img.dimensions();
@@ -407,32 +444,40 @@ impl ImageEngine {
         }
 
         // Try to read dimensions from header only (no full decode)
-        let source = self
-            .source
-            .as_ref()
-            .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
+        let source = match self.source.as_ref() {
+            Some(source) => source,
+            None => {
+                let lazy_err = LazyImageError::source_consumed();
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Use as_bytes() to get zero-copy access for Memory and Mapped sources
         if let Some(bytes) = source.as_bytes() {
             // For in-memory or memory-mapped data, use cursor
             let cursor = Cursor::new(bytes);
-            let reader = ImageReader::new(cursor)
-                .with_guessed_format()
-                .map_err(|e| {
-                    napi::Error::from(LazyImageError::decode_failed(format!(
-                        "failed to read image header: {e}"
-                    )))
-                })?;
+            let reader = match ImageReader::new(cursor).with_guessed_format() {
+                Ok(reader) => reader,
+                Err(e) => {
+                    let err_msg = format!("failed to read image header: {e}");
+                    let lazy_err = LazyImageError::decode_failed(err_msg);
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
 
-            let (width, height) = reader.into_dimensions().map_err(|e| {
-                napi::Error::from(LazyImageError::decode_failed(format!(
-                    "failed to read dimensions: {e}"
-                )))
-            })?;
+            let (width, height) = match reader.into_dimensions() {
+                Ok(dims) => dims,
+                Err(e) => {
+                    let err_msg = format!("failed to read dimensions: {e}");
+                    let lazy_err = LazyImageError::decode_failed(err_msg);
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
 
             Ok(Dimensions { width, height })
         } else {
-            Err(napi::Error::from(LazyImageError::source_consumed()))
+            let lazy_err = LazyImageError::source_consumed();
+            Err(crate::error::napi_error_with_code(&env, lazy_err)?)
         }
     }
 
@@ -458,6 +503,7 @@ impl ImageEngine {
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
+        env: Env,
         inputs: Vec<String>,
         output_dir: String,
         format: String,
@@ -466,8 +512,13 @@ impl ImageEngine {
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {
             inputs,
@@ -476,6 +527,8 @@ impl ImageEngine {
             format: output_format,
             concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
             keep_metadata: self.keep_metadata,
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
 }

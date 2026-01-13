@@ -11,24 +11,10 @@ use std::panic;
 
 use crate::engine::MAX_DIMENSION;
 
-// Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
-#[cfg(feature = "napi")]
-use napi::bindgen_prelude::*;
-#[cfg(feature = "napi")]
-type DecoderResult<T> = Result<T>;
-#[cfg(not(feature = "napi"))]
+// Type alias for Result - always use LazyImageError to preserve error taxonomy
+// This ensures that decode errors are properly classified (CodecError, ResourceLimit, etc.)
+// rather than being converted to generic InternalBug errors.
 type DecoderResult<T> = std::result::Result<T, LazyImageError>;
-
-// Helper function to convert LazyImageError to the appropriate error type
-#[cfg(feature = "napi")]
-fn to_decoder_error(err: LazyImageError) -> napi::Error {
-    napi::Error::from(err)
-}
-
-#[cfg(not(feature = "napi"))]
-fn to_decoder_error(err: LazyImageError) -> LazyImageError {
-    err
-}
 
 // decode() function removed - it was unused.
 // tasks.rs::EncodeTask::decode() and stress.rs::run_stress_iteration() have their own implementations.
@@ -76,10 +62,10 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
 
     match result {
         Ok(Ok(img)) => Ok(img),
-        Ok(Err(e)) => Err(to_decoder_error(LazyImageError::decode_failed(e))),
-        Err(_) => Err(to_decoder_error(LazyImageError::internal_panic(
+        Ok(Err(e)) => Err(LazyImageError::decode_failed(e)),
+        Err(_) => Err(LazyImageError::internal_panic(
             "mozjpeg panicked during decode",
-        ))),
+        )),
     }
 }
 
@@ -88,16 +74,14 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
 pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
     use super::MAX_PIXELS;
     if width > MAX_DIMENSION || height > MAX_DIMENSION {
-        return Err(to_decoder_error(LazyImageError::dimension_exceeds_limit(
+        return Err(LazyImageError::dimension_exceeds_limit(
             width.max(height),
             MAX_DIMENSION,
-        )));
+        ));
     }
     let pixels = width as u64 * height as u64;
     if pixels > MAX_PIXELS {
-        return Err(to_decoder_error(
-            LazyImageError::pixel_count_exceeds_limit(pixels, MAX_PIXELS),
-        ));
+        return Err(LazyImageError::pixel_count_exceeds_limit(pixels, MAX_PIXELS));
     }
     Ok(())
 }
