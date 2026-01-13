@@ -315,8 +315,9 @@ const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInpu
 /**
  * Extract error category from a lazy-image error
  * 
- * Errors from lazy-image include category information in the error message
- * in the format "CategoryName:Error message". This helper extracts the category.
+ * Errors from lazy-image include category information in the error.code property
+ * (e.g., "LAZY_IMAGE_USER_ERROR") or error.category property (ErrorCategory enum value).
+ * This helper extracts the category from these properties.
  * 
  * @param {Error} error - The error object from lazy-image
  * @returns {ErrorCategory|null} - The error category, or null if not found
@@ -338,33 +339,31 @@ function getErrorCategory(error) {
     return null
   }
   
-  // Try error.reason first (if available), then fall back to error.message
-  const text = error.reason || error.message
-  if (!text) {
-    return null
+  // First, try error.category (if set by create_napi_error_with_code)
+  if (typeof error.category === 'number') {
+    // ErrorCategory enum value (0=UserError, 1=CodecError, 2=ResourceLimit, 3=InternalBug)
+    if (error.category >= 0 && error.category <= 3) {
+      return error.category
+    }
   }
   
-  // Parse "CategoryName:Error message" format
-  const match = text.match(/^([^:]+):/)
-  if (!match) {
-    return null
+  // Fall back to error.code (standard pattern, like sharp uses)
+  if (error.code) {
+    switch (error.code) {
+      case 'LAZY_IMAGE_USER_ERROR':
+        return ErrorCategory.UserError
+      case 'LAZY_IMAGE_CODEC_ERROR':
+        return ErrorCategory.CodecError
+      case 'LAZY_IMAGE_RESOURCE_LIMIT':
+        return ErrorCategory.ResourceLimit
+      case 'LAZY_IMAGE_INTERNAL_BUG':
+        return ErrorCategory.InternalBug
+      default:
+        return null
+    }
   }
   
-  const categoryName = match[1]
-  
-  // Map string to ErrorCategory enum
-  switch (categoryName) {
-    case 'UserError':
-      return ErrorCategory.UserError
-    case 'CodecError':
-      return ErrorCategory.CodecError
-    case 'ResourceLimit':
-      return ErrorCategory.ResourceLimit
-    case 'InternalBug':
-      return ErrorCategory.InternalBug
-    default:
-      return null
-  }
+  return null
 }
 
 module.exports.ImageEngine = ImageEngine

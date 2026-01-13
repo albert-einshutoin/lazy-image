@@ -75,8 +75,9 @@ export declare function supportedOutputFormats(): Array<string>
 /**
  * Extract error category from a lazy-image error
  * 
- * Errors from lazy-image include category information in the error.reason field
- * in the format "CategoryName:Error message". This helper extracts the category.
+ * Errors from lazy-image include category information in the error.code property
+ * (e.g., "LAZY_IMAGE_USER_ERROR") or error.category property (ErrorCategory enum value).
+ * This helper extracts the category from these properties.
  * 
  * @param error - The error object from lazy-image
  * @returns The error category, or null if not found

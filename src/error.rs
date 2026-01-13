@@ -273,20 +273,16 @@ impl LazyImageError {
     }
 
     /// Check if this error is recoverable (user can fix it)
+    /// 
+    /// This method is consistent with category():
+    /// - UserError errors are always recoverable
+    /// - ResourceLimit errors are recoverable (user can free resources, resize image, etc.)
+    /// - CodecError and InternalBug errors are not recoverable
     pub fn is_recoverable(&self) -> bool {
-        matches!(
-            self,
-            Self::FileNotFound { .. }
-                | Self::FileReadFailed { .. }
-                | Self::FileWriteFailed { .. }
-                | Self::DimensionExceedsLimit { .. }
-                | Self::PixelCountExceedsLimit { .. }
-                | Self::InvalidCropBounds { .. }
-                | Self::InvalidRotationAngle { .. }
-                | Self::InvalidResizeDimensions { .. }
-                | Self::InvalidPreset { .. }
-                | Self::SourceConsumed
-        )
+        match self.category() {
+            ErrorCategory::UserError | ErrorCategory::ResourceLimit => true,
+            ErrorCategory::CodecError | ErrorCategory::InternalBug => false,
+        }
     }
 
     /// Get the error category for this error
@@ -313,15 +309,13 @@ impl LazyImageError {
             | Self::ResizeFailed { .. } => ErrorCategory::CodecError,
 
             // ResourceLimit: Memory/time/dimension limits
-            Self::DimensionExceedsLimit { .. }
-            | Self::PixelCountExceedsLimit { .. }
             // Note: FileReadFailed/MmapFailed/FileWriteFailed are classified as ResourceLimit
             // because they often indicate resource constraints (disk full, memory pressure,
             // file system limits). However, they can also represent I/O errors (permissions,
-            // file locks, etc.). In practice, these errors are typically recoverable by
-            // the user (fixing permissions, freeing disk space, etc.), so they could
-            // alternatively be classified as UserError. The ResourceLimit classification
-            // emphasizes the resource constraint aspect, which is the most common cause.
+            // file locks, etc.). These errors are recoverable by the user (fixing permissions,
+            // freeing disk space, etc.), which is consistent with is_recoverable() returning true.
+            Self::DimensionExceedsLimit { .. }
+            | Self::PixelCountExceedsLimit { .. }
             | Self::FileReadFailed { .. }
             | Self::MmapFailed { .. }
             | Self::FileWriteFailed { .. } => ErrorCategory::ResourceLimit,
@@ -333,7 +327,54 @@ impl LazyImageError {
     }
 }
 
-// Conversion to NAPI Error
+/// Helper function to create NAPI error with category code
+/// This allows JavaScript code to access error.code (e.g., "LAZY_IMAGE_USER_ERROR")
+/// 
+/// This function should be used when Env is available to add custom properties.
+/// For code that doesn't have Env, use the From<LazyImageError> for napi::Error implementation.
+#[cfg(feature = "napi")]
+pub fn create_napi_error_with_code(
+    env: &Env,
+    err: LazyImageError,
+) -> napi::Result<napi::JsObject> {
+    let category = err.category();
+
+    // Create error object with original message (no prefix to avoid breaking changes)
+    let mut error_obj = env.create_error(napi::Error::new(
+        match category {
+            ErrorCategory::UserError => Status::InvalidArg,
+            ErrorCategory::CodecError => Status::InvalidArg,
+            ErrorCategory::ResourceLimit => Status::GenericFailure,
+            ErrorCategory::InternalBug => Status::GenericFailure,
+        },
+        err.to_string(),
+    ))?;
+    
+    // Add error.code property (standard pattern, like sharp uses)
+    let code_str = match category {
+        ErrorCategory::UserError => "LAZY_IMAGE_USER_ERROR",
+        ErrorCategory::CodecError => "LAZY_IMAGE_CODEC_ERROR",
+        ErrorCategory::ResourceLimit => "LAZY_IMAGE_RESOURCE_LIMIT",
+        ErrorCategory::InternalBug => "LAZY_IMAGE_INTERNAL_BUG",
+    };
+    let code_value = env.create_string(code_str)?;
+    error_obj.set_named_property("code", code_value)?;
+    
+    // Add error.category property (ErrorCategory enum value as number)
+    let category_num = match category {
+        ErrorCategory::UserError => 0,
+        ErrorCategory::CodecError => 1,
+        ErrorCategory::ResourceLimit => 2,
+        ErrorCategory::InternalBug => 3,
+    };
+    let category_value = env.create_uint32(category_num)?;
+    error_obj.set_named_property("category", category_value)?;
+    
+    Ok(error_obj)
+}
+
+// Conversion to NAPI Error (fallback for code that doesn't have Env)
+// Note: This doesn't add custom properties. Use create_napi_error_with_code() when Env is available.
 #[cfg(feature = "napi")]
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
@@ -345,17 +386,8 @@ impl From<LazyImageError> for napi::Error {
             ErrorCategory::InternalBug => Status::GenericFailure,
         };
 
-        // Create error with category information
-        // We'll create a custom error object that includes the category
-        // This allows JavaScript code to access error.category
-        let mut napi_err = napi::Error::new(status, err.to_string());
-        
-        // Store category in error reason for backward compatibility
-        // The category will be accessible via error.reason in JS
-        // Format: "CategoryName:Error message"
-        napi_err.reason = format!("{}:{}", category.as_str(), err.to_string());
-        
-        napi_err
+        // Create error with original message (no prefix to avoid breaking changes)
+        napi::Error::new(status, err.to_string())
     }
 }
 
