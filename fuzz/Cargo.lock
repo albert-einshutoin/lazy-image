@@ -413,13 +413,14 @@ dependencies = [
 
 [[package]]
 name = "lazy-image"
-version = "0.8.6"
+version = "0.8.7"
 dependencies = [
  "fast_image_resize",
  "flate2",
  "image",
  "img-parts",
  "libavif-sys",
+ "libc",
  "memmap2",
  "mozjpeg",
  "rayon",
