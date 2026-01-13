@@ -212,10 +212,10 @@ pub fn encode_jpeg_with_settings(
         comp.set_optimize_scans(false);
     } else {
         // 既存の高品質設定 (mozjpeg defaults)
-        // 3. Optimize Huffman tables: Custom tables per image
+        // Optimize Huffman tables: Custom tables per image
         comp.set_optimize_coding(true);
 
-        // 4. Optimize scan order: Better progressive compression
+        // Optimize scan order: Better progressive compression
         comp.set_optimize_scans(true);
         comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
     }
