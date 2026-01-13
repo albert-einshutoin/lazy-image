@@ -366,10 +366,11 @@ function getErrorCategory(error) {
   // Fall back to error.message parsing (for backward compatibility)
   // Note: This is a temporary fallback. New errors should use error.code or error.category.
   // Format 1: "CategoryName:Error message" (e.g., "UserError:Unsupported rotation angle...")
-  // Format 2: "CODE:CategoryName" (e.g., "LAZY_IMAGE_USER_ERROR:UserError")
+  // Format 2: "CODE:CategoryName:OriginalMessage" (e.g., "LAZY_IMAGE_USER_ERROR:UserError:Unsupported rotation angle...")
   if (error.message) {
-    // Try format 2 first (CODE:CategoryName)
-    const codeMatch = error.message.match(/^(LAZY_IMAGE_\w+):(\w+)/)
+    // Try format 2 first (CODE:CategoryName:OriginalMessage)
+    // Extract code from the beginning, category name, and preserve the original message
+    const codeMatch = error.message.match(/^(LAZY_IMAGE_\w+):(\w+):(.+)$/)
     if (codeMatch) {
       const code = codeMatch[1]
       switch (code) {

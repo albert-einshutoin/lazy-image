@@ -388,17 +388,19 @@ impl From<LazyImageError> for napi::Error {
         };
 
         // Create error with original message (no prefix to avoid breaking changes)
-        let mut napi_err = napi::Error::new(status, err.to_string());
+        let original_message = err.to_string();
+        let mut napi_err = napi::Error::new(status, original_message.clone());
         
         // Set error.reason with code information for getErrorCategory() to parse
-        // Format: "CODE:CategoryName" (e.g., "LAZY_IMAGE_USER_ERROR:UserError")
+        // Format: "CODE:CategoryName:OriginalMessage" (e.g., "LAZY_IMAGE_USER_ERROR:UserError:Unsupported rotation angle...")
+        // Note: reason is used as error.message in JavaScript, so we include the original message
         let code_str = match category {
             ErrorCategory::UserError => "LAZY_IMAGE_USER_ERROR",
             ErrorCategory::CodecError => "LAZY_IMAGE_CODEC_ERROR",
             ErrorCategory::ResourceLimit => "LAZY_IMAGE_RESOURCE_LIMIT",
             ErrorCategory::InternalBug => "LAZY_IMAGE_INTERNAL_BUG",
         };
-        napi_err.reason = format!("{}:{}", code_str, category.as_str());
+        napi_err.reason = format!("{}:{}:{}", code_str, category.as_str(), original_message);
         
         napi_err
     }
