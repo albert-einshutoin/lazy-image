@@ -171,8 +171,23 @@ pub struct ProcessingMetrics {
     pub process_time: f64,
     /// Time taken to encode the image (milliseconds)
     pub encode_time: f64,
-    /// Peak memory usage during processing (bytes, as u32 for NAPI compatibility)
+    /// Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
+    /// 
+    /// **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
+    /// the cumulative maximum RSS of the entire process, not just this operation.
+    /// This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
+    /// consider using process-specific memory profiling tools.
     pub memory_peak: u32,
+    /// Total CPU time (user + system) in seconds
+    pub cpu_time: f64,
+    /// Total processing time (wall clock) in seconds
+    pub processing_time: f64,
+    /// Input file size in bytes (as u32 for NAPI compatibility, max 4GB)
+    pub input_size: u32,
+    /// Output file size in bytes (as u32 for NAPI compatibility, max 4GB)
+    pub output_size: u32,
+    /// Compression ratio (output_size / input_size)
+    pub compression_ratio: f64,
 }
 
 #[cfg(not(feature = "napi"))]
@@ -184,8 +199,23 @@ pub struct ProcessingMetrics {
     pub process_time: f64,
     /// Time taken to encode the image (milliseconds)
     pub encode_time: f64,
-    /// Peak memory usage during processing (bytes, as u32 for NAPI compatibility)
+    /// Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
+    /// 
+    /// **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
+    /// the cumulative maximum RSS of the entire process, not just this operation.
+    /// This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
+    /// consider using process-specific memory profiling tools.
     pub memory_peak: u32,
+    /// Total CPU time (user + system) in seconds
+    pub cpu_time: f64,
+    /// Total processing time (wall clock) in seconds
+    pub processing_time: f64,
+    /// Input file size in bytes (as u32 for NAPI compatibility, max 4GB)
+    pub input_size: u32,
+    /// Output file size in bytes (as u32 for NAPI compatibility, max 4GB)
+    pub output_size: u32,
+    /// Compression ratio (output_size / input_size)
+    pub compression_ratio: f64,
 }
 
 #[cfg(feature = "napi")]

@@ -95,6 +95,35 @@ async function runTests() {
         assert(result.length > 0, 'output should have content');
     });
 
+    await asyncTest('toBufferWithMetrics returns metrics', async () => {
+        const { data, metrics } = await ImageEngine.from(buffer)
+            .resize(200)
+            .toBufferWithMetrics('jpeg', 80);
+        
+        assert(data.length > 0, 'output should have content');
+        assert(typeof metrics === 'object', 'metrics should be an object');
+        assert(typeof metrics.decodeTime === 'number', 'decodeTime should be a number');
+        assert(metrics.decodeTime >= 0, 'decodeTime should be non-negative');
+        assert(typeof metrics.processTime === 'number', 'processTime should be a number');
+        assert(metrics.processTime >= 0, 'processTime should be non-negative');
+        assert(typeof metrics.encodeTime === 'number', 'encodeTime should be a number');
+        assert(metrics.encodeTime >= 0, 'encodeTime should be non-negative');
+        assert(typeof metrics.memoryPeak === 'number', 'memoryPeak should be a number');
+        assert(metrics.memoryPeak >= 0, 'memoryPeak should be non-negative');
+        assert(typeof metrics.cpuTime === 'number', 'cpuTime should be a number');
+        assert(metrics.cpuTime >= 0, 'cpuTime should be non-negative');
+        assert(typeof metrics.processingTime === 'number', 'processingTime should be a number');
+        assert(metrics.processingTime >= 0, 'processingTime should be non-negative');
+        assert(typeof metrics.inputSize === 'number', 'inputSize should be a number');
+        assert(metrics.inputSize > 0, 'inputSize should be positive');
+        assert(typeof metrics.outputSize === 'number', 'outputSize should be a number');
+        assert(metrics.outputSize > 0, 'outputSize should be positive');
+        assert(typeof metrics.compressionRatio === 'number', 'compressionRatio should be a number');
+        assert(metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
+        assert(metrics.compressionRatio <= 1 || metrics.outputSize > metrics.inputSize, 
+            'compressionRatio should be <= 1 or output larger than input');
+    });
+
     await asyncTest('chain multiple operations', async () => {
         const result = await ImageEngine.from(buffer)
             .resize(200)

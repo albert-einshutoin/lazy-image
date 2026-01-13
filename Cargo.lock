@@ -600,6 +600,7 @@ dependencies = [
  "image",
  "img-parts",
  "libavif-sys",
+ "libc",
  "memmap2",
  "mozjpeg",
  "napi",
