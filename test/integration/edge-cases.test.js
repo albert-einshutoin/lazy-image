@@ -266,7 +266,7 @@ async function runTests() {
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_empty');
         try {
-            const results = await engine.processBatch([], testDir, 'jpeg', 80, 1);
+            const results = await engine.processBatch([], testDir, 'jpeg', 80, undefined, 1);
             assert(Array.isArray(results), 'should return array');
             assert(results.length === 0, 'should return empty array for empty input');
         } finally {
@@ -289,7 +289,7 @@ async function runTests() {
         let threw = false;
         try {
             // Concurrency 0 should use default (CPU cores), but we test edge case
-            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, 0);
+            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 0);
         } catch (e) {
             threw = true;
         }
@@ -316,7 +316,7 @@ async function runTests() {
         let errorMsg = '';
         try {
             // Concurrency > 1024 should be rejected or clamped
-            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, 2000);
+            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 2000);
         } catch (e) {
             threw = true;
             errorMsg = e.message;

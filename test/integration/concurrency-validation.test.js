@@ -29,7 +29,7 @@ async function testConcurrencyValidation() {
     console.log('✅ Testing concurrency = 0 (default):');
     try {
         const engine = ImageEngine.fromPath(testImagePath).resize(200, 200);
-        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, 0);
+        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, undefined, 0);
         console.log(`  Success: Processed ${results.length} images with default concurrency`);
     } catch (e) {
         console.log(`  ❌ Unexpected error: ${e.message}`);
@@ -39,7 +39,7 @@ async function testConcurrencyValidation() {
     console.log('\n✅ Testing concurrency = 1 (minimum valid):');
     try {
         const engine = ImageEngine.fromPath(testImagePath).resize(200, 200);
-        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, 1);
+        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, undefined, 1);
         console.log(`  Success: Processed ${results.length} images with 1 thread`);
     } catch (e) {
         console.log(`  ❌ Unexpected error: ${e.message}`);
@@ -50,7 +50,7 @@ async function testConcurrencyValidation() {
     console.log(`\n✅ Testing concurrency = ${MAX_CONCURRENCY} (maximum valid):`);
     try {
         const engine = ImageEngine.fromPath(testImagePath).resize(200, 200);
-        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, MAX_CONCURRENCY);
+        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, undefined, MAX_CONCURRENCY);
         console.log(`  Success: Processed ${results.length} images with ${MAX_CONCURRENCY} threads`);
     } catch (e) {
         console.log(`  ❌ Unexpected error: ${e.message}`);
@@ -61,7 +61,7 @@ async function testConcurrencyValidation() {
     console.log(`\n❌ Testing concurrency = ${INVALID_CONCURRENCY} (should fail):`);
     try {
         const engine = ImageEngine.fromPath(testImagePath).resize(200, 200);
-        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, INVALID_CONCURRENCY);
+        const results = await engine.processBatch(inputs, outputDir, 'jpeg', 80, undefined, INVALID_CONCURRENCY);
         console.log(`  ❌ Should not reach here - invalid concurrency was accepted`);
     } catch (e) {
         console.log(`  ✅ Correctly rejected: ${e.message}`);

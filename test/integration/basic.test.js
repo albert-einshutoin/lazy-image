@@ -299,6 +299,7 @@ async function runTests() {
                 testDir,
                 'jpeg',
                 80,
+                undefined,  // fastMode (optional)
                 2  // concurrency
             );
             assert(results.length === 2, 'should process 2 images');
@@ -326,6 +327,7 @@ async function runTests() {
                 testDir,
                 'jpeg',
                 80,
+                undefined,  // fastMode (optional)
                 0  // auto-detect
             );
             assert(results.length === 2, 'should process 2 images');
