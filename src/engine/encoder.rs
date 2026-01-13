@@ -660,6 +660,75 @@ mod tests {
         }
 
         #[test]
+        fn test_encode_jpeg_fast_mode_produces_valid_jpeg() {
+            let img = create_test_image(100, 100);
+            let result = encode_jpeg_with_settings(&img, 80, None, true).unwrap();
+            // JPEGマジックバイト確認
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            // JPEGエンドマーカー確認
+            assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_fast_mode_vs_default_size_difference() {
+            let img = create_test_image(500, 500); // Larger image for more noticeable difference
+            let fast_result = encode_jpeg_with_settings(&img, 80, None, true).unwrap();
+            let default_result = encode_jpeg_with_settings(&img, 80, None, false).unwrap();
+            
+            // Both should be valid JPEGs
+            assert_eq!(&fast_result[0..2], &[0xFF, 0xD8]);
+            assert_eq!(&default_result[0..2], &[0xFF, 0xD8]);
+            
+            // Fast mode typically produces slightly larger files (5-10% increase)
+            // but should still be reasonable
+            assert!(fast_result.len() > 0);
+            assert!(default_result.len() > 0);
+            // Fast mode file size should be within reasonable range (not 10x larger)
+            assert!(fast_result.len() < default_result.len() * 2);
+        }
+
+        #[test]
+        fn test_encode_jpeg_fast_mode_with_icc() {
+            let img = create_test_image(100, 100);
+            let mut icc_data = vec![0u8; 128];
+            icc_data[0] = 0x00;
+            icc_data[1] = 0x00;
+            icc_data[2] = 0x00;
+            icc_data[3] = 0x80;
+            icc_data[4] = b'A';
+            icc_data[5] = b'D';
+            icc_data[6] = b'B';
+            icc_data[7] = b'E';
+            icc_data[8] = 2;
+            icc_data[12] = b'm';
+            icc_data[13] = b'n';
+            icc_data[14] = b't';
+            icc_data[15] = b'r';
+            icc_data[16] = b'R';
+            icc_data[17] = b'G';
+            icc_data[18] = b'B';
+            icc_data[19] = b' ';
+            icc_data[20] = b'X';
+            icc_data[21] = b'Y';
+            icc_data[22] = b'Z';
+            icc_data[23] = b' ';
+
+            let result = encode_jpeg_with_settings(&img, 80, Some(&icc_data), true).unwrap();
+            assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+        }
+
+        #[test]
+        fn test_encode_jpeg_fast_mode_quality_consistency() {
+            let img = create_test_image(200, 200);
+            // Test that fast mode works with different quality levels
+            for quality in [50, 75, 90] {
+                let result = encode_jpeg_with_settings(&img, quality, None, true).unwrap();
+                assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+                assert!(result.len() > 0);
+            }
+        }
+
+        #[test]
         fn test_encode_png_produces_valid_png() {
             let img = create_test_image(100, 100);
             let result = encode_png(&img, None).unwrap();

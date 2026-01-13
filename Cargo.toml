@@ -63,6 +63,8 @@ memmap2 = "0.9"
 thiserror = "1.0"
 
 # Memory allocator optimization - jemalloc for better performance
+# Note: jemalloc is not supported on Windows/MSVC, so we use target-specific dependencies
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
 tikv-jemallocator = { version = "0.5", optional = true }
 
 [dev-dependencies]
