@@ -88,7 +88,8 @@ export declare class ImageEngine {
   static from(buffer: Buffer): ImageEngine
   /**
    * Create engine from a file path.
-   * **TRUE LAZY LOADING**: Only stores the path - file is NOT read until needed.
+   * **ZERO-COPY MEMORY MAPPING**: Uses mmap to map the file into memory.
+   * This enables true zero-copy access - OS pages in only what's needed.
    * This is the recommended way for server-side processing of large images.
    */
   static fromPath(path: string): ImageEngine
@@ -136,13 +137,14 @@ export declare class ImageEngine {
   preset(name: string): PresetResult
   /**
    * Encode to buffer asynchronously.
-   * format: "jpeg", "jpg", "png", "webp"
-   * quality: 1-100 (default 80, ignored for PNG)
+   * format: "jpeg", "jpg", "png", "webp", "avif"
+   * quality: 1-100 (default: JPEG=85, WebP=80, AVIF=60, ignored for PNG)
+   * fastMode: If true, uses faster encoding for JPEG (2-4x faster, slightly larger files). Default: false.
    *
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
    */
-  toBuffer(format: string, quality?: number | undefined | null): Promise<Buffer>
+  toBuffer(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>
   /**
    * Encode to buffer asynchronously with performance metrics.
    * Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
@@ -150,7 +152,7 @@ export declare class ImageEngine {
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
    */
-  toBufferWithMetrics(format: string, quality?: number | undefined | null): Promise<OutputWithMetrics>
+  toBufferWithMetrics(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -161,7 +163,7 @@ export declare class ImageEngine {
    *
    * Returns the number of bytes written.
    */
-  toFile(path: string, format: string, quality?: number | undefined | null): Promise<number>
+  toFile(path: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
   /**
    * Get image dimensions WITHOUT full decoding.
    * For file paths, reads only the header bytes (extremely fast).

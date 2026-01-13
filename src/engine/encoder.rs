@@ -36,6 +36,7 @@ fn to_encoder_error(err: LazyImageError) -> LazyImageError {
 #[derive(Debug, Clone, Copy)]
 pub struct QualitySettings {
     quality: f32,
+    #[allow(dead_code)] // Reserved for future use (e.g., WebP/AVIF fast mode)
     fast_mode: bool, // Fast mode flag for JPEG encoding
 }
 

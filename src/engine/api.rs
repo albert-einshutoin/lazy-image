@@ -449,6 +449,7 @@ impl ImageEngine {
     /// - output_dir: Directory to write processed images
     /// - format: Output format ("jpeg", "png", "webp", "avif")
     /// - quality: Optional quality (1-100, uses format-specific default if None)
+    /// - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
     /// - concurrency: Optional number of parallel workers (default: CPU core count)
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
@@ -457,9 +458,11 @@ impl ImageEngine {
         output_dir: String,
         format: String,
         quality: Option<u8>,
+        fast_mode: Option<bool>,
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
-        let output_format = OutputFormat::from_str(&format, quality)
+        let fast_mode = fast_mode.unwrap_or(false);
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {
