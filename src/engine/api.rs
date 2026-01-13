@@ -263,7 +263,7 @@ impl ImageEngine {
 
         // Return preset info for the user to use with toBuffer/toFile
         let (format_str, quality) = match &config.format {
-            OutputFormat::Jpeg { quality } => ("jpeg", Some(*quality)),
+            OutputFormat::Jpeg { quality, .. } => ("jpeg", Some(*quality)),
             OutputFormat::Png => ("png", None),
             OutputFormat::WebP { quality } => ("webp", Some(*quality)),
             OutputFormat::Avif { quality } => ("avif", Some(*quality)),
@@ -282,8 +282,9 @@ impl ImageEngine {
     // =========================================================================
 
     /// Encode to buffer asynchronously.
-    /// format: "jpeg", "jpg", "png", "webp"
-    /// quality: 1-100 (default 80, ignored for PNG)
+    /// format: "jpeg", "jpg", "png", "webp", "avif"
+    /// quality: 1-100 (default: JPEG=85, WebP=80, AVIF=60, ignored for PNG)
+    /// fastMode: If true, uses faster encoding for JPEG (2-4x faster, slightly larger files). Default: false.
     ///
     /// **Non-destructive**: This method can be called multiple times on the same engine instance.
     /// The source data is cloned internally, allowing multiple format outputs.
@@ -292,8 +293,10 @@ impl ImageEngine {
         &mut self,
         format: String,
         quality: Option<u8>,
+        fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeTask>> {
-        let output_format = OutputFormat::from_str(&format, quality)
+        let fast_mode = fast_mode.unwrap_or(false);
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
         // Use source directly - zero-copy for Memory and Mapped sources
@@ -324,8 +327,10 @@ impl ImageEngine {
         &mut self,
         format: String,
         quality: Option<u8>,
+        fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
-        let output_format = OutputFormat::from_str(&format, quality)
+        let fast_mode = fast_mode.unwrap_or(false);
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
         // Use source directly - zero-copy for Memory and Mapped sources
@@ -359,8 +364,10 @@ impl ImageEngine {
         path: String,
         format: String,
         quality: Option<u8>,
+        fast_mode: Option<bool>,
     ) -> Result<AsyncTask<WriteFileTask>> {
-        let output_format = OutputFormat::from_str(&format, quality)
+        let fast_mode = fast_mode.unwrap_or(false);
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
 
         // Use source directly - zero-copy for Memory and Mapped sources
@@ -442,7 +449,12 @@ impl ImageEngine {
     /// - output_dir: Directory to write processed images
     /// - format: Output format ("jpeg", "png", "webp", "avif")
     /// - quality: Optional quality (1-100, uses format-specific default if None)
-    /// - concurrency: Optional number of parallel workers (default: CPU core count)
+    /// - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
+    /// - concurrency: Optional number of parallel workers:
+    ///   - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+    ///     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+    ///     Ideal for serverless/containerized environments with memory constraints.
+    ///   - 1-1024: Manual override - use specified number of concurrent operations
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
@@ -450,9 +462,11 @@ impl ImageEngine {
         output_dir: String,
         format: String,
         quality: Option<u8>,
+        fast_mode: Option<bool>,
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
-        let output_format = OutputFormat::from_str(&format, quality)
+        let fast_mode = fast_mode.unwrap_or(false);
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {

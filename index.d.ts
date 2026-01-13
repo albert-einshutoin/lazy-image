@@ -61,8 +61,18 @@ export interface ProcessingMetrics {
   processTime: number
   /** Time taken to encode the image (milliseconds) */
   encodeTime: number
-  /** Peak memory usage during processing (bytes, as u32 for NAPI compatibility) */
+  /** Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility) */
   memoryPeak: number
+  /** Total CPU time (user + system) in seconds */
+  cpuTime: number
+  /** Total processing time (wall clock) in seconds */
+  processingTime: number
+  /** Input file size in bytes (as u32 for NAPI compatibility, max 4GB) */
+  inputSize: number
+  /** Output file size in bytes (as u32 for NAPI compatibility, max 4GB) */
+  outputSize: number
+  /** Compression ratio (output_size / input_size) */
+  compressionRatio: number
 }
 export interface OutputWithMetrics {
   data: Buffer
@@ -88,7 +98,8 @@ export declare class ImageEngine {
   static from(buffer: Buffer): ImageEngine
   /**
    * Create engine from a file path.
-   * **TRUE LAZY LOADING**: Only stores the path - file is NOT read until needed.
+   * **ZERO-COPY MEMORY MAPPING**: Uses mmap to map the file into memory.
+   * This enables true zero-copy access - OS pages in only what's needed.
    * This is the recommended way for server-side processing of large images.
    */
   static fromPath(path: string): ImageEngine
@@ -136,13 +147,14 @@ export declare class ImageEngine {
   preset(name: string): PresetResult
   /**
    * Encode to buffer asynchronously.
-   * format: "jpeg", "jpg", "png", "webp"
-   * quality: 1-100 (default 80, ignored for PNG)
+   * format: "jpeg", "jpg", "png", "webp", "avif"
+   * quality: 1-100 (default: JPEG=85, WebP=80, AVIF=60, ignored for PNG)
+   * fastMode: If true, uses faster encoding for JPEG (2-4x faster, slightly larger files). Default: false.
    *
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
    */
-  toBuffer(format: string, quality?: number | undefined | null): Promise<Buffer>
+  toBuffer(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>
   /**
    * Encode to buffer asynchronously with performance metrics.
    * Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
@@ -150,7 +162,7 @@ export declare class ImageEngine {
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
    */
-  toBufferWithMetrics(format: string, quality?: number | undefined | null): Promise<OutputWithMetrics>
+  toBufferWithMetrics(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -161,7 +173,7 @@ export declare class ImageEngine {
    *
    * Returns the number of bytes written.
    */
-  toFile(path: string, format: string, quality?: number | undefined | null): Promise<number>
+  toFile(path: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
   /**
    * Get image dimensions WITHOUT full decoding.
    * For file paths, reads only the header bytes (extremely fast).
@@ -180,7 +192,12 @@ export declare class ImageEngine {
    * - output_dir: Directory to write processed images
    * - format: Output format ("jpeg", "png", "webp", "avif")
    * - quality: Optional quality (1-100, uses format-specific default if None)
-   * - concurrency: Optional number of parallel workers (default: CPU core count)
+   * - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
+   * - concurrency: Optional number of parallel workers:
+   *   - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+   *     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+   *     Ideal for serverless/containerized environments with memory constraints.
+   *   - 1-1024: Manual override - use specified number of concurrent operations
    */
-  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }

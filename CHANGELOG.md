@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.7] - 2026-01-13
+
+### Added
+- Telemetry metrics for performance monitoring (#86)
+  - Added `toBufferWithMetrics()` method to return processing metrics
+  - Added `ProcessingMetrics` interface with decode time, process time, encode time, memory peak, CPU time, and compression ratio
+  - Added `OutputWithMetrics` interface combining output data and metrics
+- Smart concurrency with auto memory cap detection (#85)
+  - Automatic detection of container memory limits (cgroup v1/v2 support)
+  - Memory-aware concurrency adjustment for `processBatch()` to prevent OOM kills
+  - Automatic thread pool sizing based on available memory in constrained environments
+
+### Changed
+- Performance optimizations (#156)
+  - Optimized AVIF encoding speed preset
+  - Added JPEG fast mode support
+  - Improved jemalloc configuration with `disable_initial_exec_tls` flag
+
+---
+
 ## [0.8.6] - 2026-01-XX
 
 ### Changed

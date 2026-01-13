@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.8.6"
+version = "0.8.7"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
@@ -9,8 +9,9 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["napi"]
+default = ["napi", "jemalloc"]
 napi = ["dep:napi", "dep:napi-derive"]
+jemalloc = ["dep:tikv-jemallocator"]
 fuzzing = []
 stress = []
 
@@ -60,6 +61,16 @@ memmap2 = "0.9"
 
 # Error handling
 thiserror = "1.0"
+
+# System calls for CPU time and memory tracking
+libc = "0.2"
+
+# Memory allocator optimization - jemalloc for better performance
+# Note: jemalloc is not supported on Windows/MSVC, so we use target-specific dependencies
+# disable_initial_exec_tls feature is required for Node.js native module compatibility
+# (prevents "cannot allocate memory in static TLS block" error)
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator = { version = "0.6", optional = true, features = ["disable_initial_exec_tls"] }
 
 [dev-dependencies]
 criterion = "0.5"

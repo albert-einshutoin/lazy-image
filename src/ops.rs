@@ -55,7 +55,7 @@ pub enum ColorSpace {
 /// Output format for encoding
 #[derive(Clone, Debug)]
 pub enum OutputFormat {
-    Jpeg { quality: u8 },
+    Jpeg { quality: u8, fast_mode: bool },
     Png,
     WebP { quality: u8 },
     Avif { quality: u8 },
@@ -71,10 +71,24 @@ impl OutputFormat {
     ///
     /// These defaults are chosen based on each format's characteristics and real-world usage.
     pub fn from_str(format: &str, quality: Option<u8>) -> Result<Self, String> {
+        Self::from_str_with_options(format, quality, false)
+    }
+
+    /// Create OutputFormat from string with format-specific default quality and fast mode option.
+    ///
+    /// # Arguments
+    /// * `format` - Output format string (jpeg, png, webp, avif)
+    /// * `quality` - Quality value (0-100, None uses format-specific default)
+    /// * `fast_mode` - Fast mode flag (only applies to JPEG, default: false)
+    pub fn from_str_with_options(
+        format: &str,
+        quality: Option<u8>,
+        fast_mode: bool,
+    ) -> Result<Self, String> {
         match format.to_lowercase().as_str() {
             "jpeg" | "jpg" => {
                 let q = quality.unwrap_or(85); // JPEG default: 85
-                Ok(Self::Jpeg { quality: q })
+                Ok(Self::Jpeg { quality: q, fast_mode })
             }
             "png" => Ok(Self::Png),
             "webp" => {
@@ -142,13 +156,13 @@ impl PresetConfig {
     /// Hero preset: 1920 width, JPEG quality 85
     /// Use case: Hero images, banners
     pub fn hero() -> Self {
-        Self::new(Some(1920), None, OutputFormat::Jpeg { quality: 85 })
+        Self::new(Some(1920), None, OutputFormat::Jpeg { quality: 85, fast_mode: false })
     }
 
     /// Social preset: 1200x630, JPEG quality 80
     /// Use case: OGP/Twitter Card images
     pub fn social() -> Self {
-        Self::new(Some(1200), Some(630), OutputFormat::Jpeg { quality: 80 })
+        Self::new(Some(1200), Some(630), OutputFormat::Jpeg { quality: 80, fast_mode: false })
     }
 }
 
@@ -166,25 +180,25 @@ mod tests {
         #[test]
         fn test_jpeg_with_quality() {
             let format = OutputFormat::from_str("jpeg", Some(90)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 90 }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 90, .. }));
         }
 
         #[test]
         fn test_jpeg_default_quality() {
             let format = OutputFormat::from_str("jpeg", None).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 85 }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 85, .. }));
         }
 
         #[test]
         fn test_jpg_alias() {
             let format = OutputFormat::from_str("jpg", None).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 85 }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 85, .. }));
         }
 
         #[test]
         fn test_jpg_with_quality() {
             let format = OutputFormat::from_str("jpg", Some(75)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 75 }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 75, .. }));
         }
 
         #[test]
@@ -280,10 +294,10 @@ mod tests {
         fn test_quality_range() {
             // 品質値の範囲テスト（1-100が有効）
             let format = OutputFormat::from_str("jpeg", Some(1)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 1 }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 1, .. }));
 
             let format = OutputFormat::from_str("jpeg", Some(100)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 100 }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality: 100, .. }));
         }
     }
 
@@ -311,7 +325,7 @@ mod tests {
             let preset = PresetConfig::get("hero").unwrap();
             assert_eq!(preset.width, Some(1920));
             assert_eq!(preset.height, None); // アスペクト比維持
-            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 85 }));
+            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 85, .. }));
         }
 
         #[test]
@@ -319,7 +333,7 @@ mod tests {
             let preset = PresetConfig::get("social").unwrap();
             assert_eq!(preset.width, Some(1200));
             assert_eq!(preset.height, Some(630)); // OGP標準サイズ
-            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 80 }));
+            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 80, .. }));
         }
 
         #[test]
@@ -374,10 +388,10 @@ mod tests {
         #[test]
         fn test_preset_new() {
             let preset =
-                PresetConfig::new(Some(800), Some(600), OutputFormat::Jpeg { quality: 90 });
+                PresetConfig::new(Some(800), Some(600), OutputFormat::Jpeg { quality: 90, fast_mode: false });
             assert_eq!(preset.width, Some(800));
             assert_eq!(preset.height, Some(600));
-            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 90 }));
+            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 90, .. }));
         }
 
         #[test]

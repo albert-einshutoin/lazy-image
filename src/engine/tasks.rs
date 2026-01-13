@@ -4,7 +4,7 @@
 // These tasks run in background threads and don't block Node.js main thread.
 
 use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg};
-use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
+use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "napi")]
@@ -20,6 +20,58 @@ use napi::{Env, JsBuffer, Task};
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::sync::Arc;
+
+/// Resource usage information for telemetry
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+struct ResourceUsage {
+    cpu_time: f64,      // User + system CPU time in seconds
+    memory_rss: u64,    // Resident set size in bytes
+}
+
+/// Get current process resource usage (CPU time and RSS memory)
+/// Returns None on unsupported platforms or if getrusage fails
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+fn get_resource_usage() -> Option<ResourceUsage> {
+    use libc::{getrusage, rusage, RUSAGE_SELF};
+    use std::mem;
+
+    unsafe {
+        let mut usage: rusage = mem::zeroed();
+        if getrusage(RUSAGE_SELF, &mut usage) == 0 {
+            // CPU time = user time + system time
+            let cpu_time = usage.ru_utime.tv_sec as f64
+                + usage.ru_utime.tv_usec as f64 / 1_000_000.0
+                + usage.ru_stime.tv_sec as f64
+                + usage.ru_stime.tv_usec as f64 / 1_000_000.0;
+            
+            // RSS memory (resident set size) in bytes
+            // On Linux, ru_maxrss is in KB; on macOS/FreeBSD, it's in bytes
+            #[cfg(target_os = "linux")]
+            let memory_rss = usage.ru_maxrss as u64 * 1024;
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            let memory_rss = usage.ru_maxrss as u64;
+            
+            Some(ResourceUsage {
+                cpu_time,
+                memory_rss,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+/// Get current process resource usage (stub for unsupported platforms)
+#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
+fn get_resource_usage() -> Option<ResourceUsage> {
+    None
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
+struct ResourceUsage {
+    cpu_time: f64,
+    memory_rss: u64,
+}
 
 // Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
 #[cfg(feature = "napi")]
@@ -117,6 +169,16 @@ impl EncodeTask {
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
     ) -> EngineResult<Vec<u8>> {
+        // Get initial resource usage for CPU time and memory tracking
+        let initial_usage = get_resource_usage();
+        let start_total = std::time::Instant::now();
+        
+        // Get input size from source
+        // Use len() method which works for both Memory and Mapped sources
+        let input_size = self.source.as_ref()
+            .map(|s| s.len() as u64)
+            .unwrap_or(0);
+
         // 1. Decode
         let start_decode = std::time::Instant::now();
         let img = self.decode()?;
@@ -139,18 +201,50 @@ impl EncodeTask {
             None // Strip metadata by default for security & smaller files
         };
         let result = match &self.format {
-            OutputFormat::Jpeg { quality } => encode_jpeg(&processed, *quality, icc),
+            OutputFormat::Jpeg { quality, fast_mode } => {
+                encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)
+            }
             OutputFormat::Png => encode_png(&processed, icc),
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
 
+        // Get final resource usage
+        let final_usage = get_resource_usage();
+        let total_elapsed = start_total.elapsed();
+
         if let Some(m) = metrics {
             m.encode_time = start_encode.elapsed().as_secs_f64() * 1000.0;
-            // Estimate memory (rough) - prevent overflow
-            let (w, h) = processed.dimensions();
-            m.memory_peak =
-                (w as u64 * h as u64 * 4 + result.len() as u64).min(u32::MAX as u64) as u32;
+            
+            // Calculate CPU time (difference between final and initial)
+            if let (Some(initial), Some(final_usage)) = (initial_usage, final_usage) {
+                m.cpu_time = (final_usage.cpu_time - initial.cpu_time).max(0.0);
+                // Use the maximum RSS seen during processing
+                // IMPORTANT: ru_maxrss represents the cumulative maximum RSS of the entire process,
+                // not just this operation. This is a limitation of getrusage() API.
+                // For accurate per-operation memory tracking, consider process-specific memory profiling.
+                // get_resource_usage() already converts to bytes (handles Linux KB vs macOS bytes)
+                m.memory_peak = (final_usage.memory_rss.min(u32::MAX as u64)) as u32;
+            } else {
+                // Fallback: estimate memory (rough) - prevent overflow
+                let (w, h) = processed.dimensions();
+                m.memory_peak =
+                    (w as u64 * h as u64 * 4 + result.len() as u64).min(u32::MAX as u64) as u32;
+            }
+            
+            // Total processing time (wall clock)
+            m.processing_time = total_elapsed.as_secs_f64();
+            
+            // Input and output sizes (clamp to u32::MAX for NAPI compatibility)
+            m.input_size = input_size.min(u32::MAX as u64) as u32;
+            m.output_size = (result.len() as u64).min(u32::MAX as u64) as u32;
+            
+            // Compression ratio
+            if m.input_size > 0 {
+                m.compression_ratio = m.output_size as f64 / m.input_size as f64;
+            } else {
+                m.compression_ratio = 0.0;
+            }
         }
 
         Ok(result)
@@ -394,8 +488,8 @@ impl Task for BatchTask {
                     None // Strip metadata by default for security & smaller files
                 };
                 let encoded = match format {
-                    OutputFormat::Jpeg { quality } => {
-                        encode_jpeg(&processed, *quality, icc)?
+                    OutputFormat::Jpeg { quality, fast_mode } => {
+                        encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)?
                     }
                     OutputFormat::Png => encode_png(&processed, icc)?,
                     OutputFormat::WebP { quality } => {
@@ -479,8 +573,8 @@ impl Task for BatchTask {
         };
 
         // Validate concurrency parameter
-        // concurrency = 0 means "use default" (auto-detected via available_parallelism)
-        // concurrency = 1..MAX_CONCURRENCY means "use specified number of threads"
+        // concurrency = 0 means "use default" (auto-detected via CPU and memory)
+        // concurrency = 1..MAX_CONCURRENCY means "use specified number of concurrent operations"
         if self.concurrency > pool::MAX_CONCURRENCY as u32 {
             return Err(napi::Error::from(LazyImageError::internal_panic(format!(
                 "invalid concurrency value: {} (must be 0 or 1-{})",
@@ -488,28 +582,36 @@ impl Task for BatchTask {
             ))));
         }
 
-        // Use global thread pool for better performance
-        let results: Vec<BatchResult> = if self.concurrency == 0 {
-            // Use global thread pool with default concurrency
-            // (automatically calculated from available_parallelism)
-            pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
+        // Determine effective concurrency
+        let effective_concurrency = if self.concurrency == 0 {
+            // Auto-detect: use smart concurrency based on CPU and memory
+            pool::calculate_optimal_concurrency()
         } else {
-            // For custom concurrency, create a temporary pool with specified threads
-            // Note: This creates a new pool per request, which is acceptable
-            // for custom concurrency requirements
-            use rayon::ThreadPoolBuilder;
-            let pool = ThreadPoolBuilder::new()
-                .num_threads(self.concurrency as usize)
-                .build()
-                .map_err(|e| {
-                    napi::Error::from(LazyImageError::internal_panic(format!(
-                        "failed to create thread pool: {}",
-                        e
-                    )))
-                })?;
-
-            pool.install(|| self.inputs.par_iter().map(process_one).collect())
+            // Manual override: use user-specified concurrency
+            self.concurrency as usize
         };
+
+        // Use global thread pool with chunks-based concurrency limiting
+        // This avoids creating a new pool per request (which is expensive)
+        // and instead uses chunks to limit concurrent operations
+        let results: Vec<BatchResult> = pool::get_pool().install(|| {
+            if effective_concurrency >= self.inputs.len() {
+                // If concurrency >= input count, process all in parallel
+                self.inputs.par_iter().map(process_one).collect()
+            } else {
+                // Use chunks to limit concurrent operations
+                // Process chunks sequentially, but each chunk in parallel
+                // This ensures at most `effective_concurrency` operations run simultaneously
+                // while still using the global thread pool efficiently
+                self.inputs
+                    .chunks(effective_concurrency)
+                    .flat_map(|chunk| {
+                        // Process each chunk in parallel within the global pool
+                        chunk.par_iter().map(process_one).collect::<Vec<_>>()
+                    })
+                    .collect()
+            }
+        });
 
         Ok(results)
     }

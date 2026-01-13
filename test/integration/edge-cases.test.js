@@ -266,7 +266,7 @@ async function runTests() {
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_empty');
         try {
-            const results = await engine.processBatch([], testDir, 'jpeg', 80, 1);
+            const results = await engine.processBatch([], testDir, 'jpeg', 80, undefined, 1);
             assert(Array.isArray(results), 'should return array');
             assert(results.length === 0, 'should return empty array for empty input');
         } finally {
@@ -289,7 +289,7 @@ async function runTests() {
         let threw = false;
         try {
             // Concurrency 0 should use default (CPU cores), but we test edge case
-            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, 0);
+            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 0);
         } catch (e) {
             threw = true;
         }
@@ -316,7 +316,7 @@ async function runTests() {
         let errorMsg = '';
         try {
             // Concurrency > 1024 should be rejected or clamped
-            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, 2000);
+            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 2000);
         } catch (e) {
             threw = true;
             errorMsg = e.message;
@@ -347,13 +347,15 @@ async function runTests() {
     // EDGE CASES - Metrics
     // ========================================================================
     
-    await asyncTest('toBufferWithMetrics returns valid metrics', async () => {
+    await asyncTest('toBufferWithMetrics returns valid metrics with all fields', async () => {
         const result = await ImageEngine.from(buffer)
             .resize(100)
             .toBufferWithMetrics('jpeg', 80);
         
         assert(result.data, 'should have data');
         assert(result.metrics, 'should have metrics');
+        
+        // Original metrics
         assert(typeof result.metrics.decodeTime === 'number', 'decodeTime should be number');
         assert(typeof result.metrics.processTime === 'number', 'processTime should be number');
         assert(typeof result.metrics.encodeTime === 'number', 'encodeTime should be number');
@@ -362,6 +364,37 @@ async function runTests() {
         assert(result.metrics.processTime >= 0, 'processTime should be non-negative');
         assert(result.metrics.encodeTime >= 0, 'encodeTime should be non-negative');
         assert(result.metrics.memoryPeak > 0, 'memoryPeak should be positive');
+        
+        // New telemetry metrics
+        assert(typeof result.metrics.cpuTime === 'number', 'cpuTime should be number');
+        assert(typeof result.metrics.processingTime === 'number', 'processingTime should be number');
+        assert(typeof result.metrics.inputSize === 'number', 'inputSize should be number');
+        assert(typeof result.metrics.outputSize === 'number', 'outputSize should be number');
+        assert(typeof result.metrics.compressionRatio === 'number', 'compressionRatio should be number');
+        assert(result.metrics.cpuTime >= 0, 'cpuTime should be non-negative');
+        assert(result.metrics.processingTime >= 0, 'processingTime should be non-negative');
+        assert(result.metrics.inputSize > 0, 'inputSize should be positive');
+        assert(result.metrics.outputSize > 0, 'outputSize should be positive');
+        assert(result.metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
+    });
+
+    await asyncTest('toBufferWithMetrics handles input_size=0 gracefully', async () => {
+        // This test verifies that when source is not available (edge case),
+        // input_size=0 and compressionRatio=0 are handled correctly
+        const buffer = fs.readFileSync(TEST_IMAGE);
+        const { metrics } = await ImageEngine.from(buffer)
+            .resize(100)
+            .toBufferWithMetrics('jpeg', 80);
+        
+        // input_size should be positive for valid buffer source
+        assert(metrics.inputSize > 0, 'inputSize should be positive for buffer source');
+        assert(metrics.outputSize > 0, 'outputSize should be positive');
+        assert(metrics.compressionRatio > 0, 'compressionRatio should be positive');
+        
+        // Verify compressionRatio calculation
+        const expectedRatio = metrics.outputSize / metrics.inputSize;
+        assert(Math.abs(metrics.compressionRatio - expectedRatio) < 0.0001, 
+            'compressionRatio should equal outputSize / inputSize');
     });
     
     // ========================================================================
