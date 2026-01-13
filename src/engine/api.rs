@@ -450,7 +450,11 @@ impl ImageEngine {
     /// - format: Output format ("jpeg", "png", "webp", "avif")
     /// - quality: Optional quality (1-100, uses format-specific default if None)
     /// - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
-    /// - concurrency: Optional number of parallel workers (default: CPU core count)
+    /// - concurrency: Optional number of parallel workers:
+    ///   - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+    ///     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+    ///     Ideal for serverless/containerized environments with memory constraints.
+    ///   - 1-1024: Manual override - use specified number of concurrent operations
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,

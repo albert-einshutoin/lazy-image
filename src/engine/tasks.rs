@@ -481,8 +481,8 @@ impl Task for BatchTask {
         };
 
         // Validate concurrency parameter
-        // concurrency = 0 means "use default" (auto-detected via available_parallelism)
-        // concurrency = 1..MAX_CONCURRENCY means "use specified number of threads"
+        // concurrency = 0 means "use default" (auto-detected via CPU and memory)
+        // concurrency = 1..MAX_CONCURRENCY means "use specified number of concurrent operations"
         if self.concurrency > pool::MAX_CONCURRENCY as u32 {
             return Err(napi::Error::from(LazyImageError::internal_panic(format!(
                 "invalid concurrency value: {} (must be 0 or 1-{})",
@@ -490,28 +490,36 @@ impl Task for BatchTask {
             ))));
         }
 
-        // Use global thread pool for better performance
-        let results: Vec<BatchResult> = if self.concurrency == 0 {
-            // Use global thread pool with default concurrency
-            // (automatically calculated from available_parallelism)
-            pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
+        // Determine effective concurrency
+        let effective_concurrency = if self.concurrency == 0 {
+            // Auto-detect: use smart concurrency based on CPU and memory
+            pool::calculate_optimal_concurrency()
         } else {
-            // For custom concurrency, create a temporary pool with specified threads
-            // Note: This creates a new pool per request, which is acceptable
-            // for custom concurrency requirements
-            use rayon::ThreadPoolBuilder;
-            let pool = ThreadPoolBuilder::new()
-                .num_threads(self.concurrency as usize)
-                .build()
-                .map_err(|e| {
-                    napi::Error::from(LazyImageError::internal_panic(format!(
-                        "failed to create thread pool: {}",
-                        e
-                    )))
-                })?;
-
-            pool.install(|| self.inputs.par_iter().map(process_one).collect())
+            // Manual override: use user-specified concurrency
+            self.concurrency as usize
         };
+
+        // Use global thread pool with chunks-based concurrency limiting
+        // This avoids creating a new pool per request (which is expensive)
+        // and instead uses chunks to limit concurrent operations
+        let results: Vec<BatchResult> = pool::get_pool().install(|| {
+            if effective_concurrency >= self.inputs.len() {
+                // If concurrency >= input count, process all in parallel
+                self.inputs.par_iter().map(process_one).collect()
+            } else {
+                // Use chunks to limit concurrent operations
+                // Process chunks sequentially, but each chunk in parallel
+                // This ensures at most `effective_concurrency` operations run simultaneously
+                // while still using the global thread pool efficiently
+                self.inputs
+                    .chunks(effective_concurrency)
+                    .flat_map(|chunk| {
+                        // Process each chunk in parallel within the global pool
+                        chunk.par_iter().map(process_one).collect::<Vec<_>>()
+                    })
+                    .collect()
+            }
+        });
 
         Ok(results)
     }
