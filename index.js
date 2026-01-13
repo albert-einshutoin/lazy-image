@@ -347,7 +347,7 @@ function getErrorCategory(error) {
     }
   }
   
-  // Fall back to error.code (standard pattern, like sharp uses)
+  // Second, try error.code (standard pattern, like sharp uses)
   if (error.code) {
     switch (error.code) {
       case 'LAZY_IMAGE_USER_ERROR':
@@ -359,7 +359,49 @@ function getErrorCategory(error) {
       case 'LAZY_IMAGE_INTERNAL_BUG':
         return ErrorCategory.InternalBug
       default:
-        return null
+        // Fall through to message parsing
+    }
+  }
+  
+  // Fall back to error.message parsing (for backward compatibility)
+  // Note: This is a temporary fallback. New errors should use error.code or error.category.
+  // Format 1: "CategoryName:Error message" (e.g., "UserError:Unsupported rotation angle...")
+  // Format 2: "CODE:CategoryName" (e.g., "LAZY_IMAGE_USER_ERROR:UserError")
+  if (error.message) {
+    // Try format 2 first (CODE:CategoryName)
+    const codeMatch = error.message.match(/^(LAZY_IMAGE_\w+):(\w+)/)
+    if (codeMatch) {
+      const code = codeMatch[1]
+      switch (code) {
+        case 'LAZY_IMAGE_USER_ERROR':
+          return ErrorCategory.UserError
+        case 'LAZY_IMAGE_CODEC_ERROR':
+          return ErrorCategory.CodecError
+        case 'LAZY_IMAGE_RESOURCE_LIMIT':
+          return ErrorCategory.ResourceLimit
+        case 'LAZY_IMAGE_INTERNAL_BUG':
+          return ErrorCategory.InternalBug
+        default:
+          return null
+      }
+    }
+    
+    // Try format 1 (CategoryName:Error message)
+    const categoryMatch = error.message.match(/^(UserError|CodecError|ResourceLimit|InternalBug):/)
+    if (categoryMatch) {
+      const categoryName = categoryMatch[1]
+      switch (categoryName) {
+        case 'UserError':
+          return ErrorCategory.UserError
+        case 'CodecError':
+          return ErrorCategory.CodecError
+        case 'ResourceLimit':
+          return ErrorCategory.ResourceLimit
+        case 'InternalBug':
+          return ErrorCategory.InternalBug
+        default:
+          return null
+      }
     }
   }
   

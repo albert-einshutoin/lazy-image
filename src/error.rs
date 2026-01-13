@@ -374,7 +374,8 @@ pub fn create_napi_error_with_code(
 }
 
 // Conversion to NAPI Error (fallback for code that doesn't have Env)
-// Note: This doesn't add custom properties. Use create_napi_error_with_code() when Env is available.
+// Note: This sets error.reason with code information for getErrorCategory() to parse.
+// For better error handling, use create_napi_error_with_code() when Env is available.
 #[cfg(feature = "napi")]
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
@@ -387,7 +388,19 @@ impl From<LazyImageError> for napi::Error {
         };
 
         // Create error with original message (no prefix to avoid breaking changes)
-        napi::Error::new(status, err.to_string())
+        let mut napi_err = napi::Error::new(status, err.to_string());
+        
+        // Set error.reason with code information for getErrorCategory() to parse
+        // Format: "CODE:CategoryName" (e.g., "LAZY_IMAGE_USER_ERROR:UserError")
+        let code_str = match category {
+            ErrorCategory::UserError => "LAZY_IMAGE_USER_ERROR",
+            ErrorCategory::CodecError => "LAZY_IMAGE_CODEC_ERROR",
+            ErrorCategory::ResourceLimit => "LAZY_IMAGE_RESOURCE_LIMIT",
+            ErrorCategory::InternalBug => "LAZY_IMAGE_INTERNAL_BUG",
+        };
+        napi_err.reason = format!("{}:{}", code_str, category.as_str());
+        
+        napi_err
     }
 }
 

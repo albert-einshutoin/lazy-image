@@ -15,7 +15,7 @@ lazy-image uses a 4-tier error taxonomy to enable proper error handling in JavaS
 
 ### Using Error Categories in JavaScript
 
-Errors from lazy-image include category information in the `error.reason` field in the format `"CategoryName:Error message"`. Use the `getErrorCategory()` helper function to extract the category:
+Errors from lazy-image include category information in the `error.code` property (e.g., `"LAZY_IMAGE_USER_ERROR"`) or `error.category` property (ErrorCategory enum value). Use the `getErrorCategory()` helper function to extract the category:
 
 ```javascript
 const { ImageEngine, ErrorCategory, getErrorCategory } = require('@alberteinshutoin/lazy-image');
@@ -39,9 +39,14 @@ try {
   } else if (category === ErrorCategory.InternalBug) {
     // Library bug - should report to maintainers
     console.error('Internal error - please report:', err.message);
+  } else {
+    // category is null - error.code not set (legacy error or not from lazy-image)
+    console.log('Error without category:', err.message);
   }
 }
 ```
+
+**Note**: The `error.code` property is set when errors are created using `create_napi_error_with_code()`. Currently, not all error sites use this function, so `getErrorCategory()` may return `null` for some errors. This will be addressed in future updates.
 
 ### Error Category Classification
 
