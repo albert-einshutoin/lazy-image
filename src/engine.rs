@@ -30,6 +30,7 @@ mod common;
 mod decoder;
 mod encoder;
 mod io;
+mod memory;
 mod pipeline;
 mod pool;
 mod stress;

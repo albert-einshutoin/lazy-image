@@ -12,6 +12,7 @@
 // **Thread Count Calculation**:
 // - Uses std::thread::available_parallelism() to respect cgroup/CPU quota
 // - Reserves UV_THREADPOOL_SIZE threads for libuv (defaults to 4) to avoid oversubscription
+// - Considers memory limits for smart concurrency (see memory.rs)
 // - Fallback is MIN_RAYON_THREADS when detection fails
 //
 // **IMPORTANT**:
@@ -22,6 +23,8 @@
 // - Global pool: ~0.5ms overhead for 100 items
 // - New pool per call: ~5-10ms overhead (10-20x slower)
 
+#[cfg(feature = "napi")]
+use crate::engine::memory;
 #[cfg(feature = "napi")]
 use rayon::ThreadPool;
 #[cfg(feature = "napi")]
@@ -68,6 +71,35 @@ pub fn get_pool() -> &'static ThreadPool {
                     ))
             })
     })
+}
+
+/// Calculates optimal concurrency based on CPU and memory constraints
+///
+/// This function combines CPU-based parallelism detection with memory-aware
+/// concurrency limits to prevent OOM kills in constrained containers.
+///
+/// # Returns
+/// Optimal concurrency value (number of concurrent operations)
+#[cfg(feature = "napi")]
+pub fn calculate_optimal_concurrency() -> usize {
+    // 1. Detect CPU-based parallelism
+    let cpu_based = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(MIN_RAYON_THREADS);
+
+    // Reserve threads for libuv
+    let uv_reserve = reserved_libuv_threads();
+    let cpu_concurrency = cpu_based
+        .saturating_sub(uv_reserve)
+        .max(MIN_RAYON_THREADS);
+
+    // 2. Detect memory limits and calculate memory-based concurrency
+    let available_memory = memory::detect_available_memory();
+    let memory_based = memory::calculate_memory_based_concurrency(available_memory, cpu_concurrency);
+
+    // 3. Use the minimum of CPU and memory constraints
+    // This ensures we don't exceed either CPU or memory limits
+    memory_based
 }
 
 #[cfg(feature = "napi")]
