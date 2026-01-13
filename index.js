@@ -312,8 +312,64 @@ if (!nativeBinding) {
 
 const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
+/**
+ * Extract error category from a lazy-image error
+ * 
+ * Errors from lazy-image include category information in the error message
+ * in the format "CategoryName:Error message". This helper extracts the category.
+ * 
+ * @param {Error} error - The error object from lazy-image
+ * @returns {ErrorCategory|null} - The error category, or null if not found
+ * 
+ * @example
+ * try {
+ *   await engine.toBuffer('jpeg', 80)
+ * } catch (err) {
+ *   const category = getErrorCategory(err)
+ *   if (category === ErrorCategory.UserError) {
+ *     // Handle user input error
+ *   } else if (category === ErrorCategory.CodecError) {
+ *     // Handle codec/format error
+ *   }
+ * }
+ */
+function getErrorCategory(error) {
+  if (!error) {
+    return null
+  }
+  
+  // Try error.reason first (if available), then fall back to error.message
+  const text = error.reason || error.message
+  if (!text) {
+    return null
+  }
+  
+  // Parse "CategoryName:Error message" format
+  const match = text.match(/^([^:]+):/)
+  if (!match) {
+    return null
+  }
+  
+  const categoryName = match[1]
+  
+  // Map string to ErrorCategory enum
+  switch (categoryName) {
+    case 'UserError':
+      return ErrorCategory.UserError
+    case 'CodecError':
+      return ErrorCategory.CodecError
+    case 'ResourceLimit':
+      return ErrorCategory.ResourceLimit
+    case 'InternalBug':
+      return ErrorCategory.InternalBug
+    default:
+      return null
+  }
+}
+
 module.exports.ImageEngine = ImageEngine
 module.exports.ErrorCategory = ErrorCategory
+module.exports.getErrorCategory = getErrorCategory
 module.exports.inspect = inspect
 module.exports.inspectFile = inspectFile
 module.exports.version = version

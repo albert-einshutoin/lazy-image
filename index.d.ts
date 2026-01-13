@@ -72,6 +72,30 @@ export declare function version(): string
 export declare function supportedInputFormats(): Array<string>
 /** Get supported output formats */
 export declare function supportedOutputFormats(): Array<string>
+/**
+ * Extract error category from a lazy-image error
+ * 
+ * Errors from lazy-image include category information in the error.reason field
+ * in the format "CategoryName:Error message". This helper extracts the category.
+ * 
+ * @param error - The error object from lazy-image
+ * @returns The error category, or null if not found
+ * 
+ * @example
+ * ```typescript
+ * try {
+ *   await engine.toBuffer('jpeg', 80)
+ * } catch (err) {
+ *   const category = getErrorCategory(err)
+ *   if (category === ErrorCategory.UserError) {
+ *     // Handle user input error
+ *   } else if (category === ErrorCategory.CodecError) {
+ *     // Handle codec/format error
+ *   }
+ * }
+ * ```
+ */
+export declare function getErrorCategory(error: Error | null | undefined): ErrorCategory | null
 /** Processing metrics for performance monitoring */
 export interface ProcessingMetrics {
   /** Time taken to decode the image (milliseconds) */

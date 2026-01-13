@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const { resolveRoot, resolveFixture, resolveTemp } = require('../helpers/paths');
-const { ImageEngine, inspect, inspectFile } = require(resolveRoot('index'));
+const { ImageEngine, ErrorCategory, getErrorCategory, inspect, inspectFile } = require(resolveRoot('index'));
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
 
@@ -235,6 +235,62 @@ async function runTests() {
             threw = true;
         }
         assert(threw, 'should have thrown an error');
+    });
+
+    // Error category tests
+    await asyncTest('error category: UserError for invalid rotation', async () => {
+        try {
+            await ImageEngine.from(buffer).rotate(45).toBuffer('jpeg', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'invalid rotation should be UserError');
+            assert(e.message, 'error should have message field');
+            assert(e.message.startsWith('UserError:'), 'message should start with UserError:');
+        }
+    });
+
+    await asyncTest('error category: UserError for invalid crop bounds', async () => {
+        try {
+            await ImageEngine.from(buffer).crop(10000, 10000, 1000, 1000).toBuffer('jpeg', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'invalid crop bounds should be UserError');
+            assert(e.message.startsWith('UserError:'), 'message should start with UserError:');
+        }
+    });
+
+    await asyncTest('error category: CodecError for invalid format', async () => {
+        try {
+            await ImageEngine.from(buffer).toBuffer('invalid_format', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.CodecError, 'invalid format should be CodecError');
+            assert(e.message.startsWith('CodecError:'), 'message should start with CodecError:');
+        }
+    });
+
+    await asyncTest('error category: UserError for file not found', async () => {
+        try {
+            await ImageEngine.fromPath('/nonexistent/file.jpg').toBuffer('jpeg', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'file not found should be UserError');
+        }
+    });
+
+    await asyncTest('getErrorCategory returns null for non-lazy-image errors', async () => {
+        const regularError = new Error('Regular error');
+        const category = getErrorCategory(regularError);
+        assert.strictEqual(category, null, 'non-lazy-image errors should return null');
+    });
+
+    await asyncTest('getErrorCategory handles null/undefined', async () => {
+        assert.strictEqual(getErrorCategory(null), null);
+        assert.strictEqual(getErrorCategory(undefined), null);
     });
 
     // Preset tests

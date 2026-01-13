@@ -2,6 +2,76 @@
 
 lazy-image uses a structured error code system for type-safe error handling. All errors are categorized and include detailed context information.
 
+## Error Taxonomy
+
+lazy-image uses a 4-tier error taxonomy to enable proper error handling in JavaScript:
+
+| Category | Description | Recoverable | Example |
+|----------|-------------|-------------|---------|
+| **UserError** | Invalid input, recoverable by user | Yes | Invalid rotation angle, file not found, invalid crop bounds |
+| **CodecError** | Format/encoding issues | Usually No | Unsupported format, corrupted image, encode/decode failures |
+| **ResourceLimit** | Memory/time/dimension limits | Sometimes | Dimension exceeds limit, file I/O errors (disk full, memory pressure) |
+| **InternalBug** | Library bugs (should not happen) | No | Internal panic, unexpected state |
+
+### Using Error Categories in JavaScript
+
+Errors from lazy-image include category information in the `error.reason` field in the format `"CategoryName:Error message"`. Use the `getErrorCategory()` helper function to extract the category:
+
+```javascript
+const { ImageEngine, ErrorCategory, getErrorCategory } = require('@alberteinshutoin/lazy-image');
+
+try {
+  await ImageEngine.from(buffer)
+    .rotate(45)  // Invalid rotation angle
+    .toBuffer('jpeg', 80);
+} catch (err) {
+  const category = getErrorCategory(err);
+  
+  if (category === ErrorCategory.UserError) {
+    // User can fix this - invalid input
+    console.log('Please check your input:', err.message);
+  } else if (category === ErrorCategory.CodecError) {
+    // Format/encoding issue - may need to convert or fix the image
+    console.log('Image format issue:', err.message);
+  } else if (category === ErrorCategory.ResourceLimit) {
+    // Resource constraint - may need to resize or free up resources
+    console.log('Resource limit reached:', err.message);
+  } else if (category === ErrorCategory.InternalBug) {
+    // Library bug - should report to maintainers
+    console.error('Internal error - please report:', err.message);
+  }
+}
+```
+
+### Error Category Classification
+
+**UserError** - Invalid input that the user can fix:
+- `FileNotFound` - File path doesn't exist
+- `InvalidCropBounds` - Crop bounds exceed image dimensions
+- `InvalidRotationAngle` - Unsupported rotation angle
+- `InvalidResizeDimensions` - Invalid resize parameters
+- `InvalidPreset` - Unknown preset name
+- `SourceConsumed` - Image source already used
+
+**CodecError** - Format/encoding issues:
+- `UnsupportedFormat` - Format not supported
+- `DecodeFailed` - Failed to decode image
+- `CorruptedImage` - Image data is corrupted
+- `EncodeFailed` - Failed to encode image
+- `UnsupportedColorSpace` - Color space not supported
+- `ResizeFailed` - Resize operation failed (processing error, classified as codec error)
+
+**ResourceLimit** - Resource constraints:
+- `DimensionExceedsLimit` - Image dimensions too large
+- `PixelCountExceedsLimit` - Too many pixels
+- `FileReadFailed` - File read failed (often due to resource constraints like disk full, memory pressure)
+- `MmapFailed` - Memory mapping failed (often due to resource constraints)
+- `FileWriteFailed` - File write failed (often due to resource constraints like disk full)
+
+**InternalBug** - Library bugs:
+- `InternalPanic` - Unexpected internal error
+- `Generic` - Generic internal error
+
 ## Error Code Categories
 
 | Category | Range | Description |

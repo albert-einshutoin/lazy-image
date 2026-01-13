@@ -306,11 +306,22 @@ impl LazyImageError {
             | Self::CorruptedImage
             | Self::EncodeFailed { .. }
             | Self::UnsupportedColorSpace { .. }
+            // Note: ResizeFailed is classified as CodecError because it represents
+            // a processing failure during image transformation, which is similar to
+            // encoding/decoding issues. In a future version, a ProcessingError category
+            // might be more appropriate.
             | Self::ResizeFailed { .. } => ErrorCategory::CodecError,
 
             // ResourceLimit: Memory/time/dimension limits
             Self::DimensionExceedsLimit { .. }
             | Self::PixelCountExceedsLimit { .. }
+            // Note: FileReadFailed/MmapFailed/FileWriteFailed are classified as ResourceLimit
+            // because they often indicate resource constraints (disk full, memory pressure,
+            // file system limits). However, they can also represent I/O errors (permissions,
+            // file locks, etc.). In practice, these errors are typically recoverable by
+            // the user (fixing permissions, freeing disk space, etc.), so they could
+            // alternatively be classified as UserError. The ResourceLimit classification
+            // emphasizes the resource constraint aspect, which is the most common cause.
             | Self::FileReadFailed { .. }
             | Self::MmapFailed { .. }
             | Self::FileWriteFailed { .. } => ErrorCategory::ResourceLimit,
