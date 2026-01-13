@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.6] - 2026-01-XX
+
+### Changed
+- Version bump to 0.8.6
+
+---
+
+## [0.8.5] - 2026-01-12
+
+### Fixed
+- Fixed CI compilation errors when building with `--no-default-features`
+- Made imports conditional for NAPI-dependent types to support compilation without default features
+- Fixed missing export of `run_stress_iteration` from engine module for stress testing
+
+### Changed
+- Updated conditional compilation attributes to properly handle `--no-default-features` builds
+- Improved test module imports in `engine.rs` for better feature flag compatibility
+
+---
+
 ## [0.8.4] - 2026-01-12
 
 ### Added
