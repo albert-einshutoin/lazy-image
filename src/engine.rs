@@ -485,17 +485,21 @@ mod tests {
 
             #[test]
             fn test_extract_icc_from_png_with_profile() {
-                // PNG ICC extraction behavior is deterministic:
-                // img-parts currently does not support extracting ICC profiles from PNG iCCP chunks.
-                // This test verifies that extraction returns None (deterministic behavior).
+                // PNG ICC extraction: img-parts can now extract ICC profiles from PNG iCCP chunks
+                // when they are embedded using the correct format (raw ICC profile data).
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
                 let extracted = extract_icc_profile(&png);
-                // PNG ICC extraction is not supported by img-parts - this is expected behavior
+                // PNG ICC extraction should now work with img-parts
                 assert!(
-                    extracted.is_none(),
-                    "PNG ICC extraction should return None (img-parts limitation)"
+                    extracted.is_some(),
+                    "PNG ICC extraction should return Some when ICC profile is embedded correctly"
                 );
+                let extracted = extracted.unwrap();
+                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                assert!(extracted.len() >= 128);
+                // Extracted ICC should match original
+                assert_eq!(icc, extracted, "Extracted ICC should match original");
             }
 
             #[test]

@@ -332,10 +332,7 @@ pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u
 
 /// Embed ICC profile into PNG using img-parts
 pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
-    use flate2::write::ZlibEncoder;
-    use flate2::Compression;
     use img_parts::Bytes;
-    use std::io::Write;
 
     let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
         LazyImageError::decode_failed(format!(
@@ -343,32 +340,9 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
         ))
     })?;
 
-    // iCCP chunk format: profile_name (null-terminated) + compression_method (0) + compressed_data
-    let profile_name = b"ICC\0"; // Short name
-    let compression_method = 0u8; // zlib
-
-    // Compress ICC data
-    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-    encoder.write_all(icc).map_err(|e| {
-        LazyImageError::encode_failed(
-            "png",
-            format!("failed to compress ICC: {e}"),
-        )
-    })?;
-    let compressed = encoder.finish().map_err(|e| {
-        LazyImageError::encode_failed(
-            "png",
-            format!("failed to finish ICC compression: {e}"),
-        )
-    })?;
-
-    let mut chunk_data = Vec::with_capacity(profile_name.len() + 1 + compressed.len());
-    chunk_data.extend_from_slice(profile_name);
-    chunk_data.push(compression_method);
-    chunk_data.extend_from_slice(&compressed);
-
-    // Use img-parts' ICC API
-    png.set_icc_profile(Some(Bytes::from(chunk_data)));
+    // img-parts' set_icc_profile expects raw ICC profile data
+    // It will handle iCCP chunk formatting (profile_name + compression_method + compressed_data) internally
+    png.set_icc_profile(Some(Bytes::from(icc.to_vec())));
 
     // Encode back
     let mut output = Vec::new();
