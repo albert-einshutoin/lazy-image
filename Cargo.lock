@@ -592,7 +592,7 @@ dependencies = [
 
 [[package]]
 name = "lazy-image"
-version = "0.8.5"
+version = "0.8.6"
 dependencies = [
  "criterion",
  "fast_image_resize",
