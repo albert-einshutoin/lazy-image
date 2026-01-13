@@ -199,6 +199,91 @@ pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
     png.icc_profile().map(|icc| icc.to_vec())
 }
 
+/// Extract ICC profile from PNG iCCP chunk by directly parsing PNG structure
+/// This is used for testing to verify that ICC chunks are actually present in PNG files,
+/// even when img-parts cannot extract them.
+#[cfg(test)]
+pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
+    use flate2::read::ZlibDecoder;
+    use std::io::Read;
+
+    // PNG signature: 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
+    if data.len() < 8 || &data[0..8] != [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
+        return None;
+    }
+
+    let mut offset = 8; // Skip PNG signature
+
+    // Parse chunks
+    while offset + 8 <= data.len() {
+        // Read chunk length (4 bytes, big-endian)
+        let chunk_length = u32::from_be_bytes([
+            data[offset],
+            data[offset + 1],
+            data[offset + 2],
+            data[offset + 3],
+        ]) as usize;
+        offset += 4;
+
+        // Read chunk type (4 bytes)
+        if offset + 4 > data.len() {
+            break;
+        }
+        let chunk_type = &data[offset..offset + 4];
+        offset += 4;
+
+        // Check if this is an iCCP chunk
+        if chunk_type == b"iCCP" {
+            // iCCP chunk format: profile_name (null-terminated) + compression_method (1 byte) + compressed_data
+            if offset + chunk_length > data.len() {
+                break;
+            }
+
+            // Find null terminator for profile name
+            let mut name_end = offset;
+            while name_end < offset + chunk_length && data[name_end] != 0 {
+                name_end += 1;
+            }
+            if name_end >= offset + chunk_length {
+                break;
+            }
+
+            // Skip profile name and null terminator
+            let data_start = name_end + 1;
+            if data_start >= offset + chunk_length {
+                break;
+            }
+
+            // Read compression method (should be 0 = zlib)
+            let compression_method = data[data_start];
+            if compression_method != 0 {
+                break;
+            }
+
+            // Read compressed data
+            let compressed_start = data_start + 1;
+            let compressed_end = offset + chunk_length;
+            if compressed_start >= compressed_end {
+                break;
+            }
+            let compressed_data = &data[compressed_start..compressed_end];
+
+            // Decompress zlib data
+            let mut decoder = ZlibDecoder::new(compressed_data);
+            let mut decompressed = Vec::new();
+            if decoder.read_to_end(&mut decompressed).is_ok() {
+                return Some(decompressed);
+            }
+            break;
+        }
+
+        // Skip chunk data and CRC (4 bytes)
+        offset += chunk_length + 4;
+    }
+
+    None
+}
+
 /// Extract ICC profile from WebP data
 pub(crate) fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
     use img_parts::webp::WebP;
@@ -613,27 +698,35 @@ mod tests {
 
             #[test]
             fn test_png_roundtrip() {
-                // PNG ICC extraction behavior is deterministic:
-                // img-parts currently does not support extracting ICC profiles from PNG iCCP chunks.
-                // This test verifies the deterministic behavior: extraction returns None.
+                // Test that ICC profile is preserved in PNG roundtrip
                 let original_icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&png);
 
-                // PNG ICC extraction is not supported - this is expected and deterministic
+                // Verify that iCCP chunk exists in PNG (using direct parsing)
+                let extracted_icc = extract_icc_from_png_direct(&png);
                 assert!(
-                    extracted_icc.is_none(),
-                    "PNG ICC extraction should return None (img-parts limitation)"
+                    extracted_icc.is_some(),
+                    "PNG should contain iCCP chunk with ICC profile"
+                );
+                let extracted_icc = extracted_icc.unwrap();
+                assert_eq!(
+                    original_icc, extracted_icc,
+                    "Extracted ICC should match original"
                 );
 
-                // Even though extraction fails, we can still test that encoding with ICC works
+                // Test roundtrip: decode and re-encode
                 let img = image::load_from_memory(&png).unwrap();
-                let encoded = encode_png(&img, Some(&original_icc)).unwrap();
-                // Re-extraction should also fail (deterministic)
-                let re_extracted_icc = extract_icc_profile(&encoded);
+                let encoded = encode_png(&img, Some(&extracted_icc)).unwrap();
+
+                // Verify that re-encoded PNG also contains iCCP chunk
+                let re_extracted_icc = extract_icc_from_png_direct(&encoded);
                 assert!(
-                    re_extracted_icc.is_none(),
-                    "PNG ICC re-extraction should also return None (deterministic behavior)"
+                    re_extracted_icc.is_some(),
+                    "Re-encoded PNG should also contain iCCP chunk"
+                );
+                assert_eq!(
+                    extracted_icc, re_extracted_icc.unwrap(),
+                    "Re-extracted ICC should match original"
                 );
             }
 
@@ -652,45 +745,56 @@ mod tests {
 
             #[test]
             fn test_cross_format_roundtrip_jpeg_to_png() {
-                // PNG ICC extraction behavior is deterministic:
-                // img-parts currently does not support extracting ICC profiles from PNG iCCP chunks.
-                // This test verifies that JPEG ICC can be embedded in PNG, but extraction fails (deterministic).
+                // Test that ICC profile is preserved when converting JPEG to PNG
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
                 let extracted_icc = extract_icc_profile(&jpeg).unwrap();
 
+                // Convert JPEG to PNG with ICC
                 let img = image::load_from_memory(&jpeg).unwrap();
                 let png = encode_png(&img, Some(&extracted_icc)).unwrap();
-                let re_extracted = extract_icc_profile(&png);
 
-                // PNG ICC extraction is not supported - this is expected and deterministic
+                // Verify that PNG contains iCCP chunk with ICC profile (using direct parsing)
+                let re_extracted = extract_icc_from_png_direct(&png);
                 assert!(
-                    re_extracted.is_none(),
-                    "PNG ICC extraction should return None (img-parts limitation)"
+                    re_extracted.is_some(),
+                    "PNG should contain iCCP chunk with ICC profile from JPEG"
+                );
+                assert_eq!(
+                    extracted_icc, re_extracted.unwrap(),
+                    "ICC profile should be preserved in JPEG to PNG conversion"
                 );
             }
 
             #[test]
             fn test_cross_format_roundtrip_png_to_webp() {
-                // PNG ICC extraction behavior is deterministic:
-                // img-parts currently does not support extracting ICC profiles from PNG iCCP chunks.
-                // This test verifies the deterministic behavior: extraction returns None.
+                // Test that ICC profile is preserved when converting PNG to WebP
+                // Since img-parts cannot extract ICC from PNG, we use direct parsing
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
-                let extracted_icc = extract_icc_profile(&png);
 
-                // PNG ICC extraction is not supported - this is expected and deterministic
+                // Extract ICC from PNG using direct parsing (img-parts limitation)
+                let extracted_icc = extract_icc_from_png_direct(&png);
                 assert!(
-                    extracted_icc.is_none(),
-                    "PNG ICC extraction should return None (img-parts limitation)"
+                    extracted_icc.is_some(),
+                    "PNG should contain iCCP chunk with ICC profile"
+                );
+                let extracted_icc = extracted_icc.unwrap();
+                assert_eq!(
+                    icc, extracted_icc,
+                    "Extracted ICC from PNG should match original"
                 );
 
-                // Even though extraction fails, we can still test that encoding with ICC works
+                // Convert PNG to WebP using extracted ICC
                 let img = image::load_from_memory(&png).unwrap();
-                let webp = encode_webp(&img, 80, Some(&icc)).unwrap();
-                // WebP ICC extraction should work
+                let webp = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
+
+                // Verify that WebP contains ICC profile
                 let re_extracted = extract_icc_profile(&webp).unwrap();
-                assert_eq!(icc, re_extracted);
+                assert_eq!(
+                    extracted_icc, re_extracted,
+                    "ICC profile should be preserved in PNG to WebP conversion"
+                );
             }
         }
 
