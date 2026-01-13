@@ -312,32 +312,8 @@ if (!nativeBinding) {
 
 const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
-function getErrorCategory(error) {
-  if (!error) {
-    return null
-  }
-
-  if (typeof error.category === 'number' && error.category >= 0 && error.category <= 3) {
-    return error.category
-  }
-
-  switch (error.code) {
-    case 'LAZY_IMAGE_USER_ERROR':
-      return ErrorCategory.UserError
-    case 'LAZY_IMAGE_CODEC_ERROR':
-      return ErrorCategory.CodecError
-    case 'LAZY_IMAGE_RESOURCE_LIMIT':
-      return ErrorCategory.ResourceLimit
-    case 'LAZY_IMAGE_INTERNAL_BUG':
-      return ErrorCategory.InternalBug
-    default:
-      return null
-  }
-}
-
 module.exports.ImageEngine = ImageEngine
 module.exports.ErrorCategory = ErrorCategory
-module.exports.getErrorCategory = getErrorCategory
 module.exports.inspect = inspect
 module.exports.inspectFile = inspectFile
 module.exports.version = version

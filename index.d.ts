@@ -35,7 +35,7 @@ export interface BatchResult {
  * - ResourceLimit: Memory/time/dimension limits
  * - InternalBug: Library bugs (should not happen)
  */
-export enum ErrorCategory {
+export const enum ErrorCategory {
   /** Invalid input, recoverable by user */
   UserError = 0,
   /** Format/encoding issues */
@@ -68,11 +68,6 @@ export declare function inspect(buffer: Buffer): ImageMetadata
  * This is the recommended way for server-side metadata inspection.
  */
 export declare function inspectFile(path: string): ImageMetadata
-/**
- * Extract ErrorCategory from an error object created by lazy-image.
- * Returns null when the error is not from lazy-image.
- */
-export declare function getErrorCategory(error: unknown): ErrorCategory | null
 /** Get library version */
 export declare function version(): string
 /** Get supported input formats */
@@ -151,9 +146,10 @@ export declare class ImageEngine {
   /** Convert to grayscale */
   grayscale(): ImageEngine
   /**
-   * Preserve metadata (Exif, ICC profile, XMP) in output.
+   * Preserve ICC profile in output.
+   * Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
    * By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
-   * Call this method to keep metadata for photography sites or when color accuracy is important.
+   * Call this method to keep ICC profile when color accuracy is important.
    */
   keepMetadata(): ImageEngine
   /** Adjust brightness (-100 to 100) */
