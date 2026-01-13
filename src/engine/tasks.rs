@@ -9,7 +9,7 @@ use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "napi")]
 use crate::engine::pool;
-use crate::error::LazyImageError;
+use crate::error::{ErrorCategory, LazyImageError};
 use crate::ops::{Operation, OutputFormat};
 use image::{DynamicImage, GenericImageView};
 #[cfg(feature = "napi")]
@@ -98,6 +98,8 @@ pub struct BatchResult {
     pub success: bool,
     pub error: Option<String>,
     pub output_path: Option<String>,
+    pub error_code: Option<String>,
+    pub error_category: Option<ErrorCategory>,
 }
 
 pub(crate) struct EncodeTask {
@@ -110,6 +112,9 @@ pub(crate) struct EncodeTask {
     pub icc_profile: Option<Arc<Vec<u8>>>,
     /// Whether to preserve metadata in output (default: false for security & smaller files)
     pub keep_metadata: bool,
+    /// Last error that occurred during compute (for use in reject)
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
 }
 
 impl EncodeTask {
@@ -119,7 +124,9 @@ impl EncodeTask {
     /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
     /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
     /// when no mutation is needed (e.g., format conversion only).
-    pub(crate) fn decode(&self) -> EngineResult<Cow<'_, DynamicImage>> {
+    /// 
+    /// Returns LazyImageError directly (not wrapped in napi::Error) for use in process_and_encode.
+    pub(crate) fn decode_internal(&self) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
         // Prefer already decoded image (already validated)
         // Return borrowed reference - no deep copy until mutation is needed
         if let Some(ref img_arc) = self.decoded {
@@ -134,13 +141,13 @@ impl EncodeTask {
                 } else {
                     // Path sources require loading first - this should not happen in normal flow
                     // as from_path() converts Path to Mapped. If this occurs, it's a programming error.
-                    return Err(to_engine_error(LazyImageError::decode_failed(
+                    return Err(LazyImageError::decode_failed(
                         "Path source requires loading first. Use Mapped source (from_path) instead.".to_string(),
-                    )));
+                    ));
                 }
             }
             None => {
-                return Err(to_engine_error(LazyImageError::source_consumed()));
+                return Err(LazyImageError::source_consumed());
             }
         };
 
@@ -151,7 +158,7 @@ impl EncodeTask {
         } else {
             // PNG, WebP, etc - use image crate
             image::load_from_memory(bytes).map_err(|e| {
-                to_engine_error(LazyImageError::decode_failed(format!("decode failed: {e}")))
+                LazyImageError::decode_failed(format!("decode failed: {e}"))
             })?
         };
 
@@ -162,13 +169,25 @@ impl EncodeTask {
         Ok(Cow::Owned(img))
     }
 
+    /// Decode image from source bytes (public API for backward compatibility)
+    /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
+    ///
+    /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
+    /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
+    /// when no mutation is needed (e.g., format conversion only).
+    pub(crate) fn decode(&self) -> EngineResult<Cow<'_, DynamicImage>> {
+        self.decode_internal().map_err(to_engine_error)
+    }
+
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
+    /// Returns LazyImageError directly (not wrapped in napi::Error) so that
+    /// Task::reject can properly create error objects with code/category.
     #[cfg_attr(not(any(feature = "napi", feature = "stress")), allow(dead_code))]
     pub(crate) fn process_and_encode(
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
-    ) -> EngineResult<Vec<u8>> {
+    ) -> std::result::Result<Vec<u8>, LazyImageError> {
         // Get initial resource usage for CPU time and memory tracking
         let initial_usage = get_resource_usage();
         let start_total = std::time::Instant::now();
@@ -181,7 +200,7 @@ impl EncodeTask {
 
         // 1. Decode
         let start_decode = std::time::Instant::now();
-        let img = self.decode()?;
+        let img = self.decode_internal()?;
         if let Some(m) = metrics.as_deref_mut() {
             m.decode_time = start_decode.elapsed().as_secs_f64() * 1000.0;
         }
@@ -260,11 +279,33 @@ impl Task for EncodeTask {
     type JsValue = JsBuffer;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        self.process_and_encode(None)
+        match self.process_and_encode(None) {
+            Ok(result) => {
+                self.last_error = None;
+                Ok(result)
+            }
+            Err(lazy_err) => {
+                // Store the error for use in reject
+                self.last_error = Some(lazy_err.clone());
+                // Convert to napi::Error for the Result type
+                Err(napi::Error::from(lazy_err))
+            }
+        }
     }
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
         env.create_buffer_with_data(output).map(|b| b.into_raw())
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        // Use stored error if available, otherwise try to extract from napi::Error
+        let lazy_err = self.last_error.take().unwrap_or_else(|| {
+            // Fallback: create a generic error from the napi::Error message
+            // This should not happen if all error paths properly preserve LazyImageError
+            LazyImageError::generic(err.to_string())
+        });
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
     }
 }
 
@@ -276,6 +317,9 @@ pub(crate) struct EncodeWithMetricsTask {
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub keep_metadata: bool,
+    /// Last error that occurred during compute (for use in reject)
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
 }
 
 #[cfg(feature = "napi")]
@@ -293,12 +337,24 @@ impl Task for EncodeWithMetricsTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             keep_metadata: self.keep_metadata,
+            #[cfg(feature = "napi")]
+            last_error: None,
         };
 
         use crate::ProcessingMetrics;
         let mut metrics = ProcessingMetrics::default();
-        let data = task.process_and_encode(Some(&mut metrics))?;
-        Ok((data, metrics))
+        match task.process_and_encode(Some(&mut metrics)) {
+            Ok(data) => {
+                self.last_error = None;
+                Ok((data, metrics))
+            }
+            Err(lazy_err) => {
+                // Store the error for use in reject
+                self.last_error = Some(lazy_err.clone());
+                // Convert to napi::Error for the Result type
+                Err(napi::Error::from(lazy_err))
+            }
+        }
     }
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
@@ -308,6 +364,17 @@ impl Task for EncodeWithMetricsTask {
             data: js_buffer,
             metrics,
         })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        // Use stored error if available, otherwise try to extract from napi::Error
+        let lazy_err = self.last_error.take().unwrap_or_else(|| {
+            // Fallback: create a generic error from the napi::Error message
+            // This should not happen if all error paths properly preserve LazyImageError
+            LazyImageError::generic(err.to_string())
+        });
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
     }
 }
 
@@ -320,6 +387,9 @@ pub(crate) struct WriteFileTask {
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub keep_metadata: bool,
     pub output_path: String,
+    /// Last error that occurred during compute (for use in reject)
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
 }
 
 #[cfg(feature = "napi")]
@@ -340,50 +410,69 @@ impl Task for WriteFileTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             keep_metadata: self.keep_metadata,
+            #[cfg(feature = "napi")]
+            last_error: None,
         };
 
         // Process image using shared logic
-        let data = encode_task.process_and_encode(None)?;
+        let data = match encode_task.process_and_encode(None) {
+            Ok(data) => data,
+            Err(lazy_err) => {
+                // Store the error for use in reject
+                self.last_error = Some(lazy_err.clone());
+                return Err(napi::Error::from(lazy_err));
+            }
+        };
 
         // Atomic write: write to temp file in the same directory as target,
         // then rename on success. tempfile automatically cleans up on drop.
         let output_dir = std::path::Path::new(&self.output_path)
             .parent()
             .ok_or_else(|| {
-                napi::Error::from(LazyImageError::internal_panic(
+                let lazy_err = LazyImageError::internal_panic(
                     "output path has no parent directory",
-                ))
+                );
+                self.last_error = Some(lazy_err.clone());
+                napi::Error::from(lazy_err)
             })?;
 
         // Create temp file in the same directory as the target file
         // This ensures rename() works (cross-filesystem rename can fail)
         let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
-            napi::Error::from(LazyImageError::file_write_failed(
+            let lazy_err = LazyImageError::file_write_failed(
                 output_dir.to_string_lossy().to_string(),
                 e,
-            ))
+            );
+            self.last_error = Some(lazy_err.clone());
+            napi::Error::from(lazy_err)
         })?;
 
         let temp_path = temp_file.path().to_path_buf();
         // Check for overflow: NAPI requires u32, but we can't handle >4GB files
         let bytes_written = data.len().try_into().map_err(|_| {
-            napi::Error::from(LazyImageError::internal_panic(
+            let lazy_err = LazyImageError::internal_panic(
                 "file size exceeds 4GB limit (u32::MAX)",
-            ))
+            );
+            self.last_error = Some(lazy_err.clone());
+            napi::Error::from(lazy_err)
         })?;
         temp_file.write_all(&data).map_err(|e| {
-            napi::Error::from(LazyImageError::file_write_failed(
+            let lazy_err = LazyImageError::file_write_failed(
                 temp_path.display().to_string(),
                 e,
-            ))
+            );
+            self.last_error = Some(lazy_err.clone());
+            napi::Error::from(lazy_err)
         })?;
 
         // Ensure data is flushed to disk
         temp_file.as_file_mut().sync_all().map_err(|e| {
-            napi::Error::from(LazyImageError::file_write_failed(
+            let lazy_err = LazyImageError::file_write_failed(
                 temp_path.display().to_string(),
                 e,
-            ))
+            );
+            self.last_error = Some(lazy_err.clone());
+            napi::Error::from(lazy_err)
         })?;
 
         // Atomic rename: tempfile handles cleanup automatically if this fails
@@ -392,16 +481,29 @@ impl Task for WriteFileTask {
                 std::io::ErrorKind::Other,
                 format!("failed to persist file: {}", e),
             );
-            napi::Error::from(LazyImageError::file_write_failed(
+            let lazy_err = LazyImageError::file_write_failed(
                 self.output_path.clone(),
                 io_error,
-            ))
+            );
+            self.last_error = Some(lazy_err.clone());
+            napi::Error::from(lazy_err)
         })?;
 
         Ok(bytes_written)
     }
     fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
         Ok(output)
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        // Use stored error if available, otherwise try to extract from napi::Error
+        let lazy_err = self.last_error.take().unwrap_or_else(|| {
+            // Fallback: create a generic error from the napi::Error message
+            // This should not happen if all error paths properly preserve LazyImageError
+            LazyImageError::generic(err.to_string())
+        });
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
     }
 }
 
@@ -412,6 +514,9 @@ pub(crate) struct BatchTask {
     pub format: OutputFormat,
     pub concurrency: u32,
     pub keep_metadata: bool,
+    /// Last error that occurred during compute (for use in reject)
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
 }
 
 #[cfg(feature = "napi")]
@@ -426,10 +531,12 @@ impl Task for BatchTask {
 
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir).map_err(|e| {
-                napi::Error::from(LazyImageError::file_write_failed(
+                let lazy_err = LazyImageError::file_write_failed(
                     self.output_dir.clone(),
                     e,
-                ))
+                );
+                self.last_error = Some(lazy_err.clone());
+                napi::Error::from(lazy_err)
             })?;
         }
 
@@ -439,23 +546,28 @@ impl Task for BatchTask {
         let output_dir = &self.output_dir;
         let keep_metadata = self.keep_metadata;
         let process_one = |input_path: &String| -> BatchResult {
-            let result = (|| -> Result<String> {
+            let result = (|| -> std::result::Result<String, LazyImageError> {
                 // Use memory mapping for zero-copy access (same as from_path)
                 use std::fs::File;
                 use memmap2::Mmap;
                 use std::sync::Arc;
 
-                let file = File::open(input_path).map_err(|e| {
-                    napi::Error::from(LazyImageError::file_read_failed(input_path.clone(), e))
-                })?;
+                let file = match File::open(input_path) {
+                    Ok(file) => file,
+                    Err(e) => {
+                        if e.kind() == std::io::ErrorKind::NotFound {
+                            return Err(LazyImageError::file_not_found(input_path.clone()));
+                        }
+                        return Err(LazyImageError::file_read_failed(input_path.clone(), e));
+                    }
+                };
 
                 // Safety: We assume the file won't be modified externally during processing.
                 // This is a common assumption in image processing libraries.
                 // Note: On Windows, memory-mapped files cannot be deleted while mapped.
                 let mmap = unsafe {
-                    Mmap::map(&file).map_err(|e| {
-                        napi::Error::from(LazyImageError::mmap_failed(input_path.clone(), e))
-                    })?
+                    Mmap::map(&file)
+                        .map_err(|e| LazyImageError::mmap_failed(input_path.clone(), e))?
                 };
                 let mmap_arc = Arc::new(mmap);
                 let data = mmap_arc.as_ref();
@@ -469,11 +581,10 @@ impl Task for BatchTask {
                 let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
                     decode_jpeg_mozjpeg(data)?
                 } else {
-                    image::load_from_memory(data).map_err(|e| {
-                        napi::Error::from(LazyImageError::decode_failed(format!(
+                    image::load_from_memory(data)
+                        .map_err(|e| LazyImageError::decode_failed(format!(
                             "decode failed: {e}"
-                        )))
-                    })?
+                        )))?
                 };
 
                 let (w, h) = img.dimensions();
@@ -500,9 +611,9 @@ impl Task for BatchTask {
                     }
                 };
 
-                let filename = Path::new(input_path).file_name().ok_or_else(|| {
-                    napi::Error::from(LazyImageError::internal_panic("invalid filename"))
-                })?;
+                let filename = Path::new(input_path)
+                    .file_name()
+                    .ok_or_else(|| LazyImageError::internal_panic("invalid filename"))?;
 
                 let extension = match format {
                     OutputFormat::Jpeg { .. } => "jpg",
@@ -518,23 +629,18 @@ impl Task for BatchTask {
                 use std::io::Write;
                 use tempfile::NamedTempFile;
 
-                let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
-                    napi::Error::from(LazyImageError::file_write_failed(output_dir.to_string(), e))
-                })?;
+                let mut temp_file =
+                    NamedTempFile::new_in(output_dir).map_err(|e| {
+                        LazyImageError::file_write_failed(output_dir.to_string(), e)
+                    })?;
 
                 let temp_path = temp_file.path().to_path_buf();
                 temp_file.write_all(&encoded).map_err(|e| {
-                    napi::Error::from(LazyImageError::file_write_failed(
-                        temp_path.display().to_string(),
-                        e,
-                    ))
+                    LazyImageError::file_write_failed(temp_path.display().to_string(), e)
                 })?;
 
                 temp_file.as_file_mut().sync_all().map_err(|e| {
-                    napi::Error::from(LazyImageError::file_write_failed(
-                        temp_path.display().to_string(),
-                        e,
-                    ))
+                    LazyImageError::file_write_failed(temp_path.display().to_string(), e)
                 })?;
 
                 // Atomic rename
@@ -543,10 +649,7 @@ impl Task for BatchTask {
                         std::io::ErrorKind::Other,
                         format!("failed to persist file: {}", e),
                     );
-                    napi::Error::from(LazyImageError::file_write_failed(
-                        output_path.display().to_string(),
-                        io_error,
-                    ))
+                    LazyImageError::file_write_failed(output_path.display().to_string(), io_error)
                 })?;
 
                 Ok(output_path.to_string_lossy().to_string())
@@ -558,15 +661,19 @@ impl Task for BatchTask {
                     success: true,
                     error: None,
                     output_path: Some(path),
+                    error_code: None,
+                    error_category: None,
                 },
-                Err(e) => {
-                    // Preserve error information with context
-                    let error_msg = format!("{}: {}", input_path, e);
+                Err(err) => {
+                    let category = err.category();
+                    let error_msg = format!("{}: {}", input_path, err);
                     BatchResult {
                         source: input_path.clone(),
                         success: false,
                         error: Some(error_msg),
                         output_path: None,
+                        error_code: Some(category.code().to_string()),
+                        error_category: Some(category),
                     }
                 }
             }
@@ -576,10 +683,12 @@ impl Task for BatchTask {
         // concurrency = 0 means "use default" (auto-detected via CPU and memory)
         // concurrency = 1..MAX_CONCURRENCY means "use specified number of concurrent operations"
         if self.concurrency > pool::MAX_CONCURRENCY as u32 {
-            return Err(napi::Error::from(LazyImageError::internal_panic(format!(
+            let lazy_err = LazyImageError::internal_panic(format!(
                 "invalid concurrency value: {} (must be 0 or 1-{})",
                 self.concurrency, pool::MAX_CONCURRENCY
-            ))));
+            ));
+            self.last_error = Some(lazy_err.clone());
+            return Err(napi::Error::from(lazy_err));
         }
 
         // Determine effective concurrency
@@ -618,5 +727,16 @@ impl Task for BatchTask {
 
     fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
         Ok(output)
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        // Use stored error if available, otherwise try to extract from napi::Error
+        let lazy_err = self.last_error.take().unwrap_or_else(|| {
+            // Fallback: create a generic error from the napi::Error message
+            // This should not happen if all error paths properly preserve LazyImageError
+            LazyImageError::generic(err.to_string())
+        });
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
     }
 }

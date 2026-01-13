@@ -17,6 +17,8 @@ fuzz_target!(|data: &[u8]| {
         format: OutputFormat::Png,
         icc_profile: None,
         keep_metadata: false,
+        #[cfg(feature = "napi")]
+        last_error: None,
     };
 
     let _ = task.decode();

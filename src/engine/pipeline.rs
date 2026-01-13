@@ -12,24 +12,13 @@ use std::borrow::Cow;
 #[cfg(test)]
 use image::GenericImageView;
 
-// Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
-#[cfg(feature = "napi")]
-use napi::bindgen_prelude::*;
-#[cfg(feature = "napi")]
-type PipelineResult<T> = Result<T>;
-#[cfg(not(feature = "napi"))]
+// Type alias for Result - always use LazyImageError to preserve error taxonomy
+// This ensures that pipeline errors are properly classified (CodecError, UserError, etc.)
+// rather than being converted to generic InternalBug errors.
 type PipelineResult<T> = std::result::Result<T, LazyImageError>;
 
-// Helper function to convert LazyImageError to the appropriate error type
-#[cfg(feature = "napi")]
-fn to_pipeline_error(err: LazyImageError) -> napi::Error {
-    napi::Error::from(err)
-}
-
-#[cfg(not(feature = "napi"))]
-fn to_pipeline_error(err: LazyImageError) -> LazyImageError {
-    err
-}
+// Note: to_pipeline_error is no longer needed
+// because PipelineResult now always returns LazyImageError directly
 
 #[derive(Debug)]
 pub struct ResizeError {
@@ -242,7 +231,7 @@ pub fn apply_ops<'a>(
                 // user input errors (e.g., invalid dimensions) and internal failures
                 // Convert directly to LazyImageError to preserve error type information
                 fast_resize_owned(src_image, w, h)
-                    .map_err(|err| to_pipeline_error(err.into_lazy_image_error()))?
+                    .map_err(|err| err.into_lazy_image_error())?
             }
 
             Operation::Crop {
@@ -255,9 +244,9 @@ pub fn apply_ops<'a>(
                 let img_w = img.width();
                 let img_h = img.height();
                 if *x + *width > img_w || *y + *height > img_h {
-                    return Err(to_pipeline_error(LazyImageError::invalid_crop_bounds(
+                    return Err(LazyImageError::invalid_crop_bounds(
                         *x, *y, *width, *height, img_w, img_h,
-                    )));
+                    ));
                 }
                 img.crop_imm(*x, *y, *width, *height)
             }
@@ -272,9 +261,9 @@ pub fn apply_ops<'a>(
                     -270 => img.rotate90(),
                     0 => img, // No-op for 0 degrees
                     _ => {
-                        return Err(to_pipeline_error(LazyImageError::invalid_rotation_angle(
+                        return Err(LazyImageError::invalid_rotation_angle(
                             *degrees,
-                        )));
+                        ));
                     }
                 }
             }

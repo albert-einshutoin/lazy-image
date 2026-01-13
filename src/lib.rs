@@ -113,8 +113,13 @@ impl From<InspectMetadata> for ImageMetadata {
 /// Use this to check dimensions before processing, or to reject
 /// images that are too large without wasting CPU on decoding.
 #[napi]
-pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
-    let metadata = inspect_header_from_bytes(buffer.as_ref()).map_err(napi::Error::from)?;
+pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
+    let metadata = match inspect_header_from_bytes(buffer.as_ref()) {
+        Ok(metadata) => metadata,
+        Err(err) => {
+            return Err(crate::error::napi_error_with_code(&env, err.clone())?);
+        }
+    };
     Ok(metadata.into())
 }
 
@@ -123,8 +128,13 @@ pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
 /// **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
 /// This is the recommended way for server-side metadata inspection.
 #[napi(js_name = "inspectFile")]
-pub fn inspect_file(path: String) -> Result<ImageMetadata> {
-    let metadata = inspect_header_from_path(&path).map_err(napi::Error::from)?;
+pub fn inspect_file(env: Env, path: String) -> Result<ImageMetadata> {
+    let metadata = match inspect_header_from_path(&path) {
+        Ok(metadata) => metadata,
+        Err(err) => {
+            return Err(crate::error::napi_error_with_code(&env, err.clone())?);
+        }
+    };
     Ok(metadata.into())
 }
 

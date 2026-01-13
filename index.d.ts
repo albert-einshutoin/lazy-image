@@ -23,6 +23,27 @@ export interface BatchResult {
   success: boolean
   error?: string
   outputPath?: string
+  errorCode?: string
+  errorCategory?: ErrorCategory
+}
+/**
+ * Error taxonomy for proper error handling in JavaScript
+ *
+ * This 4-tier taxonomy enables proper error handling:
+ * - UserError: Invalid input, recoverable by user
+ * - CodecError: Format/encoding issues
+ * - ResourceLimit: Memory/time/dimension limits
+ * - InternalBug: Library bugs (should not happen)
+ */
+export enum ErrorCategory {
+  /** Invalid input, recoverable by user */
+  UserError = 0,
+  /** Format/encoding issues */
+  CodecError = 1,
+  /** Memory/time/dimension limits */
+  ResourceLimit = 2,
+  /** Library bugs (should not happen) */
+  InternalBug = 3
 }
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
@@ -47,6 +68,11 @@ export declare function inspect(buffer: Buffer): ImageMetadata
  * This is the recommended way for server-side metadata inspection.
  */
 export declare function inspectFile(path: string): ImageMetadata
+/**
+ * Extract ErrorCategory from an error object created by lazy-image.
+ * Returns null when the error is not from lazy-image.
+ */
+export declare function getErrorCategory(error: unknown): ErrorCategory | null
 /** Get library version */
 export declare function version(): string
 /** Get supported input formats */
@@ -61,7 +87,14 @@ export interface ProcessingMetrics {
   processTime: number
   /** Time taken to encode the image (milliseconds) */
   encodeTime: number
-  /** Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility) */
+  /**
+   * Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
+   *
+   * **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
+   * the cumulative maximum RSS of the entire process, not just this operation.
+   * This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
+   * consider using process-specific memory profiling tools.
+   */
   memoryPeak: number
   /** Total CPU time (user + system) in seconds */
   cpuTime: number

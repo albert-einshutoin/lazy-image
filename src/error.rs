@@ -2,11 +2,39 @@
 //
 // Unified error handling for lazy-image
 // Uses thiserror for simple, type-safe error handling
+//
+// Error Taxonomy:
+// - UserError: Invalid input, recoverable
+// - CodecError: Format/encoding issues
+// - ResourceLimit: Memory/time/dimension limits
+// - InternalBug: Library bugs (should not happen)
 
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 use std::borrow::Cow;
 use thiserror::Error;
+
+/// Error taxonomy for proper error handling in JavaScript
+///
+/// This 4-tier taxonomy enables proper error handling:
+/// - UserError: Invalid input, recoverable by user
+/// - CodecError: Format/encoding issues
+/// - ResourceLimit: Memory/time/dimension limits
+/// - InternalBug: Library bugs (should not happen)
+#[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi", napi)]
+#[cfg_attr(not(feature = "napi"), derive(Clone, Copy))]
+#[repr(u32)]
+pub enum ErrorCategory {
+    /// Invalid input, recoverable by user
+    UserError,
+    /// Format/encoding issues
+    CodecError,
+    /// Memory/time/dimension limits
+    ResourceLimit,
+    /// Library bugs (should not happen)
+    InternalBug,
+}
 
 /// lazy-image error types
 ///
@@ -112,6 +140,54 @@ pub enum LazyImageError {
     // Generic Error
     #[error("{message}")]
     Generic { message: Cow<'static, str> },
+}
+
+impl Clone for LazyImageError {
+    fn clone(&self) -> Self {
+        match self {
+            Self::FileNotFound { path } => Self::FileNotFound { path: path.clone() },
+            Self::FileReadFailed { path, source } => Self::FileReadFailed {
+                path: path.clone(),
+                source: std::io::Error::new(source.kind(), source.to_string()),
+            },
+            Self::MmapFailed { path, source } => Self::MmapFailed {
+                path: path.clone(),
+                source: std::io::Error::new(source.kind(), source.to_string()),
+            },
+            Self::FileWriteFailed { path, source } => Self::FileWriteFailed {
+                path: path.clone(),
+                source: std::io::Error::new(source.kind(), source.to_string()),
+            },
+            Self::UnsupportedFormat { format } => Self::UnsupportedFormat { format: format.clone() },
+            Self::DecodeFailed { message } => Self::DecodeFailed { message: message.clone() },
+            Self::CorruptedImage => Self::CorruptedImage,
+            Self::DimensionExceedsLimit { dimension, max } => Self::DimensionExceedsLimit { dimension: *dimension, max: *max },
+            Self::PixelCountExceedsLimit { pixels, max } => Self::PixelCountExceedsLimit { pixels: *pixels, max: *max },
+            Self::InvalidCropBounds { x, y, width, height, img_width, img_height } => Self::InvalidCropBounds {
+                x: *x,
+                y: *y,
+                width: *width,
+                height: *height,
+                img_width: *img_width,
+                img_height: *img_height,
+            },
+            Self::InvalidRotationAngle { degrees } => Self::InvalidRotationAngle { degrees: *degrees },
+            Self::InvalidResizeDimensions { width, height } => Self::InvalidResizeDimensions { width: *width, height: *height },
+            Self::ResizeFailed { source_width, source_height, target_width, target_height, message } => Self::ResizeFailed {
+                source_width: *source_width,
+                source_height: *source_height,
+                target_width: *target_width,
+                target_height: *target_height,
+                message: message.clone(),
+            },
+            Self::UnsupportedColorSpace { color_space } => Self::UnsupportedColorSpace { color_space: color_space.clone() },
+            Self::EncodeFailed { format, message } => Self::EncodeFailed { format: format.clone(), message: message.clone() },
+            Self::InvalidPreset { name } => Self::InvalidPreset { name: name.clone() },
+            Self::SourceConsumed => Self::SourceConsumed,
+            Self::InternalPanic { message } => Self::InternalPanic { message: message.clone() },
+            Self::Generic { message } => Self::Generic { message: message.clone() },
+        }
+    }
 }
 
 // Constructor Helpers
@@ -246,43 +322,160 @@ impl LazyImageError {
     }
 
     /// Check if this error is recoverable (user can fix it)
+    /// 
+    /// This method is consistent with category():
+    /// - UserError errors are always recoverable
+    /// - ResourceLimit errors are recoverable (user can free resources, resize image, etc.)
+    /// - CodecError and InternalBug errors are not recoverable
     pub fn is_recoverable(&self) -> bool {
-        matches!(
-            self,
+        match self.category() {
+            ErrorCategory::UserError | ErrorCategory::ResourceLimit => true,
+            ErrorCategory::CodecError | ErrorCategory::InternalBug => false,
+        }
+    }
+
+    /// Get the error category for this error
+    pub fn category(&self) -> ErrorCategory {
+        match self {
+            // UserError: Invalid input, recoverable
             Self::FileNotFound { .. }
-                | Self::FileReadFailed { .. }
-                | Self::FileWriteFailed { .. }
-                | Self::DimensionExceedsLimit { .. }
-                | Self::PixelCountExceedsLimit { .. }
-                | Self::InvalidCropBounds { .. }
-                | Self::InvalidRotationAngle { .. }
-                | Self::InvalidResizeDimensions { .. }
-                | Self::InvalidPreset { .. }
-                | Self::SourceConsumed
-        )
+            | Self::InvalidCropBounds { .. }
+            | Self::InvalidRotationAngle { .. }
+            | Self::InvalidResizeDimensions { .. }
+            | Self::InvalidPreset { .. }
+            | Self::SourceConsumed => ErrorCategory::UserError,
+
+            // CodecError: Format/encoding issues
+            Self::UnsupportedFormat { .. }
+            | Self::DecodeFailed { .. }
+            | Self::CorruptedImage
+            | Self::EncodeFailed { .. }
+            | Self::UnsupportedColorSpace { .. }
+            // Note: ResizeFailed is classified as CodecError because it represents
+            // a processing failure during image transformation, which is similar to
+            // encoding/decoding issues. In a future version, a ProcessingError category
+            // might be more appropriate.
+            | Self::ResizeFailed { .. } => ErrorCategory::CodecError,
+
+            // ResourceLimit: Memory/time/dimension limits
+            // Note: FileReadFailed/MmapFailed/FileWriteFailed are classified as ResourceLimit
+            // because they often indicate resource constraints (disk full, memory pressure,
+            // file system limits). However, they can also represent I/O errors (permissions,
+            // file locks, etc.). These errors are recoverable by the user (fixing permissions,
+            // freeing disk space, etc.), which is consistent with is_recoverable() returning true.
+            Self::DimensionExceedsLimit { .. }
+            | Self::PixelCountExceedsLimit { .. }
+            | Self::FileReadFailed { .. }
+            | Self::MmapFailed { .. }
+            | Self::FileWriteFailed { .. } => ErrorCategory::ResourceLimit,
+
+            // InternalBug: Library bugs (should not happen)
+            Self::InternalPanic { .. }
+            | Self::Generic { .. } => ErrorCategory::InternalBug,
+        }
     }
 }
 
-// Conversion to NAPI Error
+/// Helper function to create NAPI error with category code
+/// This allows JavaScript code to access error.code (e.g., "LAZY_IMAGE_USER_ERROR")
+/// 
+/// This function should be used when Env is available to add custom properties.
+/// For code that doesn't have Env, use the From<LazyImageError> for napi::Error implementation.
+#[cfg(feature = "napi")]
+pub fn create_napi_error_with_code(
+    env: &Env,
+    err: LazyImageError,
+) -> napi::Result<napi::JsObject> {
+    let category = err.category();
+
+    // Create error object with original message (no prefix to avoid breaking changes)
+    // Use create_error with message string directly to avoid Status prefix in message
+    let err_msg = err.to_string();
+    // Create error with clean message (Status will be added by napi::Error::new, but we'll override it)
+    let mut error_obj = env.create_error(napi::Error::new(
+        match category {
+            ErrorCategory::UserError => Status::InvalidArg,
+            ErrorCategory::CodecError => Status::InvalidArg,
+            ErrorCategory::ResourceLimit => Status::GenericFailure,
+            ErrorCategory::InternalBug => Status::GenericFailure,
+        },
+        err_msg.clone(),
+    ))?;
+    
+    // Override message property to ensure clean message (without Status prefix)
+    // napi::Error::new() may include Status in message, so we set message property directly
+    error_obj.set_named_property("message", env.create_string(&err_msg)?)?;
+    
+    // Add error.code property (standard pattern, like sharp uses)
+    let code_value = env.create_string(category.code())?;
+    error_obj.set_named_property("code", code_value)?;
+    
+    // Add error.category property (ErrorCategory enum value as number)
+    // Use #[repr(u32)] to get the enum value directly
+    let category_value = env.create_uint32(category as u32)?;
+    error_obj.set_named_property("category", category_value)?;
+    
+    Ok(error_obj)
+}
+
+
+/// Helper function to convert LazyImageError to napi::Error with code/category
+/// The returned napi::Error references a JsError object which already includes
+/// the structured properties, so callers can simply `return Err(...)`.
+#[cfg(feature = "napi")]
+pub fn napi_error_with_code(
+    env: &Env,
+    err: LazyImageError,
+) -> napi::Result<napi::Error> {
+    let error_obj = create_napi_error_with_code(env, err)?;
+    let js_unknown = error_obj.into_unknown();
+    Ok(napi::Error::from(js_unknown))
+}
+
+// Conversion to NAPI Error (fallback - should not be used when Env is available)
+// Note: This creates a basic error without error.code/category properties.
+// Use create_napi_error_with_code() or napi_error_with_code() when Env is available for proper error handling.
 #[cfg(feature = "napi")]
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
-        let status = match &err {
-            // Input/Argument Errors -> InvalidArg
-            LazyImageError::UnsupportedFormat { .. }
-            | LazyImageError::DimensionExceedsLimit { .. }
-            | LazyImageError::PixelCountExceedsLimit { .. }
-            | LazyImageError::InvalidCropBounds { .. }
-            | LazyImageError::InvalidRotationAngle { .. }
-            | LazyImageError::InvalidResizeDimensions { .. }
-            | LazyImageError::UnsupportedColorSpace { .. }
-            | LazyImageError::InvalidPreset { .. } => Status::InvalidArg,
-
-            // All other errors -> GenericFailure
-            _ => Status::GenericFailure,
+        let category = err.category();
+        let status = match category {
+            ErrorCategory::UserError => Status::InvalidArg,
+            ErrorCategory::CodecError => Status::InvalidArg,
+            ErrorCategory::ResourceLimit => Status::GenericFailure,
+            ErrorCategory::InternalBug => Status::GenericFailure,
         };
 
+        // Create error with original message only (no prefix)
         napi::Error::new(status, err.to_string())
+    }
+}
+
+// Note: From<napi::Error> for LazyImageError is no longer needed
+// because decoder.rs and pipeline.rs now return LazyImageError directly
+// instead of napi::Error. This preserves error taxonomy (CodecError, ResourceLimit, etc.)
+// instead of converting everything to generic InternalBug errors.
+
+#[cfg(feature = "napi")]
+impl ErrorCategory {
+    /// Get string representation of error category
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ErrorCategory::UserError => "UserError",
+            ErrorCategory::CodecError => "CodecError",
+            ErrorCategory::ResourceLimit => "ResourceLimit",
+            ErrorCategory::InternalBug => "InternalBug",
+        }
+    }
+
+    /// Get the LAZY_IMAGE_* error code string for this category
+    pub fn code(&self) -> &'static str {
+        match self {
+            ErrorCategory::UserError => "LAZY_IMAGE_USER_ERROR",
+            ErrorCategory::CodecError => "LAZY_IMAGE_CODEC_ERROR",
+            ErrorCategory::ResourceLimit => "LAZY_IMAGE_RESOURCE_LIMIT",
+            ErrorCategory::InternalBug => "LAZY_IMAGE_INTERNAL_BUG",
+        }
     }
 }
 
@@ -333,5 +526,118 @@ mod tests {
         let _ = LazyImageError::source_consumed();
         let _ = LazyImageError::internal_panic("test");
         let _ = LazyImageError::generic("test");
+    }
+
+    #[test]
+    fn test_error_category_user_error() {
+        assert_eq!(
+            LazyImageError::file_not_found("test.jpg").category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_crop_bounds(0, 0, 100, 100, 50, 50).category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_rotation_angle(45).category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_resize_dimensions(None, None).category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_preset("unknown").category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::source_consumed().category(),
+            ErrorCategory::UserError
+        );
+    }
+
+    #[test]
+    fn test_error_category_codec_error() {
+        assert_eq!(
+            LazyImageError::unsupported_format("gif").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::decode_failed("test").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::corrupted_image().category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::encode_failed("jpeg", "test").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::unsupported_color_space("CMYK").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::resize_failed((100, 100), (50, 50), "test").category(),
+            ErrorCategory::CodecError
+        );
+    }
+
+    #[test]
+    fn test_error_category_resource_limit() {
+        assert_eq!(
+            LazyImageError::dimension_exceeds_limit(10000, 8000).category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::pixel_count_exceeds_limit(1000000000, 100000000).category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::file_read_failed(
+                "test.jpg",
+                std::io::Error::from(std::io::ErrorKind::NotFound)
+            )
+            .category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::mmap_failed(
+                "test.jpg",
+                std::io::Error::from(std::io::ErrorKind::NotFound)
+            )
+            .category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::file_write_failed(
+                "test.jpg",
+                std::io::Error::from(std::io::ErrorKind::PermissionDenied)
+            )
+            .category(),
+            ErrorCategory::ResourceLimit
+        );
+    }
+
+    #[test]
+    fn test_error_category_internal_bug() {
+        assert_eq!(
+            LazyImageError::internal_panic("test").category(),
+            ErrorCategory::InternalBug
+        );
+        assert_eq!(
+            LazyImageError::generic("test").category(),
+            ErrorCategory::InternalBug
+        );
+    }
+
+    #[cfg(feature = "napi")]
+    #[test]
+    fn test_error_category_as_str() {
+        assert_eq!(ErrorCategory::UserError.as_str(), "UserError");
+        assert_eq!(ErrorCategory::CodecError.as_str(), "CodecError");
+        assert_eq!(ErrorCategory::ResourceLimit.as_str(), "ResourceLimit");
+        assert_eq!(ErrorCategory::InternalBug.as_str(), "InternalBug");
     }
 }
