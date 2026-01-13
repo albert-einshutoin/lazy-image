@@ -347,13 +347,15 @@ async function runTests() {
     // EDGE CASES - Metrics
     // ========================================================================
     
-    await asyncTest('toBufferWithMetrics returns valid metrics', async () => {
+    await asyncTest('toBufferWithMetrics returns valid metrics with all fields', async () => {
         const result = await ImageEngine.from(buffer)
             .resize(100)
             .toBufferWithMetrics('jpeg', 80);
         
         assert(result.data, 'should have data');
         assert(result.metrics, 'should have metrics');
+        
+        // Original metrics
         assert(typeof result.metrics.decodeTime === 'number', 'decodeTime should be number');
         assert(typeof result.metrics.processTime === 'number', 'processTime should be number');
         assert(typeof result.metrics.encodeTime === 'number', 'encodeTime should be number');
@@ -362,6 +364,18 @@ async function runTests() {
         assert(result.metrics.processTime >= 0, 'processTime should be non-negative');
         assert(result.metrics.encodeTime >= 0, 'encodeTime should be non-negative');
         assert(result.metrics.memoryPeak > 0, 'memoryPeak should be positive');
+        
+        // New telemetry metrics
+        assert(typeof result.metrics.cpuTime === 'number', 'cpuTime should be number');
+        assert(typeof result.metrics.processingTime === 'number', 'processingTime should be number');
+        assert(typeof result.metrics.inputSize === 'number', 'inputSize should be number');
+        assert(typeof result.metrics.outputSize === 'number', 'outputSize should be number');
+        assert(typeof result.metrics.compressionRatio === 'number', 'compressionRatio should be number');
+        assert(result.metrics.cpuTime >= 0, 'cpuTime should be non-negative');
+        assert(result.metrics.processingTime >= 0, 'processingTime should be non-negative');
+        assert(result.metrics.inputSize > 0, 'inputSize should be positive');
+        assert(result.metrics.outputSize > 0, 'outputSize should be positive');
+        assert(result.metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
     });
     
     // ========================================================================

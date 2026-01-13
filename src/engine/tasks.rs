@@ -21,6 +21,58 @@ use rayon::prelude::*;
 use std::borrow::Cow;
 use std::sync::Arc;
 
+/// Resource usage information for telemetry
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+struct ResourceUsage {
+    cpu_time: f64,      // User + system CPU time in seconds
+    memory_rss: u64,    // Resident set size in bytes
+}
+
+/// Get current process resource usage (CPU time and RSS memory)
+/// Returns None on unsupported platforms or if getrusage fails
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+fn get_resource_usage() -> Option<ResourceUsage> {
+    use libc::{getrusage, rusage, RUSAGE_SELF};
+    use std::mem;
+
+    unsafe {
+        let mut usage: rusage = mem::zeroed();
+        if getrusage(RUSAGE_SELF, &mut usage) == 0 {
+            // CPU time = user time + system time
+            let cpu_time = usage.ru_utime.tv_sec as f64
+                + usage.ru_utime.tv_usec as f64 / 1_000_000.0
+                + usage.ru_stime.tv_sec as f64
+                + usage.ru_stime.tv_usec as f64 / 1_000_000.0;
+            
+            // RSS memory (resident set size) in bytes
+            // On Linux, ru_maxrss is in KB; on macOS/FreeBSD, it's in bytes
+            #[cfg(target_os = "linux")]
+            let memory_rss = usage.ru_maxrss as u64 * 1024;
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            let memory_rss = usage.ru_maxrss as u64;
+            
+            Some(ResourceUsage {
+                cpu_time,
+                memory_rss,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+/// Get current process resource usage (stub for unsupported platforms)
+#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
+fn get_resource_usage() -> Option<ResourceUsage> {
+    None
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
+struct ResourceUsage {
+    cpu_time: f64,
+    memory_rss: u64,
+}
+
 // Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
 #[cfg(feature = "napi")]
 type EngineResult<T> = Result<T>;
@@ -117,6 +169,16 @@ impl EncodeTask {
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
     ) -> EngineResult<Vec<u8>> {
+        // Get initial resource usage for CPU time and memory tracking
+        let initial_usage = get_resource_usage();
+        let start_total = std::time::Instant::now();
+        
+        // Get input size from source
+        let input_size = self.source.as_ref()
+            .and_then(|s| s.as_bytes())
+            .map(|b| b.len() as u64)
+            .unwrap_or(0);
+
         // 1. Decode
         let start_decode = std::time::Instant::now();
         let img = self.decode()?;
@@ -147,12 +209,40 @@ impl EncodeTask {
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
 
+        // Get final resource usage
+        let final_usage = get_resource_usage();
+        let total_elapsed = start_total.elapsed();
+
         if let Some(m) = metrics {
             m.encode_time = start_encode.elapsed().as_secs_f64() * 1000.0;
-            // Estimate memory (rough) - prevent overflow
-            let (w, h) = processed.dimensions();
-            m.memory_peak =
-                (w as u64 * h as u64 * 4 + result.len() as u64).min(u32::MAX as u64) as u32;
+            
+            // Calculate CPU time (difference between final and initial)
+            if let (Some(initial), Some(final_usage)) = (initial_usage, final_usage) {
+                m.cpu_time = (final_usage.cpu_time - initial.cpu_time).max(0.0);
+                // Use the maximum RSS seen during processing
+                // Note: ru_maxrss is cumulative, so we use the final value
+                // get_resource_usage() already converts to bytes
+                m.memory_peak = (final_usage.memory_rss.min(u32::MAX as u64)) as u32;
+            } else {
+                // Fallback: estimate memory (rough) - prevent overflow
+                let (w, h) = processed.dimensions();
+                m.memory_peak =
+                    (w as u64 * h as u64 * 4 + result.len() as u64).min(u32::MAX as u64) as u32;
+            }
+            
+            // Total processing time (wall clock)
+            m.processing_time = total_elapsed.as_secs_f64();
+            
+            // Input and output sizes (clamp to u32::MAX for NAPI compatibility)
+            m.input_size = input_size.min(u32::MAX as u64) as u32;
+            m.output_size = (result.len() as u64).min(u32::MAX as u64) as u32;
+            
+            // Compression ratio
+            if m.input_size > 0 {
+                m.compression_ratio = m.output_size as f64 / m.input_size as f64;
+            } else {
+                m.compression_ratio = 0.0;
+            }
         }
 
         Ok(result)

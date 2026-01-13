@@ -61,8 +61,18 @@ export interface ProcessingMetrics {
   processTime: number
   /** Time taken to encode the image (milliseconds) */
   encodeTime: number
-  /** Peak memory usage during processing (bytes, as u32 for NAPI compatibility) */
+  /** Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility) */
   memoryPeak: number
+  /** Total CPU time (user + system) in seconds */
+  cpuTime: number
+  /** Total processing time (wall clock) in seconds */
+  processingTime: number
+  /** Input file size in bytes (as u32 for NAPI compatibility, max 4GB) */
+  inputSize: number
+  /** Output file size in bytes (as u32 for NAPI compatibility, max 4GB) */
+  outputSize: number
+  /** Compression ratio (output_size / input_size) */
+  compressionRatio: number
 }
 export interface OutputWithMetrics {
   data: Buffer
@@ -182,7 +192,12 @@ export declare class ImageEngine {
    * - output_dir: Directory to write processed images
    * - format: Output format ("jpeg", "png", "webp", "avif")
    * - quality: Optional quality (1-100, uses format-specific default if None)
-   * - concurrency: Optional number of parallel workers (default: CPU core count)
+   * - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
+   * - concurrency: Optional number of parallel workers:
+   *   - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+   *     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+   *     Ideal for serverless/containerized environments with memory constraints.
+   *   - 1-1024: Manual override - use specified number of concurrent operations
    */
-  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }

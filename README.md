@@ -361,17 +361,22 @@ await engine.toBuffer('jpeg', 90); // Override default (85 → 90)
 ### Performance Metrics (v0.6.0+)
 
 ```javascript
-// Get detailed timing information
+// Get detailed timing and resource usage information
 const { data, metrics } = await ImageEngine.from(buffer)
   .resize(800)
   .toBufferWithMetrics('jpeg', 80);
 
 console.log(metrics);
 // {
-//   decodeTime: 12.5,   // ms
-//   processTime: 8.3,   // ms
-//   encodeTime: 45.2,   // ms
-//   memoryPeak: 2621440 // bytes
+//   decodeTime: 12.5,        // ms - time to decode image
+//   processTime: 8.3,         // ms - time to apply operations (resize, etc.)
+//   encodeTime: 45.2,        // ms - time to encode output
+//   memoryPeak: 2621440,     // bytes - peak RSS memory usage
+//   cpuTime: 0.065,          // seconds - total CPU time (user + system)
+//   processingTime: 0.066,   // seconds - wall clock time
+//   inputSize: 1048576,      // bytes - input file size
+//   outputSize: 245760,      // bytes - output file size
+//   compressionRatio: 0.234  // outputSize / inputSize
 // }
 ```
 
@@ -502,10 +507,15 @@ interface PresetResult {
 }
 
 interface ProcessingMetrics {
-  decodeTime: number;   // milliseconds
-  processTime: number;  // milliseconds
-  encodeTime: number;   // milliseconds
-  memoryPeak: number;   // bytes
+  decodeTime: number;        // milliseconds
+  processTime: number;       // milliseconds
+  encodeTime: number;        // milliseconds
+  memoryPeak: number;        // bytes (RSS)
+  cpuTime: number;           // seconds (user + system CPU time)
+  processingTime: number;    // seconds (wall clock time)
+  inputSize: number;         // bytes
+  outputSize: number;        // bytes
+  compressionRatio: number;  // outputSize / inputSize
 }
 
 interface OutputWithMetrics {
