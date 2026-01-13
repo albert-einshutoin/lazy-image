@@ -9,8 +9,9 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["napi"]
+default = ["napi", "jemalloc"]
 napi = ["dep:napi", "dep:napi-derive"]
+jemalloc = ["dep:tikv-jemallocator"]
 fuzzing = []
 stress = []
 
@@ -60,6 +61,9 @@ memmap2 = "0.9"
 
 # Error handling
 thiserror = "1.0"
+
+# Memory allocator optimization - jemalloc for better performance
+tikv-jemallocator = { version = "0.5", optional = true }
 
 [dev-dependencies]
 criterion = "0.5"

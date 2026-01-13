@@ -13,6 +13,12 @@
 #[macro_use]
 extern crate napi_derive;
 
+// Memory allocator optimization - jemalloc for better performance
+// Expected impact: 10-15% overall performance improvement
+#[cfg(feature = "jemalloc")]
+#[global_allocator]
+static ALLOC: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
 pub mod codecs;
 pub mod engine;
 pub mod error;
