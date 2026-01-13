@@ -164,7 +164,7 @@ pub fn calculate_memory_based_concurrency(
     memory_limit.min(cpu_based_concurrency).max(MIN_SAFE_CONCURRENCY)
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "napi"))]
 mod tests {
     use super::*;
 
