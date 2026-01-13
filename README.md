@@ -510,7 +510,7 @@ interface ProcessingMetrics {
   decodeTime: number;        // milliseconds
   processTime: number;       // milliseconds
   encodeTime: number;        // milliseconds
-  memoryPeak: number;        // bytes (RSS)
+  memoryPeak: number;        // bytes (RSS) - Note: represents cumulative max RSS of entire process, not just this operation
   cpuTime: number;           // seconds (user + system CPU time)
   processingTime: number;    // seconds (wall clock time)
   inputSize: number;         // bytes

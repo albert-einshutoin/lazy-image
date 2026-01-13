@@ -174,9 +174,9 @@ impl EncodeTask {
         let start_total = std::time::Instant::now();
         
         // Get input size from source
+        // Use len() method which works for both Memory and Mapped sources
         let input_size = self.source.as_ref()
-            .and_then(|s| s.as_bytes())
-            .map(|b| b.len() as u64)
+            .map(|s| s.len() as u64)
             .unwrap_or(0);
 
         // 1. Decode
@@ -220,8 +220,10 @@ impl EncodeTask {
             if let (Some(initial), Some(final_usage)) = (initial_usage, final_usage) {
                 m.cpu_time = (final_usage.cpu_time - initial.cpu_time).max(0.0);
                 // Use the maximum RSS seen during processing
-                // Note: ru_maxrss is cumulative, so we use the final value
-                // get_resource_usage() already converts to bytes
+                // IMPORTANT: ru_maxrss represents the cumulative maximum RSS of the entire process,
+                // not just this operation. This is a limitation of getrusage() API.
+                // For accurate per-operation memory tracking, consider process-specific memory profiling.
+                // get_resource_usage() already converts to bytes (handles Linux KB vs macOS bytes)
                 m.memory_peak = (final_usage.memory_rss.min(u32::MAX as u64)) as u32;
             } else {
                 // Fallback: estimate memory (rough) - prevent overflow

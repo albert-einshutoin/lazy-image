@@ -377,6 +377,25 @@ async function runTests() {
         assert(result.metrics.outputSize > 0, 'outputSize should be positive');
         assert(result.metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
     });
+
+    await asyncTest('toBufferWithMetrics handles input_size=0 gracefully', async () => {
+        // This test verifies that when source is not available (edge case),
+        // input_size=0 and compressionRatio=0 are handled correctly
+        const buffer = fs.readFileSync(TEST_IMAGE);
+        const { metrics } = await ImageEngine.from(buffer)
+            .resize(100)
+            .toBufferWithMetrics('jpeg', 80);
+        
+        // input_size should be positive for valid buffer source
+        assert(metrics.inputSize > 0, 'inputSize should be positive for buffer source');
+        assert(metrics.outputSize > 0, 'outputSize should be positive');
+        assert(metrics.compressionRatio > 0, 'compressionRatio should be positive');
+        
+        // Verify compressionRatio calculation
+        const expectedRatio = metrics.outputSize / metrics.inputSize;
+        assert(Math.abs(metrics.compressionRatio - expectedRatio) < 0.0001, 
+            'compressionRatio should equal outputSize / inputSize');
+    });
     
     // ========================================================================
     // EDGE CASES - ICC Profile

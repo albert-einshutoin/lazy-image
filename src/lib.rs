@@ -172,6 +172,11 @@ pub struct ProcessingMetrics {
     /// Time taken to encode the image (milliseconds)
     pub encode_time: f64,
     /// Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
+    /// 
+    /// **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
+    /// the cumulative maximum RSS of the entire process, not just this operation.
+    /// This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
+    /// consider using process-specific memory profiling tools.
     pub memory_peak: u32,
     /// Total CPU time (user + system) in seconds
     pub cpu_time: f64,
@@ -195,6 +200,11 @@ pub struct ProcessingMetrics {
     /// Time taken to encode the image (milliseconds)
     pub encode_time: f64,
     /// Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
+    /// 
+    /// **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
+    /// the cumulative maximum RSS of the entire process, not just this operation.
+    /// This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
+    /// consider using process-specific memory profiling tools.
     pub memory_peak: u32,
     /// Total CPU time (user + system) in seconds
     pub cpu_time: f64,
