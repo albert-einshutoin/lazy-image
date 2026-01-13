@@ -2,11 +2,38 @@
 //
 // Unified error handling for lazy-image
 // Uses thiserror for simple, type-safe error handling
+//
+// Error Taxonomy:
+// - UserError: Invalid input, recoverable
+// - CodecError: Format/encoding issues
+// - ResourceLimit: Memory/time/dimension limits
+// - InternalBug: Library bugs (should not happen)
 
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 use std::borrow::Cow;
 use thiserror::Error;
+
+/// Error taxonomy for proper error handling in JavaScript
+///
+/// This 4-tier taxonomy enables proper error handling:
+/// - UserError: Invalid input, recoverable by user
+/// - CodecError: Format/encoding issues
+/// - ResourceLimit: Memory/time/dimension limits
+/// - InternalBug: Library bugs (should not happen)
+#[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi", napi)]
+#[cfg_attr(not(feature = "napi"), derive(Clone, Copy))]
+pub enum ErrorCategory {
+    /// Invalid input, recoverable by user
+    UserError,
+    /// Format/encoding issues
+    CodecError,
+    /// Memory/time/dimension limits
+    ResourceLimit,
+    /// Library bugs (should not happen)
+    InternalBug,
+}
 
 /// lazy-image error types
 ///
@@ -261,28 +288,76 @@ impl LazyImageError {
                 | Self::SourceConsumed
         )
     }
+
+    /// Get the error category for this error
+    pub fn category(&self) -> ErrorCategory {
+        match self {
+            // UserError: Invalid input, recoverable
+            Self::FileNotFound { .. }
+            | Self::InvalidCropBounds { .. }
+            | Self::InvalidRotationAngle { .. }
+            | Self::InvalidResizeDimensions { .. }
+            | Self::InvalidPreset { .. }
+            | Self::SourceConsumed => ErrorCategory::UserError,
+
+            // CodecError: Format/encoding issues
+            Self::UnsupportedFormat { .. }
+            | Self::DecodeFailed { .. }
+            | Self::CorruptedImage
+            | Self::EncodeFailed { .. }
+            | Self::UnsupportedColorSpace { .. }
+            | Self::ResizeFailed { .. } => ErrorCategory::CodecError,
+
+            // ResourceLimit: Memory/time/dimension limits
+            Self::DimensionExceedsLimit { .. }
+            | Self::PixelCountExceedsLimit { .. }
+            | Self::FileReadFailed { .. }
+            | Self::MmapFailed { .. }
+            | Self::FileWriteFailed { .. } => ErrorCategory::ResourceLimit,
+
+            // InternalBug: Library bugs (should not happen)
+            Self::InternalPanic { .. }
+            | Self::Generic { .. } => ErrorCategory::InternalBug,
+        }
+    }
 }
 
 // Conversion to NAPI Error
 #[cfg(feature = "napi")]
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
-        let status = match &err {
-            // Input/Argument Errors -> InvalidArg
-            LazyImageError::UnsupportedFormat { .. }
-            | LazyImageError::DimensionExceedsLimit { .. }
-            | LazyImageError::PixelCountExceedsLimit { .. }
-            | LazyImageError::InvalidCropBounds { .. }
-            | LazyImageError::InvalidRotationAngle { .. }
-            | LazyImageError::InvalidResizeDimensions { .. }
-            | LazyImageError::UnsupportedColorSpace { .. }
-            | LazyImageError::InvalidPreset { .. } => Status::InvalidArg,
-
-            // All other errors -> GenericFailure
-            _ => Status::GenericFailure,
+        let category = err.category();
+        let status = match category {
+            ErrorCategory::UserError => Status::InvalidArg,
+            ErrorCategory::CodecError => Status::InvalidArg,
+            ErrorCategory::ResourceLimit => Status::GenericFailure,
+            ErrorCategory::InternalBug => Status::GenericFailure,
         };
 
-        napi::Error::new(status, err.to_string())
+        // Create error with category information
+        // We'll create a custom error object that includes the category
+        // This allows JavaScript code to access error.category
+        let mut napi_err = napi::Error::new(status, err.to_string());
+        
+        // Store category in error reason for backward compatibility
+        // The category will be accessible via error.reason in JS
+        // Format: "CategoryName:Error message"
+        napi_err.reason = format!("{}:{}", category.as_str(), err.to_string());
+        
+        napi_err
+    }
+}
+
+#[cfg(feature = "napi")]
+impl ErrorCategory {
+    /// Get string representation of error category
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ErrorCategory::UserError => "UserError",
+            ErrorCategory::CodecError => "CodecError",
+            ErrorCategory::ResourceLimit => "ResourceLimit",
+            ErrorCategory::InternalBug => "InternalBug",
+        }
     }
 }
 
@@ -333,5 +408,118 @@ mod tests {
         let _ = LazyImageError::source_consumed();
         let _ = LazyImageError::internal_panic("test");
         let _ = LazyImageError::generic("test");
+    }
+
+    #[test]
+    fn test_error_category_user_error() {
+        assert_eq!(
+            LazyImageError::file_not_found("test.jpg").category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_crop_bounds(0, 0, 100, 100, 50, 50).category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_rotation_angle(45).category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_resize_dimensions(None, None).category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_preset("unknown").category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::source_consumed().category(),
+            ErrorCategory::UserError
+        );
+    }
+
+    #[test]
+    fn test_error_category_codec_error() {
+        assert_eq!(
+            LazyImageError::unsupported_format("gif").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::decode_failed("test").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::corrupted_image().category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::encode_failed("jpeg", "test").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::unsupported_color_space("CMYK").category(),
+            ErrorCategory::CodecError
+        );
+        assert_eq!(
+            LazyImageError::resize_failed((100, 100), (50, 50), "test").category(),
+            ErrorCategory::CodecError
+        );
+    }
+
+    #[test]
+    fn test_error_category_resource_limit() {
+        assert_eq!(
+            LazyImageError::dimension_exceeds_limit(10000, 8000).category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::pixel_count_exceeds_limit(1000000000, 100000000).category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::file_read_failed(
+                "test.jpg",
+                std::io::Error::from(std::io::ErrorKind::NotFound)
+            )
+            .category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::mmap_failed(
+                "test.jpg",
+                std::io::Error::from(std::io::ErrorKind::NotFound)
+            )
+            .category(),
+            ErrorCategory::ResourceLimit
+        );
+        assert_eq!(
+            LazyImageError::file_write_failed(
+                "test.jpg",
+                std::io::Error::from(std::io::ErrorKind::PermissionDenied)
+            )
+            .category(),
+            ErrorCategory::ResourceLimit
+        );
+    }
+
+    #[test]
+    fn test_error_category_internal_bug() {
+        assert_eq!(
+            LazyImageError::internal_panic("test").category(),
+            ErrorCategory::InternalBug
+        );
+        assert_eq!(
+            LazyImageError::generic("test").category(),
+            ErrorCategory::InternalBug
+        );
+    }
+
+    #[cfg(feature = "napi")]
+    #[test]
+    fn test_error_category_as_str() {
+        assert_eq!(ErrorCategory::UserError.as_str(), "UserError");
+        assert_eq!(ErrorCategory::CodecError.as_str(), "CodecError");
+        assert_eq!(ErrorCategory::ResourceLimit.as_str(), "ResourceLimit");
+        assert_eq!(ErrorCategory::InternalBug.as_str(), "InternalBug");
     }
 }
