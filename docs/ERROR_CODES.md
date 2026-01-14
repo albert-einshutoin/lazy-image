@@ -13,6 +13,22 @@ lazy-image uses a 4-tier error taxonomy to enable proper error handling in JavaS
 | **ResourceLimit** | Memory/time/dimension limits | Sometimes | Dimension exceeds limit, file I/O errors (disk full, memory pressure) |
 | **InternalBug** | Library bugs (should not happen) | No | Internal panic, unexpected state |
 
+## Panic Policy
+
+All codec entry points (decode/encode/ICC embedding) execute inside a unified
+panic guard. Any panic raised by third-party libraries such as mozjpeg,
+libavif, img-parts, or the `image` crate is caught and converted to
+`LazyImageError::InternalPanic` before it reaches JavaScript. This guarantees:
+
+- The Node.js process never aborts due to codec panics.
+- Callers consistently receive an `InternalBug` category when a dependency
+  misbehaves.
+- The `run_with_panic_policy()` helper enforces this rule, so new codec paths
+  must wrap their core logic with it.
+
+If you encounter an `InternalBug` from lazy-image, please file an issue with
+the panic message so we can reproduce and patch the underlying codec.
+
 ### Using Error Categories in JavaScript
 
 Errors from lazy-image include category information in the `error.code` property (e.g., `"LAZY_IMAGE_USER_ERROR"`) or `error.category` property (ErrorCategory enum value). Use the `getErrorCategory()` helper function to extract the category:

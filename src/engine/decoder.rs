@@ -2,13 +2,13 @@
 //
 // Decoder operations: JPEG (mozjpeg), PNG, WebP, etc.
 
+use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
 #[cfg(test)]
 use image::GenericImageView;
 use image::{DynamicImage, ImageReader, RgbImage};
 use mozjpeg::Decompress;
 use std::io::Cursor;
-use std::panic;
 
 use crate::engine::MAX_DIMENSION;
 
@@ -23,55 +23,53 @@ type DecoderResult<T> = std::result::Result<T, LazyImageError>;
 /// Decode JPEG using mozjpeg (backed by libjpeg-turbo)
 /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
 pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
-    let result = panic::catch_unwind(|| {
-        let decompress = Decompress::new_mem(data)
-            .map_err(|e| format!("mozjpeg decompress init failed: {e:?}"))?;
+    run_with_panic_policy("decode:mozjpeg", || {
+        let decompress = Decompress::new_mem(data).map_err(|e| {
+            LazyImageError::decode_failed(format!("mozjpeg decompress init failed: {e:?}"))
+        })?;
 
         // Get image info
-        let mut decompress = decompress
-            .rgb()
-            .map_err(|e| format!("mozjpeg rgb conversion failed: {e:?}"))?;
+        let mut decompress = decompress.rgb().map_err(|e| {
+            LazyImageError::decode_failed(format!("mozjpeg rgb conversion failed: {e:?}"))
+        })?;
 
         let width = decompress.width();
         let height = decompress.height();
 
         if width > MAX_DIMENSION as usize || height > MAX_DIMENSION as usize {
-            return Err(format!(
+            return Err(LazyImageError::decode_failed(format!(
                 "image dimensions {}x{} exceed max {}",
                 width, height, MAX_DIMENSION
-            ));
+            )));
         }
         let width_u32 = width as u32;
         let height_u32 = height as u32;
-        if let Err(err) = check_dimensions(width_u32, height_u32) {
-            return Err(err.to_string());
-        }
+        check_dimensions(width_u32, height_u32)?;
 
         // Read all scanlines
-        let pixels: Vec<[u8; 3]> = decompress
-            .read_scanlines()
-            .map_err(|e| format!("mozjpeg: failed to read scanlines: {e:?}"))?;
+        let pixels: Vec<[u8; 3]> = decompress.read_scanlines().map_err(|e| {
+            LazyImageError::decode_failed(format!("mozjpeg: failed to read scanlines: {e:?}"))
+        })?;
 
         // Safe conversion from Vec<[u8; 3]> to Vec<u8>
-        // Previously used unsafe Vec::from_raw_parts, now using safe iterator approach.
-        // The compiler can optimize this into an efficient memory operation.
         let flat_pixels: Vec<u8> = pixels.into_iter().flatten().collect();
 
         // Create DynamicImage from raw RGB data
-        // Safe cast: we validated dimensions above
-        let rgb_image = RgbImage::from_raw(width_u32, height_u32, flat_pixels)
-            .ok_or_else(|| "mozjpeg: failed to create image from raw data".to_string())?;
+        let rgb_image =
+            RgbImage::from_raw(width_u32, height_u32, flat_pixels).ok_or_else(|| {
+                LazyImageError::decode_failed("mozjpeg: failed to create image from raw data")
+            })?;
 
-        Ok::<DynamicImage, String>(DynamicImage::ImageRgb8(rgb_image))
-    });
+        Ok(DynamicImage::ImageRgb8(rgb_image))
+    })
+}
 
-    match result {
-        Ok(Ok(img)) => Ok(img),
-        Ok(Err(e)) => Err(LazyImageError::decode_failed(e)),
-        Err(_) => Err(LazyImageError::internal_panic(
-            "mozjpeg panicked during decode",
-        )),
-    }
+/// Decode non-JPEG formats using the image crate under the global panic policy.
+pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
+    run_with_panic_policy("decode:image", || {
+        image::load_from_memory(data)
+            .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))
+    })
 }
 
 /// Check if image dimensions are within safe limits.
