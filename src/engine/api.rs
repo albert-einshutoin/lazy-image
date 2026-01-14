@@ -431,11 +431,11 @@ impl ImageEngine {
     // SYNC UTILITIES
     // =========================================================================
 
-    /// Get image dimensions WITHOUT full decoding.
+    /// Get image dimensions WITHOUT full decoding (internal method, no Env required).
     /// For file paths, reads only the header bytes (extremely fast).
     /// For in-memory buffers, uses header-only parsing.
-    #[napi]
-    pub fn dimensions(&mut self, env: Env) -> Result<Dimensions> {
+    /// This method is public for testing purposes.
+    pub fn dimensions_internal(&mut self) -> std::result::Result<Dimensions, LazyImageError> {
         // If already decoded, use that
         if let Some(ref img) = self.decoded {
             let (w, h) = img.dimensions();
@@ -449,8 +449,7 @@ impl ImageEngine {
         let source = match self.source.as_ref() {
             Some(source) => source,
             None => {
-                let lazy_err = LazyImageError::source_consumed();
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                return Err(LazyImageError::source_consumed());
             }
         };
 
@@ -462,8 +461,7 @@ impl ImageEngine {
                 Ok(reader) => reader,
                 Err(e) => {
                     let err_msg = format!("failed to read image header: {e}");
-                    let lazy_err = LazyImageError::decode_failed(err_msg);
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                    return Err(LazyImageError::decode_failed(err_msg));
                 }
             };
 
@@ -471,15 +469,27 @@ impl ImageEngine {
                 Ok(dims) => dims,
                 Err(e) => {
                     let err_msg = format!("failed to read dimensions: {e}");
-                    let lazy_err = LazyImageError::decode_failed(err_msg);
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                    return Err(LazyImageError::decode_failed(err_msg));
                 }
             };
 
             Ok(Dimensions { width, height })
         } else {
-            let lazy_err = LazyImageError::source_consumed();
-            Err(crate::error::napi_error_with_code(&env, lazy_err)?)
+            Err(LazyImageError::source_consumed())
+        }
+    }
+
+    /// Get image dimensions WITHOUT full decoding.
+    /// For file paths, reads only the header bytes (extremely fast).
+    /// For in-memory buffers, uses header-only parsing.
+    #[napi]
+    pub fn dimensions(&mut self, env: Env) -> Result<Dimensions> {
+        match self.dimensions_internal() {
+            Ok(dims) => Ok(dims),
+            Err(lazy_err) => {
+                let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+                Err(napi_err)
+            }
         }
     }
 
