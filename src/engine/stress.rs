@@ -6,9 +6,11 @@
 use crate::convert_result;
 use crate::engine::common::EngineResult;
 use crate::engine::decoder::decode_jpeg_mozjpeg;
-use crate::engine::encoder::{encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp};
+use crate::engine::encoder::{
+    encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp,
+};
 use crate::engine::pipeline::apply_ops;
-use crate::ops::{Operation, OutputFormat};
+use crate::ops::{Operation, OutputFormat, ResizeFit};
 use std::borrow::Cow;
 
 /// Run a single stress test iteration.
@@ -28,6 +30,7 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         Operation::Resize {
             width: Some(1200),
             height: Some(800),
+            fit: ResizeFit::Inside,
         },
         Operation::Rotate { degrees: 90 },
         Operation::Brightness { value: 12 },
@@ -36,7 +39,10 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
     ];
 
     let formats = [
-        OutputFormat::Jpeg { quality: 82, fast_mode: false },
+        OutputFormat::Jpeg {
+            quality: 82,
+            fast_mode: false,
+        },
         OutputFormat::Png,
         OutputFormat::WebP { quality: 74 },
         OutputFormat::Avif { quality: 60 },
@@ -60,7 +66,9 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         // Encode to the target format
         let _encoded = match format {
             OutputFormat::Jpeg { quality, fast_mode } => {
-                convert_result!(encode_jpeg_with_settings(&processed, quality, None, fast_mode))
+                convert_result!(encode_jpeg_with_settings(
+                    &processed, quality, None, fast_mode
+                ))
             }
             OutputFormat::Png => {
                 convert_result!(encode_png(&processed, None))
