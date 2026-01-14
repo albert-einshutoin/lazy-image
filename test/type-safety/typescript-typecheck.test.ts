@@ -3,7 +3,7 @@
  * 型定義が正しく動作するかを確認
  */
 import * as path from 'path';
-import { ImageEngine, OutputFormat, InputFormat, PresetName, ImageMetadata, PresetResult } from '../../index';
+import { ImageEngine, OutputFormat, InputFormat, PresetName, ImageMetadata, PresetResult, ResizeFit } from '../../index';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
@@ -11,14 +11,21 @@ async function testTypeSafety() {
     // 型安全なOutputFormat使用例
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];
     
-    for (const format of validFormats) {
+    const fitModes: ResizeFit[] = ['inside', 'cover', 'fill'];
+    for (let index = 0; index < validFormats.length; index++) {
+        const format = validFormats[index];
         console.log(`Testing format: ${format}`);
         
         // これらは型安全でコンパイルエラーにならない
         const engine = ImageEngine.fromPath(imagePath);
-        const result = await engine.resize(400, 300).toBuffer(format, 80);
+        const fitMode = fitModes[index % fitModes.length];
+        const result = await engine.resize(400, 300, fitMode).toBuffer(format, 80);
         console.log(`✅ ${format}: ${result.length} bytes`);
     }
+
+    // 明示的なResizeFit型の利用例
+    const coverFit: ResizeFit = 'cover';
+    await ImageEngine.fromPath(imagePath).resize(300, 300, coverFit).toBuffer('jpeg', 75);
 
     // 大文字フォーマットも許容
     await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);

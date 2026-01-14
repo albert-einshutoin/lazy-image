@@ -111,6 +111,14 @@ export interface OutputWithMetrics {
   data: Buffer
   metrics: ProcessingMetrics
 }
+/** Resize fit behavior (same semantics as sharp's fit option) */
+export type ResizeFit = 'inside' | 'cover' | 'fill'
+/** Supported output formats for encoding */
+export type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif'
+/** Supported input formats for inspection helpers */
+export type InputFormat = 'jpeg' | 'jpg' | 'png' | 'webp'
+/** Built-in preset names */
+export type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 /**
  * The main image processing engine.
  *
@@ -138,8 +146,11 @@ export declare class ImageEngine {
   static fromPath(path: string): ImageEngine
   /** Create a clone of this engine (for multi-output scenarios) */
   clone(): ImageEngine
-  /** Resize image. Width or height can be null to maintain aspect ratio. */
-  resize(width?: number | undefined | null, height?: number | undefined | null): ImageEngine
+  /**
+   * Resize image. Width or height can be null to maintain aspect ratio.
+   * When both are provided, use `fit` to control behavior (default: "inside").
+   */
+  resize(width?: number | undefined | null, height?: number | undefined | null, fit?: ResizeFit | undefined | null): ImageEngine
   /** Crop a region from the image. */
   crop(x: number, y: number, width: number, height: number): ImageEngine
   /** Rotate by degrees (90, 180, 270 only) */
