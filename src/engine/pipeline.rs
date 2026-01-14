@@ -4,7 +4,7 @@
 
 use crate::error::LazyImageError;
 use crate::ops::{Operation, ResizeFit};
-use fast_image_resize::{self as fir, MulDiv, PixelType, ResizeOptions};
+use fast_image_resize::{self as fir, ImageBufferError, MulDiv, PixelType, ResizeOptions};
 use image::{DynamicImage, RgbImage, RgbaImage};
 use std::borrow::Cow;
 
@@ -474,73 +474,73 @@ fn fast_resize_owned_impl(
 fn fast_resize_internal_impl(
     src_width: u32,
     src_height: u32,
-    src_pixels: Vec<u8>,
+    mut src_pixels: Vec<u8>,
     pixel_type: PixelType,
     dst_width: u32,
     dst_height: u32,
 ) -> std::result::Result<DynamicImage, String> {
-    // Create source image for fast_image_resize
-    // Handle alignment issues: if from_vec_u8 fails due to alignment,
-    // fallback to creating an aligned buffer and copying the data
-    // Only clone src_pixels if from_vec_u8 fails with an alignment error
-    // This avoids the unconditional clone that doubles memory usage
-    //
-    // Strategy: Keep a reference to src_pixels before moving it into from_vec_u8.
-    // If from_vec_u8 fails with an alignment error, we can clone from the reference.
-    // However, Rust's borrow checker prevents this because we move src_pixels.
-    //
-    // Solution: Store src_pixels in an Option, allowing us to take it conditionally.
-    // But this still requires moving src_pixels, so we can't access it after the error.
-    //
-    // Best approach: Accept that we cannot recover src_pixels after from_vec_u8 fails.
-    // In practice, from_vec_u8 validates alignment before taking ownership, so if it
-    // returns Err, the Vec is likely still valid but we cannot access it due to Rust's
-    // ownership rules. This is a limitation of the API design.
-    //
-    // For true fallback, we would need to either:
-    // 1. Clone src_pixels before calling from_vec_u8 (defeats the purpose - this is what
-    //    the reviewer wants to avoid)
-    // 2. Change fast_image_resize API to take &[u8] instead of Vec<u8> (not possible)
-    // 3. Use a wrapper that preserves the Vec on error (complex, may not work)
-    //
-    // For now, we return a helpful error. Alignment errors are rare with Vec<u8>
-    // from the image crate, as Vec allocates with proper alignment.
-    let mut src_image =
-        match fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type) {
-            Ok(img) => img,
-            Err(e) => {
-                // Check if error is related to buffer alignment/size
-                let error_str = format!("{e:?}");
-                let is_alignment_error = error_str.contains("alignment")
-                    || error_str.contains("Alignment")
-                    || error_str.contains("InvalidBuffer")
-                    || error_str.contains("buffer")
-                    || error_str.contains("InvalidBufferSize")
-                    || error_str.contains("InvalidBufferAlignment");
+    let pixel_count = (src_width as usize)
+        .checked_mul(src_height as usize)
+        .ok_or_else(|| "image dimensions overflow during resize".to_string())?;
+    let required_bytes = pixel_count
+        .checked_mul(pixel_type.size())
+        .ok_or_else(|| "image buffer size overflow during resize".to_string())?;
 
-                if is_alignment_error {
-                    // Fallback: Unfortunately, we cannot recover src_pixels here because
-                    // it was moved into from_vec_u8(). The best we can do is return a
-                    // helpful error message. In practice, this is a rare case.
-                    //
-                    // The reviewer's concern is valid: we cannot implement true fallback
-                    // without cloning upfront, which defeats the purpose. This is a fundamental
-                    // limitation of the fast_image_resize API design.
-                    return Err(format!(
-                        "fir source image alignment error: {e:?}. \
-                    The input buffer does not meet SIMD alignment requirements. \
-                    This is a rare case - consider reporting this as a bug."
-                    ));
-                } else {
-                    return Err(format!("fir source image error: {e:?}"));
-                }
-            }
-        };
+    if src_pixels.len() < required_bytes {
+        return Err(format!(
+            "fir source image invalid buffer size. expected {required_bytes} bytes, got {} bytes",
+            src_pixels.len()
+        ));
+    }
 
-    // Create destination image
+    match fir::images::Image::from_slice_u8(
+        src_width,
+        src_height,
+        src_pixels.as_mut_slice(),
+        pixel_type,
+    ) {
+        Ok(src_image) => resize_with_source_image(src_image, pixel_type, dst_width, dst_height),
+        Err(ImageBufferError::InvalidBufferAlignment) => {
+            let aligned_image = copy_pixels_to_aligned_image(
+                src_width,
+                src_height,
+                pixel_type,
+                &src_pixels,
+                required_bytes,
+            )?;
+            resize_with_source_image(aligned_image, pixel_type, dst_width, dst_height)
+        }
+        Err(other) => Err(format!("fir source image error: {other:?}")),
+    }
+}
+
+fn copy_pixels_to_aligned_image(
+    width: u32,
+    height: u32,
+    pixel_type: PixelType,
+    src_pixels: &[u8],
+    required_bytes: usize,
+) -> std::result::Result<fir::images::Image<'static>, String> {
+    let mut aligned_image = fir::images::Image::new(width, height, pixel_type);
+    let aligned_buffer = aligned_image.buffer_mut();
+    if aligned_buffer.len() != required_bytes {
+        return Err(format!(
+            "fir alignment fallback buffer mismatch. expected {required_bytes} bytes, got {} bytes",
+            aligned_buffer.len()
+        ));
+    }
+    aligned_buffer.copy_from_slice(&src_pixels[..required_bytes]);
+    Ok(aligned_image)
+}
+
+fn resize_with_source_image<'a>(
+    mut src_image: fir::images::Image<'a>,
+    pixel_type: PixelType,
+    dst_width: u32,
+    dst_height: u32,
+) -> std::result::Result<DynamicImage, String> {
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);
 
-    // Premultiplied Alpha conversion for RGBA images to prevent black fringing
     let mul_div = MulDiv::default();
     if pixel_type == PixelType::U8x4 {
         mul_div
@@ -548,24 +548,19 @@ fn fast_resize_internal_impl(
             .map_err(|e| format!("failed to premultiply alpha: {e}"))?;
     }
 
-    // Create resizer with Lanczos3 (high quality)
     let mut resizer = fir::Resizer::new();
-
-    // Resize with Lanczos3 filter
     let options =
         ResizeOptions::new().resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3));
     resizer
         .resize(&src_image, &mut dst_image, &options)
         .map_err(|e| format!("fir resize error: {e:?}"))?;
 
-    // Unpremultiplied Alpha conversion for RGBA images
     if pixel_type == PixelType::U8x4 {
         mul_div
             .divide_alpha_inplace(&mut dst_image)
             .map_err(|e| format!("failed to unpremultiply alpha: {e}"))?;
     }
 
-    // Convert back to DynamicImage
     let dst_pixels = dst_image.into_vec();
     match pixel_type {
         PixelType::U8x3 => {
@@ -1117,5 +1112,39 @@ mod tests {
             let resized = result.unwrap();
             assert_eq!(resized.dimensions(), (50, 50));
         }
+    }
+
+    #[test]
+    fn test_copy_pixels_to_aligned_image_preserves_data() {
+        let width = 2;
+        let height = 2;
+        let mut src_pixels = vec![0u8; (width * height * 4) as usize];
+        for (idx, byte) in src_pixels.iter_mut().enumerate() {
+            *byte = idx as u8;
+        }
+
+        let image = copy_pixels_to_aligned_image(
+            width,
+            height,
+            PixelType::U8x4,
+            &src_pixels,
+            src_pixels.len(),
+        )
+        .expect("should copy into aligned buffer");
+
+        assert_eq!(image.buffer(), src_pixels.as_slice());
+    }
+
+    #[test]
+    fn test_fast_resize_internal_impl_errors_on_short_buffer() {
+        let res = fast_resize_internal_impl(
+            4,
+            4,
+            vec![0u8; 10],
+            PixelType::U8x3,
+            2,
+            2,
+        );
+        assert!(res.is_err());
     }
 }
