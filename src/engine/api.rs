@@ -623,11 +623,8 @@ impl ImageEngine {
 
             crate::engine::decoder::ensure_dimensions_safe(bytes)?;
 
-            let img = image::load_from_memory(bytes).map_err(|e| {
-                napi::Error::from(LazyImageError::decode_failed(format!(
-                    "failed to decode: {e}"
-                )))
-            })?;
+            let img = crate::engine::decoder::decode_with_image_crate(bytes)
+                .map_err(napi::Error::from)?;
 
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();
@@ -673,8 +670,7 @@ impl ImageEngine {
 
             crate::engine::decoder::ensure_dimensions_safe(bytes)?;
 
-            let img = image::load_from_memory(bytes)
-                .map_err(|e| LazyImageError::decode_failed(format!("failed to decode: {e}")))?;
+            let img = crate::engine::decoder::decode_with_image_crate(bytes)?;
 
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();

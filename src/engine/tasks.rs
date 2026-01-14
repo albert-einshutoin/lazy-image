@@ -3,7 +3,9 @@
 // Async task implementations for NAPI.
 // These tasks run in background threads and don't block Node.js main thread.
 
-use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg, ensure_dimensions_safe};
+use crate::engine::decoder::{
+    check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, ensure_dimensions_safe,
+};
 use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
@@ -162,9 +164,8 @@ impl EncodeTask {
             // JPEG detected - use mozjpeg for TURBO speed
             decode_jpeg_mozjpeg(bytes)?
         } else {
-            // PNG, WebP, etc - use image crate
-            image::load_from_memory(bytes)
-                .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))?
+            // PNG, WebP, etc - use image crate (guarded by panic policy)
+            decode_with_image_crate(bytes)?
         };
 
         // Security check: reject decompression bombs
@@ -567,8 +568,7 @@ impl Task for BatchTask {
                 let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
                     decode_jpeg_mozjpeg(data)?
                 } else {
-                    image::load_from_memory(data)
-                        .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))?
+                    decode_with_image_crate(data)?
                 };
 
                 let (w, h) = img.dimensions();

@@ -8,7 +8,9 @@ use crate::convert_result;
 #[cfg(feature = "stress")]
 use crate::engine::common::EngineResult;
 #[cfg(feature = "stress")]
-use crate::engine::decoder::{decode_jpeg_mozjpeg, ensure_dimensions_safe};
+use crate::engine::decoder::{
+    decode_jpeg_mozjpeg, decode_with_image_crate, ensure_dimensions_safe,
+};
 #[cfg(feature = "stress")]
 use crate::engine::encoder::{
     encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp,
@@ -61,10 +63,8 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         // JPEG - use mozjpeg for speed
         convert_result!(decode_jpeg_mozjpeg(data))
     } else {
-        // Other formats - use image crate
-        image::load_from_memory(data).map_err(|e| {
-            crate::error::LazyImageError::decode_failed(format!("decode failed: {e}"))
-        })?
+        // Other formats - use image crate (guarded by panic policy)
+        convert_result!(decode_with_image_crate(data))
     };
 
     // Apply operations and encode in each format
