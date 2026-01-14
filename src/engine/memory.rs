@@ -108,11 +108,7 @@ fn detect_system_memory() -> Option<u64> {
     {
         // macOS: use sysctl
         use std::process::Command;
-        if let Ok(output) = Command::new("sysctl")
-            .arg("-n")
-            .arg("hw.memsize")
-            .output()
-        {
+        if let Ok(output) = Command::new("sysctl").arg("-n").arg("hw.memsize").output() {
             if let Ok(memory_str) = String::from_utf8(output.stdout) {
                 if let Ok(memory) = memory_str.trim().parse::<u64>() {
                     return Some(memory);
@@ -161,7 +157,9 @@ pub fn calculate_memory_based_concurrency(
 
     // Take the minimum of CPU-based and memory-based concurrency
     // This ensures we don't exceed either CPU or memory limits
-    memory_limit.min(cpu_based_concurrency).max(MIN_SAFE_CONCURRENCY)
+    memory_limit
+        .min(cpu_based_concurrency)
+        .max(MIN_SAFE_CONCURRENCY)
 }
 
 #[cfg(all(test, feature = "napi"))]

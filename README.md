@@ -156,7 +156,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 
 ### Feature Limitations
 
-- **Resize behavior**: When both width and height are specified, aspect ratio is not automatically maintained (unlike sharp's `fit: 'inside'`). Use `resize(width, null)` or `resize(null, height)` to maintain aspect ratio.
+- **Resize behavior**: When both width and height are specified, pass an optional third `fit` argument (`'inside' | 'cover' | 'fill'`, default `'inside'`). Use `'cover'` to crop and fill the box or `'fill'` to ignore aspect ratio; omitting it keeps the old inside behavior.
 - **Rotation angles**: Only 90°, 180°, and 270° rotations are supported (no arbitrary angles).
 - **No artistic filters**: Blur, sharpen, and other artistic effects are not supported. Focused on compression, not image editing.
 
@@ -454,7 +454,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 
 | Method | Description |
 |--------|-------------|
-| `.resize(width?, height?)` | Resize image (always maintains aspect ratio; fits inside specified dimensions when both are given) |
+| `.resize(width?, height?, fit?)` | Resize image (`fit`: `'inside'` default, `'cover'` to crop + fill, `'fill'` to ignore aspect ratio) |
 | `.crop(x, y, width, height)` | Crop a region |
 | `.rotate(degrees)` | Rotate (90, 180, 270) |
 | `.flipH()` | Flip horizontally |

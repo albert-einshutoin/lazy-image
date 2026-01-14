@@ -3,7 +3,7 @@
 // Async task implementations for NAPI.
 // These tasks run in background threads and don't block Node.js main thread.
 
-use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg};
+use crate::engine::decoder::{check_dimensions, decode_jpeg_mozjpeg, ensure_dimensions_safe};
 use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::pipeline::apply_ops;
@@ -24,8 +24,8 @@ use std::sync::Arc;
 /// Resource usage information for telemetry
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
 struct ResourceUsage {
-    cpu_time: f64,      // User + system CPU time in seconds
-    memory_rss: u64,    // Resident set size in bytes
+    cpu_time: f64,   // User + system CPU time in seconds
+    memory_rss: u64, // Resident set size in bytes
 }
 
 /// Get current process resource usage (CPU time and RSS memory)
@@ -43,14 +43,14 @@ fn get_resource_usage() -> Option<ResourceUsage> {
                 + usage.ru_utime.tv_usec as f64 / 1_000_000.0
                 + usage.ru_stime.tv_sec as f64
                 + usage.ru_stime.tv_usec as f64 / 1_000_000.0;
-            
+
             // RSS memory (resident set size) in bytes
             // On Linux, ru_maxrss is in KB; on macOS/FreeBSD, it's in bytes
             #[cfg(target_os = "linux")]
             let memory_rss = usage.ru_maxrss as u64 * 1024;
             #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             let memory_rss = usage.ru_maxrss as u64;
-            
+
             Some(ResourceUsage {
                 cpu_time,
                 memory_rss,
@@ -125,12 +125,15 @@ impl EncodeTask {
     /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
     /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
     /// when no mutation is needed (e.g., format conversion only).
-    /// 
+    ///
     /// Returns LazyImageError directly (not wrapped in napi::Error) for use in process_and_encode.
-    pub(crate) fn decode_internal(&self) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
+    pub(crate) fn decode_internal(
+        &self,
+    ) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
         // Prefer already decoded image (already validated)
         // Return borrowed reference - no deep copy until mutation is needed
         if let Some(ref img_arc) = self.decoded {
+            check_dimensions(img_arc.width(), img_arc.height())?;
             return Ok(Cow::Borrowed(img_arc.as_ref()));
         }
 
@@ -152,15 +155,16 @@ impl EncodeTask {
             }
         };
 
+        ensure_dimensions_safe(bytes)?;
+
         // Check magic bytes for JPEG (0xFF 0xD8)
         let img = if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
             // JPEG detected - use mozjpeg for TURBO speed
             decode_jpeg_mozjpeg(bytes)?
         } else {
             // PNG, WebP, etc - use image crate
-            image::load_from_memory(bytes).map_err(|e| {
-                LazyImageError::decode_failed(format!("decode failed: {e}"))
-            })?
+            image::load_from_memory(bytes)
+                .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))?
         };
 
         // Security check: reject decompression bombs
@@ -192,12 +196,10 @@ impl EncodeTask {
         // Get initial resource usage for CPU time and memory tracking
         let initial_usage = get_resource_usage();
         let start_total = std::time::Instant::now();
-        
+
         // Get input size from source
         // Use len() method which works for both Memory and Mapped sources
-        let input_size = self.source.as_ref()
-            .map(|s| s.len() as u64)
-            .unwrap_or(0);
+        let input_size = self.source.as_ref().map(|s| s.len() as u64).unwrap_or(0);
 
         // 1. Decode
         let start_decode = std::time::Instant::now();
@@ -235,7 +237,7 @@ impl EncodeTask {
 
         if let Some(m) = metrics {
             m.encode_time = start_encode.elapsed().as_secs_f64() * 1000.0;
-            
+
             // Calculate CPU time (difference between final and initial)
             if let (Some(initial), Some(final_usage)) = (initial_usage, final_usage) {
                 m.cpu_time = (final_usage.cpu_time - initial.cpu_time).max(0.0);
@@ -251,14 +253,14 @@ impl EncodeTask {
                 m.memory_peak =
                     (w as u64 * h as u64 * 4 + result.len() as u64).min(u32::MAX as u64) as u32;
             }
-            
+
             // Total processing time (wall clock)
             m.processing_time = total_elapsed.as_secs_f64();
-            
+
             // Input and output sizes (clamp to u32::MAX for NAPI compatibility)
             m.input_size = input_size.min(u32::MAX as u64) as u32;
             m.output_size = (result.len() as u64).min(u32::MAX as u64) as u32;
-            
+
             // Compression ratio
             if m.input_size > 0 {
                 m.compression_ratio = m.output_size as f64 / m.input_size as f64;
@@ -430,9 +432,8 @@ impl Task for WriteFileTask {
         let output_dir = std::path::Path::new(&self.output_path)
             .parent()
             .ok_or_else(|| {
-                let lazy_err = LazyImageError::internal_panic(
-                    "output path has no parent directory",
-                );
+                let lazy_err =
+                    LazyImageError::internal_panic("output path has no parent directory");
                 self.last_error = Some(lazy_err.clone());
                 napi::Error::from(lazy_err)
             })?;
@@ -440,10 +441,8 @@ impl Task for WriteFileTask {
         // Create temp file in the same directory as the target file
         // This ensures rename() works (cross-filesystem rename can fail)
         let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
-            let lazy_err = LazyImageError::file_write_failed(
-                output_dir.to_string_lossy().to_string(),
-                e,
-            );
+            let lazy_err =
+                LazyImageError::file_write_failed(output_dir.to_string_lossy().to_string(), e);
             self.last_error = Some(lazy_err.clone());
             napi::Error::from(lazy_err)
         })?;
@@ -451,27 +450,19 @@ impl Task for WriteFileTask {
         let temp_path = temp_file.path().to_path_buf();
         // Check for overflow: NAPI requires u32, but we can't handle >4GB files
         let bytes_written = data.len().try_into().map_err(|_| {
-            let lazy_err = LazyImageError::internal_panic(
-                "file size exceeds 4GB limit (u32::MAX)",
-            );
+            let lazy_err = LazyImageError::internal_panic("file size exceeds 4GB limit (u32::MAX)");
             self.last_error = Some(lazy_err.clone());
             napi::Error::from(lazy_err)
         })?;
         temp_file.write_all(&data).map_err(|e| {
-            let lazy_err = LazyImageError::file_write_failed(
-                temp_path.display().to_string(),
-                e,
-            );
+            let lazy_err = LazyImageError::file_write_failed(temp_path.display().to_string(), e);
             self.last_error = Some(lazy_err.clone());
             napi::Error::from(lazy_err)
         })?;
 
         // Ensure data is flushed to disk
         temp_file.as_file_mut().sync_all().map_err(|e| {
-            let lazy_err = LazyImageError::file_write_failed(
-                temp_path.display().to_string(),
-                e,
-            );
+            let lazy_err = LazyImageError::file_write_failed(temp_path.display().to_string(), e);
             self.last_error = Some(lazy_err.clone());
             napi::Error::from(lazy_err)
         })?;
@@ -482,10 +473,7 @@ impl Task for WriteFileTask {
                 std::io::ErrorKind::Other,
                 format!("failed to persist file: {}", e),
             );
-            let lazy_err = LazyImageError::file_write_failed(
-                self.output_path.clone(),
-                io_error,
-            );
+            let lazy_err = LazyImageError::file_write_failed(self.output_path.clone(), io_error);
             self.last_error = Some(lazy_err.clone());
             napi::Error::from(lazy_err)
         })?;
@@ -532,10 +520,7 @@ impl Task for BatchTask {
 
         if !Path::new(&self.output_dir).exists() {
             fs::create_dir_all(&self.output_dir).map_err(|e| {
-                let lazy_err = LazyImageError::file_write_failed(
-                    self.output_dir.clone(),
-                    e,
-                );
+                let lazy_err = LazyImageError::file_write_failed(self.output_dir.clone(), e);
                 self.last_error = Some(lazy_err.clone());
                 napi::Error::from(lazy_err)
             })?;
@@ -549,8 +534,8 @@ impl Task for BatchTask {
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
                 // Use memory mapping for zero-copy access (same as from_path)
-                use std::fs::File;
                 use memmap2::Mmap;
+                use std::fs::File;
                 use std::sync::Arc;
 
                 let file = match File::open(input_path) {
@@ -583,9 +568,7 @@ impl Task for BatchTask {
                     decode_jpeg_mozjpeg(data)?
                 } else {
                     image::load_from_memory(data)
-                        .map_err(|e| LazyImageError::decode_failed(format!(
-                            "decode failed: {e}"
-                        )))?
+                        .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))?
                 };
 
                 let (w, h) = img.dimensions();
@@ -604,12 +587,8 @@ impl Task for BatchTask {
                         encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)?
                     }
                     OutputFormat::Png => encode_png(&processed, icc)?,
-                    OutputFormat::WebP { quality } => {
-                        encode_webp(&processed, *quality, icc)?
-                    }
-                    OutputFormat::Avif { quality } => {
-                        encode_avif(&processed, *quality, icc)?
-                    }
+                    OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc)?,
+                    OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
 
                 let filename = Path::new(input_path)
@@ -630,10 +609,8 @@ impl Task for BatchTask {
                 use std::io::Write;
                 use tempfile::NamedTempFile;
 
-                let mut temp_file =
-                    NamedTempFile::new_in(output_dir).map_err(|e| {
-                        LazyImageError::file_write_failed(output_dir.to_string(), e)
-                    })?;
+                let mut temp_file = NamedTempFile::new_in(output_dir)
+                    .map_err(|e| LazyImageError::file_write_failed(output_dir.to_string(), e))?;
 
                 let temp_path = temp_file.path().to_path_buf();
                 temp_file.write_all(&encoded).map_err(|e| {
@@ -686,7 +663,8 @@ impl Task for BatchTask {
         if self.concurrency > pool::MAX_CONCURRENCY as u32 {
             let lazy_err = LazyImageError::internal_panic(format!(
                 "invalid concurrency value: {} (must be 0 or 1-{})",
-                self.concurrency, pool::MAX_CONCURRENCY
+                self.concurrency,
+                pool::MAX_CONCURRENCY
             ));
             self.last_error = Some(lazy_err.clone());
             return Err(napi::Error::from(lazy_err));

@@ -38,7 +38,7 @@ mod tests {
     fn test_image_engine_from_buffer() {
         let buffer = create_test_image_buffer();
         let engine = ImageEngine::from(buffer);
-        
+
         // Verify engine is created successfully
         // Test through NAPI public API to ensure Env-based error handling works
         let mut engine_for_dims = engine;
@@ -52,7 +52,7 @@ mod tests {
     fn test_image_engine_dimensions() {
         let buffer = create_test_image_buffer();
         let mut engine = ImageEngine::from(buffer);
-        
+
         // Get dimensions without full decode (header-only parsing)
         // Test through NAPI public API to ensure Env-based error handling works
         let env = dummy_env();
@@ -65,10 +65,10 @@ mod tests {
     fn test_image_engine_clone() {
         let buffer = create_test_image_buffer();
         let engine = ImageEngine::from(buffer);
-        
+
         // Clone should succeed and create independent instance
         let cloned = engine.clone_engine().unwrap();
-        
+
         // Verify cloned engine works by checking dimensions
         // Test through NAPI public API to ensure Env-based error handling works
         let mut cloned_for_dims = cloned;
@@ -76,7 +76,7 @@ mod tests {
         let dims = cloned_for_dims.dimensions(env).unwrap();
         assert_eq!(dims.width, 100);
         assert_eq!(dims.height, 100);
-        
+
         // Verify they are independent (cloned engine has same data but separate instance)
         // This is tested implicitly by the clone succeeding and dimensions matching
     }
@@ -85,12 +85,15 @@ mod tests {
     fn test_image_engine_has_icc_profile() {
         let buffer = create_test_image_buffer();
         let engine = ImageEngine::from(buffer);
-        
+
         // Test image without ICC profile should return None
         let icc_size = engine.has_icc_profile();
         // PNG created from scratch typically doesn't have ICC profile
         // This test verifies the method works without panicking
-        assert!(icc_size.is_none(), "PNG created from scratch should not have ICC profile");
+        assert!(
+            icc_size.is_none(),
+            "PNG created from scratch should not have ICC profile"
+        );
     }
 
     // Note: Methods requiring Reference (resize, crop, rotate, flip_h, flip_v,

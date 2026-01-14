@@ -27,18 +27,14 @@ pub type EngineResult<T> = std::result::Result<T, LazyImageError>;
 /// This macro helps eliminate duplicate cfg blocks in stress.rs.
 #[macro_export]
 macro_rules! convert_result {
-    ($result:expr) => {
+    ($result:expr) => {{
+        #[cfg(feature = "napi")]
         {
-            #[cfg(feature = "napi")]
-            {
-                $result.map_err(|e| {
-                    crate::error::LazyImageError::decode_failed(e.to_string())
-                })?
-            }
-            #[cfg(not(feature = "napi"))]
-            {
-                $result?
-            }
+            $result.map_err(|e| crate::error::LazyImageError::decode_failed(e.to_string()))?
         }
-    };
+        #[cfg(not(feature = "napi"))]
+        {
+            $result?
+        }
+    }};
 }

@@ -621,6 +621,8 @@ impl ImageEngine {
             // Get source bytes as slice - zero-copy for Memory and Mapped
             let bytes = self.ensure_source_slice()?;
 
+            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
+
             let img = image::load_from_memory(bytes).map_err(|e| {
                 napi::Error::from(LazyImageError::decode_failed(format!(
                     "failed to decode: {e}"
@@ -668,6 +670,8 @@ impl ImageEngine {
         if self.decoded.is_none() {
             // Get source bytes as slice - zero-copy for Memory and Mapped
             let bytes = self.ensure_source_slice()?;
+
+            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
 
             let img = image::load_from_memory(bytes)
                 .map_err(|e| LazyImageError::decode_failed(format!("failed to decode: {e}")))?;
