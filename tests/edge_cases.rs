@@ -47,7 +47,7 @@ fn create_valid_jpeg(width: u32, height: u32) -> Vec<u8> {
 
 mod minimal_image_tests {
     use super::*;
-    use lazy_image::ops::Operation;
+    use lazy_image::ops::{Operation, ResizeFit};
 
     #[test]
     fn test_1x1_resize() {
@@ -55,6 +55,7 @@ mod minimal_image_tests {
         let ops = vec![Operation::Resize {
             width: Some(100),
             height: Some(100),
+            fit: ResizeFit::Inside,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
@@ -332,7 +333,7 @@ mod quality_boundary_tests {
 
 mod zero_dimension_tests {
     use super::*;
-    use lazy_image::ops::Operation;
+    use lazy_image::ops::{Operation, ResizeFit};
 
     #[test]
     fn test_resize_to_zero_width() {
@@ -340,6 +341,7 @@ mod zero_dimension_tests {
         let ops = vec![Operation::Resize {
             width: Some(0),
             height: Some(50),
+            fit: ResizeFit::Inside,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
         // 0幅へのリサイズはfast_resizeでエラーになる可能性がある
@@ -363,6 +365,7 @@ mod zero_dimension_tests {
         let ops = vec![Operation::Resize {
             width: Some(50),
             height: Some(0),
+            fit: ResizeFit::Inside,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
         // 0高さへのリサイズはエラーになる可能性がある
@@ -425,7 +428,7 @@ mod zero_dimension_tests {
 
 mod extreme_aspect_ratio_tests {
     use super::*;
-    use lazy_image::ops::Operation;
+    use lazy_image::ops::{Operation, ResizeFit};
 
     #[test]
     fn test_resize_extreme_wide() {
@@ -436,6 +439,7 @@ mod extreme_aspect_ratio_tests {
         let ops = vec![Operation::Resize {
             width: Some(100),
             height: None,
+            fit: ResizeFit::Inside,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
         assert!(
@@ -453,6 +457,7 @@ mod extreme_aspect_ratio_tests {
         let ops = vec![Operation::Resize {
             width: None,
             height: Some(100),
+            fit: ResizeFit::Inside,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
         assert!(
@@ -503,7 +508,7 @@ mod pipeline_error_tests {
         // 0幅は無効
         let result = fast_resize_owned(img.clone(), 0, 100);
         assert!(result.is_err());
-        
+
         // 0高さは無効
         let result = fast_resize_owned(img, 100, 0);
         assert!(result.is_err());
@@ -559,10 +564,10 @@ mod pipeline_error_tests {
         // -90, -180, -270は有効
         let ops1 = vec![Operation::Rotate { degrees: -90 }];
         assert!(apply_ops(Cow::Owned(img.clone()), &ops1).is_ok());
-        
+
         let ops2 = vec![Operation::Rotate { degrees: -180 }];
         assert!(apply_ops(Cow::Owned(img.clone()), &ops2).is_ok());
-        
+
         let ops3 = vec![Operation::Rotate { degrees: -270 }];
         assert!(apply_ops(Cow::Owned(img), &ops3).is_ok());
     }
@@ -602,7 +607,9 @@ mod encoder_error_tests {
             // エラーメッセージを確認（panicではないことを確認）
             let err = result.unwrap_err();
             assert!(
-                err.to_string().contains("webp") || err.to_string().contains("encode") || err.to_string().contains("quality"),
+                err.to_string().contains("webp")
+                    || err.to_string().contains("encode")
+                    || err.to_string().contains("quality"),
                 "Error should be related to WebP encoding, got: {}",
                 err
             );

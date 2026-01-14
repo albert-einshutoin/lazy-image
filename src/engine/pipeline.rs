@@ -3,7 +3,7 @@
 // Pipeline operations: apply_ops, optimize_ops, resize calculations
 
 use crate::error::LazyImageError;
-use crate::ops::Operation;
+use crate::ops::{Operation, ResizeFit};
 use fast_image_resize::{self as fir, MulDiv, PixelType, ResizeOptions};
 use image::{DynamicImage, RgbImage, RgbaImage};
 use std::borrow::Cow;
@@ -28,7 +28,11 @@ pub struct ResizeError {
 }
 
 impl ResizeError {
-    pub fn new(source_dims: (u32, u32), target_dims: (u32, u32), reason: impl Into<String>) -> Self {
+    pub fn new(
+        source_dims: (u32, u32),
+        target_dims: (u32, u32),
+        reason: impl Into<String>,
+    ) -> Self {
         Self {
             source_dims,
             target_dims,
@@ -41,7 +45,7 @@ impl ResizeError {
     }
 }
 
-/// Calculate resize dimensions maintaining aspect ratio
+/// Calculate resize dimensions maintaining aspect ratio (fit = inside semantics)
 pub fn calc_resize_dimensions(
     orig_w: u32,
     orig_h: u32,
@@ -76,6 +80,39 @@ pub fn calc_resize_dimensions(
     }
 }
 
+fn calc_cover_resize_dimensions(
+    orig_w: u32,
+    orig_h: u32,
+    target_w: u32,
+    target_h: u32,
+) -> (u32, u32) {
+    if orig_w == 0 || orig_h == 0 {
+        return (target_w.max(1), target_h.max(1));
+    }
+    let scale_w = target_w as f64 / orig_w as f64;
+    let scale_h = target_h as f64 / orig_h as f64;
+    let scale = scale_w.max(scale_h);
+    let resize_w = ((orig_w as f64 * scale).ceil() as u32).max(1);
+    let resize_h = ((orig_h as f64 * scale).ceil() as u32).max(1);
+    (resize_w, resize_h)
+}
+
+fn crop_to_dimensions(img: DynamicImage, target_w: u32, target_h: u32) -> DynamicImage {
+    let crop_width = target_w.min(img.width()).max(1);
+    let crop_height = target_h.min(img.height()).max(1);
+    let crop_x = if img.width() > crop_width {
+        (img.width() - crop_width) / 2
+    } else {
+        0
+    };
+    let crop_y = if img.height() > crop_height {
+        (img.height() - crop_height) / 2
+    } else {
+        0
+    };
+    img.crop_imm(crop_x, crop_y, crop_width, crop_height)
+}
+
 /// Optimize operations by combining consecutive resize/crop operations
 pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
     if ops.len() < 2 {
@@ -92,10 +129,12 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
         if let Operation::Resize {
             width: w1,
             height: h1,
+            fit,
         } = current
         {
             let mut final_width = *w1;
             let mut final_height = *h1;
+            let fit_mode = fit.clone();
             let mut j = i + 1;
 
             // Combine all consecutive resize operations
@@ -103,8 +142,12 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                 if let Operation::Resize {
                     width: w2,
                     height: h2,
+                    fit: fit2,
                 } = &ops[j]
                 {
+                    if *fit2 != fit_mode {
+                        break;
+                    }
                     // If both dimensions are specified, use the last one
                     // Otherwise, maintain aspect ratio from the first resize
                     if w2.is_some() && h2.is_some() {
@@ -128,6 +171,7 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                 optimized.push(Operation::Resize {
                     width: final_width,
                     height: final_height,
+                    fit: fit_mode,
                 });
                 i = j;
                 continue;
@@ -148,21 +192,25 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                     Operation::Resize {
                         width: rw,
                         height: rh,
+                        fit,
                     },
                 ) => {
-                    let (final_w, final_h) = calc_resize_dimensions(*cw, *ch, *rw, *rh);
-                    optimized.push(Operation::Crop {
-                        x: *x,
-                        y: *y,
-                        width: *cw,
-                        height: *ch,
-                    });
-                    optimized.push(Operation::Resize {
-                        width: Some(final_w),
-                        height: Some(final_h),
-                    });
-                    i += 2;
-                    continue;
+                    if *fit == ResizeFit::Inside {
+                        let (final_w, final_h) = calc_resize_dimensions(*cw, *ch, *rw, *rh);
+                        optimized.push(Operation::Crop {
+                            x: *x,
+                            y: *y,
+                            width: *cw,
+                            height: *ch,
+                        });
+                        optimized.push(Operation::Resize {
+                            width: Some(final_w),
+                            height: Some(final_h),
+                            fit: ResizeFit::Inside,
+                        });
+                        i += 2;
+                        continue;
+                    }
                 }
                 // Resize then crop: keep both but order is already optimal
                 (Operation::Resize { .. }, Operation::Crop { .. }) => {
@@ -216,23 +264,54 @@ pub fn apply_ops<'a>(
 
     for op in &optimized_ops {
         img = match op {
-            Operation::Resize { width, height } => {
-                let (w, h) = calc_resize_dimensions(img.width(), img.height(), *width, *height);
-                // Use SIMD-accelerated fast_image_resize with data normalization
-                // Always use fast_resize_owned for consistent performance
-                // For non-RGB/RGBA formats, normalize to RGBA8 before resizing
-                let src_image = match img {
-                    DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
-                    // Normalize unsupported formats to RGBA8 to ensure fast path
-                    // This conversion cost is acceptable compared to slow fallback
-                    _ => DynamicImage::ImageRgba8(img.to_rgba8()),
-                };
-                // fast_resize_owned returns ResizeError which can represent both
-                // user input errors (e.g., invalid dimensions) and internal failures
-                // Convert directly to LazyImageError to preserve error type information
-                fast_resize_owned(src_image, w, h)
-                    .map_err(|err| err.into_lazy_image_error())?
-            }
+            Operation::Resize { width, height, fit } => match (fit, width, height) {
+                (ResizeFit::Fill, Some(w), Some(h)) => {
+                    let target_w = *w;
+                    let target_h = *h;
+                    if (target_w, target_h) == (img.width(), img.height()) {
+                        img
+                    } else {
+                        let src_image = match img {
+                            DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                            _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                        };
+                        fast_resize_owned(src_image, target_w, target_h)
+                            .map_err(|err| err.into_lazy_image_error())?
+                    }
+                }
+                (ResizeFit::Cover, Some(target_w), Some(target_h)) => {
+                    if (*target_w, *target_h) == (img.width(), img.height()) {
+                        img
+                    } else {
+                        let (resize_w, resize_h) = calc_cover_resize_dimensions(
+                            img.width(),
+                            img.height(),
+                            *target_w,
+                            *target_h,
+                        );
+                        let src_image = match img {
+                            DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                            _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                        };
+                        let resized = fast_resize_owned(src_image, resize_w, resize_h)
+                            .map_err(|err| err.into_lazy_image_error())?;
+                        crop_to_dimensions(resized, *target_w, *target_h)
+                    }
+                }
+                _ => {
+                    let (w, h) = calc_resize_dimensions(img.width(), img.height(), *width, *height);
+                    if (w, h) == (img.width(), img.height()) {
+                        img
+                    } else {
+                        let src_image = match img {
+                            DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                            _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                        };
+                        fast_resize_owned(src_image, w, h)
+                            .map_err(|err| err.into_lazy_image_error())?
+                    }
+                }
+            },
 
             Operation::Crop {
                 x,
@@ -261,9 +340,7 @@ pub fn apply_ops<'a>(
                     -270 => img.rotate90(),
                     0 => img, // No-op for 0 degrees
                     _ => {
-                        return Err(LazyImageError::invalid_rotation_angle(
-                            *degrees,
-                        ));
+                        return Err(LazyImageError::invalid_rotation_angle(*degrees));
                     }
                 }
             }
@@ -279,7 +356,9 @@ pub fn apply_ops<'a>(
                 img.adjust_contrast(*value as f32)
             }
 
-            Operation::ColorSpace { target: crate::ops::ColorSpace::Srgb } => {
+            Operation::ColorSpace {
+                target: crate::ops::ColorSpace::Srgb,
+            } => {
                 // Ensure RGB8/RGBA8 format (pixel format normalization, not color space conversion)
                 match img {
                     DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
@@ -426,33 +505,37 @@ fn fast_resize_internal_impl(
     //
     // For now, we return a helpful error. Alignment errors are rare with Vec<u8>
     // from the image crate, as Vec allocates with proper alignment.
-    let mut src_image = match fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type) {
-        Ok(img) => img,
-        Err(e) => {
-            // Check if error is related to buffer alignment/size
-            let error_str = format!("{e:?}");
-            let is_alignment_error = error_str.contains("alignment") || error_str.contains("Alignment") || 
-               error_str.contains("InvalidBuffer") || error_str.contains("buffer") ||
-               error_str.contains("InvalidBufferSize") || error_str.contains("InvalidBufferAlignment");
-            
-            if is_alignment_error {
-                // Fallback: Unfortunately, we cannot recover src_pixels here because
-                // it was moved into from_vec_u8(). The best we can do is return a
-                // helpful error message. In practice, this is a rare case.
-                //
-                // The reviewer's concern is valid: we cannot implement true fallback
-                // without cloning upfront, which defeats the purpose. This is a fundamental
-                // limitation of the fast_image_resize API design.
-                return Err(format!(
-                    "fir source image alignment error: {e:?}. \
+    let mut src_image =
+        match fir::images::Image::from_vec_u8(src_width, src_height, src_pixels, pixel_type) {
+            Ok(img) => img,
+            Err(e) => {
+                // Check if error is related to buffer alignment/size
+                let error_str = format!("{e:?}");
+                let is_alignment_error = error_str.contains("alignment")
+                    || error_str.contains("Alignment")
+                    || error_str.contains("InvalidBuffer")
+                    || error_str.contains("buffer")
+                    || error_str.contains("InvalidBufferSize")
+                    || error_str.contains("InvalidBufferAlignment");
+
+                if is_alignment_error {
+                    // Fallback: Unfortunately, we cannot recover src_pixels here because
+                    // it was moved into from_vec_u8(). The best we can do is return a
+                    // helpful error message. In practice, this is a rare case.
+                    //
+                    // The reviewer's concern is valid: we cannot implement true fallback
+                    // without cloning upfront, which defeats the purpose. This is a fundamental
+                    // limitation of the fast_image_resize API design.
+                    return Err(format!(
+                        "fir source image alignment error: {e:?}. \
                     The input buffer does not meet SIMD alignment requirements. \
                     This is a rare case - consider reporting this as a bug."
-                ));
-            } else {
-                return Err(format!("fir source image error: {e:?}"));
+                    ));
+                } else {
+                    return Err(format!("fir source image error: {e:?}"));
+                }
             }
-        }
-    };
+        };
 
     // Create destination image
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);
@@ -502,7 +585,7 @@ fn fast_resize_internal_impl(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ops::Operation;
+    use crate::ops::{Operation, ResizeFit};
     use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
     use std::borrow::Cow;
 
@@ -618,6 +701,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(50),
                 height: Some(50),
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 50));
@@ -629,6 +713,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(50),
                 height: None,
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
@@ -640,9 +725,34 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: None,
                 height: Some(25),
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
+        }
+
+        #[test]
+        fn test_resize_cover_crops_to_box() {
+            let img = create_test_image(200, 100);
+            let ops = vec![Operation::Resize {
+                width: Some(80),
+                height: Some(80),
+                fit: ResizeFit::Cover,
+            }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (80, 80));
+        }
+
+        #[test]
+        fn test_resize_fill_ignores_aspect_ratio() {
+            let img = create_test_image(200, 100);
+            let ops = vec![Operation::Resize {
+                width: Some(40),
+                height: Some(90),
+                fit: ResizeFit::Fill,
+            }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (40, 90));
         }
 
         #[test]
@@ -808,6 +918,7 @@ mod tests {
                 Operation::Resize {
                     width: Some(100),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Rotate { degrees: 90 },
                 Operation::Grayscale,
@@ -836,16 +947,24 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height: _ } = &optimized[0] {
+            if let Operation::Resize {
+                width,
+                height: _,
+                fit,
+            } = &optimized[0]
+            {
                 assert_eq!(*width, Some(400));
+                assert_eq!(*fit, ResizeFit::Inside);
             } else {
                 panic!("Expected Resize operation");
             }
@@ -857,11 +976,13 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Grayscale,
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
@@ -873,6 +994,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(100),
                 height: None,
+                fit: ResizeFit::Inside,
             }];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
@@ -891,20 +1013,29 @@ mod tests {
                 Operation::Resize {
                     width: Some(1000),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height: _ } = &optimized[0] {
+            if let Operation::Resize {
+                width,
+                height: _,
+                fit,
+            } = &optimized[0]
+            {
                 assert_eq!(*width, Some(400));
+                assert_eq!(*fit, ResizeFit::Inside);
             }
         }
 
@@ -914,17 +1045,20 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: Some(300),
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height } = &optimized[0] {
+            if let Operation::Resize { width, height, fit } = &optimized[0] {
                 assert_eq!(*width, Some(400));
                 assert_eq!(*height, Some(300));
+                assert_eq!(*fit, ResizeFit::Inside);
             }
         }
     }

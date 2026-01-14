@@ -9,12 +9,15 @@
 use crate::engine::io::{extract_icc_profile, Source};
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
-use crate::engine::tasks::{BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask};
+use crate::engine::tasks::{
+    BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
+};
 use crate::error::LazyImageError;
-use crate::ops::{Operation, OutputFormat, PresetConfig};
+use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 use image::{DynamicImage, GenericImageView, ImageReader};
 use std::io::Cursor;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 
 #[cfg(feature = "napi")]
@@ -81,14 +84,17 @@ impl ImageEngine {
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
     pub fn from_path(env: Env, path: String) -> Result<Self> {
-        use std::fs::File;
         use memmap2::Mmap;
+        use std::fs::File;
 
         let path_buf = PathBuf::from(&path);
-        
+
         // Validate that the file exists (fast check, no read)
         if !path_buf.exists() {
-            return Err(crate::error::napi_error_with_code(&env, LazyImageError::file_not_found(path.clone()))?);
+            return Err(crate::error::napi_error_with_code(
+                &env,
+                LazyImageError::file_not_found(path.clone()),
+            )?);
         }
 
         // Open file and create memory map
@@ -116,7 +122,7 @@ impl ImageEngine {
         };
 
         let mmap_arc = Arc::new(mmap);
-        
+
         // Extract ICC profile from memory-mapped data
         let icc_profile = extract_icc_profile(mmap_arc.as_ref()).map(Arc::new);
 
@@ -146,15 +152,30 @@ impl ImageEngine {
     // =========================================================================
 
     /// Resize image. Width or height can be null to maintain aspect ratio.
+    /// When both width and height are provided, `fit` controls behavior:
+    /// - "inside" (default): maintain aspect ratio and fit within the box
+    /// - "cover": maintain aspect ratio and crop to fill the box
+    /// - "fill": ignore aspect ratio and force exact dimensions
     #[napi]
     pub fn resize(
         &mut self,
         this: Reference<ImageEngine>,
         width: Option<u32>,
         height: Option<u32>,
-    ) -> Reference<ImageEngine> {
-        self.ops.push(Operation::Resize { width, height });
-        this
+        fit: Option<String>,
+    ) -> Result<Reference<ImageEngine>> {
+        let fit_mode = if let Some(value) = fit {
+            ResizeFit::from_str(&value).map_err(|_| LazyImageError::invalid_resize_fit(value))?
+        } else {
+            ResizeFit::default()
+        };
+
+        self.ops.push(Operation::Resize {
+            width,
+            height,
+            fit: fit_mode,
+        });
+        Ok(this)
     }
 
     /// Crop a region from the image.
@@ -261,7 +282,12 @@ impl ImageEngine {
     ///
     /// Returns the preset configuration for use with toBuffer/toFile.
     #[napi]
-    pub fn preset(&mut self, env: Env, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
+    pub fn preset(
+        &mut self,
+        env: Env,
+        _this: Reference<ImageEngine>,
+        name: String,
+    ) -> Result<PresetResult> {
         let config = match PresetConfig::get(&name) {
             Some(config) => config,
             None => {
@@ -274,6 +300,7 @@ impl ImageEngine {
         self.ops.push(Operation::Resize {
             width: config.width,
             height: config.height,
+            fit: ResizeFit::Inside,
         });
 
         // Return preset info for the user to use with toBuffer/toFile

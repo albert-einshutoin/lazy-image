@@ -106,6 +106,9 @@ pub enum LazyImageError {
         height: Option<u32>,
     },
 
+    #[error("Invalid resize fit: '{value}'. Expected inside, cover, or fill")]
+    InvalidResizeFit { value: Cow<'static, str> },
+
     #[error("Resize failed ({source_width}x{source_height} -> {target_width}x{target_height}): {message}")]
     ResizeFailed {
         source_width: u32,
@@ -158,12 +161,29 @@ impl Clone for LazyImageError {
                 path: path.clone(),
                 source: std::io::Error::new(source.kind(), source.to_string()),
             },
-            Self::UnsupportedFormat { format } => Self::UnsupportedFormat { format: format.clone() },
-            Self::DecodeFailed { message } => Self::DecodeFailed { message: message.clone() },
+            Self::UnsupportedFormat { format } => Self::UnsupportedFormat {
+                format: format.clone(),
+            },
+            Self::DecodeFailed { message } => Self::DecodeFailed {
+                message: message.clone(),
+            },
             Self::CorruptedImage => Self::CorruptedImage,
-            Self::DimensionExceedsLimit { dimension, max } => Self::DimensionExceedsLimit { dimension: *dimension, max: *max },
-            Self::PixelCountExceedsLimit { pixels, max } => Self::PixelCountExceedsLimit { pixels: *pixels, max: *max },
-            Self::InvalidCropBounds { x, y, width, height, img_width, img_height } => Self::InvalidCropBounds {
+            Self::DimensionExceedsLimit { dimension, max } => Self::DimensionExceedsLimit {
+                dimension: *dimension,
+                max: *max,
+            },
+            Self::PixelCountExceedsLimit { pixels, max } => Self::PixelCountExceedsLimit {
+                pixels: *pixels,
+                max: *max,
+            },
+            Self::InvalidCropBounds {
+                x,
+                y,
+                width,
+                height,
+                img_width,
+                img_height,
+            } => Self::InvalidCropBounds {
                 x: *x,
                 y: *y,
                 width: *width,
@@ -171,21 +191,44 @@ impl Clone for LazyImageError {
                 img_width: *img_width,
                 img_height: *img_height,
             },
-            Self::InvalidRotationAngle { degrees } => Self::InvalidRotationAngle { degrees: *degrees },
-            Self::InvalidResizeDimensions { width, height } => Self::InvalidResizeDimensions { width: *width, height: *height },
-            Self::ResizeFailed { source_width, source_height, target_width, target_height, message } => Self::ResizeFailed {
+            Self::InvalidRotationAngle { degrees } => {
+                Self::InvalidRotationAngle { degrees: *degrees }
+            }
+            Self::InvalidResizeDimensions { width, height } => Self::InvalidResizeDimensions {
+                width: *width,
+                height: *height,
+            },
+            Self::InvalidResizeFit { value } => Self::InvalidResizeFit {
+                value: value.clone(),
+            },
+            Self::ResizeFailed {
+                source_width,
+                source_height,
+                target_width,
+                target_height,
+                message,
+            } => Self::ResizeFailed {
                 source_width: *source_width,
                 source_height: *source_height,
                 target_width: *target_width,
                 target_height: *target_height,
                 message: message.clone(),
             },
-            Self::UnsupportedColorSpace { color_space } => Self::UnsupportedColorSpace { color_space: color_space.clone() },
-            Self::EncodeFailed { format, message } => Self::EncodeFailed { format: format.clone(), message: message.clone() },
+            Self::UnsupportedColorSpace { color_space } => Self::UnsupportedColorSpace {
+                color_space: color_space.clone(),
+            },
+            Self::EncodeFailed { format, message } => Self::EncodeFailed {
+                format: format.clone(),
+                message: message.clone(),
+            },
             Self::InvalidPreset { name } => Self::InvalidPreset { name: name.clone() },
             Self::SourceConsumed => Self::SourceConsumed,
-            Self::InternalPanic { message } => Self::InternalPanic { message: message.clone() },
-            Self::Generic { message } => Self::Generic { message: message.clone() },
+            Self::InternalPanic { message } => Self::InternalPanic {
+                message: message.clone(),
+            },
+            Self::Generic { message } => Self::Generic {
+                message: message.clone(),
+            },
         }
     }
 }
@@ -193,9 +236,7 @@ impl Clone for LazyImageError {
 // Constructor Helpers
 impl LazyImageError {
     pub fn file_not_found(path: impl Into<Cow<'static, str>>) -> Self {
-        Self::FileNotFound {
-            path: path.into(),
-        }
+        Self::FileNotFound { path: path.into() }
     }
 
     pub fn file_read_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
@@ -300,8 +341,12 @@ impl LazyImageError {
     }
 
     pub fn invalid_preset(name: impl Into<Cow<'static, str>>) -> Self {
-        Self::InvalidPreset {
-            name: name.into(),
+        Self::InvalidPreset { name: name.into() }
+    }
+
+    pub fn invalid_resize_fit(value: impl Into<Cow<'static, str>>) -> Self {
+        Self::InvalidResizeFit {
+            value: value.into(),
         }
     }
 
@@ -322,7 +367,7 @@ impl LazyImageError {
     }
 
     /// Check if this error is recoverable (user can fix it)
-    /// 
+    ///
     /// This method is consistent with category():
     /// - UserError errors are always recoverable
     /// - ResourceLimit errors are recoverable (user can free resources, resize image, etc.)
@@ -342,6 +387,7 @@ impl LazyImageError {
             | Self::InvalidCropBounds { .. }
             | Self::InvalidRotationAngle { .. }
             | Self::InvalidResizeDimensions { .. }
+            | Self::InvalidResizeFit { .. }
             | Self::InvalidPreset { .. }
             | Self::SourceConsumed => ErrorCategory::UserError,
 
@@ -378,14 +424,11 @@ impl LazyImageError {
 
 /// Helper function to create NAPI error with category code
 /// This allows JavaScript code to access error.code (e.g., "LAZY_IMAGE_USER_ERROR")
-/// 
+///
 /// This function should be used when Env is available to add custom properties.
 /// For code that doesn't have Env, use the From<LazyImageError> for napi::Error implementation.
 #[cfg(feature = "napi")]
-pub fn create_napi_error_with_code(
-    env: &Env,
-    err: LazyImageError,
-) -> napi::Result<napi::JsObject> {
+pub fn create_napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi::JsObject> {
     let category = err.category();
 
     // Create error object with original message (no prefix to avoid breaking changes)
@@ -401,32 +444,28 @@ pub fn create_napi_error_with_code(
         },
         err_msg.clone(),
     ))?;
-    
+
     // Override message property to ensure clean message (without Status prefix)
     // napi::Error::new() may include Status in message, so we set message property directly
     error_obj.set_named_property("message", env.create_string(&err_msg)?)?;
-    
+
     // Add error.code property (standard pattern, like sharp uses)
     let code_value = env.create_string(category.code())?;
     error_obj.set_named_property("code", code_value)?;
-    
+
     // Add error.category property (ErrorCategory enum value as number)
     // Use #[repr(u32)] to get the enum value directly
     let category_value = env.create_uint32(category as u32)?;
     error_obj.set_named_property("category", category_value)?;
-    
+
     Ok(error_obj)
 }
-
 
 /// Helper function to convert LazyImageError to napi::Error with code/category
 /// The returned napi::Error references a JsError object which already includes
 /// the structured properties, so callers can simply `return Err(...)`.
 #[cfg(feature = "napi")]
-pub fn napi_error_with_code(
-    env: &Env,
-    err: LazyImageError,
-) -> napi::Result<napi::Error> {
+pub fn napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi::Error> {
     let error_obj = create_napi_error_with_code(env, err)?;
     let js_unknown = error_obj.into_unknown();
     Ok(napi::Error::from(js_unknown))

@@ -39,7 +39,10 @@ mod tasks;
 // Re-export commonly used types and functions
 pub use api::ImageEngine;
 pub use decoder::{check_dimensions, decode_jpeg_mozjpeg};
-pub use encoder::{encode_avif, encode_jpeg, encode_png, encode_webp, embed_icc_jpeg, embed_icc_png, embed_icc_webp, QualitySettings};
+pub use encoder::{
+    embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
+    encode_webp, QualitySettings,
+};
 pub use io::{extract_icc_profile, Source};
 pub use pipeline::{
     apply_ops, calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned,
@@ -73,8 +76,8 @@ pub use stress::run_stress_iteration;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ops::{Operation, OutputFormat};
     use crate::engine::tasks::EncodeTask;
+    use crate::ops::{Operation, OutputFormat, ResizeFit};
     use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
     use std::borrow::Cow;
     use std::sync::Arc;
@@ -305,7 +308,10 @@ mod tests {
 
     mod icc_tests {
         use super::*;
-        use crate::engine::io::{extract_icc_from_jpeg, extract_icc_from_png, extract_icc_from_png_direct, extract_icc_from_webp, validate_icc_profile};
+        use crate::engine::io::{
+            extract_icc_from_jpeg, extract_icc_from_png, extract_icc_from_png_direct,
+            extract_icc_from_webp, validate_icc_profile,
+        };
 
         #[test]
         fn test_validate_icc_profile_too_small() {
@@ -621,7 +627,8 @@ mod tests {
                     "Re-encoded PNG should also contain iCCP chunk"
                 );
                 assert_eq!(
-                    extracted_icc, re_extracted_icc.unwrap(),
+                    extracted_icc,
+                    re_extracted_icc.unwrap(),
                     "Re-extracted ICC should match original"
                 );
             }
@@ -657,7 +664,8 @@ mod tests {
                     "PNG should contain iCCP chunk with ICC profile from JPEG"
                 );
                 assert_eq!(
-                    extracted_icc, re_extracted.unwrap(),
+                    extracted_icc,
+                    re_extracted.unwrap(),
                     "ICC profile should be preserved in JPEG to PNG conversion"
                 );
             }
@@ -767,6 +775,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(50),
                 height: Some(50),
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 50));
@@ -778,6 +787,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(50),
                 height: None,
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
@@ -789,6 +799,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: None,
                 height: Some(25),
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
@@ -957,6 +968,7 @@ mod tests {
                 Operation::Resize {
                     width: Some(100),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Rotate { degrees: 90 },
                 Operation::Grayscale,
@@ -985,16 +997,24 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height: _ } = &optimized[0] {
+            if let Operation::Resize {
+                width,
+                height: _,
+                fit,
+            } = &optimized[0]
+            {
                 assert_eq!(*width, Some(400));
+                assert_eq!(*fit, ResizeFit::Inside);
             } else {
                 panic!("Expected Resize operation");
             }
@@ -1006,11 +1026,13 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Grayscale,
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
@@ -1022,6 +1044,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(100),
                 height: None,
+                fit: ResizeFit::Inside,
             }];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
@@ -1040,20 +1063,29 @@ mod tests {
                 Operation::Resize {
                     width: Some(1000),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height: _ } = &optimized[0] {
+            if let Operation::Resize {
+                width,
+                height: _,
+                fit,
+            } = &optimized[0]
+            {
                 assert_eq!(*width, Some(400));
+                assert_eq!(*fit, ResizeFit::Inside);
             }
         }
 
@@ -1063,17 +1095,20 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: Some(300),
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height } = &optimized[0] {
+            if let Operation::Resize { width, height, fit } = &optimized[0] {
                 assert_eq!(*width, Some(400));
                 assert_eq!(*height, Some(300));
+                assert_eq!(*fit, ResizeFit::Inside);
             }
         }
     }

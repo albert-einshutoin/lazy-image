@@ -3,16 +3,20 @@
 // Lazy pipeline operations.
 // These are cheap to create and store - the expensive work happens in compute().
 
+use std::str::FromStr;
+
 /// Image operations that can be queued for lazy execution.
 ///
 /// Design principle: each operation is self-contained and stateless.
 /// No references, no lifetimes, no bullshit.
 #[derive(Clone, Debug)]
 pub enum Operation {
-    /// Resize with optional width/height (maintains aspect ratio if one is None)
+    /// Resize with optional width/height.
+    /// The behavior when both width/height are provided depends on the fit mode.
     Resize {
         width: Option<u32>,
         height: Option<u32>,
+        fit: ResizeFit,
     },
 
     /// Crop a region from the image
@@ -52,6 +56,38 @@ pub enum ColorSpace {
     Srgb,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ResizeFit {
+    /// Maintain aspect ratio while fitting inside the bounding box (default)
+    Inside,
+    /// Maintain aspect ratio but ensure the bounding box is fully covered (may crop)
+    Cover,
+    /// Ignore aspect ratio and force exact dimensions
+    Fill,
+}
+
+impl Default for ResizeFit {
+    fn default() -> Self {
+        ResizeFit::Inside
+    }
+}
+
+impl FromStr for ResizeFit {
+    type Err = String;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        let normalized = value.trim().to_ascii_lowercase();
+        match normalized.as_str() {
+            "inside" => Ok(ResizeFit::Inside),
+            "cover" => Ok(ResizeFit::Cover),
+            "fill" => Ok(ResizeFit::Fill),
+            other => Err(format!(
+                "unknown resize fit '{other}'. Expected inside, cover, or fill"
+            )),
+        }
+    }
+}
+
 /// Output format for encoding
 #[derive(Clone, Debug)]
 pub enum OutputFormat {
@@ -88,7 +124,10 @@ impl OutputFormat {
         match format.to_lowercase().as_str() {
             "jpeg" | "jpg" => {
                 let q = quality.unwrap_or(85); // JPEG default: 85
-                Ok(Self::Jpeg { quality: q, fast_mode })
+                Ok(Self::Jpeg {
+                    quality: q,
+                    fast_mode,
+                })
             }
             "png" => Ok(Self::Png),
             "webp" => {
@@ -156,13 +195,27 @@ impl PresetConfig {
     /// Hero preset: 1920 width, JPEG quality 85
     /// Use case: Hero images, banners
     pub fn hero() -> Self {
-        Self::new(Some(1920), None, OutputFormat::Jpeg { quality: 85, fast_mode: false })
+        Self::new(
+            Some(1920),
+            None,
+            OutputFormat::Jpeg {
+                quality: 85,
+                fast_mode: false,
+            },
+        )
     }
 
     /// Social preset: 1200x630, JPEG quality 80
     /// Use case: OGP/Twitter Card images
     pub fn social() -> Self {
-        Self::new(Some(1200), Some(630), OutputFormat::Jpeg { quality: 80, fast_mode: false })
+        Self::new(
+            Some(1200),
+            Some(630),
+            OutputFormat::Jpeg {
+                quality: 80,
+                fast_mode: false,
+            },
+        )
     }
 }
 
@@ -325,7 +378,10 @@ mod tests {
             let preset = PresetConfig::get("hero").unwrap();
             assert_eq!(preset.width, Some(1920));
             assert_eq!(preset.height, None); // アスペクト比維持
-            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 85, .. }));
+            assert!(matches!(
+                preset.format,
+                OutputFormat::Jpeg { quality: 85, .. }
+            ));
         }
 
         #[test]
@@ -333,7 +389,10 @@ mod tests {
             let preset = PresetConfig::get("social").unwrap();
             assert_eq!(preset.width, Some(1200));
             assert_eq!(preset.height, Some(630)); // OGP標準サイズ
-            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 80, .. }));
+            assert!(matches!(
+                preset.format,
+                OutputFormat::Jpeg { quality: 80, .. }
+            ));
         }
 
         #[test]
@@ -387,11 +446,20 @@ mod tests {
 
         #[test]
         fn test_preset_new() {
-            let preset =
-                PresetConfig::new(Some(800), Some(600), OutputFormat::Jpeg { quality: 90, fast_mode: false });
+            let preset = PresetConfig::new(
+                Some(800),
+                Some(600),
+                OutputFormat::Jpeg {
+                    quality: 90,
+                    fast_mode: false,
+                },
+            );
             assert_eq!(preset.width, Some(800));
             assert_eq!(preset.height, Some(600));
-            assert!(matches!(preset.format, OutputFormat::Jpeg { quality: 90, .. }));
+            assert!(matches!(
+                preset.format,
+                OutputFormat::Jpeg { quality: 90, .. }
+            ));
         }
 
         #[test]
