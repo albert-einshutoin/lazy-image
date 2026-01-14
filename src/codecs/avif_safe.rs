@@ -64,9 +64,7 @@ impl SafeAvifImage {
     /// # Returns
     /// Returns `Ok(())` on success, or an error if setting the profile fails.
     pub fn set_icc_profile(&mut self, icc: &[u8]) -> Result<(), LazyImageError> {
-        let result = unsafe {
-            avifImageSetProfileICC(self.ptr, icc.as_ptr(), icc.len())
-        };
+        let result = unsafe { avifImageSetProfileICC(self.ptr, icc.as_ptr(), icc.len()) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
@@ -186,13 +184,7 @@ impl SafeAvifEncoder {
     /// * `quality_alpha` - Alpha quality value (0-100)
     /// * `speed` - Encoding speed (0-10, where 0 is slowest/best)
     /// * `max_threads` - Maximum number of threads to use
-    pub fn configure(
-        &mut self,
-        quality: u8,
-        quality_alpha: u8,
-        speed: i32,
-        max_threads: i32,
-    ) {
+    pub fn configure(&mut self, quality: u8, quality_alpha: u8, speed: i32, max_threads: i32) {
         unsafe {
             (*self.ptr).quality = quality as i32;
             (*self.ptr).qualityAlpha = quality_alpha as i32;
@@ -216,14 +208,8 @@ impl SafeAvifEncoder {
         duration: u64,
         add_image_flags: u32,
     ) -> Result<(), LazyImageError> {
-        let result = unsafe {
-            avifEncoderAddImage(
-                self.ptr,
-                image.as_mut_ptr(),
-                duration,
-                add_image_flags,
-            )
-        };
+        let result =
+            unsafe { avifEncoderAddImage(self.ptr, image.as_mut_ptr(), duration, add_image_flags) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",

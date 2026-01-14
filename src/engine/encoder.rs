@@ -108,19 +108,15 @@ impl QualitySettings {
 }
 
 /// Encode to JPEG using mozjpeg with RUTHLESS Web-optimized settings
-/// 
+///
 /// This function uses high-quality settings by default. For faster encoding
 /// (matching Sharp's speed), use `encode_jpeg_with_settings` with `fast_mode: true`.
-pub fn encode_jpeg(
-    img: &DynamicImage,
-    quality: u8,
-    icc: Option<&[u8]>,
-) -> EncoderResult<Vec<u8>> {
+pub fn encode_jpeg(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     encode_jpeg_with_settings(img, quality, icc, false)
 }
 
 /// Encode to JPEG with explicit fast mode control
-/// 
+///
 /// # Arguments
 /// * `img` - Image to encode
 /// * `quality` - Quality (0-100)
@@ -195,7 +191,7 @@ pub fn encode_jpeg_with_settings(
     // Fast mode: Sharp (libjpeg-turbo defaults) に近い設定
     if fast_mode {
         // Disable expensive optimizations for faster encoding
-        comp.set_optimize_coding(false); 
+        comp.set_optimize_coding(false);
         comp.set_optimize_scans(false);
     } else {
         // 既存の高品質設定 (mozjpeg defaults)
@@ -256,10 +252,7 @@ pub fn encode_jpeg_with_settings(
         }
 
         writer.finish().map_err(|e| {
-            LazyImageError::encode_failed(
-                "jpeg",
-                format!("mozjpeg: failed to finish: {e:?}"),
-            )
+            LazyImageError::encode_failed("jpeg", format!("mozjpeg: failed to finish: {e:?}"))
         })?;
 
         output
@@ -275,14 +268,11 @@ pub fn encode_jpeg_with_settings(
 
 /// Embed ICC profile into JPEG using img-parts
 pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
-    use img_parts::jpeg::{JpegSegment, markers::APP2};
+    use img_parts::jpeg::{markers::APP2, JpegSegment};
     use img_parts::Bytes;
 
-    let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
-        LazyImageError::decode_failed(format!(
-            "failed to parse JPEG for ICC: {e}"
-        ))
-    })?;
+    let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data))
+        .map_err(|e| LazyImageError::decode_failed(format!("failed to parse JPEG for ICC: {e}")))?;
 
     // Build ICC marker: "ICC_PROFILE\0" + chunk_num + total_chunks + data
     // For simplicity, we embed as a single chunk (works for profiles < 64KB)
@@ -302,10 +292,7 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     // Encode back
     let mut output = Vec::new();
     jpeg.encoder().write_to(&mut output).map_err(|e| {
-        LazyImageError::encode_failed(
-            "jpeg",
-            format!("failed to write JPEG with ICC: {e}"),
-        )
+        LazyImageError::encode_failed("jpeg", format!("failed to write JPEG with ICC: {e}"))
     })?;
 
     Ok(output)
@@ -315,12 +302,7 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     let mut buf = Vec::new();
     img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
-        .map_err(|e| {
-            LazyImageError::encode_failed(
-                "png",
-                format!("PNG encode failed: {e}"),
-            )
-        })?;
+        .map_err(|e| LazyImageError::encode_failed("png", format!("PNG encode failed: {e}")))?;
 
     // Embed ICC profile if present
     if let Some(icc_data) = icc {
@@ -334,11 +316,8 @@ pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u
 pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
     use img_parts::Bytes;
 
-    let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
-        LazyImageError::decode_failed(format!(
-            "failed to parse PNG for ICC: {e}"
-        ))
-    })?;
+    let mut png = Png::from_bytes(Bytes::from(png_data))
+        .map_err(|e| LazyImageError::decode_failed(format!("failed to parse PNG for ICC: {e}")))?;
 
     // img-parts' set_icc_profile expects raw ICC profile data
     // It will handle iCCP chunk formatting (profile_name + compression_method + compressed_data) internally
@@ -347,10 +326,7 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
     // Encode back
     let mut output = Vec::new();
     png.encoder().write_to(&mut output).map_err(|e| {
-        LazyImageError::encode_failed(
-            "png",
-            format!("failed to write PNG with ICC: {e}"),
-        )
+        LazyImageError::encode_failed("png", format!("failed to write PNG with ICC: {e}"))
     })?;
 
     Ok(output)
@@ -358,11 +334,7 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
 
 /// Encode to WebP with optimized settings
 /// Avoids unnecessary alpha channel to reduce file size
-pub fn encode_webp(
-    img: &DynamicImage,
-    quality: u8,
-    icc: Option<&[u8]>,
-) -> EncoderResult<Vec<u8>> {
+pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     use std::borrow::Cow;
 
     // Zero-copy optimization: avoid conversion if already RGB8
@@ -374,11 +346,8 @@ pub fn encode_webp(
     let encoder = webp::Encoder::from_rgb(&rgb, w, h);
 
     // Create WebPConfig with enhanced preprocessing for better compression
-    let mut config = webp::WebPConfig::new().map_err(|_| {
-        LazyImageError::internal_panic(
-            "failed to create WebPConfig",
-        )
-    })?;
+    let mut config = webp::WebPConfig::new()
+        .map_err(|_| LazyImageError::internal_panic("failed to create WebPConfig"))?;
 
     let settings = QualitySettings::new(quality);
     config.quality = settings.quality;
@@ -390,12 +359,9 @@ pub fn encode_webp(
     config.filter_strength = settings.webp_filter_strength();
     config.filter_sharpness = settings.webp_filter_sharpness();
 
-    let mem = encoder.encode_advanced(&config).map_err(|e| {
-        LazyImageError::encode_failed(
-            "webp",
-            format!("WebP encode failed: {e:?}"),
-        )
-    })?;
+    let mem = encoder
+        .encode_advanced(&config)
+        .map_err(|e| LazyImageError::encode_failed("webp", format!("WebP encode failed: {e:?}")))?;
 
     let encoded = mem.to_vec();
 
@@ -412,11 +378,8 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     use img_parts::webp::WebP;
     use img_parts::Bytes;
 
-    let mut webp = WebP::from_bytes(Bytes::from(webp_data)).map_err(|e| {
-        LazyImageError::decode_failed(format!(
-            "failed to parse WebP for ICC: {e}"
-        ))
-    })?;
+    let mut webp = WebP::from_bytes(Bytes::from(webp_data))
+        .map_err(|e| LazyImageError::decode_failed(format!("failed to parse WebP for ICC: {e}")))?;
 
     // Set the ICCP chunk directly
     webp.set_icc_profile(Some(Bytes::from(icc.to_vec())));
@@ -424,10 +387,7 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     // Encode back
     let mut output = Vec::new();
     webp.encoder().write_to(&mut output).map_err(|e| {
-        LazyImageError::encode_failed(
-            "webp",
-            format!("failed to write WebP with ICC: {e}"),
-        )
+        LazyImageError::encode_failed("webp", format!("failed to write WebP with ICC: {e}"))
     })?;
 
     Ok(output)
@@ -442,11 +402,7 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 ///
 /// This function uses safe abstractions from `codecs::avif_safe` to minimize
 /// unsafe blocks and improve memory safety.
-pub fn encode_avif(
-    img: &DynamicImage,
-    quality: u8,
-    icc: Option<&[u8]>,
-) -> EncoderResult<Vec<u8>> {
+pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     use std::borrow::Cow;
 
     let settings = QualitySettings::new(quality);
@@ -481,21 +437,29 @@ pub fn encode_avif(
 
     // Set ICC profile if provided
     if let Some(icc_data) = icc {
-        avif_image.set_icc_profile(icc_data).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+        avif_image
+            .set_icc_profile(icc_data)
+            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
     }
 
     // Create and configure RGB image structure
     let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height);
 
     // Allocate YUV planes in the image
-    avif_image.allocate_planes(AVIF_PLANES_YUV).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+    avif_image
+        .allocate_planes(AVIF_PLANES_YUV)
+        .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Convert RGB to YUV using libavif's optimized conversion
-    avif_image.rgb_to_yuv(&rgb).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+    avif_image
+        .rgb_to_yuv(&rgb)
+        .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Handle alpha channel if present
     if has_alpha {
-        avif_image.allocate_planes(AVIF_PLANES_A).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+        avif_image
+            .allocate_planes(AVIF_PLANES_A)
+            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
         // Copy alpha channel data
         // This is the only place where we need unsafe access to the alpha plane
@@ -513,7 +477,8 @@ pub fn encode_avif(
     }
 
     // Create encoder using safe wrapper
-    let mut encoder = SafeAvifEncoder::new().map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+    let mut encoder = SafeAvifEncoder::new()
+        .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Configure encoder
     // libavif quality: 0 (worst) to 100 (lossless),
@@ -537,7 +502,9 @@ pub fn encode_avif(
         .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Finish encoding
-    encoder.finish(&mut output).map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+    encoder
+        .finish(&mut output)
+        .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
     // Copy output data
     let encoded_data = output.to_vec();
@@ -635,11 +602,11 @@ mod tests {
             let img = create_test_image(500, 500); // Larger image for more noticeable difference
             let fast_result = encode_jpeg_with_settings(&img, 80, None, true).unwrap();
             let default_result = encode_jpeg_with_settings(&img, 80, None, false).unwrap();
-            
+
             // Both should be valid JPEGs
             assert_eq!(&fast_result[0..2], &[0xFF, 0xD8]);
             assert_eq!(&default_result[0..2], &[0xFF, 0xD8]);
-            
+
             // Fast mode typically produces slightly larger files (5-10% increase)
             // but should still be reasonable
             assert!(fast_result.len() > 0);

@@ -3,10 +3,11 @@
 // Decoder operations: JPEG (mozjpeg), PNG, WebP, etc.
 
 use crate::error::LazyImageError;
-use image::{DynamicImage, RgbImage};
 #[cfg(test)]
 use image::GenericImageView;
+use image::{DynamicImage, ImageReader, RgbImage};
 use mozjpeg::Decompress;
+use std::io::Cursor;
 use std::panic;
 
 use crate::engine::MAX_DIMENSION;
@@ -34,12 +35,16 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
         let width = decompress.width();
         let height = decompress.height();
 
-        // Validate dimensions before casting (mozjpeg returns usize)
         if width > MAX_DIMENSION as usize || height > MAX_DIMENSION as usize {
             return Err(format!(
                 "image dimensions {}x{} exceed max {}",
                 width, height, MAX_DIMENSION
             ));
+        }
+        let width_u32 = width as u32;
+        let height_u32 = height as u32;
+        if let Err(err) = check_dimensions(width_u32, height_u32) {
+            return Err(err.to_string());
         }
 
         // Read all scanlines
@@ -54,7 +59,7 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
 
         // Create DynamicImage from raw RGB data
         // Safe cast: we validated dimensions above
-        let rgb_image = RgbImage::from_raw(width as u32, height as u32, flat_pixels)
+        let rgb_image = RgbImage::from_raw(width_u32, height_u32, flat_pixels)
             .ok_or_else(|| "mozjpeg: failed to create image from raw data".to_string())?;
 
         Ok::<DynamicImage, String>(DynamicImage::ImageRgb8(rgb_image))
@@ -81,7 +86,49 @@ pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
     }
     let pixels = width as u64 * height as u64;
     if pixels > MAX_PIXELS {
-        return Err(LazyImageError::pixel_count_exceeds_limit(pixels, MAX_PIXELS));
+        return Err(LazyImageError::pixel_count_exceeds_limit(
+            pixels, MAX_PIXELS,
+        ));
     }
     Ok(())
+}
+
+/// Inspect encoded bytes and ensure the image dimensions are safe before decoding.
+pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
+    let cursor = Cursor::new(bytes);
+    if let Ok(reader) = ImageReader::new(cursor).with_guessed_format() {
+        if let Ok((width, height)) = reader.into_dimensions() {
+            return check_dimensions(width, height);
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::{ImageFormat, Rgb, RgbImage};
+
+    fn encode_png(width: u32, height: u32) -> Vec<u8> {
+        let img = RgbImage::from_fn(width, height, |_, _| Rgb([0, 0, 0]));
+        let mut buffer = Vec::new();
+        DynamicImage::ImageRgb8(img)
+            .write_to(&mut Cursor::new(&mut buffer), ImageFormat::Png)
+            .unwrap();
+        buffer
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_allows_small_image() {
+        let data = encode_png(64, 64);
+        assert!(ensure_dimensions_safe(&data).is_ok());
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_rejects_large_image() {
+        let width = crate::engine::MAX_DIMENSION + 1;
+        let data = encode_png(width, 1);
+        let err = ensure_dimensions_safe(&data).unwrap_err();
+        assert!(matches!(err, LazyImageError::DimensionExceedsLimit { .. }));
+    }
 }

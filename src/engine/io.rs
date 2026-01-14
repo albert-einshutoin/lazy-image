@@ -21,7 +21,9 @@ impl Source {
     /// Load the actual bytes from the source
     /// Note: For Mapped sources, this converts to Vec<u8> (defeats zero-copy).
     /// Prefer using as_bytes() for zero-copy access when possible.
-    #[deprecated(note = "Use as_bytes() for zero-copy access. This method defeats zero-copy by converting Mapped to Vec<u8>.")]
+    #[deprecated(
+        note = "Use as_bytes() for zero-copy access. This method defeats zero-copy by converting Mapped to Vec<u8>."
+    )]
     pub fn load(&self) -> std::result::Result<Arc<Vec<u8>>, LazyImageError> {
         match self {
             Source::Memory(data) => Ok(data.clone()),
@@ -729,7 +731,8 @@ mod tests {
                     "Re-encoded PNG should also contain iCCP chunk"
                 );
                 assert_eq!(
-                    extracted_icc, re_extracted_icc.unwrap(),
+                    extracted_icc,
+                    re_extracted_icc.unwrap(),
                     "Re-extracted ICC should match original"
                 );
             }
@@ -765,7 +768,8 @@ mod tests {
                     "PNG should contain iCCP chunk with ICC profile from JPEG"
                 );
                 assert_eq!(
-                    extracted_icc, re_extracted.unwrap(),
+                    extracted_icc,
+                    re_extracted.unwrap(),
                     "ICC profile should be preserved in JPEG to PNG conversion"
                 );
             }

@@ -3,14 +3,21 @@
 // Stress test utilities for fuzzing and performance testing.
 // This module is independent of NAPI and can be used with --no-default-features --features stress.
 
+#[cfg(feature = "stress")]
 use crate::convert_result;
+#[cfg(feature = "stress")]
 use crate::engine::common::EngineResult;
-use crate::engine::decoder::decode_jpeg_mozjpeg;
+#[cfg(feature = "stress")]
+use crate::engine::decoder::{decode_jpeg_mozjpeg, ensure_dimensions_safe};
+#[cfg(feature = "stress")]
 use crate::engine::encoder::{
     encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp,
 };
+#[cfg(feature = "stress")]
 use crate::engine::pipeline::apply_ops;
+#[cfg(feature = "stress")]
 use crate::ops::{Operation, OutputFormat, ResizeFit};
+#[cfg(feature = "stress")]
 use std::borrow::Cow;
 
 /// Run a single stress test iteration.
@@ -49,6 +56,7 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
     ];
 
     // Decode the image once
+    ensure_dimensions_safe(data)?;
     let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
         // JPEG - use mozjpeg for speed
         convert_result!(decode_jpeg_mozjpeg(data))

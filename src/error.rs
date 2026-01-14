@@ -310,6 +310,12 @@ impl LazyImageError {
         Self::InvalidResizeDimensions { width, height }
     }
 
+    pub fn invalid_resize_fit(value: impl Into<Cow<'static, str>>) -> Self {
+        Self::InvalidResizeFit {
+            value: value.into(),
+        }
+    }
+
     pub fn resize_failed(
         source_dims: (u32, u32),
         target_dims: (u32, u32),
@@ -342,12 +348,6 @@ impl LazyImageError {
 
     pub fn invalid_preset(name: impl Into<Cow<'static, str>>) -> Self {
         Self::InvalidPreset { name: name.into() }
-    }
-
-    pub fn invalid_resize_fit(value: impl Into<Cow<'static, str>>) -> Self {
-        Self::InvalidResizeFit {
-            value: value.into(),
-        }
     }
 
     pub fn source_consumed() -> Self {
