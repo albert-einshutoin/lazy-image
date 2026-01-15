@@ -1,11 +1,11 @@
 #![no_main]
 
 //! Fuzz target for image encoding to various formats.
-//! Tests JPEG, PNG, WebP encoding paths for crashes and memory issues.
+//! Tests JPEG (mozjpeg), PNG, WebP, and AVIF encoding paths for crashes and memory issues.
 
 use arbitrary::{Arbitrary, Unstructured};
 use image::{DynamicImage, RgbaImage};
-use lazy_image::engine::{encode_jpeg, encode_png, encode_webp};
+use lazy_image::engine::{encode_avif, encode_jpeg, encode_png, encode_webp};
 use libfuzzer_sys::fuzz_target;
 
 #[derive(Arbitrary, Debug)]
@@ -17,8 +17,9 @@ struct EncodeSeed {
 }
 
 fn build_image(data: &[u8], width: u8, height: u8) -> DynamicImage {
-    let w = (width as u32 % 256).max(1);
-    let h = (height as u32 % 256).max(1);
+    // Limit dimensions to avoid OOM (max 128x128 = 64KB RGBA)
+    let w = (width as u32 % 128).max(1);
+    let h = (height as u32 % 128).max(1);
     let pixel_count = (w * h * 4) as usize;
 
     let mut buffer = vec![0u8; pixel_count];
@@ -47,15 +48,22 @@ fuzz_target!(|data: &[u8]| {
 
     // Test encoding to different formats
     // We only care about panics/crashes, not encoding errors
-    match seed.format % 3 {
+    match seed.format % 4 {
         0 => {
+            // JPEG encoding via mozjpeg
             let _ = encode_jpeg(&img, quality, None);
         }
         1 => {
+            // PNG encoding
             let _ = encode_png(&img, None);
         }
-        _ => {
+        2 => {
+            // WebP encoding via libwebp
             let _ = encode_webp(&img, quality, None);
+        }
+        _ => {
+            // AVIF encoding via libavif (AOMedia reference encoder)
+            let _ = encode_avif(&img, quality, None);
         }
     }
 });
