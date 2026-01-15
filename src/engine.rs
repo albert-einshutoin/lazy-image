@@ -1402,7 +1402,7 @@ mod tests {
                 #[cfg(feature = "napi")]
                 last_error: None,
             };
-            let err = task.decode().unwrap_err();
+            let err = task.decode_internal().unwrap_err();
             assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
         }
 
@@ -1424,7 +1424,7 @@ mod tests {
                 #[cfg(feature = "napi")]
                 last_error: None,
             };
-            let err = task.decode().unwrap_err();
+            let err = task.decode_internal().unwrap_err();
             assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
         }
     }

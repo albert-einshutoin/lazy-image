@@ -10,8 +10,8 @@ const STRICT_MAX_PIXELS: u64 = 40_000_000; // ~8K x 5K
 const LENIENT_MAX_PIXELS: u64 = 75_000_000; // generous but below global MAX_PIXELS
 const STRICT_MAX_BYTES: u64 = 32 * 1024 * 1024; // 32MB input cap
 const LENIENT_MAX_BYTES: u64 = 48 * 1024 * 1024; // 48MB input cap
-const STRICT_TIMEOUT_MS: u64 = 1_500; // 1.5s wall clock guardrail
-const LENIENT_TIMEOUT_MS: u64 = 3_000; // 3s wall clock guardrail
+const STRICT_TIMEOUT_MS: u64 = 5_000; // 5s wall clock (allows JPEG/WebP, strict on slow AVIF)
+const LENIENT_TIMEOUT_MS: u64 = 30_000; // 30s wall clock (allows AVIF on large images)
 const LENIENT_METADATA_LIMIT: u64 = 512 * 1024; // 512KB ICC cap
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -105,8 +105,9 @@ impl FirewallConfig {
             let len_u64 = len as u64;
             if len_u64 > limit {
                 return Err(LazyImageError::firewall_violation(format!(
-                    "Image Firewall: input size {} bytes exceeds max {} bytes",
-                    len_u64, limit
+                    "Image Firewall: input size {} bytes exceeds limit of {} bytes. \
+                     Use .limits({{ maxBytes: {} }}) to allow larger files or switch to lenient policy.",
+                    len_u64, limit, len_u64 + 1024 * 1024
                 )));
             }
         }
@@ -121,8 +122,9 @@ impl FirewallConfig {
             let pixels = width as u64 * height as u64;
             if pixels > limit {
                 return Err(LazyImageError::firewall_violation(format!(
-                    "Image Firewall: {}x{} ({} pixels) exceeds max {} pixels",
-                    width, height, pixels, limit
+                    "Image Firewall: {}x{} ({} pixels) exceeds limit of {} pixels. \
+                     Resize the image first with .resize() or use .limits({{ maxPixels: {} }}).",
+                    width, height, pixels, limit, pixels + 1_000_000
                 )));
             }
         }
@@ -141,8 +143,9 @@ impl FirewallConfig {
             let elapsed_ms = started_at.elapsed().as_millis() as u64;
             if elapsed_ms > limit_ms {
                 return Err(LazyImageError::firewall_violation(format!(
-                    "Image Firewall: processing exceeded {}ms during {} stage",
-                    limit_ms, stage
+                    "Image Firewall: processing exceeded {}ms timeout at {} stage (elapsed: {}ms). \
+                     Use .limits({{ timeoutMs: {} }}) for longer operations or switch to lenient policy.",
+                    limit_ms, stage, elapsed_ms, elapsed_ms + 5000
                 )));
             }
         }
@@ -159,7 +162,8 @@ impl FirewallConfig {
 
         if self.reject_metadata {
             return Err(LazyImageError::firewall_violation(
-                "Image Firewall: embedded ICC metadata is blocked under strict policy",
+                "Image Firewall: embedded ICC profile blocked under strict policy. \
+                 Use .sanitize({ policy: 'lenient' }) to allow ICC profiles.",
             ));
         }
 
@@ -167,7 +171,8 @@ impl FirewallConfig {
             let icc_len = icc.len() as u64;
             if icc_len > limit {
                 return Err(LazyImageError::firewall_violation(format!(
-                    "Image Firewall: ICC profile ({} bytes) exceeds safe limit {} bytes",
+                    "Image Firewall: ICC profile ({} bytes) exceeds limit of {} bytes. \
+                     This may indicate a malformed or malicious file.",
                     icc_len, limit
                 )));
             }

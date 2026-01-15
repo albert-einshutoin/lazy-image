@@ -312,6 +312,13 @@ if (!nativeBinding) {
 
 const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
+/**
+ * Extract ErrorCategory from an error object created by lazy-image.
+ * Returns null when the error is not from lazy-image.
+ *
+ * @param {Error|null|undefined} error - The error object to inspect
+ * @returns {ErrorCategory|null} The error category or null
+ */
 function getErrorCategory(error) {
   if (!error) {
     return null
