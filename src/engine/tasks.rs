@@ -3,6 +3,7 @@
 // Async task implementations for NAPI.
 // These tasks run in background threads and don't block Node.js main thread.
 
+use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
     check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, ensure_dimensions_safe,
 };
@@ -115,6 +116,7 @@ pub(crate) struct EncodeTask {
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     pub keep_metadata: bool,
+    pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
     pub(crate) last_error: Option<LazyImageError>,
@@ -136,6 +138,8 @@ impl EncodeTask {
         // Return borrowed reference - no deep copy until mutation is needed
         if let Some(ref img_arc) = self.decoded {
             check_dimensions(img_arc.width(), img_arc.height())?;
+            self.firewall
+                .enforce_pixels(img_arc.width(), img_arc.height())?;
             return Ok(Cow::Borrowed(img_arc.as_ref()));
         }
 
@@ -157,6 +161,9 @@ impl EncodeTask {
             }
         };
 
+        self.firewall.enforce_source_len(bytes.len())?;
+        self.firewall.scan_metadata(bytes)?;
+
         ensure_dimensions_safe(bytes)?;
 
         // Check magic bytes for JPEG (0xFF 0xD8)
@@ -171,6 +178,7 @@ impl EncodeTask {
         // Security check: reject decompression bombs
         let (w, h) = img.dimensions();
         check_dimensions(w, h)?;
+        self.firewall.enforce_pixels(w, h)?;
 
         Ok(Cow::Owned(img))
     }
@@ -205,6 +213,7 @@ impl EncodeTask {
         // 1. Decode
         let start_decode = std::time::Instant::now();
         let img = self.decode_internal()?;
+        self.firewall.enforce_timeout(start_total, "decode")?;
         if let Some(m) = metrics.as_deref_mut() {
             m.decode_time = start_decode.elapsed().as_secs_f64() * 1000.0;
         }
@@ -212,6 +221,7 @@ impl EncodeTask {
         // 2. Apply operations
         let start_process = std::time::Instant::now();
         let processed = apply_ops(img, &self.ops)?;
+        self.firewall.enforce_timeout(start_total, "process")?;
         if let Some(m) = metrics.as_deref_mut() {
             m.process_time = start_process.elapsed().as_secs_f64() * 1000.0;
         }
@@ -231,6 +241,7 @@ impl EncodeTask {
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
+        self.firewall.enforce_timeout(start_total, "encode")?;
 
         // Get final resource usage
         let final_usage = get_resource_usage();
@@ -321,6 +332,7 @@ pub(crate) struct EncodeWithMetricsTask {
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub keep_metadata: bool,
+    pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
     pub(crate) last_error: Option<LazyImageError>,
@@ -341,6 +353,7 @@ impl Task for EncodeWithMetricsTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             keep_metadata: self.keep_metadata,
+            firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
         };
@@ -390,6 +403,7 @@ pub(crate) struct WriteFileTask {
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub keep_metadata: bool,
+    pub firewall: FirewallConfig,
     pub output_path: String,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -414,6 +428,7 @@ impl Task for WriteFileTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             keep_metadata: self.keep_metadata,
+            firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
         };
@@ -504,6 +519,7 @@ pub(crate) struct BatchTask {
     pub format: OutputFormat,
     pub concurrency: u32,
     pub keep_metadata: bool,
+    pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
     pub(crate) last_error: Option<LazyImageError>,
@@ -532,8 +548,10 @@ impl Task for BatchTask {
         let format = &self.format;
         let output_dir = &self.output_dir;
         let keep_metadata = self.keep_metadata;
+        let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
+                let start_total = std::time::Instant::now();
                 // Use memory mapping for zero-copy access (same as from_path)
                 use memmap2::Mmap;
                 use std::fs::File;
@@ -559,6 +577,9 @@ impl Task for BatchTask {
                 let mmap_arc = Arc::new(mmap);
                 let data = mmap_arc.as_ref();
 
+                firewall.enforce_source_len(data.len())?;
+                firewall.scan_metadata(data)?;
+
                 let icc_profile = if keep_metadata {
                     extract_icc_profile(data).map(Arc::new)
                 } else {
@@ -570,11 +591,14 @@ impl Task for BatchTask {
                 } else {
                     decode_with_image_crate(data)?
                 };
+                firewall.enforce_timeout(start_total, "decode")?;
 
                 let (w, h) = img.dimensions();
                 check_dimensions(w, h)?;
+                firewall.enforce_pixels(w, h)?;
 
                 let processed = apply_ops(Cow::Owned(img), ops)?;
+                firewall.enforce_timeout(start_total, "process")?;
 
                 // Encode - only preserve ICC profile if keep_metadata is true
                 let icc = if keep_metadata {
@@ -590,6 +614,7 @@ impl Task for BatchTask {
                     OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc)?,
                     OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
+                firewall.enforce_timeout(start_total, "encode")?;
 
                 let filename = Path::new(input_path)
                     .file_name()

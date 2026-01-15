@@ -729,6 +729,95 @@ If you process untrusted images (user avatars, uploads, etc.):
 
 > 📖 See [SECURITY.md](./SECURITY.md) for vulnerability reporting and security policy.
 
+### Image Firewall Mode (Strict & Lenient)
+
+**This is a major differentiator vs sharp.** lazy-image provides production-ready input sanitization that other libraries lack.
+
+#### Why You Need This
+
+Image processing is a major attack vector:
+- **Decompression bombs**: A 42KB zip can expand to 4.5PB
+- **Billion laughs attacks**: Nested metadata causing exponential expansion
+- **Slowloris-style attacks**: Crafted images that take minutes to process
+- **Metadata exploits**: Malicious ICC profiles, oversized EXIF data
+
+sharp requires you to implement all validation yourself. lazy-image provides it out of the box.
+
+#### Quick Start
+
+```ts
+// Zero-trust mode: strictest security for user uploads
+const result = await ImageEngine.from(untrustedBuffer)
+  .sanitize({ policy: 'strict' })
+  .resize(800)
+  .toBuffer('webp', 80);
+
+// Balanced mode: generous limits while still protecting against attacks
+const result = await ImageEngine.from(buffer)
+  .sanitize({ policy: 'lenient' })
+  .resize(1920)
+  .toBuffer('jpeg', 85);
+```
+
+#### Policy Comparison
+
+| Limit | Strict | Lenient | Default (no firewall) |
+|-------|--------|---------|----------------------|
+| Max pixels | 40 MP (~8K) | 75 MP | 1 GP (1 billion) |
+| Max input bytes | 32 MB | 48 MB | Unlimited |
+| Timeout | 5 seconds | 30 seconds | Unlimited |
+| ICC profiles | **Blocked** | 512 KB max | Allowed |
+
+#### Custom Limits
+
+Override any limit for specific use cases:
+
+```ts
+// Allow larger images but keep timeout protection
+await ImageEngine.from(buffer)
+  .sanitize({ policy: 'lenient' })
+  .limits({ maxPixels: 100_000_000 })  // 100 MP
+  .toBuffer('jpeg', 85);
+
+// Quick thumbnail generation with tight timeout
+await ImageEngine.from(buffer)
+  .sanitize({ policy: 'strict' })
+  .limits({ timeoutMs: 2000 })  // 2 second max
+  .resize(150, 150)
+  .toBuffer('webp', 75);
+
+// Disable specific limits (set to 0)
+await ImageEngine.from(buffer)
+  .limits({ maxPixels: 0, maxBytes: 50_000_000 })  // No pixel limit, 50MB max
+  .toBuffer('jpeg', 85);
+```
+
+#### Error Handling
+
+Firewall violations throw actionable errors:
+
+```ts
+try {
+  await ImageEngine.from(hugeImage)
+    .sanitize({ policy: 'strict' })
+    .toBuffer('jpeg', 85);
+} catch (e) {
+  // Error: Image Firewall: 8000x6000 (48000000 pixels) exceeds limit of 40000000 pixels.
+  //        Resize the image first with .resize() or use .limits({ maxPixels: 49000000 }).
+  console.error(e.message);
+}
+```
+
+#### When to Use Each Policy
+
+| Use Case | Recommended Policy |
+|----------|-------------------|
+| User avatar uploads | `strict` |
+| Social media images | `strict` |
+| Admin-uploaded content | `lenient` |
+| Internal processing | `lenient` or no firewall |
+| AVIF encoding (slow) | `lenient` + custom timeout |
+
 ---
 
 ## 🔬 Technical Details

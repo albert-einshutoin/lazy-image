@@ -29,6 +29,7 @@ mod api;
 mod common;
 mod decoder;
 mod encoder;
+mod firewall;
 mod io;
 mod memory;
 mod pipeline;
@@ -56,8 +57,12 @@ pub use pool::{get_pool, MAX_CONCURRENCY};
 // Re-export types from api.rs and tasks.rs
 #[cfg(feature = "napi")]
 pub use api::{Dimensions, PresetResult};
+#[cfg(feature = "fuzzing")]
+pub use firewall::FirewallConfig;
 #[cfg(feature = "napi")]
 pub use tasks::BatchResult;
+#[cfg(feature = "fuzzing")]
+pub use tasks::EncodeTask;
 
 // Re-export stress test function
 #[cfg(feature = "stress")]
@@ -76,7 +81,9 @@ pub use stress::run_stress_iteration;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::engine::firewall::FirewallConfig;
     use crate::engine::tasks::EncodeTask;
+    use crate::error::LazyImageError;
     use crate::ops::{Operation, OutputFormat, ResizeFit};
     use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
     use std::borrow::Cow;
@@ -122,13 +129,17 @@ mod tests {
         output
     }
 
-    // Helper to create minimal valid PNG bytes
-    fn create_minimal_png() -> Vec<u8> {
-        let img = create_test_image(1, 1);
+    fn create_png(width: u32, height: u32) -> Vec<u8> {
+        let img = create_test_image(width, height);
         let mut buf = Vec::new();
         img.write_to(&mut std::io::Cursor::new(&mut buf), image::ImageFormat::Png)
             .unwrap();
         buf
+    }
+
+    // Helper to create minimal valid PNG bytes
+    fn create_minimal_png() -> Vec<u8> {
+        create_png(1, 1)
     }
 
     // Helper to create minimal valid WebP bytes
@@ -394,7 +405,7 @@ mod tests {
         #[test]
         fn test_extract_icc_from_png_no_profile() {
             // ICCプロファイルなしのPNG
-            let png_data = create_minimal_png();
+            let png_data = create_png(2, 2);
             let result = extract_icc_from_png(&png_data);
             assert!(result.is_none());
         }
@@ -1321,6 +1332,7 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 keep_metadata: false,
+                firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
             };
@@ -1341,6 +1353,7 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 keep_metadata: false,
+                firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
             };
@@ -1358,9 +1371,10 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                keep_metadata: false,
+                firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
-                keep_metadata: false,
             };
             let result = task.decode();
             assert!(result.is_err());
@@ -1368,6 +1382,50 @@ mod tests {
                 .unwrap_err()
                 .to_string()
                 .contains("Image source already consumed"));
+        }
+
+        #[test]
+        fn test_firewall_blocks_large_input_bytes() {
+            use crate::engine::io::Source;
+            let png_data = create_minimal_png();
+            let mut firewall = FirewallConfig::custom();
+            firewall.max_bytes = Some(1);
+
+            let task = EncodeTask {
+                source: Some(Source::Memory(Arc::new(png_data))),
+                decoded: None,
+                ops: vec![],
+                format: OutputFormat::Png,
+                icc_profile: None,
+                keep_metadata: false,
+                firewall,
+                #[cfg(feature = "napi")]
+                last_error: None,
+            };
+            let err = task.decode_internal().unwrap_err();
+            assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
+        }
+
+        #[test]
+        fn test_firewall_blocks_large_pixel_count() {
+            use crate::engine::io::Source;
+            let png_data = create_png(2, 2);
+            let mut firewall = FirewallConfig::custom();
+            firewall.max_pixels = Some(1);
+
+            let task = EncodeTask {
+                source: Some(Source::Memory(Arc::new(png_data))),
+                decoded: None,
+                ops: vec![],
+                format: OutputFormat::Png,
+                icc_profile: None,
+                keep_metadata: false,
+                firewall,
+                #[cfg(feature = "napi")]
+                last_error: None,
+            };
+            let err = task.decode_internal().unwrap_err();
+            assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
         }
     }
 
