@@ -47,6 +47,9 @@ libavif-sys = { version = "0.17", default-features = false, features = ["codec-r
 # ICC profile extraction from image containers
 img-parts = "0.3"
 
+# Compression for PNG ICC chunks (used in extract_icc_from_png_direct)
+flate2 = "1.0"
+
 # Temporary file handling
 tempfile = "3.10"
 
@@ -71,8 +74,6 @@ tikv-jemallocator = { version = "0.6", optional = true, features = ["disable_ini
 
 [dev-dependencies]
 criterion = "0.5"
-# Compression for PNG ICC chunks (test only - used in extract_icc_from_png_direct)
-flate2 = "1.0"
 
 [[bench]]
 name = "benchmark"
