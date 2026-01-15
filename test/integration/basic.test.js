@@ -308,19 +308,33 @@ async function runTests() {
     });
 
     await asyncTest('error category: ResourceLimit for file write error', async () => {
-        // 書き込み権限のないディレクトリに書き込もうとする
-        // 実際のテストでは、権限エラーが発生する可能性がある
-        // このテストは、エラーが発生した場合にResourceLimitカテゴリが設定されることを確認する
+        // ✅ Fix: より確実なテスト: 既存のファイルをディレクトリとして指定（確実にエラーになる）
+        // 既存のファイルをディレクトリとして指定することで、確実にエラーを発生させる
+        let threw = false;
+        let category = null;
         try {
-            // 存在しない親ディレクトリへの書き込みを試みる
+            // 既存のファイルをディレクトリとして指定
+            // ファイルの下にファイルを作成しようとするため、確実にエラーになる
+            const invalidPath = path.join(TEST_IMAGE, 'output.jpg');
             await ImageEngine.from(buffer)
                 .resize(100, 100)
-                .toFile('/nonexistent/directory/output.jpg', 'jpeg', 80);
-            // エラーが発生しない場合もある（環境による）
+                .toFile(invalidPath, 'jpeg', 80);
         } catch (e) {
-            const category = getErrorCategory(e);
-            assertCategory(category, ErrorCategory.ResourceLimit, 'file write error should be ResourceLimit');
+            threw = true;
+            category = getErrorCategory(e);
+            // ✅ Fix: エラーカテゴリがResourceLimitであることを確認
+            if (category !== null) {
+                assertCategory(
+                    category, 
+                    ErrorCategory.ResourceLimit, 
+                    'file write error should be ResourceLimit'
+                );
+            }
         }
+        
+        // ✅ Fix: エラーが発生することを確認（必須）
+        assert(threw, 'should throw error when trying to write to invalid path');
+        assert(category === ErrorCategory.ResourceLimit, 'error category should be ResourceLimit');
     });
 
     await asyncTest('processBatch error results expose category', async () => {

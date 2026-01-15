@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const { resolveRoot, resolveFixture, resolveTemp } = require('../helpers/paths');
-const { ImageEngine, inspect, inspectFile } = require(resolveRoot('index'));
+const { ImageEngine, inspect, inspectFile, ErrorCategory, getErrorCategory } = require(resolveRoot('index'));
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
 
@@ -48,27 +48,21 @@ async function runTests() {
     // SECURITY TESTS - Decompression bomb protection
     // ========================================================================
     
-    await asyncTest('rejects images exceeding MAX_DIMENSION (32768)', async () => {
-        // Test dimension validation - we verify the check exists without processing huge images
-        // The actual protection happens during decode via check_dimensions()
-        // We test with a reasonable size that won't cause timeout/memory issues
-        // The real validation is tested in Rust unit tests (tests/edge_cases.rs)
-        let threw = false;
-        try {
-            // Use a size that's large but still reasonable for CI environments
-            // The dimension check happens during decode, not during resize operation
-            const largeSize = 35000; // Exceeds MAX_DIMENSION of 32768
-            await ImageEngine.from(buffer)
-                .resize(largeSize, largeSize)
-                .toBuffer('jpeg', 80);
-        } catch (e) {
-            threw = true;
-            // Should fail during decode if dimensions exceed limit
-        }
-        // Note: Resize operation itself doesn't validate dimensions,
-        // but decode() will catch it via check_dimensions()
-        // This test verifies the error handling path exists
-    });
+    // Note: MAX_DIMENSION check happens during decode, not during resize operation
+    // This test is skipped because:
+    // 1. Resize operation itself doesn't validate dimensions
+    // 2. The actual check happens in check_dimensions() during decode
+    // 3. Testing with actual huge images (35000x35000) has OOM risk
+    // 4. The real validation is tested in Rust unit tests (tests/edge_cases.rs)
+    // 
+    // To properly test MAX_DIMENSION, we would need:
+    // - A test fixture with huge image dimensions in the header (without full decode)
+    // - Or use ensure_dimensions_safe() via inspect() API
+    // 
+    // For now, this protection is verified in Rust unit tests.
+    // await asyncTest('rejects images exceeding MAX_DIMENSION (32768)', async () => {
+    //     // This test would require a huge image fixture or header-only parsing
+    // });
     
     // ========================================================================
     // EDGE CASES - Invalid inputs
@@ -198,16 +192,24 @@ async function runTests() {
         assert(result.length > 0, 'should handle negative rotation');
     });
     
-    await asyncTest('handles rotation 360 (equivalent to 0)', async () => {
-        // 360 should be treated as invalid or equivalent to 0
+    await asyncTest('rejects rotation 360 (invalid angle)', async () => {
+        // 360度は無効な角度なのでエラーになるべき
+        // 実装では0, 90, 180, 270, -90, -180, -270のみサポート
         let threw = false;
         try {
             await ImageEngine.from(buffer).rotate(360).toBuffer('jpeg', 80);
         } catch (e) {
             threw = true;
+            assert(
+                e.message.includes('rotation') || 
+                e.message.includes('angle') || 
+                e.message.includes('360') ||
+                e.message.includes('Unsupported'),
+                `error should mention rotation/angle: ${e.message}`
+            );
         }
-        // Either should work (if normalized) or throw error (if not supported)
-        // Both behaviors are acceptable
+        // ✅ Fix: Verify that error was thrown for invalid rotation angle
+        assert(threw, 'should throw error for invalid rotation angle 360');
     });
     
     // ========================================================================
@@ -240,22 +242,29 @@ async function runTests() {
     // EDGE CASES - File I/O
     // ========================================================================
     
-    await asyncTest('toFile() handles non-existent parent directory', async () => {
+    await asyncTest('toFile() rejects non-existent parent directory', async () => {
+        // toFile()は親ディレクトリを作成しない（src/engine/tasks.rs:446-455）
+        // 存在しない親ディレクトリへの書き込みはエラーになるべき
         const testDir = resolveTemp('nonexistent_dir');
         const outPath = path.join(testDir, 'test_output.jpg');
         let threw = false;
+        let errorMessage = '';
         try {
             await ImageEngine.from(buffer).resize(100).toFile(outPath, 'jpeg', 80);
         } catch (e) {
             threw = true;
+            errorMessage = e.message;
+            // エラーメッセージにディレクトリ関連の文字列が含まれることを確認
+            assert(
+                errorMessage.includes('directory') || 
+                errorMessage.includes('path') || 
+                errorMessage.includes('not found') ||
+                errorMessage.includes('No such file'),
+                `error should mention directory/path issue: ${errorMessage}`
+            );
         }
-        // Should either create directory or throw error - both are acceptable
-        if (!threw && fs.existsSync(outPath)) {
-            fs.unlinkSync(outPath);
-            if (fs.existsSync(testDir)) {
-                fs.rmdirSync(testDir);
-            }
-        }
+        // ✅ Fix: Verify that error was thrown when parent directory does not exist
+        assert(threw, 'should throw error when parent directory does not exist');
     });
     
     // ========================================================================
@@ -283,19 +292,24 @@ async function runTests() {
         }
     });
     
-    await asyncTest('processBatch handles invalid concurrency (0)', async () => {
+    await asyncTest('processBatch accepts concurrency 0 (uses default)', async () => {
+        // concurrency=0は有効で、デフォルトのスレッドプールを使用する
+        // src/engine/tasks.rs:699-701でauto-detectされる
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = resolveTemp('test_batch_concurrency');
-        let threw = false;
+        const testDir = resolveTemp('test_batch_concurrency_0');
         try {
-            // Concurrency 0 should use default (CPU cores), but we test edge case
-            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 0);
-        } catch (e) {
-            threw = true;
-        }
-        // Should either work (0 = default) or throw error - both acceptable
-        if (!threw) {
-            // Cleanup
+            const results = await engine.processBatch(
+                [TEST_IMAGE], 
+                testDir, 
+                'jpeg', 
+                80, 
+                undefined, 
+                0  // concurrency=0は有効
+            );
+            assert(results.length === 1, 'should process 1 image');
+            assert(results[0].success, 'should succeed with concurrency=0');
+        } finally {
+            // ✅ Fix: Verify success and cleanup
             if (fs.existsSync(testDir)) {
                 try {
                     fs.readdirSync(testDir).forEach(file => {
@@ -309,28 +323,44 @@ async function runTests() {
         }
     });
     
-    await asyncTest('processBatch handles very high concurrency', async () => {
+    await asyncTest('processBatch rejects concurrency > 1024 (InternalBug)', async () => {
+        // concurrency > MAX_CONCURRENCY (1024) は必ずエラーになる
+        // src/engine/tasks.rs:688-695でinternal_panicエラーになる
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_high_concurrency');
         let threw = false;
-        let errorMsg = '';
+        let errorMessage = '';
+        let category = null;
+        
         try {
-            // Concurrency > 1024 should be rejected or clamped
+            // Concurrency > 1024 should be rejected
             await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 2000);
         } catch (e) {
             threw = true;
-            errorMsg = e.message;
+            errorMessage = e.message;
+            category = getErrorCategory(e);
+            
+            // エラーメッセージにconcurrency関連の文字列が含まれることを確認
+            assert(
+                errorMessage.includes('concurrency') || 
+                errorMessage.includes('invalid') ||
+                errorMessage.includes('1024'),
+                `error should mention concurrency limit: ${errorMessage}`
+            );
+            
+            // ✅ Fix: カテゴリはInternalBugになる
+            if (category !== null) {
+                assert(
+                    category === ErrorCategory.InternalBug,
+                    `error category should be InternalBug, got: ${category}`
+                );
+            }
         }
-        // Either should reject with error OR silently clamp to reasonable value
-        // Both behaviors are acceptable for production use
-        if (threw) {
-            assert(errorMsg.includes('concurrency') || errorMsg.includes('invalid'), 
-                'should mention concurrency error');
-        } else {
-            // If not rejected, it should still work (clamped internally)
-            // This is acceptable behavior
-        }
-        // Cleanup
+        
+        // ✅ Fix: Verify that error was thrown
+        assert(threw, 'should throw error for concurrency > 1024');
+        
+        // クリーンアップ（エラーが発生した場合はファイルが作成されていないはず）
         if (fs.existsSync(testDir)) {
             try {
                 fs.readdirSync(testDir).forEach(file => {
