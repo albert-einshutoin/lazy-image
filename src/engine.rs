@@ -57,12 +57,8 @@ pub use pool::{get_pool, MAX_CONCURRENCY};
 // Re-export types from api.rs and tasks.rs
 #[cfg(feature = "napi")]
 pub use api::{Dimensions, PresetResult};
-#[cfg(feature = "fuzzing")]
-pub use firewall::FirewallConfig;
 #[cfg(feature = "napi")]
 pub use tasks::BatchResult;
-#[cfg(feature = "fuzzing")]
-pub use tasks::EncodeTask;
 
 // Re-export stress test function
 #[cfg(feature = "stress")]
