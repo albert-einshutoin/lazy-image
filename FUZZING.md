@@ -1,82 +1,106 @@
 # Fuzzing lazy-image
 
 This repository ships a [`cargo-fuzz`](https://github.com/rust-fuzz/cargo-fuzz) setup under
-`fuzz/` to stress critical entry points such as the decoder pipeline and header
-inspection helpers. The goal is to ensure corrupted or adversarial inputs never
-trigger panics or memory-safety bugs.
+`fuzz/` to stress critical entry points such as the decoder pipeline, encoder pipeline,
+ICC profile parsing, and header inspection helpers. The goal is to ensure corrupted or
+adversarial inputs never trigger panics or memory-safety bugs.
 
 ## Requirements
 
 - Rust nightly toolchain
 - [`cargo-fuzz`](https://github.com/rust-fuzz/cargo-fuzz) (`cargo install cargo-fuzz`)
 - macOS/Linux host (libFuzzer requires UNIX signals)
+- cmake and nasm (for libavif-sys)
 
 ## Available fuzz targets
 
-| Target | Description |
-| --- | --- |
-| `decode_from_buffer` | Feeds arbitrary bytes through `EncodeTask::decode` to hit JPEG (mozjpeg) and `image` decoders. |
-| `pipeline_ops` | Applies randomly generated resize/crop/rotate operations to decoded images, ensuring lazy pipeline steps never panic. |
-| `inspect_header` | Critical attack surface – fuzzes `inspect_header_from_bytes` used by the JS `inspect()`/`inspectFile()` APIs. |
+| Target | Description | APIs Tested |
+| --- | --- | --- |
+| `decode_from_buffer` | Tests lazy-image's decoders with arbitrary bytes | `decode_jpeg_mozjpeg`, `decode_with_image_crate`, `inspect_header_from_bytes` |
+| `encode_to_format` | Tests encoding to all supported formats | `encode_jpeg`, `encode_png`, `encode_webp`, `encode_avif` |
+| `pipeline_ops` | Tests image operations pipeline | `apply_ops` (resize, crop, rotate, flip, brightness, contrast) |
+| `inspect_header` | Critical attack surface – header-only metadata parsing | `inspect_header_from_bytes` |
+| `icc_profile` | Tests ICC profile extraction from various containers | `extract_icc_profile` (JPEG, PNG, WebP, AVIF) |
 
-Seed corpora for header inspection live in `fuzz/corpus/inspect_header/` (1×1 PNG/JPEG)
-and can be expanded with additional minimal samples for better coverage.
+Seed corpora live in `fuzz/seeds/` (tiny.jpg, tiny.png, tiny.webp) and can be
+expanded with additional minimal samples for better coverage.
 
 ## Running locally
 
 ```bash
-rustup run nightly cargo fuzz run decode_from_buffer
-rustup run nightly cargo fuzz run pipeline_ops
-rustup run nightly cargo fuzz run inspect_header
+# Run a specific target
+cargo +nightly fuzz run decode_from_buffer
+
+# Run with time limit (recommended)
+cargo +nightly fuzz run decode_from_buffer -- -max_total_time=60
+
+# Run all targets for 1 minute each
+for target in decode_from_buffer encode_to_format pipeline_ops inspect_header icc_profile; do
+  cargo +nightly fuzz run $target -- -max_total_time=60
+done
 ```
 
 Notes:
 - `cargo fuzz` automatically builds the `lazy-image-fuzz` crate located in `fuzz/`.
-- The harness links against the `lazy-image` library with the lightweight `fuzzing`
-  feature to expose inspect helpers without pulling in N-API bindings.
+- The harness links against the `lazy-image` library with the `fuzzing` feature
+  to expose internal helpers without pulling in N-API bindings.
 
 ### AddressSanitizer
 
-To run with ASAN locally:
+To run with ASAN locally for enhanced memory error detection:
 
 ```bash
-rustup run nightly RUSTFLAGS="-Zsanitizer=address" \
-  cargo fuzz run inspect_header -- -max_total_time=60
+RUSTFLAGS="-Zsanitizer=address" \
+  cargo +nightly fuzz run inspect_header -- -max_total_time=60
 ```
 
-## CI / Automation
+### Memory limits
 
-Fuzzing is meant to run on a scheduled job (e.g. nightly or weekly) so that long
-libFuzzer sessions can accumulate coverage. Integrate via:
+For CI/resource-constrained environments, use memory limits:
 
 ```bash
-rustup run nightly cargo fuzz run inspect_header -- -max_total_time=600
+cargo +nightly fuzz run encode_to_format -- \
+  -max_len=1048576 \
+  -rss_limit_mb=2048 \
+  -max_total_time=300
 ```
 
-Example GitHub Actions workflow:
+## CI Integration
 
-```yaml
-name: fuzz
-on:
-  schedule:
-    - cron: '0 3 * * 0'
-jobs:
-  inspect_header:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo install cargo-fuzz
-      - run: |
-          RUSTFLAGS="-Zsanitizer=address" \
-          cargo fuzz run inspect_header -- -max_total_time=600
+Fuzzing runs automatically via GitHub Actions (`.github/workflows/fuzz.yml`):
+
+- **Schedule**: Nightly at 3:00 UTC
+- **Duration**: 5 minutes per target
+- **Memory limit**: 2GB RSS
+- **Crash handling**: Auto-creates GitHub issues with `bug`, `security`, `fuzz-crash` labels
+
+### Manual trigger
+
+You can manually trigger fuzzing from GitHub Actions:
+1. Go to Actions → Fuzz workflow
+2. Click "Run workflow"
+3. Optionally specify duration (seconds) or specific target
+
+## Corpus management
+
+- Corpora are cached between CI runs for incremental coverage improvement
+- New interesting inputs are automatically saved to `fuzz/corpus/<target>/`
+- Crash reproducers are exported to `fuzz/artifacts/<target>/`
+
+To minimize a crash input:
+
+```bash
+cargo +nightly fuzz tmin <target> <crash_file>
 ```
-
-Store resulting corpora in `fuzz/corpus/<target>/` if new interesting inputs are
-found, and export crash reproducers into `fuzz/artifacts/<target>/` for triage.
 
 ## Reporting issues
 
-If fuzzing uncovers a panic or memory-safety problem, please file an issue
-with the crashing input (or minimized reproducer) and mention the fuzz target
-that triggered it.
+If fuzzing uncovers a panic or memory-safety problem:
+
+1. Check `fuzz/artifacts/<target>/` for the crashing input
+2. Minimize it with `cargo fuzz tmin`
+3. File an issue with the minimized reproducer
+4. Mention the fuzz target that triggered it
+
+For security-critical crashes, please use responsible disclosure and contact
+the maintainers privately before public disclosure.
