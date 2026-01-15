@@ -84,6 +84,9 @@ pub enum LazyImageError {
     #[error("Image pixel count {pixels} exceeds maximum {max}")]
     PixelCountExceedsLimit { pixels: u64, max: u64 },
 
+    #[error("Image Firewall blocked the image: {reason}")]
+    FirewallViolation { reason: Cow<'static, str> },
+
     // Operation Errors
     #[error("Crop bounds ({x}+{width}, {y}+{height}) exceed image dimensions ({img_width}x{img_height})")]
     InvalidCropBounds {
@@ -132,6 +135,9 @@ pub enum LazyImageError {
     #[error("Unknown preset: '{name}'. Available: thumbnail, avatar, hero, social")]
     InvalidPreset { name: Cow<'static, str> },
 
+    #[error("Unknown firewall policy: '{policy}'. Expected strict or lenient")]
+    InvalidFirewallPolicy { policy: Cow<'static, str> },
+
     // State Errors
     #[error("Image source already consumed. Use clone() for multi-output scenarios")]
     SourceConsumed,
@@ -175,6 +181,9 @@ impl Clone for LazyImageError {
             Self::PixelCountExceedsLimit { pixels, max } => Self::PixelCountExceedsLimit {
                 pixels: *pixels,
                 max: *max,
+            },
+            Self::FirewallViolation { reason } => Self::FirewallViolation {
+                reason: reason.clone(),
             },
             Self::InvalidCropBounds {
                 x,
@@ -222,6 +231,9 @@ impl Clone for LazyImageError {
                 message: message.clone(),
             },
             Self::InvalidPreset { name } => Self::InvalidPreset { name: name.clone() },
+            Self::InvalidFirewallPolicy { policy } => Self::InvalidFirewallPolicy {
+                policy: policy.clone(),
+            },
             Self::SourceConsumed => Self::SourceConsumed,
             Self::InternalPanic { message } => Self::InternalPanic {
                 message: message.clone(),
@@ -282,6 +294,12 @@ impl LazyImageError {
 
     pub fn pixel_count_exceeds_limit(pixels: u64, max: u64) -> Self {
         Self::PixelCountExceedsLimit { pixels, max }
+    }
+
+    pub fn firewall_violation(reason: impl Into<Cow<'static, str>>) -> Self {
+        Self::FirewallViolation {
+            reason: reason.into(),
+        }
     }
 
     pub fn invalid_crop_bounds(
@@ -350,6 +368,12 @@ impl LazyImageError {
         Self::InvalidPreset { name: name.into() }
     }
 
+    pub fn invalid_firewall_policy(policy: impl Into<Cow<'static, str>>) -> Self {
+        Self::InvalidFirewallPolicy {
+            policy: policy.into(),
+        }
+    }
+
     pub fn source_consumed() -> Self {
         Self::SourceConsumed
     }
@@ -389,6 +413,7 @@ impl LazyImageError {
             | Self::InvalidResizeDimensions { .. }
             | Self::InvalidResizeFit { .. }
             | Self::InvalidPreset { .. }
+            | Self::InvalidFirewallPolicy { .. }
             | Self::SourceConsumed => ErrorCategory::UserError,
 
             // CodecError: Format/encoding issues
@@ -411,6 +436,7 @@ impl LazyImageError {
             // freeing disk space, etc.), which is consistent with is_recoverable() returning true.
             Self::DimensionExceedsLimit { .. }
             | Self::PixelCountExceedsLimit { .. }
+            | Self::FirewallViolation { .. }
             | Self::FileReadFailed { .. }
             | Self::MmapFailed { .. }
             | Self::FileWriteFailed { .. } => ErrorCategory::ResourceLimit,

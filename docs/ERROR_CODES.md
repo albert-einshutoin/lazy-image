@@ -82,6 +82,7 @@ This makes it possible to inspect per-file failures without parsing strings.
 - `InvalidRotationAngle` - Unsupported rotation angle
 - `InvalidResizeDimensions` - Invalid resize parameters
 - `InvalidPreset` - Unknown preset name
+- `InvalidFirewallPolicy` - Unknown policy passed to `sanitize()`
 - `SourceConsumed` - Image source already used
 
 **CodecError** - Format/encoding issues:
@@ -98,6 +99,7 @@ This makes it possible to inspect per-file failures without parsing strings.
 - `FileReadFailed` - File read failed (often due to resource constraints like disk full, memory pressure)
 - `MmapFailed` - Memory mapping failed (often due to resource constraints)
 - `FileWriteFailed` - File write failed (often due to resource constraints like disk full)
+- `FirewallViolation` - Image Firewall blocked the input (bytes, pixels, metadata, or timeout)
 
 **InternalBug** - Library bugs:
 - `InternalPanic` - Unexpected internal error

@@ -5,6 +5,7 @@
 
 // BatchResult is used in ts_return_type attribute (line 446) - compiler can't detect this
 // Source is used via Source::Memory and Source::Mapped
+use super::firewall::{FirewallConfig, FirewallPolicy};
 #[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
 #[cfg(feature = "napi")]
@@ -50,6 +51,7 @@ pub struct ImageEngine {
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// Default is false (strip all) for security and smaller file sizes.
     pub(crate) keep_metadata: bool,
+    pub(crate) firewall: FirewallConfig,
 }
 
 #[cfg(feature = "napi")]
@@ -75,6 +77,7 @@ impl ImageEngine {
             ops: Vec::new(),
             icc_profile,
             keep_metadata: false, // Strip metadata by default for security & smaller files
+            firewall: FirewallConfig::disabled(),
         }
     }
 
@@ -132,6 +135,7 @@ impl ImageEngine {
             ops: Vec::new(),
             icc_profile,
             keep_metadata: false, // Strip metadata by default for security & smaller files
+            firewall: FirewallConfig::disabled(),
         })
     }
 
@@ -144,6 +148,7 @@ impl ImageEngine {
             ops: self.ops.clone(),
             icc_profile: self.icc_profile.clone(),
             keep_metadata: self.keep_metadata,
+            firewall: self.firewall.clone(),
         })
     }
 
@@ -233,6 +238,88 @@ impl ImageEngine {
     pub fn keep_metadata(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
         self.keep_metadata = true;
         this
+    }
+
+    /// Enable Image Firewall mode with built-in policies (strict or lenient).
+    /// Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).
+    /// Lenient mode keeps generous limits but still guards against decompression bombs.
+    #[napi]
+    pub fn sanitize(
+        &mut self,
+        this: Reference<ImageEngine>,
+        options: Option<SanitizeOptions>,
+    ) -> Result<Reference<ImageEngine>> {
+        let requested = options
+            .and_then(|opts| opts.policy)
+            .unwrap_or_else(|| "strict".to_string());
+        let lowered = requested.to_lowercase();
+        let policy = match lowered.as_str() {
+            "strict" => FirewallPolicy::Strict,
+            "lenient" => FirewallPolicy::Lenient,
+            _ => return Err(LazyImageError::invalid_firewall_policy(requested).into()),
+        };
+
+        self.firewall = FirewallConfig::apply_policy(policy);
+        if self.firewall.reject_metadata {
+            self.keep_metadata = false;
+            self.icc_profile = None;
+        }
+
+        if let Some(decoded) = &self.decoded {
+            self.firewall
+                .enforce_pixels(decoded.width(), decoded.height())?;
+        }
+
+        if let Some(source) = &self.source {
+            self.firewall.enforce_source_len(source.len())?;
+            if let Some(bytes) = source.as_bytes() {
+                self.firewall.scan_metadata(bytes)?;
+            }
+        }
+
+        Ok(this)
+    }
+
+    /// Override Image Firewall limits (maxPixels, maxBytes, timeoutMs).
+    /// Any field set to 0 disables that particular limit.
+    #[napi]
+    pub fn limits(
+        &mut self,
+        this: Reference<ImageEngine>,
+        options: FirewallLimitOptions,
+    ) -> Result<Reference<ImageEngine>> {
+        if !self.firewall.enabled || matches!(self.firewall.policy, FirewallPolicy::Disabled) {
+            self.firewall = FirewallConfig::custom();
+        } else {
+            self.firewall.enabled = true;
+            self.firewall.policy = FirewallPolicy::Custom;
+        }
+
+        if let Some(max_pixels) = options.max_pixels {
+            if max_pixels == 0 {
+                self.firewall.max_pixels = None;
+            } else {
+                self.firewall.max_pixels = Some(max_pixels as u64);
+            }
+        }
+
+        if let Some(max_bytes) = options.max_bytes {
+            if max_bytes == 0 {
+                self.firewall.max_bytes = None;
+            } else {
+                self.firewall.max_bytes = Some(max_bytes as u64);
+            }
+        }
+
+        if let Some(timeout) = options.timeout_ms {
+            if timeout == 0 {
+                self.firewall.timeout_ms = None;
+            } else {
+                self.firewall.timeout_ms = Some(timeout as u64);
+            }
+        }
+
+        Ok(this)
     }
 
     /// Adjust brightness (-100 to 100)
@@ -351,9 +438,12 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let icc_profile = self.icc_profile.clone();
-
-        let keep_metadata = self.keep_metadata;
+        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let icc_profile = if keep_metadata {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
 
         Ok(AsyncTask::new(EncodeTask {
             source,
@@ -362,6 +452,7 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
         }))
@@ -393,8 +484,12 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let icc_profile = self.icc_profile.clone();
-        let keep_metadata = self.keep_metadata;
+        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let icc_profile = if keep_metadata {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
             source,
@@ -403,6 +498,7 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
         }))
@@ -438,8 +534,12 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let icc_profile = self.icc_profile.clone();
-        let keep_metadata = self.keep_metadata;
+        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let icc_profile = if keep_metadata {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
 
         Ok(AsyncTask::new(WriteFileTask {
             source,
@@ -448,6 +548,7 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            firewall: self.firewall.clone(),
             output_path: path,
             #[cfg(feature = "napi")]
             last_error: None,
@@ -480,8 +581,11 @@ impl ImageEngine {
             }
         };
 
+        self.firewall.enforce_source_len(source.len())?;
+
         // Use as_bytes() to get zero-copy access for Memory and Mapped sources
         if let Some(bytes) = source.as_bytes() {
+            self.firewall.scan_metadata(bytes)?;
             // For in-memory or memory-mapped data, use cursor
             let cursor = Cursor::new(bytes);
             let reader = match ImageReader::new(cursor).with_guessed_format() {
@@ -565,11 +669,26 @@ impl ImageEngine {
             ops,
             format: output_format,
             concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
-            keep_metadata: self.keep_metadata,
+            keep_metadata: self.keep_metadata && !self.firewall.reject_metadata,
+            firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
         }))
     }
+}
+
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct SanitizeOptions {
+    pub policy: Option<String>,
+}
+
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct FirewallLimitOptions {
+    pub max_pixels: Option<u32>,
+    pub max_bytes: Option<u32>,
+    pub timeout_ms: Option<u32>,
 }
 
 #[cfg(feature = "napi")]

@@ -729,6 +729,26 @@ If you process untrusted images (user avatars, uploads, etc.):
 
 > 📖 See [SECURITY.md](./SECURITY.md) for vulnerability reporting and security policy.
 
+### Image Firewall Mode (Strict & Lenient)
+
+lazy-image now includes an opt-in Image Firewall for production workloads:
+
+- 🔒 **Strict policy**: Rejects oversized inputs (40MP/32MB), blocks ICC metadata, 1.5s timeout
+- ⚖️ **Lenient policy**: Higher limits (75MP/48MB) while still catching bombs
+- ⚙️ **Custom limits**: Override `maxPixels`, `maxBytes`, or `timeoutMs` per use case
+- 🧼 **Metadata sanitizer**: Strict mode blocks embedded ICC profiles entirely
+
+```ts
+const result = await ImageEngine.from(buffer)
+  .sanitize({ policy: 'strict' })
+  .limits({ maxPixels: 25_000_000, timeoutMs: 1200 })
+  .resize(2048)
+  .toBuffer('webp', 80)
+```
+
+If any limit is exceeded (bytes, pixels, metadata, timeout) the operation fails with a
+`LAZY_IMAGE_RESOURCE_LIMIT` error before touching the Node.js heap.
+
 ---
 
 ## 🔬 Technical Details
