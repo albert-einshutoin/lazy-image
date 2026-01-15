@@ -51,6 +51,7 @@ async function runTests() {
     await asyncTest('rejects images exceeding MAX_DIMENSION via ImageEngine.from()', async () => {
         // ImageEngine.from() calls ensure_dimensions_safe() which checks MAX_DIMENSION
         // during header parsing (before full decode). This tests the NAPI path.
+        // Implementation: src/engine/api.rs:743 (ensure_dimensions_safe)
         // We use 32769x1 (extreme aspect ratio) to minimize memory usage while
         // still exceeding MAX_DIMENSION (32768).
         // 
@@ -60,6 +61,8 @@ async function runTests() {
         //
         // TODO: Create a test fixture with 32769x1 dimensions using create_valid_jpeg()
         // or similar helper to properly test this without OOM risk.
+        // Reference: src/engine/api.rs:743 (ensure_dimensions_safe call)
+        //            src/engine/decoder.rs:95 (ensure_dimensions_safe implementation)
         //
         // For now, this test is skipped but the structure is kept for future implementation.
         // The actual validation is tested in Rust unit tests (tests/edge_cases.rs),
