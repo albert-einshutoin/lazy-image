@@ -1,9 +1,12 @@
 #![no_main]
 
+//! Fuzz target for image pipeline operations.
+//! Tests resize, crop, rotate, flip, brightness, contrast operations.
+
 use arbitrary::{Arbitrary, Unstructured};
-use image::{self, DynamicImage, RgbaImage};
-use lazy_image::engine::EncodeTask;
-use lazy_image::ops::{ColorSpace, Operation};
+use image::{DynamicImage, RgbaImage};
+use lazy_image::engine::apply_ops;
+use lazy_image::ops::{ColorSpace, Operation, ResizeFit};
 use libfuzzer_sys::fuzz_target;
 use std::borrow::Cow;
 
@@ -41,6 +44,11 @@ fn seeds_to_ops(seeds: Vec<OperationSeed>) -> Vec<Operation> {
             0 => Operation::Resize {
                 width: Some(seed.a.clamp(1, 4096) as u32),
                 height: Some(seed.b.clamp(1, 4096) as u32),
+                fit: match seed.c.rem_euclid(3) {
+                    0 => ResizeFit::Inside,
+                    1 => ResizeFit::Cover,
+                    _ => ResizeFit::Fill,
+                },
             },
             1 => Operation::Crop {
                 x: seed.a.max(0) as u32,
@@ -79,5 +87,5 @@ fuzz_target!(|data: &[u8]| {
     let img = build_image(data);
     // Fuzzing: apply_ops may return errors for invalid operations; we're
     // interested only in panics or memory issues.
-    let _ = EncodeTask::apply_ops(Cow::Owned(img), &ops);
+    let _ = apply_ops(Cow::Owned(img), &ops);
 });

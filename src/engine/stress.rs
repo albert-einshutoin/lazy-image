@@ -3,12 +3,23 @@
 // Stress test utilities for fuzzing and performance testing.
 // This module is independent of NAPI and can be used with --no-default-features --features stress.
 
+#[cfg(feature = "stress")]
 use crate::convert_result;
+#[cfg(feature = "stress")]
 use crate::engine::common::EngineResult;
-use crate::engine::decoder::decode_jpeg_mozjpeg;
-use crate::engine::encoder::{encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp};
+#[cfg(feature = "stress")]
+use crate::engine::decoder::{
+    decode_jpeg_mozjpeg, decode_with_image_crate, ensure_dimensions_safe,
+};
+#[cfg(feature = "stress")]
+use crate::engine::encoder::{
+    encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp,
+};
+#[cfg(feature = "stress")]
 use crate::engine::pipeline::apply_ops;
-use crate::ops::{Operation, OutputFormat};
+#[cfg(feature = "stress")]
+use crate::ops::{Operation, OutputFormat, ResizeFit};
+#[cfg(feature = "stress")]
 use std::borrow::Cow;
 
 /// Run a single stress test iteration.
@@ -28,6 +39,7 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         Operation::Resize {
             width: Some(1200),
             height: Some(800),
+            fit: ResizeFit::Inside,
         },
         Operation::Rotate { degrees: 90 },
         Operation::Brightness { value: 12 },
@@ -36,21 +48,23 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
     ];
 
     let formats = [
-        OutputFormat::Jpeg { quality: 82, fast_mode: false },
+        OutputFormat::Jpeg {
+            quality: 82,
+            fast_mode: false,
+        },
         OutputFormat::Png,
         OutputFormat::WebP { quality: 74 },
         OutputFormat::Avif { quality: 60 },
     ];
 
     // Decode the image once
+    ensure_dimensions_safe(data)?;
     let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
         // JPEG - use mozjpeg for speed
         convert_result!(decode_jpeg_mozjpeg(data))
     } else {
-        // Other formats - use image crate
-        image::load_from_memory(data).map_err(|e| {
-            crate::error::LazyImageError::decode_failed(format!("decode failed: {e}"))
-        })?
+        // Other formats - use image crate (guarded by panic policy)
+        convert_result!(decode_with_image_crate(data))
     };
 
     // Apply operations and encode in each format
@@ -60,7 +74,9 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         // Encode to the target format
         let _encoded = match format {
             OutputFormat::Jpeg { quality, fast_mode } => {
-                convert_result!(encode_jpeg_with_settings(&processed, quality, None, fast_mode))
+                convert_result!(encode_jpeg_with_settings(
+                    &processed, quality, None, fast_mode
+                ))
             }
             OutputFormat::Png => {
                 convert_result!(encode_png(&processed, None))

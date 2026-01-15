@@ -28,3 +28,11 @@ path = "fuzz_targets/pipeline_ops.rs"
 [[bin]]
 name = "inspect_header"
 path = "fuzz_targets/inspect_header.rs"
+
+[[bin]]
+name = "encode_to_format"
+path = "fuzz_targets/encode_to_format.rs"
+
+[[bin]]
+name = "icc_profile"
+path = "fuzz_targets/icc_profile.rs"

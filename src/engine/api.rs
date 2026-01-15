@@ -5,16 +5,20 @@
 
 // BatchResult is used in ts_return_type attribute (line 446) - compiler can't detect this
 // Source is used via Source::Memory and Source::Mapped
+use super::firewall::{FirewallConfig, FirewallPolicy};
 #[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
-use crate::engine::tasks::{BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask};
+use crate::engine::tasks::{
+    BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
+};
 use crate::error::LazyImageError;
-use crate::ops::{Operation, OutputFormat, PresetConfig};
+use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 use image::{DynamicImage, GenericImageView, ImageReader};
 use std::io::Cursor;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 
 #[cfg(feature = "napi")]
@@ -43,9 +47,11 @@ pub struct ImageEngine {
     pub(crate) ops: Vec<Operation>,
     /// ICC color profile extracted from source image
     pub(crate) icc_profile: Option<Arc<Vec<u8>>>,
-    /// Whether to preserve metadata (Exif, ICC, XMP) in output.
+    /// Whether to preserve ICC profile in output.
+    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// Default is false (strip all) for security and smaller file sizes.
     pub(crate) keep_metadata: bool,
+    pub(crate) firewall: FirewallConfig,
 }
 
 #[cfg(feature = "napi")]
@@ -71,6 +77,7 @@ impl ImageEngine {
             ops: Vec::new(),
             icc_profile,
             keep_metadata: false, // Strip metadata by default for security & smaller files
+            firewall: FirewallConfig::disabled(),
         }
     }
 
@@ -79,21 +86,28 @@ impl ImageEngine {
     /// This enables true zero-copy access - OS pages in only what's needed.
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
-    pub fn from_path(path: String) -> Result<Self> {
-        use std::fs::File;
+    pub fn from_path(env: Env, path: String) -> Result<Self> {
         use memmap2::Mmap;
+        use std::fs::File;
 
         let path_buf = PathBuf::from(&path);
-        
+
         // Validate that the file exists (fast check, no read)
         if !path_buf.exists() {
-            return Err(napi::Error::from(LazyImageError::file_not_found(path.clone())));
+            return Err(crate::error::napi_error_with_code(
+                &env,
+                LazyImageError::file_not_found(path.clone()),
+            )?);
         }
 
         // Open file and create memory map
-        let file = File::open(&path_buf).map_err(|e| {
-            napi::Error::from(LazyImageError::file_read_failed(path.clone(), e))
-        })?;
+        let file = match File::open(&path_buf) {
+            Ok(file) => file,
+            Err(e) => {
+                let lazy_err = LazyImageError::file_read_failed(path.clone(), e);
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Safety: We assume the file won't be modified externally during processing.
         // This is a common assumption in image processing libraries.
@@ -101,13 +115,17 @@ impl ImageEngine {
         // Note: On Windows, memory-mapped files cannot be deleted while mapped.
         // This is a platform limitation that should be documented for users.
         let mmap = unsafe {
-            Mmap::map(&file).map_err(|e| {
-                napi::Error::from(LazyImageError::mmap_failed(path.clone(), e))
-            })?
+            match Mmap::map(&file) {
+                Ok(mmap) => mmap,
+                Err(e) => {
+                    let lazy_err = LazyImageError::mmap_failed(path.clone(), e);
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            }
         };
 
         let mmap_arc = Arc::new(mmap);
-        
+
         // Extract ICC profile from memory-mapped data
         let icc_profile = extract_icc_profile(mmap_arc.as_ref()).map(Arc::new);
 
@@ -117,6 +135,7 @@ impl ImageEngine {
             ops: Vec::new(),
             icc_profile,
             keep_metadata: false, // Strip metadata by default for security & smaller files
+            firewall: FirewallConfig::disabled(),
         })
     }
 
@@ -129,6 +148,7 @@ impl ImageEngine {
             ops: self.ops.clone(),
             icc_profile: self.icc_profile.clone(),
             keep_metadata: self.keep_metadata,
+            firewall: self.firewall.clone(),
         })
     }
 
@@ -137,15 +157,30 @@ impl ImageEngine {
     // =========================================================================
 
     /// Resize image. Width or height can be null to maintain aspect ratio.
+    /// When both width and height are provided, `fit` controls behavior:
+    /// - "inside" (default): maintain aspect ratio and fit within the box
+    /// - "cover": maintain aspect ratio and crop to fill the box
+    /// - "fill": ignore aspect ratio and force exact dimensions
     #[napi]
     pub fn resize(
         &mut self,
         this: Reference<ImageEngine>,
         width: Option<u32>,
         height: Option<u32>,
-    ) -> Reference<ImageEngine> {
-        self.ops.push(Operation::Resize { width, height });
-        this
+        fit: Option<String>,
+    ) -> Result<Reference<ImageEngine>> {
+        let fit_mode = if let Some(value) = fit {
+            ResizeFit::from_str(&value).map_err(|_| LazyImageError::invalid_resize_fit(value))?
+        } else {
+            ResizeFit::default()
+        };
+
+        self.ops.push(Operation::Resize {
+            width,
+            height,
+            fit: fit_mode,
+        });
+        Ok(this)
     }
 
     /// Crop a region from the image.
@@ -195,13 +230,96 @@ impl ImageEngine {
         this
     }
 
-    /// Preserve metadata (Exif, ICC profile, XMP) in output.
+    /// Preserve ICC profile in output.
+    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
-    /// Call this method to keep metadata for photography sites or when color accuracy is important.
+    /// Call this method to keep ICC profile when color accuracy is important.
     #[napi(js_name = "keepMetadata")]
     pub fn keep_metadata(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
         self.keep_metadata = true;
         this
+    }
+
+    /// Enable Image Firewall mode with built-in policies (strict or lenient).
+    /// Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).
+    /// Lenient mode keeps generous limits but still guards against decompression bombs.
+    #[napi]
+    pub fn sanitize(
+        &mut self,
+        this: Reference<ImageEngine>,
+        options: Option<SanitizeOptions>,
+    ) -> Result<Reference<ImageEngine>> {
+        let requested = options
+            .and_then(|opts| opts.policy)
+            .unwrap_or_else(|| "strict".to_string());
+        let lowered = requested.to_lowercase();
+        let policy = match lowered.as_str() {
+            "strict" => FirewallPolicy::Strict,
+            "lenient" => FirewallPolicy::Lenient,
+            _ => return Err(LazyImageError::invalid_firewall_policy(requested).into()),
+        };
+
+        self.firewall = FirewallConfig::apply_policy(policy);
+        if self.firewall.reject_metadata {
+            self.keep_metadata = false;
+            self.icc_profile = None;
+        }
+
+        if let Some(decoded) = &self.decoded {
+            self.firewall
+                .enforce_pixels(decoded.width(), decoded.height())?;
+        }
+
+        if let Some(source) = &self.source {
+            self.firewall.enforce_source_len(source.len())?;
+            if let Some(bytes) = source.as_bytes() {
+                self.firewall.scan_metadata(bytes)?;
+            }
+        }
+
+        Ok(this)
+    }
+
+    /// Override Image Firewall limits (maxPixels, maxBytes, timeoutMs).
+    /// Any field set to 0 disables that particular limit.
+    #[napi]
+    pub fn limits(
+        &mut self,
+        this: Reference<ImageEngine>,
+        options: FirewallLimitOptions,
+    ) -> Result<Reference<ImageEngine>> {
+        if !self.firewall.enabled || matches!(self.firewall.policy, FirewallPolicy::Disabled) {
+            self.firewall = FirewallConfig::custom();
+        } else {
+            self.firewall.enabled = true;
+            self.firewall.policy = FirewallPolicy::Custom;
+        }
+
+        if let Some(max_pixels) = options.max_pixels {
+            if max_pixels == 0 {
+                self.firewall.max_pixels = None;
+            } else {
+                self.firewall.max_pixels = Some(max_pixels as u64);
+            }
+        }
+
+        if let Some(max_bytes) = options.max_bytes {
+            if max_bytes == 0 {
+                self.firewall.max_bytes = None;
+            } else {
+                self.firewall.max_bytes = Some(max_bytes as u64);
+            }
+        }
+
+        if let Some(timeout) = options.timeout_ms {
+            if timeout == 0 {
+                self.firewall.timeout_ms = None;
+            } else {
+                self.firewall.timeout_ms = Some(timeout as u64);
+            }
+        }
+
+        Ok(this)
     }
 
     /// Adjust brightness (-100 to 100)
@@ -251,14 +369,25 @@ impl ImageEngine {
     ///
     /// Returns the preset configuration for use with toBuffer/toFile.
     #[napi]
-    pub fn preset(&mut self, _this: Reference<ImageEngine>, name: String) -> Result<PresetResult> {
-        let config = PresetConfig::get(&name)
-            .ok_or_else(|| napi::Error::from(LazyImageError::invalid_preset(name)))?;
+    pub fn preset(
+        &mut self,
+        env: Env,
+        _this: Reference<ImageEngine>,
+        name: String,
+    ) -> Result<PresetResult> {
+        let config = match PresetConfig::get(&name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Apply resize operation
         self.ops.push(Operation::Resize {
             width: config.width,
             height: config.height,
+            fit: ResizeFit::Inside,
         });
 
         // Return preset info for the user to use with toBuffer/toFile
@@ -291,21 +420,30 @@ impl ImageEngine {
     #[napi(ts_return_type = "Promise<Buffer>")]
     pub fn to_buffer(
         &mut self,
+        env: Env,
         format: String,
         quality: Option<u8>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Use source directly - zero-copy for Memory and Mapped sources
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let icc_profile = self.icc_profile.clone();
-
-        let keep_metadata = self.keep_metadata;
+        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let icc_profile = if keep_metadata {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
 
         Ok(AsyncTask::new(EncodeTask {
             source,
@@ -314,6 +452,9 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            firewall: self.firewall.clone(),
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
 
@@ -325,20 +466,30 @@ impl ImageEngine {
     #[napi(ts_return_type = "Promise<OutputWithMetrics>")]
     pub fn to_buffer_with_metrics(
         &mut self,
+        env: Env,
         format: String,
         quality: Option<u8>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Use source directly - zero-copy for Memory and Mapped sources
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let icc_profile = self.icc_profile.clone();
-        let keep_metadata = self.keep_metadata;
+        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let icc_profile = if keep_metadata {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
             source,
@@ -347,6 +498,9 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            firewall: self.firewall.clone(),
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
 
@@ -361,21 +515,31 @@ impl ImageEngine {
     #[napi(js_name = "toFile", ts_return_type = "Promise<number>")]
     pub fn to_file(
         &mut self,
+        env: Env,
         path: String,
         format: String,
         quality: Option<u8>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
 
         // Use source directly - zero-copy for Memory and Mapped sources
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let icc_profile = self.icc_profile.clone();
-        let keep_metadata = self.keep_metadata;
+        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let icc_profile = if keep_metadata {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
 
         Ok(AsyncTask::new(WriteFileTask {
             source,
@@ -384,7 +548,10 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             keep_metadata,
+            firewall: self.firewall.clone(),
             output_path: path,
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
 
@@ -392,11 +559,11 @@ impl ImageEngine {
     // SYNC UTILITIES
     // =========================================================================
 
-    /// Get image dimensions WITHOUT full decoding.
+    /// Get image dimensions WITHOUT full decoding (internal method, no Env required).
     /// For file paths, reads only the header bytes (extremely fast).
     /// For in-memory buffers, uses header-only parsing.
-    #[napi]
-    pub fn dimensions(&mut self) -> Result<Dimensions> {
+    /// This method is public for testing purposes.
+    pub fn dimensions_internal(&mut self) -> std::result::Result<Dimensions, LazyImageError> {
         // If already decoded, use that
         if let Some(ref img) = self.decoded {
             let (w, h) = img.dimensions();
@@ -407,32 +574,53 @@ impl ImageEngine {
         }
 
         // Try to read dimensions from header only (no full decode)
-        let source = self
-            .source
-            .as_ref()
-            .ok_or_else(|| napi::Error::from(LazyImageError::source_consumed()))?;
+        let source = match self.source.as_ref() {
+            Some(source) => source,
+            None => {
+                return Err(LazyImageError::source_consumed());
+            }
+        };
+
+        self.firewall.enforce_source_len(source.len())?;
 
         // Use as_bytes() to get zero-copy access for Memory and Mapped sources
         if let Some(bytes) = source.as_bytes() {
+            self.firewall.scan_metadata(bytes)?;
             // For in-memory or memory-mapped data, use cursor
             let cursor = Cursor::new(bytes);
-            let reader = ImageReader::new(cursor)
-                .with_guessed_format()
-                .map_err(|e| {
-                    napi::Error::from(LazyImageError::decode_failed(format!(
-                        "failed to read image header: {e}"
-                    )))
-                })?;
+            let reader = match ImageReader::new(cursor).with_guessed_format() {
+                Ok(reader) => reader,
+                Err(e) => {
+                    let err_msg = format!("failed to read image header: {e}");
+                    return Err(LazyImageError::decode_failed(err_msg));
+                }
+            };
 
-            let (width, height) = reader.into_dimensions().map_err(|e| {
-                napi::Error::from(LazyImageError::decode_failed(format!(
-                    "failed to read dimensions: {e}"
-                )))
-            })?;
+            let (width, height) = match reader.into_dimensions() {
+                Ok(dims) => dims,
+                Err(e) => {
+                    let err_msg = format!("failed to read dimensions: {e}");
+                    return Err(LazyImageError::decode_failed(err_msg));
+                }
+            };
 
             Ok(Dimensions { width, height })
         } else {
-            Err(napi::Error::from(LazyImageError::source_consumed()))
+            Err(LazyImageError::source_consumed())
+        }
+    }
+
+    /// Get image dimensions WITHOUT full decoding.
+    /// For file paths, reads only the header bytes (extremely fast).
+    /// For in-memory buffers, uses header-only parsing.
+    #[napi]
+    pub fn dimensions(&mut self, env: Env) -> Result<Dimensions> {
+        match self.dimensions_internal() {
+            Ok(dims) => Ok(dims),
+            Err(lazy_err) => {
+                let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+                Err(napi_err)
+            }
         }
     }
 
@@ -458,6 +646,7 @@ impl ImageEngine {
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
+        env: Env,
         inputs: Vec<String>,
         output_dir: String,
         format: String,
@@ -466,8 +655,13 @@ impl ImageEngine {
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
-        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
-            .map_err(|_e| napi::Error::from(LazyImageError::unsupported_format(format)))?;
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
         let ops = self.ops.clone();
         Ok(AsyncTask::new(BatchTask {
             inputs,
@@ -475,9 +669,26 @@ impl ImageEngine {
             ops,
             format: output_format,
             concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
-            keep_metadata: self.keep_metadata,
+            keep_metadata: self.keep_metadata && !self.firewall.reject_metadata,
+            firewall: self.firewall.clone(),
+            #[cfg(feature = "napi")]
+            last_error: None,
         }))
     }
+}
+
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct SanitizeOptions {
+    pub policy: Option<String>,
+}
+
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct FirewallLimitOptions {
+    pub max_pixels: Option<u32>,
+    pub max_bytes: Option<u32>,
+    pub timeout_ms: Option<u32>,
 }
 
 #[cfg(feature = "napi")]
@@ -529,11 +740,10 @@ impl ImageEngine {
             // Get source bytes as slice - zero-copy for Memory and Mapped
             let bytes = self.ensure_source_slice()?;
 
-            let img = image::load_from_memory(bytes).map_err(|e| {
-                napi::Error::from(LazyImageError::decode_failed(format!(
-                    "failed to decode: {e}"
-                )))
-            })?;
+            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
+
+            let img = crate::engine::decoder::decode_with_image_crate(bytes)
+                .map_err(napi::Error::from)?;
 
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();
@@ -577,8 +787,9 @@ impl ImageEngine {
             // Get source bytes as slice - zero-copy for Memory and Mapped
             let bytes = self.ensure_source_slice()?;
 
-            let img = image::load_from_memory(bytes)
-                .map_err(|e| LazyImageError::decode_failed(format!("failed to decode: {e}")))?;
+            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
+
+            let img = crate::engine::decoder::decode_with_image_crate(bytes)?;
 
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();

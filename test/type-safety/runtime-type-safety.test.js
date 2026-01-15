@@ -18,7 +18,8 @@ async function testTypeSafetyInPractice() {
     for (const format of validFormats) {
         try {
             const engine = ImageEngine.fromPath(imagePath);
-            const result = await engine.resize(200, 200).toBuffer(format, 80);
+            const fitMode = format === 'jpeg' ? 'cover' : format === 'jpg' ? 'fill' : undefined;
+            const result = await engine.resize(200, 200, fitMode).toBuffer(format, 80);
             console.log(`  ${format}: ${result.length} bytes`);
         } catch (e) {
             console.log(`  ${format}: Error - ${e.message}`);

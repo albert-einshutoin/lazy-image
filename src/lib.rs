@@ -79,7 +79,8 @@ pub fn inspect_header_from_path(
 ) -> std::result::Result<InspectMetadata, LazyImageError> {
     use std::fs::File;
 
-    let file = File::open(path).map_err(|e| LazyImageError::file_read_failed(path.to_string(), e))?;
+    let file =
+        File::open(path).map_err(|e| LazyImageError::file_read_failed(path.to_string(), e))?;
     read_inspect_metadata(BufReader::new(file))
 }
 
@@ -113,8 +114,13 @@ impl From<InspectMetadata> for ImageMetadata {
 /// Use this to check dimensions before processing, or to reject
 /// images that are too large without wasting CPU on decoding.
 #[napi]
-pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
-    let metadata = inspect_header_from_bytes(buffer.as_ref()).map_err(napi::Error::from)?;
+pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
+    let metadata = match inspect_header_from_bytes(buffer.as_ref()) {
+        Ok(metadata) => metadata,
+        Err(err) => {
+            return Err(crate::error::napi_error_with_code(&env, err.clone())?);
+        }
+    };
     Ok(metadata.into())
 }
 
@@ -123,8 +129,13 @@ pub fn inspect(buffer: Buffer) -> Result<ImageMetadata> {
 /// **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
 /// This is the recommended way for server-side metadata inspection.
 #[napi(js_name = "inspectFile")]
-pub fn inspect_file(path: String) -> Result<ImageMetadata> {
-    let metadata = inspect_header_from_path(&path).map_err(napi::Error::from)?;
+pub fn inspect_file(env: Env, path: String) -> Result<ImageMetadata> {
+    let metadata = match inspect_header_from_path(&path) {
+        Ok(metadata) => metadata,
+        Err(err) => {
+            return Err(crate::error::napi_error_with_code(&env, err.clone())?);
+        }
+    };
     Ok(metadata.into())
 }
 
@@ -172,7 +183,7 @@ pub struct ProcessingMetrics {
     /// Time taken to encode the image (milliseconds)
     pub encode_time: f64,
     /// Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
-    /// 
+    ///
     /// **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
     /// the cumulative maximum RSS of the entire process, not just this operation.
     /// This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
@@ -200,7 +211,7 @@ pub struct ProcessingMetrics {
     /// Time taken to encode the image (milliseconds)
     pub encode_time: f64,
     /// Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
-    /// 
+    ///
     /// **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
     /// the cumulative maximum RSS of the entire process, not just this operation.
     /// This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,

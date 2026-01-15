@@ -89,13 +89,12 @@ pub fn calculate_optimal_concurrency() -> usize {
 
     // Reserve threads for libuv
     let uv_reserve = reserved_libuv_threads();
-    let cpu_concurrency = cpu_based
-        .saturating_sub(uv_reserve)
-        .max(MIN_RAYON_THREADS);
+    let cpu_concurrency = cpu_based.saturating_sub(uv_reserve).max(MIN_RAYON_THREADS);
 
     // 2. Detect memory limits and calculate memory-based concurrency
     let available_memory = memory::detect_available_memory();
-    let memory_based = memory::calculate_memory_based_concurrency(available_memory, cpu_concurrency);
+    let memory_based =
+        memory::calculate_memory_based_concurrency(available_memory, cpu_concurrency);
 
     // 3. Use the minimum of CPU and memory constraints
     // This ensures we don't exceed either CPU or memory limits

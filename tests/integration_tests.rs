@@ -26,15 +26,24 @@ mod tests {
         Buffer::from(buf)
     }
 
+    // Helper to create a dummy Env for exercising NAPI entry points in Rust tests.
+    // The Env value is only used when an error occurs, so we can safely pass a null
+    // pointer for success-path tests. This keeps coverage on the `dimensions` API
+    // without requiring a real Node.js runtime in cargo test.
+    fn dummy_env() -> Env {
+        unsafe { Env::from_raw(std::ptr::null_mut()) }
+    }
+
     #[test]
     fn test_image_engine_from_buffer() {
         let buffer = create_test_image_buffer();
         let engine = ImageEngine::from(buffer);
-        
+
         // Verify engine is created successfully
-        // We can verify by checking that dimensions() works (uses source.as_bytes() for zero-copy access)
+        // Test through NAPI public API to ensure Env-based error handling works
         let mut engine_for_dims = engine;
-        let dims = engine_for_dims.dimensions().unwrap();
+        let env = dummy_env();
+        let dims = engine_for_dims.dimensions(env).unwrap();
         assert_eq!(dims.width, 100);
         assert_eq!(dims.height, 100);
     }
@@ -43,9 +52,11 @@ mod tests {
     fn test_image_engine_dimensions() {
         let buffer = create_test_image_buffer();
         let mut engine = ImageEngine::from(buffer);
-        
+
         // Get dimensions without full decode (header-only parsing)
-        let dims = engine.dimensions().unwrap();
+        // Test through NAPI public API to ensure Env-based error handling works
+        let env = dummy_env();
+        let dims = engine.dimensions(env).unwrap();
         assert_eq!(dims.width, 100);
         assert_eq!(dims.height, 100);
     }
@@ -54,16 +65,18 @@ mod tests {
     fn test_image_engine_clone() {
         let buffer = create_test_image_buffer();
         let engine = ImageEngine::from(buffer);
-        
+
         // Clone should succeed and create independent instance
         let cloned = engine.clone_engine().unwrap();
-        
+
         // Verify cloned engine works by checking dimensions
+        // Test through NAPI public API to ensure Env-based error handling works
         let mut cloned_for_dims = cloned;
-        let dims = cloned_for_dims.dimensions().unwrap();
+        let env = dummy_env();
+        let dims = cloned_for_dims.dimensions(env).unwrap();
         assert_eq!(dims.width, 100);
         assert_eq!(dims.height, 100);
-        
+
         // Verify they are independent (cloned engine has same data but separate instance)
         // This is tested implicitly by the clone succeeding and dimensions matching
     }
@@ -72,12 +85,15 @@ mod tests {
     fn test_image_engine_has_icc_profile() {
         let buffer = create_test_image_buffer();
         let engine = ImageEngine::from(buffer);
-        
+
         // Test image without ICC profile should return None
         let icc_size = engine.has_icc_profile();
         // PNG created from scratch typically doesn't have ICC profile
         // This test verifies the method works without panicking
-        assert!(icc_size.is_none(), "PNG created from scratch should not have ICC profile");
+        assert!(
+            icc_size.is_none(),
+            "PNG created from scratch should not have ICC profile"
+        );
     }
 
     // Note: Methods requiring Reference (resize, crop, rotate, flip_h, flip_v,

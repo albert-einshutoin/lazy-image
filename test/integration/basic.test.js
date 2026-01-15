@@ -7,9 +7,14 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const { resolveRoot, resolveFixture, resolveTemp } = require('../helpers/paths');
-const { ImageEngine, inspect, inspectFile } = require(resolveRoot('index'));
+const { ImageEngine, ErrorCategory, getErrorCategory, inspect, inspectFile } = require(resolveRoot('index'));
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
+
+function assertCategory(category, expected, message) {
+    assert.notStrictEqual(category, null, 'error.category should be set');
+    assert.strictEqual(category, expected, message);
+}
 
 let passed = 0;
 let failed = 0;
@@ -236,6 +241,107 @@ async function runTests() {
         }
         assert(threw, 'should have thrown an error');
     });
+
+    // Error category tests
+    // Note: These tests check for error.code property, which is set by create_napi_error_with_code()
+    // Currently, not all error sites use this function, so some tests may fail until all error sites are updated.
+    await asyncTest('error category: UserError for invalid rotation', async () => {
+        try {
+            await ImageEngine.from(buffer).rotate(45).toBuffer('jpeg', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.UserError, 'invalid rotation should be UserError');
+            assert(e.message, 'error should have message field');
+            // Error message should NOT have prefix (backward compatibility)
+            // Check for both possible prefix formats
+            assert(!e.message.startsWith('LAZY_IMAGE_USER_ERROR:UserError:'), 'message should NOT have LAZY_IMAGE_USER_ERROR:UserError: prefix');
+            assert(!e.message.startsWith('UserError:'), 'message should NOT have UserError: prefix');
+        }
+    });
+
+    await asyncTest('error category: UserError for invalid crop bounds', async () => {
+        try {
+            await ImageEngine.from(buffer).crop(10000, 10000, 1000, 1000).toBuffer('jpeg', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.UserError, 'invalid crop bounds should be UserError');
+            // Error message should NOT have prefix
+            assert(!e.message.startsWith('LAZY_IMAGE_USER_ERROR:UserError:'), 'message should NOT have LAZY_IMAGE_USER_ERROR:UserError: prefix');
+            assert(!e.message.startsWith('UserError:'), 'message should NOT have UserError: prefix');
+        }
+    });
+
+    await asyncTest('error category: CodecError for invalid format', async () => {
+        try {
+            await ImageEngine.from(buffer).toBuffer('invalid_format', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.CodecError, 'invalid format should be CodecError');
+            // Error message should NOT have prefix
+            assert(!e.message.startsWith('LAZY_IMAGE_CODEC_ERROR:CodecError:'), 'message should NOT have LAZY_IMAGE_CODEC_ERROR:CodecError: prefix');
+            assert(!e.message.startsWith('CodecError:'), 'message should NOT have CodecError: prefix');
+        }
+    });
+
+    await asyncTest('error category: UserError for file not found', async () => {
+        try {
+            await ImageEngine.fromPath('/nonexistent/file.jpg').toBuffer('jpeg', 80);
+            assert.fail('should have thrown an error');
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.UserError, 'file not found should be UserError');
+        }
+    });
+
+    await asyncTest('getErrorCategory returns null for non-lazy-image errors', async () => {
+        const regularError = new Error('Regular error');
+        const category = getErrorCategory(regularError);
+        assert.strictEqual(category, null, 'non-lazy-image errors should return null');
+    });
+
+    await asyncTest('getErrorCategory handles null/undefined', async () => {
+        assert.strictEqual(getErrorCategory(null), null);
+        assert.strictEqual(getErrorCategory(undefined), null);
+    });
+
+    await asyncTest('error category: ResourceLimit for file write error', async () => {
+        // 書き込み権限のないディレクトリに書き込もうとする
+        // 実際のテストでは、権限エラーが発生する可能性がある
+        // このテストは、エラーが発生した場合にResourceLimitカテゴリが設定されることを確認する
+        try {
+            // 存在しない親ディレクトリへの書き込みを試みる
+            await ImageEngine.from(buffer)
+                .resize(100, 100)
+                .toFile('/nonexistent/directory/output.jpg', 'jpeg', 80);
+            // エラーが発生しない場合もある（環境による）
+        } catch (e) {
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.ResourceLimit, 'file write error should be ResourceLimit');
+        }
+    });
+
+    await asyncTest('processBatch error results expose category', async () => {
+        const engine = ImageEngine.from(buffer).resize(100);
+        const tempDir = resolveTemp('batch_error_meta');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        const invalidPath = '/nonexistent/batch-input.jpg';
+        const results = await engine.processBatch([invalidPath], tempDir, 'jpeg', 80, undefined, 1);
+        assert.strictEqual(results.length, 1, 'should return one result');
+        const result = results[0];
+        assert.strictEqual(result.success, false, 'result should be marked as failure');
+        assert.strictEqual(result.errorCode, 'LAZY_IMAGE_USER_ERROR', 'error code should be set');
+        assert.strictEqual(result.errorCategory, ErrorCategory.UserError, 'error category should be UserError');
+        assert(result.error && result.error.includes(invalidPath), 'error message should include source path');
+    });
+
+    // Note: InternalBugカテゴリのテストは、実際の内部エラーを発生させるのが困難なため、
+    // 実装上の問題が発生した場合にのみテスト可能です。
+    // 通常の使用では、InternalBugエラーは発生しないはずです。
 
     // Preset tests
     await asyncTest('preset("thumbnail") works', async () => {

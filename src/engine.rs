@@ -29,6 +29,7 @@ mod api;
 mod common;
 mod decoder;
 mod encoder;
+mod firewall;
 mod io;
 mod memory;
 mod pipeline;
@@ -38,8 +39,11 @@ mod tasks;
 
 // Re-export commonly used types and functions
 pub use api::ImageEngine;
-pub use decoder::{check_dimensions, decode_jpeg_mozjpeg};
-pub use encoder::{encode_avif, encode_jpeg, encode_png, encode_webp, embed_icc_jpeg, embed_icc_png, embed_icc_webp, QualitySettings};
+pub use decoder::{check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate};
+pub use encoder::{
+    embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
+    encode_webp, QualitySettings,
+};
 pub use io::{extract_icc_profile, Source};
 pub use pipeline::{
     apply_ops, calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned,
@@ -73,8 +77,10 @@ pub use stress::run_stress_iteration;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ops::{Operation, OutputFormat};
+    use crate::engine::firewall::FirewallConfig;
     use crate::engine::tasks::EncodeTask;
+    use crate::error::LazyImageError;
+    use crate::ops::{Operation, OutputFormat, ResizeFit};
     use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
     use std::borrow::Cow;
     use std::sync::Arc;
@@ -119,13 +125,17 @@ mod tests {
         output
     }
 
-    // Helper to create minimal valid PNG bytes
-    fn create_minimal_png() -> Vec<u8> {
-        let img = create_test_image(1, 1);
+    fn create_png(width: u32, height: u32) -> Vec<u8> {
+        let img = create_test_image(width, height);
         let mut buf = Vec::new();
         img.write_to(&mut std::io::Cursor::new(&mut buf), image::ImageFormat::Png)
             .unwrap();
         buf
+    }
+
+    // Helper to create minimal valid PNG bytes
+    fn create_minimal_png() -> Vec<u8> {
+        create_png(1, 1)
     }
 
     // Helper to create minimal valid WebP bytes
@@ -305,7 +315,10 @@ mod tests {
 
     mod icc_tests {
         use super::*;
-        use crate::engine::io::{extract_icc_from_jpeg, extract_icc_from_png, extract_icc_from_webp, validate_icc_profile};
+        use crate::engine::io::{
+            extract_icc_from_jpeg, extract_icc_from_png, extract_icc_from_png_direct,
+            extract_icc_from_webp, validate_icc_profile,
+        };
 
         #[test]
         fn test_validate_icc_profile_too_small() {
@@ -388,7 +401,7 @@ mod tests {
         #[test]
         fn test_extract_icc_from_png_no_profile() {
             // ICCプロファイルなしのPNG
-            let png_data = create_minimal_png();
+            let png_data = create_png(2, 2);
             let result = extract_icc_from_png(&png_data);
             assert!(result.is_none());
         }
@@ -485,18 +498,21 @@ mod tests {
 
             #[test]
             fn test_extract_icc_from_png_with_profile() {
+                // PNG ICC extraction: img-parts can now extract ICC profiles from PNG iCCP chunks
+                // when they are embedded using the correct format (raw ICC profile data).
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
                 let extracted = extract_icc_profile(&png);
-                // PNGのICC埋め込みはimg-partsの実装に依存するため、
-                // 抽出が成功するかどうかは実装次第
-                // 少なくともエラーにならないことを確認
-                // 実際の動作はimg-partsのバージョンに依存する可能性がある
-                if extracted.is_none() {
-                    // PNGのICC埋め込みが動作しない場合は、警告として記録
-                    // これは既知の制限事項の可能性がある
-                    eprintln!("Warning: PNG ICC profile extraction failed - this may be a limitation of img-parts");
-                }
+                // PNG ICC extraction should now work with img-parts
+                assert!(
+                    extracted.is_some(),
+                    "PNG ICC extraction should return Some when ICC profile is embedded correctly"
+                );
+                let extracted = extracted.unwrap();
+                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                assert!(extracted.len() >= 128);
+                // Extracted ICC should match original
+                assert_eq!(icc, extracted, "Extracted ICC should match original");
             }
 
             #[test]
@@ -591,26 +607,37 @@ mod tests {
 
             #[test]
             fn test_png_roundtrip() {
+                // Test that ICC profile is preserved in PNG roundtrip
                 let original_icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&png);
 
-                // PNGのICC埋め込みが動作しない場合はスキップ
-                if extracted_icc.is_none() {
-                    eprintln!("Skipping PNG roundtrip test - ICC extraction not supported");
-                    return;
-                }
-
+                // Verify that iCCP chunk exists in PNG (using direct parsing)
+                let extracted_icc = extract_icc_from_png_direct(&png);
+                assert!(
+                    extracted_icc.is_some(),
+                    "PNG should contain iCCP chunk with ICC profile"
+                );
                 let extracted_icc = extracted_icc.unwrap();
+                assert_eq!(
+                    original_icc, extracted_icc,
+                    "Extracted ICC should match original"
+                );
+
+                // Test roundtrip: decode and re-encode
                 let img = image::load_from_memory(&png).unwrap();
                 let encoded = encode_png(&img, Some(&extracted_icc)).unwrap();
-                let re_extracted_icc = extract_icc_profile(&encoded);
 
-                if re_extracted_icc.is_some() {
-                    assert_eq!(extracted_icc, re_extracted_icc.unwrap());
-                } else {
-                    eprintln!("Warning: PNG ICC roundtrip failed - ICC may not be preserved");
-                }
+                // Verify that re-encoded PNG also contains iCCP chunk
+                let re_extracted_icc = extract_icc_from_png_direct(&encoded);
+                assert!(
+                    re_extracted_icc.is_some(),
+                    "Re-encoded PNG should also contain iCCP chunk"
+                );
+                assert_eq!(
+                    extracted_icc,
+                    re_extracted_icc.unwrap(),
+                    "Re-extracted ICC should match original"
+                );
             }
 
             #[test]
@@ -628,47 +655,57 @@ mod tests {
 
             #[test]
             fn test_cross_format_roundtrip_jpeg_to_png() {
-                // JPEGからICCを抽出してPNGに埋め込み
+                // Test that ICC profile is preserved when converting JPEG to PNG
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
                 let extracted_icc = extract_icc_profile(&jpeg).unwrap();
 
+                // Convert JPEG to PNG with ICC
                 let img = image::load_from_memory(&jpeg).unwrap();
                 let png = encode_png(&img, Some(&extracted_icc)).unwrap();
-                let re_extracted = extract_icc_profile(&png);
 
-                // PNGのICC抽出が動作しない場合はスキップ
-                if re_extracted.is_none() {
-                    eprintln!(
-                        "Skipping JPEG to PNG roundtrip test - PNG ICC extraction not supported"
-                    );
-                    return;
-                }
-
-                assert_eq!(extracted_icc, re_extracted.unwrap());
+                // Verify that PNG contains iCCP chunk with ICC profile (using direct parsing)
+                let re_extracted = extract_icc_from_png_direct(&png);
+                assert!(
+                    re_extracted.is_some(),
+                    "PNG should contain iCCP chunk with ICC profile from JPEG"
+                );
+                assert_eq!(
+                    extracted_icc,
+                    re_extracted.unwrap(),
+                    "ICC profile should be preserved in JPEG to PNG conversion"
+                );
             }
 
             #[test]
             fn test_cross_format_roundtrip_png_to_webp() {
-                // PNGからICCを抽出してWebPに埋め込み
+                // Test that ICC profile is preserved when converting PNG to WebP
+                // Since img-parts cannot extract ICC from PNG, we use direct parsing
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
-                let extracted_icc = extract_icc_profile(&png);
 
-                // PNGのICC抽出が動作しない場合はスキップ
-                if extracted_icc.is_none() {
-                    eprintln!(
-                        "Skipping PNG to WebP roundtrip test - PNG ICC extraction not supported"
-                    );
-                    return;
-                }
-
+                // Extract ICC from PNG using direct parsing (img-parts limitation)
+                let extracted_icc = extract_icc_from_png_direct(&png);
+                assert!(
+                    extracted_icc.is_some(),
+                    "PNG should contain iCCP chunk with ICC profile"
+                );
                 let extracted_icc = extracted_icc.unwrap();
+                assert_eq!(
+                    icc, extracted_icc,
+                    "Extracted ICC from PNG should match original"
+                );
+
+                // Convert PNG to WebP using extracted ICC
                 let img = image::load_from_memory(&png).unwrap();
                 let webp = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
-                let re_extracted = extract_icc_profile(&webp).unwrap();
 
-                assert_eq!(extracted_icc, re_extracted);
+                // Verify that WebP contains ICC profile
+                let re_extracted = extract_icc_profile(&webp).unwrap();
+                assert_eq!(
+                    extracted_icc, re_extracted,
+                    "ICC profile should be preserved in PNG to WebP conversion"
+                );
             }
         }
 
@@ -745,6 +782,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(50),
                 height: Some(50),
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 50));
@@ -756,6 +794,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(50),
                 height: None,
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
@@ -767,6 +806,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: None,
                 height: Some(25),
+                fit: ResizeFit::Inside,
             }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
             assert_eq!(result.dimensions(), (50, 25));
@@ -935,6 +975,7 @@ mod tests {
                 Operation::Resize {
                     width: Some(100),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Rotate { degrees: 90 },
                 Operation::Grayscale,
@@ -963,16 +1004,24 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height: _ } = &optimized[0] {
+            if let Operation::Resize {
+                width,
+                height: _,
+                fit,
+            } = &optimized[0]
+            {
                 assert_eq!(*width, Some(400));
+                assert_eq!(*fit, ResizeFit::Inside);
             } else {
                 panic!("Expected Resize operation");
             }
@@ -984,11 +1033,13 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Grayscale,
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
@@ -1000,6 +1051,7 @@ mod tests {
             let ops = vec![Operation::Resize {
                 width: Some(100),
                 height: None,
+                fit: ResizeFit::Inside,
             }];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
@@ -1018,20 +1070,29 @@ mod tests {
                 Operation::Resize {
                     width: Some(1000),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height: _ } = &optimized[0] {
+            if let Operation::Resize {
+                width,
+                height: _,
+                fit,
+            } = &optimized[0]
+            {
                 assert_eq!(*width, Some(400));
+                assert_eq!(*fit, ResizeFit::Inside);
             }
         }
 
@@ -1041,17 +1102,20 @@ mod tests {
                 Operation::Resize {
                     width: Some(800),
                     height: None,
+                    fit: ResizeFit::Inside,
                 },
                 Operation::Resize {
                     width: Some(400),
                     height: Some(300),
+                    fit: ResizeFit::Inside,
                 },
             ];
             let optimized = optimize_ops(&ops);
             assert_eq!(optimized.len(), 1);
-            if let Operation::Resize { width, height } = &optimized[0] {
+            if let Operation::Resize { width, height, fit } = &optimized[0] {
                 assert_eq!(*width, Some(400));
                 assert_eq!(*height, Some(300));
+                assert_eq!(*fit, ResizeFit::Inside);
             }
         }
     }
@@ -1264,6 +1328,9 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 keep_metadata: false,
+                firewall: FirewallConfig::disabled(),
+                #[cfg(feature = "napi")]
+                last_error: None,
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -1282,6 +1349,9 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 keep_metadata: false,
+                firewall: FirewallConfig::disabled(),
+                #[cfg(feature = "napi")]
+                last_error: None,
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -1298,6 +1368,9 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 keep_metadata: false,
+                firewall: FirewallConfig::disabled(),
+                #[cfg(feature = "napi")]
+                last_error: None,
             };
             let result = task.decode();
             assert!(result.is_err());
@@ -1305,6 +1378,50 @@ mod tests {
                 .unwrap_err()
                 .to_string()
                 .contains("Image source already consumed"));
+        }
+
+        #[test]
+        fn test_firewall_blocks_large_input_bytes() {
+            use crate::engine::io::Source;
+            let png_data = create_minimal_png();
+            let mut firewall = FirewallConfig::custom();
+            firewall.max_bytes = Some(1);
+
+            let task = EncodeTask {
+                source: Some(Source::Memory(Arc::new(png_data))),
+                decoded: None,
+                ops: vec![],
+                format: OutputFormat::Png,
+                icc_profile: None,
+                keep_metadata: false,
+                firewall,
+                #[cfg(feature = "napi")]
+                last_error: None,
+            };
+            let err = task.decode_internal().unwrap_err();
+            assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
+        }
+
+        #[test]
+        fn test_firewall_blocks_large_pixel_count() {
+            use crate::engine::io::Source;
+            let png_data = create_png(2, 2);
+            let mut firewall = FirewallConfig::custom();
+            firewall.max_pixels = Some(1);
+
+            let task = EncodeTask {
+                source: Some(Source::Memory(Arc::new(png_data))),
+                decoded: None,
+                ops: vec![],
+                format: OutputFormat::Png,
+                icc_profile: None,
+                keep_metadata: false,
+                firewall,
+                #[cfg(feature = "napi")]
+                last_error: None,
+            };
+            let err = task.decode_internal().unwrap_err();
+            assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
         }
     }
 
