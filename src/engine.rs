@@ -39,7 +39,7 @@ mod tasks;
 
 // Re-export commonly used types and functions
 pub use api::ImageEngine;
-pub use decoder::{check_dimensions, decode_jpeg_mozjpeg};
+pub use decoder::{check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate};
 pub use encoder::{
     embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
     encode_webp, QualitySettings,
@@ -57,12 +57,8 @@ pub use pool::{get_pool, MAX_CONCURRENCY};
 // Re-export types from api.rs and tasks.rs
 #[cfg(feature = "napi")]
 pub use api::{Dimensions, PresetResult};
-#[cfg(feature = "fuzzing")]
-pub use firewall::FirewallConfig;
 #[cfg(feature = "napi")]
 pub use tasks::BatchResult;
-#[cfg(feature = "fuzzing")]
-pub use tasks::EncodeTask;
 
 // Re-export stress test function
 #[cfg(feature = "stress")]
