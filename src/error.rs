@@ -98,6 +98,9 @@ pub enum LazyImageError {
         img_height: u32,
     },
 
+    #[error("Invalid crop dimensions: width={width}, height={height}")]
+    InvalidCropDimensions { width: u32, height: u32 },
+
     #[error(
         "Unsupported rotation angle: {degrees}. Only 0, 90, 180, 270 (and negatives) are supported"
     )]
@@ -199,6 +202,10 @@ impl Clone for LazyImageError {
                 height: *height,
                 img_width: *img_width,
                 img_height: *img_height,
+            },
+            Self::InvalidCropDimensions { width, height } => Self::InvalidCropDimensions {
+                width: *width,
+                height: *height,
             },
             Self::InvalidRotationAngle { degrees } => {
                 Self::InvalidRotationAngle { degrees: *degrees }
@@ -320,6 +327,10 @@ impl LazyImageError {
         }
     }
 
+    pub fn invalid_crop_dimensions(width: u32, height: u32) -> Self {
+        Self::InvalidCropDimensions { width, height }
+    }
+
     pub fn invalid_rotation_angle(degrees: i32) -> Self {
         Self::InvalidRotationAngle { degrees }
     }
@@ -409,6 +420,7 @@ impl LazyImageError {
             // UserError: Invalid input, recoverable
             Self::FileNotFound { .. }
             | Self::InvalidCropBounds { .. }
+            | Self::InvalidCropDimensions { .. }
             | Self::InvalidRotationAngle { .. }
             | Self::InvalidResizeDimensions { .. }
             | Self::InvalidResizeFit { .. }
@@ -561,6 +573,7 @@ mod tests {
     fn test_error_recoverable() {
         assert!(LazyImageError::file_not_found("test.jpg").is_recoverable());
         assert!(LazyImageError::invalid_crop_bounds(0, 0, 100, 100, 50, 50).is_recoverable());
+        assert!(LazyImageError::invalid_crop_dimensions(0, 100).is_recoverable());
         assert!(!LazyImageError::decode_failed("test").is_recoverable());
         assert!(!LazyImageError::internal_panic("test").is_recoverable());
     }
@@ -582,6 +595,7 @@ mod tests {
         let _ = LazyImageError::dimension_exceeds_limit(10000, 8000);
         let _ = LazyImageError::pixel_count_exceeds_limit(1000000000, 100000000);
         let _ = LazyImageError::invalid_crop_bounds(100, 100, 500, 500, 200, 200);
+        let _ = LazyImageError::invalid_crop_dimensions(0, 0);
         let _ = LazyImageError::invalid_rotation_angle(45);
         let _ = LazyImageError::invalid_resize_dimensions(None, None);
         let _ = LazyImageError::resize_failed((100, 100), (50, 50), "test");
@@ -601,6 +615,10 @@ mod tests {
         );
         assert_eq!(
             LazyImageError::invalid_crop_bounds(0, 0, 100, 100, 50, 50).category(),
+            ErrorCategory::UserError
+        );
+        assert_eq!(
+            LazyImageError::invalid_crop_dimensions(0, 100).category(),
             ErrorCategory::UserError
         );
         assert_eq!(

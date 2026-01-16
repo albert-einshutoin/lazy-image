@@ -8,6 +8,7 @@ use lazy_image::engine::{
     apply_ops, calc_resize_dimensions, check_dimensions, encode_avif, encode_jpeg, encode_png,
     encode_webp, fast_resize,
 };
+use lazy_image::error::LazyImageError;
 use std::borrow::Cow;
 
 // Helper function to create test images
@@ -177,11 +178,7 @@ mod large_image_tests {
     fn test_calc_resize_extreme_aspect_ratio() {
         // 極端なアスペクト比でのリサイズ計算
         let (w, h) = calc_resize_dimensions(32768, 1, Some(100), None);
-        assert_eq!(w, 100);
-        // 32768:1 = 100:0.003... → 0に丸められる可能性がある
-        // 実際の計算: 100 / 32768 * 1 = 0.003... → round()で0になる可能性がある
-        // これは計算上の制限であり、実際のリサイズ処理で1にクランプされる可能性がある
-        eprintln!("Calculated resize: 32768x1 -> {}x{}", w, h);
+        assert_eq!((w, h), (100, 0));
     }
 }
 
@@ -196,7 +193,7 @@ mod corrupted_image_tests {
         let result = decode_jpeg_mozjpeg(&corrupted);
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
-        assert!(err.contains("decode") || err.contains("failed"));
+        assert!(err.contains("EOI") || err.contains("decode") || err.contains("failed"));
     }
 
     #[test]
@@ -206,12 +203,13 @@ mod corrupted_image_tests {
         let truncated: Vec<u8> = valid_jpeg[..valid_jpeg.len() / 2].to_vec();
 
         let result = decode_jpeg_mozjpeg(&truncated);
-        // 切断されたJPEGは通常エラーになるが、image crateが部分的にデコードできる場合もある
-        // 少なくともpanicしないことを確認
-        if result.is_ok() {
-            // デコードできた場合でも、後続の処理でエラーになる可能性がある
-            eprintln!("Warning: Truncated JPEG was decoded successfully (may be a limitation)");
-        }
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("EOI"),
+            "expected EOI error for truncated JPEG, got: {}",
+            err
+        );
     }
 
     #[test]
@@ -223,7 +221,7 @@ mod corrupted_image_tests {
 
         // PNGマジックバイトなので、decode_jpeg_mozjpegは呼ばれず、image crateが処理する
         let result = image::load_from_memory(&fake);
-        // PNGとして解析を試みるが、実際はJPEGなので失敗する可能性が高い
+        // PNGとして解析を試みるが、実際はJPEGなので失敗する
         assert!(result.is_err());
     }
 
@@ -261,11 +259,10 @@ mod quality_boundary_tests {
     #[test]
     fn test_quality_0() {
         let img = create_test_image(100, 100);
-        // quality=0は意味があるか？多くのエンコーダは1以上を期待
-        // 少なくともpanicしないことを確認
         let result = encode_jpeg(&img, 0, None);
-        // mozjpegは0を受け入れる可能性がある
-        assert!(result.is_ok() || result.is_err());
+        assert!(result.is_ok());
+        let encoded = result.unwrap();
+        assert_eq!(&encoded[0..2], &[0xFF, 0xD8]);
     }
 
     #[test]
@@ -289,19 +286,19 @@ mod quality_boundary_tests {
     #[test]
     fn test_quality_over_100() {
         let img = create_test_image(100, 100);
-        // quality > 100 の処理：クランプされるか、エラーか
-        // mozjpegはf32で品質を受け取るので、101も受け入れる可能性がある
         let result = encode_jpeg(&img, 101, None);
-        // panicしないことが最低限の要件
-        assert!(result.is_ok() || result.is_err());
+        assert!(result.is_ok());
+        let encoded = result.unwrap();
+        assert_eq!(&encoded[0..2], &[0xFF, 0xD8]);
     }
 
     #[test]
     fn test_quality_webp_0() {
         let img = create_test_image(100, 100);
         let result = encode_webp(&img, 0, None);
-        // WebPは0を受け入れる可能性がある
-        assert!(result.is_ok() || result.is_err());
+        assert!(result.is_ok());
+        let encoded = result.unwrap();
+        assert_eq!(&encoded[0..4], b"RIFF");
     }
 
     #[test]
@@ -344,19 +341,10 @@ mod zero_dimension_tests {
             fit: ResizeFit::Inside,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
-        // 0幅へのリサイズはfast_resizeでエラーになる可能性がある
-        // または、image crateのresizeでエラーになる
-        // 少なくともpanicしないことを確認
-        if result.is_ok() {
-            let resized = result.unwrap();
-            // 0幅は無効なので、エラーになるか、または1にクランプされる可能性がある
-            // 実際の動作に依存する
-            eprintln!(
-                "Warning: Resize to 0 width succeeded, result: {}x{}",
-                resized.width(),
-                resized.height()
-            );
-        }
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidResizeDimensions { .. })
+        ));
     }
 
     #[test]
@@ -368,16 +356,10 @@ mod zero_dimension_tests {
             fit: ResizeFit::Inside,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
-        // 0高さへのリサイズはエラーになる可能性がある
-        // 少なくともpanicしないことを確認
-        if result.is_ok() {
-            let resized = result.unwrap();
-            eprintln!(
-                "Warning: Resize to 0 height succeeded, result: {}x{}",
-                resized.width(),
-                resized.height()
-            );
-        }
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidResizeDimensions { .. })
+        ));
     }
 
     #[test]
@@ -390,11 +372,10 @@ mod zero_dimension_tests {
             height: 50,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
-        // 0幅のクロップはエラーであるべき
-        // ただし、image crateの動作に依存する可能性がある
-        if result.is_ok() {
-            eprintln!("Warning: Crop with 0 width succeeded (may be a limitation)");
-        }
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidCropDimensions { .. })
+        ));
     }
 
     #[test]
@@ -407,11 +388,10 @@ mod zero_dimension_tests {
             height: 0,
         }];
         let result = apply_ops(Cow::Owned(img), &ops);
-        // 0高さのクロップはエラーであるべき
-        // ただし、image crateの動作に依存する可能性がある
-        if result.is_ok() {
-            eprintln!("Warning: Crop with 0 height succeeded (may be a limitation)");
-        }
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidCropDimensions { .. })
+        ));
     }
 
     #[test]
@@ -587,9 +567,7 @@ mod encoder_error_tests {
     #[test]
     fn test_encode_jpeg_invalid_quality() {
         let img = create_test_image(100, 100);
-        // quality > 100 でもpanicしないことを確認
-        // mozjpegはf32で品質を受け取るので、100を超える値も受け入れる可能性がある
-        // 実際の動作: 品質値が100を超えても成功する（mozjpegが内部で処理）
+        // quality > 100 はクランプされ、エンコードは成功する
         let result = encode_jpeg(&img, 150, None);
         assert!(result.is_ok(), "encode_jpeg should accept quality > 100");
     }
@@ -597,36 +575,18 @@ mod encoder_error_tests {
     #[test]
     fn test_encode_webp_invalid_quality() {
         let img = create_test_image(100, 100);
-        // quality > 100 でもpanicしないことを確認
-        // WebPエンコーダーは品質値が100を超えるとエラーを返す可能性がある
+        // quality > 100 はクランプされ、エンコードは成功する
         let result = encode_webp(&img, 150, None);
-        // WebPの実装では品質値が100を超えるとエラーになる可能性がある
-        // 少なくともpanicしないことを確認（エラーでもOK）
-        // 実際の動作: 品質値が100を超えるとエラーを返す
-        if result.is_err() {
-            // エラーメッセージを確認（panicではないことを確認）
-            let err = result.unwrap_err();
-            assert!(
-                err.to_string().contains("webp")
-                    || err.to_string().contains("encode")
-                    || err.to_string().contains("quality"),
-                "Error should be related to WebP encoding, got: {}",
-                err
-            );
-        } else {
-            // 成功する場合もある（実装に依存）
-            assert!(result.is_ok());
-        }
+        assert!(result.is_ok(), "encode_webp should accept quality > 100");
+        let encoded = result.unwrap();
+        assert_eq!(&encoded[0..4], b"RIFF");
     }
 
     #[test]
     fn test_encode_avif_invalid_quality() {
         let img = create_test_image(100, 100);
-        // quality > 100 でもpanicしないことを確認
-        // AVIFエンコーダーは品質値をそのまま受け取る可能性がある
+        // quality > 100 はクランプされ、エンコードは成功する
         let result = encode_avif(&img, 150, None);
-        // AVIFの実装に依存するが、少なくともpanicしないことを確認
-        // 実際の動作を確認するため、成功することを期待
         assert!(result.is_ok(), "encode_avif should accept quality > 100");
     }
 }

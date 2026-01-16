@@ -29,16 +29,18 @@ pub struct QualitySettings {
 
 impl QualitySettings {
     pub fn new(quality: u8) -> Self {
+        let clamped = quality.min(100);
         Self {
-            quality: quality as f32,
+            quality: clamped as f32,
             fast_mode: false, // Default: high quality mode
         }
     }
 
     /// Create with fast mode option
     pub fn with_fast_mode(quality: u8, fast_mode: bool) -> Self {
+        let clamped = quality.min(100);
         Self {
-            quality: quality as f32,
+            quality: clamped as f32,
             fast_mode,
         }
     }
@@ -132,6 +134,7 @@ pub fn encode_jpeg_with_settings(
 ) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:jpeg", || {
         use std::borrow::Cow;
+        let quality = quality.min(100);
 
         // Zero-copy optimization: avoid conversion if already RGB8
         let rgb: Cow<'_, image::RgbImage> = match img {
@@ -371,7 +374,8 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
     run_with_panic_policy("encode:avif", || {
         use std::borrow::Cow;
 
-        let settings = QualitySettings::new(quality);
+        let clamped_quality = quality.min(100);
+        let settings = QualitySettings::new(clamped_quality);
         let (width, height) = img.dimensions();
 
         let has_alpha = img.color().has_alpha();
@@ -435,7 +439,12 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         let capped = cmp::min(8, cpu_threads);
         let encoder_threads = cmp::max(2, capped) as i32;
 
-        encoder.configure(quality, quality, settings.avif_speed(), encoder_threads);
+        encoder.configure(
+            clamped_quality,
+            clamped_quality,
+            settings.avif_speed(),
+            encoder_threads,
+        );
 
         let mut output = SafeAvifRwData::new();
 

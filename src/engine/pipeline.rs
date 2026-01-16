@@ -80,6 +80,16 @@ pub fn calc_resize_dimensions(
     }
 }
 
+fn validate_resize_dimensions(width: u32, height: u32) -> PipelineResult<()> {
+    if width == 0 || height == 0 {
+        return Err(LazyImageError::invalid_resize_dimensions(
+            Some(width),
+            Some(height),
+        ));
+    }
+    Ok(())
+}
+
 fn calc_cover_resize_dimensions(
     orig_w: u32,
     orig_h: u32,
@@ -268,6 +278,7 @@ pub fn apply_ops<'a>(
                 (ResizeFit::Fill, Some(w), Some(h)) => {
                     let target_w = *w;
                     let target_h = *h;
+                    validate_resize_dimensions(target_w, target_h)?;
                     if (target_w, target_h) == (img.width(), img.height()) {
                         img
                     } else {
@@ -280,6 +291,7 @@ pub fn apply_ops<'a>(
                     }
                 }
                 (ResizeFit::Cover, Some(target_w), Some(target_h)) => {
+                    validate_resize_dimensions(*target_w, *target_h)?;
                     if (*target_w, *target_h) == (img.width(), img.height()) {
                         img
                     } else {
@@ -300,6 +312,7 @@ pub fn apply_ops<'a>(
                 }
                 _ => {
                     let (w, h) = calc_resize_dimensions(img.width(), img.height(), *width, *height);
+                    validate_resize_dimensions(w, h)?;
                     if (w, h) == (img.width(), img.height()) {
                         img
                     } else {
@@ -319,6 +332,9 @@ pub fn apply_ops<'a>(
                 width,
                 height,
             } => {
+                if *width == 0 || *height == 0 {
+                    return Err(LazyImageError::invalid_crop_dimensions(*width, *height));
+                }
                 // Validate crop bounds
                 let img_w = img.width();
                 let img_h = img.height();
