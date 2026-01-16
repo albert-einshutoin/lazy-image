@@ -14,8 +14,7 @@ async function testConcurrencyValidation() {
     // Create test input image if it doesn't exist
     const testImagePath = resolveFixture('test_input.jpg');
     if (!fs.existsSync(testImagePath)) {
-        console.log('⚠️  Test image not found, skipping concurrency validation tests');
-        return;
+        throw new Error(`Test image not found: ${testImagePath}`);
     }
     
     const outputDir = path.join(TEST_DIR, 'output', 'concurrency-validation');

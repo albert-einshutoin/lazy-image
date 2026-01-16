@@ -24,6 +24,12 @@ type DecoderResult<T> = std::result::Result<T, LazyImageError>;
 /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
 pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:mozjpeg", || {
+        if !data.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
+            return Err(LazyImageError::decode_failed(
+                "mozjpeg: missing JPEG EOI marker",
+            ));
+        }
+
         let decompress = Decompress::new_mem(data).map_err(|e| {
             LazyImageError::decode_failed(format!("mozjpeg decompress init failed: {e:?}"))
         })?;

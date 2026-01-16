@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const zlib = require('zlib');
 const { resolveRoot, resolveFixture, resolveTemp } = require('../helpers/paths');
 const { ImageEngine, inspect, inspectFile, ErrorCategory, getErrorCategory } = require(resolveRoot('index'));
 
@@ -38,6 +39,62 @@ async function asyncTest(name, fn) {
     }
 }
 
+function buildCrc32Table() {
+    const table = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) {
+            c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        }
+        table[i] = c >>> 0;
+    }
+    return table;
+}
+
+const CRC_TABLE = buildCrc32Table();
+
+function crc32(buf) {
+    let crc = 0xFFFFFFFF;
+    for (const byte of buf) {
+        crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ byte) & 0xFF];
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function pngChunk(type, data) {
+    const typeBuf = Buffer.from(type, 'ascii');
+    const lengthBuf = Buffer.alloc(4);
+    lengthBuf.writeUInt32BE(data.length, 0);
+    const crcBuf = Buffer.alloc(4);
+    const crc = crc32(Buffer.concat([typeBuf, data]));
+    crcBuf.writeUInt32BE(crc, 0);
+    return Buffer.concat([lengthBuf, typeBuf, data, crcBuf]);
+}
+
+function createGrayscalePng(width, height) {
+    const signature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+    const ihdr = Buffer.alloc(13);
+    ihdr.writeUInt32BE(width, 0);
+    ihdr.writeUInt32BE(height, 4);
+    ihdr[8] = 8; // bit depth
+    ihdr[9] = 0; // color type: grayscale
+    ihdr[10] = 0; // compression
+    ihdr[11] = 0; // filter
+    ihdr[12] = 0; // interlace
+
+    const rowSize = width + 1;
+    const raw = Buffer.alloc(rowSize * height);
+    for (let y = 0; y < height; y++) {
+        raw[y * rowSize] = 0; // filter type 0
+    }
+
+    const compressed = zlib.deflateSync(raw);
+    const ihdrChunk = pngChunk('IHDR', ihdr);
+    const idatChunk = pngChunk('IDAT', compressed);
+    const iendChunk = pngChunk('IEND', Buffer.alloc(0));
+    return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
+}
+
 async function runTests() {
     console.log('=== lazy-image Edge Cases & Security Tests ===\n');
     
@@ -49,24 +106,19 @@ async function runTests() {
     // ========================================================================
     
     await asyncTest('rejects images exceeding MAX_DIMENSION via ImageEngine.from()', async () => {
-        // ImageEngine.from() calls ensure_dimensions_safe() which checks MAX_DIMENSION
-        // during header parsing (before full decode). This tests the NAPI path.
-        // Implementation: src/engine/api.rs:743 (ensure_dimensions_safe)
-        // We use 32769x1 (extreme aspect ratio) to minimize memory usage while
-        // still exceeding MAX_DIMENSION (32768).
-        // 
-        // Note: This requires a test fixture with large dimensions in the header.
-        // For now, we verify the error path exists. A proper fixture would be
-        // created using Rust's create_valid_jpeg() helper (see tests/edge_cases.rs).
-        //
-        // TODO: Create a test fixture with 32769x1 dimensions using create_valid_jpeg()
-        // or similar helper to properly test this without OOM risk.
-        // Reference: src/engine/api.rs:743 (ensure_dimensions_safe call)
-        //            src/engine/decoder.rs:95 (ensure_dimensions_safe implementation)
-        //
-        // For now, this test is skipped but the structure is kept for future implementation.
-        // The actual validation is tested in Rust unit tests (tests/edge_cases.rs),
-        // but we should add a JS-side test to catch NAPI path regressions.
+        const maxDimension = 32768;
+        const oversized = createGrayscalePng(maxDimension + 1, 1);
+        let threw = false;
+        try {
+            await ImageEngine.from(oversized).toBuffer('jpeg', 80);
+        } catch (e) {
+            threw = true;
+            assert(
+                e.message.includes('exceeds maximum') || e.message.includes('exceeds max'),
+                `unexpected error: ${e.message}`
+            );
+        }
+        assert(threw, 'should throw error for oversized dimensions');
     });
     
     // ========================================================================
