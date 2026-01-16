@@ -3,8 +3,12 @@
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/239496c7-ad7f-4649-b130-8ed0a65481f7" />
 
 > **Next-generation image processing engine for Node.js**
-> 
+>
 > Smaller files. Better quality. Memory-efficient. Powered by Rust + mozjpeg + AVIF.
+>
+> **Positioning**: lazy-image is an **opinionated web image optimization engine**.
+> It is **not a drop-in replacement for sharp**. If you need sharp-compatible APIs
+> or a broad image editing feature set, use sharp.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -14,6 +18,28 @@
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
 
 ---
+
+## 🎯 Positioning & Compatibility
+
+lazy-image focuses on **web image optimization**: smaller files, safe limits, and
+predictable behavior over feature breadth. It intentionally exposes a smaller API
+surface than sharp.
+
+**Compatibility at a glance**
+
+| Capability | lazy-image | sharp |
+| :--- | :--- | :--- |
+| Drop-in API compatibility | ❌ | ✅ |
+| Input formats | jpeg/jpg, png, webp | ✅ (broader) |
+| Output formats | jpeg/jpg, png, webp, avif | ✅ (broader) |
+| Resize / crop / rotate / flip | ✅ | ✅ |
+| Basic adjustments (grayscale/brightness/contrast) | ✅ | ✅ |
+| Compositing / rich filters | ❌ | ✅ |
+| Animated images | ❌ | ✅ |
+| Streaming pipeline | ❌ | ✅ |
+| Metadata handling | ICC only | ✅ (EXIF/XMP/etc) |
+
+For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
 
 ## 📊 Benchmark Results
 
