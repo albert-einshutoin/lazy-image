@@ -374,6 +374,8 @@ Each format has an optimal default quality based on its compression characterist
 | **WebP** | 80 | 70-90 | Balanced quality and file size |
 | **AVIF** | 60 | 50-80 | High compression efficiency means lower quality still looks great |
 
+See `docs/QUALITY_EFFORT_SPEED_MAPPING.md` for the exact quality/effort/speed mapping and cross-format equivalence tables.
+
 **Why different defaults?**
 - **JPEG (85)**: JPEG benefits from higher quality to avoid compression artifacts
 - **WebP (80)**: WebP's superior compression allows good quality at 80
