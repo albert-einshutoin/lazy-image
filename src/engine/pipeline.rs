@@ -1153,14 +1153,45 @@ mod tests {
 
     #[test]
     fn test_fast_resize_internal_impl_errors_on_short_buffer() {
-        let res = fast_resize_internal_impl(
-            4,
-            4,
-            vec![0u8; 10],
-            PixelType::U8x3,
-            2,
-            2,
-        );
+        let res = fast_resize_internal_impl(4, 4, vec![0u8; 10], PixelType::U8x3, 2, 2);
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_fast_resize_uses_rayon_pool() {
+        // Ensure that fast_image_resize works correctly when executed inside a custom rayon pool.
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(2)
+            .build()
+            .expect("failed to build test pool");
+
+        pool.install(|| {
+            let src_width = 256;
+            let src_height = 256;
+            let dst_width = 64;
+            let dst_height = 64;
+
+            // Simple opaque RGBA pattern
+            let src_pixels: Vec<u8> = (0..(src_width * src_height))
+                .flat_map(|i| {
+                    let v = (i as u8).wrapping_mul(13);
+                    [v, v, v, 255]
+                })
+                .collect();
+
+            let result = fast_resize_internal_impl(
+                src_width,
+                src_height,
+                src_pixels,
+                PixelType::U8x4,
+                dst_width,
+                dst_height,
+            );
+
+            assert!(result.is_ok(), "resize failed inside rayon pool");
+            let img = result.unwrap();
+            assert_eq!(img.width(), dst_width);
+            assert_eq!(img.height(), dst_height);
+        });
     }
 }
