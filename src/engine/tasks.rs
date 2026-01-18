@@ -23,6 +23,7 @@ use napi::{Env, JsBuffer, Task};
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::sync::Arc;
+use std::time::Instant;
 
 /// Resource usage information for telemetry
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
@@ -74,6 +75,77 @@ fn get_resource_usage() -> Option<ResourceUsage> {
 struct ResourceUsage {
     cpu_time: f64,
     memory_rss: u64,
+}
+
+/// 統一的なメトリクス測定を行うヘルパー。
+/// decode -> process -> encode の各区間をミリ秒で計測し、
+/// CPU/メモリや入出力サイズも一箇所で設定する。
+struct MetricsRecorder<'m> {
+    metrics: Option<&'m mut crate::ProcessingMetrics>,
+    start_total: Instant,
+    stage_start: Instant,
+    usage_start: Option<ResourceUsage>,
+    input_size: u64,
+}
+
+impl<'m> MetricsRecorder<'m> {
+    fn new(metrics: Option<&'m mut crate::ProcessingMetrics>, input_size: u64) -> Self {
+        let now = Instant::now();
+        Self {
+            metrics,
+            start_total: now,
+            stage_start: now,
+            usage_start: get_resource_usage(),
+            input_size,
+        }
+    }
+
+    fn mark_decode_done(&mut self) {
+        if let Some(m) = self.metrics.as_deref_mut() {
+            m.decode_time = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            self.stage_start = Instant::now();
+        }
+    }
+
+    fn mark_process_done(&mut self) {
+        if let Some(m) = self.metrics.as_deref_mut() {
+            m.process_time = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            self.stage_start = Instant::now();
+        }
+    }
+
+    fn finalize(
+        &mut self,
+        processed_dims: (u32, u32),
+        output_len: usize,
+        usage_end: &Option<ResourceUsage>,
+    ) {
+        if let Some(m) = self.metrics.as_deref_mut() {
+            // encode 区間
+            m.encode_time = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            // 全体
+            m.processing_time = self.start_total.elapsed().as_secs_f64();
+
+            // CPU / メモリ
+            if let (Some(start), Some(end)) = (self.usage_start.as_ref(), usage_end.as_ref()) {
+                m.cpu_time = (end.cpu_time - start.cpu_time).max(0.0);
+                m.memory_peak = end.memory_rss.min(u32::MAX as u64) as u32;
+            } else {
+                let (w, h) = processed_dims;
+                m.memory_peak =
+                    ((w as u64 * h as u64 * 4) + output_len as u64).min(u32::MAX as u64) as u32;
+            }
+
+            // 入出力サイズと圧縮率
+            m.input_size = self.input_size.min(u32::MAX as u64) as u32;
+            m.output_size = (output_len as u64).min(u32::MAX as u64) as u32;
+            m.compression_ratio = if m.input_size > 0 {
+                m.output_size as f64 / m.input_size as f64
+            } else {
+                0.0
+            };
+        }
+    }
 }
 
 // Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
@@ -202,32 +274,26 @@ impl EncodeTask {
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
     ) -> std::result::Result<Vec<u8>, LazyImageError> {
-        // Get initial resource usage for CPU time and memory tracking
-        let initial_usage = get_resource_usage();
-        let start_total = std::time::Instant::now();
-
         // Get input size from source
         // Use len() method which works for both Memory and Mapped sources
         let input_size = self.source.as_ref().map(|s| s.len() as u64).unwrap_or(0);
 
+        // メトリクス測定を一元化
+        let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
+
         // 1. Decode
-        let start_decode = std::time::Instant::now();
         let img = self.decode_internal()?;
-        self.firewall.enforce_timeout(start_total, "decode")?;
-        if let Some(m) = metrics.as_deref_mut() {
-            m.decode_time = start_decode.elapsed().as_secs_f64() * 1000.0;
-        }
+        self.firewall
+            .enforce_timeout(metrics_recorder.start_total, "decode")?;
+        metrics_recorder.mark_decode_done();
 
         // 2. Apply operations
-        let start_process = std::time::Instant::now();
         let processed = apply_ops(img, &self.ops)?;
-        self.firewall.enforce_timeout(start_total, "process")?;
-        if let Some(m) = metrics.as_deref_mut() {
-            m.process_time = start_process.elapsed().as_secs_f64() * 1000.0;
-        }
+        self.firewall
+            .enforce_timeout(metrics_recorder.start_total, "process")?;
+        metrics_recorder.mark_process_done();
 
         // 3. Encode - only preserve ICC profile if keep_metadata is true
-        let start_encode = std::time::Instant::now();
         let icc = if self.keep_metadata {
             self.icc_profile.as_ref().map(|v| v.as_slice())
         } else {
@@ -241,45 +307,12 @@ impl EncodeTask {
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
-        self.firewall.enforce_timeout(start_total, "encode")?;
+        self.firewall
+            .enforce_timeout(metrics_recorder.start_total, "encode")?;
 
-        // Get final resource usage
+        // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
-        let total_elapsed = start_total.elapsed();
-
-        if let Some(m) = metrics {
-            m.encode_time = start_encode.elapsed().as_secs_f64() * 1000.0;
-
-            // Calculate CPU time (difference between final and initial)
-            if let (Some(initial), Some(final_usage)) = (initial_usage, final_usage) {
-                m.cpu_time = (final_usage.cpu_time - initial.cpu_time).max(0.0);
-                // Use the maximum RSS seen during processing
-                // IMPORTANT: ru_maxrss represents the cumulative maximum RSS of the entire process,
-                // not just this operation. This is a limitation of getrusage() API.
-                // For accurate per-operation memory tracking, consider process-specific memory profiling.
-                // get_resource_usage() already converts to bytes (handles Linux KB vs macOS bytes)
-                m.memory_peak = (final_usage.memory_rss.min(u32::MAX as u64)) as u32;
-            } else {
-                // Fallback: estimate memory (rough) - prevent overflow
-                let (w, h) = processed.dimensions();
-                m.memory_peak =
-                    (w as u64 * h as u64 * 4 + result.len() as u64).min(u32::MAX as u64) as u32;
-            }
-
-            // Total processing time (wall clock)
-            m.processing_time = total_elapsed.as_secs_f64();
-
-            // Input and output sizes (clamp to u32::MAX for NAPI compatibility)
-            m.input_size = input_size.min(u32::MAX as u64) as u32;
-            m.output_size = (result.len() as u64).min(u32::MAX as u64) as u32;
-
-            // Compression ratio
-            if m.input_size > 0 {
-                m.compression_ratio = m.output_size as f64 / m.input_size as f64;
-            } else {
-                m.compression_ratio = 0.0;
-            }
-        }
+        metrics_recorder.finalize(processed.dimensions(), result.len(), &final_usage);
 
         Ok(result)
     }

@@ -462,6 +462,16 @@ async function runTests() {
         assert(result.metrics.inputSize > 0, 'inputSize should be positive');
         assert(result.metrics.outputSize > 0, 'outputSize should be positive');
         assert(result.metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
+
+        // Contract: processingTime should encompass decode+process+encode (same Instant baseline)
+        const stageMs =
+            result.metrics.decodeTime + result.metrics.processTime + result.metrics.encodeTime;
+        const totalMs = result.metrics.processingTime * 1000;
+        assert(stageMs > 0, 'sum of decode/process/encode should be positive');
+        assert(
+            totalMs + 5 >= stageMs,
+            'processingTime must include decode+process+encode (allow slight scheduling drift)'
+        );
     });
 
     await asyncTest('toBufferWithMetrics handles input_size=0 gracefully', async () => {
