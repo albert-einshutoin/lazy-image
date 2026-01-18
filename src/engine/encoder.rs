@@ -292,10 +292,19 @@ pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| LazyImageError::encode_failed("png", format!("PNG encode failed: {e}")))?;
 
+        // oxipng で再圧縮してサイズを最適化（無劣化）
+        let mut options = oxipng::Options::from_preset(4);
+        // メタデータは保持する（特に ICC をストリップしない）
+        options.strip = oxipng::StripChunks::None;
+
+        let optimized = oxipng::optimize_from_memory(&buf, &options).map_err(|e| {
+            LazyImageError::encode_failed("png", format!("oxipng optimization failed: {e}"))
+        })?;
+
         if let Some(icc_data) = icc {
-            embed_icc_png(buf, icc_data)
+            embed_icc_png(optimized, icc_data)
         } else {
-            Ok(buf)
+            Ok(optimized)
         }
     })
 }

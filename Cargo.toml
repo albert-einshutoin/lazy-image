@@ -30,6 +30,8 @@ image = { version = "0.25", default-features = false, features = [
     "png",
     "webp",
 ] }
+# PNG optimization
+oxipng = "9.1"
 
 # SIMD-accelerated image resizing - this is where we catch libvips
 # Enable rayon feature to allow parallel resize paths
