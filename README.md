@@ -1007,7 +1007,7 @@ Built on the shoulders of giants:
 - [mozjpeg](https://github.com/mozilla/mozjpeg) - Mozilla's JPEG encoder
 - [libwebp](https://chromium.googlesource.com/webm/libwebp) - Google's WebP codec
 - [ravif](https://github.com/kornelski/ravif) - Pure Rust AVIF encoder
-- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer
+- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer（`rayon` feature有効化で並列リサイズ）
 - [img-parts](https://github.com/paolobarbolini/img-parts) - Image container manipulation
 - [napi-rs](https://napi.rs/) - Rust bindings for Node.js
 

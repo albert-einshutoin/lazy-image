@@ -32,7 +32,8 @@ image = { version = "0.25", default-features = false, features = [
 ] }
 
 # SIMD-accelerated image resizing - this is where we catch libvips
-fast_image_resize = "5"
+# Enable rayon feature to allow parallel resize paths
+fast_image_resize = { version = "5", features = ["rayon"] }
 
 # High-quality JPEG encoding - the core of our advantage over sharp
 mozjpeg = "0.10"
