@@ -28,6 +28,7 @@ use std::time::Instant;
 
 /// Resource usage information for telemetry
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+#[derive(Clone, Copy)]
 struct ResourceUsage {
     cpu_time: f64,   // User + system CPU time in seconds
     memory_rss: u64, // Resident set size in bytes
@@ -73,6 +74,7 @@ fn get_resource_usage() -> Option<ResourceUsage> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
+#[derive(Clone, Copy)]
 struct ResourceUsage {
     cpu_time: f64,
     memory_rss: u64,
@@ -99,6 +101,10 @@ impl<'m> MetricsRecorder<'m> {
             usage_start: get_resource_usage(),
             input_size,
         }
+    }
+
+    fn memory_usage_start(&self) -> Option<u64> {
+        self.usage_start.as_ref().map(|u| u.memory_rss)
     }
 
     fn mark_decode_done(&mut self) {
@@ -285,7 +291,9 @@ impl EncodeTask {
             .source
             .as_ref()
             .and_then(|s| s.as_bytes())
-            .and_then(memory::estimate_memory_from_header)
+            .and_then(|bytes| {
+                memory::estimate_memory_from_header(bytes, &self.ops, Some(&self.format))
+            })
             .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
         let permit = memory::memory_semaphore().acquire(estimated_memory);
         // keep guard alive for entire processing scope
@@ -344,6 +352,11 @@ impl EncodeTask {
 
         // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
+        memory::record_memory_observation(
+            estimated_memory,
+            metrics_recorder.memory_usage_start(),
+            final_usage.as_ref().map(|u| u.memory_rss),
+        );
         metrics_recorder.finalize(processed.dimensions(), result.len(), &final_usage);
 
         Ok(result)
@@ -649,10 +662,12 @@ impl Task for BatchTask {
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
 
-                let estimated_memory = memory::estimate_memory_from_header(data)
-                    .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
+                let estimated_memory =
+                    memory::estimate_memory_from_header(data, &ops, Some(format))
+                        .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
                 let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
 
+                let usage_start = get_resource_usage();
                 let start_total = std::time::Instant::now();
 
                 let orientation = if self.auto_orient {
@@ -700,6 +715,13 @@ impl Task for BatchTask {
                     OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
                 firewall.enforce_timeout(start_total, "encode")?;
+
+                let usage_end = get_resource_usage();
+                memory::record_memory_observation(
+                    estimated_memory,
+                    usage_start.as_ref().map(|u| u.memory_rss),
+                    usage_end.as_ref().map(|u| u.memory_rss),
+                );
 
                 let filename = Path::new(input_path)
                     .file_name()

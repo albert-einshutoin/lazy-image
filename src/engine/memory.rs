@@ -5,16 +5,42 @@
 // This module detects container memory limits from cgroup v1/v2 to automatically
 // adjust thread pool size and prevent OOM kills in constrained environments.
 
+use crate::engine::pipeline::calc_resize_dimensions;
+use crate::ops::{Operation, OutputFormat, ResizeFit};
+use image::ImageFormat;
 #[cfg(feature = "napi")]
 use std::fs;
+use std::io::Cursor;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Condvar, Mutex, OnceLock};
 
 /// Estimated memory per image operation (in bytes)
-/// This is a conservative estimate: width × height × 4 bytes (RGBA) + encoding overhead
+/// 100MB keeps backwards compatibility for fallback paths; dynamic estimates are preferred.
 pub const ESTIMATED_MEMORY_PER_OPERATION: u64 = 100 * 1024 * 1024; // 100MB per operation (conservative)
 
 /// Minimum memory to reserve for system and other processes (in bytes)
 const RESERVED_MEMORY: u64 = 128 * 1024 * 1024; // 128MB
+
+/// Lower bound for any estimate to avoid zero-ish weights
+const MIN_ESTIMATE_BYTES: u64 = 24 * 1024 * 1024; // 24MB
+
+/// Overhead for decode/temporary buffers (heuristic)
+const DECODE_OVERHEAD_BYTES: u64 = 8 * 1024 * 1024;
+const FILTER_OVERHEAD_BYTES: u64 = 4 * 1024 * 1024;
+
+/// Moving-average tuning factor to self-correct estimates using observed RSS.
+/// Stored as fixed-point (scale = 1000) to avoid floating point atomics.
+const TUNING_SCALE: u64 = 1000;
+const TUNING_MIN: u64 = 500; // 0.5x
+const TUNING_MAX: u64 = 4000; // 4x
+static ESTIMATE_TUNING: AtomicU64 = AtomicU64::new(TUNING_SCALE);
+
+/// Default bytes-per-pixel assumptions per format (decoded)
+const BPP_JPEG: u64 = 3; // YCbCr → RGB
+const BPP_PNG: u64 = 4; // favor safety (alpha)
+const BPP_WEBP: u64 = 4;
+const BPP_AVIF: u64 = 4;
+const BPP_UNKNOWN: u64 = 4;
 
 /// Minimum safe concurrency when memory is very constrained
 const MIN_SAFE_CONCURRENCY: usize = 1;
@@ -103,26 +129,177 @@ pub fn memory_semaphore() -> Arc<WeightedSemaphore> {
         .clone()
 }
 
-/// Estimate decoded image memory usage (bytes) from dimensions and assumed 4 channels/8bit.
-/// Falls back to ESTIMATED_MEMORY_PER_OPERATION when data is missing.
-pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
-    let pixels = width as u64 * height as u64;
-    // RGBA 8-bit = 4 bytes, plus 8MB overhead for buffers/temporary copies
-    pixels
-        .saturating_mul(4)
-        .saturating_add(8 * 1024 * 1024)
-        .max(ESTIMATED_MEMORY_PER_OPERATION / 4) // avoid zero-ish estimates
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HeaderEstimate {
+    pub width: u32,
+    pub height: u32,
+    pub format: Option<ImageFormat>,
 }
 
-/// Estimate using lightweight header parse; returns None if dimensions can't be read.
-pub fn estimate_memory_from_header(bytes: &[u8]) -> Option<u64> {
-    let cursor = std::io::Cursor::new(bytes);
+fn bytes_for_image(width: u32, height: u32, bytes_per_pixel: u64) -> u64 {
+    let pixels = width as u64 * height as u64;
+    pixels.saturating_mul(bytes_per_pixel)
+}
+
+fn default_bpp(format: Option<ImageFormat>) -> u64 {
+    match format {
+        Some(ImageFormat::Jpeg) => BPP_JPEG,
+        Some(ImageFormat::Png) => BPP_PNG,
+        Some(ImageFormat::WebP) => BPP_WEBP,
+        Some(ImageFormat::Avif) => BPP_AVIF,
+        _ => BPP_UNKNOWN,
+    }
+}
+
+fn tuned(bytes: u64) -> u64 {
+    let scale = ESTIMATE_TUNING
+        .load(Ordering::Relaxed)
+        .max(TUNING_MIN)
+        .min(TUNING_MAX);
+    bytes.saturating_mul(scale).saturating_add(TUNING_SCALE - 1) / TUNING_SCALE
+}
+
+fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u32, u32), u64, u64) {
+    match op {
+        Operation::Resize { width, height, fit } => {
+            let (w, h) = match fit {
+                ResizeFit::Fill => (
+                    width.unwrap_or(dims.0).max(1),
+                    height.unwrap_or(dims.1).max(1),
+                ),
+                ResizeFit::Cover => (
+                    width.unwrap_or(dims.0).max(1),
+                    height.unwrap_or(dims.1).max(1),
+                ),
+                ResizeFit::Inside => calc_resize_dimensions(dims.0, dims.1, *width, *height),
+            };
+            ((w, h), 4, FILTER_OVERHEAD_BYTES)
+        }
+        Operation::Crop { width, height, .. } => {
+            let w = (*width).max(1).min(dims.0);
+            let h = (*height).max(1).min(dims.1);
+            ((w, h), current_bpp, FILTER_OVERHEAD_BYTES / 2)
+        }
+        Operation::Rotate { degrees } => {
+            let rotated = matches!(degrees.rem_euclid(360), 90 | 270);
+            let next_dims = if rotated { (dims.1, dims.0) } else { dims };
+            (next_dims, current_bpp, FILTER_OVERHEAD_BYTES)
+        }
+        Operation::FlipH | Operation::FlipV => (dims, current_bpp, FILTER_OVERHEAD_BYTES / 2),
+        Operation::Brightness { .. } | Operation::Contrast { .. } => {
+            (dims, current_bpp.max(3), FILTER_OVERHEAD_BYTES / 2)
+        }
+        Operation::AutoOrient { orientation } => {
+            let rotated = matches!(orientation, 5 | 6 | 7 | 8);
+            let next_dims = if rotated { (dims.1, dims.0) } else { dims };
+            (next_dims, current_bpp, FILTER_OVERHEAD_BYTES)
+        }
+        Operation::Grayscale => (dims, current_bpp.max(3), FILTER_OVERHEAD_BYTES / 2),
+        Operation::ColorSpace { .. } => (dims, 3, FILTER_OVERHEAD_BYTES / 2),
+    }
+}
+
+fn estimate_memory_from_dimensions_with_context(
+    width: u32,
+    height: u32,
+    format: Option<ImageFormat>,
+    ops: &[Operation],
+    output_format: Option<&OutputFormat>,
+) -> u64 {
+    let mut current_dims = (width, height);
+    let mut current_bpp = default_bpp(format);
+
+    let mut peak = bytes_for_image(current_dims.0, current_dims.1, current_bpp)
+        .saturating_add(DECODE_OVERHEAD_BYTES);
+    let mut current_bytes = bytes_for_image(current_dims.0, current_dims.1, current_bpp);
+
+    for op in ops {
+        let (next_dims, next_bpp, op_overhead) = project_operation(current_dims, current_bpp, op);
+        let next_bytes = bytes_for_image(next_dims.0, next_dims.1, next_bpp);
+        let op_peak = current_bytes
+            .saturating_add(next_bytes)
+            .saturating_add(op_overhead);
+        peak = peak.max(op_peak);
+        current_dims = next_dims;
+        current_bpp = next_bpp;
+        current_bytes = next_bytes;
+    }
+
+    let output_bpp = match output_format {
+        Some(OutputFormat::Jpeg { .. }) => BPP_JPEG,
+        Some(OutputFormat::Png)
+        | Some(OutputFormat::WebP { .. })
+        | Some(OutputFormat::Avif { .. }) => 4,
+        None => current_bpp,
+    };
+    let output_bytes = bytes_for_image(current_dims.0, current_dims.1, output_bpp);
+    peak = peak.max(current_bytes.saturating_add(output_bytes / 4));
+
+    tuned(peak.max(MIN_ESTIMATE_BYTES))
+}
+
+/// Simple wrapper for callers without format/ops context (kept for compatibility in tests)
+pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
+    estimate_memory_from_dimensions_with_context(width, height, None, &[], None)
+}
+
+/// Lightweight header parse; returns None if dimensions can't be read.
+pub fn estimate_memory_from_header(
+    bytes: &[u8],
+    ops: &[Operation],
+    output_format: Option<&OutputFormat>,
+) -> Option<u64> {
+    parse_header(bytes).map(|header| {
+        estimate_memory_from_dimensions_with_context(
+            header.width,
+            header.height,
+            header.format,
+            ops,
+            output_format,
+        )
+    })
+}
+
+/// Parse width/height/format from input bytes without full decode.
+pub fn parse_header(bytes: &[u8]) -> Option<HeaderEstimate> {
+    let cursor = Cursor::new(bytes);
     if let Ok(reader) = image::ImageReader::new(cursor).with_guessed_format() {
+        let format = reader.format();
         if let Ok((w, h)) = reader.into_dimensions() {
-            return Some(estimate_memory_from_dimensions(w, h));
+            return Some(HeaderEstimate {
+                width: w,
+                height: h,
+                format,
+            });
         }
     }
     None
+}
+
+/// Record observed RSS to self-correct future estimates (moving average with clamp).
+pub fn record_memory_observation(predicted: u64, start_rss: Option<u64>, end_rss: Option<u64>) {
+    if predicted == 0 {
+        return;
+    }
+    let observed = match (start_rss, end_rss) {
+        (Some(start), Some(end)) => end.saturating_sub(start),
+        (None, Some(end)) => end,
+        _ => return,
+    };
+    if observed == 0 {
+        return;
+    }
+
+    let ratio = (observed as f64 / predicted as f64).clamp(
+        TUNING_MIN as f64 / TUNING_SCALE as f64,
+        TUNING_MAX as f64 / TUNING_SCALE as f64,
+    );
+    let scaled = (ratio * TUNING_SCALE as f64).round() as u64;
+
+    let previous = ESTIMATE_TUNING.load(Ordering::Relaxed);
+    let blended = ((previous * 4).saturating_add(scaled)) / 5;
+    let clamped = blended.clamp(TUNING_MIN, TUNING_MAX);
+    ESTIMATE_TUNING.store(clamped, Ordering::Relaxed);
 }
 
 /// Detects available memory from container limits or system memory
@@ -276,6 +453,7 @@ pub fn calculate_memory_based_concurrency(
 #[cfg(all(test, feature = "napi"))]
 mod tests {
     use super::*;
+    use crate::ops::{Operation, OutputFormat, ResizeFit};
     use std::sync::Arc;
 
     #[test]
@@ -329,6 +507,39 @@ mod tests {
     #[test]
     fn test_estimate_memory_from_dimensions_non_zero() {
         let est = estimate_memory_from_dimensions(10, 10);
-        assert!(est >= ESTIMATED_MEMORY_PER_OPERATION / 4);
+        assert!(est >= MIN_ESTIMATE_BYTES);
+    }
+
+    #[test]
+    fn test_format_specific_estimate_differs() {
+        let ops: Vec<Operation> = Vec::new();
+        let jpeg_est = estimate_memory_from_dimensions_with_context(
+            2000,
+            2000,
+            Some(ImageFormat::Jpeg),
+            &ops,
+            Some(&OutputFormat::Jpeg {
+                quality: 80,
+                fast_mode: false,
+            }),
+        );
+        let png_est = estimate_memory_from_dimensions_with_context(
+            2000,
+            2000,
+            Some(ImageFormat::Png),
+            &ops,
+            Some(&OutputFormat::Png),
+        );
+        assert!(png_est > jpeg_est);
+    }
+
+    #[test]
+    fn test_record_memory_observation_adjusts_scale() {
+        ESTIMATE_TUNING.store(TUNING_SCALE, Ordering::Relaxed);
+        let predicted = 20 * 1024 * 1024;
+        // Observed delta is 50MB -> expected scale > 1.0
+        record_memory_observation(predicted, Some(100 * 1024 * 1024), Some(150 * 1024 * 1024));
+        let scale = ESTIMATE_TUNING.load(Ordering::Relaxed);
+        assert!(scale > TUNING_SCALE);
     }
 }
