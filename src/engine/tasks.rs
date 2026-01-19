@@ -185,6 +185,7 @@ pub(crate) struct EncodeTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     pub keep_metadata: bool,
@@ -281,6 +282,20 @@ impl EncodeTask {
         // メトリクス測定を一元化
         let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
 
+        // Pre-read orientation from EXIF header (before full decode)
+        let orientation = if self.auto_orient {
+            if let Some(bytes) = self.source.as_ref().and_then(|s| s.as_bytes()) {
+                // Enforce byte limit & metadata scan prior to EXIF解析 to honor firewall settings
+                self.firewall.enforce_source_len(bytes.len())?;
+                self.firewall.scan_metadata(bytes)?;
+                crate::engine::decoder::detect_exif_orientation(bytes)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         // 1. Decode
         let img = self.decode_internal()?;
         self.firewall
@@ -288,7 +303,12 @@ impl EncodeTask {
         metrics_recorder.mark_decode_done();
 
         // 2. Apply operations
-        let processed = apply_ops(img, &self.ops)?;
+        let mut effective_ops = self.ops.clone();
+        if let Some(o) = orientation {
+            // 挿入位置は最先頭: ユーザー指定オペレーションより前に正規化する
+            effective_ops.insert(0, Operation::AutoOrient { orientation: o });
+        }
+        let processed = apply_ops(img, &effective_ops)?;
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "process")?;
         metrics_recorder.mark_process_done();
@@ -364,6 +384,7 @@ pub(crate) struct EncodeWithMetricsTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
@@ -385,6 +406,7 @@ impl Task for EncodeWithMetricsTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
@@ -435,6 +457,7 @@ pub(crate) struct WriteFileTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
     pub firewall: FirewallConfig,
     pub output_path: String,
@@ -460,6 +483,7 @@ impl Task for WriteFileTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
@@ -551,6 +575,7 @@ pub(crate) struct BatchTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub concurrency: u32,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
@@ -613,6 +638,11 @@ impl Task for BatchTask {
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
 
+                let orientation = if self.auto_orient {
+                    crate::engine::decoder::detect_exif_orientation(data)
+                } else {
+                    None
+                };
                 let icc_profile = if keep_metadata {
                     extract_icc_profile(data).map(Arc::new)
                 } else {
@@ -630,7 +660,12 @@ impl Task for BatchTask {
                 check_dimensions(w, h)?;
                 firewall.enforce_pixels(w, h)?;
 
-                let processed = apply_ops(Cow::Owned(img), ops)?;
+                let mut effective_ops = ops.clone();
+                if let Some(o) = orientation {
+                    effective_ops.insert(0, Operation::AutoOrient { orientation: o });
+                }
+
+                let processed = apply_ops(Cow::Owned(img), &effective_ops)?;
                 firewall.enforce_timeout(start_total, "process")?;
 
                 // Encode - only preserve ICC profile if keep_metadata is true

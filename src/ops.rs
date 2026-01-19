@@ -42,6 +42,9 @@ pub enum Operation {
     /// Adjust contrast (-100 to 100)
     Contrast { value: i32 },
 
+    /// Auto-orient based on EXIF Orientation tag (1-8)
+    AutoOrient { orientation: u16 },
+
     /// Grayscale conversion
     Grayscale,
 

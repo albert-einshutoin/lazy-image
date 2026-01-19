@@ -7,6 +7,7 @@ use crate::error::LazyImageError;
 #[cfg(test)]
 use image::GenericImageView;
 use image::{DynamicImage, ImageReader, RgbImage};
+use exif;
 use mozjpeg::Decompress;
 use std::io::Cursor;
 
@@ -106,6 +107,22 @@ pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
         }
     }
     Ok(())
+}
+
+/// Extract EXIF Orientation tag (1-8). Returns None if missing or invalid.
+pub fn detect_exif_orientation(bytes: &[u8]) -> Option<u16> {
+    let mut cursor = Cursor::new(bytes);
+    let exif_reader = exif::Reader::new();
+    let exif = exif_reader.read_from_container(&mut cursor).ok()?;
+    let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
+    // exif crate can represent as Short/Long; use get_uint for safety
+    let value = field.value.get_uint(0)?;
+    let orientation = value as u16;
+    if (1..=8).contains(&orientation) {
+        Some(orientation)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]

@@ -372,6 +372,20 @@ pub fn apply_ops<'a>(
                 img.adjust_contrast(*value as f32)
             }
 
+            Operation::AutoOrient { orientation } => {
+                match orientation {
+                    1 => img,
+                    2 => img.fliph(),
+                    3 => img.rotate180(),
+                    4 => img.flipv(),
+                    5 => img.rotate90().fliph(), // transpose
+                    6 => img.rotate90(),
+                    7 => img.rotate270().fliph(), // transverse
+                    8 => img.rotate270(),
+                    _ => img, // Ignore invalid values silently
+                }
+            }
+
             Operation::ColorSpace {
                 target: crate::ops::ColorSpace::Srgb,
             } => {
@@ -869,6 +883,36 @@ mod tests {
                 .unwrap_err()
                 .to_string()
                 .contains("Unsupported rotation angle"));
+        }
+
+        #[test]
+        fn test_auto_orient_rotate_90() {
+            let img = create_test_image(80, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 6 }]; // 6 = rotate 90 CW
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (40, 80));
+        }
+
+        #[test]
+        fn test_auto_orient_flip_horizontal() {
+            let img = create_test_image(10, 10);
+            let ops = vec![Operation::AutoOrient { orientation: 2 }]; // mirror horizontal
+            let result = apply_ops(Cow::Owned(img.clone()), &ops)
+                .unwrap()
+                .into_owned();
+
+            let original = img.to_rgb8();
+            let flipped = result.to_rgb8();
+            assert_eq!(original.width(), flipped.width());
+            assert_eq!(original.height(), flipped.height());
+            for y in 0..original.height() {
+                for x in 0..original.width() {
+                    assert_eq!(
+                        original.get_pixel(x, y),
+                        flipped.get_pixel(original.width() - 1 - x, y)
+                    );
+                }
+            }
         }
 
         #[test]
