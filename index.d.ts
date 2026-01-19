@@ -164,6 +164,8 @@ export declare class ImageEngine {
   flipV(): ImageEngine
   /** Convert to grayscale */
   grayscale(): ImageEngine
+  /** Enable/disable EXIF auto orientation (default: true) */
+  autoOrient(enabled: boolean): ImageEngine
   /**
    * Preserve ICC profile in output.
    * Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.

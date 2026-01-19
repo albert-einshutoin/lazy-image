@@ -142,6 +142,7 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 - 🏆 **AVIF support** - Next-gen format, 30% smaller than WebP
 - 🚀 **Smaller files** than sharp (mozjpeg + libwebp + ravif)
 - 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB)
+- 🔄 **EXIF auto-orientation** - Defaultで正しい向きに補正、`autoOrient(false)`で無効化可能
 - 💾 **Memory-efficient** - Direct file I/O bypasses Node.js heap
 - 🔗 **Fluent API** with method chaining
 - 📦 **Lazy pipeline** - operations are queued and executed in a single pass

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- EXIF auto-orientationをデフォルト有効化、`autoOrient(false)`でオプトアウト可能
+
+### Fixed
+- EXIFパーサ依存をcrates.io配布の`kamadak-exif`に変更しビルド再現性を確保
+
 ---
 
 ## [0.8.7] - 2026-01-13

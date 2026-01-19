@@ -185,6 +185,7 @@ pub(crate) struct EncodeTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     pub keep_metadata: bool,
@@ -282,11 +283,14 @@ impl EncodeTask {
         let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
 
         // Pre-read orientation from EXIF header (before full decode)
-        let orientation = self
-            .source
-            .as_ref()
-            .and_then(|s| s.as_bytes())
-            .and_then(crate::engine::decoder::detect_exif_orientation);
+        let orientation = if self.auto_orient {
+            self.source
+                .as_ref()
+                .and_then(|s| s.as_bytes())
+                .and_then(crate::engine::decoder::detect_exif_orientation)
+        } else {
+            None
+        };
 
         // 1. Decode
         let img = self.decode_internal()?;
@@ -376,6 +380,7 @@ pub(crate) struct EncodeWithMetricsTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
@@ -397,6 +402,7 @@ impl Task for EncodeWithMetricsTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
@@ -447,6 +453,7 @@ pub(crate) struct WriteFileTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
     pub firewall: FirewallConfig,
     pub output_path: String,
@@ -472,6 +479,7 @@ impl Task for WriteFileTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
@@ -563,6 +571,7 @@ pub(crate) struct BatchTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub concurrency: u32,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
@@ -625,7 +634,11 @@ impl Task for BatchTask {
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
 
-                let orientation = crate::engine::decoder::detect_exif_orientation(data);
+                let orientation = if self.auto_orient {
+                    crate::engine::decoder::detect_exif_orientation(data)
+                } else {
+                    None
+                };
                 let icc_profile = if keep_metadata {
                     extract_icc_profile(data).map(Arc::new)
                 } else {

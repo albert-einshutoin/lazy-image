@@ -1327,6 +1327,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                auto_orient: true,
                 keep_metadata: false,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
@@ -1348,6 +1349,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                auto_orient: true,
                 keep_metadata: false,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
@@ -1367,6 +1369,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                auto_orient: true,
                 keep_metadata: false,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
@@ -1393,6 +1396,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                auto_orient: true,
                 keep_metadata: false,
                 firewall,
                 #[cfg(feature = "napi")]
@@ -1415,6 +1419,7 @@ mod tests {
                 ops: vec![],
                 format: OutputFormat::Png,
                 icc_profile: None,
+                auto_orient: true,
                 keep_metadata: false,
                 firewall,
                 #[cfg(feature = "napi")]

@@ -30,8 +30,8 @@ image = { version = "0.25", default-features = false, features = [
     "png",
     "webp",
 ] }
-# EXIFパース（Orientationタグ抽出用） - crates.ioが0.0.1しか見えないためGit依存を使用
-exif = { git = "https://github.com/kamadak/exif-rs", tag = "0.6.1" }
+# EXIFパース（Orientationタグ抽出用）
+exif = { package = "kamadak-exif", version = "0.6.1" }
 # PNG optimization
 oxipng = "9.1"
 

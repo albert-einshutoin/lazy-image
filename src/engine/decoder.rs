@@ -7,6 +7,7 @@ use crate::error::LazyImageError;
 #[cfg(test)]
 use image::GenericImageView;
 use image::{DynamicImage, ImageReader, RgbImage};
+use exif;
 use mozjpeg::Decompress;
 use std::io::Cursor;
 
