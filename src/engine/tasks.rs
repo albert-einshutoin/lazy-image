@@ -621,7 +621,6 @@ impl Task for BatchTask {
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
-                let start_total = std::time::Instant::now();
                 // Use memory mapping for zero-copy access (same as from_path)
                 use memmap2::Mmap;
                 use std::fs::File;
@@ -653,6 +652,8 @@ impl Task for BatchTask {
                 let estimated_memory = memory::estimate_memory_from_header(data)
                     .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
                 let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
+
+                let start_total = std::time::Instant::now();
 
                 let orientation = if self.auto_orient {
                     crate::engine::decoder::detect_exif_orientation(data)

@@ -5,6 +5,7 @@
 // This module detects container memory limits from cgroup v1/v2 to automatically
 // adjust thread pool size and prevent OOM kills in constrained environments.
 
+#[cfg(feature = "napi")]
 use std::fs;
 use std::sync::{Arc, Condvar, Mutex, OnceLock};
 
@@ -66,7 +67,8 @@ impl WeightedSemaphore {
         let mut available = self.state.lock().unwrap();
         let freed = (*available).saturating_add(weight).min(self.capacity);
         *available = freed;
-        self.cvar.notify_one();
+        // notify_all to avoid starvation when waiters have heterogeneous weights
+        self.cvar.notify_all();
     }
 }
 
@@ -221,6 +223,12 @@ fn detect_system_memory() -> Option<u64> {
     }
 
     // Windows and other platforms: not implemented yet
+    None
+}
+
+/// Non-NAPI builds: skip detection and return None (use fallback)
+#[cfg(not(feature = "napi"))]
+pub fn detect_available_memory() -> Option<u64> {
     None
 }
 
