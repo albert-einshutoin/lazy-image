@@ -9,6 +9,7 @@ use crate::engine::decoder::{
 };
 use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
+use crate::engine::memory;
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "napi")]
 use crate::engine::pool;
@@ -278,6 +279,17 @@ impl EncodeTask {
         // Get input size from source
         // Use len() method which works for both Memory and Mapped sources
         let input_size = self.source.as_ref().map(|s| s.len() as u64).unwrap_or(0);
+
+        // Memory backpressure: estimate before decode and acquire weighted permit
+        let estimated_memory = self
+            .source
+            .as_ref()
+            .and_then(|s| s.as_bytes())
+            .and_then(memory::estimate_memory_from_header)
+            .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
+        let permit = memory::memory_semaphore().acquire(estimated_memory);
+        // keep guard alive for entire processing scope
+        let _permit_guard = permit;
 
         // メトリクス測定を一元化
         let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
@@ -637,6 +649,10 @@ impl Task for BatchTask {
 
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
+
+                let estimated_memory = memory::estimate_memory_from_header(data)
+                    .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
+                let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
 
                 let orientation = if self.auto_orient {
                     crate::engine::decoder::detect_exif_orientation(data)

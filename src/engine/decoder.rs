@@ -4,10 +4,10 @@
 
 use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
+use exif;
 #[cfg(test)]
 use image::GenericImageView;
 use image::{DynamicImage, ImageReader, RgbImage};
-use exif;
 use mozjpeg::Decompress;
 use std::io::Cursor;
 
