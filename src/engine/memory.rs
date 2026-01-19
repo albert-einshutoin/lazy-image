@@ -159,21 +159,52 @@ fn tuned(bytes: u64) -> u64 {
     bytes.saturating_mul(scale).saturating_add(TUNING_SCALE - 1) / TUNING_SCALE
 }
 
+fn calc_cover_resize_dimensions(
+    orig_w: u32,
+    orig_h: u32,
+    target_w: u32,
+    target_h: u32,
+) -> (u32, u32) {
+    if orig_w == 0 || orig_h == 0 {
+        return (target_w.max(1), target_h.max(1));
+    }
+    let scale_w = target_w as f64 / orig_w as f64;
+    let scale_h = target_h as f64 / orig_h as f64;
+    let scale = scale_w.max(scale_h);
+    let resize_w = ((orig_w as f64 * scale).ceil() as u32).max(1);
+    let resize_h = ((orig_h as f64 * scale).ceil() as u32).max(1);
+    (resize_w, resize_h)
+}
+
 fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u32, u32), u64, u64) {
     match op {
         Operation::Resize { width, height, fit } => {
-            let (w, h) = match fit {
-                ResizeFit::Fill => (
-                    width.unwrap_or(dims.0).max(1),
-                    height.unwrap_or(dims.1).max(1),
-                ),
-                ResizeFit::Cover => (
-                    width.unwrap_or(dims.0).max(1),
-                    height.unwrap_or(dims.1).max(1),
-                ),
-                ResizeFit::Inside => calc_resize_dimensions(dims.0, dims.1, *width, *height),
-            };
-            ((w, h), 4, FILTER_OVERHEAD_BYTES)
+            let target = (
+                width.unwrap_or(dims.0).max(1),
+                height.unwrap_or(dims.1).max(1),
+            );
+            match fit {
+                ResizeFit::Fill => ((target.0, target.1), 4, FILTER_OVERHEAD_BYTES),
+                ResizeFit::Inside => {
+                    let (w, h) = calc_resize_dimensions(dims.0, dims.1, *width, *height);
+                    ((w, h), 4, FILTER_OVERHEAD_BYTES)
+                }
+                ResizeFit::Cover => {
+                    let (resize_w, resize_h) =
+                        calc_cover_resize_dimensions(dims.0, dims.1, target.0, target.1);
+                    // Peak occurs after resize before crop; use larger of resize and target
+                    // to model intermediate buffer.
+                    let resize_bytes = bytes_for_image(resize_w, resize_h, 4);
+                    let target_bytes = bytes_for_image(target.0, target.1, 4);
+                    let overhead = FILTER_OVERHEAD_BYTES;
+                    // Return final dims (after crop), but include resize_bytes in peak.
+                    (
+                        (target.0, target.1),
+                        4,
+                        overhead.saturating_add(resize_bytes.saturating_sub(target_bytes)),
+                    )
+                }
+            }
         }
         Operation::Crop { width, height, .. } => {
             let w = (*width).max(1).min(dims.0);
@@ -296,10 +327,20 @@ pub fn record_memory_observation(predicted: u64, start_rss: Option<u64>, end_rss
     );
     let scaled = (ratio * TUNING_SCALE as f64).round() as u64;
 
-    let previous = ESTIMATE_TUNING.load(Ordering::Relaxed);
-    let blended = ((previous * 4).saturating_add(scaled)) / 5;
-    let clamped = blended.clamp(TUNING_MIN, TUNING_MAX);
-    ESTIMATE_TUNING.store(clamped, Ordering::Relaxed);
+    let mut previous = ESTIMATE_TUNING.load(Ordering::Relaxed);
+    loop {
+        let blended = ((previous * 4).saturating_add(scaled)) / 5;
+        let clamped = blended.clamp(TUNING_MIN, TUNING_MAX);
+        match ESTIMATE_TUNING.compare_exchange(
+            previous,
+            clamped,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+        ) {
+            Ok(_) => break,
+            Err(actual) => previous = actual,
+        }
+    }
 }
 
 /// Detects available memory from container limits or system memory
@@ -541,5 +582,18 @@ mod tests {
         record_memory_observation(predicted, Some(100 * 1024 * 1024), Some(150 * 1024 * 1024));
         let scale = ESTIMATE_TUNING.load(Ordering::Relaxed);
         assert!(scale > TUNING_SCALE);
+    }
+
+    #[test]
+    fn test_cover_resize_accounts_intermediate() {
+        ESTIMATE_TUNING.store(TUNING_SCALE, Ordering::Relaxed);
+        let ops = vec![Operation::Resize {
+            width: Some(1000),
+            height: Some(1000),
+            fit: ResizeFit::Cover,
+        }];
+        let est = estimate_memory_from_dimensions_with_context(100, 10_000, None, &ops, None);
+        let resize_bytes = bytes_for_image(1000, 10_000, 4);
+        assert!(est >= resize_bytes);
     }
 }
