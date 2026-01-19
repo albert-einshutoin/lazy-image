@@ -281,6 +281,13 @@ impl EncodeTask {
         // メトリクス測定を一元化
         let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
 
+        // Pre-read orientation from EXIF header (before full decode)
+        let orientation = self
+            .source
+            .as_ref()
+            .and_then(|s| s.as_bytes())
+            .and_then(crate::engine::decoder::detect_exif_orientation);
+
         // 1. Decode
         let img = self.decode_internal()?;
         self.firewall
@@ -288,7 +295,12 @@ impl EncodeTask {
         metrics_recorder.mark_decode_done();
 
         // 2. Apply operations
-        let processed = apply_ops(img, &self.ops)?;
+        let mut effective_ops = self.ops.clone();
+        if let Some(o) = orientation {
+            // 挿入位置は最先頭: ユーザー指定オペレーションより前に正規化する
+            effective_ops.insert(0, Operation::AutoOrient { orientation: o });
+        }
+        let processed = apply_ops(img, &effective_ops)?;
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "process")?;
         metrics_recorder.mark_process_done();
@@ -613,6 +625,7 @@ impl Task for BatchTask {
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
 
+                let orientation = crate::engine::decoder::detect_exif_orientation(data);
                 let icc_profile = if keep_metadata {
                     extract_icc_profile(data).map(Arc::new)
                 } else {
@@ -630,7 +643,12 @@ impl Task for BatchTask {
                 check_dimensions(w, h)?;
                 firewall.enforce_pixels(w, h)?;
 
-                let processed = apply_ops(Cow::Owned(img), ops)?;
+                let mut effective_ops = ops.clone();
+                if let Some(o) = orientation {
+                    effective_ops.insert(0, Operation::AutoOrient { orientation: o });
+                }
+
+                let processed = apply_ops(Cow::Owned(img), &effective_ops)?;
                 firewall.enforce_timeout(start_total, "process")?;
 
                 // Encode - only preserve ICC profile if keep_metadata is true
