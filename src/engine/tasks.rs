@@ -284,10 +284,14 @@ impl EncodeTask {
 
         // Pre-read orientation from EXIF header (before full decode)
         let orientation = if self.auto_orient {
-            self.source
-                .as_ref()
-                .and_then(|s| s.as_bytes())
-                .and_then(crate::engine::decoder::detect_exif_orientation)
+            if let Some(bytes) = self.source.as_ref().and_then(|s| s.as_bytes()) {
+                // Enforce byte limit & metadata scan prior to EXIF解析 to honor firewall settings
+                self.firewall.enforce_source_len(bytes.len())?;
+                self.firewall.scan_metadata(bytes)?;
+                crate::engine::decoder::detect_exif_orientation(bytes)
+            } else {
+                None
+            }
         } else {
             None
         };
