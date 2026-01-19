@@ -408,6 +408,8 @@ console.log(metrics);
 // }
 ```
 
+詳しい計測境界と保証事項は `docs/METRICS_CONTRACT.md` を参照してください。
+
 ### Batch Processing (v0.6.0+)
 
 ```javascript
