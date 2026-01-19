@@ -5,11 +5,13 @@
 // This module detects container memory limits from cgroup v1/v2 to automatically
 // adjust thread pool size and prevent OOM kills in constrained environments.
 
+#[cfg(feature = "napi")]
 use std::fs;
+use std::sync::{Arc, Condvar, Mutex, OnceLock};
 
 /// Estimated memory per image operation (in bytes)
 /// This is a conservative estimate: width × height × 4 bytes (RGBA) + encoding overhead
-const ESTIMATED_MEMORY_PER_OPERATION: u64 = 100 * 1024 * 1024; // 100MB per operation (conservative)
+pub const ESTIMATED_MEMORY_PER_OPERATION: u64 = 100 * 1024 * 1024; // 100MB per operation (conservative)
 
 /// Minimum memory to reserve for system and other processes (in bytes)
 const RESERVED_MEMORY: u64 = 128 * 1024 * 1024; // 128MB
@@ -19,6 +21,109 @@ const MIN_SAFE_CONCURRENCY: usize = 1;
 
 /// Maximum safe concurrency based on memory (even if CPU allows more)
 const MAX_MEMORY_BASED_CONCURRENCY: usize = 16;
+
+/// Fallback memory capacity when detection fails (aligned with previous conservative limit)
+const FALLBACK_SEMAPHORE_CAPACITY: u64 =
+    ESTIMATED_MEMORY_PER_OPERATION * MAX_MEMORY_BASED_CONCURRENCY as u64;
+
+/// In-memory weighted semaphore for byte-based backpressure
+#[derive(Debug)]
+pub struct WeightedSemaphore {
+    capacity: u64,
+    state: Mutex<u64>, // available bytes
+    cvar: Condvar,
+}
+
+#[derive(Debug)]
+pub struct MemoryPermit {
+    sem: Arc<WeightedSemaphore>,
+    weight: u64,
+}
+
+impl WeightedSemaphore {
+    pub fn new(capacity: u64) -> Self {
+        Self {
+            capacity,
+            state: Mutex::new(capacity),
+            cvar: Condvar::new(),
+        }
+    }
+
+    pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
+        let mut available = self.state.lock().unwrap();
+        // clamp absurd weights to capacity to avoid deadlock
+        let need = weight.min(self.capacity);
+        while *available < need {
+            available = self.cvar.wait(available).unwrap();
+        }
+        *available -= need;
+        MemoryPermit {
+            sem: Arc::clone(self),
+            weight: need,
+        }
+    }
+
+    fn release(&self, weight: u64) {
+        let mut available = self.state.lock().unwrap();
+        let freed = (*available).saturating_add(weight).min(self.capacity);
+        *available = freed;
+        // notify_all to avoid starvation when waiters have heterogeneous weights
+        self.cvar.notify_all();
+    }
+}
+
+impl Drop for MemoryPermit {
+    fn drop(&mut self) {
+        self.sem.release(self.weight);
+    }
+}
+
+fn compute_semaphore_capacity() -> u64 {
+    // Try to honor detected memory; if no detection, use fallback
+    let available = detect_available_memory();
+    match available {
+        Some(mem) => {
+            let usable = mem.saturating_sub(RESERVED_MEMORY);
+            if usable < ESTIMATED_MEMORY_PER_OPERATION {
+                ESTIMATED_MEMORY_PER_OPERATION
+            } else {
+                usable
+            }
+        }
+        None => FALLBACK_SEMAPHORE_CAPACITY,
+    }
+}
+
+static GLOBAL_MEMORY_SEMAPHORE: OnceLock<Arc<WeightedSemaphore>> = OnceLock::new();
+
+/// Get global weighted semaphore for memory backpressure
+pub fn memory_semaphore() -> Arc<WeightedSemaphore> {
+    GLOBAL_MEMORY_SEMAPHORE
+        .get_or_init(|| Arc::new(WeightedSemaphore::new(compute_semaphore_capacity())))
+        .clone()
+}
+
+/// Estimate decoded image memory usage (bytes) from dimensions and assumed 4 channels/8bit.
+/// Falls back to ESTIMATED_MEMORY_PER_OPERATION when data is missing.
+pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
+    let pixels = width as u64 * height as u64;
+    // RGBA 8-bit = 4 bytes, plus 8MB overhead for buffers/temporary copies
+    pixels
+        .saturating_mul(4)
+        .saturating_add(8 * 1024 * 1024)
+        .max(ESTIMATED_MEMORY_PER_OPERATION / 4) // avoid zero-ish estimates
+}
+
+/// Estimate using lightweight header parse; returns None if dimensions can't be read.
+pub fn estimate_memory_from_header(bytes: &[u8]) -> Option<u64> {
+    let cursor = std::io::Cursor::new(bytes);
+    if let Ok(reader) = image::ImageReader::new(cursor).with_guessed_format() {
+        if let Ok((w, h)) = reader.into_dimensions() {
+            return Some(estimate_memory_from_dimensions(w, h));
+        }
+    }
+    None
+}
 
 /// Detects available memory from container limits or system memory
 ///
@@ -121,6 +226,12 @@ fn detect_system_memory() -> Option<u64> {
     None
 }
 
+/// Non-NAPI builds: skip detection and return None (use fallback)
+#[cfg(not(feature = "napi"))]
+pub fn detect_available_memory() -> Option<u64> {
+    None
+}
+
 /// Calculates safe concurrency based on available memory
 ///
 /// This function estimates how many concurrent image operations can safely
@@ -165,6 +276,7 @@ pub fn calculate_memory_based_concurrency(
 #[cfg(all(test, feature = "napi"))]
 mod tests {
     use super::*;
+    use std::sync::Arc;
 
     #[test]
     fn test_calculate_memory_based_concurrency_very_constrained() {
@@ -199,5 +311,24 @@ mod tests {
         // 1GB container with 8 CPUs: memory limits to ~8 operations, but we cap at 16
         let result = calculate_memory_based_concurrency(Some(1024 * 1024 * 1024), 8);
         assert!(result <= 8); // Limited by memory (1GB - 128MB = 896MB / 100MB = 8)
+    }
+
+    #[test]
+    fn test_weighted_semaphore_acquire_release() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let permit = sem.acquire(60);
+        {
+            let remaining = *sem.state.lock().unwrap();
+            assert_eq!(remaining, 40);
+        }
+        drop(permit);
+        let remaining = *sem.state.lock().unwrap();
+        assert_eq!(remaining, 100);
+    }
+
+    #[test]
+    fn test_estimate_memory_from_dimensions_non_zero() {
+        let est = estimate_memory_from_dimensions(10, 10);
+        assert!(est >= ESTIMATED_MEMORY_PER_OPERATION / 4);
     }
 }
