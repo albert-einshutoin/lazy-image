@@ -1,0 +1,26 @@
+{
+  "jpeg_resize_inside_1200_q82": {
+    "pixelHash": "055beced9600804eb4727844d2380e3f016c235298ba1d89ebf7a405c5975caf",
+    "width": 1200,
+    "height": 1200,
+    "format": "jpeg"
+  },
+  "png_cover_rotate_grayscale": {
+    "pixelHash": "6c8da0a73847462be3160f6ece02fa32e4ae4480f493e10d6ff16aa27ee4e65f",
+    "width": 1600,
+    "height": 900,
+    "format": "png"
+  },
+  "webp_cover_flip": {
+    "pixelHash": "f51e648b840a58794d139a6356991040246bc10d7614e8d4f79416daf72c8295",
+    "width": 800,
+    "height": 800,
+    "format": "webp"
+  },
+  "png_cover_no_grayscale": {
+    "pixelHash": "1c1b8537feef8f0586f244334b61334d3bc1fc603be43206707ffdfded8d6f93",
+    "width": 1600,
+    "height": 900,
+    "format": "png"
+  }
+}
