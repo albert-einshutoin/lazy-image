@@ -235,6 +235,8 @@ pub(crate) struct EncodeTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    /// Whether the input originally had an ICC profile (even if stripped)
+    pub icc_present: bool,
     pub auto_orient: bool,
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
@@ -404,11 +406,10 @@ impl EncodeTask {
             metrics_recorder.memory_usage_start(),
             final_usage.as_ref().map(|u| u.memory_rss),
         );
-        let icc_present = self.icc_profile.is_some();
+        let icc_present = self.icc_present;
         let icc_preserved = self.keep_metadata && icc_present;
-        // metadata_stripped: true when metadata is not preserved (either not present, or stripped by default/policy)
-        // This correctly handles the case when no metadata exists (default stripped state)
-        let metadata_stripped = !icc_preserved;
+        // metadata_stripped: true when source had ICC but we did not preserve it
+        let metadata_stripped = icc_present && !icc_preserved;
         let metadata_blocked_by_policy =
             self.keep_metadata_requested && self.firewall.reject_metadata && icc_present;
         let mut policy_violations = Vec::new();
@@ -480,6 +481,7 @@ pub(crate) struct EncodeWithMetricsTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
     pub auto_orient: bool,
     pub keep_metadata: bool,
     pub keep_metadata_requested: bool,
@@ -503,6 +505,7 @@ impl Task for EncodeWithMetricsTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            icc_present: self.icc_present,
             auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
             keep_metadata_requested: self.keep_metadata_requested,
@@ -555,6 +558,7 @@ pub(crate) struct WriteFileTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
     pub auto_orient: bool,
     pub keep_metadata: bool,
     pub keep_metadata_requested: bool,
@@ -582,6 +586,7 @@ impl Task for WriteFileTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            icc_present: self.icc_present,
             auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
             keep_metadata_requested: self.keep_metadata_requested,

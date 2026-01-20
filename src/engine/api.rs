@@ -459,6 +459,7 @@ impl ImageEngine {
         let keep_metadata_requested = self.keep_metadata;
         let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
         let icc_profile = if keep_metadata {
             self.icc_profile.clone()
         } else {
@@ -471,6 +472,7 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            icc_present,
             auto_orient,
             keep_metadata,
             keep_metadata_requested,
@@ -509,6 +511,7 @@ impl ImageEngine {
         let keep_metadata_requested = self.keep_metadata;
         let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
         let icc_profile = if keep_metadata {
             self.icc_profile.clone()
         } else {
@@ -521,6 +524,7 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            icc_present,
             auto_orient,
             keep_metadata,
             keep_metadata_requested,
@@ -563,6 +567,7 @@ impl ImageEngine {
         let keep_metadata_requested = self.keep_metadata;
         let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
         let icc_profile = if keep_metadata {
             self.icc_profile.clone()
         } else {
@@ -575,6 +580,7 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            icc_present,
             auto_orient,
             keep_metadata,
             keep_metadata_requested,
