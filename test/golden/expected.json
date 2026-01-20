@@ -1,26 +1,20 @@
 {
-  "jpeg_resize_inside_800_q82": {
-    "pixelHash": "47d23dadd0f8a03d2ce179b07af10b6a2461477526e919003bad797678040ea0",
-    "width": 800,
-    "height": 800,
+  "jpeg_resize_inside_1200_q82": {
+    "pixelHash": "055beced9600804eb4727844d2380e3f016c235298ba1d89ebf7a405c5975caf",
+    "width": 1200,
+    "height": 1200,
     "format": "jpeg"
   },
   "png_cover_rotate_grayscale": {
-    "pixelHash": "c984ee3cffb73bfe6b045d9af5c2cf26f72a8731188e5ac7f911d2ef570c9e6c",
-    "width": 480,
-    "height": 360,
+    "pixelHash": "6c8da0a73847462be3160f6ece02fa32e4ae4480f493e10d6ff16aa27ee4e65f",
+    "width": 1600,
+    "height": 900,
     "format": "png"
   },
   "webp_cover_flip": {
-    "pixelHash": "122a722694467e84fc2da451f011aa3c577da62a1debde29ed6d4a4449fab25a",
-    "width": 640,
-    "height": 426,
+    "pixelHash": "82a5c09eb267ffad6f4bc237807eaf33abadfc3b8dc875254ed9dc3e428d3fda",
+    "width": 800,
+    "height": 800,
     "format": "webp"
-  },
-  "avif_inside_large_q60": {
-    "pixelHash": "5393d0abf56f98debbc69b85ff2d2f65a559fee7ff6c0f0fe4f694860431f568",
-    "width": 1280,
-    "height": 1280,
-    "format": "avif"
   }
 }

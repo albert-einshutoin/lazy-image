@@ -40,6 +40,7 @@ async function runCase(testCase) {
     // sharpリファレンスとの画質比較
     const reference = await renderSharpReference(input, testCase.operations, testCase.output);
     const { psnr, ssim } = await calculateQualityMetrics(reference, output);
+    const sizeRatio = output.length / reference.length;
 
     assert(
         ssim >= testCase.thresholds.minSsim,
@@ -49,9 +50,15 @@ async function runCase(testCase) {
         psnr >= testCase.thresholds.minPsnr,
         `${testCase.name}: PSNR ${psnr.toFixed(2)} < ${testCase.thresholds.minPsnr}`,
     );
+    if (testCase.sizeRatioMax) {
+        assert(
+            sizeRatio <= testCase.sizeRatioMax,
+            `${testCase.name}: file size ratio ${sizeRatio.toFixed(3)} exceeds limit ${testCase.sizeRatioMax}`,
+        );
+    }
 
     console.log(
-        `✅ ${testCase.name} | hash=${hash.slice(0, 8)}… | ${info.width}x${info.height} | SSIM=${ssim.toFixed(4)} PSNR=${psnr.toFixed(2)}`,
+        `✅ ${testCase.name} | hash=${hash.slice(0, 8)}… | ${info.width}x${info.height} | SSIM=${ssim.toFixed(4)} PSNR=${psnr.toFixed(2)} | sizeRatio=${sizeRatio.toFixed(3)}`,
     );
 }
 
