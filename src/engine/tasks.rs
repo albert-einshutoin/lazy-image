@@ -15,7 +15,8 @@ use crate::engine::pipeline::apply_ops;
 use crate::engine::pool;
 use crate::error::{ErrorCategory, LazyImageError};
 use crate::ops::{Operation, OutputFormat};
-use image::{DynamicImage, GenericImageView};
+use crate::PROCESSING_METRICS_VERSION;
+use image::{DynamicImage, GenericImageView, ImageFormat};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
@@ -80,6 +81,32 @@ struct ResourceUsage {
     memory_rss: u64,
 }
 
+#[derive(Default)]
+struct MetricsContext {
+    input_format: Option<String>,
+    output_format: String,
+    icc_preserved: bool,
+    metadata_stripped: bool,
+    policy_violations: Vec<String>,
+}
+
+fn detect_input_format(bytes: &[u8]) -> Option<String> {
+    image::guess_format(bytes).ok().map(|fmt| {
+        match fmt {
+            ImageFormat::Jpeg => "jpeg",
+            ImageFormat::Png => "png",
+            ImageFormat::WebP => "webp",
+            ImageFormat::Avif => "avif",
+            ImageFormat::Gif => "gif",
+            ImageFormat::Bmp => "bmp",
+            ImageFormat::Ico => "ico",
+            ImageFormat::Tiff => "tiff",
+            other => other.to_mime_type(),
+        }
+        .to_string()
+    })
+}
+
 /// 統一的なメトリクス測定を行うヘルパー。
 /// decode -> process -> encode の各区間をミリ秒で計測し、
 /// CPU/メモリや入出力サイズも一箇所で設定する。
@@ -109,14 +136,16 @@ impl<'m> MetricsRecorder<'m> {
 
     fn mark_decode_done(&mut self) {
         if let Some(m) = self.metrics.as_deref_mut() {
-            m.decode_time = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.decode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.decode_time = m.decode_ms;
             self.stage_start = Instant::now();
         }
     }
 
     fn mark_process_done(&mut self) {
         if let Some(m) = self.metrics.as_deref_mut() {
-            m.process_time = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.ops_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.process_time = m.ops_ms;
             self.stage_start = Instant::now();
         }
     }
@@ -126,31 +155,45 @@ impl<'m> MetricsRecorder<'m> {
         processed_dims: (u32, u32),
         output_len: usize,
         usage_end: &Option<ResourceUsage>,
+        context: MetricsContext,
     ) {
         if let Some(m) = self.metrics.as_deref_mut() {
             // encode 区間
-            m.encode_time = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.encode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.encode_time = m.encode_ms;
             // 全体
-            m.processing_time = self.start_total.elapsed().as_secs_f64();
+            m.total_ms = self.start_total.elapsed().as_secs_f64() * 1000.0;
+            m.processing_time = m.total_ms / 1000.0;
+            m.version = PROCESSING_METRICS_VERSION.to_string();
 
             // CPU / メモリ
             if let (Some(start), Some(end)) = (self.usage_start.as_ref(), usage_end.as_ref()) {
                 m.cpu_time = (end.cpu_time - start.cpu_time).max(0.0);
-                m.memory_peak = end.memory_rss.min(u32::MAX as u64) as u32;
+                m.peak_rss = end.memory_rss.min(u32::MAX as u64) as u32;
             } else {
                 let (w, h) = processed_dims;
-                m.memory_peak =
+                m.peak_rss =
                     ((w as u64 * h as u64 * 4) + output_len as u64).min(u32::MAX as u64) as u32;
             }
+            m.memory_peak = m.peak_rss;
 
             // 入出力サイズと圧縮率
-            m.input_size = self.input_size.min(u32::MAX as u64) as u32;
-            m.output_size = (output_len as u64).min(u32::MAX as u64) as u32;
-            m.compression_ratio = if m.input_size > 0 {
-                m.output_size as f64 / m.input_size as f64
+            m.bytes_in = self.input_size.min(u32::MAX as u64) as u32;
+            m.bytes_out = (output_len as u64).min(u32::MAX as u64) as u32;
+            m.input_size = m.bytes_in;
+            m.output_size = m.bytes_out;
+            m.compression_ratio = if m.bytes_in > 0 {
+                m.bytes_out as f64 / m.bytes_in as f64
             } else {
                 0.0
             };
+
+            // 形式 & メタデータ
+            m.format_in = context.input_format;
+            m.format_out = context.output_format;
+            m.icc_preserved = context.icc_preserved;
+            m.metadata_stripped = context.metadata_stripped;
+            m.policy_violations = context.policy_violations;
         }
     }
 }
@@ -196,6 +239,8 @@ pub(crate) struct EncodeTask {
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     pub keep_metadata: bool,
+    /// Whether the caller explicitly requested metadata preservation (before firewall rules)
+    pub keep_metadata_requested: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -285,6 +330,8 @@ impl EncodeTask {
         // Get input size from source
         // Use len() method which works for both Memory and Mapped sources
         let input_size = self.source.as_ref().map(|s| s.len() as u64).unwrap_or(0);
+        let input_bytes = self.source.as_ref().and_then(|s| s.as_bytes());
+        let input_format = input_bytes.and_then(detect_input_format);
 
         // Memory backpressure: estimate before decode and acquire weighted permit
         let estimated_memory = self
@@ -304,7 +351,7 @@ impl EncodeTask {
 
         // Pre-read orientation from EXIF header (before full decode)
         let orientation = if self.auto_orient {
-            if let Some(bytes) = self.source.as_ref().and_then(|s| s.as_bytes()) {
+            if let Some(bytes) = input_bytes {
                 // Enforce byte limit & metadata scan prior to EXIF解析 to honor firewall settings
                 self.firewall.enforce_source_len(bytes.len())?;
                 self.firewall.scan_metadata(bytes)?;
@@ -357,7 +404,29 @@ impl EncodeTask {
             metrics_recorder.memory_usage_start(),
             final_usage.as_ref().map(|u| u.memory_rss),
         );
-        metrics_recorder.finalize(processed.dimensions(), result.len(), &final_usage);
+        let icc_present = self.icc_profile.is_some();
+        let icc_preserved = self.keep_metadata && icc_present;
+        let metadata_stripped = !self.keep_metadata && icc_present;
+        let metadata_blocked_by_policy =
+            self.keep_metadata_requested && self.firewall.reject_metadata && icc_present;
+        let mut policy_violations = Vec::new();
+        if metadata_blocked_by_policy {
+            policy_violations.push("firewall_rejected_metadata".to_string());
+        }
+
+        let metrics_context = MetricsContext {
+            input_format,
+            output_format: self.format.as_str().to_string(),
+            icc_preserved,
+            metadata_stripped,
+            policy_violations,
+        };
+        metrics_recorder.finalize(
+            processed.dimensions(),
+            result.len(),
+            &final_usage,
+            metrics_context,
+        );
 
         Ok(result)
     }
@@ -411,6 +480,7 @@ pub(crate) struct EncodeWithMetricsTask {
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
     pub keep_metadata: bool,
+    pub keep_metadata_requested: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -433,6 +503,7 @@ impl Task for EncodeWithMetricsTask {
             icc_profile: self.icc_profile.clone(),
             auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
+            keep_metadata_requested: self.keep_metadata_requested,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -484,6 +555,7 @@ pub(crate) struct WriteFileTask {
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
     pub keep_metadata: bool,
+    pub keep_metadata_requested: bool,
     pub firewall: FirewallConfig,
     pub output_path: String,
     /// Last error that occurred during compute (for use in reject)
@@ -510,6 +582,7 @@ impl Task for WriteFileTask {
             icc_profile: self.icc_profile.clone(),
             auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
+            keep_metadata_requested: self.keep_metadata_requested,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,

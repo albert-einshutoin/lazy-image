@@ -1329,6 +1329,7 @@ mod tests {
                 icc_profile: None,
                 auto_orient: true,
                 keep_metadata: false,
+                keep_metadata_requested: false,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1351,6 +1352,7 @@ mod tests {
                 icc_profile: None,
                 auto_orient: true,
                 keep_metadata: false,
+                keep_metadata_requested: false,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1371,6 +1373,7 @@ mod tests {
                 icc_profile: None,
                 auto_orient: true,
                 keep_metadata: false,
+                keep_metadata_requested: false,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1398,6 +1401,7 @@ mod tests {
                 icc_profile: None,
                 auto_orient: true,
                 keep_metadata: false,
+                keep_metadata_requested: false,
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1421,6 +1425,7 @@ mod tests {
                 icc_profile: None,
                 auto_orient: true,
                 keep_metadata: false,
+                keep_metadata_requested: false,
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,

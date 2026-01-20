@@ -107,25 +107,44 @@ async function runTests() {
         
         assert(data.length > 0, 'output should have content');
         assert(typeof metrics === 'object', 'metrics should be an object');
-        assert(typeof metrics.decodeTime === 'number', 'decodeTime should be a number');
-        assert(metrics.decodeTime >= 0, 'decodeTime should be non-negative');
-        assert(typeof metrics.processTime === 'number', 'processTime should be a number');
-        assert(metrics.processTime >= 0, 'processTime should be non-negative');
-        assert(typeof metrics.encodeTime === 'number', 'encodeTime should be a number');
-        assert(metrics.encodeTime >= 0, 'encodeTime should be non-negative');
-        assert(typeof metrics.memoryPeak === 'number', 'memoryPeak should be a number');
-        assert(metrics.memoryPeak >= 0, 'memoryPeak should be non-negative');
+        assert.strictEqual(metrics.version, '1.0.0', 'version should be set');
+
+        // New productized fields
+        assert(typeof metrics.decodeMs === 'number', 'decodeMs should be a number');
+        assert(metrics.decodeMs >= 0, 'decodeMs should be non-negative');
+        assert(typeof metrics.opsMs === 'number', 'opsMs should be a number');
+        assert(metrics.opsMs >= 0, 'opsMs should be non-negative');
+        assert(typeof metrics.encodeMs === 'number', 'encodeMs should be a number');
+        assert(metrics.encodeMs >= 0, 'encodeMs should be non-negative');
+        assert(typeof metrics.totalMs === 'number', 'totalMs should be a number');
+        assert(metrics.totalMs >= 0, 'totalMs should be non-negative');
+        assert(typeof metrics.peakRss === 'number', 'peakRss should be a number');
+        assert(metrics.peakRss >= 0, 'peakRss should be non-negative');
+        assert(typeof metrics.bytesIn === 'number', 'bytesIn should be a number');
+        assert(metrics.bytesIn > 0, 'bytesIn should be positive');
+        assert(typeof metrics.bytesOut === 'number', 'bytesOut should be a number');
+        assert(metrics.bytesOut > 0, 'bytesOut should be positive');
+        assert(Array.isArray(metrics.policyViolations), 'policyViolations should be an array');
+        assert(typeof metrics.metadataStripped === 'boolean', 'metadataStripped should be boolean');
+        assert(typeof metrics.iccPreserved === 'boolean', 'iccPreserved should be boolean');
+        assert(typeof metrics.formatOut === 'string', 'formatOut should be string');
+        assert(metrics.formatOut === 'jpeg', 'formatOut should match requested output');
+
+        // Legacy aliases remain stable
+        assert.strictEqual(metrics.decodeTime, metrics.decodeMs, 'decodeTime mirrors decodeMs');
+        assert.strictEqual(metrics.processTime, metrics.opsMs, 'processTime mirrors opsMs');
+        assert.strictEqual(metrics.encodeTime, metrics.encodeMs, 'encodeTime mirrors encodeMs');
+        assert.strictEqual(metrics.memoryPeak, metrics.peakRss, 'memoryPeak mirrors peakRss');
+        assert.strictEqual(metrics.inputSize, metrics.bytesIn, 'inputSize mirrors bytesIn');
+        assert.strictEqual(metrics.outputSize, metrics.bytesOut, 'outputSize mirrors bytesOut');
+
         assert(typeof metrics.cpuTime === 'number', 'cpuTime should be a number');
         assert(metrics.cpuTime >= 0, 'cpuTime should be non-negative');
         assert(typeof metrics.processingTime === 'number', 'processingTime should be a number');
         assert(metrics.processingTime >= 0, 'processingTime should be non-negative');
-        assert(typeof metrics.inputSize === 'number', 'inputSize should be a number');
-        assert(metrics.inputSize > 0, 'inputSize should be positive');
-        assert(typeof metrics.outputSize === 'number', 'outputSize should be a number');
-        assert(metrics.outputSize > 0, 'outputSize should be positive');
         assert(typeof metrics.compressionRatio === 'number', 'compressionRatio should be a number');
         assert(metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
-        assert(metrics.compressionRatio <= 1 || metrics.outputSize > metrics.inputSize, 
+        assert(metrics.compressionRatio <= 1 || metrics.bytesOut > metrics.bytesIn, 
             'compressionRatio should be <= 1 or output larger than input');
     });
 
@@ -166,11 +185,11 @@ async function runTests() {
         // First call
         const result1 = await engine.toBufferWithMetrics('jpeg', 80);
         assert(result1.data.length > 0, 'First JPEG should have content');
-        assert(result1.metrics.decodeTime > 0, 'Metrics should include decode time');
+        assert(result1.metrics.decodeMs > 0, 'Metrics should include decode time');
         // Second call on the same instance
         const result2 = await engine.toBufferWithMetrics('webp', 80);
         assert(result2.data.length > 0, 'Second WebP should have content');
-        assert(result2.metrics.decodeTime > 0, 'Metrics should include decode time');
+        assert(result2.metrics.decodeMs > 0, 'Metrics should include decode time');
     });
 
     await asyncTest('toFile() is non-destructive', async () => {

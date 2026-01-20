@@ -144,6 +144,16 @@ impl OutputFormat {
             other => Err(format!("unsupported format: {other}")),
         }
     }
+
+    /// Return canonical lowercase string for telemetry/export
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            OutputFormat::Jpeg { .. } => "jpeg",
+            OutputFormat::Png => "png",
+            OutputFormat::WebP { .. } => "webp",
+            OutputFormat::Avif { .. } => "avif",
+        }
+    }
 }
 
 // =============================================================================

@@ -441,32 +441,47 @@ async function runTests() {
         assert(result.data, 'should have data');
         assert(result.metrics, 'should have metrics');
         
-        // Original metrics
-        assert(typeof result.metrics.decodeTime === 'number', 'decodeTime should be number');
-        assert(typeof result.metrics.processTime === 'number', 'processTime should be number');
-        assert(typeof result.metrics.encodeTime === 'number', 'encodeTime should be number');
-        assert(typeof result.metrics.memoryPeak === 'number', 'memoryPeak should be number');
-        assert(result.metrics.decodeTime >= 0, 'decodeTime should be non-negative');
-        assert(result.metrics.processTime >= 0, 'processTime should be non-negative');
-        assert(result.metrics.encodeTime >= 0, 'encodeTime should be non-negative');
-        assert(result.metrics.memoryPeak > 0, 'memoryPeak should be positive');
-        
-        // New telemetry metrics
+        assert.strictEqual(result.metrics.version, '1.0.0', 'version should be set');
+
+        // Productized fields
+        assert(typeof result.metrics.decodeMs === 'number', 'decodeMs should be number');
+        assert(typeof result.metrics.opsMs === 'number', 'opsMs should be number');
+        assert(typeof result.metrics.encodeMs === 'number', 'encodeMs should be number');
+        assert(typeof result.metrics.totalMs === 'number', 'totalMs should be number');
+        assert(result.metrics.decodeMs >= 0, 'decodeMs should be non-negative');
+        assert(result.metrics.opsMs >= 0, 'opsMs should be non-negative');
+        assert(result.metrics.encodeMs >= 0, 'encodeMs should be non-negative');
+        assert(result.metrics.totalMs >= 0, 'totalMs should be non-negative');
+        assert(typeof result.metrics.peakRss === 'number', 'peakRss should be number');
+        assert(result.metrics.peakRss > 0, 'peakRss should be positive');
+        assert(typeof result.metrics.bytesIn === 'number', 'bytesIn should be number');
+        assert(typeof result.metrics.bytesOut === 'number', 'bytesOut should be number');
+        assert(result.metrics.bytesIn > 0, 'bytesIn should be positive');
+        assert(result.metrics.bytesOut > 0, 'bytesOut should be positive');
+        assert(typeof result.metrics.formatOut === 'string', 'formatOut should be string');
+        assert(Array.isArray(result.metrics.policyViolations), 'policyViolations should be array');
+        assert(typeof result.metrics.metadataStripped === 'boolean', 'metadataStripped boolean');
+        assert(typeof result.metrics.iccPreserved === 'boolean', 'iccPreserved boolean');
+
+        // Legacy aliases
+        assert.strictEqual(result.metrics.decodeTime, result.metrics.decodeMs);
+        assert.strictEqual(result.metrics.processTime, result.metrics.opsMs);
+        assert.strictEqual(result.metrics.encodeTime, result.metrics.encodeMs);
+        assert.strictEqual(result.metrics.memoryPeak, result.metrics.peakRss);
+        assert.strictEqual(result.metrics.inputSize, result.metrics.bytesIn);
+        assert.strictEqual(result.metrics.outputSize, result.metrics.bytesOut);
+
+        // Telemetry
         assert(typeof result.metrics.cpuTime === 'number', 'cpuTime should be number');
         assert(typeof result.metrics.processingTime === 'number', 'processingTime should be number');
-        assert(typeof result.metrics.inputSize === 'number', 'inputSize should be number');
-        assert(typeof result.metrics.outputSize === 'number', 'outputSize should be number');
         assert(typeof result.metrics.compressionRatio === 'number', 'compressionRatio should be number');
         assert(result.metrics.cpuTime >= 0, 'cpuTime should be non-negative');
         assert(result.metrics.processingTime >= 0, 'processingTime should be non-negative');
-        assert(result.metrics.inputSize > 0, 'inputSize should be positive');
-        assert(result.metrics.outputSize > 0, 'outputSize should be positive');
         assert(result.metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
 
         // Contract: processingTime should encompass decode+process+encode (same Instant baseline)
-        const stageMs =
-            result.metrics.decodeTime + result.metrics.processTime + result.metrics.encodeTime;
-        const totalMs = result.metrics.processingTime * 1000;
+        const stageMs = result.metrics.decodeMs + result.metrics.opsMs + result.metrics.encodeMs;
+        const totalMs = result.metrics.totalMs;
         assert(stageMs > 0, 'sum of decode/process/encode should be positive');
         assert(
             totalMs + 5 >= stageMs,
@@ -483,12 +498,12 @@ async function runTests() {
             .toBufferWithMetrics('jpeg', 80);
         
         // input_size should be positive for valid buffer source
-        assert(metrics.inputSize > 0, 'inputSize should be positive for buffer source');
-        assert(metrics.outputSize > 0, 'outputSize should be positive');
+        assert(metrics.bytesIn > 0, 'bytesIn should be positive for buffer source');
+        assert(metrics.bytesOut > 0, 'bytesOut should be positive');
         assert(metrics.compressionRatio > 0, 'compressionRatio should be positive');
         
         // Verify compressionRatio calculation
-        const expectedRatio = metrics.outputSize / metrics.inputSize;
+        const expectedRatio = metrics.bytesOut / metrics.bytesIn;
         assert(Math.abs(metrics.compressionRatio - expectedRatio) < 0.0001, 
             'compressionRatio should equal outputSize / inputSize');
     });

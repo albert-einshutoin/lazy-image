@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/albert-einshutoin/lazy-image/docs/metrics-schema.json",
+  "title": "lazy-image ProcessingMetrics",
+  "description": "Telemetry payload returned by ImageEngine.toBufferWithMetrics()",
+  "type": "object",
+  "required": [
+    "version",
+    "decodeMs",
+    "opsMs",
+    "encodeMs",
+    "totalMs",
+    "peakRss",
+    "cpuTime",
+    "processingTime",
+    "bytesIn",
+    "bytesOut",
+    "compressionRatio",
+    "formatOut",
+    "iccPreserved",
+    "metadataStripped",
+    "policyViolations",
+    "decodeTime",
+    "processTime",
+    "encodeTime",
+    "memoryPeak",
+    "inputSize",
+    "outputSize"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for compatibility negotiation"
+    },
+    "decodeMs": { "type": "number", "minimum": 0, "description": "Decode stage duration (ms)" },
+    "opsMs": { "type": "number", "minimum": 0, "description": "Transform/operations duration (ms)" },
+    "encodeMs": { "type": "number", "minimum": 0, "description": "Encode stage duration (ms)" },
+    "totalMs": { "type": "number", "minimum": 0, "description": "Total wall-clock duration (ms)" },
+    "peakRss": { "type": "number", "minimum": 0, "description": "Peak resident set size in bytes" },
+    "cpuTime": { "type": "number", "minimum": 0, "description": "CPU time in seconds (user + system)" },
+    "processingTime": { "type": "number", "minimum": 0, "description": "Total wall-clock duration in seconds (legacy seconds field)" },
+    "bytesIn": { "type": "number", "minimum": 0, "description": "Input size in bytes" },
+    "bytesOut": { "type": "number", "minimum": 0, "description": "Output size in bytes" },
+    "compressionRatio": { "type": "number", "minimum": 0, "description": "bytesOut / bytesIn" },
+    "formatIn": {
+      "type": ["string", "null"],
+      "description": "Detected input format (lowercase) or null when unknown"
+    },
+    "formatOut": { "type": "string", "description": "Output format (jpeg, png, webp, avif)" },
+    "iccPreserved": { "type": "boolean", "description": "True when ICC profile existed and was preserved" },
+    "metadataStripped": { "type": "boolean", "description": "True when metadata was stripped" },
+    "policyViolations": {
+      "type": "array",
+      "description": "Non-fatal Image Firewall enforcement that altered output",
+      "items": { "type": "string" }
+    },
+    "decodeTime": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias of decodeMs (ms)"
+    },
+    "processTime": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias of opsMs (ms)"
+    },
+    "encodeTime": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias of encodeMs (ms)"
+    },
+    "memoryPeak": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias of peakRss (bytes)"
+    },
+    "inputSize": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias of bytesIn (bytes)"
+    },
+    "outputSize": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias of bytesOut (bytes)"
+    }
+  },
+  "additionalProperties": false
+}
