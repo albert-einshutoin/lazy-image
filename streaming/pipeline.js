@@ -54,14 +54,18 @@ function createStreamingPipeline(options) {
                 }
             }
             await engine.toFile(outputPath, format, quality ?? undefined);
+            // release reference ASAP to allow underlying mmap to close on platforms that keep file handles open
+            engine = null;
+
             const rs = fs.createReadStream(outputPath);
             rs.on('error', (err) => {
                 readable.destroy(err);
                 cleanup();
             });
+            rs.on('close', cleanup);
             readable.on('error', cleanup);
             readable.on('close', cleanup);
-            rs.pipe(readable).on('finish', cleanup);
+            rs.pipe(readable);
         } catch (err) {
             readable.destroy(err);
             cleanup();
