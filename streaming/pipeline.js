@@ -52,6 +52,11 @@ function createStreamingPipeline(options) {
             }
             await engine.toFile(outputPath, format, quality ?? undefined);
             const rs = fs.createReadStream(outputPath);
+            rs.on('error', (err) => {
+                readable.destroy(err);
+                cleanup();
+            });
+            readable.on('error', cleanup);
             rs.pipe(readable).on('finish', cleanup);
         } catch (err) {
             readable.destroy(err);
