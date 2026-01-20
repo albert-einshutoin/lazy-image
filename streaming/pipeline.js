@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { PassThrough } = require('stream');
-const { ImageEngine } = require('../index');
 
 /**
  * Create a streaming processor that accepts a Writable input stream and exposes a Readable output stream.
@@ -15,10 +14,14 @@ const { ImageEngine } = require('../index');
  * - ops: array of operations (same schema as core API)
  */
 function createStreamingPipeline(options) {
-    const { format = 'jpeg', quality, ops = [] } = options ?? {};
+    const { format = 'jpeg', quality, ops = [], ImageEngine } = options ?? {};
+    if (!ImageEngine) {
+        throw new Error('ImageEngine must be provided to createStreamingPipeline');
+    }
     const tempBase = fs.mkdtempSync(path.join(os.tmpdir(), 'lazy-image-stream-'));
     const inputPath = path.join(tempBase, 'input.bin');
     const outputPath = path.join(tempBase, 'output.bin');
+    let cleaned = false;
 
     const writable = fs.createWriteStream(inputPath);
     const readable = new PassThrough();
@@ -57,6 +60,7 @@ function createStreamingPipeline(options) {
                 cleanup();
             });
             readable.on('error', cleanup);
+            readable.on('close', cleanup);
             rs.pipe(readable).on('finish', cleanup);
         } catch (err) {
             readable.destroy(err);
@@ -65,6 +69,8 @@ function createStreamingPipeline(options) {
     }
 
     function cleanup() {
+        if (cleaned) return;
+        cleaned = true;
         fs.rm(inputPath, { force: true }, () => {});
         fs.rm(outputPath, { force: true }, () => {});
         fs.rm(tempBase, { force: true, recursive: true }, () => {});
