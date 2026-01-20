@@ -5,7 +5,7 @@
 
 use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
-    check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, ensure_dimensions_safe,
+    check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
 use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
@@ -91,20 +91,22 @@ struct MetricsContext {
 }
 
 fn detect_input_format(bytes: &[u8]) -> Option<String> {
-    image::guess_format(bytes).ok().map(|fmt| {
-        match fmt {
-            ImageFormat::Jpeg => "jpeg",
-            ImageFormat::Png => "png",
-            ImageFormat::WebP => "webp",
-            ImageFormat::Avif => "avif",
-            ImageFormat::Gif => "gif",
-            ImageFormat::Bmp => "bmp",
-            ImageFormat::Ico => "ico",
-            ImageFormat::Tiff => "tiff",
-            other => other.to_mime_type(),
-        }
-        .to_string()
-    })
+    detect_format(bytes).map(format_to_string)
+}
+
+fn format_to_string(fmt: ImageFormat) -> String {
+    match fmt {
+        ImageFormat::Jpeg => "jpeg",
+        ImageFormat::Png => "png",
+        ImageFormat::WebP => "webp",
+        ImageFormat::Avif => "avif",
+        ImageFormat::Gif => "gif",
+        ImageFormat::Bmp => "bmp",
+        ImageFormat::Ico => "ico",
+        ImageFormat::Tiff => "tiff",
+        other => other.to_mime_type(),
+    }
+    .to_string()
 }
 
 /// 統一的なメトリクス測定を行うヘルパー。
@@ -293,14 +295,7 @@ impl EncodeTask {
 
         ensure_dimensions_safe(bytes)?;
 
-        // Check magic bytes for JPEG (0xFF 0xD8)
-        let img = if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
-            // JPEG detected - use mozjpeg for TURBO speed
-            decode_jpeg_mozjpeg(bytes)?
-        } else {
-            // PNG, WebP, etc - use image crate (guarded by panic policy)
-            decode_with_image_crate(bytes)?
-        };
+        let (img, _detected_format) = decode_image(bytes)?;
 
         // Security check: reject decompression bombs
         let (w, h) = img.dimensions();
@@ -761,11 +756,7 @@ impl Task for BatchTask {
                     None
                 };
 
-                let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
-                    decode_jpeg_mozjpeg(data)?
-                } else {
-                    decode_with_image_crate(data)?
-                };
+                let (img, _detected_format) = decode_image(data)?;
                 firewall.enforce_timeout(start_total, "decode")?;
 
                 let (w, h) = img.dimensions();
