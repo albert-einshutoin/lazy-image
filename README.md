@@ -568,6 +568,18 @@ interface OutputWithMetrics {
   metrics: ProcessingMetrics;
 }
 
+## 品質メトリクス (SSIM/PSNR)
+
+lazy-image は sharp との品質パリティを維持するため、ベンチマークで以下の品質ゲートを設けています:
+
+- SSIM ≥ 0.995
+- PSNR ≥ 40 dB
+
+`npm run test:js` で実行されるベンチマーク (`test/benchmarks/sharp-comparison.bench.js`) は、同一条件で生成した sharp 出力と比較し、上記閾値を下回ると失敗します。  
+統合テスト `test/integration/quality-metrics.test.js` では品質メトリクス計算の健全性をスモークテストしています。
+
+※ 現時点では品質メトリクスは内部ベンチ・テスト専用です。アプリ側で品質指標を取得したい場合は別IssueでAPI公開を検討してください。
+
 interface BatchResult {
   source: string;
   success: boolean;
