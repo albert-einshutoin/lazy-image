@@ -192,4 +192,19 @@ mod tests {
         assert_eq!(fmt_png, Some(ImageFormat::Png));
         assert_eq!(img_png.dimensions(), (2, 2));
     }
+
+    #[test]
+    fn test_decode_image_routes_jpeg_to_mozjpeg() {
+        // Create a tiny JPEG via image crate; detect_format should see JPEG and route to mozjpeg
+        let jpeg = {
+            let mut buf = Vec::new();
+            DynamicImage::ImageRgb8(RgbImage::from_pixel(2, 2, Rgb([9, 8, 7])))
+                .write_to(&mut Cursor::new(&mut buf), ImageFormat::Jpeg)
+                .unwrap();
+            buf
+        };
+        let (img, fmt) = decode_image(&jpeg).unwrap();
+        assert_eq!(fmt, Some(ImageFormat::Jpeg));
+        assert_eq!(img.dimensions(), (2, 2));
+    }
 }

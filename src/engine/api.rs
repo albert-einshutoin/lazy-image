@@ -779,8 +779,8 @@ impl ImageEngine {
 
             crate::engine::decoder::ensure_dimensions_safe(bytes)?;
 
-            let (img, _detected_format) = crate::engine::decoder::decode_image(bytes)
-                .map_err(napi::Error::from)?;
+            let (img, _detected_format) =
+                crate::engine::decoder::decode_image(bytes).map_err(napi::Error::from)?;
 
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();
