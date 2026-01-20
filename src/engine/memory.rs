@@ -382,20 +382,24 @@ pub fn detect_available_memory() -> Option<u64> {
 #[cfg(feature = "napi")]
 fn detect_cgroup_v2_memory() -> Option<u64> {
     let mountinfo = fs::read_to_string("/proc/self/mountinfo").ok();
-    let mount_point = mountinfo
+    let mount = mountinfo
         .as_deref()
         .and_then(parse_cgroup2_mount_point)
-        .unwrap_or_else(|| "/sys/fs/cgroup".to_string());
+        .unwrap_or_else(|| CgroupMount {
+            mount_point: "/sys/fs/cgroup".to_string(),
+            root: "/".to_string(),
+        });
 
     let rel_path = fs::read_to_string("/proc/self/cgroup")
         .ok()
         .and_then(|c| parse_cgroup2_relative_path(&c))
         .unwrap_or_default();
 
+    let rel = strip_mount_root(&mount.root, &rel_path);
     let path = format!(
         "{}/{}{}",
-        mount_point.trim_end_matches('/'),
-        rel_path,
+        mount.mount_point.trim_end_matches('/'),
+        rel.trim_start_matches('/'),
         "/memory.max"
     );
     if let Ok(content) = fs::read_to_string(&path) {
@@ -414,10 +418,13 @@ fn detect_cgroup_v2_memory() -> Option<u64> {
 #[cfg(feature = "napi")]
 fn detect_cgroup_v1_memory() -> Option<u64> {
     let mountinfo = fs::read_to_string("/proc/self/mountinfo").ok();
-    let mount_point = mountinfo
+    let mount = mountinfo
         .as_deref()
         .and_then(|m| parse_cgroup1_mount_point(m, "memory"))
-        .unwrap_or_else(|| "/sys/fs/cgroup/memory".to_string());
+        .unwrap_or_else(|| CgroupMount {
+            mount_point: "/sys/fs/cgroup/memory".to_string(),
+            root: "/".to_string(),
+        });
 
     let rel_path = fs::read_to_string("/proc/self/cgroup")
         .ok()
@@ -425,10 +432,11 @@ fn detect_cgroup_v1_memory() -> Option<u64> {
         .and_then(parse_cgroup1_memory_relative_path)
         .unwrap_or_default();
 
+    let rel = strip_mount_root(&mount.root, &rel_path);
     let path = format!(
         "{}/{}{}",
-        mount_point.trim_end_matches('/'),
-        rel_path,
+        mount.mount_point.trim_end_matches('/'),
+        rel.trim_start_matches('/'),
         "/memory.limit_in_bytes"
     );
 
@@ -483,7 +491,13 @@ fn detect_system_memory() -> Option<u64> {
 }
 
 #[cfg(feature = "napi")]
-fn parse_cgroup2_mount_point(mountinfo: &str) -> Option<String> {
+struct CgroupMount {
+    mount_point: String,
+    root: String,
+}
+
+#[cfg(feature = "napi")]
+fn parse_cgroup2_mount_point(mountinfo: &str) -> Option<CgroupMount> {
     for line in mountinfo.lines() {
         // fields: id parent major:minor root mountpoint opts ... - fstype ...
         // Example: 36 27 0:31 / /sys/fs/cgroup rw,relatime - cgroup2 cgroup2 rw
@@ -495,14 +509,17 @@ fn parse_cgroup2_mount_point(mountinfo: &str) -> Option<String> {
         }
         let pre_fields: Vec<&str> = pre.split_whitespace().collect();
         if pre_fields.len() >= 5 {
-            return Some(pre_fields[4].to_string());
+            return Some(CgroupMount {
+                root: pre_fields[3].to_string(),
+                mount_point: pre_fields[4].to_string(),
+            });
         }
     }
     None
 }
 
 #[cfg(feature = "napi")]
-fn parse_cgroup1_mount_point(mountinfo: &str, controller: &str) -> Option<String> {
+fn parse_cgroup1_mount_point(mountinfo: &str, controller: &str) -> Option<CgroupMount> {
     for line in mountinfo.lines() {
         let mut parts = line.split(" - ");
         let pre = parts.next()?;
@@ -512,7 +529,10 @@ fn parse_cgroup1_mount_point(mountinfo: &str, controller: &str) -> Option<String
         }
         let pre_fields: Vec<&str> = pre.split_whitespace().collect();
         if pre_fields.len() >= 5 {
-            return Some(pre_fields[4].to_string());
+            return Some(CgroupMount {
+                root: pre_fields[3].to_string(),
+                mount_point: pre_fields[4].to_string(),
+            });
         }
     }
     None
@@ -544,6 +564,24 @@ fn parse_cgroup1_memory_relative_path(content: &str) -> Option<String> {
         }
     }
     None
+}
+
+#[cfg(feature = "napi")]
+fn strip_mount_root(root: &str, rel: &str) -> String {
+    if root == "/" {
+        return rel.to_string();
+    }
+    let trimmed_root = root.trim_end_matches('/');
+    let rel_no_leading = rel.trim_start_matches('/');
+    let prefix = trimmed_root.trim_start_matches('/');
+    if rel_no_leading.starts_with(prefix) {
+        let stripped = rel_no_leading
+            .trim_start_matches(prefix)
+            .trim_start_matches('/');
+        stripped.to_string()
+    } else {
+        rel.to_string()
+    }
 }
 
 /// Non-NAPI builds: skip detection and return None (use fallback)
@@ -619,10 +657,9 @@ mod tests {
     #[test]
     fn test_parse_cgroup2_mount_point() {
         let sample = "36 27 0:31 / /sys/fs/cgroup rw,relatime - cgroup2 cgroup2 rw\n";
-        assert_eq!(
-            parse_cgroup2_mount_point(sample),
-            Some("/sys/fs/cgroup".to_string())
-        );
+        let mount = parse_cgroup2_mount_point(sample).unwrap();
+        assert_eq!(mount.mount_point, "/sys/fs/cgroup");
+        assert_eq!(mount.root, "/");
     }
 
     #[test]
@@ -633,6 +670,13 @@ mod tests {
             parse_cgroup1_memory_relative_path(sample),
             Some("/kubepods.slice/kubepods-besteffort.slice".to_string())
         );
+    }
+
+    #[test]
+    fn test_strip_mount_root_removes_duplicate() {
+        let root = "/docker/12345";
+        let rel = "/docker/12345/foo/bar";
+        assert_eq!(strip_mount_root(root, rel), "foo/bar");
     }
 
     #[test]
