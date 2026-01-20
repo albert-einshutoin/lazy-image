@@ -1072,6 +1072,9 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.9.0 | Streaming architecture, EXIF auto-orientation, Image Firewall, Quality metrics (SSIM/PSNR), Metrics API v1.0.0, Memory estimate model, Weighted semaphore, Golden test suite, Parallel resize, PNG compression with oxipng, Unified format detection, Cgroup detection, Fuzzing CI |
+| v0.8.7 | Telemetry metrics, Smart concurrency with auto memory cap detection, Performance optimizations |
+| v0.8.6 | Version bump to 0.8.6 |
 | v0.8.5 | Fixed CI compilation errors and improved --no-default-features build support |
 | v0.8.4 | Zero-copy memory mapping implementation: fromPath() and processBatch() use mmap for zero-copy file access |
 | v0.8.3 | Documentation: Updated README.md to document zero-copy memory mapping for processBatch() |
