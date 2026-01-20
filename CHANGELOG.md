@@ -9,6 +9,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - 2026-01-XX
+
+### Added
+- Streaming architecture for bounded-memory processing (#228, #239)
+  - Added `createStreamingPipeline()` function for disk-backed streaming processing
+  - Supports processing huge images without loading into memory
+  - Ideal for serverless and memory-constrained environments
+- EXIF auto-orientation enabled by default (#231)
+  - Images are automatically rotated based on EXIF orientation tag
+  - Use `autoOrient(false)` to opt-out
+- Image Firewall for production-ready input sanitization (#213, #175)
+  - Strict and lenient policies for protecting against decompression bombs
+  - Configurable limits for pixels, bytes, and processing time
+  - Automatic rejection of malicious images
+- Quality metrics (SSIM/PSNR) for image quality assessment (#173, #235)
+  - Added quality metrics calculation for benchmarking
+  - SSIM ≥ 0.995 and PSNR ≥ 40 dB quality gates
+- Metrics API v1.0.0 for production monitoring (#194, #234, #225, #182)
+  - Unified metrics schema with versioning
+  - Comprehensive performance tracking (decode, process, encode times)
+  - Memory usage and compression ratio tracking
+- Memory estimate model for intelligent resource management (#174, #233)
+  - Predicts memory usage before processing
+  - Helps prevent OOM in constrained environments
+- Weighted semaphore for memory backpressure (#227, #232)
+  - Prevents memory exhaustion during batch processing
+  - Automatic concurrency adjustment based on available memory
+- Golden test suite for regression testing (#230, #236)
+  - Ensures consistent output quality across versions
+  - Validates file size and visual quality
+- Parallel resize with Rayon for improved performance (#222)
+  - SIMD-accelerated parallel resizing
+  - Better utilization of multi-core CPUs
+- PNG compression with oxipng (#224, #148)
+  - Improved PNG file size optimization
+  - Better compression ratios for PNG outputs
+- Quality/effort/speed mapping for optimal encoder settings (#223, #185)
+  - Intelligent quality parameter mapping
+  - Format-specific optimization strategies
+- Unified format detection (#238)
+  - Consistent format detection across all entry points
+  - Improved reliability and performance
+- Cgroup detection for container memory limits (#191, #237)
+  - Automatic detection of container memory constraints
+  - Better concurrency management in Docker/Kubernetes
+- Fuzzing CI integration (#214, #179)
+  - Automated fuzzing tests in CI pipeline
+  - Improved security and stability
+- Property-based testing with proptest (#219, #177)
+  - Comprehensive test coverage
+  - Better edge case detection
+
+### Changed
+- Project positioning and documentation updates (#221, #160)
+  - Clarified positioning vs sharp
+  - Updated compatibility matrix
+- Improved error handling and error taxonomy (#171)
+  - Structured error codes for better error handling
+  - Clear error categories (UserError, CodecError, ResourceLimit, InternalBug)
+- Specified previously unspecified behavior (#220, #178)
+  - Documented edge cases and undefined behavior
+  - Improved API consistency
+
+### Fixed
+- EXIFパーサ依存をcrates.io配布の`kamadak-exif`に変更しビルド再現性を確保 (#231)
+- Fixed PNG ICC profile tests (#218, #164)
+- Fixed tests that were always passing (#217, #216)
+
+---
+
 ## [0.8.7] - 2026-01-13
 
 ### Added
@@ -259,7 +329,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.7...v0.9.0
+[0.8.7]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.6...v0.8.7
+[0.8.6]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.5...v0.8.6
+[0.8.5]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.4...v0.8.5
+[0.8.4]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.3...v0.8.4
+[0.8.3]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.2...v0.8.3
+[0.8.2]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.1...v0.8.2
+[0.8.1]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.9...v0.8.0
 [0.7.9]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/albert-einshutoin/lazy-image/compare/v0.7.7...v0.7.8

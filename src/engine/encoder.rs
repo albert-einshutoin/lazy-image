@@ -19,7 +19,13 @@ use crate::engine::MAX_DIMENSION;
 // rather than being converted to generic InternalBug errors.
 type EncoderResult<T> = std::result::Result<T, LazyImageError>;
 
-// Quality configuration helper
+/// 品質値(0-100)から各フォーマットのエンコード設定を導出するための
+/// センターオブトゥルース。品質帯域は以下で固定する (WebP の
+/// filter_strength だけは sharp 互換の 80/60 しきい値を保持):
+/// - High (>=85): 視覚品質重視、AVIF speed 6
+/// - Balanced (70-84): 画質と速度のバランス、AVIF speed 7
+/// - Fast (50-69): 速度寄り、AVIF speed 8
+/// - Fastest (<50): 最速優先、AVIF speed 9
 #[derive(Debug, Clone, Copy)]
 pub struct QualitySettings {
     quality: f32,
@@ -27,19 +33,41 @@ pub struct QualitySettings {
     fast_mode: bool, // Fast mode flag for JPEG encoding
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum QualityBand {
+    High,
+    Balanced,
+    Fast,
+    Fastest,
+}
+
 impl QualitySettings {
     pub fn new(quality: u8) -> Self {
+        let clamped = quality.min(100);
         Self {
-            quality: quality as f32,
+            quality: clamped as f32,
             fast_mode: false, // Default: high quality mode
         }
     }
 
     /// Create with fast mode option
     pub fn with_fast_mode(quality: u8, fast_mode: bool) -> Self {
+        let clamped = quality.min(100);
         Self {
-            quality: quality as f32,
+            quality: clamped as f32,
             fast_mode,
+        }
+    }
+
+    fn band(&self) -> QualityBand {
+        if self.quality >= 85.0 {
+            QualityBand::High
+        } else if self.quality >= 70.0 {
+            QualityBand::Balanced
+        } else if self.quality >= 50.0 {
+            QualityBand::Fast
+        } else {
+            QualityBand::Fastest
         }
     }
 
@@ -64,12 +92,10 @@ impl QualitySettings {
     }
 
     pub fn webp_sns_strength(&self) -> i32 {
-        if self.quality >= 85.0 {
-            50
-        } else if self.quality >= 70.0 {
-            70
-        } else {
-            80
+        match self.band() {
+            QualityBand::High => 50,
+            QualityBand::Balanced => 70,
+            QualityBand::Fast | QualityBand::Fastest => 80,
         }
     }
 
@@ -84,10 +110,9 @@ impl QualitySettings {
     }
 
     pub fn webp_filter_sharpness(&self) -> i32 {
-        if self.quality >= 85.0 {
-            2
-        } else {
-            0
+        match self.band() {
+            QualityBand::High => 2,
+            QualityBand::Balanced | QualityBand::Fast | QualityBand::Fastest => 0,
         }
     }
 
@@ -96,14 +121,11 @@ impl QualitySettings {
     // Updated to match Sharp's speed settings for better performance
     // Sharpに速度で追いつくためのアグレッシブな設定変更
     pub fn avif_speed(&self) -> i32 {
-        if self.quality >= 85.0 {
-            6 // High quality, slightly slower (was 4) - 2段階高速化
-        } else if self.quality >= 70.0 {
-            7 // Good balance (was 5) - 2段階高速化
-        } else if self.quality >= 50.0 {
-            8 // Fast (was 6) - 2段階高速化
-        } else {
-            9 // Fastest useful (was 7) - 2段階高速化
+        match self.band() {
+            QualityBand::High => 6, // High quality, slightly slower (was 4) - 2段階高速化
+            QualityBand::Balanced => 7, // Good balance (was 5) - 2段階高速化
+            QualityBand::Fast => 8, // Fast (was 6) - 2段階高速化
+            QualityBand::Fastest => 9, // Fastest useful (was 7) - 2段階高速化
         }
     }
 }
@@ -132,6 +154,7 @@ pub fn encode_jpeg_with_settings(
 ) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:jpeg", || {
         use std::borrow::Cow;
+        let quality = quality.min(100);
 
         // Zero-copy optimization: avoid conversion if already RGB8
         let rgb: Cow<'_, image::RgbImage> = match img {
@@ -269,10 +292,19 @@ pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| LazyImageError::encode_failed("png", format!("PNG encode failed: {e}")))?;
 
+        // oxipng で再圧縮してサイズを最適化（無劣化）
+        let mut options = oxipng::Options::from_preset(4);
+        // メタデータは保持する（特に ICC をストリップしない）
+        options.strip = oxipng::StripChunks::None;
+
+        let optimized = oxipng::optimize_from_memory(&buf, &options).map_err(|e| {
+            LazyImageError::encode_failed("png", format!("oxipng optimization failed: {e}"))
+        })?;
+
         if let Some(icc_data) = icc {
-            embed_icc_png(buf, icc_data)
+            embed_icc_png(optimized, icc_data)
         } else {
-            Ok(buf)
+            Ok(optimized)
         }
     })
 }
@@ -371,7 +403,8 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
     run_with_panic_policy("encode:avif", || {
         use std::borrow::Cow;
 
-        let settings = QualitySettings::new(quality);
+        let clamped_quality = quality.min(100);
+        let settings = QualitySettings::new(clamped_quality);
         let (width, height) = img.dimensions();
 
         let has_alpha = img.color().has_alpha();
@@ -435,7 +468,12 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         let capped = cmp::min(8, cpu_threads);
         let encoder_threads = cmp::max(2, capped) as i32;
 
-        encoder.configure(quality, quality, settings.avif_speed(), encoder_threads);
+        encoder.configure(
+            clamped_quality,
+            clamped_quality,
+            settings.avif_speed(),
+            encoder_threads,
+        );
 
         let mut output = SafeAvifRwData::new();
 
@@ -698,6 +736,42 @@ mod tests {
             // 両方とも有効なAVIFであることを確認
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
+        }
+
+        #[test]
+        fn test_quality_band_mapping_boundaries() {
+            let high = QualitySettings::new(90);
+            let balanced = QualitySettings::new(75);
+            let fast = QualitySettings::new(60);
+            let fastest = QualitySettings::new(40);
+
+            assert_eq!(high.avif_speed(), 6);
+            assert_eq!(balanced.avif_speed(), 7);
+            assert_eq!(fast.avif_speed(), 8);
+            assert_eq!(fastest.avif_speed(), 9);
+        }
+
+        #[test]
+        fn test_quality_settings_webp_mapping_is_stable() {
+            let high = QualitySettings::new(90);
+            assert_eq!(high.webp_method(), 4);
+            assert_eq!(high.webp_pass(), 1);
+            assert_eq!(high.webp_sns_strength(), 50);
+            assert_eq!(high.webp_filter_strength(), 20);
+            assert_eq!(high.webp_filter_sharpness(), 2);
+
+            let balanced = QualitySettings::new(75);
+            assert_eq!(balanced.webp_sns_strength(), 70);
+            assert_eq!(balanced.webp_filter_strength(), 30);
+            assert_eq!(balanced.webp_filter_sharpness(), 0);
+
+            let fast = QualitySettings::new(60);
+            assert_eq!(fast.webp_sns_strength(), 80);
+            assert_eq!(fast.webp_filter_strength(), 30);
+
+            let fastest = QualitySettings::new(40);
+            assert_eq!(fastest.webp_sns_strength(), 80);
+            assert_eq!(fastest.webp_filter_strength(), 40);
         }
 
         #[test]

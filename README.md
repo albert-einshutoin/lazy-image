@@ -3,8 +3,12 @@
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/239496c7-ad7f-4649-b130-8ed0a65481f7" />
 
 > **Next-generation image processing engine for Node.js**
-> 
+>
 > Smaller files. Better quality. Memory-efficient. Powered by Rust + mozjpeg + AVIF.
+>
+> **Positioning**: lazy-image is an **opinionated web image optimization engine**.
+> It is **not a drop-in replacement for sharp**. If you need sharp-compatible APIs
+> or a broad image editing feature set, use sharp.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -14,6 +18,28 @@
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
 
 ---
+
+## 🎯 Positioning & Compatibility
+
+lazy-image focuses on **web image optimization**: smaller files, safe limits, and
+predictable behavior over feature breadth. It intentionally exposes a smaller API
+surface than sharp.
+
+**Compatibility at a glance**
+
+| Capability | lazy-image | sharp |
+| :--- | :--- | :--- |
+| Drop-in API compatibility | ❌ | ✅ |
+| Input formats | jpeg/jpg, png, webp | ✅ (broader) |
+| Output formats | jpeg/jpg, png, webp, avif | ✅ (broader) |
+| Resize / crop / rotate / flip | ✅ | ✅ |
+| Basic adjustments (grayscale/brightness/contrast) | ✅ | ✅ |
+| Compositing / rich filters | ❌ | ✅ |
+| Animated images | ❌ | ✅ |
+| Streaming pipeline | ❌ | ✅ |
+| Metadata handling | ICC only | ✅ (EXIF/XMP/etc) |
+
+For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
 
 ## 📊 Benchmark Results
 
@@ -116,7 +142,9 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 - 🏆 **AVIF support** - Next-gen format, 30% smaller than WebP
 - 🚀 **Smaller files** than sharp (mozjpeg + libwebp + ravif)
 - 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB)
+- 🔄 **EXIF auto-orientation** - Defaultで正しい向きに補正、`autoOrient(false)`で無効化可能
 - 💾 **Memory-efficient** - Direct file I/O bypasses Node.js heap
+- 🌊 **Streaming (bounded-memory, disk-backed)** - Process huge inputs via streams without heap blow-up
 - 🔗 **Fluent API** with method chaining
 - 📦 **Lazy pipeline** - operations are queued and executed in a single pass
 - 🔄 **Async/Promise-based** - doesn't block the event loop
@@ -348,6 +376,8 @@ Each format has an optimal default quality based on its compression characterist
 | **WebP** | 80 | 70-90 | Balanced quality and file size |
 | **AVIF** | 60 | 50-80 | High compression efficiency means lower quality still looks great |
 
+See `docs/QUALITY_EFFORT_SPEED_MAPPING.md` for the exact quality/effort/speed mapping and cross-format equivalence tables.
+
 **Why different defaults?**
 - **JPEG (85)**: JPEG benefits from higher quality to avoid compression artifacts
 - **WebP (80)**: WebP's superior compression allows good quality at 80
@@ -379,6 +409,8 @@ console.log(metrics);
 //   compressionRatio: 0.234  // outputSize / inputSize
 // }
 ```
+
+詳しい計測境界と保証事項は `docs/METRICS_CONTRACT.md` を参照してください。
 
 ### Batch Processing (v0.6.0+)
 
@@ -507,21 +539,47 @@ interface PresetResult {
 }
 
 interface ProcessingMetrics {
-  decodeTime: number;        // milliseconds
-  processTime: number;       // milliseconds
-  encodeTime: number;        // milliseconds
-  memoryPeak: number;        // bytes (RSS) - Note: represents cumulative max RSS of entire process, not just this operation
+  version: string;           // schema version, e.g. "1.0.0"
+  decodeMs: number;          // milliseconds
+  opsMs: number;             // milliseconds
+  encodeMs: number;          // milliseconds
+  totalMs: number;           // total wall clock (ms)
+  peakRss: number;           // bytes (RSS)
   cpuTime: number;           // seconds (user + system CPU time)
-  processingTime: number;    // seconds (wall clock time)
-  inputSize: number;         // bytes
-  outputSize: number;        // bytes
-  compressionRatio: number;  // outputSize / inputSize
+  processingTime: number;    // seconds (legacy wall clock field)
+  bytesIn: number;           // bytes
+  bytesOut: number;          // bytes
+  compressionRatio: number;  // bytesOut / bytesIn
+  formatIn?: string | null;  // detected input format (nullable)
+  formatOut: string;         // requested output format
+  iccPreserved: boolean;     // ICC profile preserved
+  metadataStripped: boolean; // metadata stripped (by default or policy)
+  policyViolations: string[];// non-fatal Image Firewall actions
+  // Legacy aliases preserved for compatibility
+  decodeTime: number;
+  processTime: number;
+  encodeTime: number;
+  memoryPeak: number;
+  inputSize: number;
+  outputSize: number;
 }
 
 interface OutputWithMetrics {
   data: Buffer;
   metrics: ProcessingMetrics;
 }
+
+## 品質メトリクス (SSIM/PSNR)
+
+lazy-image は sharp との品質パリティを維持するため、ベンチマークで以下の品質ゲートを設けています:
+
+- SSIM ≥ 0.995
+- PSNR ≥ 40 dB
+
+`npm run test:js` で実行されるベンチマーク (`test/benchmarks/sharp-comparison.bench.js`) は、同一条件で生成した sharp 出力と比較し、上記閾値を下回ると失敗します。  
+統合テスト `test/integration/quality-metrics.test.js` では品質メトリクス計算の健全性をスモークテストしています。
+
+※ 現時点では品質メトリクスは内部ベンチ・テスト専用です。アプリ側で品質指標を取得したい場合は別IssueでAPI公開を検討してください。
 
 interface BatchResult {
   source: string;
@@ -530,6 +588,8 @@ interface BatchResult {
   outputPath?: string;
 }
 ```
+
+Metrics payloads are versioned and validated. Refer to `docs/metrics-api.md` for field semantics and `docs/metrics-schema.json` for the formal JSON Schema.
 
 ---
 
@@ -587,6 +647,27 @@ try {
   }
 }
 ```
+
+#### Streaming (bounded-memory, disk-backed)
+
+```javascript
+const { createStreamingPipeline } = require('@alberteinshutoin/lazy-image');
+const fs = require('fs');
+
+const { writable, readable } = createStreamingPipeline({
+  format: 'jpeg',
+  quality: 82,
+  ops: [{ op: 'resize', width: 800, height: null, fit: 'inside' }],
+});
+
+fs.createReadStream('huge-input.jpg').pipe(writable);
+readable.pipe(fs.createWriteStream('output.jpg'));
+
+readable.on('finish', () => console.log('done'));
+readable.on('error', console.error);
+```
+
+> Note: This pipeline keeps memory使用を O(1) 近傍に抑えるため、一時ファイルを用いたストリーミングです。真の逐次エンコードが必要な場合も、APIはこのまま後方互換で拡張予定です。
 
 #### Rust
 
@@ -981,7 +1062,7 @@ Built on the shoulders of giants:
 - [mozjpeg](https://github.com/mozilla/mozjpeg) - Mozilla's JPEG encoder
 - [libwebp](https://chromium.googlesource.com/webm/libwebp) - Google's WebP codec
 - [ravif](https://github.com/kornelski/ravif) - Pure Rust AVIF encoder
-- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer
+- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer（`rayon` feature有効化で並列リサイズ）
 - [img-parts](https://github.com/paolobarbolini/img-parts) - Image container manipulation
 - [napi-rs](https://napi.rs/) - Rust bindings for Node.js
 
@@ -991,6 +1072,9 @@ Built on the shoulders of giants:
 
 | Version | Features |
 |---------|----------|
+| v0.9.0 | Streaming architecture, EXIF auto-orientation, Image Firewall, Quality metrics (SSIM/PSNR), Metrics API v1.0.0, Memory estimate model, Weighted semaphore, Golden test suite, Parallel resize, PNG compression with oxipng, Unified format detection, Cgroup detection, Fuzzing CI |
+| v0.8.7 | Telemetry metrics, Smart concurrency with auto memory cap detection, Performance optimizations |
+| v0.8.6 | Version bump to 0.8.6 |
 | v0.8.5 | Fixed CI compilation errors and improved --no-default-features build support |
 | v0.8.4 | Zero-copy memory mapping implementation: fromPath() and processBatch() use mmap for zero-copy file access |
 | v0.8.3 | Documentation: Updated README.md to document zero-copy memory mapping for processBatch() |

@@ -80,6 +80,16 @@ pub fn calc_resize_dimensions(
     }
 }
 
+fn validate_resize_dimensions(width: u32, height: u32) -> PipelineResult<()> {
+    if width == 0 || height == 0 {
+        return Err(LazyImageError::invalid_resize_dimensions(
+            Some(width),
+            Some(height),
+        ));
+    }
+    Ok(())
+}
+
 fn calc_cover_resize_dimensions(
     orig_w: u32,
     orig_h: u32,
@@ -268,6 +278,7 @@ pub fn apply_ops<'a>(
                 (ResizeFit::Fill, Some(w), Some(h)) => {
                     let target_w = *w;
                     let target_h = *h;
+                    validate_resize_dimensions(target_w, target_h)?;
                     if (target_w, target_h) == (img.width(), img.height()) {
                         img
                     } else {
@@ -280,6 +291,7 @@ pub fn apply_ops<'a>(
                     }
                 }
                 (ResizeFit::Cover, Some(target_w), Some(target_h)) => {
+                    validate_resize_dimensions(*target_w, *target_h)?;
                     if (*target_w, *target_h) == (img.width(), img.height()) {
                         img
                     } else {
@@ -300,6 +312,7 @@ pub fn apply_ops<'a>(
                 }
                 _ => {
                     let (w, h) = calc_resize_dimensions(img.width(), img.height(), *width, *height);
+                    validate_resize_dimensions(w, h)?;
                     if (w, h) == (img.width(), img.height()) {
                         img
                     } else {
@@ -319,6 +332,9 @@ pub fn apply_ops<'a>(
                 width,
                 height,
             } => {
+                if *width == 0 || *height == 0 {
+                    return Err(LazyImageError::invalid_crop_dimensions(*width, *height));
+                }
                 // Validate crop bounds
                 let img_w = img.width();
                 let img_h = img.height();
@@ -354,6 +370,20 @@ pub fn apply_ops<'a>(
             Operation::Contrast { value } => {
                 // image crate expects f32, convert from our -100..100 scale
                 img.adjust_contrast(*value as f32)
+            }
+
+            Operation::AutoOrient { orientation } => {
+                match orientation {
+                    1 => img,
+                    2 => img.fliph(),
+                    3 => img.rotate180(),
+                    4 => img.flipv(),
+                    5 => img.rotate90().fliph(), // transpose
+                    6 => img.rotate90(),
+                    7 => img.rotate270().fliph(), // transverse
+                    8 => img.rotate270(),
+                    _ => img, // Ignore invalid values silently
+                }
             }
 
             Operation::ColorSpace {
@@ -856,6 +886,36 @@ mod tests {
         }
 
         #[test]
+        fn test_auto_orient_rotate_90() {
+            let img = create_test_image(80, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 6 }]; // 6 = rotate 90 CW
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (40, 80));
+        }
+
+        #[test]
+        fn test_auto_orient_flip_horizontal() {
+            let img = create_test_image(10, 10);
+            let ops = vec![Operation::AutoOrient { orientation: 2 }]; // mirror horizontal
+            let result = apply_ops(Cow::Owned(img.clone()), &ops)
+                .unwrap()
+                .into_owned();
+
+            let original = img.to_rgb8();
+            let flipped = result.to_rgb8();
+            assert_eq!(original.width(), flipped.width());
+            assert_eq!(original.height(), flipped.height());
+            for y in 0..original.height() {
+                for x in 0..original.width() {
+                    assert_eq!(
+                        original.get_pixel(x, y),
+                        flipped.get_pixel(original.width() - 1 - x, y)
+                    );
+                }
+            }
+        }
+
+        #[test]
         fn test_flip_h() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::FlipH];
@@ -1137,14 +1197,45 @@ mod tests {
 
     #[test]
     fn test_fast_resize_internal_impl_errors_on_short_buffer() {
-        let res = fast_resize_internal_impl(
-            4,
-            4,
-            vec![0u8; 10],
-            PixelType::U8x3,
-            2,
-            2,
-        );
+        let res = fast_resize_internal_impl(4, 4, vec![0u8; 10], PixelType::U8x3, 2, 2);
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_fast_resize_uses_rayon_pool() {
+        // Ensure that fast_image_resize works correctly when executed inside a custom rayon pool.
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(2)
+            .build()
+            .expect("failed to build test pool");
+
+        pool.install(|| {
+            let src_width = 256;
+            let src_height = 256;
+            let dst_width = 64;
+            let dst_height = 64;
+
+            // Simple opaque RGBA pattern
+            let src_pixels: Vec<u8> = (0..(src_width * src_height))
+                .flat_map(|i| {
+                    let v = (i as u8).wrapping_mul(13);
+                    [v, v, v, 255]
+                })
+                .collect();
+
+            let result = fast_resize_internal_impl(
+                src_width,
+                src_height,
+                src_pixels,
+                PixelType::U8x4,
+                dst_width,
+                dst_height,
+            );
+
+            assert!(result.is_ok(), "resize failed inside rayon pool");
+            let img = result.unwrap();
+            assert_eq!(img.width(), dst_width);
+            assert_eq!(img.height(), dst_height);
+        });
     }
 }

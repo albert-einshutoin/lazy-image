@@ -5,16 +5,18 @@
 
 use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
-    check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, ensure_dimensions_safe,
+    check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
 use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::{extract_icc_profile, Source};
+use crate::engine::memory;
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "napi")]
 use crate::engine::pool;
 use crate::error::{ErrorCategory, LazyImageError};
 use crate::ops::{Operation, OutputFormat};
-use image::{DynamicImage, GenericImageView};
+use crate::PROCESSING_METRICS_VERSION;
+use image::{DynamicImage, GenericImageView, ImageFormat};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
@@ -23,9 +25,11 @@ use napi::{Env, JsBuffer, Task};
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::sync::Arc;
+use std::time::Instant;
 
 /// Resource usage information for telemetry
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+#[derive(Clone, Copy)]
 struct ResourceUsage {
     cpu_time: f64,   // User + system CPU time in seconds
     memory_rss: u64, // Resident set size in bytes
@@ -71,9 +75,129 @@ fn get_resource_usage() -> Option<ResourceUsage> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
+#[derive(Clone, Copy)]
 struct ResourceUsage {
     cpu_time: f64,
     memory_rss: u64,
+}
+
+#[derive(Default)]
+struct MetricsContext {
+    input_format: Option<String>,
+    output_format: String,
+    icc_preserved: bool,
+    metadata_stripped: bool,
+    policy_violations: Vec<String>,
+}
+
+fn detect_input_format(bytes: &[u8]) -> Option<String> {
+    detect_format(bytes).map(format_to_string)
+}
+
+fn format_to_string(fmt: ImageFormat) -> String {
+    match fmt {
+        ImageFormat::Jpeg => "jpeg",
+        ImageFormat::Png => "png",
+        ImageFormat::WebP => "webp",
+        ImageFormat::Avif => "avif",
+        ImageFormat::Gif => "gif",
+        ImageFormat::Bmp => "bmp",
+        ImageFormat::Ico => "ico",
+        ImageFormat::Tiff => "tiff",
+        other => other.to_mime_type(),
+    }
+    .to_string()
+}
+
+/// 統一的なメトリクス測定を行うヘルパー。
+/// decode -> process -> encode の各区間をミリ秒で計測し、
+/// CPU/メモリや入出力サイズも一箇所で設定する。
+struct MetricsRecorder<'m> {
+    metrics: Option<&'m mut crate::ProcessingMetrics>,
+    start_total: Instant,
+    stage_start: Instant,
+    usage_start: Option<ResourceUsage>,
+    input_size: u64,
+}
+
+impl<'m> MetricsRecorder<'m> {
+    fn new(metrics: Option<&'m mut crate::ProcessingMetrics>, input_size: u64) -> Self {
+        let now = Instant::now();
+        Self {
+            metrics,
+            start_total: now,
+            stage_start: now,
+            usage_start: get_resource_usage(),
+            input_size,
+        }
+    }
+
+    fn memory_usage_start(&self) -> Option<u64> {
+        self.usage_start.as_ref().map(|u| u.memory_rss)
+    }
+
+    fn mark_decode_done(&mut self) {
+        if let Some(m) = self.metrics.as_deref_mut() {
+            m.decode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.decode_time = m.decode_ms;
+            self.stage_start = Instant::now();
+        }
+    }
+
+    fn mark_process_done(&mut self) {
+        if let Some(m) = self.metrics.as_deref_mut() {
+            m.ops_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.process_time = m.ops_ms;
+            self.stage_start = Instant::now();
+        }
+    }
+
+    fn finalize(
+        &mut self,
+        processed_dims: (u32, u32),
+        output_len: usize,
+        usage_end: &Option<ResourceUsage>,
+        context: MetricsContext,
+    ) {
+        if let Some(m) = self.metrics.as_deref_mut() {
+            // encode 区間
+            m.encode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
+            m.encode_time = m.encode_ms;
+            // 全体
+            m.total_ms = self.start_total.elapsed().as_secs_f64() * 1000.0;
+            m.processing_time = m.total_ms / 1000.0;
+            m.version = PROCESSING_METRICS_VERSION.to_string();
+
+            // CPU / メモリ
+            if let (Some(start), Some(end)) = (self.usage_start.as_ref(), usage_end.as_ref()) {
+                m.cpu_time = (end.cpu_time - start.cpu_time).max(0.0);
+                m.peak_rss = end.memory_rss.min(u32::MAX as u64) as u32;
+            } else {
+                let (w, h) = processed_dims;
+                m.peak_rss =
+                    ((w as u64 * h as u64 * 4) + output_len as u64).min(u32::MAX as u64) as u32;
+            }
+            m.memory_peak = m.peak_rss;
+
+            // 入出力サイズと圧縮率
+            m.bytes_in = self.input_size.min(u32::MAX as u64) as u32;
+            m.bytes_out = (output_len as u64).min(u32::MAX as u64) as u32;
+            m.input_size = m.bytes_in;
+            m.output_size = m.bytes_out;
+            m.compression_ratio = if m.bytes_in > 0 {
+                m.bytes_out as f64 / m.bytes_in as f64
+            } else {
+                0.0
+            };
+
+            // 形式 & メタデータ
+            m.format_in = context.input_format;
+            m.format_out = context.output_format;
+            m.icc_preserved = context.icc_preserved;
+            m.metadata_stripped = context.metadata_stripped;
+            m.policy_violations = context.policy_violations;
+        }
+    }
 }
 
 // Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
@@ -113,9 +237,14 @@ pub(crate) struct EncodeTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    /// Whether the input originally had an ICC profile (even if stripped)
+    pub icc_present: bool,
+    pub auto_orient: bool,
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     pub keep_metadata: bool,
+    /// Whether the caller explicitly requested metadata preservation (before firewall rules)
+    pub keep_metadata_requested: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -166,14 +295,7 @@ impl EncodeTask {
 
         ensure_dimensions_safe(bytes)?;
 
-        // Check magic bytes for JPEG (0xFF 0xD8)
-        let img = if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
-            // JPEG detected - use mozjpeg for TURBO speed
-            decode_jpeg_mozjpeg(bytes)?
-        } else {
-            // PNG, WebP, etc - use image crate (guarded by panic policy)
-            decode_with_image_crate(bytes)?
-        };
+        let (img, _detected_format) = decode_image(bytes)?;
 
         // Security check: reject decompression bombs
         let (w, h) = img.dimensions();
@@ -202,32 +324,60 @@ impl EncodeTask {
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
     ) -> std::result::Result<Vec<u8>, LazyImageError> {
-        // Get initial resource usage for CPU time and memory tracking
-        let initial_usage = get_resource_usage();
-        let start_total = std::time::Instant::now();
-
         // Get input size from source
         // Use len() method which works for both Memory and Mapped sources
         let input_size = self.source.as_ref().map(|s| s.len() as u64).unwrap_or(0);
+        let input_bytes = self.source.as_ref().and_then(|s| s.as_bytes());
+        let input_format = input_bytes.and_then(detect_input_format);
+
+        // Memory backpressure: estimate before decode and acquire weighted permit
+        let estimated_memory = self
+            .source
+            .as_ref()
+            .and_then(|s| s.as_bytes())
+            .and_then(|bytes| {
+                memory::estimate_memory_from_header(bytes, &self.ops, Some(&self.format))
+            })
+            .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
+        let permit = memory::memory_semaphore().acquire(estimated_memory);
+        // keep guard alive for entire processing scope
+        let _permit_guard = permit;
+
+        // メトリクス測定を一元化
+        let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
+
+        // Pre-read orientation from EXIF header (before full decode)
+        let orientation = if self.auto_orient {
+            if let Some(bytes) = input_bytes {
+                // Enforce byte limit & metadata scan prior to EXIF解析 to honor firewall settings
+                self.firewall.enforce_source_len(bytes.len())?;
+                self.firewall.scan_metadata(bytes)?;
+                crate::engine::decoder::detect_exif_orientation(bytes)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         // 1. Decode
-        let start_decode = std::time::Instant::now();
         let img = self.decode_internal()?;
-        self.firewall.enforce_timeout(start_total, "decode")?;
-        if let Some(m) = metrics.as_deref_mut() {
-            m.decode_time = start_decode.elapsed().as_secs_f64() * 1000.0;
-        }
+        self.firewall
+            .enforce_timeout(metrics_recorder.start_total, "decode")?;
+        metrics_recorder.mark_decode_done();
 
         // 2. Apply operations
-        let start_process = std::time::Instant::now();
-        let processed = apply_ops(img, &self.ops)?;
-        self.firewall.enforce_timeout(start_total, "process")?;
-        if let Some(m) = metrics.as_deref_mut() {
-            m.process_time = start_process.elapsed().as_secs_f64() * 1000.0;
+        let mut effective_ops = self.ops.clone();
+        if let Some(o) = orientation {
+            // 挿入位置は最先頭: ユーザー指定オペレーションより前に正規化する
+            effective_ops.insert(0, Operation::AutoOrient { orientation: o });
         }
+        let processed = apply_ops(img, &effective_ops)?;
+        self.firewall
+            .enforce_timeout(metrics_recorder.start_total, "process")?;
+        metrics_recorder.mark_process_done();
 
         // 3. Encode - only preserve ICC profile if keep_metadata is true
-        let start_encode = std::time::Instant::now();
         let icc = if self.keep_metadata {
             self.icc_profile.as_ref().map(|v| v.as_slice())
         } else {
@@ -241,45 +391,40 @@ impl EncodeTask {
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
-        self.firewall.enforce_timeout(start_total, "encode")?;
+        self.firewall
+            .enforce_timeout(metrics_recorder.start_total, "encode")?;
 
-        // Get final resource usage
+        // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
-        let total_elapsed = start_total.elapsed();
-
-        if let Some(m) = metrics {
-            m.encode_time = start_encode.elapsed().as_secs_f64() * 1000.0;
-
-            // Calculate CPU time (difference between final and initial)
-            if let (Some(initial), Some(final_usage)) = (initial_usage, final_usage) {
-                m.cpu_time = (final_usage.cpu_time - initial.cpu_time).max(0.0);
-                // Use the maximum RSS seen during processing
-                // IMPORTANT: ru_maxrss represents the cumulative maximum RSS of the entire process,
-                // not just this operation. This is a limitation of getrusage() API.
-                // For accurate per-operation memory tracking, consider process-specific memory profiling.
-                // get_resource_usage() already converts to bytes (handles Linux KB vs macOS bytes)
-                m.memory_peak = (final_usage.memory_rss.min(u32::MAX as u64)) as u32;
-            } else {
-                // Fallback: estimate memory (rough) - prevent overflow
-                let (w, h) = processed.dimensions();
-                m.memory_peak =
-                    (w as u64 * h as u64 * 4 + result.len() as u64).min(u32::MAX as u64) as u32;
-            }
-
-            // Total processing time (wall clock)
-            m.processing_time = total_elapsed.as_secs_f64();
-
-            // Input and output sizes (clamp to u32::MAX for NAPI compatibility)
-            m.input_size = input_size.min(u32::MAX as u64) as u32;
-            m.output_size = (result.len() as u64).min(u32::MAX as u64) as u32;
-
-            // Compression ratio
-            if m.input_size > 0 {
-                m.compression_ratio = m.output_size as f64 / m.input_size as f64;
-            } else {
-                m.compression_ratio = 0.0;
-            }
+        memory::record_memory_observation(
+            estimated_memory,
+            metrics_recorder.memory_usage_start(),
+            final_usage.as_ref().map(|u| u.memory_rss),
+        );
+        let icc_present = self.icc_present;
+        let icc_preserved = self.keep_metadata && icc_present;
+        // metadata_stripped: true when source had ICC but we did not preserve it
+        let metadata_stripped = icc_present && !icc_preserved;
+        let metadata_blocked_by_policy =
+            self.keep_metadata_requested && self.firewall.reject_metadata && icc_present;
+        let mut policy_violations = Vec::new();
+        if metadata_blocked_by_policy {
+            policy_violations.push("firewall_rejected_metadata".to_string());
         }
+
+        let metrics_context = MetricsContext {
+            input_format,
+            output_format: self.format.as_str().to_string(),
+            icc_preserved,
+            metadata_stripped,
+            policy_violations,
+        };
+        metrics_recorder.finalize(
+            processed.dimensions(),
+            result.len(),
+            &final_usage,
+            metrics_context,
+        );
 
         Ok(result)
     }
@@ -331,7 +476,10 @@ pub(crate) struct EncodeWithMetricsTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
+    pub keep_metadata_requested: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -352,7 +500,10 @@ impl Task for EncodeWithMetricsTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            icc_present: self.icc_present,
+            auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
+            keep_metadata_requested: self.keep_metadata_requested,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -402,7 +553,10 @@ pub(crate) struct WriteFileTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
+    pub keep_metadata_requested: bool,
     pub firewall: FirewallConfig,
     pub output_path: String,
     /// Last error that occurred during compute (for use in reject)
@@ -427,7 +581,10 @@ impl Task for WriteFileTask {
             ops: self.ops.clone(),
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
+            icc_present: self.icc_present,
+            auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
+            keep_metadata_requested: self.keep_metadata_requested,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -518,6 +675,7 @@ pub(crate) struct BatchTask {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub concurrency: u32,
+    pub auto_orient: bool,
     pub keep_metadata: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
@@ -551,7 +709,6 @@ impl Task for BatchTask {
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
-                let start_total = std::time::Instant::now();
                 // Use memory mapping for zero-copy access (same as from_path)
                 use memmap2::Mmap;
                 use std::fs::File;
@@ -580,24 +737,38 @@ impl Task for BatchTask {
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
 
+                let estimated_memory =
+                    memory::estimate_memory_from_header(data, &ops, Some(format))
+                        .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
+                let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
+
+                let usage_start = get_resource_usage();
+                let start_total = std::time::Instant::now();
+
+                let orientation = if self.auto_orient {
+                    crate::engine::decoder::detect_exif_orientation(data)
+                } else {
+                    None
+                };
                 let icc_profile = if keep_metadata {
                     extract_icc_profile(data).map(Arc::new)
                 } else {
                     None
                 };
 
-                let img = if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
-                    decode_jpeg_mozjpeg(data)?
-                } else {
-                    decode_with_image_crate(data)?
-                };
+                let (img, _detected_format) = decode_image(data)?;
                 firewall.enforce_timeout(start_total, "decode")?;
 
                 let (w, h) = img.dimensions();
                 check_dimensions(w, h)?;
                 firewall.enforce_pixels(w, h)?;
 
-                let processed = apply_ops(Cow::Owned(img), ops)?;
+                let mut effective_ops = ops.clone();
+                if let Some(o) = orientation {
+                    effective_ops.insert(0, Operation::AutoOrient { orientation: o });
+                }
+
+                let processed = apply_ops(Cow::Owned(img), &effective_ops)?;
                 firewall.enforce_timeout(start_total, "process")?;
 
                 // Encode - only preserve ICC profile if keep_metadata is true
@@ -615,6 +786,13 @@ impl Task for BatchTask {
                     OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
                 firewall.enforce_timeout(start_total, "encode")?;
+
+                let usage_end = get_resource_usage();
+                memory::record_memory_observation(
+                    estimated_memory,
+                    usage_start.as_ref().map(|u| u.memory_rss),
+                    usage_end.as_ref().map(|u| u.memory_rss),
+                );
 
                 let filename = Path::new(input_path)
                     .file_name()

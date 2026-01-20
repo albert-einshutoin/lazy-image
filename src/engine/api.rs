@@ -47,6 +47,8 @@ pub struct ImageEngine {
     pub(crate) ops: Vec<Operation>,
     /// ICC color profile extracted from source image
     pub(crate) icc_profile: Option<Arc<Vec<u8>>>,
+    /// Whether to auto-apply EXIF Orientation (default: true)
+    pub(crate) auto_orient: bool,
     /// Whether to preserve ICC profile in output.
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// Default is false (strip all) for security and smaller file sizes.
@@ -76,6 +78,7 @@ impl ImageEngine {
             decoded: None,
             ops: Vec::new(),
             icc_profile,
+            auto_orient: true,
             keep_metadata: false, // Strip metadata by default for security & smaller files
             firewall: FirewallConfig::disabled(),
         }
@@ -134,6 +137,7 @@ impl ImageEngine {
             decoded: None,
             ops: Vec::new(),
             icc_profile,
+            auto_orient: true,
             keep_metadata: false, // Strip metadata by default for security & smaller files
             firewall: FirewallConfig::disabled(),
         })
@@ -147,6 +151,7 @@ impl ImageEngine {
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
             icc_profile: self.icc_profile.clone(),
+            auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
             firewall: self.firewall.clone(),
         })
@@ -227,6 +232,19 @@ impl ImageEngine {
     #[napi]
     pub fn grayscale(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
         self.ops.push(Operation::Grayscale);
+        this
+    }
+
+    /// Enable or disable EXIF auto-orientation (default: enabled).
+    /// `true` = apply EXIF Orientation automatically (sharp-compatible)
+    /// `false` = ignore EXIF Orientation
+    #[napi(js_name = "autoOrient")]
+    pub fn auto_orient(
+        &mut self,
+        this: Reference<ImageEngine>,
+        enabled: bool,
+    ) -> Reference<ImageEngine> {
+        self.auto_orient = enabled;
         this
     }
 
@@ -438,7 +456,10 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let keep_metadata_requested = self.keep_metadata;
+        let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
         let icc_profile = if keep_metadata {
             self.icc_profile.clone()
         } else {
@@ -451,7 +472,10 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            icc_present,
+            auto_orient,
             keep_metadata,
+            keep_metadata_requested,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -484,7 +508,10 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let keep_metadata_requested = self.keep_metadata;
+        let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
         let icc_profile = if keep_metadata {
             self.icc_profile.clone()
         } else {
@@ -497,7 +524,10 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            icc_present,
+            auto_orient,
             keep_metadata,
+            keep_metadata_requested,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -534,7 +564,10 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_metadata = self.keep_metadata && !self.firewall.reject_metadata;
+        let keep_metadata_requested = self.keep_metadata;
+        let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
         let icc_profile = if keep_metadata {
             self.icc_profile.clone()
         } else {
@@ -547,7 +580,10 @@ impl ImageEngine {
             ops,
             format: output_format,
             icc_profile,
+            icc_present,
+            auto_orient,
             keep_metadata,
+            keep_metadata_requested,
             firewall: self.firewall.clone(),
             output_path: path,
             #[cfg(feature = "napi")]
@@ -670,6 +706,7 @@ impl ImageEngine {
             format: output_format,
             concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
             keep_metadata: self.keep_metadata && !self.firewall.reject_metadata,
+            auto_orient: self.auto_orient,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -742,8 +779,8 @@ impl ImageEngine {
 
             crate::engine::decoder::ensure_dimensions_safe(bytes)?;
 
-            let img = crate::engine::decoder::decode_with_image_crate(bytes)
-                .map_err(napi::Error::from)?;
+            let (img, _detected_format) =
+                crate::engine::decoder::decode_image(bytes).map_err(napi::Error::from)?;
 
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();
@@ -789,7 +826,7 @@ impl ImageEngine {
 
             crate::engine::decoder::ensure_dimensions_safe(bytes)?;
 
-            let img = crate::engine::decoder::decode_with_image_crate(bytes)?;
+            let (img, _detected_format) = crate::engine::decoder::decode_image(bytes)?;
 
             // Security check: reject decompression bombs
             let (w, h) = img.dimensions();

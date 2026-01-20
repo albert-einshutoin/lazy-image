@@ -310,43 +310,41 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
+const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats, getErrorCategory: getErrorCategoryNative } = nativeBinding
 
-/**
- * Extract ErrorCategory from an error object created by lazy-image.
- * Returns null when the error is not from lazy-image.
- *
- * @param {Error|null|undefined} error - The error object to inspect
- * @returns {ErrorCategory|null} The error category or null
- */
-function getErrorCategory(error) {
-  if (!error) {
-    return null
-  }
+const ERROR_CODE_MAP = {
+  LAZY_IMAGE_USER_ERROR: () => ErrorCategory.UserError,
+  LAZY_IMAGE_CODEC_ERROR: () => ErrorCategory.CodecError,
+  LAZY_IMAGE_RESOURCE_LIMIT: () => ErrorCategory.ResourceLimit,
+  LAZY_IMAGE_INTERNAL_BUG: () => ErrorCategory.InternalBug,
+};
 
-  if (typeof error.category === 'number' && error.category >= 0 && error.category <= 3) {
-    return error.category
-  }
-
-  switch (error.code) {
-    case 'LAZY_IMAGE_USER_ERROR':
-      return ErrorCategory.UserError
-    case 'LAZY_IMAGE_CODEC_ERROR':
-      return ErrorCategory.CodecError
-    case 'LAZY_IMAGE_RESOURCE_LIMIT':
-      return ErrorCategory.ResourceLimit
-    case 'LAZY_IMAGE_INTERNAL_BUG':
-      return ErrorCategory.InternalBug
-    default:
-      return null
-  }
-}
+const getErrorCategory =
+  typeof getErrorCategoryNative === 'function'
+    ? getErrorCategoryNative
+    : (error) => {
+        if (!error || typeof error !== 'object') return null;
+        if (typeof error.category === 'number') return error.category;
+        if (typeof error.code === 'string' && ERROR_CODE_MAP[error.code]) {
+          return ERROR_CODE_MAP[error.code]();
+        }
+        return null;
+      };
 
 module.exports.ImageEngine = ImageEngine
 module.exports.ErrorCategory = ErrorCategory
-module.exports.getErrorCategory = getErrorCategory
 module.exports.inspect = inspect
 module.exports.inspectFile = inspectFile
 module.exports.version = version
 module.exports.supportedInputFormats = supportedInputFormats
 module.exports.supportedOutputFormats = supportedOutputFormats
+module.exports.getErrorCategory = getErrorCategory
+const { createStreamingPipeline: createStreamingPipelineInternal } = require('./streaming/pipeline')
+
+function createStreamingPipeline(options = {}) {
+  // inject ImageEngine here to avoid requiring index.js from streaming/pipeline (would create circular require)
+  const optsWithEngine = options.ImageEngine ? options : { ...options, ImageEngine }
+  return createStreamingPipelineInternal(optsWithEngine)
+}
+
+module.exports.createStreamingPipeline = createStreamingPipeline

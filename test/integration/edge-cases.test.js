@@ -6,8 +6,9 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const zlib = require('zlib');
 const { resolveRoot, resolveFixture, resolveTemp } = require('../helpers/paths');
-const { ImageEngine, inspect, inspectFile } = require(resolveRoot('index'));
+const { ImageEngine, inspect, inspectFile, ErrorCategory, getErrorCategory } = require(resolveRoot('index'));
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
 
@@ -38,6 +39,62 @@ async function asyncTest(name, fn) {
     }
 }
 
+function buildCrc32Table() {
+    const table = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) {
+            c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        }
+        table[i] = c >>> 0;
+    }
+    return table;
+}
+
+const CRC_TABLE = buildCrc32Table();
+
+function crc32(buf) {
+    let crc = 0xFFFFFFFF;
+    for (const byte of buf) {
+        crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ byte) & 0xFF];
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function pngChunk(type, data) {
+    const typeBuf = Buffer.from(type, 'ascii');
+    const lengthBuf = Buffer.alloc(4);
+    lengthBuf.writeUInt32BE(data.length, 0);
+    const crcBuf = Buffer.alloc(4);
+    const crc = crc32(Buffer.concat([typeBuf, data]));
+    crcBuf.writeUInt32BE(crc, 0);
+    return Buffer.concat([lengthBuf, typeBuf, data, crcBuf]);
+}
+
+function createGrayscalePng(width, height) {
+    const signature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+    const ihdr = Buffer.alloc(13);
+    ihdr.writeUInt32BE(width, 0);
+    ihdr.writeUInt32BE(height, 4);
+    ihdr[8] = 8; // bit depth
+    ihdr[9] = 0; // color type: grayscale
+    ihdr[10] = 0; // compression
+    ihdr[11] = 0; // filter
+    ihdr[12] = 0; // interlace
+
+    const rowSize = width + 1;
+    const raw = Buffer.alloc(rowSize * height);
+    for (let y = 0; y < height; y++) {
+        raw[y * rowSize] = 0; // filter type 0
+    }
+
+    const compressed = zlib.deflateSync(raw);
+    const ihdrChunk = pngChunk('IHDR', ihdr);
+    const idatChunk = pngChunk('IDAT', compressed);
+    const iendChunk = pngChunk('IEND', Buffer.alloc(0));
+    return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
+}
+
 async function runTests() {
     console.log('=== lazy-image Edge Cases & Security Tests ===\n');
     
@@ -48,26 +105,20 @@ async function runTests() {
     // SECURITY TESTS - Decompression bomb protection
     // ========================================================================
     
-    await asyncTest('rejects images exceeding MAX_DIMENSION (32768)', async () => {
-        // Test dimension validation - we verify the check exists without processing huge images
-        // The actual protection happens during decode via check_dimensions()
-        // We test with a reasonable size that won't cause timeout/memory issues
-        // The real validation is tested in Rust unit tests (tests/edge_cases.rs)
+    await asyncTest('rejects images exceeding MAX_DIMENSION via ImageEngine.from()', async () => {
+        const maxDimension = 32768;
+        const oversized = createGrayscalePng(maxDimension + 1, 1);
         let threw = false;
         try {
-            // Use a size that's large but still reasonable for CI environments
-            // The dimension check happens during decode, not during resize operation
-            const largeSize = 35000; // Exceeds MAX_DIMENSION of 32768
-            await ImageEngine.from(buffer)
-                .resize(largeSize, largeSize)
-                .toBuffer('jpeg', 80);
+            await ImageEngine.from(oversized).toBuffer('jpeg', 80);
         } catch (e) {
             threw = true;
-            // Should fail during decode if dimensions exceed limit
+            assert(
+                e.message.includes('exceeds maximum') || e.message.includes('exceeds max'),
+                `unexpected error: ${e.message}`
+            );
         }
-        // Note: Resize operation itself doesn't validate dimensions,
-        // but decode() will catch it via check_dimensions()
-        // This test verifies the error handling path exists
+        assert(threw, 'should throw error for oversized dimensions');
     });
     
     // ========================================================================
@@ -198,16 +249,24 @@ async function runTests() {
         assert(result.length > 0, 'should handle negative rotation');
     });
     
-    await asyncTest('handles rotation 360 (equivalent to 0)', async () => {
-        // 360 should be treated as invalid or equivalent to 0
+    await asyncTest('rejects rotation 360 (invalid angle)', async () => {
+        // 360度は無効な角度なのでエラーになるべき
+        // 実装では0, 90, 180, 270, -90, -180, -270のみサポート
         let threw = false;
         try {
             await ImageEngine.from(buffer).rotate(360).toBuffer('jpeg', 80);
         } catch (e) {
             threw = true;
+            assert(
+                e.message.includes('rotation') || 
+                e.message.includes('angle') || 
+                e.message.includes('360') ||
+                e.message.includes('Unsupported'),
+                `error should mention rotation/angle: ${e.message}`
+            );
         }
-        // Either should work (if normalized) or throw error (if not supported)
-        // Both behaviors are acceptable
+        // ✅ Fix: Verify that error was thrown for invalid rotation angle
+        assert(threw, 'should throw error for invalid rotation angle 360');
     });
     
     // ========================================================================
@@ -240,22 +299,29 @@ async function runTests() {
     // EDGE CASES - File I/O
     // ========================================================================
     
-    await asyncTest('toFile() handles non-existent parent directory', async () => {
+    await asyncTest('toFile() rejects non-existent parent directory', async () => {
+        // toFile()は親ディレクトリを作成しない（src/engine/tasks.rs:446-455）
+        // 存在しない親ディレクトリへの書き込みはエラーになるべき
         const testDir = resolveTemp('nonexistent_dir');
         const outPath = path.join(testDir, 'test_output.jpg');
         let threw = false;
+        let errorMessage = '';
         try {
             await ImageEngine.from(buffer).resize(100).toFile(outPath, 'jpeg', 80);
         } catch (e) {
             threw = true;
+            errorMessage = e.message;
+            // エラーメッセージにディレクトリ関連の文字列が含まれることを確認
+            assert(
+                errorMessage.includes('directory') || 
+                errorMessage.includes('path') || 
+                errorMessage.includes('not found') ||
+                errorMessage.includes('No such file'),
+                `error should mention directory/path issue: ${errorMessage}`
+            );
         }
-        // Should either create directory or throw error - both are acceptable
-        if (!threw && fs.existsSync(outPath)) {
-            fs.unlinkSync(outPath);
-            if (fs.existsSync(testDir)) {
-                fs.rmdirSync(testDir);
-            }
-        }
+        // ✅ Fix: Verify that error was thrown when parent directory does not exist
+        assert(threw, 'should throw error when parent directory does not exist');
     });
     
     // ========================================================================
@@ -283,19 +349,24 @@ async function runTests() {
         }
     });
     
-    await asyncTest('processBatch handles invalid concurrency (0)', async () => {
+    await asyncTest('processBatch accepts concurrency 0 (uses default)', async () => {
+        // concurrency=0は有効で、デフォルトのスレッドプールを使用する
+        // src/engine/tasks.rs:699-701でauto-detectされる
         const engine = ImageEngine.from(buffer).resize(100);
-        const testDir = resolveTemp('test_batch_concurrency');
-        let threw = false;
+        const testDir = resolveTemp('test_batch_concurrency_0');
         try {
-            // Concurrency 0 should use default (CPU cores), but we test edge case
-            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 0);
-        } catch (e) {
-            threw = true;
-        }
-        // Should either work (0 = default) or throw error - both acceptable
-        if (!threw) {
-            // Cleanup
+            const results = await engine.processBatch(
+                [TEST_IMAGE], 
+                testDir, 
+                'jpeg', 
+                80, 
+                undefined, 
+                0  // concurrency=0は有効
+            );
+            assert(results.length === 1, 'should process 1 image');
+            assert(results[0].success, 'should succeed with concurrency=0');
+        } finally {
+            // ✅ Fix: Verify success and cleanup
             if (fs.existsSync(testDir)) {
                 try {
                     fs.readdirSync(testDir).forEach(file => {
@@ -309,28 +380,43 @@ async function runTests() {
         }
     });
     
-    await asyncTest('processBatch handles very high concurrency', async () => {
+    await asyncTest('processBatch rejects concurrency > 1024 (InternalBug)', async () => {
+        // concurrency > MAX_CONCURRENCY (1024) は必ずエラーになる
+        // src/engine/tasks.rs:688-695でinternal_panicエラーになる
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_high_concurrency');
         let threw = false;
-        let errorMsg = '';
+        let errorMessage = '';
+        let category = null;
+        
         try {
-            // Concurrency > 1024 should be rejected or clamped
+            // Concurrency > 1024 should be rejected
             await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 2000);
         } catch (e) {
             threw = true;
-            errorMsg = e.message;
+            errorMessage = e.message;
+            category = getErrorCategory(e);
+            
+            // エラーメッセージにconcurrency関連の文字列が含まれることを確認
+            assert(
+                errorMessage.includes('concurrency') || 
+                errorMessage.includes('invalid') ||
+                errorMessage.includes('1024'),
+                `error should mention concurrency limit: ${errorMessage}`
+            );
+            
+            // ✅ Fix: カテゴリはInternalBugになる（必ず設定されるべき）
+            assert(category !== null, 'error category should be set (not null)');
+            assert(
+                category === ErrorCategory.InternalBug,
+                `error category should be InternalBug, got: ${category}`
+            );
         }
-        // Either should reject with error OR silently clamp to reasonable value
-        // Both behaviors are acceptable for production use
-        if (threw) {
-            assert(errorMsg.includes('concurrency') || errorMsg.includes('invalid'), 
-                'should mention concurrency error');
-        } else {
-            // If not rejected, it should still work (clamped internally)
-            // This is acceptable behavior
-        }
-        // Cleanup
+        
+        // ✅ Fix: Verify that error was thrown
+        assert(threw, 'should throw error for concurrency > 1024');
+        
+        // クリーンアップ（エラーが発生した場合はファイルが作成されていないはず）
         if (fs.existsSync(testDir)) {
             try {
                 fs.readdirSync(testDir).forEach(file => {
@@ -355,27 +441,61 @@ async function runTests() {
         assert(result.data, 'should have data');
         assert(result.metrics, 'should have metrics');
         
-        // Original metrics
-        assert(typeof result.metrics.decodeTime === 'number', 'decodeTime should be number');
-        assert(typeof result.metrics.processTime === 'number', 'processTime should be number');
-        assert(typeof result.metrics.encodeTime === 'number', 'encodeTime should be number');
-        assert(typeof result.metrics.memoryPeak === 'number', 'memoryPeak should be number');
-        assert(result.metrics.decodeTime >= 0, 'decodeTime should be non-negative');
-        assert(result.metrics.processTime >= 0, 'processTime should be non-negative');
-        assert(result.metrics.encodeTime >= 0, 'encodeTime should be non-negative');
-        assert(result.metrics.memoryPeak > 0, 'memoryPeak should be positive');
-        
-        // New telemetry metrics
+        assert.strictEqual(result.metrics.version, '1.0.0', 'version should be set');
+
+        // Productized fields
+        assert(typeof result.metrics.decodeMs === 'number', 'decodeMs should be number');
+        assert(typeof result.metrics.opsMs === 'number', 'opsMs should be number');
+        assert(typeof result.metrics.encodeMs === 'number', 'encodeMs should be number');
+        assert(typeof result.metrics.totalMs === 'number', 'totalMs should be number');
+        assert(result.metrics.decodeMs >= 0, 'decodeMs should be non-negative');
+        assert(result.metrics.opsMs >= 0, 'opsMs should be non-negative');
+        assert(result.metrics.encodeMs >= 0, 'encodeMs should be non-negative');
+        assert(result.metrics.totalMs >= 0, 'totalMs should be non-negative');
+        assert(typeof result.metrics.peakRss === 'number', 'peakRss should be number');
+        assert(result.metrics.peakRss > 0, 'peakRss should be positive');
+        assert(typeof result.metrics.bytesIn === 'number', 'bytesIn should be number');
+        assert(typeof result.metrics.bytesOut === 'number', 'bytesOut should be number');
+        assert(result.metrics.bytesIn > 0, 'bytesIn should be positive');
+        assert(result.metrics.bytesOut > 0, 'bytesOut should be positive');
+        assert(typeof result.metrics.formatOut === 'string', 'formatOut should be string');
+        // formatIn may be null if format detection fails, or a string if detected
+        assert(result.metrics.formatIn === null || typeof result.metrics.formatIn === 'string', 'formatIn should be null or string');
+        assert(Array.isArray(result.metrics.policyViolations), 'policyViolations should be array');
+        assert(typeof result.metrics.metadataStripped === 'boolean', 'metadataStripped boolean');
+        assert(typeof result.metrics.iccPreserved === 'boolean', 'iccPreserved boolean');
+        // metadata_stripped = true when metadata is not preserved (default behavior)
+        // icc_preserved = true when metadata exists and is preserved
+        // They should be mutually exclusive: if metadata is preserved, it's not stripped
+        if (result.metrics.iccPreserved) {
+            assert.strictEqual(result.metrics.metadataStripped, false, 
+                'if iccPreserved is true, metadataStripped should be false');
+        }
+
+        // Legacy aliases
+        assert.strictEqual(result.metrics.decodeTime, result.metrics.decodeMs);
+        assert.strictEqual(result.metrics.processTime, result.metrics.opsMs);
+        assert.strictEqual(result.metrics.encodeTime, result.metrics.encodeMs);
+        assert.strictEqual(result.metrics.memoryPeak, result.metrics.peakRss);
+        assert.strictEqual(result.metrics.inputSize, result.metrics.bytesIn);
+        assert.strictEqual(result.metrics.outputSize, result.metrics.bytesOut);
+
+        // Telemetry
         assert(typeof result.metrics.cpuTime === 'number', 'cpuTime should be number');
         assert(typeof result.metrics.processingTime === 'number', 'processingTime should be number');
-        assert(typeof result.metrics.inputSize === 'number', 'inputSize should be number');
-        assert(typeof result.metrics.outputSize === 'number', 'outputSize should be number');
         assert(typeof result.metrics.compressionRatio === 'number', 'compressionRatio should be number');
         assert(result.metrics.cpuTime >= 0, 'cpuTime should be non-negative');
         assert(result.metrics.processingTime >= 0, 'processingTime should be non-negative');
-        assert(result.metrics.inputSize > 0, 'inputSize should be positive');
-        assert(result.metrics.outputSize > 0, 'outputSize should be positive');
         assert(result.metrics.compressionRatio >= 0, 'compressionRatio should be non-negative');
+
+        // Contract: processingTime should encompass decode+process+encode (same Instant baseline)
+        const stageMs = result.metrics.decodeMs + result.metrics.opsMs + result.metrics.encodeMs;
+        const totalMs = result.metrics.totalMs;
+        assert(stageMs > 0, 'sum of decode/process/encode should be positive');
+        assert(
+            totalMs + 5 >= stageMs,
+            'processingTime must include decode+process+encode (allow slight scheduling drift)'
+        );
     });
 
     await asyncTest('toBufferWithMetrics handles input_size=0 gracefully', async () => {
@@ -387,12 +507,12 @@ async function runTests() {
             .toBufferWithMetrics('jpeg', 80);
         
         // input_size should be positive for valid buffer source
-        assert(metrics.inputSize > 0, 'inputSize should be positive for buffer source');
-        assert(metrics.outputSize > 0, 'outputSize should be positive');
+        assert(metrics.bytesIn > 0, 'bytesIn should be positive for buffer source');
+        assert(metrics.bytesOut > 0, 'bytesOut should be positive');
         assert(metrics.compressionRatio > 0, 'compressionRatio should be positive');
         
         // Verify compressionRatio calculation
-        const expectedRatio = metrics.outputSize / metrics.inputSize;
+        const expectedRatio = metrics.bytesOut / metrics.bytesIn;
         assert(Math.abs(metrics.compressionRatio - expectedRatio) < 0.0001, 
             'compressionRatio should equal outputSize / inputSize');
     });

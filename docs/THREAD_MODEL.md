@@ -8,6 +8,7 @@ lazy-image uses two thread pools:
 
 1. **libuv thread pool** (Node.js) - for I/O operations
 2. **rayon thread pool** (Rust) - for CPU-bound image processing
+   - **fast_image_resize also uses rayon** when its `rayon` feature is enabled (default in this repo). When resize runs inside `processBatch()` we wrap work in our global pool, so fast_image_resize reuses that pool (no二重スレッド). 単発の`toBuffer()`呼び出しはlibuvワーカー上で実行されるため、グローバルrayonプール（デフォルト設定）のみを消費し、オーバーサブスクライブしづらい構成になっています。
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -244,6 +245,7 @@ The default behavior of `processBatch()` now automatically balances thread pools
 **Remaining considerations**:
 - For batch processing, prefer `processBatch()` (pure rayon) over parallel `Promise.all()` with many `toBuffer()` calls
 - In containerized environments, still recommend explicit `concurrency` parameter
+- fast_image_resize の内部並列は「現在アクティブなrayonプール」を利用します。`processBatch()`ではグローバルプール内でresizeを実行するためプールは共有されます。もし独自に`rayon::ThreadPoolBuilder::new().build_global()`を呼んでいる場合は、プールを一つに統一することで二重プールによるオーバーサブスクライブを防げます。
 
 ## References
 

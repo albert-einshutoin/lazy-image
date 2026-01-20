@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.8.7"
+version = "0.9.0"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
@@ -30,9 +30,14 @@ image = { version = "0.25", default-features = false, features = [
     "png",
     "webp",
 ] }
+# EXIFパース（Orientationタグ抽出用）
+exif = { package = "kamadak-exif", version = "0.6.1" }
+# PNG optimization
+oxipng = "9.1"
 
 # SIMD-accelerated image resizing - this is where we catch libvips
-fast_image_resize = "5"
+# Enable rayon feature to allow parallel resize paths
+fast_image_resize = { version = "5", features = ["rayon"] }
 
 # High-quality JPEG encoding - the core of our advantage over sharp
 mozjpeg = "0.10"
@@ -46,6 +51,9 @@ libavif-sys = { version = "0.17", default-features = false, features = ["codec-r
 
 # ICC profile extraction from image containers
 img-parts = "0.3"
+
+# Compression for PNG ICC chunks (used in extract_icc_from_png_direct)
+flate2 = "1.0"
 
 # Temporary file handling
 tempfile = "3.10"
@@ -71,8 +79,7 @@ tikv-jemallocator = { version = "0.6", optional = true, features = ["disable_ini
 
 [dev-dependencies]
 criterion = "0.5"
-# Compression for PNG ICC chunks (test only - used in extract_icc_from_png_direct)
-flate2 = "1.0"
+proptest = "1.4"
 
 [[bench]]
 name = "benchmark"

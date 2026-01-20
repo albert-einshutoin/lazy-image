@@ -4,9 +4,10 @@
 
 use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
+use exif;
 #[cfg(test)]
 use image::GenericImageView;
-use image::{DynamicImage, ImageReader, RgbImage};
+use image::{DynamicImage, ImageFormat, ImageReader, RgbImage};
 use mozjpeg::Decompress;
 use std::io::Cursor;
 
@@ -24,6 +25,12 @@ type DecoderResult<T> = std::result::Result<T, LazyImageError>;
 /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
 pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:mozjpeg", || {
+        if !data.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
+            return Err(LazyImageError::decode_failed(
+                "mozjpeg: missing JPEG EOI marker",
+            ));
+        }
+
         let decompress = Decompress::new_mem(data).map_err(|e| {
             LazyImageError::decode_failed(format!("mozjpeg decompress init failed: {e:?}"))
         })?;
@@ -72,6 +79,24 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
     })
 }
 
+/// Detect input format using magic bytes. Returns None if unknown.
+pub fn detect_format(bytes: &[u8]) -> Option<ImageFormat> {
+    image::guess_format(bytes).ok()
+}
+
+/// Unified decode entrypoint:
+/// - Detect format once (magic bytes)
+/// - Route JPEG to mozjpeg, others to image crate
+/// - Return decoded image and detected format
+pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFormat>)> {
+    let detected = detect_format(bytes);
+    let img = match detected {
+        Some(ImageFormat::Jpeg) => decode_jpeg_mozjpeg(bytes)?,
+        _ => decode_with_image_crate(bytes)?,
+    };
+    Ok((img, detected))
+}
+
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
 pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
@@ -102,6 +127,22 @@ pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
     Ok(())
 }
 
+/// Extract EXIF Orientation tag (1-8). Returns None if missing or invalid.
+pub fn detect_exif_orientation(bytes: &[u8]) -> Option<u16> {
+    let mut cursor = Cursor::new(bytes);
+    let exif_reader = exif::Reader::new();
+    let exif = exif_reader.read_from_container(&mut cursor).ok()?;
+    let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
+    // exif crate can represent as Short/Long; use get_uint for safety
+    let value = field.value.get_uint(0)?;
+    let orientation = value as u16;
+    if (1..=8).contains(&orientation) {
+        Some(orientation)
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -128,5 +169,42 @@ mod tests {
         let data = encode_png(width, 1);
         let err = ensure_dimensions_safe(&data).unwrap_err();
         assert!(matches!(err, LazyImageError::DimensionExceedsLimit { .. }));
+    }
+
+    #[test]
+    fn test_detect_format_jpeg_and_png() {
+        let png = encode_png(2, 2);
+        let jpeg = {
+            let mut buf = Vec::new();
+            DynamicImage::ImageRgb8(RgbImage::from_pixel(2, 2, Rgb([1, 2, 3])))
+                .write_to(&mut Cursor::new(&mut buf), ImageFormat::Jpeg)
+                .unwrap();
+            buf
+        };
+        assert_eq!(detect_format(&png), Some(ImageFormat::Png));
+        assert_eq!(detect_format(&jpeg), Some(ImageFormat::Jpeg));
+    }
+
+    #[test]
+    fn test_decode_image_routes_by_format() {
+        let png = encode_png(2, 2);
+        let (img_png, fmt_png) = decode_image(&png).unwrap();
+        assert_eq!(fmt_png, Some(ImageFormat::Png));
+        assert_eq!(img_png.dimensions(), (2, 2));
+    }
+
+    #[test]
+    fn test_decode_image_routes_jpeg_to_mozjpeg() {
+        // Create a tiny JPEG via image crate; detect_format should see JPEG and route to mozjpeg
+        let jpeg = {
+            let mut buf = Vec::new();
+            DynamicImage::ImageRgb8(RgbImage::from_pixel(2, 2, Rgb([9, 8, 7])))
+                .write_to(&mut Cursor::new(&mut buf), ImageFormat::Jpeg)
+                .unwrap();
+            buf
+        };
+        let (img, fmt) = decode_image(&jpeg).unwrap();
+        assert_eq!(fmt, Some(ImageFormat::Jpeg));
+        assert_eq!(img.dimensions(), (2, 2));
     }
 }

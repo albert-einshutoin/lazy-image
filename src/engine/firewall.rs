@@ -124,7 +124,11 @@ impl FirewallConfig {
                 return Err(LazyImageError::firewall_violation(format!(
                     "Image Firewall: {}x{} ({} pixels) exceeds limit of {} pixels. \
                      Resize the image first with .resize() or use .limits({{ maxPixels: {} }}).",
-                    width, height, pixels, limit, pixels + 1_000_000
+                    width,
+                    height,
+                    pixels,
+                    limit,
+                    pixels + 1_000_000
                 )));
             }
         }

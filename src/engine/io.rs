@@ -197,14 +197,15 @@ pub(crate) fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
 pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
     use img_parts::Bytes;
     // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
-    let png = Png::from_bytes(Bytes::copy_from_slice(data)).ok()?;
-    png.icc_profile().map(|icc| icc.to_vec())
+    let img_parts_icc = Png::from_bytes(Bytes::copy_from_slice(data))
+        .ok()
+        .and_then(|png| png.icc_profile().map(|icc| icc.to_vec()));
+
+    img_parts_icc.or_else(|| extract_icc_from_png_direct(data))
 }
 
 /// Extract ICC profile from PNG iCCP chunk by directly parsing PNG structure
-/// This is used for testing to verify that ICC chunks are actually present in PNG files,
-/// even when img-parts cannot extract them.
-#[cfg(test)]
+/// This provides a deterministic fallback when img-parts cannot extract the profile.
 pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
     use flate2::read::ZlibDecoder;
     use std::io::Read;
@@ -595,12 +596,12 @@ mod tests {
 
             #[test]
             fn test_extract_icc_from_png_with_profile() {
-                // PNG ICC extraction: img-parts can now extract ICC profiles from PNG iCCP chunks
-                // when they are embedded using the correct format (raw ICC profile data).
+                // PNG ICC extraction should succeed for valid iCCP chunks.
+                // The direct parser fallback keeps this deterministic across environments.
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
                 let extracted = extract_icc_profile(&png);
-                // PNG ICC extraction should now work with img-parts
+                // PNG ICC extraction should return Some when ICC profile is embedded correctly
                 assert!(
                     extracted.is_some(),
                     "PNG ICC extraction should return Some when ICC profile is embedded correctly"
@@ -777,11 +778,11 @@ mod tests {
             #[test]
             fn test_cross_format_roundtrip_png_to_webp() {
                 // Test that ICC profile is preserved when converting PNG to WebP
-                // Since img-parts cannot extract ICC from PNG, we use direct parsing
+                // Use direct parsing to assert the iCCP chunk deterministically
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
 
-                // Extract ICC from PNG using direct parsing (img-parts limitation)
+                // Extract ICC from PNG using direct parsing
                 let extracted_icc = extract_icc_from_png_direct(&png);
                 assert!(
                     extracted_icc.is_some(),

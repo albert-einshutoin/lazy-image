@@ -43,7 +43,7 @@ export interface BatchResult {
  * - ResourceLimit: Memory/time/dimension limits
  * - InternalBug: Library bugs (should not happen)
  */
-export enum ErrorCategory {
+export const enum ErrorCategory {
   /** Invalid input, recoverable by user */
   UserError = 0,
   /** Format/encoding issues */
@@ -76,11 +76,6 @@ export declare function inspect(buffer: Buffer): ImageMetadata
  * This is the recommended way for server-side metadata inspection.
  */
 export declare function inspectFile(path: string): ImageMetadata
-/**
- * Extract ErrorCategory from an error object created by lazy-image.
- * Returns null when the error is not from lazy-image.
- */
-export declare function getErrorCategory(error: unknown): ErrorCategory | null
 /** Get library version */
 export declare function version(): string
 /** Get supported input formats */
@@ -89,12 +84,16 @@ export declare function supportedInputFormats(): Array<string>
 export declare function supportedOutputFormats(): Array<string>
 /** Processing metrics for performance monitoring */
 export interface ProcessingMetrics {
-  /** Time taken to decode the image (milliseconds) */
-  decodeTime: number
-  /** Time taken to apply all operations (milliseconds) */
-  processTime: number
-  /** Time taken to encode the image (milliseconds) */
-  encodeTime: number
+  /** Schema version for compatibility negotiation */
+  version: string
+  /** Decode stage duration in milliseconds */
+  decodeMs: number
+  /** Ops (transform) stage duration in milliseconds */
+  opsMs: number
+  /** Encode stage duration in milliseconds */
+  encodeMs: number
+  /** Total wall-clock duration in milliseconds */
+  totalMs: number
   /**
    * Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
    *
@@ -103,17 +102,39 @@ export interface ProcessingMetrics {
    * This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
    * consider using process-specific memory profiling tools.
    */
-  memoryPeak: number
+  peakRss: number
   /** Total CPU time (user + system) in seconds */
   cpuTime: number
-  /** Total processing time (wall clock) in seconds */
+  /** Total processing time (wall clock) in seconds (legacy seconds field) */
   processingTime: number
   /** Input file size in bytes (as u32 for NAPI compatibility, max 4GB) */
-  inputSize: number
+  bytesIn: number
   /** Output file size in bytes (as u32 for NAPI compatibility, max 4GB) */
-  outputSize: number
-  /** Compression ratio (output_size / input_size) */
+  bytesOut: number
+  /** Compression ratio (bytes_out / bytes_in) */
   compressionRatio: number
+  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */
+  formatIn?: string
+  /** Output format */
+  formatOut: string
+  /** True when ICC profile was present and preserved */
+  iccPreserved: boolean
+  /** True when metadata was stripped (either by default or policy) */
+  metadataStripped: boolean
+  /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
+  policyViolations: Array<string>
+  /** Time taken to decode the image (milliseconds) - legacy alias of decode_ms */
+  decodeTime: number
+  /** Time taken to apply all operations (milliseconds) - legacy alias of ops_ms */
+  processTime: number
+  /** Time taken to encode the image (milliseconds) - legacy alias of encode_ms */
+  encodeTime: number
+  /** Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss */
+  memoryPeak: number
+  /** Input size legacy alias (bytes_in) */
+  inputSize: number
+  /** Output size legacy alias (bytes_out) */
+  outputSize: number
 }
 export interface OutputWithMetrics {
   data: Buffer
@@ -164,6 +185,12 @@ export declare class ImageEngine {
   flipV(): ImageEngine
   /** Convert to grayscale */
   grayscale(): ImageEngine
+  /**
+   * Enable or disable EXIF auto-orientation (default: enabled).
+   * `true` = apply EXIF Orientation automatically (sharp-compatible)
+   * `false` = ignore EXIF Orientation
+   */
+  autoOrient(enabled: boolean): ImageEngine
   /**
    * Preserve ICC profile in output.
    * Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
@@ -260,3 +287,25 @@ export declare class ImageEngine {
    */
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
+
+export interface StreamingOperation {
+  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
+  width?: number | null
+  height?: number | null
+  fit?: string | null
+  degrees?: number
+  enabled?: boolean
+}
+
+export interface StreamingOptions {
+  format?: string
+  quality?: number | null
+  ops?: StreamingOperation[]
+}
+
+export interface StreamingPipeline {
+  writable: import('stream').Writable
+  readable: import('stream').Readable
+}
+
+export function createStreamingPipeline(options?: StreamingOptions): StreamingPipeline

@@ -42,6 +42,9 @@ pub enum Operation {
     /// Adjust contrast (-100 to 100)
     Contrast { value: i32 },
 
+    /// Auto-orient based on EXIF Orientation tag (1-8)
+    AutoOrient { orientation: u16 },
+
     /// Grayscale conversion
     Grayscale,
 
@@ -139,6 +142,16 @@ impl OutputFormat {
                 Ok(Self::Avif { quality: q })
             }
             other => Err(format!("unsupported format: {other}")),
+        }
+    }
+
+    /// Return canonical lowercase string for telemetry/export
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            OutputFormat::Jpeg { .. } => "jpeg",
+            OutputFormat::Png => "png",
+            OutputFormat::WebP { .. } => "webp",
+            OutputFormat::Avif { .. } => "avif",
         }
     }
 }
