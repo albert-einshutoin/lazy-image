@@ -396,12 +396,7 @@ fn detect_cgroup_v2_memory() -> Option<u64> {
         .unwrap_or_default();
 
     let rel = strip_mount_root(&mount.root, &rel_path);
-    let path = format!(
-        "{}/{}{}",
-        mount.mount_point.trim_end_matches('/'),
-        rel.trim_start_matches('/'),
-        "/memory.max"
-    );
+    let path = join_mount_rel_file(&mount.mount_point, &rel, "memory.max");
     if let Ok(content) = fs::read_to_string(&path) {
         let trimmed = content.trim();
         if trimmed == "max" {
@@ -433,12 +428,7 @@ fn detect_cgroup_v1_memory() -> Option<u64> {
         .unwrap_or_default();
 
     let rel = strip_mount_root(&mount.root, &rel_path);
-    let path = format!(
-        "{}/{}{}",
-        mount.mount_point.trim_end_matches('/'),
-        rel.trim_start_matches('/'),
-        "/memory.limit_in_bytes"
-    );
+    let path = join_mount_rel_file(&mount.mount_point, &rel, "memory.limit_in_bytes");
 
     if let Ok(content) = fs::read_to_string(&path) {
         let trimmed = content.trim();
@@ -584,6 +574,15 @@ fn strip_mount_root(root: &str, rel: &str) -> String {
     }
 }
 
+#[cfg(feature = "napi")]
+fn join_mount_rel_file(mount_point: &str, rel: &str, file: &str) -> String {
+    let base = mount_point.trim_end_matches('/');
+    if rel.is_empty() {
+        return format!("{}/{}", base, file);
+    }
+    format!("{}/{}/{}", base, rel.trim_start_matches('/'), file)
+}
+
 /// Non-NAPI builds: skip detection and return None (use fallback)
 #[cfg(not(feature = "napi"))]
 pub fn detect_available_memory() -> Option<u64> {
@@ -680,6 +679,21 @@ mod tests {
     }
 
     #[test]
+    fn test_join_mount_rel_file_handles_empty_rel() {
+        let path = join_mount_rel_file("/sys/fs/cgroup", "", "memory.max");
+        assert_eq!(path, "/sys/fs/cgroup/memory.max");
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path() {
+        let sample = "0::/docker/abcd\n";
+        assert_eq!(
+            parse_cgroup2_relative_path(sample),
+            Some("/docker/abcd".to_string())
+        );
+    }
+
+    #[test]
     fn test_calculate_memory_based_concurrency_very_constrained() {
         // 256MB container: very constrained
         let result = calculate_memory_based_concurrency(Some(256 * 1024 * 1024), 8);
@@ -737,8 +751,8 @@ mod tests {
     fn test_format_specific_estimate_differs() {
         let ops: Vec<Operation> = Vec::new();
         let jpeg_est = estimate_memory_from_dimensions_with_context(
-            2000,
-            2000,
+            4000,
+            4000,
             Some(ImageFormat::Jpeg),
             &ops,
             Some(&OutputFormat::Jpeg {
@@ -747,8 +761,8 @@ mod tests {
             }),
         );
         let png_est = estimate_memory_from_dimensions_with_context(
-            2000,
-            2000,
+            4000,
+            4000,
             Some(ImageFormat::Png),
             &ops,
             Some(&OutputFormat::Png),
