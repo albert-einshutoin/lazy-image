@@ -19,7 +19,8 @@ use std::sync::{Arc, Condvar, Mutex, OnceLock};
 pub const ESTIMATED_MEMORY_PER_OPERATION: u64 = 100 * 1024 * 1024; // 100MB per operation (conservative)
 
 /// Minimum memory to reserve for system and other processes (in bytes)
-const RESERVED_MEMORY: u64 = 128 * 1024 * 1024; // 128MB
+const MIN_RESERVED_MEMORY: u64 = 64 * 1024 * 1024; // 64MB for tiny containers
+const MAX_RESERVED_MEMORY: u64 = 512 * 1024 * 1024; // cap for large hosts
 
 /// Lower bound for any estimate to avoid zero-ish weights
 const MIN_ESTIMATE_BYTES: u64 = 24 * 1024 * 1024; // 24MB
@@ -109,12 +110,9 @@ fn compute_semaphore_capacity() -> u64 {
     let available = detect_available_memory();
     match available {
         Some(mem) => {
-            let usable = mem.saturating_sub(RESERVED_MEMORY);
-            if usable < ESTIMATED_MEMORY_PER_OPERATION {
-                ESTIMATED_MEMORY_PER_OPERATION
-            } else {
-                usable
-            }
+            let reserved = compute_reserved_memory(mem);
+            let usable = mem.saturating_sub(reserved);
+            usable.max(MIN_ESTIMATE_BYTES)
         }
         None => FALLBACK_SEMAPHORE_CAPACITY,
     }
@@ -157,6 +155,23 @@ fn tuned(bytes: u64) -> u64 {
         .max(TUNING_MIN)
         .min(TUNING_MAX);
     bytes.saturating_mul(scale).saturating_add(TUNING_SCALE - 1) / TUNING_SCALE
+}
+
+/// Reserve memory for OS / runtime based on container/host limit
+#[cfg(feature = "napi")]
+fn compute_reserved_memory(total_bytes: u64) -> u64 {
+    // reserve 5% of total, clamped to [64MB, 512MB]
+    let five_percent = total_bytes / 20;
+    five_percent
+        .max(MIN_RESERVED_MEMORY)
+        .min(MAX_RESERVED_MEMORY)
+}
+
+#[cfg(not(feature = "napi"))]
+fn compute_reserved_memory(total_bytes: u64) -> u64 {
+    let _ = total_bytes;
+    let _ = MAX_RESERVED_MEMORY; // keep constant used in non-NAPI builds
+    MIN_RESERVED_MEMORY
 }
 
 fn calc_cover_resize_dimensions(
@@ -366,41 +381,62 @@ pub fn detect_available_memory() -> Option<u64> {
 /// Detects memory limit from cgroup v2
 #[cfg(feature = "napi")]
 fn detect_cgroup_v2_memory() -> Option<u64> {
-    // cgroup v2 path: /sys/fs/cgroup/memory.max
-    // Note: cgroup v2 uses a unified hierarchy, so the path structure is different from v1
-    let path = "/sys/fs/cgroup/memory.max";
+    let mountinfo = fs::read_to_string("/proc/self/mountinfo").ok();
+    let mount = mountinfo
+        .as_deref()
+        .and_then(parse_cgroup2_mount_point)
+        .unwrap_or_else(|| CgroupMount {
+            mount_point: "/sys/fs/cgroup".to_string(),
+            root: "/".to_string(),
+        });
 
-    if let Ok(content) = fs::read_to_string(path) {
+    let rel_path = fs::read_to_string("/proc/self/cgroup")
+        .ok()
+        .and_then(|c| parse_cgroup2_relative_path(&c))
+        .unwrap_or_default();
+
+    let rel = strip_mount_root(&mount.root, &rel_path);
+    let path = join_mount_rel_file(&mount.mount_point, &rel, "memory.max");
+    if let Ok(content) = fs::read_to_string(&path) {
         let trimmed = content.trim();
-        // "max" means no limit
         if trimmed == "max" {
-            return None; // No limit, fall back to system memory
+            return None;
         }
-
         if let Ok(memory) = trimmed.parse::<u64>() {
-            // cgroup v2 uses bytes
             return Some(memory);
         }
     }
-
     None
 }
 
 /// Detects memory limit from cgroup v1
 #[cfg(feature = "napi")]
 fn detect_cgroup_v1_memory() -> Option<u64> {
-    // cgroup v1 path: /sys/fs/cgroup/memory/memory.limit_in_bytes
-    // Note: memory.max_usage_in_bytes is the maximum usage, not the limit, so we don't use it
-    let path = "/sys/fs/cgroup/memory/memory.limit_in_bytes";
+    let mountinfo = fs::read_to_string("/proc/self/mountinfo").ok();
+    let mount = mountinfo
+        .as_deref()
+        .and_then(|m| parse_cgroup1_mount_point(m, "memory"))
+        .unwrap_or_else(|| CgroupMount {
+            mount_point: "/sys/fs/cgroup/memory".to_string(),
+            root: "/".to_string(),
+        });
 
-    if let Ok(content) = fs::read_to_string(path) {
+    let rel_path = fs::read_to_string("/proc/self/cgroup")
+        .ok()
+        .as_deref()
+        .and_then(parse_cgroup1_memory_relative_path)
+        .unwrap_or_default();
+
+    let rel = strip_mount_root(&mount.root, &rel_path);
+    let path = join_mount_rel_file(&mount.mount_point, &rel, "memory.limit_in_bytes");
+
+    if let Ok(content) = fs::read_to_string(&path) {
         let trimmed = content.trim();
         if let Ok(memory) = trimmed.parse::<u64>() {
             // Very large values (like 2^63-1) usually mean "no limit"
             if memory > 1_000_000_000_000_000 {
                 return None; // No limit, fall back to system memory
             }
-            // cgroup v1 uses bytes
             return Some(memory);
         }
     }
@@ -444,6 +480,109 @@ fn detect_system_memory() -> Option<u64> {
     None
 }
 
+#[cfg(feature = "napi")]
+struct CgroupMount {
+    mount_point: String,
+    root: String,
+}
+
+#[cfg(feature = "napi")]
+fn parse_cgroup2_mount_point(mountinfo: &str) -> Option<CgroupMount> {
+    for line in mountinfo.lines() {
+        // fields: id parent major:minor root mountpoint opts ... - fstype ...
+        // Example: 36 27 0:31 / /sys/fs/cgroup rw,relatime - cgroup2 cgroup2 rw
+        let mut parts = line.split(" - ");
+        let pre = parts.next()?;
+        let post = parts.next()?;
+        if !post.contains("cgroup2") {
+            continue;
+        }
+        let pre_fields: Vec<&str> = pre.split_whitespace().collect();
+        if pre_fields.len() >= 5 {
+            return Some(CgroupMount {
+                root: pre_fields[3].to_string(),
+                mount_point: pre_fields[4].to_string(),
+            });
+        }
+    }
+    None
+}
+
+#[cfg(feature = "napi")]
+fn parse_cgroup1_mount_point(mountinfo: &str, controller: &str) -> Option<CgroupMount> {
+    for line in mountinfo.lines() {
+        let mut parts = line.split(" - ");
+        let pre = parts.next()?;
+        let post = parts.next()?;
+        if !(post.contains("cgroup") && post.contains(controller)) {
+            continue;
+        }
+        let pre_fields: Vec<&str> = pre.split_whitespace().collect();
+        if pre_fields.len() >= 5 {
+            return Some(CgroupMount {
+                root: pre_fields[3].to_string(),
+                mount_point: pre_fields[4].to_string(),
+            });
+        }
+    }
+    None
+}
+
+#[cfg(feature = "napi")]
+fn parse_cgroup2_relative_path(content: &str) -> Option<String> {
+    // Format: 0::/docker/abcd...
+    for line in content.lines() {
+        let mut parts = line.splitn(3, ':');
+        let _hier = parts.next()?;
+        let _controllers = parts.next()?;
+        let path = parts.next()?;
+        return Some(path.to_string());
+    }
+    None
+}
+
+#[cfg(feature = "napi")]
+fn parse_cgroup1_memory_relative_path(content: &str) -> Option<String> {
+    // Lines like: 5:memory:/kubepods.slice/... or 5:memory:/
+    for line in content.lines() {
+        let mut parts = line.splitn(3, ':');
+        let _id = parts.next()?;
+        let controllers = parts.next()?;
+        if controllers.split(',').any(|c| c == "memory") {
+            let path = parts.next().unwrap_or("");
+            return Some(path.to_string());
+        }
+    }
+    None
+}
+
+#[cfg(feature = "napi")]
+fn strip_mount_root(root: &str, rel: &str) -> String {
+    if root == "/" {
+        return rel.to_string();
+    }
+    let trimmed_root = root.trim_end_matches('/');
+    let rel_no_leading = rel.trim_start_matches('/');
+    let prefix = trimmed_root.trim_start_matches('/');
+    if rel_no_leading.starts_with(prefix) {
+        let stripped = rel_no_leading
+            .trim_start_matches(prefix)
+            .trim_start_matches('/');
+        stripped.to_string()
+    } else {
+        rel.to_string()
+    }
+}
+
+#[cfg(feature = "napi")]
+fn join_mount_rel_file(mount_point: &str, rel: &str, file: &str) -> String {
+    let base = mount_point.trim_end_matches('/');
+    if rel.is_empty() {
+        return format!("{}/{}", base, file);
+    }
+    format!("{}/{}/{}", base, rel.trim_start_matches('/'), file)
+}
+
 /// Non-NAPI builds: skip detection and return None (use fallback)
 #[cfg(not(feature = "napi"))]
 pub fn detect_available_memory() -> Option<u64> {
@@ -468,15 +607,15 @@ pub fn calculate_memory_based_concurrency(
 ) -> usize {
     let memory_limit = match available_memory {
         Some(mem) => {
-            // Reserve some memory for system and other processes
-            let usable = mem.saturating_sub(RESERVED_MEMORY);
-            if usable < ESTIMATED_MEMORY_PER_OPERATION {
+            let reserved = compute_reserved_memory(mem);
+            let usable = mem.saturating_sub(reserved);
+            if usable < MIN_ESTIMATE_BYTES {
                 // Very constrained: use minimum
                 return MIN_SAFE_CONCURRENCY;
             }
             // Calculate how many operations can fit
             let max_ops = usable / ESTIMATED_MEMORY_PER_OPERATION;
-            max_ops.min(MAX_MEMORY_BASED_CONCURRENCY as u64) as usize
+            max_ops.max(1).min(MAX_MEMORY_BASED_CONCURRENCY as u64) as usize
         }
         None => {
             // No memory limit detected: use CPU-based concurrency
@@ -496,6 +635,63 @@ mod tests {
     use super::*;
     use crate::ops::{Operation, OutputFormat, ResizeFit};
     use std::sync::Arc;
+
+    #[test]
+    fn test_reserved_memory_bounds_and_percent() {
+        // tiny container: min 64MB
+        assert_eq!(
+            compute_reserved_memory(128 * 1024 * 1024),
+            MIN_RESERVED_MEMORY
+        );
+        // huge host: capped at 512MB
+        assert_eq!(
+            compute_reserved_memory(64 * 1024 * 1024 * 1024),
+            MAX_RESERVED_MEMORY
+        );
+        // 2GB -> 5% = 102.4MB -> within bounds
+        let reserved = compute_reserved_memory(2 * 1024 * 1024 * 1024);
+        assert!(reserved >= 100 * 1024 * 1024 && reserved <= 110 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_parse_cgroup2_mount_point() {
+        let sample = "36 27 0:31 / /sys/fs/cgroup rw,relatime - cgroup2 cgroup2 rw\n";
+        let mount = parse_cgroup2_mount_point(sample).unwrap();
+        assert_eq!(mount.mount_point, "/sys/fs/cgroup");
+        assert_eq!(mount.root, "/");
+    }
+
+    #[test]
+    fn test_parse_cgroup1_memory_relative_path() {
+        let sample =
+            "5:memory:/kubepods.slice/kubepods-besteffort.slice\n9:cpu,cpuacct:/kubepods.slice\n";
+        assert_eq!(
+            parse_cgroup1_memory_relative_path(sample),
+            Some("/kubepods.slice/kubepods-besteffort.slice".to_string())
+        );
+    }
+
+    #[test]
+    fn test_strip_mount_root_removes_duplicate() {
+        let root = "/docker/12345";
+        let rel = "/docker/12345/foo/bar";
+        assert_eq!(strip_mount_root(root, rel), "foo/bar");
+    }
+
+    #[test]
+    fn test_join_mount_rel_file_handles_empty_rel() {
+        let path = join_mount_rel_file("/sys/fs/cgroup", "", "memory.max");
+        assert_eq!(path, "/sys/fs/cgroup/memory.max");
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path() {
+        let sample = "0::/docker/abcd\n";
+        assert_eq!(
+            parse_cgroup2_relative_path(sample),
+            Some("/docker/abcd".to_string())
+        );
+    }
 
     #[test]
     fn test_calculate_memory_based_concurrency_very_constrained() {
@@ -555,8 +751,8 @@ mod tests {
     fn test_format_specific_estimate_differs() {
         let ops: Vec<Operation> = Vec::new();
         let jpeg_est = estimate_memory_from_dimensions_with_context(
-            2000,
-            2000,
+            4000,
+            4000,
             Some(ImageFormat::Jpeg),
             &ops,
             Some(&OutputFormat::Jpeg {
@@ -565,8 +761,8 @@ mod tests {
             }),
         );
         let png_est = estimate_memory_from_dimensions_with_context(
-            2000,
-            2000,
+            4000,
+            4000,
             Some(ImageFormat::Png),
             &ops,
             Some(&OutputFormat::Png),
