@@ -406,7 +406,9 @@ impl EncodeTask {
         );
         let icc_present = self.icc_profile.is_some();
         let icc_preserved = self.keep_metadata && icc_present;
-        let metadata_stripped = !self.keep_metadata && icc_present;
+        // metadata_stripped: true when metadata is not preserved (either not present, or stripped by default/policy)
+        // This correctly handles the case when no metadata exists (default stripped state)
+        let metadata_stripped = !icc_preserved;
         let metadata_blocked_by_policy =
             self.keep_metadata_requested && self.firewall.reject_metadata && icc_present;
         let mut policy_violations = Vec::new();

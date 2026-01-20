@@ -459,9 +459,18 @@ async function runTests() {
         assert(result.metrics.bytesIn > 0, 'bytesIn should be positive');
         assert(result.metrics.bytesOut > 0, 'bytesOut should be positive');
         assert(typeof result.metrics.formatOut === 'string', 'formatOut should be string');
+        // formatIn may be null if format detection fails, or a string if detected
+        assert(result.metrics.formatIn === null || typeof result.metrics.formatIn === 'string', 'formatIn should be null or string');
         assert(Array.isArray(result.metrics.policyViolations), 'policyViolations should be array');
         assert(typeof result.metrics.metadataStripped === 'boolean', 'metadataStripped boolean');
         assert(typeof result.metrics.iccPreserved === 'boolean', 'iccPreserved boolean');
+        // metadata_stripped = true when metadata is not preserved (default behavior)
+        // icc_preserved = true when metadata exists and is preserved
+        // They should be mutually exclusive: if metadata is preserved, it's not stripped
+        if (result.metrics.iccPreserved) {
+            assert.strictEqual(result.metrics.metadataStripped, false, 
+                'if iccPreserved is true, metadataStripped should be false');
+        }
 
         // Legacy aliases
         assert.strictEqual(result.metrics.decodeTime, result.metrics.decodeMs);

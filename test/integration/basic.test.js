@@ -129,6 +129,11 @@ async function runTests() {
         assert(typeof metrics.iccPreserved === 'boolean', 'iccPreserved should be boolean');
         assert(typeof metrics.formatOut === 'string', 'formatOut should be string');
         assert(metrics.formatOut === 'jpeg', 'formatOut should match requested output');
+        // formatIn may be null if format detection fails, or a string if detected
+        assert(metrics.formatIn === null || typeof metrics.formatIn === 'string', 'formatIn should be null or string');
+        if (metrics.formatIn !== null) {
+            assert(metrics.formatIn.length > 0, 'formatIn should not be empty string if not null');
+        }
 
         // Legacy aliases remain stable
         assert.strictEqual(metrics.decodeTime, metrics.decodeMs, 'decodeTime mirrors decodeMs');
