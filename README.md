@@ -538,15 +538,29 @@ interface PresetResult {
 }
 
 interface ProcessingMetrics {
-  decodeTime: number;        // milliseconds
-  processTime: number;       // milliseconds
-  encodeTime: number;        // milliseconds
-  memoryPeak: number;        // bytes (RSS) - Note: represents cumulative max RSS of entire process, not just this operation
+  version: string;           // schema version, e.g. "1.0.0"
+  decodeMs: number;          // milliseconds
+  opsMs: number;             // milliseconds
+  encodeMs: number;          // milliseconds
+  totalMs: number;           // total wall clock (ms)
+  peakRss: number;           // bytes (RSS)
   cpuTime: number;           // seconds (user + system CPU time)
-  processingTime: number;    // seconds (wall clock time)
-  inputSize: number;         // bytes
-  outputSize: number;        // bytes
-  compressionRatio: number;  // outputSize / inputSize
+  processingTime: number;    // seconds (legacy wall clock field)
+  bytesIn: number;           // bytes
+  bytesOut: number;          // bytes
+  compressionRatio: number;  // bytesOut / bytesIn
+  formatIn?: string | null;  // detected input format (nullable)
+  formatOut: string;         // requested output format
+  iccPreserved: boolean;     // ICC profile preserved
+  metadataStripped: boolean; // metadata stripped (by default or policy)
+  policyViolations: string[];// non-fatal Image Firewall actions
+  // Legacy aliases preserved for compatibility
+  decodeTime: number;
+  processTime: number;
+  encodeTime: number;
+  memoryPeak: number;
+  inputSize: number;
+  outputSize: number;
 }
 
 interface OutputWithMetrics {
@@ -561,6 +575,8 @@ interface BatchResult {
   outputPath?: string;
 }
 ```
+
+Metrics payloads are versioned and validated. Refer to `docs/metrics-api.md` for field semantics and `docs/metrics-schema.json` for the formal JSON Schema.
 
 ---
 
