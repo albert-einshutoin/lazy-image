@@ -1,21 +1,19 @@
 # 📋 Versioning Plan & Issue Prioritization
 
-> **Current Version**: v0.8.1 (2026-01-01)  
+> **Current Version**: v0.9.0 (2026-01-21)  
 > **Goal**: v1.0.0 "Production Ready" release
 
-このドキュメントは、v0.8.1からv1.0.0までのバージョニングプランと、各issueの優先順位を定義します。
+このドキュメントは、v0.9.0からv1.0.0までのバージョニングプランと、各issueの優先順位を定義します。
 
 ---
 
 ## 🎯 Version Roadmap Overview
 
 ```
-v0.8.1 (Current) ──┐
+v0.9.0 (Current) ──┐
                     │
-v0.9.0 ─────────────┼──> v1.0.0 ──> v1.x ──> v2.0
-"The Optimizer"     │   "Production Ready"  "Serverless"  "Universal"
-                    │
-                    └──> Critical fixes & optimizations
+                    └──> v1.0.0 ──> v1.x ──> v2.0
+                    "Production Ready"  "Serverless"  "Universal"
 ```
 
 ---
