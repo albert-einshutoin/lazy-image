@@ -144,6 +144,7 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 - 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB)
 - 🔄 **EXIF auto-orientation** - Defaultで正しい向きに補正、`autoOrient(false)`で無効化可能
 - 💾 **Memory-efficient** - Direct file I/O bypasses Node.js heap
+- 🌊 **Streaming (bounded-memory, disk-backed)** - Process huge inputs via streams without heap blow-up
 - 🔗 **Fluent API** with method chaining
 - 📦 **Lazy pipeline** - operations are queued and executed in a single pass
 - 🔄 **Async/Promise-based** - doesn't block the event loop
@@ -646,6 +647,27 @@ try {
   }
 }
 ```
+
+#### Streaming (bounded-memory, disk-backed)
+
+```javascript
+const { createStreamingPipeline } = require('@alberteinshutoin/lazy-image');
+const fs = require('fs');
+
+const { writable, readable } = createStreamingPipeline({
+  format: 'jpeg',
+  quality: 82,
+  ops: [{ op: 'resize', width: 800, height: null, fit: 'inside' }],
+});
+
+fs.createReadStream('huge-input.jpg').pipe(writable);
+readable.pipe(fs.createWriteStream('output.jpg'));
+
+readable.on('finish', () => console.log('done'));
+readable.on('error', console.error);
+```
+
+> Note: This pipeline keeps memory使用を O(1) 近傍に抑えるため、一時ファイルを用いたストリーミングです。真の逐次エンコードが必要な場合も、APIはこのまま後方互換で拡張予定です。
 
 #### Rust
 

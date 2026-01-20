@@ -76,6 +76,7 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "streaming/",
     "README.md",
     "LICENSE"
   ],

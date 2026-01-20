@@ -339,3 +339,12 @@ module.exports.version = version
 module.exports.supportedInputFormats = supportedInputFormats
 module.exports.supportedOutputFormats = supportedOutputFormats
 module.exports.getErrorCategory = getErrorCategory
+const { createStreamingPipeline: createStreamingPipelineInternal } = require('./streaming/pipeline')
+
+function createStreamingPipeline(options = {}) {
+  // inject ImageEngine here to avoid requiring index.js from streaming/pipeline (would create circular require)
+  const optsWithEngine = options.ImageEngine ? options : { ...options, ImageEngine }
+  return createStreamingPipelineInternal(optsWithEngine)
+}
+
+module.exports.createStreamingPipeline = createStreamingPipeline
