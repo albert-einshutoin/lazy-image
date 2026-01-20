@@ -12,9 +12,15 @@
     "format": "png"
   },
   "webp_cover_flip": {
-    "pixelHash": "82a5c09eb267ffad6f4bc237807eaf33abadfc3b8dc875254ed9dc3e428d3fda",
+    "pixelHash": "f51e648b840a58794d139a6356991040246bc10d7614e8d4f79416daf72c8295",
     "width": 800,
     "height": 800,
     "format": "webp"
+  },
+  "png_cover_no_grayscale": {
+    "pixelHash": "1c1b8537feef8f0586f244334b61334d3bc1fc603be43206707ffdfded8d6f93",
+    "width": 1600,
+    "height": 900,
+    "format": "png"
   }
 }

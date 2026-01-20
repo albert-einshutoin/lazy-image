@@ -32,14 +32,25 @@ module.exports = [
     },
     {
         name: 'webp_cover_flip',
-        description: '中解像度WebPをスクエアcover＋水平反転',
-        input: resolveFixture('test_90KB_1471x1471.webp'),
+        description: '5000px級JPEG→WebP変換でサイズ優位を確認',
+        input: resolveFixture('test_3.2MB_5000x5000.jpg'),
         operations: [
             { op: 'resize', width: 800, height: 800, fit: 'cover' },
             { op: 'flipH' },
         ],
-        output: { format: 'webp', quality: 80 },
-        thresholds: { minSsim: 0.99, minPsnr: 34 },
-        sizeRatioMax: 1.1,
+        output: { format: 'webp', quality: 78 },
+        thresholds: { minSsim: 0.99, minPsnr: 40 },
+        sizeRatioMax: 0.97,
+    },
+    {
+        name: 'png_cover_no_grayscale',
+        description: 'PNG coverリサイズ（品質のみ比較・グレースケールなし）',
+        input: resolveFixture('test_4.5MB_5000x5000.png'),
+        operations: [
+            { op: 'resize', width: 1600, height: 900, fit: 'cover' },
+        ],
+        output: { format: 'png' },
+        thresholds: { minSsim: 0.98, minPsnr: 30 },
+        sizeRatioMax: 0.6,
     },
 ];
