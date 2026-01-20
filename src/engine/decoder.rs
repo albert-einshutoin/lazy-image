@@ -7,7 +7,7 @@ use crate::error::LazyImageError;
 use exif;
 #[cfg(test)]
 use image::GenericImageView;
-use image::{DynamicImage, ImageReader, RgbImage};
+use image::{DynamicImage, ImageFormat, ImageReader, RgbImage};
 use mozjpeg::Decompress;
 use std::io::Cursor;
 
@@ -77,6 +77,24 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
         image::load_from_memory(data)
             .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))
     })
+}
+
+/// Detect input format using magic bytes. Returns None if unknown.
+pub fn detect_format(bytes: &[u8]) -> Option<ImageFormat> {
+    image::guess_format(bytes).ok()
+}
+
+/// Unified decode entrypoint:
+/// - Detect format once (magic bytes)
+/// - Route JPEG to mozjpeg, others to image crate
+/// - Return decoded image and detected format
+pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFormat>)> {
+    let detected = detect_format(bytes);
+    let img = match detected {
+        Some(ImageFormat::Jpeg) => decode_jpeg_mozjpeg(bytes)?,
+        _ => decode_with_image_crate(bytes)?,
+    };
+    Ok((img, detected))
 }
 
 /// Check if image dimensions are within safe limits.
@@ -151,5 +169,27 @@ mod tests {
         let data = encode_png(width, 1);
         let err = ensure_dimensions_safe(&data).unwrap_err();
         assert!(matches!(err, LazyImageError::DimensionExceedsLimit { .. }));
+    }
+
+    #[test]
+    fn test_detect_format_jpeg_and_png() {
+        let png = encode_png(2, 2);
+        let jpeg = {
+            let mut buf = Vec::new();
+            DynamicImage::ImageRgb8(RgbImage::from_pixel(2, 2, Rgb([1, 2, 3])))
+                .write_to(&mut Cursor::new(&mut buf), ImageFormat::Jpeg)
+                .unwrap();
+            buf
+        };
+        assert_eq!(detect_format(&png), Some(ImageFormat::Png));
+        assert_eq!(detect_format(&jpeg), Some(ImageFormat::Jpeg));
+    }
+
+    #[test]
+    fn test_decode_image_routes_by_format() {
+        let png = encode_png(2, 2);
+        let (img_png, fmt_png) = decode_image(&png).unwrap();
+        assert_eq!(fmt_png, Some(ImageFormat::Png));
+        assert_eq!(img_png.dimensions(), (2, 2));
     }
 }
