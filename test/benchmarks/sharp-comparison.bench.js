@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 const { ImageEngine } = require(resolveRoot('index'));
+const { calculateQualityMetrics } = require('../helpers/quality');
 
 // Check if sharp is available
 let sharp;
@@ -40,13 +41,18 @@ function calcDiff(lazy, sharp) {
     return diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
 }
 
+const QUALITY_TARGETS = {
+    ssim: 0.995,
+    psnr: 40,
+};
+
 async function benchmarkLazyImage(format, quality) {
     const start = Date.now();
     const buffer = await ImageEngine.fromPath(TEST_IMAGE)
         .resize(800, null)
         .toBuffer(format, quality);
     const time = Date.now() - start;
-    return { size: buffer.length, time };
+    return { size: buffer.length, time, buffer };
 }
 
 async function benchmarkSharp(format, quality) {
@@ -66,7 +72,7 @@ async function benchmarkSharp(format, quality) {
     }
     
     const time = Date.now() - start;
-    return { size: buffer.length, time };
+    return { size: buffer.length, time, buffer };
 }
 
 async function runBenchmark() {
@@ -75,6 +81,7 @@ async function runBenchmark() {
     const stats = fs.statSync(TEST_IMAGE);
     console.log(`Size: ${(stats.size / 1024 / 1024).toFixed(1)} MB\n`);
     console.log('Conditions: resize to 800px width, auto height\n');
+    console.log(`Quality targets: SSIM >= ${QUALITY_TARGETS.ssim}, PSNR >= ${QUALITY_TARGETS.psnr} dB\n`);
     console.log('─'.repeat(60));
     
     const results = [];
@@ -118,6 +125,7 @@ async function runBenchmark() {
                 quality,
                 lazy: lazyResult,
                 sharp: sharpResult,
+                qualityMetrics: null,
             });
             
             console.log(`  ✅ lazy-image: ${formatBytes(lazyResult.size)} bytes (${lazyResult.time}ms)`);
@@ -129,6 +137,24 @@ async function runBenchmark() {
                 const speedEmoji = lazyResult.time < sharpResult.time ? '⚡' : '🐢';
                 console.log(`  ${sizeEmoji} Size diff: ${sizeDiff}`);
                 console.log(`  ${speedEmoji} Speed: ${speedRatio}x ${lazyResult.time < sharpResult.time ? 'faster' : 'slower'}`);
+
+                // Quality metrics vs sharp output
+                const qualityMetrics = await calculateQualityMetrics(
+                    lazyResult.buffer,
+                    sharpResult.buffer
+                );
+                results[results.length - 1].qualityMetrics = qualityMetrics;
+
+                const ssimOk = qualityMetrics.ssim >= QUALITY_TARGETS.ssim;
+                const psnrOk = qualityMetrics.psnr >= QUALITY_TARGETS.psnr;
+                console.log(
+                    `  🎯 Quality vs sharp: SSIM ${qualityMetrics.ssim.toFixed(4)} (${ssimOk ? '✅' : '❌'} target ${
+                        QUALITY_TARGETS.ssim
+                    }), PSNR ${qualityMetrics.psnr.toFixed(2)} dB (${psnrOk ? '✅' : '❌'} target ${QUALITY_TARGETS.psnr} dB)`
+                );
+                if (!ssimOk || !psnrOk) {
+                    throw new Error('Quality target not met');
+                }
             }
         } catch (e) {
             console.error(`  ❌ Error testing ${name}:`, e.message);

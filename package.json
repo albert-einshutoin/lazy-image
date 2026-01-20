@@ -44,6 +44,7 @@
     "@napi-rs/cli": "^2.18.0",
     "@types/node": "^25.0.2",
     "sharp": "^0.34.5",
+    "ssim.js": "^3.5.0",
     "typescript": "^5.6.3"
   },
   "napi": {
