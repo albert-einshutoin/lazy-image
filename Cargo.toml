@@ -70,6 +70,9 @@ thiserror = "1.0"
 # System calls for CPU time and memory tracking
 libc = "0.2"
 
+# Fast mutex/condvar for contention-heavy semaphore
+parking_lot = "0.12"
+
 # Memory allocator optimization - jemalloc for better performance
 # Note: jemalloc is not supported on Windows/MSVC, so we use target-specific dependencies
 # disable_initial_exec_tls feature is required for Node.js native module compatibility
@@ -83,6 +86,10 @@ proptest = "1.4"
 
 [[bench]]
 name = "benchmark"
+harness = false
+
+[[bench]]
+name = "memory_semaphore"
 harness = false
 
 # 【重要】依存関係（mozjpeg, ravif等）はデバッグビルド時も最適化する

@@ -310,26 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats, getErrorCategory: getErrorCategoryNative } = nativeBinding
-
-const ERROR_CODE_MAP = {
-  LAZY_IMAGE_USER_ERROR: () => ErrorCategory.UserError,
-  LAZY_IMAGE_CODEC_ERROR: () => ErrorCategory.CodecError,
-  LAZY_IMAGE_RESOURCE_LIMIT: () => ErrorCategory.ResourceLimit,
-  LAZY_IMAGE_INTERNAL_BUG: () => ErrorCategory.InternalBug,
-};
-
-const getErrorCategory =
-  typeof getErrorCategoryNative === 'function'
-    ? getErrorCategoryNative
-    : (error) => {
-        if (!error || typeof error !== 'object') return null;
-        if (typeof error.category === 'number') return error.category;
-        if (typeof error.code === 'string' && ERROR_CODE_MAP[error.code]) {
-          return ERROR_CODE_MAP[error.code]();
-        }
-        return null;
-      };
+const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
 module.exports.ImageEngine = ImageEngine
 module.exports.ErrorCategory = ErrorCategory
@@ -338,13 +319,38 @@ module.exports.inspectFile = inspectFile
 module.exports.version = version
 module.exports.supportedInputFormats = supportedInputFormats
 module.exports.supportedOutputFormats = supportedOutputFormats
-module.exports.getErrorCategory = getErrorCategory
-const { createStreamingPipeline: createStreamingPipelineInternal } = require('./streaming/pipeline')
 
-function createStreamingPipeline(options = {}) {
-  // inject ImageEngine here to avoid requiring index.js from streaming/pipeline (would create circular require)
-  const optsWithEngine = options.ImageEngine ? options : { ...options, ImageEngine }
-  return createStreamingPipelineInternal(optsWithEngine)
+// -----------------------------------------------------------------------------
+// JS helpers (manual exports)
+// -----------------------------------------------------------------------------
+function getErrorCategory(err) {
+  if (!err) return null
+  // Preferred: numeric enum or string name set on error.category
+  if (typeof err === 'object') {
+    if (err.category !== undefined && err.category !== null) {
+      return err.category
+    }
+    // Fallback: derive from error.code (e.g., LAZY_IMAGE_USER_ERROR)
+    if (typeof err.code === 'string') {
+      const code = err.code
+      if (code.includes('USER')) return ErrorCategory.UserError
+      if (code.includes('CODEC')) return ErrorCategory.CodecError
+      if (code.includes('RESOURCE')) return ErrorCategory.ResourceLimit
+      if (code.includes('INTERNAL')) return ErrorCategory.InternalBug
+    }
+  }
+  return null
 }
 
+const { createStreamingPipeline: createStreamingPipelineCore } = require('./streaming/pipeline')
+
+function createStreamingPipeline(options) {
+  // Inject ImageEngine if caller omits it (backward compatibility)
+  return createStreamingPipelineCore({
+    ImageEngine,
+    ...(options || {}),
+  })
+}
+
+module.exports.getErrorCategory = getErrorCategory
 module.exports.createStreamingPipeline = createStreamingPipeline

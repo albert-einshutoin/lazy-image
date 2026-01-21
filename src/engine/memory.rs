@@ -8,11 +8,12 @@
 use crate::engine::pipeline::calc_resize_dimensions;
 use crate::ops::{Operation, OutputFormat, ResizeFit};
 use image::ImageFormat;
+use parking_lot::{Condvar, Mutex};
 #[cfg(feature = "napi")]
 use std::fs;
 use std::io::Cursor;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, Condvar, Mutex, OnceLock};
+use std::sync::{Arc, OnceLock};
 
 /// Estimated memory per image operation (in bytes)
 /// 100MB keeps backwards compatibility for fallback paths; dynamic estimates are preferred.
@@ -77,11 +78,11 @@ impl WeightedSemaphore {
     }
 
     pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
-        let mut available = self.state.lock().unwrap();
+        let mut available = self.state.lock();
         // clamp absurd weights to capacity to avoid deadlock
         let need = weight.min(self.capacity);
         while *available < need {
-            available = self.cvar.wait(available).unwrap();
+            self.cvar.wait(&mut available);
         }
         *available -= need;
         MemoryPermit {
@@ -91,7 +92,7 @@ impl WeightedSemaphore {
     }
 
     fn release(&self, weight: u64) {
-        let mut available = self.state.lock().unwrap();
+        let mut available = self.state.lock();
         let freed = (*available).saturating_add(weight).min(self.capacity);
         *available = freed;
         // notify_all to avoid starvation when waiters have heterogeneous weights
@@ -756,11 +757,11 @@ mod tests {
         let sem = Arc::new(WeightedSemaphore::new(100));
         let permit = sem.acquire(60);
         {
-            let remaining = *sem.state.lock().unwrap();
+            let remaining = *sem.state.lock();
             assert_eq!(remaining, 40);
         }
         drop(permit);
-        let remaining = *sem.state.lock().unwrap();
+        let remaining = *sem.state.lock();
         assert_eq!(remaining, 100);
     }
 
