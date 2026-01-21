@@ -376,14 +376,23 @@ pub fn apply_ops<'a>(
 
                 validate_resize_dimensions(resize_w, resize_h)?;
 
-                if *crop_x + *crop_width > resize_w || *crop_y + *crop_height > resize_h {
+                let (frame_w, frame_h, offset_x, offset_y) = match (fit, width, height) {
+                    (ResizeFit::Cover, Some(target_w), Some(target_h)) => {
+                        let off_x = (resize_w.saturating_sub(*target_w)) / 2;
+                        let off_y = (resize_h.saturating_sub(*target_h)) / 2;
+                        (*target_w, *target_h, off_x, off_y)
+                    }
+                    _ => (resize_w, resize_h, 0, 0),
+                };
+
+                if *crop_x + *crop_width > frame_w || *crop_y + *crop_height > frame_h {
                     return Err(LazyImageError::invalid_crop_bounds(
                         *crop_x,
                         *crop_y,
                         *crop_width,
                         *crop_height,
-                        resize_w,
-                        resize_h,
+                        frame_w,
+                        frame_h,
                     ));
                 }
 
@@ -400,8 +409,8 @@ pub fn apply_ops<'a>(
                     let scale_x = resize_w as f64 / img.width().max(1) as f64;
                     let scale_y = resize_h as f64 / img.height().max(1) as f64;
 
-                    let src_left = *crop_x as f64 / scale_x;
-                    let src_top = *crop_y as f64 / scale_y;
+                    let src_left = (offset_x as f64 + *crop_x as f64) / scale_x;
+                    let src_top = (offset_y as f64 + *crop_y as f64) / scale_y;
                     let mut src_width = *crop_width as f64 / scale_x;
                     let mut src_height = *crop_height as f64 / scale_y;
                     let max_src_width = img.width().max(1) as f64 - src_left;
@@ -995,6 +1004,139 @@ mod tests {
             let expected = resized.crop_imm(5, 10, 30, 20);
 
             assert_eq!(fused.dimensions(), (30, 20));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_cover_fit_matches_two_step() {
+            let img = create_test_image(160, 80); // 2:1 aspect
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(80),
+                    height: Some(80),
+                    fit: ResizeFit::Cover,
+                },
+                Operation::Crop {
+                    x: 10,
+                    y: 5,
+                    width: 40,
+                    height: 30,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let (resize_w, resize_h) = calc_cover_resize_dimensions(160, 80, 80, 80);
+            let resized = fast_resize_owned(img, resize_w, resize_h).unwrap();
+            let centered = crop_to_dimensions(resized, 80, 80);
+            let expected = centered.crop_imm(10, 5, 40, 30);
+
+            assert_eq!(fused.dimensions(), (40, 30));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_fill_fit_matches_two_step() {
+            let img = create_test_image(60, 30);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(90),
+                    height: Some(60),
+                    fit: ResizeFit::Fill,
+                },
+                Operation::Crop {
+                    x: 20,
+                    y: 10,
+                    width: 30,
+                    height: 20,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let resized = fast_resize_owned(img, 90, 60).unwrap();
+            let expected = resized.crop_imm(20, 10, 30, 20);
+
+            assert_eq!(fused.dimensions(), (30, 20));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_at_boundary() {
+            let img = create_test_image(100, 100);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(100),
+                    height: Some(100),
+                    fit: ResizeFit::Fill,
+                },
+                Operation::Crop {
+                    x: 90,
+                    y: 90,
+                    width: 10,
+                    height: 10,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let resized = fast_resize_owned(img, 100, 100).unwrap();
+            let expected = resized.crop_imm(90, 90, 10, 10);
+
+            assert_eq!(fused.dimensions(), (10, 10));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_small_image() {
+            let img = create_test_image(2, 2);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(1),
+                    height: Some(1),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Crop {
+                    x: 0,
+                    y: 0,
+                    width: 1,
+                    height: 1,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let resized = fast_resize_owned(img, 1, 1).unwrap();
+            let expected = resized.crop_imm(0, 0, 1, 1);
+
+            assert_eq!(fused.dimensions(), (1, 1));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_extreme_aspect_ratio() {
+            let img = create_test_image(10_000, 50);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(100),
+                    height: Some(100),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Crop {
+                    x: 0,
+                    y: 0,
+                    width: 50,
+                    height: 1,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let (resize_w, resize_h) = calc_resize_dimensions(10_000, 50, Some(100), Some(100));
+            let resized = fast_resize_owned(img, resize_w, resize_h).unwrap();
+            let expected = resized.crop_imm(0, 0, 50, 1);
+
+            assert_eq!(fused.dimensions(), (50, 1));
             assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
         }
 
