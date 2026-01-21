@@ -88,6 +88,10 @@ proptest = "1.4"
 name = "benchmark"
 harness = false
 
+[[bench]]
+name = "memory_semaphore"
+harness = false
+
 # 【重要】依存関係（mozjpeg, ravif等）はデバッグビルド時も最適化する
 # これがないと、ASanテスト中の画像処理が激重でタイムアウトする
 [profile.dev.package."*"]

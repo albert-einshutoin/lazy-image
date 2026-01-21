@@ -288,24 +288,18 @@ export declare class ImageEngine {
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
 
-export interface StreamingOperation {
-  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
-  width?: number | null
-  height?: number | null
-  fit?: string | null
-  degrees?: number
-  enabled?: boolean
-}
+export function getErrorCategory(err: unknown): ErrorCategory | null
 
-export interface StreamingOptions {
+export interface StreamingPipelineOptions {
   format?: string
   quality?: number | null
-  ops?: StreamingOperation[]
+  ops?: Array<any>
+  ImageEngine?: typeof ImageEngine
 }
 
 export interface StreamingPipeline {
-  writable: import('stream').Writable
-  readable: import('stream').Readable
+  writable: NodeJS.WritableStream
+  readable: NodeJS.ReadableStream
 }
 
-export function createStreamingPipeline(options?: StreamingOptions): StreamingPipeline
+export function createStreamingPipeline(options: StreamingPipelineOptions): StreamingPipeline
