@@ -98,7 +98,11 @@ jobs:
             -rss_limit_mb=2048 \
             -max_total_time=${FUZZ_DURATION} \
             || EXIT_CODE=$?
-          # Exit code 77 = libFuzzer timeout (expected), 124 = timeout command timeout (expected), 0 = normal
+          # Exit codes that indicate successful completion:
+          #   0 = normal completion (no crashes found)
+          #  77 = libFuzzer reached max_total_time (expected - means no crashes in time limit)
+          # 124 = timeout command terminated after time limit (expected - means no crashes in time limit)
+          # Any other exit code indicates a real failure (crash, memory error, etc.)
           if [ "${EXIT_CODE:-0}" != "0" ] && [ "${EXIT_CODE:-0}" != "77" ] && [ "${EXIT_CODE:-0}" != "124" ]; then
             exit $EXIT_CODE
           fi
