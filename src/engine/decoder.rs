@@ -86,8 +86,27 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
 }
 
 /// Decode PNG using zune-png (SIMD最適化デコーダ)。16bit入力は8bitへダウンサンプル。
+/// Falls back to image crate if:
+/// - Image dimensions exceed zune-png's limit (16,384px)
+/// - Unsupported colorspace (e.g., YCbCr)
+/// - Decode fails for any reason
 pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:png", || {
+        // zune-png has a default dimension limit of 16,384px
+        // Check dimensions first to avoid unnecessary decode attempt
+        // If exceeds zune-png limit but within MAX_DIMENSION, fallback to image crate
+        const ZUNE_PNG_MAX_DIM: u32 = 16384;
+        
+        // Try to read dimensions from PNG header without full decode
+        if let Ok((width, height)) = read_png_dimensions(data) {
+            if width > ZUNE_PNG_MAX_DIM || height > ZUNE_PNG_MAX_DIM {
+                // Exceeds zune-png limit but may be within MAX_DIMENSION - fallback
+                return Err(LazyImageError::decode_failed(
+                    "png: dimensions exceed zune-png limit, fallback to image crate"
+                ));
+            }
+        }
+
         let options = DecoderOptions::default().png_set_strip_to_8bit(true);
         let mut decoder = PngDecoder::new_with_options(data, options);
         let pixels = decoder
@@ -119,12 +138,12 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
             ColorSpace::RGB => RgbImage::from_raw(width, height, buf)
                 .map(DynamicImage::ImageRgb8)
                 .ok_or_else(|| LazyImageError::decode_failed("png: failed to build RGB image"))?,
-            ColorSpace::RGBA | ColorSpace::YCbCr | ColorSpace::BGRA | ColorSpace::ARGB => {
+            ColorSpace::RGBA | ColorSpace::BGRA | ColorSpace::ARGB => {
                 RgbaImage::from_raw(width, height, buf)
-                    .map(DynamicImage::ImageRgba8)
-                    .ok_or_else(|| {
-                        LazyImageError::decode_failed("png: failed to build RGBA image")
-                    })?
+                .map(DynamicImage::ImageRgba8)
+                .ok_or_else(|| {
+                    LazyImageError::decode_failed("png: failed to build RGBA image")
+                })?
             }
             ColorSpace::Luma => GrayImage::from_raw(width, height, buf)
                 .map(DynamicImage::ImageLuma8)
@@ -132,9 +151,16 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
             ColorSpace::LumaA => GrayAlphaImage::from_raw(width, height, buf)
                 .map(DynamicImage::ImageLumaA8)
                 .ok_or_else(|| LazyImageError::decode_failed("png: failed to build LumaA image"))?,
+            // YCbCr is 3-channel, not compatible with RGBA (4-channel)
+            // Fallback to image crate for proper handling
+            ColorSpace::YCbCr | ColorSpace::YCCK => {
+                return Err(LazyImageError::decode_failed(
+                    "png: YCbCr colorspace not supported by zune-png, fallback to image crate"
+                ));
+            }
             other => {
                 return Err(LazyImageError::decode_failed(format!(
-                    "png: unsupported colorspace {:?}",
+                    "png: unsupported colorspace {:?}, fallback to image crate",
                     other
                 )))
             }
@@ -142,6 +168,23 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
 
         Ok(img)
     })
+}
+
+/// Read PNG dimensions from header without full decode.
+/// Returns (width, height) or error if header is invalid.
+fn read_png_dimensions(data: &[u8]) -> Result<(u32, u32), ()> {
+    // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+    if data.len() < 24 || &data[0..8] != b"\x89PNG\r\n\x1a\n" {
+        return Err(());
+    }
+    // First chunk (IHDR) starts at offset 8
+    // Width: bytes 16-19, Height: bytes 20-23 (big-endian)
+    if data.len() < 24 {
+        return Err(());
+    }
+    let width = u32::from_be_bytes([data[16], data[17], data[18], data[19]]);
+    let height = u32::from_be_bytes([data[20], data[21], data[22], data[23]]);
+    Ok((width, height))
 }
 
 /// Decode WebP using libwebp (via webp crate). Falls back to image crate for animated WebP.
@@ -188,7 +231,16 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
     let detected = detect_format(bytes);
     let img = match detected {
         Some(ImageFormat::Jpeg) => decode_jpeg_mozjpeg(bytes)?,
-        Some(ImageFormat::Png) => decode_png_zune(bytes)?,
+        Some(ImageFormat::Png) => {
+            // Try zune-png first, fallback to image crate on failure
+            match decode_png_zune(bytes) {
+                Ok(img) => img,
+                Err(_) => {
+                    // Fallback to image crate for compatibility (e.g., >16k dimensions, YCbCr)
+                    decode_with_image_crate(bytes)?
+                }
+            }
+        }
         Some(ImageFormat::WebP) => decode_webp_libwebp(bytes)?,
         _ => decode_with_image_crate(bytes)?,
     };
@@ -333,5 +385,17 @@ mod tests {
         let rgb = img.to_rgb8();
         let pixel = rgb.get_pixel(0, 0);
         assert_eq!(pixel.0, [10, 20, 30]);
+    }
+
+    #[test]
+    fn test_decode_png_fallback_to_image_crate_for_large_dimensions() {
+        // PNG with dimensions > 16,384 (zune-png limit) but < MAX_DIMENSION (32,768)
+        // Should fallback to image crate
+        const ZUNE_PNG_MAX_DIM: u32 = 16384;
+        let large_png = encode_png(ZUNE_PNG_MAX_DIM + 100, 100);
+        let (img, fmt) = decode_image(&large_png).unwrap();
+        assert_eq!(fmt, Some(ImageFormat::Png));
+        // Should decode successfully via image crate fallback
+        assert_eq!(img.dimensions(), (ZUNE_PNG_MAX_DIM + 100, 100));
     }
 }

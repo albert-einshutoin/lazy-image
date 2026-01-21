@@ -859,7 +859,9 @@ impl ImageEngine {
 mod tests {
     use super::*;
     use crate::engine::pipeline::fast_resize_owned;
-    use image::{DynamicImage, GenericImageView, RgbImage};
+    #[allow(unused_imports)]
+    use image::GenericImageView;
+    use image::{DynamicImage, RgbImage};
 
     fn create_test_image(width: u32, height: u32) -> DynamicImage {
         DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
