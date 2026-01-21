@@ -81,11 +81,18 @@ jobs:
             cp -r fuzz/seeds/* fuzz/corpus/${{ matrix.target }}/ 2>/dev/null || true
           fi
 
+      - name: Build fuzzer
+        if: ${{ github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        run: |
+          cd fuzz
+          cargo +nightly fuzz build ${{ matrix.target }}
+
       - name: Run fuzzer
         if: ${{ github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
         run: |
           cd fuzz
           # Run with memory limit (2GB) and length limit (1MB)
+          # Timeout applies only to fuzzer execution, not build time
           timeout ${FUZZ_DURATION}s cargo +nightly fuzz run ${{ matrix.target }} -- \
             -max_len=1048576 \
             -rss_limit_mb=2048 \
