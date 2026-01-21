@@ -5,10 +5,9 @@
 use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
 use exif;
-#[cfg(test)]
-use image::GenericImageView;
 use image::{
-    DynamicImage, GrayAlphaImage, GrayImage, ImageFormat, ImageReader, RgbImage, RgbaImage,
+    DynamicImage, GenericImageView, GrayAlphaImage, GrayImage, ImageFormat, ImageReader, RgbImage,
+    RgbaImage,
 };
 use mozjpeg::Decompress;
 use std::io::Cursor;
@@ -96,13 +95,16 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
         // Check dimensions first to avoid unnecessary decode attempt
         // If exceeds zune-png limit but within MAX_DIMENSION, fallback to image crate
         const ZUNE_PNG_MAX_DIM: u32 = 16384;
-        
+
         // Try to read dimensions from PNG header without full decode
         if let Ok((width, height)) = read_png_dimensions(data) {
+            // Global safety check (DoS防止)
+            check_dimensions(width, height)?;
+
             if width > ZUNE_PNG_MAX_DIM || height > ZUNE_PNG_MAX_DIM {
-                // Exceeds zune-png limit but may be within MAX_DIMENSION - fallback
+                // Exceeds zune-png limit but still within MAX_DIMENSION - fallback
                 return Err(LazyImageError::decode_failed(
-                    "png: dimensions exceed zune-png limit, fallback to image crate"
+                    "png: dimensions exceed zune-png limit, fallback to image crate",
                 ));
             }
         }
@@ -140,10 +142,10 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
                 .ok_or_else(|| LazyImageError::decode_failed("png: failed to build RGB image"))?,
             ColorSpace::RGBA | ColorSpace::BGRA | ColorSpace::ARGB => {
                 RgbaImage::from_raw(width, height, buf)
-                .map(DynamicImage::ImageRgba8)
-                .ok_or_else(|| {
-                    LazyImageError::decode_failed("png: failed to build RGBA image")
-                })?
+                    .map(DynamicImage::ImageRgba8)
+                    .ok_or_else(|| {
+                        LazyImageError::decode_failed("png: failed to build RGBA image")
+                    })?
             }
             ColorSpace::Luma => GrayImage::from_raw(width, height, buf)
                 .map(DynamicImage::ImageLuma8)
@@ -155,7 +157,7 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
             // Fallback to image crate for proper handling
             ColorSpace::YCbCr | ColorSpace::YCCK => {
                 return Err(LazyImageError::decode_failed(
-                    "png: YCbCr colorspace not supported by zune-png, fallback to image crate"
+                    "png: YCbCr colorspace not supported by zune-png, fallback to image crate",
                 ));
             }
             other => {
@@ -233,13 +235,18 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
         Some(ImageFormat::Jpeg) => decode_jpeg_mozjpeg(bytes)?,
         Some(ImageFormat::Png) => {
             // Try zune-png first, fallback to image crate on failure
-            match decode_png_zune(bytes) {
+            let decoded = match decode_png_zune(bytes) {
                 Ok(img) => img,
                 Err(_) => {
                     // Fallback to image crate for compatibility (e.g., >16k dimensions, YCbCr)
-                    decode_with_image_crate(bytes)?
+                    let fallback = decode_with_image_crate(bytes)?;
+                    fallback
                 }
-            }
+            };
+            // Enforce global dimension limits even after fallback
+            let (w, h) = decoded.dimensions();
+            check_dimensions(w, h)?;
+            decoded
         }
         Some(ImageFormat::WebP) => decode_webp_libwebp(bytes)?,
         _ => decode_with_image_crate(bytes)?,

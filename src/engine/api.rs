@@ -16,13 +16,13 @@ use crate::engine::tasks::{
     BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
 };
 use crate::error::LazyImageError;
-#[cfg(feature = "napi")]
-use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 #[cfg(not(feature = "napi"))]
 use crate::ops::Operation;
-use image::{DynamicImage, GenericImageView};
+#[cfg(feature = "napi")]
+use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 #[cfg(feature = "napi")]
 use image::ImageReader;
+use image::{DynamicImage, GenericImageView};
 #[cfg(feature = "napi")]
 use std::io::Cursor;
 #[cfg(feature = "napi")]
