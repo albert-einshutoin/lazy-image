@@ -720,7 +720,7 @@ dependencies = [
  "png",
  "ravif",
  "rayon",
- "zune-core",
+ "zune-core 0.5.1",
  "zune-jpeg",
 ]
 
@@ -875,6 +875,8 @@ dependencies = [
  "thiserror 1.0.69",
  "tikv-jemallocator",
  "webp",
+ "zune-core 0.4.12",
+ "zune-png",
 ]
 
 [[package]]
@@ -2257,6 +2259,12 @@ dependencies = [
 
 [[package]]
 name = "zune-core"
+version = "0.4.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f423a2c17029964870cfaabb1f13dfab7d092a62a29a89264f4d36990ca414a"
+
+[[package]]
+name = "zune-core"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb8a0807f7c01457d0379ba880ba6322660448ddebc890ce29bb64da71fb40f9"
@@ -2276,5 +2284,15 @@ version = "0.5.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2959ca473aae96a14ecedf501d20b3608d2825ba280d5adb57d651721885b0c2"
 dependencies = [
- "zune-core",
+ "zune-core 0.5.1",
+]
+
+[[package]]
+name = "zune-png"
+version = "0.4.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d29c085769c6f29effea890f093120ac019375fdc789d2a496ba8ba96c77509"
+dependencies = [
+ "zune-core 0.4.12",
+ "zune-inflate",
 ]

@@ -45,6 +45,10 @@ mozjpeg = "0.10"
 # WebP encoding
 webp = "0.3"
 
+# PNG decoding (SIMD最適化デコーダ)
+zune-png = "0.4"
+zune-core = "0.4"
+
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
 libavif-sys = { version = "0.17", default-features = false, features = ["codec-rav1e"] }

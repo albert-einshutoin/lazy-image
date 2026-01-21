@@ -492,7 +492,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
+    use image::{DynamicImage, RgbImage, RgbaImage};
 
     // Helper function to create test images
     fn create_test_image(width: u32, height: u32) -> DynamicImage {

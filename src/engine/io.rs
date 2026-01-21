@@ -358,7 +358,7 @@ fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
 mod tests {
     use super::*;
     use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
-    use image::{DynamicImage, GenericImageView, RgbImage};
+    use image::{DynamicImage, RgbImage};
     use std::io::Cursor;
 
     // Helper function to create test images
