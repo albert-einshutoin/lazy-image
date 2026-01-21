@@ -98,8 +98,8 @@ jobs:
             -rss_limit_mb=2048 \
             -max_total_time=${FUZZ_DURATION} \
             || EXIT_CODE=$?
-          # Exit code 77 = timeout (expected), 0 = normal
-          if [ "${EXIT_CODE:-0}" != "0" ] && [ "${EXIT_CODE:-0}" != "77" ]; then
+          # Exit code 77 = libFuzzer timeout (expected), 124 = timeout command timeout (expected), 0 = normal
+          if [ "${EXIT_CODE:-0}" != "0" ] && [ "${EXIT_CODE:-0}" != "77" ] && [ "${EXIT_CODE:-0}" != "124" ]; then
             exit $EXIT_CODE
           fi
 
