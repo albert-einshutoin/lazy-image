@@ -221,6 +221,29 @@ fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u3
                 }
             }
         }
+        Operation::Extract {
+            width,
+            height,
+            fit,
+            crop_width,
+            crop_height,
+            ..
+        } => {
+            let target_resize = (
+                width.unwrap_or(dims.0).max(1),
+                height.unwrap_or(dims.1).max(1),
+            );
+            let (resize_w, resize_h) = match fit {
+                ResizeFit::Fill => target_resize,
+                ResizeFit::Inside => calc_resize_dimensions(dims.0, dims.1, *width, *height),
+                ResizeFit::Cover => {
+                    calc_cover_resize_dimensions(dims.0, dims.1, target_resize.0, target_resize.1)
+                }
+            };
+            let final_w = (*crop_width).max(1).min(resize_w);
+            let final_h = (*crop_height).max(1).min(resize_h);
+            ((final_w, final_h), 4, FILTER_OVERHEAD_BYTES)
+        }
         Operation::Crop { width, height, .. } => {
             let w = (*width).max(1).min(dims.0);
             let h = (*height).max(1).min(dims.1);

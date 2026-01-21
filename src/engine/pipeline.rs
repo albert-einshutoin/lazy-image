@@ -191,6 +191,28 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
         // Try to optimize crop + resize or resize + crop
         if i + 1 < ops.len() {
             match (&ops[i], &ops[i + 1]) {
+                // Resize then crop: fuse into single Extract to avoid intermediate buffer
+                (
+                    Operation::Resize { width, height, fit },
+                    Operation::Crop {
+                        x,
+                        y,
+                        width: cw,
+                        height: ch,
+                    },
+                ) if *fit != ResizeFit::Cover => {
+                    optimized.push(Operation::Extract {
+                        width: *width,
+                        height: *height,
+                        fit: fit.clone(),
+                        crop_x: *x,
+                        crop_y: *y,
+                        crop_width: *cw,
+                        crop_height: *ch,
+                    });
+                    i += 2;
+                    continue;
+                }
                 // Crop then resize: optimize by calculating final dimensions
                 (
                     Operation::Crop {
@@ -223,9 +245,6 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                     }
                 }
                 // Resize then crop: keep both but order is already optimal
-                (Operation::Resize { .. }, Operation::Crop { .. }) => {
-                    // Keep both operations, but we could optimize further if needed
-                }
                 _ => {}
             }
         }
@@ -325,6 +344,98 @@ pub fn apply_ops<'a>(
                     }
                 }
             },
+            Operation::Extract {
+                width,
+                height,
+                fit,
+                crop_x,
+                crop_y,
+                crop_width,
+                crop_height,
+            } => {
+                if *crop_width == 0 || *crop_height == 0 {
+                    return Err(LazyImageError::invalid_crop_dimensions(
+                        *crop_width,
+                        *crop_height,
+                    ));
+                }
+
+                // Calculate resize target identical to Resize branch
+                let (resize_w, resize_h) = match (fit, width, height) {
+                    (ResizeFit::Fill, Some(w), Some(h)) => (*w, *h),
+                    (ResizeFit::Cover, Some(target_w), Some(target_h)) => {
+                        calc_cover_resize_dimensions(
+                            img.width(),
+                            img.height(),
+                            *target_w,
+                            *target_h,
+                        )
+                    }
+                    _ => calc_resize_dimensions(img.width(), img.height(), *width, *height),
+                };
+
+                validate_resize_dimensions(resize_w, resize_h)?;
+
+                let (frame_w, frame_h, offset_x, offset_y) = match (fit, width, height) {
+                    (ResizeFit::Cover, Some(target_w), Some(target_h)) => {
+                        let off_x = (resize_w.saturating_sub(*target_w)) / 2;
+                        let off_y = (resize_h.saturating_sub(*target_h)) / 2;
+                        (*target_w, *target_h, off_x, off_y)
+                    }
+                    _ => (resize_w, resize_h, 0, 0),
+                };
+
+                if *crop_x + *crop_width > frame_w || *crop_y + *crop_height > frame_h {
+                    return Err(LazyImageError::invalid_crop_bounds(
+                        *crop_x,
+                        *crop_y,
+                        *crop_width,
+                        *crop_height,
+                        frame_w,
+                        frame_h,
+                    ));
+                }
+
+                if (resize_w, resize_h) == (img.width(), img.height())
+                    && *crop_x == 0
+                    && *crop_y == 0
+                    && *crop_width == resize_w
+                    && *crop_height == resize_h
+                {
+                    // Degenerate case: no-op extract
+                    img
+                } else {
+                    // Map crop region back to source coordinates to avoid resizing unused areas.
+                    let scale_x = resize_w as f64 / img.width().max(1) as f64;
+                    let scale_y = resize_h as f64 / img.height().max(1) as f64;
+
+                    let src_left = (offset_x as f64 + *crop_x as f64) / scale_x;
+                    let src_top = (offset_y as f64 + *crop_y as f64) / scale_y;
+                    let mut src_width = *crop_width as f64 / scale_x;
+                    let mut src_height = *crop_height as f64 / scale_y;
+                    let max_src_width = img.width().max(1) as f64 - src_left;
+                    let max_src_height = img.height().max(1) as f64 - src_top;
+                    if src_width > max_src_width {
+                        src_width = max_src_width;
+                    }
+                    if src_height > max_src_height {
+                        src_height = max_src_height;
+                    }
+
+                    let src_image = match img {
+                        DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
+                        _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                    };
+
+                    fast_resize_owned_impl(
+                        src_image,
+                        *crop_width,
+                        *crop_height,
+                        default_resize_options().crop(src_left, src_top, src_width, src_height),
+                    )
+                    .map_err(|err| err.into_lazy_image_error())?
+                }
+            }
 
             Operation::Crop {
                 x,
@@ -407,7 +518,11 @@ pub fn fast_resize_owned(
     dst_width: u32,
     dst_height: u32,
 ) -> std::result::Result<DynamicImage, ResizeError> {
-    fast_resize_owned_impl(img, dst_width, dst_height)
+    fast_resize_owned_impl(img, dst_width, dst_height, default_resize_options())
+}
+
+fn default_resize_options() -> ResizeOptions {
+    ResizeOptions::new().resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3))
 }
 
 /// Fast resize with reference (for external API compatibility)
@@ -442,12 +557,33 @@ pub fn fast_resize(
         }
     };
 
-    fast_resize_internal(
-        src_width, src_height, src_pixels, pixel_type, dst_width, dst_height,
+    fast_resize_internal_with_options(
+        src_width,
+        src_height,
+        src_pixels,
+        pixel_type,
+        dst_width,
+        dst_height,
+        default_resize_options(),
     )
 }
 
 /// Internal resize implementation (shared by both owned and reference versions)
+pub fn fast_resize_internal_with_options(
+    src_width: u32,
+    src_height: u32,
+    src_pixels: Vec<u8>,
+    pixel_type: PixelType,
+    dst_width: u32,
+    dst_height: u32,
+    options: ResizeOptions,
+) -> std::result::Result<DynamicImage, String> {
+    fast_resize_internal_impl(
+        src_width, src_height, src_pixels, pixel_type, dst_width, dst_height, options,
+    )
+}
+
+/// Backward-compatible helper preserving the legacy signature without options.
 pub fn fast_resize_internal(
     src_width: u32,
     src_height: u32,
@@ -456,8 +592,14 @@ pub fn fast_resize_internal(
     dst_width: u32,
     dst_height: u32,
 ) -> std::result::Result<DynamicImage, String> {
-    fast_resize_internal_impl(
-        src_width, src_height, src_pixels, pixel_type, dst_width, dst_height,
+    fast_resize_internal_with_options(
+        src_width,
+        src_height,
+        src_pixels,
+        pixel_type,
+        dst_width,
+        dst_height,
+        default_resize_options(),
     )
 }
 
@@ -465,6 +607,7 @@ fn fast_resize_owned_impl(
     img: DynamicImage,
     dst_width: u32,
     dst_height: u32,
+    options: ResizeOptions,
 ) -> std::result::Result<DynamicImage, ResizeError> {
     let src_width = img.width();
     let src_height = img.height();
@@ -496,7 +639,7 @@ fn fast_resize_owned_impl(
     };
 
     fast_resize_internal_impl(
-        src_width, src_height, src_pixels, pixel_type, dst_width, dst_height,
+        src_width, src_height, src_pixels, pixel_type, dst_width, dst_height, options,
     )
     .map_err(|reason| ResizeError::new((src_width, src_height), (dst_width, dst_height), reason))
 }
@@ -508,6 +651,7 @@ fn fast_resize_internal_impl(
     pixel_type: PixelType,
     dst_width: u32,
     dst_height: u32,
+    options: ResizeOptions,
 ) -> std::result::Result<DynamicImage, String> {
     let pixel_count = (src_width as usize)
         .checked_mul(src_height as usize)
@@ -529,7 +673,9 @@ fn fast_resize_internal_impl(
         src_pixels.as_mut_slice(),
         pixel_type,
     ) {
-        Ok(src_image) => resize_with_source_image(src_image, pixel_type, dst_width, dst_height),
+        Ok(src_image) => {
+            resize_with_source_image(src_image, pixel_type, dst_width, dst_height, options)
+        }
         Err(ImageBufferError::InvalidBufferAlignment) => {
             let aligned_image = copy_pixels_to_aligned_image(
                 src_width,
@@ -538,7 +684,7 @@ fn fast_resize_internal_impl(
                 &src_pixels,
                 required_bytes,
             )?;
-            resize_with_source_image(aligned_image, pixel_type, dst_width, dst_height)
+            resize_with_source_image(aligned_image, pixel_type, dst_width, dst_height, options)
         }
         Err(other) => Err(format!("fir source image error: {other:?}")),
     }
@@ -568,6 +714,7 @@ fn resize_with_source_image<'a>(
     pixel_type: PixelType,
     dst_width: u32,
     dst_height: u32,
+    options: ResizeOptions,
 ) -> std::result::Result<DynamicImage, String> {
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);
 
@@ -579,8 +726,6 @@ fn resize_with_source_image<'a>(
     }
 
     let mut resizer = fir::Resizer::new();
-    let options =
-        ResizeOptions::new().resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3));
     resizer
         .resize(&src_image, &mut dst_image, &options)
         .map_err(|e| format!("fir resize error: {e:?}"))?;
@@ -834,6 +979,170 @@ mod tests {
         }
 
         #[test]
+        fn test_extract_matches_resize_then_crop() {
+            let img = create_test_image(120, 80);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(60),
+                    height: Some(60),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Crop {
+                    x: 5,
+                    y: 10,
+                    width: 30,
+                    height: 20,
+                },
+            ];
+
+            // Fused path via optimize_ops inside apply_ops
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            // Expected result using explicit two-step processing (reference behavior)
+            let (resize_w, resize_h) = calc_resize_dimensions(120, 80, Some(60), Some(60));
+            let resized = fast_resize_owned(img, resize_w, resize_h).unwrap();
+            let expected = resized.crop_imm(5, 10, 30, 20);
+
+            assert_eq!(fused.dimensions(), (30, 20));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_cover_fit_is_not_fused() {
+            let img = create_test_image(160, 80); // 2:1 aspect
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(80),
+                    height: Some(80),
+                    fit: ResizeFit::Cover,
+                },
+                Operation::Crop {
+                    x: 10,
+                    y: 5,
+                    width: 40,
+                    height: 30,
+                },
+            ];
+
+            let optimized = optimize_ops(&ops);
+            assert_eq!(optimized.len(), 2, "Cover fit should not be fused");
+
+            let result = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+            let (resize_w, resize_h) = calc_cover_resize_dimensions(160, 80, 80, 80);
+            let resized = fast_resize_owned(img, resize_w, resize_h).unwrap();
+            let centered = crop_to_dimensions(resized, 80, 80);
+            let expected = centered.crop_imm(10, 5, 40, 30);
+
+            assert_eq!(result.dimensions(), (40, 30));
+            assert_eq!(result.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_fill_fit_matches_two_step() {
+            let img = create_test_image(60, 30);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(90),
+                    height: Some(60),
+                    fit: ResizeFit::Fill,
+                },
+                Operation::Crop {
+                    x: 20,
+                    y: 10,
+                    width: 30,
+                    height: 20,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let resized = fast_resize_owned(img, 90, 60).unwrap();
+            let expected = resized.crop_imm(20, 10, 30, 20);
+
+            assert_eq!(fused.dimensions(), (30, 20));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_at_boundary() {
+            let img = create_test_image(100, 100);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(100),
+                    height: Some(100),
+                    fit: ResizeFit::Fill,
+                },
+                Operation::Crop {
+                    x: 90,
+                    y: 90,
+                    width: 10,
+                    height: 10,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let resized = fast_resize_owned(img, 100, 100).unwrap();
+            let expected = resized.crop_imm(90, 90, 10, 10);
+
+            assert_eq!(fused.dimensions(), (10, 10));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_small_image() {
+            let img = create_test_image(2, 2);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(1),
+                    height: Some(1),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Crop {
+                    x: 0,
+                    y: 0,
+                    width: 1,
+                    height: 1,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let resized = fast_resize_owned(img, 1, 1).unwrap();
+            let expected = resized.crop_imm(0, 0, 1, 1);
+
+            assert_eq!(fused.dimensions(), (1, 1));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_extract_extreme_aspect_ratio() {
+            let img = create_test_image(10_000, 50);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(100),
+                    height: Some(100),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Crop {
+                    x: 0,
+                    y: 0,
+                    width: 50,
+                    height: 1,
+                },
+            ];
+
+            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let (resize_w, resize_h) = calc_resize_dimensions(10_000, 50, Some(100), Some(100));
+            let resized = fast_resize_owned(img, resize_w, resize_h).unwrap();
+            let expected = resized.crop_imm(0, 0, 50, 1);
+
+            assert_eq!(fused.dimensions(), (50, 1));
+            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
         fn test_rotate_90() {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 90 }];
@@ -1063,6 +1372,46 @@ mod tests {
         }
 
         #[test]
+        fn test_resize_then_crop_is_fused_into_extract() {
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(200),
+                    height: Some(150),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Crop {
+                    x: 10,
+                    y: 5,
+                    width: 80,
+                    height: 60,
+                },
+            ];
+
+            let optimized = optimize_ops(&ops);
+            assert_eq!(optimized.len(), 1);
+            match &optimized[0] {
+                Operation::Extract {
+                    width,
+                    height,
+                    fit,
+                    crop_x,
+                    crop_y,
+                    crop_width,
+                    crop_height,
+                } => {
+                    assert_eq!(*width, Some(200));
+                    assert_eq!(*height, Some(150));
+                    assert_eq!(*fit, ResizeFit::Inside);
+                    assert_eq!(*crop_x, 10);
+                    assert_eq!(*crop_y, 5);
+                    assert_eq!(*crop_width, 80);
+                    assert_eq!(*crop_height, 60);
+                }
+                other => panic!("expected Extract, got {other:?}"),
+            }
+        }
+
+        #[test]
         fn test_multiple_consecutive_resizes() {
             let ops = vec![
                 Operation::Resize {
@@ -1197,7 +1546,15 @@ mod tests {
 
     #[test]
     fn test_fast_resize_internal_impl_errors_on_short_buffer() {
-        let res = fast_resize_internal_impl(4, 4, vec![0u8; 10], PixelType::U8x3, 2, 2);
+        let res = fast_resize_internal_impl(
+            4,
+            4,
+            vec![0u8; 10],
+            PixelType::U8x3,
+            2,
+            2,
+            default_resize_options(),
+        );
         assert!(res.is_err());
     }
 
@@ -1230,6 +1587,7 @@ mod tests {
                 PixelType::U8x4,
                 dst_width,
                 dst_height,
+                default_resize_options(),
             );
 
             assert!(result.is_ok(), "resize failed inside rayon pool");

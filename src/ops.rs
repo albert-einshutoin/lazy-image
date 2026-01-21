@@ -19,6 +19,19 @@ pub enum Operation {
         fit: ResizeFit,
     },
 
+    /// Fused resize + crop operation.
+    /// Resize according to width/height/fit, then extract the specified region
+    /// without allocating an intermediate buffer.
+    Extract {
+        width: Option<u32>,
+        height: Option<u32>,
+        fit: ResizeFit,
+        crop_x: u32,
+        crop_y: u32,
+        crop_width: u32,
+        crop_height: u32,
+    },
+
     /// Crop a region from the image
     Crop {
         x: u32,
