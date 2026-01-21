@@ -200,7 +200,7 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                         width: cw,
                         height: ch,
                     },
-                ) => {
+                ) if *fit != ResizeFit::Cover => {
                     optimized.push(Operation::Extract {
                         width: *width,
                         height: *height,
@@ -1008,7 +1008,7 @@ mod tests {
         }
 
         #[test]
-        fn test_extract_cover_fit_matches_two_step() {
+        fn test_extract_cover_fit_is_not_fused() {
             let img = create_test_image(160, 80); // 2:1 aspect
             let ops = vec![
                 Operation::Resize {
@@ -1024,15 +1024,17 @@ mod tests {
                 },
             ];
 
-            let fused = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+            let optimized = optimize_ops(&ops);
+            assert_eq!(optimized.len(), 2, "Cover fit should not be fused");
 
+            let result = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
             let (resize_w, resize_h) = calc_cover_resize_dimensions(160, 80, 80, 80);
             let resized = fast_resize_owned(img, resize_w, resize_h).unwrap();
             let centered = crop_to_dimensions(resized, 80, 80);
             let expected = centered.crop_imm(10, 5, 40, 30);
 
-            assert_eq!(fused.dimensions(), (40, 30));
-            assert_eq!(fused.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+            assert_eq!(result.dimensions(), (40, 30));
+            assert_eq!(result.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
         }
 
         #[test]
