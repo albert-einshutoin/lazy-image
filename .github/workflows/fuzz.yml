@@ -82,13 +82,13 @@ jobs:
           fi
 
       - name: Build fuzzer
-        if: ${{ github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
         run: |
           cd fuzz
           cargo +nightly fuzz build ${{ matrix.target }}
 
       - name: Run fuzzer
-        if: ${{ github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
         run: |
           cd fuzz
           # Run with memory limit (2GB) and length limit (1MB)
