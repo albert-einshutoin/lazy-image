@@ -721,8 +721,8 @@ impl Task for BatchTask {
                 };
 
                 // Safety: We assume the file won't be modified externally during processing.
-                // This is a common assumption in image processing libraries.
-                // Note: On Windows, memory-mapped files cannot be deleted while mapped.
+                // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
+                // On Windows, deleting a memory-mapped file fails (platform limitation).
                 let mmap = unsafe {
                     Mmap::map(&file)
                         .map_err(|e| LazyImageError::mmap_failed(input_path.clone(), e))?
