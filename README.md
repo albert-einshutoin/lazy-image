@@ -141,7 +141,7 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 
 - 🏆 **AVIF support** - Next-gen format, 30% smaller than WebP
 - 🚀 **Smaller files** than sharp (mozjpeg + libwebp + ravif)
-- 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB)
+- 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB). **Note:** AVIF currently does not preserve ICC (see below).
 - 🔄 **EXIF auto-orientation** - Defaultで正しい向きに補正、`autoOrient(false)`で無効化可能
 - 💾 **Memory-efficient** - Direct file I/O bypasses Node.js heap
 - 🌊 **Streaming (bounded-memory, disk-backed)** - Process huge inputs via streams without heap blow-up
@@ -160,7 +160,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 | Design Choice | Rationale |
 |---------------|-----------|
 | **8-bit output** | Web browsers don't benefit from 16-bit; reduces file size |
-| **AVIF with ICC** | Full ICC profile support via libavif |
+| **AVIF with ICC** | ⚠️ ICC preservation not supported (current limitation) |
 | **Fixed rotation angles** | 90°/180°/270° covers 99% of use cases; simpler implementation |
 | **No artistic filters** | Focused scope: compression, not image editing |
 | **No animation** | Static image optimization only; use ffmpeg for video/GIF |
@@ -179,7 +179,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 
 ### Format Limitations
 
-- **AVIF color profiles**: AVIF format fully supports ICC color profiles via libavif. All formats (JPEG/PNG/WebP/AVIF) preserve color accuracy.
+- **AVIF color profiles**: ICC cannot be preserved currently. Even with `keep_metadata(true)`, ICC is dropped. If you need ICC, use PNG/JPEG/WebP or convert to sRGB before encoding to AVIF.
 - **Input formats**: 16-bit images are automatically converted to 8-bit (by design, not a bug).
 
 ### Feature Limitations
@@ -924,14 +924,17 @@ lazy-image implements a **Copy-on-Write (CoW)** architecture to minimize memory 
 
 ### Color Management
 
-ICC color profiles are automatically extracted and embedded during processing.
+> ⚠️ **AVIF currently does NOT preserve ICC profiles.**  
+> Even with `keep_metadata(true)`, ICC is dropped when encoding to AVIF. If ICC is required, use PNG/JPEG/WebP or convert to sRGB before encoding.
+
+ICC color profiles are automatically extracted and embedded during processing (except AVIF).
 
 | Format | ICC Profile Support | Notes |
 |--------|---------------------|-------|
 | JPEG   | ✅ Full support | Extracted and embedded |
 | PNG    | ✅ Full support | Via iCCP chunk |
 | WebP   | ✅ Full support | Via ICCP chunk |
-| AVIF   | ✅ Full support | Via libavif ICC profile embedding |
+| AVIF   | ⚠️ Not preserved | Current limitation: ICC is dropped on encode |
 
 ### Platform Notes
 
