@@ -920,6 +920,7 @@ lazy-image implements a **Copy-on-Write (CoW)** architecture to minimize memory 
 3. **Zero-Copy Conversions**: For format conversions (e.g., PNG → WebP) without pixel manipulation (resize/crop), **no pixel buffer allocation or copy occurs**. The engine reuses the decoded buffer directly.
 4. **Smart Cloning**: `.clone()` operations are instant and memory-free until a destructive operation is applied.
 5. **Definition & Verification**: 「ゼロコピー」の意味・適用範囲・測定方法は [docs/ZERO_COPY.md](./docs/ZERO_COPY.md) に明示。`node --expose-gc docs/scripts/measure-zero-copy.js` で JS ヒープ増加 ≤2MB / RSS 予算式を確認可能。
+6. **File Modification Contract**: mmap 中に外部でファイルが変更・削除されると結果は未定義（デコードエラー/破損/OS 依存挙動）。処理中は元ファイルを変更しないこと。Windows では mmap 中のファイル削除不可。
 
 ### Color Management
 

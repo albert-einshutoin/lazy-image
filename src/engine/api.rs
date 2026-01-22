@@ -122,11 +122,9 @@ impl ImageEngine {
             }
         };
 
-        // Safety: We assume the file won't be modified externally during processing.
-        // This is a common assumption in image processing libraries.
-        // For production use, consider adding file locking (flock) if needed.
-        // Note: On Windows, memory-mapped files cannot be deleted while mapped.
-        // This is a platform limitation that should be documented for users.
+        // Safety: mmap は処理中に外部から内容を書き換えられないことを前提とする。
+        // 変更された場合はデコード失敗や破損、OS により SIGBUS/SIGSEGV が発生する可能性がある。
+        // 競合が懸念される場合は事前コピーやファイルロックを利用すること。
         let mmap = unsafe {
             match Mmap::map(&file) {
                 Ok(mmap) => mmap,
