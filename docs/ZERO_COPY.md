@@ -73,3 +73,20 @@
   - 変更が懸念される環境では `from(Buffer)` などコピー経路を使うか、事前に一時ディレクトリへコピーしてから処理する。
   - 共有ストレージでの並行書き込みを防ぐ場合は OS ロック（`flock` 相当）を使用する。
   - Windows では mmap 中に削除できないため、処理完了までファイルを保持するか、`from(Buffer)` を使用する。
+
+### Windows で安全に扱うパターン例
+
+- **すぐ削除したい**: 
+  ```js
+  const buf = fs.readFileSync(src); // JSヒープ経路
+  const out = await ImageEngine.from(buf).toFile(dst, 'jpeg', 80);
+  fs.unlinkSync(src); // OK
+  ```
+- **テンポラリにコピーして処理**:
+  ```js
+  const tmp = path.join(os.tmpdir(), path.basename(src));
+  fs.copyFileSync(src, tmp);
+  await ImageEngine.fromPath(tmp).toFile(dst, 'jpeg', 80);
+  fs.unlinkSync(tmp); // 元ファイルはそのまま
+  ```
+- **バッチ処理**: `processBatch()` 実行中は入力を残し、完了後に削除する（スコープが抜けて mmap が閉じたことを確認してから削除）。

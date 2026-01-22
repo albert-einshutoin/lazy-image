@@ -941,10 +941,10 @@ ICC color profiles are automatically extracted and embedded during processing.
 
 **Impact**: If you use `fromPath()` to process a file and then try to delete or replace that file while the `ImageEngine` instance is still in scope, the operation will fail on Windows.
 
-**Workaround**: 
-- Ensure the `ImageEngine` instance is dropped before attempting to delete/replace the file
-- Use `from()` with a Buffer if you need to delete the source file immediately after processing
-- For batch processing, process files sequentially or ensure engines are dropped before file cleanup
+**Recommended usage (Windows)**:
+- 処理中は元ファイルを変更・削除しない。エンジンのスコープ終了（drop）を待ってから削除する。
+- 直後に削除したい場合は `fs.readFileSync` → `ImageEngine.from(buffer)` でヒープ経路を使うか、一時ディレクトリにコピーしてから処理・削除する。
+- `processBatch()` でも同様に、バッチ終了まで入力ファイルを残す。
 
 **Example**:
 ```javascript
