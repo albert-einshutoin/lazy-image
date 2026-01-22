@@ -87,7 +87,8 @@ impl WeightedSemaphore {
         let mut available = self.state.lock();
         let freed = (*available).saturating_add(weight).min(self.capacity);
         *available = freed;
-        // notify_all to avoid starvation when waiters have heterogeneous weights
+        // notify_all: 大きな重みと小さな重みが混在すると notify_one では飢餓が起きやすい。
+        // ベンチでは wake スパイクは許容範囲内だったため全員起こし、即時再競合で公平性を優先する。
         self.cvar.notify_all();
     }
 }
