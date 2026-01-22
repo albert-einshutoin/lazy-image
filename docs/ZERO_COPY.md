@@ -65,28 +65,28 @@
 - **測定式**で上限を示し、`docs/scripts/measure-zero-copy.js` でいつでも再検証できる
 - 適用範囲と例外を明示し、期待値と境界をドキュメント化
 
-## mmap 中にファイルが変更・削除された場合の挙動
+## Behavior when files are modified or deleted during mmap
 
-- **契約**: 処理中に元ファイルを変更・削除しないことを前提とする（変更は未定義動作）。
-- **起こり得る結果**: デコード失敗、破損画像、OS 依存の SIGBUS/SIGSEGV（Linux/macOS）、Windows では削除自体が失敗。
-- **推奨策**:
-  - 変更が懸念される環境では `from(Buffer)` などコピー経路を使うか、事前に一時ディレクトリへコピーしてから処理する。
-  - 共有ストレージでの並行書き込みを防ぐ場合は OS ロック（`flock` 相当）を使用する。
-  - Windows では mmap 中に削除できないため、処理完了までファイルを保持するか、`from(Buffer)` を使用する。
+- **Contract**: It is assumed that the source file will not be modified or deleted during processing (modification is undefined behavior).
+- **Possible outcomes**: Decode failure, corrupted images, OS-dependent SIGBUS/SIGSEGV (Linux/macOS), or deletion failure on Windows.
+- **Recommendations**:
+  - In environments where modification is a concern, use copy paths such as `from(Buffer)` or copy to a temporary directory before processing.
+  - To prevent concurrent writes on shared storage, use OS locks (equivalent to `flock`).
+  - On Windows, files cannot be deleted while mmap is active, so keep the file until processing completes or use `from(Buffer)`.
 
-### Windows で安全に扱うパターン例
+### Windows-specific safe usage patterns
 
-- **すぐ削除したい**: 
+- **Immediate deletion**: 
   ```js
-  const buf = fs.readFileSync(src); // JSヒープ経路
+  const buf = fs.readFileSync(src); // JS heap path
   const out = await ImageEngine.from(buf).toFile(dst, 'jpeg', 80);
   fs.unlinkSync(src); // OK
   ```
-- **テンポラリにコピーして処理**:
+- **Copy to temporary directory for processing**:
   ```js
   const tmp = path.join(os.tmpdir(), path.basename(src));
   fs.copyFileSync(src, tmp);
   await ImageEngine.fromPath(tmp).toFile(dst, 'jpeg', 80);
-  fs.unlinkSync(tmp); // 元ファイルはそのまま
+  fs.unlinkSync(tmp); // Original file remains unchanged
   ```
-- **バッチ処理**: `processBatch()` 実行中は入力を残し、完了後に削除する（スコープが抜けて mmap が閉じたことを確認してから削除）。
+- **Batch processing**: Keep input files during `processBatch()` execution and delete after completion (after confirming that the scope has exited and mmap is closed).
