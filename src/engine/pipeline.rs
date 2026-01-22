@@ -202,6 +202,8 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                         height: ch,
                     },
                 ) if *fit != ResizeFit::Cover => {
+                    // Cover は拡大側に倒すため中間バッファが最大化し、融合してもメモリピークを小さくできない。
+                    // Inside/Fill だけを Extract に畳み、ピーク削減とコピー削減を狙う。
                     optimized.push(Operation::Extract {
                         width: *width,
                         height: *height,
