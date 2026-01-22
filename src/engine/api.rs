@@ -5,7 +5,9 @@
 
 // BatchResult is used in ts_return_type attribute (line 446) - compiler can't detect this
 // Source is used via Source::Memory and Source::Mapped
-use super::firewall::{FirewallConfig, FirewallPolicy};
+use super::firewall::FirewallConfig;
+#[cfg(feature = "napi")]
+use super::firewall::FirewallPolicy;
 #[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
 #[cfg(feature = "napi")]
@@ -14,10 +16,18 @@ use crate::engine::tasks::{
     BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
 };
 use crate::error::LazyImageError;
+#[cfg(not(feature = "napi"))]
+use crate::ops::Operation;
+#[cfg(feature = "napi")]
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
-use image::{DynamicImage, GenericImageView, ImageReader};
+#[cfg(feature = "napi")]
+use image::ImageReader;
+use image::{DynamicImage, GenericImageView};
+#[cfg(feature = "napi")]
 use std::io::Cursor;
+#[cfg(feature = "napi")]
 use std::path::PathBuf;
+#[cfg(feature = "napi")]
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -849,7 +859,9 @@ impl ImageEngine {
 mod tests {
     use super::*;
     use crate::engine::pipeline::fast_resize_owned;
-    use image::{DynamicImage, GenericImageView, RgbImage};
+    #[allow(unused_imports)]
+    use image::GenericImageView;
+    use image::{DynamicImage, RgbImage};
 
     fn create_test_image(width: u32, height: u32) -> DynamicImage {
         DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {

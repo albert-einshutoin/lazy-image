@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- performance: Optimized codec backends (PNG decode via zune-png, WebP decode via libwebp)
+  - Faster PNG/WebP decoding with SIMD/native codecs
+  - Fallback to image crate for large PNGs (>16,384px) and animated WebP to preserve compatibility
+  - Added safety checks to keep MAX_DIMENSION enforcement consistent
+
+
 ### Added
 - Fused Extract operation (resize+crop) with zero-allocation pipeline path and memory model support (#240)
 - Benchmarks for resize+crop vs sharp plus JS integration tests covering fusion path (#240)

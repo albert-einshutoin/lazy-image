@@ -192,7 +192,9 @@ async function runTests() {
     });
 
     await asyncTest('sanitize() rejects oversized images (maxPixels)', async () => {
-        const oversized = createGrayscalePng(30_000, 1);
+        // Use 10,000x1 instead of 30,000x1 to stay within zune-png's default limit (16384)
+        // This ensures Firewall pixel check is triggered, not zune-png's internal limit
+        const oversized = createGrayscalePng(10_000, 1);
         try {
             await ImageEngine.from(oversized)
                 .sanitize({ policy: 'strict' })

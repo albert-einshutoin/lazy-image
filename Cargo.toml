@@ -45,6 +45,14 @@ mozjpeg = "0.10"
 # WebP encoding
 webp = "0.3"
 
+# PNG decoding (SIMD最適化デコーダ)
+# Note: zune-png 0.4 uses zune-core 0.4, while zune-jpeg uses zune-core 0.5
+# This results in two versions of zune-core in Cargo.lock (0.4.12 and 0.5.1).
+# This is acceptable until zune-png 0.5 is released (currently only 0.4 available).
+# TODO: Upgrade to zune-png 0.5 when available to unify zune-core versions.
+zune-png = "0.4"
+zune-core = "0.4"
+
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
 libavif-sys = { version = "0.17", default-features = false, features = ["codec-rav1e"] }

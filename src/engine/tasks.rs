@@ -8,11 +8,13 @@ use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
 use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
+#[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::memory;
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "napi")]
 use crate::engine::pool;
+#[allow(unused_imports)]
 use crate::error::{ErrorCategory, LazyImageError};
 use crate::ops::{Operation, OutputFormat};
 use crate::PROCESSING_METRICS_VERSION;

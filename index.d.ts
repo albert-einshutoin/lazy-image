@@ -53,6 +53,10 @@ export const enum ErrorCategory {
   /** Library bugs (should not happen) */
   InternalBug = 3
 }
+
+/** Extract ErrorCategory from a thrown error or returns null if unavailable */
+export declare function getErrorCategory(err: unknown): ErrorCategory | null
+
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
@@ -288,8 +292,6 @@ export declare class ImageEngine {
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
 
-export function getErrorCategory(err: unknown): ErrorCategory | null
-
 export interface StreamingPipelineOptions {
   format?: string
   quality?: number | null
@@ -302,4 +304,4 @@ export interface StreamingPipeline {
   readable: NodeJS.ReadableStream
 }
 
-export function createStreamingPipeline(options: StreamingPipelineOptions): StreamingPipeline
+export function createStreamingPipeline(options?: StreamingPipelineOptions): StreamingPipeline

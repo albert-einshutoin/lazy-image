@@ -10,6 +10,7 @@ use std::borrow::Cow;
 
 // GenericImageView is used in tests via dimensions() method
 #[cfg(test)]
+#[allow(unused_imports)] // used in tests for dimensions() helpers
 use image::GenericImageView;
 
 // Type alias for Result - always use LazyImageError to preserve error taxonomy
