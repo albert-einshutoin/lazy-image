@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fused Extract operation (resize+crop) with zero-allocation pipeline path and memory model support (#240)
 - Benchmarks for resize+crop vs sharp plus JS integration tests covering fusion path (#240)
 
+### Changed
+- Memory semaphore switched to `parking_lot` mutex/condvar for reduced contention under load; added contention benchmark (#241)
+
 --- 
 
 ## [0.9.0] - 2026-01-21

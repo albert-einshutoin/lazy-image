@@ -312,31 +312,45 @@ if (!nativeBinding) {
 
 const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
-// Error category helper: compatible with legacy and new error shapes
+module.exports.ImageEngine = ImageEngine
+module.exports.ErrorCategory = ErrorCategory
+module.exports.inspect = inspect
+module.exports.inspectFile = inspectFile
+module.exports.version = version
+module.exports.supportedInputFormats = supportedInputFormats
+module.exports.supportedOutputFormats = supportedOutputFormats
+
+// -----------------------------------------------------------------------------
+// JS helpers (manual exports)
+// -----------------------------------------------------------------------------
 function getErrorCategory(err) {
   if (!err) return null
-  // Prefer explicit category field if present
-  if (err.category !== undefined && err.category !== null) return err.category
-  // Fallback to code like "LAZY_IMAGE_USER_ERROR" -> convert to enum value if available
-  if (typeof err.code === 'string' && err.code.startsWith('LAZY_IMAGE_')) {
-    const suffix = err.code.replace('LAZY_IMAGE_', '').toUpperCase()
-    // Map suffix to ErrorCategory keys
-    if (ErrorCategory[suffix] !== undefined) {
-      return ErrorCategory[suffix]
+  // Preferred: numeric enum or string name set on error.category
+  if (typeof err === 'object') {
+    if (err.category !== undefined && err.category !== null) {
+      return err.category
+    }
+    // Fallback: derive from error.code (e.g., LAZY_IMAGE_USER_ERROR)
+    if (typeof err.code === 'string') {
+      const code = err.code
+      if (code.includes('USER')) return ErrorCategory.UserError
+      if (code.includes('CODEC')) return ErrorCategory.CodecError
+      if (code.includes('RESOURCE')) return ErrorCategory.ResourceLimit
+      if (code.includes('INTERNAL')) return ErrorCategory.InternalBug
     }
   }
   return null
 }
 
-// Streaming helper
-const { createStreamingPipeline } = require('./streaming/pipeline')
+const { createStreamingPipeline: createStreamingPipelineCore } = require('./streaming/pipeline')
 
-module.exports.ImageEngine = ImageEngine
-module.exports.ErrorCategory = ErrorCategory
-module.exports.inspect = inspect
-module.exports.inspectFile = inspectFile
+function createStreamingPipeline(options) {
+  // Inject ImageEngine if caller omits it (backward compatibility)
+  return createStreamingPipelineCore({
+    ImageEngine,
+    ...(options || {}),
+  })
+}
+
 module.exports.getErrorCategory = getErrorCategory
 module.exports.createStreamingPipeline = createStreamingPipeline
-module.exports.version = version
-module.exports.supportedInputFormats = supportedInputFormats
-module.exports.supportedOutputFormats = supportedOutputFormats

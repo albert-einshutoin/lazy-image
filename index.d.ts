@@ -291,3 +291,17 @@ export declare class ImageEngine {
    */
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
+
+export interface StreamingPipelineOptions {
+  format?: string
+  quality?: number | null
+  ops?: Array<any>
+  ImageEngine?: typeof ImageEngine
+}
+
+export interface StreamingPipeline {
+  writable: NodeJS.WritableStream
+  readable: NodeJS.ReadableStream
+}
+
+export function createStreamingPipeline(options?: StreamingPipelineOptions): StreamingPipeline
