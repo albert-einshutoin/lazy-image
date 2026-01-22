@@ -18,6 +18,105 @@ use image::GenericImageView;
 // rather than being converted to generic InternalBug errors.
 type PipelineResult<T> = std::result::Result<T, LazyImageError>;
 
+fn update_color_state(mut state: ColorState, op: &Operation) -> ColorState {
+    match op {
+        Operation::Grayscale => {
+            state.color_space = ColorSpace::Luma;
+        }
+        Operation::ColorSpace { target: _ } => {
+            state.transfer = TransferFn::Srgb;
+        }
+        Operation::Resize { .. }
+        | Operation::Extract { .. }
+        | Operation::Crop { .. }
+        | Operation::Rotate { .. }
+        | Operation::FlipH
+        | Operation::FlipV
+        | Operation::Brightness { .. }
+        | Operation::Contrast { .. }
+        | Operation::AutoOrient { .. } => {}
+    }
+    state
+}
+
+/// Color representation tracked through the pipeline.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ColorSpace {
+    Rgb,
+    Rgba,
+    Luma,
+    LumaA,
+    Unknown,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BitDepth {
+    Eight,
+    Ten,
+    Twelve,
+    Sixteen,
+    Unknown,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TransferFn {
+    Srgb,
+    Linear,
+    Unknown,
+}
+
+/// Presence of ICC profile.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum IccState {
+    Present,
+    Absent,
+}
+
+/// Pipeline color state (color space + bit depth + transfer + ICC presence).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ColorState {
+    pub color_space: ColorSpace,
+    pub bit_depth: BitDepth,
+    pub transfer: TransferFn,
+    pub icc: IccState,
+}
+
+impl ColorState {
+    pub fn from_dynamic_image(img: &DynamicImage, icc: IccState) -> Self {
+        let color_space = match img {
+            DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgb16(_) => ColorSpace::Rgb,
+            DynamicImage::ImageRgba8(_) | DynamicImage::ImageRgba16(_) => ColorSpace::Rgba,
+            DynamicImage::ImageLuma8(_) | DynamicImage::ImageLuma16(_) => ColorSpace::Luma,
+            DynamicImage::ImageLumaA8(_) | DynamicImage::ImageLumaA16(_) => ColorSpace::LumaA,
+            _ => ColorSpace::Unknown,
+        };
+        let bit_depth = match img {
+            DynamicImage::ImageRgb8(_)
+            | DynamicImage::ImageRgba8(_)
+            | DynamicImage::ImageLuma8(_)
+            | DynamicImage::ImageLumaA8(_) => BitDepth::Eight,
+            DynamicImage::ImageRgb16(_)
+            | DynamicImage::ImageRgba16(_)
+            | DynamicImage::ImageLuma16(_)
+            | DynamicImage::ImageLumaA16(_) => BitDepth::Sixteen,
+            _ => BitDepth::Unknown,
+        };
+
+        Self {
+            color_space,
+            bit_depth,
+            transfer: TransferFn::Srgb, // default assumption; refined by ops
+            icc,
+        }
+    }
+}
+
+/// Image plus tracked color state.
+pub struct ColorTrackedImage<'a> {
+    pub image: Cow<'a, DynamicImage>,
+    pub state: ColorState,
+}
+
 // Note: to_pipeline_error is no longer needed
 // because PipelineResult now always returns LazyImageError directly
 
@@ -277,10 +376,11 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
 /// - The original engine's operation queue remains unchanged
 /// - Each task can optimize operations independently
 /// - The design maintains clear separation between immutable engine state and task execution
-pub fn apply_ops<'a>(
+pub fn apply_ops_tracked<'a>(
     img: Cow<'a, DynamicImage>,
     ops: &[Operation],
-) -> PipelineResult<Cow<'a, DynamicImage>> {
+    initial_state: ColorState,
+) -> PipelineResult<ColorTrackedImage<'a>> {
     // Optimize operations first
     // Note: This clones ops internally, which is intentional for the immutable engine design.
     // The clone cost is low (ops are small structs) and ensures task isolation.
@@ -288,14 +388,19 @@ pub fn apply_ops<'a>(
 
     // No operations = no copy needed (format conversion only path)
     if optimized_ops.is_empty() {
-        return Ok(img);
+        return Ok(ColorTrackedImage {
+            image: img,
+            state: initial_state,
+        });
     }
 
     // Operations exist - we need owned data to mutate
     // This is where the "copy" in Copy-on-Write happens
     let mut img = img.into_owned();
+    let mut state = initial_state;
 
     for op in &optimized_ops {
+        state = update_color_state(state, op);
         img = match op {
             Operation::Resize { width, height, fit } => match (fit, width, height) {
                 (ResizeFit::Fill, Some(w), Some(h)) => {
@@ -512,7 +617,19 @@ pub fn apply_ops<'a>(
             }
         };
     }
-    Ok(Cow::Owned(img))
+    Ok(ColorTrackedImage {
+        image: Cow::Owned(img),
+        state,
+    })
+}
+
+/// Backward-compatible wrapper that drops color state.
+pub fn apply_ops<'a>(
+    img: Cow<'a, DynamicImage>,
+    ops: &[Operation],
+) -> PipelineResult<Cow<'a, DynamicImage>> {
+    let init_state = ColorState::from_dynamic_image(img.as_ref(), IccState::Absent);
+    Ok(apply_ops_tracked(img, ops, init_state)?.image)
 }
 
 /// Fast resize with owned DynamicImage (zero-copy for RGB/RGBA)
