@@ -202,6 +202,9 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                         height: ch,
                     },
                 ) if *fit != ResizeFit::Cover => {
+                    // Cover fit scales to the larger dimension, maximizing intermediate buffers.
+                    // Fusing Cover into Extract doesn't reduce memory peak, so we only fuse
+                    // Inside/Fill to reduce peak memory and copies.
                     optimized.push(Operation::Extract {
                         width: *width,
                         height: *height,

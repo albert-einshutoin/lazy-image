@@ -12,7 +12,6 @@ use parking_lot::{Condvar, Mutex};
 #[cfg(feature = "napi")]
 use std::fs;
 use std::io::Cursor;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, OnceLock};
 
 /// Estimated memory per image operation (in bytes)
@@ -29,13 +28,6 @@ const MIN_ESTIMATE_BYTES: u64 = 24 * 1024 * 1024; // 24MB
 /// Overhead for decode/temporary buffers (heuristic)
 const DECODE_OVERHEAD_BYTES: u64 = 8 * 1024 * 1024;
 const FILTER_OVERHEAD_BYTES: u64 = 4 * 1024 * 1024;
-
-/// Moving-average tuning factor to self-correct estimates using observed RSS.
-/// Stored as fixed-point (scale = 1000) to avoid floating point atomics.
-const TUNING_SCALE: u64 = 1000;
-const TUNING_MIN: u64 = 500; // 0.5x
-const TUNING_MAX: u64 = 4000; // 4x
-static ESTIMATE_TUNING: AtomicU64 = AtomicU64::new(TUNING_SCALE);
 
 /// Default bytes-per-pixel assumptions per format (decoded)
 const BPP_JPEG: u64 = 3; // YCbCr → RGB
@@ -95,7 +87,9 @@ impl WeightedSemaphore {
         let mut available = self.state.lock();
         let freed = (*available).saturating_add(weight).min(self.capacity);
         *available = freed;
-        // notify_all to avoid starvation when waiters have heterogeneous weights
+        // notify_all: When waiters have heterogeneous weights, notify_one can cause starvation.
+        // Benchmarks showed wake spikes are acceptable, so we wake all waiters and prioritize
+        // fairness through immediate re-contention.
         self.cvar.notify_all();
     }
 }
@@ -148,14 +142,6 @@ fn default_bpp(format: Option<ImageFormat>) -> u64 {
         Some(ImageFormat::Avif) => BPP_AVIF,
         _ => BPP_UNKNOWN,
     }
-}
-
-fn tuned(bytes: u64) -> u64 {
-    let scale = ESTIMATE_TUNING
-        .load(Ordering::Relaxed)
-        .max(TUNING_MIN)
-        .min(TUNING_MAX);
-    bytes.saturating_mul(scale).saturating_add(TUNING_SCALE - 1) / TUNING_SCALE
 }
 
 /// Reserve memory for OS / runtime based on container/host limit
@@ -276,6 +262,8 @@ fn estimate_memory_from_dimensions_with_context(
     ops: &[Operation],
     output_format: Option<&OutputFormat>,
 ) -> u64 {
+    // Deterministic model: Calculate peak memory directly from input pixel count × BPP
+    // and pipeline intermediate buffer count. No learning or observation-based corrections.
     let mut current_dims = (width, height);
     let mut current_bpp = default_bpp(format);
 
@@ -305,10 +293,11 @@ fn estimate_memory_from_dimensions_with_context(
     let output_bytes = bytes_for_image(current_dims.0, current_dims.1, output_bpp);
     peak = peak.max(current_bytes.saturating_add(output_bytes / 4));
 
-    tuned(peak.max(MIN_ESTIMATE_BYTES))
+    peak.max(MIN_ESTIMATE_BYTES)
 }
 
 /// Simple wrapper for callers without format/ops context (kept for compatibility in tests)
+#[cfg(test)]
 pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
     estimate_memory_from_dimensions_with_context(width, height, None, &[], None)
 }
@@ -344,42 +333,6 @@ pub fn parse_header(bytes: &[u8]) -> Option<HeaderEstimate> {
         }
     }
     None
-}
-
-/// Record observed RSS to self-correct future estimates (moving average with clamp).
-pub fn record_memory_observation(predicted: u64, start_rss: Option<u64>, end_rss: Option<u64>) {
-    if predicted == 0 {
-        return;
-    }
-    let observed = match (start_rss, end_rss) {
-        (Some(start), Some(end)) => end.saturating_sub(start),
-        (None, Some(end)) => end,
-        _ => return,
-    };
-    if observed == 0 {
-        return;
-    }
-
-    let ratio = (observed as f64 / predicted as f64).clamp(
-        TUNING_MIN as f64 / TUNING_SCALE as f64,
-        TUNING_MAX as f64 / TUNING_SCALE as f64,
-    );
-    let scaled = (ratio * TUNING_SCALE as f64).round() as u64;
-
-    let mut previous = ESTIMATE_TUNING.load(Ordering::Relaxed);
-    loop {
-        let blended = ((previous * 4).saturating_add(scaled)) / 5;
-        let clamped = blended.clamp(TUNING_MIN, TUNING_MAX);
-        match ESTIMATE_TUNING.compare_exchange(
-            previous,
-            clamped,
-            Ordering::Relaxed,
-            Ordering::Relaxed,
-        ) {
-            Ok(_) => break,
-            Err(actual) => previous = actual,
-        }
-    }
 }
 
 /// Detects available memory from container limits or system memory
@@ -795,18 +748,7 @@ mod tests {
     }
 
     #[test]
-    fn test_record_memory_observation_adjusts_scale() {
-        ESTIMATE_TUNING.store(TUNING_SCALE, Ordering::Relaxed);
-        let predicted = 20 * 1024 * 1024;
-        // Observed delta is 50MB -> expected scale > 1.0
-        record_memory_observation(predicted, Some(100 * 1024 * 1024), Some(150 * 1024 * 1024));
-        let scale = ESTIMATE_TUNING.load(Ordering::Relaxed);
-        assert!(scale > TUNING_SCALE);
-    }
-
-    #[test]
     fn test_cover_resize_accounts_intermediate() {
-        ESTIMATE_TUNING.store(TUNING_SCALE, Ordering::Relaxed);
         let ops = vec![Operation::Resize {
             width: Some(1000),
             height: Some(1000),

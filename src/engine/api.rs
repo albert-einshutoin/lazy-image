@@ -857,7 +857,6 @@ impl ImageEngine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::engine::pipeline::fast_resize_owned;
     #[allow(unused_imports)]
     use image::GenericImageView;

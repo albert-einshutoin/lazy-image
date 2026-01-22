@@ -32,7 +32,7 @@ function formatBytes(bytes) {
 async function benchLazy() {
     const start = Date.now();
     const { data, metrics } = await ImageEngine.fromPath(SOURCE)
-        .resize(TARGET_W, TARGET_H)
+        .resize(TARGET_W, TARGET_H, { fit: 'inside' })
         .crop(CROP.left, CROP.top, CROP.width, CROP.height)
         .toBufferWithMetrics('png');
     const elapsed = Date.now() - start;
@@ -43,7 +43,7 @@ async function benchLazy() {
 async function benchSharp() {
     const start = Date.now();
     const buffer = await sharp(SOURCE)
-        .resize(TARGET_W, TARGET_H, { fit: 'cover' })
+        .resize(TARGET_W, TARGET_H, { fit: 'inside' })
         .extract(CROP)
         .png()
         .toBuffer();

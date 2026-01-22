@@ -134,10 +134,6 @@ impl<'m> MetricsRecorder<'m> {
         }
     }
 
-    fn memory_usage_start(&self) -> Option<u64> {
-        self.usage_start.as_ref().map(|u| u.memory_rss)
-    }
-
     fn mark_decode_done(&mut self) {
         if let Some(m) = self.metrics.as_deref_mut() {
             m.decode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
@@ -204,12 +200,14 @@ impl<'m> MetricsRecorder<'m> {
 
 // Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
 #[cfg(feature = "napi")]
+#[allow(dead_code)]
 type EngineResult<T> = Result<T>;
 #[cfg(not(feature = "napi"))]
 type EngineResult<T> = std::result::Result<T, LazyImageError>;
 
 // Helper function to convert LazyImageError to the appropriate error type
 #[cfg(feature = "napi")]
+#[allow(dead_code)]
 fn to_engine_error(err: LazyImageError) -> napi::Error {
     napi::Error::from(err)
 }
@@ -313,6 +311,7 @@ impl EncodeTask {
     /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
     /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
     /// when no mutation is needed (e.g., format conversion only).
+    #[allow(dead_code)] // Used in tests in engine.rs
     pub(crate) fn decode(&self) -> EngineResult<Cow<'_, DynamicImage>> {
         self.decode_internal().map_err(to_engine_error)
     }
@@ -398,11 +397,6 @@ impl EncodeTask {
 
         // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
-        memory::record_memory_observation(
-            estimated_memory,
-            metrics_recorder.memory_usage_start(),
-            final_usage.as_ref().map(|u| u.memory_rss),
-        );
         let icc_present = self.icc_present;
         let icc_preserved = self.keep_metadata && icc_present;
         // metadata_stripped: true when source had ICC but we did not preserve it
@@ -744,7 +738,6 @@ impl Task for BatchTask {
                         .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
                 let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
 
-                let usage_start = get_resource_usage();
                 let start_total = std::time::Instant::now();
 
                 let orientation = if self.auto_orient {
@@ -788,13 +781,6 @@ impl Task for BatchTask {
                     OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
                 firewall.enforce_timeout(start_total, "encode")?;
-
-                let usage_end = get_resource_usage();
-                memory::record_memory_observation(
-                    estimated_memory,
-                    usage_start.as_ref().map(|u| u.memory_rss),
-                    usage_end.as_ref().map(|u| u.memory_rss),
-                );
 
                 let filename = Path::new(input_path)
                     .file_name()

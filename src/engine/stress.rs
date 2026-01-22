@@ -10,9 +10,7 @@ use crate::engine::common::EngineResult;
 #[cfg(feature = "stress")]
 use crate::engine::decoder::{decode_image, ensure_dimensions_safe};
 #[cfg(feature = "stress")]
-use crate::engine::encoder::{
-    encode_avif, encode_jpeg, encode_jpeg_with_settings, encode_png, encode_webp,
-};
+use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 #[cfg(feature = "stress")]
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "stress")]
