@@ -11,7 +11,7 @@ use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png,
 #[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::memory;
-use crate::engine::pipeline::apply_ops;
+use crate::engine::pipeline::{apply_ops_tracked, ColorState, IccState};
 #[cfg(feature = "napi")]
 use crate::engine::pool;
 #[allow(unused_imports)]
@@ -373,7 +373,14 @@ impl EncodeTask {
             // 挿入位置は最先頭: ユーザー指定オペレーションより前に正規化する
             effective_ops.insert(0, Operation::AutoOrient { orientation: o });
         }
-        let processed = apply_ops(img, &effective_ops)?;
+        let icc_state = if self.icc_present {
+            IccState::Present
+        } else {
+            IccState::Absent
+        };
+        let initial_state = ColorState::from_dynamic_image(&img, icc_state);
+
+        let processed = apply_ops_tracked(img, &effective_ops, initial_state)?.image;
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "process")?;
         metrics_recorder.mark_process_done();
@@ -763,7 +770,17 @@ impl Task for BatchTask {
                     effective_ops.insert(0, Operation::AutoOrient { orientation: o });
                 }
 
-                let processed = apply_ops(Cow::Owned(img), &effective_ops)?;
+                let icc_state = if icc_profile.is_some() {
+                    IccState::Present
+                } else {
+                    IccState::Absent
+                };
+                let processed = apply_ops_tracked(
+                    Cow::Owned(img),
+                    &effective_ops,
+                    ColorState::from_dynamic_image(&img, icc_state),
+                )?
+                .image;
                 firewall.enforce_timeout(start_total, "process")?;
 
                 // Encode - only preserve ICC profile if keep_metadata is true
