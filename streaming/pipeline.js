@@ -15,7 +15,8 @@ const { PassThrough } = require('stream');
  */
 function createStreamingPipeline(options) {
     const { format = 'jpeg', quality, ops = [], ImageEngine } = options ?? {};
-    if (!ImageEngine) {
+    const Engine = ImageEngine || require('../index').ImageEngine;
+    if (!Engine) {
         throw new Error('ImageEngine must be provided to createStreamingPipeline');
     }
     const tempBase = fs.mkdtempSync(path.join(os.tmpdir(), 'lazy-image-stream-'));
@@ -28,7 +29,7 @@ function createStreamingPipeline(options) {
 
     async function process() {
         try {
-            let engine = ImageEngine.fromPath(inputPath);
+            let engine = Engine.fromPath(inputPath);
             for (const op of ops) {
                 switch (op.op) {
                     case 'resize':

@@ -53,6 +53,10 @@ export const enum ErrorCategory {
   /** Library bugs (should not happen) */
   InternalBug = 3
 }
+
+/** Extract ErrorCategory from a thrown error or returns null if unavailable */
+export declare function getErrorCategory(err: unknown): ErrorCategory | null
+
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
@@ -287,25 +291,3 @@ export declare class ImageEngine {
    */
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
-
-export interface StreamingOperation {
-  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
-  width?: number | null
-  height?: number | null
-  fit?: string | null
-  degrees?: number
-  enabled?: boolean
-}
-
-export interface StreamingOptions {
-  format?: string
-  quality?: number | null
-  ops?: StreamingOperation[]
-}
-
-export interface StreamingPipeline {
-  writable: import('stream').Writable
-  readable: import('stream').Readable
-}
-
-export function createStreamingPipeline(options?: StreamingOptions): StreamingPipeline
