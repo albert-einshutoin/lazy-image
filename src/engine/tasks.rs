@@ -720,9 +720,9 @@ impl Task for BatchTask {
                     }
                 };
 
-                // Safety: mmap は処理中に外部から書き換えられないことを前提とする。
-                // 内容が変更されるとデコード失敗や破損、OS 依存で SIGBUS/SIGSEGV の可能性がある。
-                // Windows では mmap 中のファイル削除は失敗する（仕様）。
+                // Safety: We assume the file won't be modified externally during processing.
+                // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
+                // On Windows, deleting a memory-mapped file fails (platform limitation).
                 let mmap = unsafe {
                     Mmap::map(&file)
                         .map_err(|e| LazyImageError::mmap_failed(input_path.clone(), e))?

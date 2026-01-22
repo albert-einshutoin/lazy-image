@@ -122,9 +122,9 @@ impl ImageEngine {
             }
         };
 
-        // Safety: mmap は処理中に外部から内容を書き換えられないことを前提とする。
-        // 変更された場合はデコード失敗や破損、OS により SIGBUS/SIGSEGV が発生する可能性がある。
-        // 競合が懸念される場合は事前コピーやファイルロックを利用すること。
+        // Safety: We assume the file won't be modified externally during processing.
+        // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
+        // For concurrent access concerns, use a copy path or file locking.
         let mmap = unsafe {
             match Mmap::map(&file) {
                 Ok(mmap) => mmap,
