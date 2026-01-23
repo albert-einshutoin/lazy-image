@@ -14,9 +14,11 @@ use std::panic::{self, AssertUnwindSafe};
 /// When NAPI is enabled, uses napi::Result.
 /// When NAPI is disabled, uses std::result::Result<T, LazyImageError>.
 #[cfg(feature = "napi")]
+#[allow(dead_code)]
 pub type EngineResult<T> = Result<T>;
 
 #[cfg(not(feature = "napi"))]
+#[allow(dead_code)]
 pub type EngineResult<T> = std::result::Result<T, LazyImageError>;
 
 // to_engine_error removed - it was unused.

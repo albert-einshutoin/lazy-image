@@ -229,7 +229,7 @@ pub struct BatchResult {
     pub error_category: Option<ErrorCategory>,
 }
 
-pub(crate) struct EncodeTask {
+pub struct EncodeTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc. decode() returns Cow::Borrowed pointing here,
     /// enabling true Copy-on-Write in apply_ops (no deep copy for format-only conversion).
@@ -474,7 +474,7 @@ impl Task for EncodeTask {
     }
 }
 
-pub(crate) struct EncodeWithMetricsTask {
+pub struct EncodeWithMetricsTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
@@ -551,7 +551,7 @@ impl Task for EncodeWithMetricsTask {
     }
 }
 
-pub(crate) struct WriteFileTask {
+pub struct WriteFileTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
@@ -674,7 +674,7 @@ impl Task for WriteFileTask {
     }
 }
 
-pub(crate) struct BatchTask {
+pub struct BatchTask {
     pub inputs: Vec<String>,
     pub output_dir: String,
     pub ops: Vec<Operation>,
