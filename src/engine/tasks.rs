@@ -474,6 +474,7 @@ impl Task for EncodeTask {
     }
 }
 
+#[allow(dead_code)]
 pub struct EncodeWithMetricsTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
@@ -551,6 +552,7 @@ impl Task for EncodeWithMetricsTask {
     }
 }
 
+#[allow(dead_code)]
 pub struct WriteFileTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
@@ -674,6 +676,7 @@ impl Task for WriteFileTask {
     }
 }
 
+#[allow(dead_code)]
 pub struct BatchTask {
     pub inputs: Vec<String>,
     pub output_dir: String,
