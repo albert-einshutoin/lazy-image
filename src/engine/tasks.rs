@@ -379,8 +379,9 @@ impl EncodeTask {
             IccState::Absent
         };
         let initial_state = ColorState::from_dynamic_image(&img, icc_state);
-
-        let processed = apply_ops_tracked(img, &effective_ops, initial_state)?.image;
+        let tracked = apply_ops_tracked(img, &effective_ops, initial_state)?;
+        let final_color_state = tracked.state;
+        let processed = tracked.image;
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "process")?;
         metrics_recorder.mark_process_done();
@@ -404,7 +405,8 @@ impl EncodeTask {
 
         // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
-        let icc_present = self.icc_present;
+        // Use tracked color state to reason about ICC preservation.
+        let icc_present = matches!(final_color_state.icc, IccState::Present);
         let icc_preserved = self.keep_metadata && icc_present;
         // metadata_stripped: true when source had ICC but we did not preserve it
         let metadata_stripped = icc_present && !icc_preserved;
@@ -775,12 +777,9 @@ impl Task for BatchTask {
                 } else {
                     IccState::Absent
                 };
-                let processed = apply_ops_tracked(
-                    Cow::Owned(img),
-                    &effective_ops,
-                    ColorState::from_dynamic_image(&img, icc_state),
-                )?
-                .image;
+                let initial_state = ColorState::from_dynamic_image(&img, icc_state);
+                let tracked = apply_ops_tracked(Cow::Owned(img), &effective_ops, initial_state)?;
+                let processed = tracked.image;
                 firewall.enforce_timeout(start_total, "process")?;
 
                 // Encode - only preserve ICC profile if keep_metadata is true

@@ -22,9 +22,19 @@ fn update_color_state(mut state: ColorState, op: &Operation) -> ColorState {
     match op {
         Operation::Grayscale => {
             state.color_space = ColorSpace::Luma;
+            // Grayscale output implies alpha stripped unless the pipeline adds it later.
+            if matches!(state.color_space, ColorSpace::Rgba | ColorSpace::LumaA) {
+                state.color_space = ColorSpace::Luma;
+            }
         }
         Operation::ColorSpace { target: _ } => {
             state.transfer = TransferFn::Srgb;
+        }
+        Operation::Brightness { .. } | Operation::Contrast { .. } => {
+            // These ops operate on 8-bit buffers in our pipeline; if we had 16-bit, mark it unknown.
+            if state.bit_depth == BitDepth::Sixteen {
+                state.bit_depth = BitDepth::Unknown;
+            }
         }
         Operation::Resize { .. }
         | Operation::Extract { .. }
@@ -32,8 +42,6 @@ fn update_color_state(mut state: ColorState, op: &Operation) -> ColorState {
         | Operation::Rotate { .. }
         | Operation::FlipH
         | Operation::FlipV
-        | Operation::Brightness { .. }
-        | Operation::Contrast { .. }
         | Operation::AutoOrient { .. } => {}
     }
     state
@@ -885,6 +893,41 @@ mod tests {
         DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
             image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
         }))
+    }
+
+    mod color_state_tests {
+        use super::*;
+
+        #[test]
+        fn color_state_from_dynamic_image_detects_rgba_8bit() {
+            let img = DynamicImage::ImageRgba8(RgbaImage::new(2, 2));
+            let state = ColorState::from_dynamic_image(&img, IccState::Present);
+            assert_eq!(state.color_space, ColorSpace::Rgba);
+            assert_eq!(state.bit_depth, BitDepth::Eight);
+            assert_eq!(state.icc, IccState::Present);
+            assert_eq!(state.transfer, TransferFn::Srgb);
+        }
+
+        #[test]
+        fn update_color_state_sets_luma_on_grayscale() {
+            let img = DynamicImage::ImageRgb8(RgbImage::new(2, 2));
+            let mut state = ColorState::from_dynamic_image(&img, IccState::Absent);
+            state = update_color_state(state, &Operation::Grayscale);
+            assert_eq!(state.color_space, ColorSpace::Luma);
+        }
+
+        #[test]
+        fn apply_ops_tracked_keeps_icc_flag() {
+            let img = DynamicImage::ImageRgb8(RgbImage::new(4, 4));
+            let ops = vec![Operation::Resize {
+                width: Some(2),
+                height: Some(2),
+                fit: ResizeFit::Inside,
+            }];
+            let init = ColorState::from_dynamic_image(&img, IccState::Present);
+            let tracked = apply_ops_tracked(Cow::Owned(img), &ops, init).unwrap();
+            assert_eq!(tracked.state.icc, IccState::Present);
+        }
     }
 
     fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
