@@ -23,6 +23,8 @@ fn update_color_state(mut state: ColorState, op: &Operation) -> ColorState {
         Operation::Grayscale => {
             // Grayscale converts any input to luma (alpha is stripped).
             state.color_space = ColorSpace::Luma;
+            // Pipeline uses to_luma8(), so bit depth is always 8-bit after this op.
+            state.bit_depth = BitDepth::Eight;
         }
         Operation::Brightness { .. } | Operation::Contrast { .. } => {
             // These ops operate on 8-bit buffers in our pipeline; if we had 16-bit, mark it unknown.
@@ -31,6 +33,9 @@ fn update_color_state(mut state: ColorState, op: &Operation) -> ColorState {
             }
         }
         Operation::ColorSpace { target: _ } => {
+            // Pixel-format normalization forces RGB8 (no alpha) today.
+            state.color_space = ColorSpace::Rgb;
+            state.bit_depth = BitDepth::Eight;
             state.transfer = TransferFn::Srgb;
         }
         Operation::Resize { .. }
@@ -914,6 +919,40 @@ mod tests {
             let mut state = ColorState::from_dynamic_image(&img, IccState::Absent);
             state = update_color_state(state, &Operation::Grayscale);
             assert_eq!(state.color_space, ColorSpace::Luma);
+            assert_eq!(state.bit_depth, BitDepth::Eight);
+        }
+
+        #[test]
+        fn update_color_state_converts_bit_depth_on_grayscale_16bit() {
+            let img = DynamicImage::ImageRgb16(
+                image::ImageBuffer::<image::Rgb<u16>, Vec<u16>>::new(2, 2),
+            );
+            let mut state = ColorState::from_dynamic_image(&img, IccState::Absent);
+            assert_eq!(state.bit_depth, BitDepth::Sixteen);
+            state = update_color_state(state, &Operation::Grayscale);
+            assert_eq!(state.color_space, ColorSpace::Luma);
+            assert_eq!(state.bit_depth, BitDepth::Eight);
+        }
+
+        #[test]
+        fn update_color_state_normalizes_colorspace_and_bitdepth() {
+            // Simulate Luma16 input normalized to sRGB8
+            let img = DynamicImage::ImageLuma16(
+                image::ImageBuffer::<image::Luma<u16>, Vec<u16>>::new(2, 2),
+            );
+            let mut state = ColorState::from_dynamic_image(&img, IccState::Absent);
+            assert_eq!(state.color_space, ColorSpace::Luma);
+            assert_eq!(state.bit_depth, BitDepth::Sixteen);
+
+            state = update_color_state(
+                state,
+                &Operation::ColorSpace {
+                    target: crate::ops::ColorSpace::Srgb,
+                },
+            );
+
+            assert_eq!(state.color_space, ColorSpace::Rgb);
+            assert_eq!(state.bit_depth, BitDepth::Eight);
         }
 
         #[test]
