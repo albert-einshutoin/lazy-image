@@ -104,10 +104,16 @@ impl ColorState {
             _ => BitDepth::Unknown,
         };
 
+        let transfer = if matches!(color_space, ColorSpace::Unknown) {
+            TransferFn::Unknown
+        } else {
+            TransferFn::Srgb
+        };
+
         Self {
             color_space,
             bit_depth,
-            transfer: TransferFn::Srgb, // default assumption; refined by ops
+            transfer,
             icc,
         }
     }
