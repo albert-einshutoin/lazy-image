@@ -43,13 +43,12 @@ fn validate_buffer_len(
     Ok(())
 }
 
-/// 品質値(0-100)から各フォーマットのエンコード設定を導出するための
-/// センターオブトゥルース。品質帯域は以下で固定する (WebP の
-/// filter_strength だけは sharp 互換の 80/60 しきい値を保持):
-/// - High (>=85): 視覚品質重視、AVIF speed 6
-/// - Balanced (70-84): 画質と速度のバランス、AVIF speed 7
-/// - Fast (50-69): 速度寄り、AVIF speed 8
-/// - Fastest (<50): 最速優先、AVIF speed 9
+/// Single source of truth for mapping quality (0-100) to per-format encoder knobs.
+/// Bands are fixed (WebP filter_strength keeps sharp-compatible 80/60 thresholds):
+/// - High (>=85): Quality first, AVIF speed 6
+/// - Balanced (70-84): Balanced, AVIF speed 7
+/// - Fast (50-69): Speed leaning, AVIF speed 8
+/// - Fastest (<50): Lowest quality / fastest, AVIF speed 9
 #[derive(Debug, Clone, Copy)]
 pub struct QualitySettings {
     quality: f32,
@@ -143,13 +142,13 @@ impl QualitySettings {
     // AVIF settings for libavif encoder
     // libavif speed: 0 (slowest/best) to 10 (fastest/worst)
     // Updated to match Sharp's speed settings for better performance
-    // Sharpに速度で追いつくためのアグレッシブな設定変更
+    // Aggressive speed lift to match Sharp defaults
     pub fn avif_speed(&self) -> i32 {
         match self.band() {
-            QualityBand::High => 6, // High quality, slightly slower (was 4) - 2段階高速化
-            QualityBand::Balanced => 7, // Good balance (was 5) - 2段階高速化
-            QualityBand::Fast => 8, // Fast (was 6) - 2段階高速化
-            QualityBand::Fastest => 9, // Fastest useful (was 7) - 2段階高速化
+            QualityBand::High => 6, // High quality, slightly slower (was 4) - two steps faster than before
+            QualityBand::Balanced => 7, // Balanced (was 5) - two steps faster than before
+            QualityBand::Fast => 8, // Speed-biased (was 6) - two steps faster than before
+            QualityBand::Fastest => 9, // Fastest useful (was 7) - two steps faster than before
         }
     }
 }
@@ -303,9 +302,9 @@ pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| LazyImageError::encode_failed("png", format!("PNG encode failed: {e}")))?;
 
-        // oxipng で再圧縮してサイズを最適化（無劣化）
+        // Recompress with oxipng to losslessly reduce size
         let mut options = oxipng::Options::from_preset(4);
-        // メタデータは保持する（特に ICC をストリップしない）
+        // Preserve metadata (do not strip ICC)
         options.strip = oxipng::StripChunks::None;
 
         let optimized = oxipng::optimize_from_memory(&buf, &options).map_err(|e| {
@@ -537,9 +536,9 @@ mod tests {
         fn test_encode_jpeg_produces_valid_jpeg() {
             let img = create_test_image(100, 100);
             let result = encode_jpeg(&img, 80, None).unwrap();
-            // JPEGマジックバイト確認
+            // Check JPEG magic bytes
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
-            // JPEGエンドマーカー確認
+            // Check JPEG end marker
             assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
         }
 
@@ -548,8 +547,7 @@ mod tests {
             let img = create_test_image(100, 100);
             let high_quality = encode_jpeg(&img, 95, None).unwrap();
             let low_quality = encode_jpeg(&img, 50, None).unwrap();
-            // 高品質の方が通常は大きい（ただし、画像内容によっては逆転する可能性もある）
-            // 少なくとも両方とも有効なJPEGであることを確認
+            // High quality is usually larger (content can flip this); both should be valid JPEGs
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
             assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
@@ -559,12 +557,12 @@ mod tests {
         #[test]
         fn test_encode_jpeg_with_icc() {
             let img = create_test_image(100, 100);
-            // 最小限の有効なICCプロファイル
+            // Minimal valid ICC profile
             let mut icc_data = vec![0u8; 128];
             icc_data[0] = 0x00;
             icc_data[1] = 0x00;
             icc_data[2] = 0x00;
-            icc_data[3] = 0x80; // 128バイト
+            icc_data[3] = 0x80; // 128 bytes
             icc_data[4] = b'A';
             icc_data[5] = b'D';
             icc_data[6] = b'B';
@@ -591,9 +589,9 @@ mod tests {
         fn test_encode_jpeg_fast_mode_produces_valid_jpeg() {
             let img = create_test_image(100, 100);
             let result = encode_jpeg_with_settings(&img, 80, None, true).unwrap();
-            // JPEGマジックバイト確認
+            // Check JPEG magic bytes
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
-            // JPEGエンドマーカー確認
+            // Check JPEG end marker
             assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
         }
 
@@ -660,7 +658,7 @@ mod tests {
         fn test_encode_png_produces_valid_png() {
             let img = create_test_image(100, 100);
             let result = encode_png(&img, None).unwrap();
-            // PNGマジックバイト確認
+            // Check PNG magic bytes
             assert_eq!(
                 &result[0..8],
                 &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
@@ -704,7 +702,7 @@ mod tests {
         fn test_encode_webp_produces_valid_webp() {
             let img = create_test_image(100, 100);
             let result = encode_webp(&img, 80, None).unwrap();
-            // WebPマジックバイト確認 (RIFF....WEBP)
+            // Check WebP magic bytes (RIFF....WEBP)
             assert_eq!(&result[0..4], b"RIFF");
             assert_eq!(&result[8..12], b"WEBP");
         }
@@ -744,9 +742,9 @@ mod tests {
         fn test_encode_avif_produces_valid_avif() {
             let img = create_test_image(100, 100);
             let result = encode_avif(&img, 60, None).unwrap();
-            // AVIFは先頭にftypボックス
+            // AVIF should contain an ftyp box near the start
             assert!(result.len() > 12);
-            // "ftyp"が含まれることを確認
+            // Ensure "ftyp" exists
             let has_ftyp = result.windows(4).any(|w| w == b"ftyp");
             assert!(has_ftyp);
         }
@@ -756,7 +754,7 @@ mod tests {
             let img = create_test_image(100, 100);
             let high_quality = encode_avif(&img, 80, None).unwrap();
             let low_quality = encode_avif(&img, 40, None).unwrap();
-            // 両方とも有効なAVIFであることを確認
+            // Both outputs should be valid AVIF
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
         }

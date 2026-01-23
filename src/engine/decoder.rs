@@ -78,7 +78,7 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
     })
 }
 
-/// Decode PNG using zune-png (SIMD最適化デコーダ)。16bit入力は8bitへダウンサンプル。
+/// Decode PNG using zune-png (SIMD-optimized decoder). 16-bit input is downsampled to 8-bit.
 /// Falls back to image crate if:
 /// - Image dimensions exceed zune-png's limit (16,384px)
 /// - Unsupported colorspace (e.g., YCbCr)
@@ -92,7 +92,7 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
 
         // Try to read dimensions from PNG header without full decode
         if let Ok((width, height)) = read_png_dimensions(data) {
-            // Global safety check (DoS防止)
+            // Global safety check (avoid decompression bombs)
             check_dimensions(width, height)?;
 
             if width > ZUNE_PNG_MAX_DIM || height > ZUNE_PNG_MAX_DIM {
@@ -134,19 +134,21 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
             ColorSpace::RGB => RgbImage::from_raw(width, height, buf)
                 .map(DynamicImage::ImageRgb8)
                 .ok_or_else(|| LazyImageError::decode_failed("png: failed to build RGB image"))?,
-            ColorSpace::RGBA | ColorSpace::BGRA | ColorSpace::ARGB => {
-                RgbaImage::from_raw(width, height, buf)
-                    .map(DynamicImage::ImageRgba8)
-                    .ok_or_else(|| {
-                        LazyImageError::decode_failed("png: failed to build RGBA image")
-                    })?
-            }
+            ColorSpace::RGBA => RgbaImage::from_raw(width, height, buf)
+                .map(DynamicImage::ImageRgba8)
+                .ok_or_else(|| LazyImageError::decode_failed("png: failed to build RGBA image"))?,
             ColorSpace::Luma => GrayImage::from_raw(width, height, buf)
                 .map(DynamicImage::ImageLuma8)
                 .ok_or_else(|| LazyImageError::decode_failed("png: failed to build Luma image"))?,
             ColorSpace::LumaA => GrayAlphaImage::from_raw(width, height, buf)
                 .map(DynamicImage::ImageLumaA8)
                 .ok_or_else(|| LazyImageError::decode_failed("png: failed to build LumaA image"))?,
+            // Fallback to image crate for unsupported ordering/space
+            ColorSpace::BGRA | ColorSpace::ARGB => {
+                return Err(LazyImageError::decode_failed(
+                    "png: BGRA/ARGB not supported by zune-png, fallback to image crate",
+                ));
+            }
             // YCbCr is 3-channel, not compatible with RGBA (4-channel)
             // Fallback to image crate for proper handling
             ColorSpace::YCbCr | ColorSpace::YCCK => {

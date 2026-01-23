@@ -34,6 +34,8 @@ export interface BatchResult {
   errorCode?: string
   errorCategory?: ErrorCategory
 }
+/** Helper to extract ErrorCategory from lazy-image errors (or null otherwise). */
+export declare function getErrorCategory(err: unknown): ErrorCategory | null
 /**
  * Error taxonomy for proper error handling in JavaScript
  *
@@ -53,10 +55,6 @@ export const enum ErrorCategory {
   /** Library bugs (should not happen) */
   InternalBug = 3
 }
-
-/** Extract ErrorCategory from a thrown error or returns null if unavailable */
-export declare function getErrorCategory(err: unknown): ErrorCategory | null
-
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
