@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Memory semaphore switched to `parking_lot` mutex/condvar for reduced contention under load; added contention benchmark (#241)
+- Added ColorState tracking for pipeline operations (color space / bit depth / transfer / ICC) to prepare for safer color-handling (#169)
 
 ---
 

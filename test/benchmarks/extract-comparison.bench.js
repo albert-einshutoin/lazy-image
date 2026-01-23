@@ -32,7 +32,7 @@ function formatBytes(bytes) {
 async function benchLazy() {
     const start = Date.now();
     const { data, metrics } = await ImageEngine.fromPath(SOURCE)
-        .resize(TARGET_W, TARGET_H, { fit: 'inside' })
+        .resize(TARGET_W, TARGET_H, 'inside')
         .crop(CROP.left, CROP.top, CROP.width, CROP.height)
         .toBufferWithMetrics('png');
     const elapsed = Date.now() - start;

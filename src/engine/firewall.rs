@@ -6,15 +6,23 @@ use crate::engine::io::extract_icc_profile;
 use crate::error::LazyImageError;
 use std::time::Instant;
 
+#[allow(dead_code)]
 const STRICT_MAX_PIXELS: u64 = 40_000_000; // ~8K x 5K
+#[allow(dead_code)]
 const LENIENT_MAX_PIXELS: u64 = 75_000_000; // generous but below global MAX_PIXELS
+#[allow(dead_code)]
 const STRICT_MAX_BYTES: u64 = 32 * 1024 * 1024; // 32MB input cap
+#[allow(dead_code)]
 const LENIENT_MAX_BYTES: u64 = 48 * 1024 * 1024; // 48MB input cap
+#[allow(dead_code)]
 const STRICT_TIMEOUT_MS: u64 = 5_000; // 5s wall clock (allows JPEG/WebP, strict on slow AVIF)
+#[allow(dead_code)]
 const LENIENT_TIMEOUT_MS: u64 = 30_000; // 30s wall clock (allows AVIF on large images)
+#[allow(dead_code)]
 const LENIENT_METADATA_LIMIT: u64 = 512 * 1024; // 512KB ICC cap
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum FirewallPolicy {
     Disabled,
     Strict,
@@ -23,6 +31,7 @@ pub enum FirewallPolicy {
 }
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct FirewallConfig {
     pub enabled: bool,
     pub policy: FirewallPolicy,
@@ -47,6 +56,7 @@ impl Default for FirewallConfig {
     }
 }
 
+#[allow(dead_code)]
 impl FirewallConfig {
     pub fn disabled() -> Self {
         Self::default()

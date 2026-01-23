@@ -11,7 +11,7 @@ use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png,
 #[allow(unused_imports)]
 use crate::engine::io::{extract_icc_profile, Source};
 use crate::engine::memory;
-use crate::engine::pipeline::apply_ops;
+use crate::engine::pipeline::{apply_ops_tracked, ColorState, IccState};
 #[cfg(feature = "napi")]
 use crate::engine::pool;
 #[allow(unused_imports)]
@@ -229,7 +229,7 @@ pub struct BatchResult {
     pub error_category: Option<ErrorCategory>,
 }
 
-pub(crate) struct EncodeTask {
+pub struct EncodeTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc. decode() returns Cow::Borrowed pointing here,
     /// enabling true Copy-on-Write in apply_ops (no deep copy for format-only conversion).
@@ -373,7 +373,15 @@ impl EncodeTask {
             // 挿入位置は最先頭: ユーザー指定オペレーションより前に正規化する
             effective_ops.insert(0, Operation::AutoOrient { orientation: o });
         }
-        let processed = apply_ops(img, &effective_ops)?;
+        let icc_state = if self.icc_present {
+            IccState::Present
+        } else {
+            IccState::Absent
+        };
+        let initial_state = ColorState::from_dynamic_image(&img, icc_state);
+        let tracked = apply_ops_tracked(img, &effective_ops, initial_state)?;
+        let final_color_state = tracked.state;
+        let processed = tracked.image;
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "process")?;
         metrics_recorder.mark_process_done();
@@ -397,7 +405,8 @@ impl EncodeTask {
 
         // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
-        let icc_present = self.icc_present;
+        // Use tracked color state to reason about ICC preservation.
+        let icc_present = matches!(final_color_state.icc, IccState::Present);
         let icc_preserved = self.keep_metadata && icc_present;
         // metadata_stripped: true when source had ICC but we did not preserve it
         let metadata_stripped = icc_present && !icc_preserved;
@@ -465,7 +474,8 @@ impl Task for EncodeTask {
     }
 }
 
-pub(crate) struct EncodeWithMetricsTask {
+#[allow(dead_code)]
+pub struct EncodeWithMetricsTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
@@ -542,7 +552,8 @@ impl Task for EncodeWithMetricsTask {
     }
 }
 
-pub(crate) struct WriteFileTask {
+#[allow(dead_code)]
+pub struct WriteFileTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
@@ -665,7 +676,8 @@ impl Task for WriteFileTask {
     }
 }
 
-pub(crate) struct BatchTask {
+#[allow(dead_code)]
+pub struct BatchTask {
     pub inputs: Vec<String>,
     pub output_dir: String,
     pub ops: Vec<Operation>,
@@ -763,7 +775,14 @@ impl Task for BatchTask {
                     effective_ops.insert(0, Operation::AutoOrient { orientation: o });
                 }
 
-                let processed = apply_ops(Cow::Owned(img), &effective_ops)?;
+                let icc_state = if icc_profile.is_some() {
+                    IccState::Present
+                } else {
+                    IccState::Absent
+                };
+                let initial_state = ColorState::from_dynamic_image(&img, icc_state);
+                let tracked = apply_ops_tracked(Cow::Owned(img), &effective_ops, initial_state)?;
+                let processed = tracked.image;
                 firewall.enforce_timeout(start_total, "process")?;
 
                 // Encode - only preserve ICC profile if keep_metadata is true
