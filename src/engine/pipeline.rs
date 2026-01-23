@@ -21,20 +21,17 @@ type PipelineResult<T> = std::result::Result<T, LazyImageError>;
 fn update_color_state(mut state: ColorState, op: &Operation) -> ColorState {
     match op {
         Operation::Grayscale => {
+            // Grayscale converts any input to luma (alpha is stripped).
             state.color_space = ColorSpace::Luma;
-            // Grayscale output implies alpha stripped unless the pipeline adds it later.
-            if matches!(state.color_space, ColorSpace::Rgba | ColorSpace::LumaA) {
-                state.color_space = ColorSpace::Luma;
-            }
-        }
-        Operation::ColorSpace { target: _ } => {
-            state.transfer = TransferFn::Srgb;
         }
         Operation::Brightness { .. } | Operation::Contrast { .. } => {
             // These ops operate on 8-bit buffers in our pipeline; if we had 16-bit, mark it unknown.
             if state.bit_depth == BitDepth::Sixteen {
                 state.bit_depth = BitDepth::Unknown;
             }
+        }
+        Operation::ColorSpace { target: _ } => {
+            state.transfer = TransferFn::Srgb;
         }
         Operation::Resize { .. }
         | Operation::Extract { .. }
@@ -60,8 +57,6 @@ pub enum ColorSpace {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BitDepth {
     Eight,
-    Ten,
-    Twelve,
     Sixteen,
     Unknown,
 }
@@ -69,7 +64,6 @@ pub enum BitDepth {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TransferFn {
     Srgb,
-    Linear,
     Unknown,
 }
 
