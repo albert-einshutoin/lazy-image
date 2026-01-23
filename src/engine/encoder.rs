@@ -3,6 +3,7 @@
 // Encoder operations: JPEG (mozjpeg), PNG, WebP, AVIF with quality settings
 
 use crate::codecs::avif_safe::{create_rgb_image, SafeAvifEncoder, SafeAvifImage, SafeAvifRwData};
+use crate::engine::check_dimensions;
 use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
 use image::{DynamicImage, GenericImageView, ImageFormat};
@@ -12,12 +13,35 @@ use mozjpeg::{ColorSpace, Compress, ScanMode};
 use std::cmp;
 use std::io::Cursor;
 
-use crate::engine::MAX_DIMENSION;
-
 // Type alias for Result - always use LazyImageError to preserve error taxonomy
 // This ensures that encode errors are properly classified (CodecError, etc.)
 // rather than being converted to generic InternalBug errors.
 type EncoderResult<T> = std::result::Result<T, LazyImageError>;
+
+fn validate_encode_dimensions(width: u32, height: u32, format: &'static str) -> EncoderResult<()> {
+    if width == 0 || height == 0 {
+        return Err(LazyImageError::encode_failed(
+            format,
+            format!("Invalid image dimensions: width={width}, height={height}"),
+        ));
+    }
+    check_dimensions(width, height)?;
+    Ok(())
+}
+
+fn validate_buffer_len(
+    width: u32,
+    height: u32,
+    channels: usize,
+    len: usize,
+    _format: &'static str,
+) -> EncoderResult<()> {
+    let expected_len = width as usize * height as usize * channels;
+    if len != expected_len {
+        return Err(LazyImageError::corrupted_image());
+    }
+    Ok(())
+}
 
 /// 品質値(0-100)から各フォーマットのエンコード設定を導出するための
 /// センターオブトゥルース。品質帯域は以下で固定する (WebP の
@@ -164,24 +188,8 @@ pub fn encode_jpeg_with_settings(
         let (w, h) = rgb.dimensions();
         let pixels: &[u8] = rgb.as_raw();
 
-        // 1. 事前検証 (パニック要因の排除)
-        if w == 0 || h == 0 {
-            return Err(LazyImageError::internal_panic(
-                "Invalid image dimensions: width or height is zero",
-            ));
-        }
-
-        if w > MAX_DIMENSION || h > MAX_DIMENSION {
-            return Err(LazyImageError::dimension_exceeds_limit(
-                w.max(h),
-                MAX_DIMENSION,
-            ));
-        }
-
-        let expected_len = (w as usize) * (h as usize) * 3;
-        if pixels.len() != expected_len {
-            return Err(LazyImageError::corrupted_image());
-        }
+        validate_encode_dimensions(w, h, "jpeg")?;
+        validate_buffer_len(w, h, 3, pixels.len(), "jpeg")?;
 
         let mut comp = Compress::new(ColorSpace::JCS_RGB);
         comp.set_size(w as usize, h as usize);
@@ -288,6 +296,9 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 /// Encode to PNG using image crate
 pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:png", || {
+        let (w, h) = img.dimensions();
+        validate_encode_dimensions(w, h, "png")?;
+
         let mut buf = Vec::new();
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| LazyImageError::encode_failed("png", format!("PNG encode failed: {e}")))?;
@@ -335,13 +346,6 @@ pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
     run_with_panic_policy("encode:webp", || {
         use std::borrow::Cow;
 
-        let rgb: Cow<'_, image::RgbImage> = match img {
-            DynamicImage::ImageRgb8(rgb_img) => Cow::Borrowed(rgb_img),
-            _ => Cow::Owned(img.to_rgb8()),
-        };
-        let (w, h) = rgb.dimensions();
-        let encoder = webp::Encoder::from_rgb(&rgb, w, h);
-
         let mut config = webp::WebPConfig::new()
             .map_err(|_| LazyImageError::internal_panic("failed to create WebPConfig"))?;
 
@@ -355,9 +359,26 @@ pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         config.filter_strength = settings.webp_filter_strength();
         config.filter_sharpness = settings.webp_filter_sharpness();
 
-        let mem = encoder.encode_advanced(&config).map_err(|e| {
-            LazyImageError::encode_failed("webp", format!("WebP encode failed: {e:?}"))
-        })?;
+        let mem = if img.color().has_alpha() {
+            let rgba: Cow<'_, image::RgbaImage> = match img {
+                DynamicImage::ImageRgba8(rgba_img) => Cow::Borrowed(rgba_img),
+                _ => Cow::Owned(img.to_rgba8()),
+            };
+            let (w, h) = rgba.dimensions();
+            validate_encode_dimensions(w, h, "webp")?;
+            validate_buffer_len(w, h, 4, rgba.as_raw().len(), "webp")?;
+            webp::Encoder::from_rgba(&rgba, w, h).encode_advanced(&config)
+        } else {
+            let rgb: Cow<'_, image::RgbImage> = match img {
+                DynamicImage::ImageRgb8(rgb_img) => Cow::Borrowed(rgb_img),
+                _ => Cow::Owned(img.to_rgb8()),
+            };
+            let (w, h) = rgb.dimensions();
+            validate_encode_dimensions(w, h, "webp")?;
+            validate_buffer_len(w, h, 3, rgb.as_raw().len(), "webp")?;
+            webp::Encoder::from_rgb(&rgb, w, h).encode_advanced(&config)
+        }
+        .map_err(|e| LazyImageError::encode_failed("webp", format!("WebP encode failed: {e:?}")))?;
 
         let encoded = mem.to_vec();
 
@@ -406,6 +427,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         let clamped_quality = quality.min(100);
         let settings = QualitySettings::new(clamped_quality);
         let (width, height) = img.dimensions();
+        validate_encode_dimensions(width, height, "avif")?;
 
         let has_alpha = img.color().has_alpha();
 
@@ -414,6 +436,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
             _ => Cow::Owned(img.to_rgba8()),
         };
         let pixels = rgba.as_raw();
+        validate_buffer_len(width, height, 4, pixels.len(), "avif")?;
 
         let mut avif_image = SafeAvifImage::new(width, height, 8, AVIF_PIXEL_FORMAT_YUV420)
             .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;

@@ -48,12 +48,6 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
         let width = decompress.width();
         let height = decompress.height();
 
-        if width > MAX_DIMENSION as usize || height > MAX_DIMENSION as usize {
-            return Err(LazyImageError::decode_failed(format!(
-                "image dimensions {}x{} exceed max {}",
-                width, height, MAX_DIMENSION
-            )));
-        }
         let width_u32 = width as u32;
         let height_u32 = height as u32;
         check_dimensions(width_u32, height_u32)?;
@@ -251,6 +245,7 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
         Some(ImageFormat::WebP) => decode_webp_libwebp(bytes)?,
         _ => decode_with_image_crate(bytes)?,
     };
+    check_dimensions(img.width(), img.height())?;
     Ok((img, detected))
 }
 
