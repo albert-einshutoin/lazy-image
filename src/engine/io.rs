@@ -19,7 +19,7 @@ pub enum Source {
 
 impl Source {
     /// Load the actual bytes from the source
-    /// Note: For Mapped sources, this converts to Vec<u8> (defeats zero-copy).
+    /// Note: For Mapped sources, this converts to `Vec<u8>` (defeats zero-copy).
     /// Prefer using as_bytes() for zero-copy access when possible.
     #[deprecated(
         note = "Use as_bytes() for zero-copy access. This method defeats zero-copy by converting Mapped to Vec<u8>."

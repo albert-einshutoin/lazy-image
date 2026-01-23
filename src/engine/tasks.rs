@@ -111,9 +111,8 @@ fn format_to_string(fmt: ImageFormat) -> String {
     .to_string()
 }
 
-/// 統一的なメトリクス測定を行うヘルパー。
-/// decode -> process -> encode の各区間をミリ秒で計測し、
-/// CPU/メモリや入出力サイズも一箇所で設定する。
+/// Helper for unified metrics collection.
+/// Measures decode -> process -> encode in milliseconds and sets CPU/memory and I/O sizes in one place.
 struct MetricsRecorder<'m> {
     metrics: Option<&'m mut crate::ProcessingMetrics>,
     start_total: Instant,
@@ -158,15 +157,15 @@ impl<'m> MetricsRecorder<'m> {
         context: MetricsContext,
     ) {
         if let Some(m) = self.metrics.as_deref_mut() {
-            // encode 区間
+            // Encode stage
             m.encode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
             m.encode_time = m.encode_ms;
-            // 全体
+            // Whole pipeline
             m.total_ms = self.start_total.elapsed().as_secs_f64() * 1000.0;
             m.processing_time = m.total_ms / 1000.0;
             m.version = PROCESSING_METRICS_VERSION.to_string();
 
-            // CPU / メモリ
+            // CPU / memory
             if let (Some(start), Some(end)) = (self.usage_start.as_ref(), usage_end.as_ref()) {
                 m.cpu_time = (end.cpu_time - start.cpu_time).max(0.0);
                 m.peak_rss = end.memory_rss.min(u32::MAX as u64) as u32;
@@ -177,7 +176,7 @@ impl<'m> MetricsRecorder<'m> {
             }
             m.memory_peak = m.peak_rss;
 
-            // 入出力サイズと圧縮率
+            // Input/output sizes and compression ratio
             m.bytes_in = self.input_size.min(u32::MAX as u64) as u32;
             m.bytes_out = (output_len as u64).min(u32::MAX as u64) as u32;
             m.input_size = m.bytes_in;
@@ -188,7 +187,7 @@ impl<'m> MetricsRecorder<'m> {
                 0.0
             };
 
-            // 形式 & メタデータ
+            // Formats & metadata
             m.format_in = context.input_format;
             m.format_out = context.output_format;
             m.icc_preserved = context.icc_preserved;
@@ -344,13 +343,13 @@ impl EncodeTask {
         // keep guard alive for entire processing scope
         let _permit_guard = permit;
 
-        // メトリクス測定を一元化
+        // Centralize metrics recording
         let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
 
         // Pre-read orientation from EXIF header (before full decode)
         let orientation = if self.auto_orient {
             if let Some(bytes) = input_bytes {
-                // Enforce byte limit & metadata scan prior to EXIF解析 to honor firewall settings
+                // Enforce byte limit & metadata scan before EXIF parsing to honor firewall settings
                 self.firewall.enforce_source_len(bytes.len())?;
                 self.firewall.scan_metadata(bytes)?;
                 crate::engine::decoder::detect_exif_orientation(bytes)
@@ -370,7 +369,7 @@ impl EncodeTask {
         // 2. Apply operations
         let mut effective_ops = self.ops.clone();
         if let Some(o) = orientation {
-            // 挿入位置は最先頭: ユーザー指定オペレーションより前に正規化する
+            // Insert at the very beginning to normalize before user operations
             effective_ops.insert(0, Operation::AutoOrient { orientation: o });
         }
         let icc_state = if self.icc_present {

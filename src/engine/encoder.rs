@@ -3,6 +3,7 @@
 // Encoder operations: JPEG (mozjpeg), PNG, WebP, AVIF with quality settings
 
 use crate::codecs::avif_safe::{create_rgb_image, SafeAvifEncoder, SafeAvifImage, SafeAvifRwData};
+use crate::engine::check_dimensions;
 use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
 use image::{DynamicImage, GenericImageView, ImageFormat};
@@ -12,20 +13,42 @@ use mozjpeg::{ColorSpace, Compress, ScanMode};
 use std::cmp;
 use std::io::Cursor;
 
-use crate::engine::MAX_DIMENSION;
-
 // Type alias for Result - always use LazyImageError to preserve error taxonomy
 // This ensures that encode errors are properly classified (CodecError, etc.)
 // rather than being converted to generic InternalBug errors.
 type EncoderResult<T> = std::result::Result<T, LazyImageError>;
 
-/// 品質値(0-100)から各フォーマットのエンコード設定を導出するための
-/// センターオブトゥルース。品質帯域は以下で固定する (WebP の
-/// filter_strength だけは sharp 互換の 80/60 しきい値を保持):
-/// - High (>=85): 視覚品質重視、AVIF speed 6
-/// - Balanced (70-84): 画質と速度のバランス、AVIF speed 7
-/// - Fast (50-69): 速度寄り、AVIF speed 8
-/// - Fastest (<50): 最速優先、AVIF speed 9
+fn validate_encode_dimensions(width: u32, height: u32, format: &'static str) -> EncoderResult<()> {
+    if width == 0 || height == 0 {
+        return Err(LazyImageError::encode_failed(
+            format,
+            format!("Invalid image dimensions: width={width}, height={height}"),
+        ));
+    }
+    check_dimensions(width, height)?;
+    Ok(())
+}
+
+fn validate_buffer_len(
+    width: u32,
+    height: u32,
+    channels: usize,
+    len: usize,
+    _format: &'static str,
+) -> EncoderResult<()> {
+    let expected_len = width as usize * height as usize * channels;
+    if len != expected_len {
+        return Err(LazyImageError::corrupted_image());
+    }
+    Ok(())
+}
+
+/// Single source of truth for mapping quality (0-100) to per-format encoder knobs.
+/// Bands are fixed (WebP filter_strength keeps sharp-compatible 80/60 thresholds):
+/// - High (>=85): Quality first, AVIF speed 6
+/// - Balanced (70-84): Balanced, AVIF speed 7
+/// - Fast (50-69): Speed leaning, AVIF speed 8
+/// - Fastest (<50): Lowest quality / fastest, AVIF speed 9
 #[derive(Debug, Clone, Copy)]
 pub struct QualitySettings {
     quality: f32,
@@ -119,13 +142,13 @@ impl QualitySettings {
     // AVIF settings for libavif encoder
     // libavif speed: 0 (slowest/best) to 10 (fastest/worst)
     // Updated to match Sharp's speed settings for better performance
-    // Sharpに速度で追いつくためのアグレッシブな設定変更
+    // Aggressive speed lift to match Sharp defaults
     pub fn avif_speed(&self) -> i32 {
         match self.band() {
-            QualityBand::High => 6, // High quality, slightly slower (was 4) - 2段階高速化
-            QualityBand::Balanced => 7, // Good balance (was 5) - 2段階高速化
-            QualityBand::Fast => 8, // Fast (was 6) - 2段階高速化
-            QualityBand::Fastest => 9, // Fastest useful (was 7) - 2段階高速化
+            QualityBand::High => 6, // High quality, slightly slower (was 4) - two steps faster than before
+            QualityBand::Balanced => 7, // Balanced (was 5) - two steps faster than before
+            QualityBand::Fast => 8, // Speed-biased (was 6) - two steps faster than before
+            QualityBand::Fastest => 9, // Fastest useful (was 7) - two steps faster than before
         }
     }
 }
@@ -164,24 +187,8 @@ pub fn encode_jpeg_with_settings(
         let (w, h) = rgb.dimensions();
         let pixels: &[u8] = rgb.as_raw();
 
-        // 1. 事前検証 (パニック要因の排除)
-        if w == 0 || h == 0 {
-            return Err(LazyImageError::internal_panic(
-                "Invalid image dimensions: width or height is zero",
-            ));
-        }
-
-        if w > MAX_DIMENSION || h > MAX_DIMENSION {
-            return Err(LazyImageError::dimension_exceeds_limit(
-                w.max(h),
-                MAX_DIMENSION,
-            ));
-        }
-
-        let expected_len = (w as usize) * (h as usize) * 3;
-        if pixels.len() != expected_len {
-            return Err(LazyImageError::corrupted_image());
-        }
+        validate_encode_dimensions(w, h, "jpeg")?;
+        validate_buffer_len(w, h, 3, pixels.len(), "jpeg")?;
 
         let mut comp = Compress::new(ColorSpace::JCS_RGB);
         comp.set_size(w as usize, h as usize);
@@ -288,13 +295,16 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 /// Encode to PNG using image crate
 pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:png", || {
+        let (w, h) = img.dimensions();
+        validate_encode_dimensions(w, h, "png")?;
+
         let mut buf = Vec::new();
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| LazyImageError::encode_failed("png", format!("PNG encode failed: {e}")))?;
 
-        // oxipng で再圧縮してサイズを最適化（無劣化）
+        // Recompress with oxipng to losslessly reduce size
         let mut options = oxipng::Options::from_preset(4);
-        // メタデータは保持する（特に ICC をストリップしない）
+        // Preserve metadata (do not strip ICC)
         options.strip = oxipng::StripChunks::None;
 
         let optimized = oxipng::optimize_from_memory(&buf, &options).map_err(|e| {
@@ -335,13 +345,6 @@ pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
     run_with_panic_policy("encode:webp", || {
         use std::borrow::Cow;
 
-        let rgb: Cow<'_, image::RgbImage> = match img {
-            DynamicImage::ImageRgb8(rgb_img) => Cow::Borrowed(rgb_img),
-            _ => Cow::Owned(img.to_rgb8()),
-        };
-        let (w, h) = rgb.dimensions();
-        let encoder = webp::Encoder::from_rgb(&rgb, w, h);
-
         let mut config = webp::WebPConfig::new()
             .map_err(|_| LazyImageError::internal_panic("failed to create WebPConfig"))?;
 
@@ -355,9 +358,26 @@ pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         config.filter_strength = settings.webp_filter_strength();
         config.filter_sharpness = settings.webp_filter_sharpness();
 
-        let mem = encoder.encode_advanced(&config).map_err(|e| {
-            LazyImageError::encode_failed("webp", format!("WebP encode failed: {e:?}"))
-        })?;
+        let mem = if img.color().has_alpha() {
+            let rgba: Cow<'_, image::RgbaImage> = match img {
+                DynamicImage::ImageRgba8(rgba_img) => Cow::Borrowed(rgba_img),
+                _ => Cow::Owned(img.to_rgba8()),
+            };
+            let (w, h) = rgba.dimensions();
+            validate_encode_dimensions(w, h, "webp")?;
+            validate_buffer_len(w, h, 4, rgba.as_raw().len(), "webp")?;
+            webp::Encoder::from_rgba(&rgba, w, h).encode_advanced(&config)
+        } else {
+            let rgb: Cow<'_, image::RgbImage> = match img {
+                DynamicImage::ImageRgb8(rgb_img) => Cow::Borrowed(rgb_img),
+                _ => Cow::Owned(img.to_rgb8()),
+            };
+            let (w, h) = rgb.dimensions();
+            validate_encode_dimensions(w, h, "webp")?;
+            validate_buffer_len(w, h, 3, rgb.as_raw().len(), "webp")?;
+            webp::Encoder::from_rgb(&rgb, w, h).encode_advanced(&config)
+        }
+        .map_err(|e| LazyImageError::encode_failed("webp", format!("WebP encode failed: {e:?}")))?;
 
         let encoded = mem.to_vec();
 
@@ -406,6 +426,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         let clamped_quality = quality.min(100);
         let settings = QualitySettings::new(clamped_quality);
         let (width, height) = img.dimensions();
+        validate_encode_dimensions(width, height, "avif")?;
 
         let has_alpha = img.color().has_alpha();
 
@@ -414,6 +435,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
             _ => Cow::Owned(img.to_rgba8()),
         };
         let pixels = rgba.as_raw();
+        validate_buffer_len(width, height, 4, pixels.len(), "avif")?;
 
         let mut avif_image = SafeAvifImage::new(width, height, 8, AVIF_PIXEL_FORMAT_YUV420)
             .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
@@ -514,9 +536,9 @@ mod tests {
         fn test_encode_jpeg_produces_valid_jpeg() {
             let img = create_test_image(100, 100);
             let result = encode_jpeg(&img, 80, None).unwrap();
-            // JPEGマジックバイト確認
+            // Check JPEG magic bytes
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
-            // JPEGエンドマーカー確認
+            // Check JPEG end marker
             assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
         }
 
@@ -525,8 +547,7 @@ mod tests {
             let img = create_test_image(100, 100);
             let high_quality = encode_jpeg(&img, 95, None).unwrap();
             let low_quality = encode_jpeg(&img, 50, None).unwrap();
-            // 高品質の方が通常は大きい（ただし、画像内容によっては逆転する可能性もある）
-            // 少なくとも両方とも有効なJPEGであることを確認
+            // High quality is usually larger (content can flip this); both should be valid JPEGs
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
             assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
@@ -536,12 +557,12 @@ mod tests {
         #[test]
         fn test_encode_jpeg_with_icc() {
             let img = create_test_image(100, 100);
-            // 最小限の有効なICCプロファイル
+            // Minimal valid ICC profile
             let mut icc_data = vec![0u8; 128];
             icc_data[0] = 0x00;
             icc_data[1] = 0x00;
             icc_data[2] = 0x00;
-            icc_data[3] = 0x80; // 128バイト
+            icc_data[3] = 0x80; // 128 bytes
             icc_data[4] = b'A';
             icc_data[5] = b'D';
             icc_data[6] = b'B';
@@ -568,9 +589,9 @@ mod tests {
         fn test_encode_jpeg_fast_mode_produces_valid_jpeg() {
             let img = create_test_image(100, 100);
             let result = encode_jpeg_with_settings(&img, 80, None, true).unwrap();
-            // JPEGマジックバイト確認
+            // Check JPEG magic bytes
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
-            // JPEGエンドマーカー確認
+            // Check JPEG end marker
             assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
         }
 
@@ -637,7 +658,7 @@ mod tests {
         fn test_encode_png_produces_valid_png() {
             let img = create_test_image(100, 100);
             let result = encode_png(&img, None).unwrap();
-            // PNGマジックバイト確認
+            // Check PNG magic bytes
             assert_eq!(
                 &result[0..8],
                 &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
@@ -681,7 +702,7 @@ mod tests {
         fn test_encode_webp_produces_valid_webp() {
             let img = create_test_image(100, 100);
             let result = encode_webp(&img, 80, None).unwrap();
-            // WebPマジックバイト確認 (RIFF....WEBP)
+            // Check WebP magic bytes (RIFF....WEBP)
             assert_eq!(&result[0..4], b"RIFF");
             assert_eq!(&result[8..12], b"WEBP");
         }
@@ -721,9 +742,9 @@ mod tests {
         fn test_encode_avif_produces_valid_avif() {
             let img = create_test_image(100, 100);
             let result = encode_avif(&img, 60, None).unwrap();
-            // AVIFは先頭にftypボックス
+            // AVIF should contain an ftyp box near the start
             assert!(result.len() > 12);
-            // "ftyp"が含まれることを確認
+            // Ensure "ftyp" exists
             let has_ftyp = result.windows(4).any(|w| w == b"ftyp");
             assert!(has_ftyp);
         }
@@ -733,7 +754,7 @@ mod tests {
             let img = create_test_image(100, 100);
             let high_quality = encode_avif(&img, 80, None).unwrap();
             let low_quality = encode_avif(&img, 40, None).unwrap();
-            // 両方とも有効なAVIFであることを確認
+            // Both outputs should be valid AVIF
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
         }

@@ -275,10 +275,10 @@ impl SafeAvifRwData {
         }
     }
 
-    /// Copy the encoded data into a Vec<u8>.
+    /// Copy the encoded data into a `Vec<u8>`.
     ///
     /// # Returns
-    /// Returns a Vec<u8> containing a copy of the encoded AVIF data.
+    /// Returns a `Vec<u8>` containing a copy of the encoded AVIF data.
     pub fn to_vec(&self) -> Vec<u8> {
         self.as_slice().to_vec()
     }
