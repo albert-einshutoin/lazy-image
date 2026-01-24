@@ -12,6 +12,8 @@
 > - **Security-first defaults**: EXIF/XMP and other metadata are stripped by default; ICC is preserved for color accuracy
 > - **Zero-copy input path**: `fromPath()/processBatch()` → `toFile()` avoids copying source data into the JS heap
 > - **AVIF ICC**: preserved in v0.9.x (libavif-sys); older <0.9.0 or ravif-only builds drop ICC
+>
+> Looking for Japanese? See the Japanese summary in [README.ja.md](./README.ja.md).
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -580,17 +582,16 @@ interface OutputWithMetrics {
   metrics: ProcessingMetrics;
 }
 
-## 品質メトリクス (SSIM/PSNR)
+## Quality Metrics (SSIM/PSNR)
 
-lazy-image は sharp との品質パリティを維持するため、ベンチマークで以下の品質ゲートを設けています:
+lazy-image enforces quality parity with sharp via benchmark gates:
 
 - SSIM ≥ 0.995
 - PSNR ≥ 40 dB
 
-`npm run test:js` で実行されるベンチマーク (`test/benchmarks/sharp-comparison.bench.js`) は、同一条件で生成した sharp 出力と比較し、上記閾値を下回ると失敗します。  
-統合テスト `test/integration/quality-metrics.test.js` では品質メトリクス計算の健全性をスモークテストしています。
+`npm run test:js` runs `test/benchmarks/sharp-comparison.bench.js`, comparing outputs against sharp under identical settings; it fails if either metric drops below the thresholds. Integration test `test/integration/quality-metrics.test.js` smoke-tests the metric calculations.
 
-※ 現時点では品質メトリクスは内部ベンチ・テスト専用です。アプリ側で品質指標を取得したい場合は別IssueでAPI公開を検討してください。
+These metrics are currently internal (bench/test only). If you need programmatic access in applications, open an issue to discuss an API surface.
 
 interface BatchResult {
   source: string;
@@ -1079,7 +1080,7 @@ Built on the shoulders of giants:
 - [mozjpeg](https://github.com/mozilla/mozjpeg) - Mozilla's JPEG encoder
 - [libwebp](https://chromium.googlesource.com/webm/libwebp) - Google's WebP codec
 - [ravif](https://github.com/kornelski/ravif) - Pure Rust AVIF encoder
-- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer（`rayon` feature有効化で並列リサイズ）
+- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer (enable the `rayon` feature for parallel resize)
 - [img-parts](https://github.com/paolobarbolini/img-parts) - Image container manipulation
 - [napi-rs](https://napi.rs/) - Rust bindings for Node.js
 
