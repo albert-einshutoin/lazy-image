@@ -7,9 +7,9 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..', '..');
 const script = `
-  const { ImageEngine } = require('../index');
+  const { ImageEngine } = require('./index');
   const fs = require('fs');
-  const img = fs.readFileSync(require('path').join(__dirname, '../fixtures/test_input.jpg'));
+  const img = fs.readFileSync('./test/fixtures/test_input.jpg');
   const engine = ImageEngine.from(img).resize(10, 10, 'fill');
   (async () => { await engine.toBuffer('jpeg', 80); })();
 `;
