@@ -141,8 +141,8 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 
 - 🏆 **AVIF support** - Next-gen format, 30% smaller than WebP
 - 🚀 **Smaller files** than sharp (mozjpeg + libwebp + ravif)
-- 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB). **Note:** AVIF currently does not preserve ICC (see below).
-- 🔄 **EXIF auto-orientation** - Defaultで正しい向きに補正、`autoOrient(false)`で無効化可能
+- 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB). **AVIF now preserves ICC via libavif-sys (v0.9.0+); legacy (<0.9.0) ravif builds dropped ICC.**
+- 🔄 **EXIF auto-orientation** - Automatically corrects orientation by default; use `autoOrient(false)` to disable
 - 💾 **Memory-efficient** - Direct file I/O bypasses Node.js heap
 - 🌊 **Streaming (bounded-memory, disk-backed)** - Process huge inputs via streams without heap blow-up
 - 🔗 **Fluent API** with method chaining
@@ -160,7 +160,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 | Design Choice | Rationale |
 |---------------|-----------|
 | **8-bit output** | Web browsers don't benefit from 16-bit; reduces file size |
-| **AVIF with ICC** | ⚠️ ICC preservation not supported (current limitation) |
+| **AVIF with ICC** | ✅ ICC preservation supported via libavif-sys (v0.9.0+); legacy ravif builds dropped ICC |
 | **Fixed rotation angles** | 90°/180°/270° covers 99% of use cases; simpler implementation |
 | **No artistic filters** | Focused scope: compression, not image editing |
 | **No animation** | Static image optimization only; use ffmpeg for video/GIF |
@@ -179,7 +179,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 
 ### Format Limitations
 
-- **AVIF color profiles**: ICC cannot be preserved currently. Even with `keep_metadata(true)`, ICC is dropped. If you need ICC, use PNG/JPEG/WebP or convert to sRGB before encoding to AVIF.
+- **AVIF color profiles**: ICC is preserved in v0.9.0+ (libavif-sys backend). If you are pinned to <0.9.0 or a custom ravif-only build, ICC will be dropped—upgrade or convert to sRGB before encoding AVIF.
 - **Input formats**: 16-bit images are automatically converted to 8-bit (by design, not a bug).
 
 ### Feature Limitations
@@ -410,7 +410,7 @@ console.log(metrics);
 // }
 ```
 
-詳しい計測境界と保証事項は `docs/METRICS_CONTRACT.md` を参照してください。
+For detailed measurement boundaries and guarantees, see `docs/METRICS_CONTRACT.md`.
 
 ### Batch Processing (v0.6.0+)
 
@@ -667,7 +667,7 @@ readable.on('finish', () => console.log('done'));
 readable.on('error', console.error);
 ```
 
-> Note: This pipeline keeps memory使用を O(1) 近傍に抑えるため、一時ファイルを用いたストリーミングです。真の逐次エンコードが必要な場合も、APIはこのまま後方互換で拡張予定です。
+> Note: This pipeline uses disk-backed streaming to keep memory usage near O(1). The API will remain backward-compatible for future true streaming encoding support.
 
 #### Rust
 
@@ -919,13 +919,13 @@ lazy-image implements a **Copy-on-Write (CoW)** architecture to minimize memory 
 2. **Zero-Copy Memory Mapping**: Both `fromPath()` and `processBatch()` use memory mapping (mmap) for zero-copy file access. This bypasses the Node.js heap entirely, making it ideal for processing large images in memory-constrained environments.
 3. **Zero-Copy Conversions**: For format conversions (e.g., PNG → WebP) without pixel manipulation (resize/crop), **no pixel buffer allocation or copy occurs**. The engine reuses the decoded buffer directly.
 4. **Smart Cloning**: `.clone()` operations are instant and memory-free until a destructive operation is applied.
-5. **Definition & Verification**: 「ゼロコピー」の意味・適用範囲・測定方法は [docs/ZERO_COPY.md](./docs/ZERO_COPY.md) に明示。`node --expose-gc docs/scripts/measure-zero-copy.js` で JS ヒープ増加 ≤2MB / RSS 予算式を確認可能。
-6. **File Modification Contract**: mmap 中に外部でファイルが変更・削除されると結果は未定義（デコードエラー/破損/OS 依存挙動）。処理中は元ファイルを変更しないこと。Windows では mmap 中のファイル削除不可。
+5. **Definition & Verification**: The meaning, scope, and measurement methods of "zero-copy" are documented in [docs/ZERO_COPY.md](./docs/ZERO_COPY.md). Run `node --expose-gc docs/scripts/measure-zero-copy.js` to verify JS heap increase ≤2MB / RSS estimates.
+6. **File Modification Contract**: If a file is modified or deleted externally while memory-mapped, the result is undefined (decode errors, corruption, OS-dependent behavior). Do not modify source files during processing. On Windows, memory-mapped files cannot be deleted while mapped.
 
 ### Color Management
 
-> ⚠️ **AVIF currently does NOT preserve ICC profiles.**  
-> Even with `keep_metadata(true)`, ICC is dropped when encoding to AVIF. If ICC is required, use PNG/JPEG/WebP or convert to sRGB before encoding.
+> ✅ **AVIF preserves ICC profiles in v0.9.0+ (libavif-sys backend).**  
+> For versions <0.9.0 or custom builds that disable libavif-sys in favor of ravif-only, ICC will be dropped. Upgrade to retain ICC or convert to sRGB before encoding.
 
 ICC color profiles are automatically extracted and embedded during processing (except AVIF).
 
@@ -934,7 +934,7 @@ ICC color profiles are automatically extracted and embedded during processing (e
 | JPEG   | ✅ Full support | Extracted and embedded |
 | PNG    | ✅ Full support | Via iCCP chunk |
 | WebP   | ✅ Full support | Via ICCP chunk |
-| AVIF   | ⚠️ Not preserved | Current limitation: ICC is dropped on encode |
+| AVIF   | ✅ Preserved (v0.9.0+ libavif-sys) | On <0.9.0 or ravif-only builds, ICC is dropped |
 
 ### Platform Notes
 
@@ -1009,10 +1009,10 @@ npm run build
 
 # Run tests
 npm run test:js       # JavaScript specs (custom runner)
-npm run test:types    # TypeScript 型チェック
-npm run test:bench    # ベンチマークスクリプト
+npm run test:types    # TypeScript type checking
+npm run test:bench    # Benchmark scripts
 npm run test:rust     # Cargo tests
-npm test              # JS + Rust をまとめて実行
+npm test              # Run JS + Rust tests together
 ```
 
 ### Benchmark Testing
@@ -1021,30 +1021,29 @@ For production-like benchmark testing, see the [Benchmark Test Environment](#-be
 
 ### Fuzzing
 
-セキュリティクリティカルな入口 (`inspect`, decoder) については `cargo-fuzz` による
-自動テストを用意しています。セットアップと実行方法は [FUZZING.md](./FUZZING.md)
-を参照してください。
+Security-critical entry points (`inspect`, decoder) are tested with `cargo-fuzz`.
+See [FUZZING.md](./FUZZING.md) for setup and execution instructions.
 
 ### Memory Leak Detection
 
-Rust だけで動作するストレステスト (`examples/stress_test.rs`) を用意し、AddressSanitizer でメモリリーク検知を行えます。
+A Rust-only stress test (`examples/stress_test.rs`) is available for memory leak detection with AddressSanitizer.
 
 ```bash
-# 通常実行（デフォルト 200 ループ）
+# Normal execution (default 200 iterations)
 cargo run --example stress_test --no-default-features --features stress
 
-# ループ回数を指定
+# Specify iteration count
 cargo run --example stress_test --no-default-features --features stress -- 500
 
-# AddressSanitizer を利用（推奨）
+# Use AddressSanitizer (recommended)
 RUSTFLAGS="-Zsanitizer=address" \
   ASAN_OPTIONS="detect_leaks=1:abort_on_error=1:symbolize=1" \
   cargo +nightly run --example stress_test --no-default-features --features stress -- 5
 ```
 
-**Note:** CI では AddressSanitizer を使用しています。Valgrind は遅いため非推奨です。
+**Note:** CI uses AddressSanitizer. Valgrind is not recommended due to performance.
 
-※ CI のサニタイザージョブでは実行時間を抑えるため `--iterations 5` を使用しています。
+Note: CI sanitizer jobs use `--iterations 5` to reduce execution time.
 
 ### Requirements
 
