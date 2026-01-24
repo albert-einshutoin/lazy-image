@@ -23,3 +23,4 @@ Default policy: **strict** unless caller sets `sanitize({ policy: "lenient" })` 
 ## Memory expectations
 - Zero-copy input path (fromPath/processBatch) avoids copying source data into JS heap.
 - Target RSS budget: `peak_rss ≤ decoded_bytes + 24 MB` (see spec/quality.md for measurement references).
+- Mmap safety: mapped files must not be modified, truncated, or deleted while engines (and their clones) are alive. Prefer temp copies or `from(Buffer)` when inputs are mutable.

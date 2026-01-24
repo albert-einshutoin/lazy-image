@@ -14,6 +14,7 @@
 > - **AVIF ICC**: preserved in v0.9.x (libavif-sys); older <0.9.0 or ravif-only builds drop ICC
 >
 > Looking for Japanese? See the Japanese summary in [README.ja.md](./README.ja.md).
+> mmap safety: `fromPath` memory-maps files; do not modify/delete/resize mapped files while processing. For mutable inputs, use a copy or `from(Buffer)`.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)

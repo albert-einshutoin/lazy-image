@@ -23,3 +23,12 @@ lazy-image exposes structured errors with category + code for programmatic handl
 ## Batch/streaming
 - `processBatch` returns per-file `error`, `errorCode`, `errorCategory` in `BatchResult` entries; success/failure is per item.
 - Streaming pipeline surfaces errors via stream `error` events and destroys the output stream on failure.
+
+## Clone semantics
+- `clone()` duplicates the engine state by sharing immutable data via `Arc`:
+  - `source` (mmap/buffer) is shared; modifications to the underlying file after cloning are unsafe and may affect all clones.
+  - `decoded` image is shared until a mutation requires a copy (Copy-on-Write via `Arc` + `Cow`).
+  - `ops` queue is cloned per engine; subsequent `resize/crop/...` calls are isolated per clone.
+  - `icc_profile` is shared as immutable bytes.
+- Safe pattern: decode once, clone, then diverge ops to emit multiple outputs without re-decoding.
+- Unsafe pattern: modify/delete mmap'ed file after cloning; may SIGBUS or corrupt all clones.

@@ -74,6 +74,14 @@
   - To prevent concurrent writes on shared storage, use OS locks (equivalent to `flock`).
   - On Windows, files cannot be deleted while mmap is active, so keep the file until processing completes or use `from(Buffer)`.
 
+## Additional mmap safety assumptions (fromPath/processBatch)
+
+- Files must be readable for the lifetime of the engine; permission changes or truncation after mmap are undefined behavior.
+- File size is assumed stable: truncation/extension after mmap may SIGBUS or yield corrupt output.
+- Network/distributed filesystems (NFS/SMB/etc.) can propagate remote edits mid-flight; prefer local/temp copies when consistency is required.
+- Delete-after-write patterns should copy to a temp path or use `from(Buffer)`; mmap keeps the file open until the engine (and its clones) are dropped.
+- If you need transactional reads, take an advisory lock or work on an immutable snapshot/copy before calling `fromPath`.
+
 ### Windows-specific safe usage patterns
 
 - **Immediate deletion**: 
