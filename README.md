@@ -46,6 +46,16 @@ surface than sharp.
 
 For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
 
+## 📑 Specification
+
+Formal semantics live in `spec/`:
+
+- [Resize](./spec/resize.md) — fit/inside/cover/fill, rounding rules, limits
+- [Metadata](./spec/metadata.md) — ICC/EXIF/XMP handling, defaults, AVIF notes
+- [Errors](./spec/errors.md) — taxonomy, mappings, JS category helpers
+- [Limits](./spec/limits.md) — dimensions/pixels, firewall bytes/timeout, concurrency
+- [Quality](./spec/quality.md) — SSIM/PSNR gates and repro guidance
+
 ### 🔎 Measurable & Verifiable Claims
 
 - **Zero-copy definition**: `fromPath()` / `processBatch()` → `toFile()` does not copy source data into the JS heap; input is mmapped and processed in Rust. Output buffers are allocated (by design).
