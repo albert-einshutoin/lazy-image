@@ -82,6 +82,13 @@
 - Delete-after-write patterns should copy to a temp path or use `from(Buffer)`; mmap keeps the file open until the engine (and its clones) are dropped.
 - If you need transactional reads, take an advisory lock or work on an immutable snapshot/copy before calling `fromPath`.
 
+## Copy-on-Write points (deep-copy triggers)
+
+- `apply_ops_tracked`: `Cow<DynamicImage>` is materialized via `into_owned()` when any operation exists (format-conversion-only path stays borrowed).
+- Resize paths normalize to RGBA via `to_rgba8()` if the buffer is not already RGB/RGBA before resizing (adds a copy at that point).
+- Encoders allocate output buffers: `toBuffer*` returns a new Node.js `Buffer`; `toFile` writes via an encoded buffer on disk.
+- Debugging: set `LAZY_IMAGE_DEBUG_COW=1` to log deep-copy points (stderr) with stage name and dimensions.
+
 ### Windows-specific safe usage patterns
 
 - **Immediate deletion**: 
