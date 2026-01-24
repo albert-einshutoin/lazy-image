@@ -8,10 +8,14 @@ use fast_image_resize::{self as fir, ImageBufferError, MulDiv, PixelType, Resize
 use image::{DynamicImage, RgbImage, RgbaImage};
 use std::borrow::Cow;
 
-// GenericImageView is used in tests via dimensions() method
-#[cfg(test)]
-#[allow(unused_imports)] // used in tests for dimensions() helpers
-use image::GenericImageView;
+#[cfg(feature = "cow-debug")]
+use once_cell::sync::Lazy;
+#[cfg(feature = "cow-debug")]
+use tracing::debug;
+
+// Copy-on-Write logging note:
+// Use DynamicImage::width()/height() (built-in methods) to avoid pulling in GenericImageView.
+// If you ever need dimensions via the trait, import it locally to prevent duplicate/global imports.
 
 // Type alias for Result - always use LazyImageError to preserve error taxonomy
 // This ensures that pipeline errors are properly classified (CodecError, UserError, etc.)
@@ -394,6 +398,19 @@ pub fn apply_ops_tracked<'a>(
     ops: &[Operation],
     initial_state: ColorState,
 ) -> PipelineResult<ColorTrackedImage<'a>> {
+    // Optional debug logging for copy-on-write events.
+    // Enabled only when feature "cow-debug" is on AND env LAZY_IMAGE_DEBUG_COW=1.
+    #[cfg(feature = "cow-debug")]
+    static COW_DEBUG_ENABLED: Lazy<bool> = Lazy::new(|| std::env::var("LAZY_IMAGE_DEBUG_COW").is_ok());
+    #[cfg(feature = "cow-debug")]
+    let log_copy = |stage: &str, dims: (u32, u32)| {
+        if *COW_DEBUG_ENABLED {
+            debug!(target: "lazy_image::cow", %stage, width = dims.0, height = dims.1, "copy-on-write");
+        }
+    };
+    #[cfg(not(feature = "cow-debug"))]
+    let log_copy = |_stage: &str, _dims: (u32, u32)| {};
+
     // Optimize operations first
     // Note: This clones ops internally, which is intentional for the immutable engine design.
     // The clone cost is low (ops are small structs) and ensures task isolation.
@@ -409,6 +426,7 @@ pub fn apply_ops_tracked<'a>(
 
     // Operations exist - we need owned data to mutate
     // This is where the "copy" in Copy-on-Write happens
+    log_copy("into_owned (materialize for ops)", (img.width(), img.height()));
     let mut img = img.into_owned();
     let mut state = initial_state;
 
@@ -425,7 +443,13 @@ pub fn apply_ops_tracked<'a>(
                     } else {
                         let src_image = match img {
                             DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
-                            _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                            _ => {
+                                log_copy(
+                                    "to_rgba8 (normalize before resize)",
+                                    (img.width(), img.height()),
+                                );
+                                DynamicImage::ImageRgba8(img.to_rgba8())
+                            }
                         };
                         fast_resize_owned(src_image, target_w, target_h)
                             .map_err(|err| err.into_lazy_image_error())?
@@ -444,7 +468,13 @@ pub fn apply_ops_tracked<'a>(
                         );
                         let src_image = match img {
                             DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
-                            _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                            _ => {
+                                log_copy(
+                                    "to_rgba8 (normalize before cover resize)",
+                                    (img.width(), img.height()),
+                                );
+                                DynamicImage::ImageRgba8(img.to_rgba8())
+                            }
                         };
                         let resized = fast_resize_owned(src_image, resize_w, resize_h)
                             .map_err(|err| err.into_lazy_image_error())?;
@@ -459,7 +489,13 @@ pub fn apply_ops_tracked<'a>(
                     } else {
                         let src_image = match img {
                             DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
-                            _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                            _ => {
+                                log_copy(
+                                    "to_rgba8 (normalize before resize/extract)",
+                                    (img.width(), img.height()),
+                                );
+                                DynamicImage::ImageRgba8(img.to_rgba8())
+                            }
                         };
                         fast_resize_owned(src_image, w, h)
                             .map_err(|err| err.into_lazy_image_error())?
@@ -546,7 +582,13 @@ pub fn apply_ops_tracked<'a>(
 
                     let src_image = match img {
                         DynamicImage::ImageRgb8(_) | DynamicImage::ImageRgba8(_) => img,
-                        _ => DynamicImage::ImageRgba8(img.to_rgba8()),
+                        _ => {
+                            log_copy(
+                                "to_rgba8 (normalize before crop->resize path)",
+                                (img.width(), img.height()),
+                            );
+                            DynamicImage::ImageRgba8(img.to_rgba8())
+                        }
                     };
 
                     fast_resize_owned_impl(

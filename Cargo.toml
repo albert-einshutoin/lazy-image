@@ -14,6 +14,7 @@ napi = ["dep:napi", "dep:napi-derive"]
 jemalloc = ["dep:tikv-jemallocator"]
 fuzzing = []
 stress = []
+cow-debug = ["tracing", "once_cell"]
 
 [[example]]
 name = "stress_test"
@@ -56,6 +57,10 @@ zune-core = "0.4"
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
 libavif-sys = { version = "0.17", default-features = false, features = ["codec-rav1e"] }
+
+# Debug/logging (only used when cow-debug feature is enabled)
+tracing = { version = "0.1", default-features = false, features = ["std"], optional = true }
+once_cell = { version = "1.19", optional = true }
 
 # ICC profile extraction from image containers
 img-parts = "0.3"

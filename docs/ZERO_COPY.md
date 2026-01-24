@@ -1,41 +1,39 @@
-# Zero-Copy 定義と検証方法
+# Zero-Copy definition and validation
 
-このドキュメントは lazy-image が主張する「ゼロコピー」について、**意味・適用範囲・測定方法**を明確にします。
+This document clarifies the **meaning, scope, and measurement** of lazy-image's zero-copy claims.
 
-## 定義（意味）
+## Meaning
 
-- **ゼロコピーとは**: `fromPath()` または `processBatch()` で入力を受け取り、`toFile()`/`toBuffer()` で出力するまでに **Node.js の JS ヒープへ入力ファイル全体をコピーしない** ことを指す。  
-- 具体的には、入力ファイルは **mmap（メモリマップ）** で Rust 側から直接参照され、JS 側にはファイルの生データを載せない。
+- **Zero-copy**: when using `fromPath()` or `processBatch()` to `toFile()/toBuffer()`, the source file is **not copied into the Node.js heap**.
+- Implementation: input files are accessed via **mmap**, read directly by Rust; JS never holds the raw file bytes.
 
-## 適用範囲（どこで有効か）
+## Scope (where it applies)
 
-有効:
-- `ImageEngine.fromPath(...)` → 任意の処理 → `toFile()/toBuffer()/toBufferWithMetrics()`
-- `processBatch()` の内部（各入力を mmap で扱う）
-- Rust 側でのデコード・エンコード処理（ピクセルバッファは Rust メモリ内で管理）
+Applies:
+- `ImageEngine.fromPath(...)` → any processing → `toFile()/toBuffer()/toBufferWithMetrics()`
+- `processBatch()` (each input handled via mmap)
+- Rust-side decode/encode (pixel buffers live in Rust memory)
 
-無効/例外:
-- `ImageEngine.from(Buffer)` / `fromBytes()` / `fromMemory()` など、JS でバッファを保持したまま渡す経路（受け取ったバッファを共有するため JS ヒープ依存）。
-- `as_vec()` のように明示的に `Vec<u8>` 化する経路（ドキュメント内コメントにも「zero-copy を破る」と記載）。
-- 出力バッファ（`toBuffer*` の戻り値）は Node.js `Buffer` として確保されるため、**出力分のコピーは発生**する。
-- Windows では mmap 中のファイル削除ができない制約がある（動作はゼロコピーだがファイル運用に注意）。
+Not applicable / exceptions:
+- `ImageEngine.from(Buffer)` / `fromBytes()` / `fromMemory()` where JS already owns the buffer.
+- Explicit conversions to `Vec<u8>` (e.g., `as_vec()`), which break zero-copy.
+- Output buffers (`toBuffer*`) are always copied (expected).
+- Windows: files cannot be deleted while mmap is active; manage lifecycle accordingly.
 
-## 測定可能な基準（数値目標）
+## Measurable targets
 
-1. **JS ヒープ増加**: `fromPath → toBufferWithMetrics` のパイプラインで **heapUsed の増加が 2MB 以下**（GC 可能状態で測定）。  
-2. **RSS 予算式**: ピーク RSS は以下を満たすことを目標とする。  
-   `peak_rss ≤ decoded_bytes + 24MB`  
+1. **JS heap growth**: `fromPath → toBufferWithMetrics` should increase `heapUsed` by ≤ **2 MB** (measure with `node --expose-gc docs/scripts/measure-zero-copy.js`).
+2. **RSS budget**: `peak_rss ≤ decoded_bytes + 24 MB`  
    - `decoded_bytes = width × height × bpp` (`bpp`: JPEG=3, PNG/WebP/AVIF=4)  
-   - 24MB はデコード/エンコード補助バッファとスレッド分の安全マージン。
-3. **例**: 6000×4000 PNG (24MP, bpp=4) の場合  
-   - `decoded_bytes ≈ 96MB` → 目標 `peak_rss ≤ 120MB`
+   - 24 MB is the safety margin for decode/encode working buffers and threads.
+3. **Example**: 6000×4000 PNG (24 MP, bpp=4) → `decoded_bytes ≈ 96 MB`, target `peak_rss ≤ 120 MB`.
 
-この数値は **測定手順に従って再現・検証可能** であり、ズレがあれば issue/PR で調整する。
+These numbers are reproducible via the measurement script; open an issue/PR if you observe deviations.
 
-## 測定手順
+## Measurement steps
 
-1. Node を GC 可能モードで起動: `node --expose-gc docs/scripts/measure-zero-copy.js`
-2. 出力例（JSON）:
+1. Run Node in GC-enabled mode: `node --expose-gc docs/scripts/measure-zero-copy.js`
+2. Example JSON output:
    ```json
    {
      "source": "test_4.5MB_5000x5000.png",
@@ -46,9 +44,9 @@
      "peak_rss_metrics_mb": 116.9
    }
    ```
-3. 判定:
-   - `heap_delta_mb <= 2.0` を満たすこと
-   - `rss_end_mb` が「予算式 + 10% バッファ」以内であること（例では 120MB ×1.1 ≒ 132MB → OK）
+3. Pass criteria:
+   - `heap_delta_mb <= 2.0`
+   - `rss_end_mb` within 10% of the budget formula (e.g., budget 120 MB → limit ≈ 132 MB)
 
 ## FAQ
 
@@ -76,11 +74,23 @@
 
 ## Additional mmap safety assumptions (fromPath/processBatch)
 
-- Files must be readable for the lifetime of the engine; permission changes or truncation after mmap are undefined behavior.
-- File size is assumed stable: truncation/extension after mmap may SIGBUS or yield corrupt output.
-- Network/distributed filesystems (NFS/SMB/etc.) can propagate remote edits mid-flight; prefer local/temp copies when consistency is required.
-- Delete-after-write patterns should copy to a temp path or use `from(Buffer)`; mmap keeps the file open until the engine (and its clones) are dropped.
-- If you need transactional reads, take an advisory lock or work on an immutable snapshot/copy before calling `fromPath`.
+- Files must stay readable for the engine lifetime; permission changes or truncation after mmap are undefined behavior.
+- File size is assumed stable: truncation/extension after mmap may SIGBUS or corrupt output.
+- Network/distributed filesystems (NFS/SMB/etc.) can propagate remote edits; prefer local/temp copies when consistency is required.
+- Delete-after-write: copy to a temp path or use `from(Buffer)`; mmap keeps the file open until the engine (and its clones) are dropped.
+- For transactional reads, take an advisory lock or use an immutable snapshot/copy before calling `fromPath`.
+
+## Copy-on-Write points (deep-copy triggers)
+
+- `apply_ops_tracked`: `Cow<DynamicImage>` materializes via `into_owned()` when any op exists (format-only path stays borrowed).
+- Resize paths normalize to RGBA via `to_rgba8()` if not already RGB/RGBA.
+- Encoders allocate output buffers: `toBuffer*` returns a fresh Node.js `Buffer`; `toFile` writes encoded data to disk.
+- Debugging: enable feature `cow-debug` and set `LAZY_IMAGE_DEBUG_COW=1` to emit `tracing::debug!` logs for each copy point.
+
+### How to avoid extra copies
+- Keep inputs in RGB/RGBA when possible to skip `to_rgba8()`.
+- Chain multiple outputs via `clone()` before applying divergent ops to reuse decoded data.
+- Prefer `fromPath()` over `from(Buffer)` for large files to avoid JS-heap copies.
 
 ### Windows-specific safe usage patterns
 
