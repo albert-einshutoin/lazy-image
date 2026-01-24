@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ColorState tracking for pipeline operations (color space / bit depth / transfer / ICC) to prepare for safer color-handling (#169)
 - Docs: Clarified `createStreamingPipeline()` is disk-backed bounded-memory (not true chunk streaming); name retained for compatibility (#260)
 - Documentation corrected: AVIF now preserves ICC profiles in v0.9.0+ via libavif-sys; pre-0.9.0 ravif-only builds still drop ICC (#256)
+- Docs: README positioning strengthened with security defaults, zero-copy definition, and measurable RSS/heap targets (#195)
 
 ---
 
