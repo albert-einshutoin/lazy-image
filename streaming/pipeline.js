@@ -4,9 +4,13 @@ const os = require('os');
 const { PassThrough } = require('stream');
 
 /**
- * Create a streaming processor that accepts a Writable input stream and exposes a Readable output stream.
- * Internally it stages input to a temp file (bounded memory), then processes via ImageEngine.fromPath,
- * writes to another temp file, and streams the result out.
+ * Create a disk-backed, bounded-memory pipeline that accepts a Writable input stream
+ * and exposes a Readable output stream.
+ *
+ * Notes:
+ * - This is NOT true chunk-by-chunk encoding; input is staged to a temp file first.
+ * - Memory stays ~O(1) while disk usage mirrors input/output sizes.
+ * - Name is kept for backward compatibility; future true streaming APIs will be additive.
  *
  * options:
  * - format: 'jpeg' | 'png' | 'webp' | 'avif'
