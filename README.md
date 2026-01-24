@@ -648,7 +648,7 @@ try {
 }
 ```
 
-#### Streaming (bounded-memory, disk-backed)
+#### Streaming (disk-backed, bounded-memory)
 
 ```javascript
 const { createStreamingPipeline } = require('@alberteinshutoin/lazy-image');
@@ -667,7 +667,9 @@ readable.on('finish', () => console.log('done'));
 readable.on('error', console.error);
 ```
 
-> Note: This pipeline uses disk-backed streaming to keep memory usage near O(1). The API will remain backward-compatible for future true streaming encoding support.
+> What this does: stages input to a temp file, processes via `ImageEngine.fromPath`, and streams the encoded result from another temp file.  
+> What this does **not** do: real-time chunked encoding; latency includes downloading to disk first.  
+> Naming: kept as `createStreamingPipeline()` for compatibility; a future true streaming encoder will be exposed as a separate API.
 
 #### Rust
 

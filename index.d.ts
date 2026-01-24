@@ -302,4 +302,8 @@ export interface StreamingPipeline {
   readable: NodeJS.ReadableStream
 }
 
+/**
+ * Disk-backed, bounded-memory helper that stages input to temp files before encoding.
+ * Not a true chunk-by-chunk encoder; kept for backward compatibility.
+ */
 export function createStreamingPipeline(options?: StreamingPipelineOptions): StreamingPipeline
