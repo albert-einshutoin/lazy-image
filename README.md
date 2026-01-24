@@ -6,9 +6,12 @@
 >
 > Smaller files. Better quality. Memory-efficient. Powered by Rust + mozjpeg + AVIF.
 >
-> **Positioning**: lazy-image is an **opinionated web image optimization engine**.
-> It is **not a drop-in replacement for sharp**. If you need sharp-compatible APIs
-> or a broad image editing feature set, use sharp.
+> **Top-level stance**
+> - Opinionated **web image optimization engine** (performance + safety over feature breadth)
+> - **Not** a drop-in replacement for sharp (yet); use sharp if you need its full API surface
+> - **Security-first defaults**: EXIF/XMP and other metadata are stripped by default; ICC is preserved for color accuracy
+> - **Zero-copy input path**: `fromPath()/processBatch()` → `toFile()` avoids copying source data into the JS heap
+> - **AVIF ICC**: preserved in v0.9.x (libavif-sys); older <0.9.0 or ravif-only builds drop ICC
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -40,6 +43,14 @@ surface than sharp.
 | Metadata handling | ICC only | ✅ (EXIF/XMP/etc) |
 
 For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
+
+### 🔎 Measurable & Verifiable Claims
+
+- **Zero-copy definition**: `fromPath()` / `processBatch()` → `toFile()` does not copy source data into the JS heap; input is mmapped and processed in Rust. Output buffers are allocated (by design).
+- **Heap budget (input path)**: JS heap increase ≤ **2 MB** for `fromPath → toBufferWithMetrics` (validated via `node --expose-gc docs/scripts/measure-zero-copy.js`).
+- **RSS budget**: `peak_rss ≤ decoded_bytes + 24 MB` (decoded_bytes = width × height × bpp; JPEG bpp=3, PNG/WebP/AVIF bpp=4). Example: 6000×4000 PNG (~24 MP, bpp=4) → decoded ≈ 96 MB, target peak RSS ≤ **120 MB**.
+- **Metadata defaults**: EXIF/XMP and most metadata are stripped by default for safety; ICC is preserved for color accuracy (AVIF requires v0.9.x/libavif-sys to keep ICC).
+- **Reproducibility**: Run `node --expose-gc docs/scripts/measure-zero-copy.js` to emit JSON with `rss_delta_mb` / `heap_delta_mb` and confirm the budgets above.
 
 ## 📊 Benchmark Results
 
