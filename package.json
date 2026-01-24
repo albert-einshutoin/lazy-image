@@ -38,7 +38,8 @@
     "test:clean": "rm -rf .tmp/",
     "test:rust": "cargo test --no-default-features",
     "version": "node scripts/sync-version.js",
-    "prepublishOnly": "napi prepublish --skip-gh-release"
+    "prepublishOnly": "napi prepublish --skip-gh-release",
+    "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.0",
