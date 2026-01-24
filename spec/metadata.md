@@ -13,6 +13,8 @@
 - Stripping metadata reduces payload size, avoids leaking camera/location data, and aligns with security-first defaults.
 - ICC is kept to maintain color accuracy in delivery pipelines.
 
+## mmap-related considerations
+- When using `fromPath`, the source file must remain unchanged (no edits/truncate/delete) for the lifetime of the engine and any clones. On network filesystems, prefer copying to a temp path first.
+
 ## AVIF-specific notes
 - ICC preserved only when libavif backend is present (default in v0.9.x). If using ravif-only builds, convert to sRGB before encoding or upgrade.
-
