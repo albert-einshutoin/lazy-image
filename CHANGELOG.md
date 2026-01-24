@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Memory semaphore switched to `parking_lot` mutex/condvar for reduced contention under load; added contention benchmark (#241)
 - Added ColorState tracking for pipeline operations (color space / bit depth / transfer / ICC) to prepare for safer color-handling (#169)
+- Documentation corrected: AVIF now preserves ICC profiles in v0.9.0+ via libavif-sys; pre-0.9.0 ravif-only builds still drop ICC (#256)
 
 ---
 
