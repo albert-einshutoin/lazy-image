@@ -453,7 +453,8 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
                 .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
         }
 
-        let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height);
+        let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height)
+            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
         avif_image
             .allocate_planes(AVIF_PLANES_YUV)

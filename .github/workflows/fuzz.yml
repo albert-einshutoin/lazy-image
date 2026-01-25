@@ -1,6 +1,14 @@
 name: Fuzz
 
 on:
+  pull_request:
+    paths:
+      - "fuzz/**"
+      - "src/**"
+      - ".github/workflows/fuzz.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "package-lock.json"
   schedule:
     # Run nightly at 3:00 UTC
     - cron: '0 3 * * *'
@@ -18,7 +26,10 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # Fuzz duration: 5 minutes per target for scheduled runs
-  FUZZ_DURATION: ${{ github.event.inputs.fuzz_duration || '300' }}
+  FUZZ_DURATION: ${{ github.event_name == 'pull_request' && '60' || github.event.inputs.fuzz_duration || '300' }}
+  FUZZ_SANITIZER: address
+  ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
+  RUSTFLAGS: "-Zsanitizer=address"
 
 jobs:
   fuzz:
@@ -26,8 +37,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      actions: write      # cache save 用
-      issues: write       # クラッシュ時の issue 作成用
+      actions: write      # For cache save
+      issues: write       # For creating issues on crash
     strategy:
       fail-fast: false
       matrix:
@@ -85,7 +96,7 @@ jobs:
         if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
         run: |
           cd fuzz
-          cargo +nightly fuzz build ${{ matrix.target }}
+          cargo +nightly fuzz build --sanitizer=${FUZZ_SANITIZER} ${{ matrix.target }}
 
       - name: Run fuzzer
         if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
@@ -93,7 +104,7 @@ jobs:
           cd fuzz
           # Run with memory limit (2GB) and length limit (1MB)
           # Timeout applies only to fuzzer execution, not build time
-          timeout ${FUZZ_DURATION}s cargo +nightly fuzz run ${{ matrix.target }} -- \
+          timeout ${FUZZ_DURATION}s cargo +nightly fuzz run --sanitizer=${FUZZ_SANITIZER} ${{ matrix.target }} -- \
             -max_len=1048576 \
             -rss_limit_mb=2048 \
             -max_total_time=${FUZZ_DURATION} \
@@ -130,7 +141,7 @@ jobs:
     if: always()
     permissions:
       contents: read
-      issues: write       # クラッシュ時の issue 作成用
+      issues: write       # For creating issues on crash
     steps:
       - name: Download all crash artifacts
         uses: actions/download-artifact@v4

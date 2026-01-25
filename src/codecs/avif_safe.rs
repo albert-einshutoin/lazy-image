@@ -4,8 +4,10 @@
 // This module provides RAII-based wrappers that hide raw pointers and
 // eliminate unsafe blocks from the calling code.
 
+use crate::engine::{MAX_DIMENSION, MAX_PIXELS};
 use crate::error::LazyImageError;
 use libavif_sys::*;
+use std::num::NonZeroU32;
 
 /// Safe wrapper for avifImage that manages its lifetime using RAII.
 /// This eliminates the need for unsafe blocks when working with AVIF images.
@@ -14,6 +16,40 @@ pub struct SafeAvifImage {
 }
 
 impl SafeAvifImage {
+    fn validate_dimensions(
+        width: u32,
+        height: u32,
+    ) -> Result<(NonZeroU32, NonZeroU32), LazyImageError> {
+        let w = NonZeroU32::new(width)
+            .ok_or_else(|| LazyImageError::encode_failed("avif", "Width must be greater than 0"))?;
+        let h = NonZeroU32::new(height).ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "Height must be greater than 0")
+        })?;
+
+        if width > MAX_DIMENSION || height > MAX_DIMENSION {
+            return Err(LazyImageError::encode_failed(
+                "avif",
+                format!(
+                    "Dimensions exceed MAX_DIMENSION {} ({}x{})",
+                    MAX_DIMENSION, width, height
+                ),
+            ));
+        }
+
+        let pixels = (width as u64)
+            .checked_mul(height as u64)
+            .ok_or_else(|| LazyImageError::encode_failed("avif", "Pixel count overflow"))?;
+
+        if pixels > MAX_PIXELS {
+            return Err(LazyImageError::encode_failed(
+                "avif",
+                format!("Pixel count {} exceeds MAX_PIXELS {}", pixels, MAX_PIXELS),
+            ));
+        }
+
+        Ok((w, h))
+    }
+
     /// Create a new AVIF image with the specified dimensions and pixel format.
     ///
     /// # Arguments
@@ -30,6 +66,7 @@ impl SafeAvifImage {
         depth: u32,
         pixel_format: avifPixelFormat,
     ) -> Result<Self, LazyImageError> {
+        let (_w, _h) = Self::validate_dimensions(width, height)?;
         let ptr = unsafe { avifImageCreate(width, height, depth, pixel_format) };
         if ptr.is_null() {
             return Err(LazyImageError::encode_failed(
@@ -314,15 +351,85 @@ pub fn create_rgb_image(
     image: &mut SafeAvifImage,
     pixels: *const u8,
     width: u32,
-    _height: u32,
-) -> avifRGBImage {
+    height: u32,
+) -> Result<avifRGBImage, LazyImageError> {
+    // Ensure dimensions are non-zero and within global bounds.
+    SafeAvifImage::validate_dimensions(width, height)?;
+
+    // rowBytes = width * 4 (RGBA8). Validate against overflow and libavif expectations (u32).
+    let row_bytes_u32: u32 = width.checked_mul(4).ok_or_else(|| {
+        LazyImageError::encode_failed("avif", "row bytes overflow for RGBA image")
+    })?;
+
+    let total_bytes: usize = (row_bytes_u32 as usize)
+        .checked_mul(height as usize)
+        .ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "pixel buffer size overflow for RGBA image")
+        })?;
+
+    if total_bytes == 0 {
+        return Err(LazyImageError::encode_failed(
+            "avif",
+            "pixel buffer size must be greater than 0",
+        ));
+    }
+
+    if pixels.is_null() {
+        return Err(LazyImageError::encode_failed(
+            "avif",
+            "pixel buffer pointer is null",
+        ));
+    }
+
     let mut rgb: avifRGBImage = unsafe { std::mem::zeroed() };
     unsafe {
         avifRGBImageSetDefaults(&mut rgb, image.as_mut_ptr());
         rgb.format = AVIF_RGB_FORMAT_RGBA;
         rgb.depth = 8;
         rgb.pixels = pixels as *mut u8;
-        rgb.rowBytes = (width * 4) as u32;
+        rgb.rowBytes = row_bytes_u32;
     }
-    rgb
+    Ok(rgb)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_rejects_zero_dimensions() {
+        let err = SafeAvifImage::new(0, 10, 8, AVIF_PIXEL_FORMAT_YUV420)
+            .err()
+            .expect("zero width should fail");
+        assert!(err.to_string().contains("Width must be greater than 0"));
+    }
+
+    #[test]
+    fn new_rejects_dimension_limits() {
+        let over = MAX_DIMENSION + 1;
+        let err = SafeAvifImage::new(over, 10, 8, AVIF_PIXEL_FORMAT_YUV420)
+            .err()
+            .expect("dimensions beyond limit should fail");
+        assert!(err
+            .to_string()
+            .contains(&format!("exceed MAX_DIMENSION {}", MAX_DIMENSION)));
+    }
+
+    #[test]
+    fn create_rgb_image_rejects_pixel_overflow() {
+        // MAX_DIMENSION^2 exceeds MAX_PIXELS, should fail validation.
+        let mut img = SafeAvifImage::new(1, 1, 8, AVIF_PIXEL_FORMAT_YUV420).unwrap();
+        let err =
+            create_rgb_image(&mut img, std::ptr::null(), MAX_DIMENSION, MAX_DIMENSION).unwrap_err();
+        assert!(err.to_string().contains("Pixel count"));
+    }
+
+    #[test]
+    fn create_rgb_image_sets_row_bytes() {
+        let mut img = SafeAvifImage::new(4, 2, 8, AVIF_PIXEL_FORMAT_YUV420).unwrap();
+        let pixels: [u8; 32] = [0; 32];
+        let rgb = create_rgb_image(&mut img, pixels.as_ptr(), 4, 2).unwrap();
+        assert_eq!(rgb.rowBytes, 16);
+        assert_eq!(rgb.format, AVIF_RGB_FORMAT_RGBA);
+    }
 }
