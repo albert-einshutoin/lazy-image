@@ -1048,16 +1048,16 @@ mod tests {
 
         #[test]
         fn test_rounding_behavior() {
-            // 奇数サイズでの丸め動作確認
+            // Test rounding behavior with odd dimensions
             let (w, h) = calc_resize_dimensions(101, 51, Some(50), None);
             assert_eq!(w, 50);
-            // 101:51 ≈ 50:25.2... → 25に丸められるべき
+            // 101:51 ≈ 50:25.2... → should round to 25
             assert_eq!(h, 25);
         }
 
         #[test]
         fn test_aspect_ratio_preservation_wide() {
-            // 横長画像
+            // Wide image (landscape)
             let (w, h) = calc_resize_dimensions(2000, 1000, Some(1000), None);
             assert_eq!(w, 1000);
             assert_eq!(h, 500);
@@ -1065,7 +1065,7 @@ mod tests {
 
         #[test]
         fn test_aspect_ratio_preservation_tall() {
-            // 縦長画像
+            // Tall image (portrait)
             let (w, h) = calc_resize_dimensions(1000, 2000, None, Some(1000));
             assert_eq!(w, 500);
             assert_eq!(h, 1000);
@@ -1080,9 +1080,9 @@ mod tests {
 
         #[test]
         fn test_both_dimensions_wide_image_fits_inside() {
-            // 横長画像（6000×4000）を800×600にリサイズ
-            // アスペクト比: 6000/4000 = 1.5 > 800/600 = 1.333...
-            // → 幅に合わせて800×533になるべき
+            // Resize wide image (6000×4000) to 800×600
+            // Aspect ratio: 6000/4000 = 1.5 > 800/600 = 1.333...
+            // → should fit to width: 800×533
             let (w, h) = calc_resize_dimensions(6000, 4000, Some(800), Some(600));
             assert_eq!(w, 800);
             assert_eq!(h, 533); // 4000 * (800/6000) = 533.33... → 533
@@ -1090,9 +1090,9 @@ mod tests {
 
         #[test]
         fn test_both_dimensions_tall_image_fits_inside() {
-            // 縦長画像（4000×6000）を800×600にリサイズ
-            // アスペクト比: 4000/6000 = 0.666... < 800/600 = 1.333...
-            // → 高さに合わせて400×600になるべき
+            // Resize tall image (4000×6000) to 800×600
+            // Aspect ratio: 4000/6000 = 0.666... < 800/600 = 1.333...
+            // → should fit to height: 400×600
             let (w, h) = calc_resize_dimensions(4000, 6000, Some(800), Some(600));
             assert_eq!(w, 400); // 4000 * (600/6000) = 400
             assert_eq!(h, 600);
@@ -1100,7 +1100,7 @@ mod tests {
 
         #[test]
         fn test_both_dimensions_same_aspect_ratio() {
-            // 同じアスペクト比の場合は指定サイズそのまま
+            // Same aspect ratio: use specified dimensions as-is
             // 1000:500 = 2:1, 800:400 = 2:1
             let (w, h) = calc_resize_dimensions(1000, 500, Some(800), Some(400));
             assert_eq!((w, h), (800, 400));
@@ -1392,7 +1392,7 @@ mod tests {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 90 }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
-            assert_eq!(result.dimensions(), (50, 100)); // 幅と高さが入れ替わる
+            assert_eq!(result.dimensions(), (50, 100)); // width and height swapped
         }
 
         #[test]
@@ -1400,7 +1400,7 @@ mod tests {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 180 }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
-            assert_eq!(result.dimensions(), (100, 50)); // サイズは変わらない
+            assert_eq!(result.dimensions(), (100, 50)); // size unchanged
         }
 
         #[test]
@@ -1490,7 +1490,7 @@ mod tests {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::Grayscale];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
-            // グレースケール後はLuma8形式
+            // After grayscale conversion, image is in Luma8 format
             assert!(matches!(*result, DynamicImage::ImageLuma8(_)));
         }
 
@@ -1536,6 +1536,66 @@ mod tests {
             // 200x100 → resize → 100x50 → rotate90 → 50x100
             assert_eq!(result.dimensions(), (50, 100));
             assert!(matches!(*result, DynamicImage::ImageLuma8(_)));
+        }
+
+        #[test]
+        fn test_extract_fusion_preserves_following_operations() {
+            let img = create_test_image(60, 40);
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(30),
+                    height: Some(30),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Crop {
+                    x: 4,
+                    y: 3,
+                    width: 12,
+                    height: 10,
+                },
+                Operation::Rotate { degrees: 90 },
+            ];
+
+            let optimized = optimize_ops(&ops);
+            assert_eq!(optimized.len(), 2, "resize+crop should fuse into extract");
+            assert!(matches!(optimized[0], Operation::Extract { .. }));
+
+            let result = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let (resize_w, resize_h) = calc_resize_dimensions(60, 40, Some(30), Some(30));
+            let resized = fast_resize_owned(img, resize_w, resize_h).unwrap();
+            let cropped = resized.crop_imm(4, 3, 12, 10);
+            let expected = cropped.rotate90();
+
+            assert_eq!(result.dimensions(), expected.dimensions());
+            assert_eq!(result.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
+        }
+
+        #[test]
+        fn test_crop_then_resize_rounds_from_cropped_bounds() {
+            let img = create_test_image(101, 51);
+            let ops = vec![
+                Operation::Crop {
+                    x: 1,
+                    y: 1,
+                    width: 100,
+                    height: 49,
+                },
+                Operation::Resize {
+                    width: Some(50),
+                    height: None,
+                    fit: ResizeFit::Inside,
+                },
+            ];
+
+            let result = apply_ops(Cow::Owned(img.clone()), &ops).unwrap();
+
+            let cropped = img.crop_imm(1, 1, 100, 49);
+            let (expected_w, expected_h) = calc_resize_dimensions(100, 49, Some(50), None);
+            let expected = fast_resize_owned(cropped, expected_w, expected_h).unwrap();
+
+            assert_eq!(result.dimensions(), (expected_w, expected_h));
+            assert_eq!(result.to_rgba8().into_raw(), expected.to_rgba8().into_raw());
         }
 
         #[test]

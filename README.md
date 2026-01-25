@@ -51,6 +51,7 @@ For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPAT
 
 Formal semantics live in `spec/`:
 
+- [Pipeline](./spec/pipeline.md) — operation ordering, fusion rules, and crop/resize boundary handling
 - [Resize](./spec/resize.md) — fit/inside/cover/fill, rounding rules, limits
 - [Metadata](./spec/metadata.md) — ICC/EXIF/XMP handling, defaults, AVIF notes
 - [Errors](./spec/errors.md) — taxonomy, mappings, JS category helpers
