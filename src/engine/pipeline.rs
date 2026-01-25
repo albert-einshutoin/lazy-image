@@ -401,7 +401,8 @@ pub fn apply_ops_tracked<'a>(
     // Optional debug logging for copy-on-write events.
     // Enabled only when feature "cow-debug" is on AND env LAZY_IMAGE_DEBUG_COW=1.
     #[cfg(feature = "cow-debug")]
-    static COW_DEBUG_ENABLED: Lazy<bool> = Lazy::new(|| std::env::var("LAZY_IMAGE_DEBUG_COW").is_ok());
+    static COW_DEBUG_ENABLED: Lazy<bool> =
+        Lazy::new(|| std::env::var("LAZY_IMAGE_DEBUG_COW").is_ok());
     #[cfg(feature = "cow-debug")]
     let log_copy = |stage: &str, dims: (u32, u32)| {
         if *COW_DEBUG_ENABLED {
@@ -426,7 +427,10 @@ pub fn apply_ops_tracked<'a>(
 
     // Operations exist - we need owned data to mutate
     // This is where the "copy" in Copy-on-Write happens
-    log_copy("into_owned (materialize for ops)", (img.width(), img.height()));
+    log_copy(
+        "into_owned (materialize for ops)",
+        (img.width(), img.height()),
+    );
     let mut img = img.into_owned();
     let mut state = initial_state;
 
@@ -1855,9 +1859,21 @@ mod tests {
             let resized_rgba = resized.to_rgba8();
             let pixel = resized_rgba.get_pixel(0, 0);
             // Expect the visible color to stay red and not bleed blue from the transparent pixel.
-            assert!(pixel[0] > 200, "red channel should dominate, got {}", pixel[0]);
-            assert!(pixel[2] < 30, "blue channel should be minimal, got {}", pixel[2]);
-            assert!(pixel[3] > 100, "alpha should remain non-zero, got {}", pixel[3]);
+            assert!(
+                pixel[0] > 200,
+                "red channel should dominate, got {}",
+                pixel[0]
+            );
+            assert!(
+                pixel[2] < 30,
+                "blue channel should be minimal, got {}",
+                pixel[2]
+            );
+            assert!(
+                pixel[3] > 100,
+                "alpha should remain non-zero, got {}",
+                pixel[3]
+            );
         }
     }
 
