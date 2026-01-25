@@ -28,8 +28,6 @@ env:
   # Fuzz duration: 5 minutes per target for scheduled runs
   FUZZ_DURATION: ${{ github.event_name == 'pull_request' && '60' || github.event.inputs.fuzz_duration || '300' }}
   FUZZ_SANITIZER: address
-  ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
-  RUSTFLAGS: "-Zsanitizer=address"
 
 jobs:
   fuzz:
@@ -94,12 +92,18 @@ jobs:
 
       - name: Build fuzzer
         if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        env:
+          RUSTFLAGS: "-Zsanitizer=address"
+          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
         run: |
           cd fuzz
           cargo +nightly fuzz build --sanitizer=${FUZZ_SANITIZER} ${{ matrix.target }}
 
       - name: Run fuzzer
         if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        env:
+          RUSTFLAGS: "-Zsanitizer=address"
+          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
         run: |
           cd fuzz
           # Run with memory limit (2GB) and length limit (1MB)
