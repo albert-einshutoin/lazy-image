@@ -62,7 +62,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake nasm
+          sudo apt-get install -y cmake nasm clang lld
 
       - name: Cache cargo registry
         uses: actions/cache@v4
