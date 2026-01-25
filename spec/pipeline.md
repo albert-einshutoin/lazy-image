@@ -19,3 +19,10 @@ Scope: overall pipeline execution rules across operations such as resize, crop, 
   - The crop window is mapped back to source space with double-precision scale factors and clamped to the source image; the output size is exactly `crop_width × crop_height`.
 - `crop → resize`: resize calculations use the cropped width/height as the source dimensions; rounding therefore reflects the cropped boundaries instead of the original image.
 - All paths reject zero-size resizes/crops and never sample outside the original image bounds.
+
+## Alpha handling (premultiply / unpremultiply)
+- Premultiply is required only for pixel layouts with alpha (`U8x4` / RGBA). RGB paths never premultiply to avoid unnecessary work or color shifts.
+- The resize pipeline performs:
+  1. `multiply_alpha_inplace` before filtering (to keep color channels energy-correct during interpolation).
+  2. `divide_alpha_inplace` after filtering (to return to straight-alpha outputs).
+- Premultiply/unpremultiply is applied uniformly to resized data; non-resize operations (crop/rotate/flip/adjust) do not toggle alpha state.

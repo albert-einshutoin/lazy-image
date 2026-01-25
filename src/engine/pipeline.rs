@@ -820,6 +820,12 @@ fn fast_resize_owned_impl(
     .map_err(|reason| ResizeError::new((src_width, src_height), (dst_width, dst_height), reason))
 }
 
+/// Decide whether alpha premultiplication is required for a given pixel layout.
+#[inline]
+fn requires_premultiply(pixel_type: PixelType) -> bool {
+    matches!(pixel_type, PixelType::U8x4)
+}
+
 fn fast_resize_internal_impl(
     src_width: u32,
     src_height: u32,
@@ -895,7 +901,8 @@ fn resize_with_source_image<'a>(
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);
 
     let mul_div = MulDiv::default();
-    if pixel_type == PixelType::U8x4 {
+    let premultiply = requires_premultiply(pixel_type);
+    if premultiply {
         mul_div
             .multiply_alpha_inplace(&mut src_image)
             .map_err(|e| format!("failed to premultiply alpha: {e}"))?;
@@ -906,7 +913,7 @@ fn resize_with_source_image<'a>(
         .resize(&src_image, &mut dst_image, &options)
         .map_err(|e| format!("fir resize error: {e:?}"))?;
 
-    if pixel_type == PixelType::U8x4 {
+    if premultiply {
         mul_div
             .divide_alpha_inplace(&mut dst_image)
             .map_err(|e| format!("failed to unpremultiply alpha: {e}"))?;
@@ -1825,6 +1832,32 @@ mod tests {
             assert!(result.is_ok());
             let resized = result.unwrap();
             assert_eq!(resized.dimensions(), (50, 50));
+        }
+
+        #[test]
+        fn test_requires_premultiply_only_for_rgba() {
+            assert!(requires_premultiply(PixelType::U8x4));
+            assert!(!requires_premultiply(PixelType::U8x3));
+        }
+
+        #[test]
+        fn test_fast_resize_rgba_respects_transparency_when_downscaling() {
+            // Left pixel opaque red, right pixel fully transparent blue.
+            // After downscale, color should stay red-dominant (premultiply prevents blue bleed).
+            let mut img = DynamicImage::ImageRgba8(RgbaImage::new(2, 1));
+            {
+                let buf = img.as_mut_rgba8().unwrap();
+                buf.put_pixel(0, 0, image::Rgba([255, 0, 0, 255]));
+                buf.put_pixel(1, 0, image::Rgba([0, 0, 255, 0]));
+            }
+
+            let resized = fast_resize(&img, 1, 1).expect("resize should succeed");
+            let resized_rgba = resized.to_rgba8();
+            let pixel = resized_rgba.get_pixel(0, 0);
+            // Expect the visible color to stay red and not bleed blue from the transparent pixel.
+            assert!(pixel[0] > 200, "red channel should dominate, got {}", pixel[0]);
+            assert!(pixel[2] < 30, "blue channel should be minimal, got {}", pixel[2]);
+            assert!(pixel[3] > 100, "alpha should remain non-zero, got {}", pixel[3]);
         }
     }
 
