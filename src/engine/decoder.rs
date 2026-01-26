@@ -36,6 +36,8 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
             ));
         }
 
+        validate_jpeg_structure(data)?;
+
         let decompress = Decompress::new_mem(data).map_err(|e| {
             LazyImageError::decode_failed(format!("mozjpeg decompress init failed: {e:?}"))
         })?;
@@ -68,6 +70,79 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
 
         Ok(DynamicImage::ImageRgb8(rgb_image))
     })
+}
+
+/// Minimal JPEG structure validation to avoid handing obviously malformed buffers to libjpeg.
+/// Walks markers until SOS, ensuring declared segment lengths stay within the buffer.
+fn validate_jpeg_structure(data: &[u8]) -> DecoderResult<()> {
+    const SOI: u8 = 0xD8;
+    const EOI: u8 = 0xD9;
+    const SOS: u8 = 0xDA;
+
+    if data.len() < 4 || data[0] != 0xFF || data[1] != SOI {
+        return Err(LazyImageError::decode_failed("mozjpeg: missing SOI marker"));
+    }
+
+    let mut i = 2; // position after SOI
+    while i + 1 < data.len() {
+        if data[i] != 0xFF {
+            return Err(LazyImageError::decode_failed(
+                "mozjpeg: expected marker prefix 0xFF",
+            ));
+        }
+        // Skip padding FF bytes
+        while i < data.len() && data[i] == 0xFF {
+            i += 1;
+        }
+        if i >= data.len() {
+            return Err(LazyImageError::decode_failed(
+                "mozjpeg: truncated marker after 0xFF padding",
+            ));
+        }
+        let marker = data[i];
+        i += 1;
+
+        // Standalone markers without length
+        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 || marker == EOI {
+            if marker == EOI {
+                return Ok(());
+            }
+            continue;
+        }
+
+        if i + 1 >= data.len() {
+            return Err(LazyImageError::decode_failed(
+                "mozjpeg: truncated segment length",
+            ));
+        }
+        let seg_len = u16::from_be_bytes([data[i], data[i + 1]]) as usize;
+        if seg_len < 2 {
+            return Err(LazyImageError::decode_failed(
+                "mozjpeg: invalid segment length (<2)",
+            ));
+        }
+        if i + seg_len > data.len() {
+            return Err(LazyImageError::decode_failed(
+                "mozjpeg: segment length exceeds buffer",
+            ));
+        }
+
+        i += seg_len;
+
+        if marker == SOS {
+            // After SOS, compressed scan follows until EOI; require at least 1 byte of scan data.
+            if i >= data.len() {
+                return Err(LazyImageError::decode_failed(
+                    "mozjpeg: SOS without scan data",
+                ));
+            }
+            return Ok(()); // stop validation; hand off to decoder
+        }
+    }
+
+    Err(LazyImageError::decode_failed(
+        "mozjpeg: no EOI or SOS found while validating",
+    ))
 }
 
 /// Decode non-JPEG formats using the image crate under the global panic policy.
