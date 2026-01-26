@@ -753,6 +753,7 @@ pub fn napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
         let category = err.category();
+        let code = err.code();
         let status = match category {
             ErrorCategory::UserError => Status::InvalidArg,
             ErrorCategory::CodecError => Status::InvalidArg,
@@ -760,8 +761,10 @@ impl From<LazyImageError> for napi::Error {
             ErrorCategory::InternalBug => Status::GenericFailure,
         };
 
-        // Create error with original message only (no prefix)
-        napi::Error::new(status, err.to_string())
+        // Fallback conversion without Env: embed fine-grained code in message so
+        // JavaScript can still classify errors (parseable "[E***]" prefix).
+        let message_with_code = format!("[{}] {}", code.as_str(), err);
+        napi::Error::new(status, message_with_code)
     }
 }
 
