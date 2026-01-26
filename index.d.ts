@@ -286,7 +286,7 @@ export declare class ImageEngine {
    *     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
    *     Ideal for serverless/containerized environments with memory constraints.
    *   - 1-1024: Manual override - use specified number of concurrent operations
-   */
+  */
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
 

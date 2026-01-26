@@ -250,8 +250,8 @@ async function runTests() {
     });
     
     await asyncTest('rejects rotation 360 (invalid angle)', async () => {
-        // 360度は無効な角度なのでエラーになるべき
-        // 実装では0, 90, 180, 270, -90, -180, -270のみサポート
+        // 360 degrees is invalid; should error
+        // Implementation only supports 0, 90, 180, 270, -90, -180, -270
         let threw = false;
         try {
             await ImageEngine.from(buffer).rotate(360).toBuffer('jpeg', 80);
@@ -265,7 +265,7 @@ async function runTests() {
                 `error should mention rotation/angle: ${e.message}`
             );
         }
-        // ✅ Fix: Verify that error was thrown for invalid rotation angle
+        // Verify that error was thrown for invalid rotation angle
         assert(threw, 'should throw error for invalid rotation angle 360');
     });
     
@@ -300,8 +300,8 @@ async function runTests() {
     // ========================================================================
     
     await asyncTest('toFile() rejects non-existent parent directory', async () => {
-        // toFile()は親ディレクトリを作成しない（src/engine/tasks.rs:446-455）
-        // 存在しない親ディレクトリへの書き込みはエラーになるべき
+        // toFile() does not create parent directories (src/engine/tasks.rs:446-455)
+        // Writing to non-existent parent directory should error
         const testDir = resolveTemp('nonexistent_dir');
         const outPath = path.join(testDir, 'test_output.jpg');
         let threw = false;
@@ -311,7 +311,7 @@ async function runTests() {
         } catch (e) {
             threw = true;
             errorMessage = e.message;
-            // エラーメッセージにディレクトリ関連の文字列が含まれることを確認
+            // Verify error message mentions directory/path issue
             assert(
                 errorMessage.includes('directory') || 
                 errorMessage.includes('path') || 
@@ -320,7 +320,7 @@ async function runTests() {
                 `error should mention directory/path issue: ${errorMessage}`
             );
         }
-        // ✅ Fix: Verify that error was thrown when parent directory does not exist
+        // Verify that error was thrown when parent directory does not exist
         assert(threw, 'should throw error when parent directory does not exist');
     });
     
@@ -350,8 +350,8 @@ async function runTests() {
     });
     
     await asyncTest('processBatch accepts concurrency 0 (uses default)', async () => {
-        // concurrency=0は有効で、デフォルトのスレッドプールを使用する
-        // src/engine/tasks.rs:699-701でauto-detectされる
+        // concurrency=0 is valid and uses default thread pool
+        // Auto-detected in src/engine/tasks.rs:699-701
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_concurrency_0');
         try {
@@ -361,12 +361,12 @@ async function runTests() {
                 'jpeg', 
                 80, 
                 undefined, 
-                0  // concurrency=0は有効
+                0  // concurrency=0 is valid
             );
             assert(results.length === 1, 'should process 1 image');
             assert(results[0].success, 'should succeed with concurrency=0');
         } finally {
-            // ✅ Fix: Verify success and cleanup
+            // Verify success and cleanup
             if (fs.existsSync(testDir)) {
                 try {
                     fs.readdirSync(testDir).forEach(file => {
@@ -381,8 +381,8 @@ async function runTests() {
     });
     
     await asyncTest('processBatch rejects concurrency > 1024 (InternalBug)', async () => {
-        // concurrency > MAX_CONCURRENCY (1024) は必ずエラーになる
-        // src/engine/tasks.rs:688-695でinternal_panicエラーになる
+        // concurrency > MAX_CONCURRENCY (1024) must error
+        // Results in internal_panic error in src/engine/tasks.rs:688-695
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_high_concurrency');
         let threw = false;
@@ -397,7 +397,7 @@ async function runTests() {
             errorMessage = e.message;
             category = getErrorCategory(e);
             
-            // エラーメッセージにconcurrency関連の文字列が含まれることを確認
+            // Verify error message mentions concurrency limit
             assert(
                 errorMessage.includes('concurrency') || 
                 errorMessage.includes('invalid') ||
@@ -405,7 +405,7 @@ async function runTests() {
                 `error should mention concurrency limit: ${errorMessage}`
             );
             
-            // ✅ Fix: カテゴリはInternalBugになる（必ず設定されるべき）
+            // Category should be InternalBug (must be set)
             assert(category !== null, 'error category should be set (not null)');
             assert(
                 category === ErrorCategory.InternalBug,
@@ -413,10 +413,10 @@ async function runTests() {
             );
         }
         
-        // ✅ Fix: Verify that error was thrown
+        // Verify that error was thrown
         assert(threw, 'should throw error for concurrency > 1024');
         
-        // クリーンアップ（エラーが発生した場合はファイルが作成されていないはず）
+        // Cleanup (files should not be created if error occurred)
         if (fs.existsSync(testDir)) {
             try {
                 fs.readdirSync(testDir).forEach(file => {
@@ -540,12 +540,34 @@ async function runTests() {
         assert(result2.length > 0, 'should handle brightness 100');
     });
     
-    await asyncTest('clamps brightness values outside range', async () => {
-        // Values should be clamped to -100..100
-        const result1 = await ImageEngine.from(buffer).resize(100).brightness(-200).toBuffer('jpeg', 80);
-        const result2 = await ImageEngine.from(buffer).resize(100).brightness(200).toBuffer('jpeg', 80);
-        assert(result1.length > 0, 'should clamp brightness -200 to -100');
-        assert(result2.length > 0, 'should clamp brightness 200 to 100');
+    await asyncTest('rejects brightness outside range', async () => {
+        let threw = false;
+        try {
+            await ImageEngine.from(buffer).resize(100).brightness(-200).toBuffer('jpeg', 80);
+        } catch (e) {
+            threw = true;
+            const category = getErrorCategory(e);
+            assert.strictEqual(
+                category,
+                ErrorCategory.UserError,
+                'out-of-range brightness should be UserError'
+            );
+        }
+        assert(threw, 'should throw for brightness below -100');
+
+        threw = false;
+        try {
+            await ImageEngine.from(buffer).resize(100).brightness(200).toBuffer('jpeg', 80);
+        } catch (e) {
+            threw = true;
+            const category = getErrorCategory(e);
+            assert.strictEqual(
+                category,
+                ErrorCategory.UserError,
+                'out-of-range brightness should be UserError'
+            );
+        }
+        assert(threw, 'should throw for brightness above 100');
     });
     
     await asyncTest('handles contrast at limits (-100, 100)', async () => {

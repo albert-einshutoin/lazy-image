@@ -34,6 +34,12 @@ use std::sync::Arc;
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 
+#[cfg(feature = "napi")]
+fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
+    // Helper to attach code/category consistently when Env is available
+    crate::error::napi_error_with_code(env, err).expect("failed to create napi error")
+}
+
 /// The main image processing engine.
 ///
 /// Usage:
@@ -177,16 +183,49 @@ impl ImageEngine {
     #[napi]
     pub fn resize(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
         width: Option<u32>,
         height: Option<u32>,
         fit: Option<String>,
     ) -> Result<Reference<ImageEngine>> {
         let fit_mode = if let Some(value) = fit {
-            ResizeFit::from_str(&value).map_err(|_| LazyImageError::invalid_resize_fit(value))?
+            ResizeFit::from_str(&value)
+                .map_err(|_| napi_err(&env, LazyImageError::invalid_resize_fit(value)))?
         } else {
             ResizeFit::default()
         };
+
+        if let Some(w) = width {
+            if w == 0 || w > crate::engine::MAX_DIMENSION {
+                return Err(napi_err(
+                    &env,
+                    LazyImageError::invalid_argument(
+                        "width",
+                        w.to_string(),
+                        format!(
+                            "must be between 1 and {}",
+                            crate::engine::MAX_DIMENSION
+                        ),
+                    ),
+                ));
+            }
+        }
+        if let Some(h) = height {
+            if h == 0 || h > crate::engine::MAX_DIMENSION {
+                return Err(napi_err(
+                    &env,
+                    LazyImageError::invalid_argument(
+                        "height",
+                        h.to_string(),
+                        format!(
+                            "must be between 1 and {}",
+                            crate::engine::MAX_DIMENSION
+                        ),
+                    ),
+                ));
+            }
+        }
 
         self.ops.push(Operation::Resize {
             width,
@@ -217,9 +256,22 @@ impl ImageEngine {
 
     /// Rotate by degrees (90, 180, 270 only)
     #[napi]
-    pub fn rotate(&mut self, this: Reference<ImageEngine>, degrees: i32) -> Reference<ImageEngine> {
-        self.ops.push(Operation::Rotate { degrees });
-        this
+    pub fn rotate(
+        &mut self,
+        env: Env,
+        this: Reference<ImageEngine>,
+        degrees: i32,
+    ) -> Result<Reference<ImageEngine>> {
+        match degrees {
+            0 | 90 | 180 | 270 | -90 | -180 | -270 => {
+                self.ops.push(Operation::Rotate { degrees });
+                Ok(this)
+            }
+            other => Err(napi_err(
+                &env,
+                LazyImageError::invalid_rotation_angle(other),
+            )),
+        }
     }
 
     /// Flip horizontally
@@ -272,6 +324,7 @@ impl ImageEngine {
     #[napi]
     pub fn sanitize(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
         options: Option<SanitizeOptions>,
     ) -> Result<Reference<ImageEngine>> {
@@ -282,7 +335,12 @@ impl ImageEngine {
         let policy = match lowered.as_str() {
             "strict" => FirewallPolicy::Strict,
             "lenient" => FirewallPolicy::Lenient,
-            _ => return Err(LazyImageError::invalid_firewall_policy(requested).into()),
+            _ => {
+                return Err(napi_err(
+                    &env,
+                    LazyImageError::invalid_firewall_policy(requested),
+                ))
+            }
         };
 
         self.firewall = FirewallConfig::apply_policy(policy);
@@ -293,13 +351,18 @@ impl ImageEngine {
 
         if let Some(decoded) = &self.decoded {
             self.firewall
-                .enforce_pixels(decoded.width(), decoded.height())?;
+                .enforce_pixels(decoded.width(), decoded.height())
+                .map_err(|e| napi_err(&env, e))?;
         }
 
         if let Some(source) = &self.source {
-            self.firewall.enforce_source_len(source.len())?;
+            self.firewall
+                .enforce_source_len(source.len())
+                .map_err(|e| napi_err(&env, e))?;
             if let Some(bytes) = source.as_bytes() {
-                self.firewall.scan_metadata(bytes)?;
+                self.firewall
+                    .scan_metadata(bytes)
+                    .map_err(|e| napi_err(&env, e))?;
             }
         }
 
@@ -311,6 +374,7 @@ impl ImageEngine {
     #[napi]
     pub fn limits(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
         options: FirewallLimitOptions,
     ) -> Result<Reference<ImageEngine>> {
@@ -345,6 +409,20 @@ impl ImageEngine {
             }
         }
 
+        // Validate that user did not exceed internal hard limits
+        if let Some(max_pixels) = self.firewall.max_pixels {
+            if max_pixels == 0 {
+                return Err(napi_err(
+                    &env,
+                    LazyImageError::invalid_argument(
+                        "maxPixels",
+                        "0",
+                        "set to a positive value or omit to disable",
+                    ),
+                ));
+            }
+        }
+
         Ok(this)
     }
 
@@ -352,20 +430,44 @@ impl ImageEngine {
     #[napi]
     pub fn brightness(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
         value: i32,
-    ) -> Reference<ImageEngine> {
-        let clamped = value.clamp(-100, 100);
-        self.ops.push(Operation::Brightness { value: clamped });
-        this
+    ) -> Result<Reference<ImageEngine>> {
+        if value < -100 || value > 100 {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "brightness",
+                    value.to_string(),
+                    "expected value between -100 and 100",
+                ),
+            ));
+        }
+        self.ops.push(Operation::Brightness { value });
+        Ok(this)
     }
 
     /// Adjust contrast (-100 to 100)
     #[napi]
-    pub fn contrast(&mut self, this: Reference<ImageEngine>, value: i32) -> Reference<ImageEngine> {
-        let clamped = value.clamp(-100, 100);
-        self.ops.push(Operation::Contrast { value: clamped });
-        this
+    pub fn contrast(
+        &mut self,
+        env: Env,
+        this: Reference<ImageEngine>,
+        value: i32,
+    ) -> Result<Reference<ImageEngine>> {
+        if value < -100 || value > 100 {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "contrast",
+                    value.to_string(),
+                    "expected value between -100 and 100",
+                ),
+            ));
+        }
+        self.ops.push(Operation::Contrast { value });
+        Ok(this)
     }
 
     /// Ensure the image is in RGB/RGBA format (pixel format conversion, not color space transformation)
