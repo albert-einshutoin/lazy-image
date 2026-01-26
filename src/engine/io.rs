@@ -3,10 +3,11 @@
 // I/O operations: Source enum, file loading, and ICC profile extraction
 
 use crate::error::LazyImageError;
-use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
 use libavif_sys::*;
 use memmap2::Mmap;
 use std::sync::Arc;
+
+const MAX_ICC_SOURCE_BYTES: usize = 8 * 1024 * 1024; // Hard cap to keep fuzz inputs bounded without breaking large images
 
 /// Image source - supports both in-memory data and memory-mapped files
 #[derive(Clone, Debug)]
@@ -53,26 +54,21 @@ impl Source {
 }
 
 /// Extract ICC profile from image data.
-/// Supports JPEG (APP2 marker), PNG (iCCP chunk), and WebP (ICCP chunk).
+/// Supports JPEG (APP2 marker), PNG (iCCP chunk), WebP (ICCP chunk), and AVIF (colr box).
 pub fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
-    // Check magic bytes to determine format
-    if data.len() < 12 {
+    if data.len() < 12 || data.len() > MAX_ICC_SOURCE_BYTES {
         return None;
     }
 
     let icc_data = std::panic::catch_unwind(|| {
-        if data[0] == 0xFF && data[1] == 0xD8 {
-            // JPEG: starts with 0xFF 0xD8
+        if data.starts_with(&[0xFF, 0xD8]) {
             extract_icc_from_jpeg(data)
-        } else if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 {
-            // PNG: starts with 0x89 0x50 0x4E 0x47
+        } else if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
             extract_icc_from_png(data)
-        } else if &data[0..4] == b"RIFF" && data.len() >= 12 && &data[8..12] == b"WEBP" {
-            // WebP: starts with "RIFF" then 4 bytes size then "WEBP"
+        } else if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
             extract_icc_from_webp(data)
         } else if is_avif_data(data) {
-            // AVIF: ISOBMFF-based format with 'ftyp' box containing 'avif' brand
-            extract_icc_from_avif(data)
+            extract_icc_from_avif_safe(data)
         } else {
             None
         }
@@ -80,13 +76,7 @@ pub fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
     .ok()
     .flatten()?;
 
-    // Validate extracted ICC profile
-    if validate_icc_profile(&icc_data) {
-        Some(icc_data)
-    } else {
-        // Invalid ICC profile - skip it
-        None
-    }
+    validate_icc_profile(&icc_data).then_some(icc_data)
 }
 
 /// Validate ICC profile header
@@ -189,18 +179,15 @@ pub(crate) fn is_avif_data(data: &[u8]) -> bool {
     false
 }
 
-/// Extract ICC profile from JPEG data
+/// Extract ICC profile from JPEG data using a guarded APP2 parser.
 pub(crate) fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
     if !is_well_formed_jpeg(data) {
         return None;
     }
-    use img_parts::Bytes;
-    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
-    let jpeg = Jpeg::from_bytes(Bytes::copy_from_slice(data)).ok()?;
-    jpeg.icc_profile().map(|icc| icc.to_vec())
+    extract_icc_from_jpeg_app2(data)
 }
 
-/// Minimal JPEG structure check to avoid feeding obviously malformed buffers to img_parts/libjpeg.
+/// Minimal JPEG structure check to avoid handing obviously malformed buffers to parsers.
 fn is_well_formed_jpeg(data: &[u8]) -> bool {
     const SOI: u8 = 0xD8;
     const EOI: u8 = 0xD9;
@@ -252,15 +239,101 @@ fn is_well_formed_jpeg(data: &[u8]) -> bool {
     false
 }
 
-/// Extract ICC profile from PNG data
-pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
-    use img_parts::Bytes;
-    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
-    let img_parts_icc = Png::from_bytes(Bytes::copy_from_slice(data))
-        .ok()
-        .and_then(|png| png.icc_profile().map(|icc| icc.to_vec()));
+/// Extract ICC profile from APP2 segments following the ICC.1 spec.
+fn extract_icc_from_jpeg_app2(data: &[u8]) -> Option<Vec<u8>> {
+    const APP2: u8 = 0xE2;
+    const SOS: u8 = 0xDA;
+    const EOI: u8 = 0xD9;
+    const ICC_ID: &[u8] = b"ICC_PROFILE\0";
 
-    img_parts_icc.or_else(|| extract_icc_from_png_direct(data))
+    let mut i = 2; // skip SOI
+    let mut count_expected: Option<u8> = None;
+    let mut segments: Vec<(u8, Vec<u8>)> = Vec::new();
+
+    while i + 1 < data.len() {
+        if data[i] != 0xFF {
+            return None;
+        }
+        while i < data.len() && data[i] == 0xFF {
+            i += 1;
+        }
+        if i >= data.len() {
+            return None;
+        }
+        let marker = data[i];
+        i += 1;
+
+        if marker == SOS || marker == EOI {
+            break; // stop before compressed scan or explicit end
+        }
+        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 {
+            continue; // standalone marker
+        }
+
+        if i + 1 >= data.len() {
+            return None;
+        }
+        let seg_len = u16::from_be_bytes([data[i], data[i + 1]]) as usize;
+        if seg_len < 2 || i + seg_len > data.len() {
+            return None;
+        }
+        i += 2;
+        let seg_end = i + seg_len - 2;
+        if seg_end > data.len() {
+            return None;
+        }
+
+        if marker == APP2 && seg_len >= 16 {
+            let segment = &data[i..seg_end];
+            if segment.len() >= 14 && segment.starts_with(ICC_ID) {
+                let seq = segment[12];
+                let count = segment[13];
+                if seq == 0 || count == 0 {
+                    // invalid numbering, skip
+                } else {
+                    if let Some(expected) = count_expected {
+                        if expected != count {
+                            return None;
+                        }
+                    } else {
+                        count_expected = Some(count);
+                    }
+                    let payload = segment[14..].to_vec();
+                    segments.push((seq, payload));
+                }
+            }
+        }
+
+        i = seg_end;
+    }
+
+    let total_segments = count_expected?;
+    if segments.is_empty() || segments.len() != total_segments as usize {
+        return None;
+    }
+
+    segments.sort_by_key(|(seq, _)| *seq);
+    for (expected_seq, (seq, _)) in (1u8..=total_segments).zip(segments.iter()) {
+        if *seq != expected_seq {
+            return None;
+        }
+    }
+
+    let total_len: usize = segments.iter().map(|(_, payload)| payload.len()).sum();
+    if total_len > MAX_ICC_SOURCE_BYTES {
+        return None;
+    }
+
+    let mut combined = Vec::with_capacity(total_len);
+    for (_, payload) in segments {
+        combined.extend_from_slice(&payload);
+    }
+    Some(combined)
+}
+
+/// Extract ICC profile from PNG data using a deterministic parser (iCCP chunk).
+pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
+    extract_icc_from_png_direct(data)
 }
 
 /// Extract ICC profile from PNG iCCP chunk by directly parsing PNG structure
@@ -346,19 +419,56 @@ pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
     None
 }
 
-/// Extract ICC profile from WebP data
+/// Extract ICC profile from WebP data by walking RIFF chunks and reading ICCP.
 pub(crate) fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
-    use img_parts::webp::WebP;
-    use img_parts::Bytes;
-    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
-    let webp = WebP::from_bytes(Bytes::copy_from_slice(data)).ok()?;
-    webp.icc_profile().map(|icc| icc.to_vec())
+    extract_icc_from_webp_riff(data)
 }
 
-/// Extract ICC profile from AVIF data using libavif
+/// Extract ICC profile from WebP RIFF container without invoking img-parts.
+fn extract_icc_from_webp_riff(data: &[u8]) -> Option<Vec<u8>> {
+    if data.len() < 12 || !data.starts_with(b"RIFF") || &data[8..12] != b"WEBP" {
+        return None;
+    }
+
+    // RIFF chunk size is bytes 4..8 (little-endian) but we only validate bounds defensively.
+    let mut offset = 12;
+    while offset + 8 <= data.len() {
+        let chunk_id = &data[offset..offset + 4];
+        let size = u32::from_le_bytes([
+            data[offset + 4],
+            data[offset + 5],
+            data[offset + 6],
+            data[offset + 7],
+        ]) as usize;
+        offset = offset
+            .checked_add(8)
+            .filter(|&v| v <= data.len())
+            .unwrap_or(data.len());
+
+        if offset + size > data.len() {
+            break;
+        }
+
+        if chunk_id == b"ICCP" {
+            return Some(data[offset..offset + size].to_vec());
+        }
+
+        // Chunks are padded to even sizes.
+        let padded = if size % 2 == 0 { size } else { size + 1 };
+        offset = offset.saturating_add(padded);
+    }
+
+    None
+}
+
+/// Extract ICC profile from AVIF data using libavif with panic and size guards.
 /// libavif-sys is always available (not dependent on napi feature)
-fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
-    unsafe {
+fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
+    if data.len() > MAX_ICC_SOURCE_BYTES {
+        return None;
+    }
+
+    std::panic::catch_unwind(|| unsafe {
         // Create decoder
         let decoder = avifDecoderCreate();
         if decoder.is_null() {
@@ -377,6 +487,9 @@ fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
             }
         }
         let _decoder_guard = AvifDecoderGuard(decoder);
+
+        // Keep fuzz runs single-threaded to reduce nondeterminism and memory overhead.
+        (*decoder).maxThreads = 1;
 
         // Set decode data
         let result = avifDecoderSetIOMemory(decoder, data.as_ptr(), data.len());
@@ -408,9 +521,15 @@ fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
             return None;
         }
 
+        if icc_size > MAX_ICC_SOURCE_BYTES {
+            return None;
+        }
+
         let icc_data = std::slice::from_raw_parts(icc_ptr, icc_size).to_vec();
         Some(icc_data)
-    }
+    })
+    .ok()
+    .flatten()
 }
 
 #[cfg(test)]
