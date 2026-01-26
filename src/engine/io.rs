@@ -60,21 +60,25 @@ pub fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
         return None;
     }
 
-    let icc_data = if data[0] == 0xFF && data[1] == 0xD8 {
-        // JPEG: starts with 0xFF 0xD8
-        extract_icc_from_jpeg(data)?
-    } else if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 {
-        // PNG: starts with 0x89 0x50 0x4E 0x47
-        extract_icc_from_png(data)?
-    } else if &data[0..4] == b"RIFF" && data.len() >= 12 && &data[8..12] == b"WEBP" {
-        // WebP: starts with "RIFF" then 4 bytes size then "WEBP"
-        extract_icc_from_webp(data)?
-    } else if is_avif_data(data) {
-        // AVIF: ISOBMFF-based format with 'ftyp' box containing 'avif' brand
-        extract_icc_from_avif(data)?
-    } else {
-        return None;
-    };
+    let icc_data = std::panic::catch_unwind(|| {
+        if data[0] == 0xFF && data[1] == 0xD8 {
+            // JPEG: starts with 0xFF 0xD8
+            extract_icc_from_jpeg(data)
+        } else if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 {
+            // PNG: starts with 0x89 0x50 0x4E 0x47
+            extract_icc_from_png(data)
+        } else if &data[0..4] == b"RIFF" && data.len() >= 12 && &data[8..12] == b"WEBP" {
+            // WebP: starts with "RIFF" then 4 bytes size then "WEBP"
+            extract_icc_from_webp(data)
+        } else if is_avif_data(data) {
+            // AVIF: ISOBMFF-based format with 'ftyp' box containing 'avif' brand
+            extract_icc_from_avif(data)
+        } else {
+            None
+        }
+    })
+    .ok()
+    .flatten()?;
 
     // Validate extracted ICC profile
     if validate_icc_profile(&icc_data) {
