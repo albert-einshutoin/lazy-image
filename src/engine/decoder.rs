@@ -148,6 +148,16 @@ fn validate_jpeg_structure(data: &[u8]) -> DecoderResult<()> {
 /// Decode non-JPEG formats using the image crate under the global panic policy.
 pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:image", || {
+        // Avoid routing JPEG data to the image crate: its JPEG backend (zune-jpeg)
+        // can panic in parallel worker threads under malformed inputs when built
+        // with `panic = "abort"` (cargo-fuzz). JPEGs should be handled by
+        // decode_jpeg_mozjpeg, so bail out early to keep fuzzing stable.
+        if data.len() >= 2 && data[0] == 0xFF && data[1] == 0xD8 {
+            return Err(LazyImageError::decode_failed(
+                "jpeg: use mozjpeg decoder path",
+            ));
+        }
+
         image::load_from_memory(data)
             .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))
     })
