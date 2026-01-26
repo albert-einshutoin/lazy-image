@@ -8,6 +8,16 @@ use crate::engine::{MAX_DIMENSION, MAX_PIXELS};
 use crate::error::LazyImageError;
 use libavif_sys::*;
 use std::num::NonZeroU32;
+#[cfg(test)]
+use std::{cell::Cell, thread_local};
+
+#[cfg(test)]
+thread_local! {
+    static TRACK_DROPS: Cell<bool> = Cell::new(false);
+    static LIVE_IMAGES: Cell<usize> = Cell::new(0);
+    static LIVE_ENCODERS: Cell<usize> = Cell::new(0);
+    static LIVE_RWDATA: Cell<usize> = Cell::new(0);
+}
 
 /// Safe wrapper for avifImage that manages its lifetime using RAII.
 /// This eliminates the need for unsafe blocks when working with AVIF images.
@@ -74,6 +84,12 @@ impl SafeAvifImage {
                 "Failed to create AVIF image",
             ));
         }
+        #[cfg(test)]
+        TRACK_DROPS.with(|flag| {
+            if flag.get() {
+                LIVE_IMAGES.with(|c| c.set(c.get() + 1));
+            }
+        });
         Ok(Self { ptr })
     }
 
@@ -190,6 +206,12 @@ impl Drop for SafeAvifImage {
                 avifImageDestroy(self.ptr);
             }
         }
+        #[cfg(test)]
+        TRACK_DROPS.with(|flag| {
+            if flag.get() && !self.ptr.is_null() {
+                LIVE_IMAGES.with(|c| c.set(c.get().saturating_sub(1)));
+            }
+        });
     }
 }
 
@@ -211,6 +233,12 @@ impl SafeAvifEncoder {
                 "Failed to create AVIF encoder",
             ));
         }
+        #[cfg(test)]
+        TRACK_DROPS.with(|flag| {
+            if flag.get() {
+                LIVE_ENCODERS.with(|c| c.set(c.get() + 1));
+            }
+        });
         Ok(Self { ptr })
     }
 
@@ -282,6 +310,12 @@ impl Drop for SafeAvifEncoder {
                 avifEncoderDestroy(self.ptr);
             }
         }
+        #[cfg(test)]
+        TRACK_DROPS.with(|flag| {
+            if flag.get() && !self.ptr.is_null() {
+                LIVE_ENCODERS.with(|c| c.set(c.get().saturating_sub(1)));
+            }
+        });
     }
 }
 
@@ -293,6 +327,12 @@ pub struct SafeAvifRwData {
 impl SafeAvifRwData {
     /// Create a new empty avifRWData structure.
     pub fn new() -> Self {
+        #[cfg(test)]
+        TRACK_DROPS.with(|flag| {
+            if flag.get() {
+                LIVE_RWDATA.with(|c| c.set(c.get() + 1));
+            }
+        });
         Self {
             data: unsafe { std::mem::zeroed() },
         }
@@ -336,6 +376,12 @@ impl Drop for SafeAvifRwData {
         unsafe {
             avifRWDataFree(&mut self.data);
         }
+        #[cfg(test)]
+        TRACK_DROPS.with(|flag| {
+            if flag.get() {
+                LIVE_RWDATA.with(|c| c.set(c.get().saturating_sub(1)));
+            }
+        });
     }
 }
 
@@ -395,6 +441,41 @@ pub fn create_rgb_image(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::mem::ManuallyDrop;
+
+    #[cfg(test)]
+    fn enable_drop_tracking() -> DropTrackingGuard {
+        TRACK_DROPS.with(|t| t.set(true));
+        LIVE_IMAGES.with(|c| c.set(0));
+        LIVE_ENCODERS.with(|c| c.set(0));
+        LIVE_RWDATA.with(|c| c.set(0));
+        DropTrackingGuard
+    }
+
+    #[cfg(test)]
+    struct DropTrackingGuard;
+
+    #[cfg(test)]
+    impl Drop for DropTrackingGuard {
+        fn drop(&mut self) {
+            TRACK_DROPS.with(|t| t.set(false));
+        }
+    }
+
+    #[cfg(test)]
+    fn live_images() -> usize {
+        LIVE_IMAGES.with(|c| c.get())
+    }
+
+    #[cfg(test)]
+    fn live_encoders() -> usize {
+        LIVE_ENCODERS.with(|c| c.get())
+    }
+
+    #[cfg(test)]
+    fn live_rwdata() -> usize {
+        LIVE_RWDATA.with(|c| c.get())
+    }
 
     #[test]
     fn new_rejects_zero_dimensions() {
@@ -431,5 +512,162 @@ mod tests {
         let rgb = create_rgb_image(&mut img, pixels.as_ptr(), 4, 2).unwrap();
         assert_eq!(rgb.rowBytes, 16);
         assert_eq!(rgb.format, AVIF_RGB_FORMAT_RGBA);
+    }
+
+    #[test]
+    fn image_drop_happens_on_unwind() {
+        let _guard = enable_drop_tracking();
+        assert_eq!(live_images(), 0);
+
+        let result = std::panic::catch_unwind(|| {
+            let _img = SafeAvifImage::new(2, 2, 8, AVIF_PIXEL_FORMAT_YUV444).unwrap();
+            assert_eq!(live_images(), 1);
+            panic!("force unwind");
+        });
+
+        assert!(result.is_err());
+        assert_eq!(live_images(), 0, "image drop should run during unwind");
+    }
+
+    #[test]
+    fn image_manual_drop_runs_once() {
+        let _guard = enable_drop_tracking();
+        let mut img =
+            ManuallyDrop::new(SafeAvifImage::new(2, 2, 8, AVIF_PIXEL_FORMAT_YUV444).unwrap());
+        assert_eq!(live_images(), 1);
+        let taken = unsafe { ManuallyDrop::take(&mut img) };
+        drop(taken);
+        assert_eq!(
+            live_images(),
+            0,
+            "manual drop should release exactly one live image"
+        );
+    }
+
+    #[test]
+    fn encoder_and_rwdata_drop_once_after_move() {
+        let _guard = enable_drop_tracking();
+        assert_eq!(live_encoders(), 0);
+        assert_eq!(live_rwdata(), 0);
+
+        {
+            let enc = SafeAvifEncoder::new().unwrap();
+            let rw = SafeAvifRwData::new();
+            assert_eq!(live_encoders(), 1);
+            assert_eq!(live_rwdata(), 1);
+            consume_encoder_and_data(enc, rw);
+        }
+
+        assert_eq!(
+            live_encoders(),
+            0,
+            "encoder drop should execute exactly once after move"
+        );
+        assert_eq!(
+            live_rwdata(),
+            0,
+            "rwdata drop should execute exactly once after move"
+        );
+    }
+
+    #[test]
+    fn drop_counters_stay_zero_across_tests() {
+        let _guard = enable_drop_tracking();
+        assert_eq!(live_images(), 0);
+        assert_eq!(live_encoders(), 0);
+        assert_eq!(live_rwdata(), 0);
+    }
+
+    fn consume_encoder_and_data(enc: SafeAvifEncoder, data: SafeAvifRwData) {
+        drop(enc);
+        drop(data);
+    }
+
+    #[test]
+    fn image_drop_handles_manual_release_without_double_free() {
+        let _guard = enable_drop_tracking();
+        let mut img =
+            SafeAvifImage::new(2, 2, 8, AVIF_PIXEL_FORMAT_YUV420).expect("image alloc should work");
+        assert_eq!(live_images(), 1);
+
+        // Simulate an external FFI consumer that takes ownership and frees the image.
+        unsafe {
+            avifImageDestroy(img.ptr);
+        }
+        LIVE_IMAGES.with(|c| c.set(0));
+        img.ptr = std::ptr::null_mut();
+
+        // Drop must not double free the already-released pointer.
+        drop(img);
+        assert_eq!(live_images(), 0);
+    }
+
+    #[test]
+    fn encoder_drop_handles_manual_release_without_double_free() {
+        let _guard = enable_drop_tracking();
+        let mut enc = SafeAvifEncoder::new().expect("encoder alloc should work");
+        assert_eq!(live_encoders(), 1);
+
+        unsafe {
+            avifEncoderDestroy(enc.ptr);
+        }
+        LIVE_ENCODERS.with(|c| c.set(0));
+        enc.ptr = std::ptr::null_mut();
+
+        drop(enc);
+        assert_eq!(live_encoders(), 0);
+    }
+
+    #[test]
+    fn rwdata_drop_handles_manual_release_without_double_free() {
+        let _guard = enable_drop_tracking();
+        let mut data = SafeAvifRwData::new();
+        assert_eq!(live_rwdata(), 1);
+
+        // Allocate a real buffer via libavif to mirror production ownership.
+        unsafe {
+            let raw = data.as_mut_ptr();
+            assert_eq!(avifRWDataRealloc(raw, 8), AVIF_RESULT_OK);
+            avifRWDataFree(raw);
+        }
+        LIVE_RWDATA.with(|c| c.set(0));
+        data.data.data = std::ptr::null_mut();
+        data.data.size = 0;
+
+        drop(data);
+        assert_eq!(live_rwdata(), 0);
+    }
+
+    #[test]
+    fn encoder_and_rwdata_drop_on_unwind() {
+        let _guard = enable_drop_tracking();
+        assert_eq!(live_encoders(), 0);
+        assert_eq!(live_rwdata(), 0);
+
+        let result = std::panic::catch_unwind(|| {
+            let _enc = SafeAvifEncoder::new().unwrap();
+            let _rw = SafeAvifRwData::new();
+            assert_eq!(live_encoders(), 1);
+            assert_eq!(live_rwdata(), 1);
+            panic!("trigger unwind");
+        });
+
+        assert!(result.is_err());
+        assert_eq!(live_encoders(), 0);
+        assert_eq!(live_rwdata(), 0);
+    }
+
+    #[test]
+    fn image_drop_runs_on_error_path_without_leak() {
+        let _guard = enable_drop_tracking();
+        assert_eq!(live_images(), 0);
+
+        let result: Result<(), LazyImageError> = (|| {
+            let _img = SafeAvifImage::new(3, 3, 8, AVIF_PIXEL_FORMAT_YUV444)?;
+            Err(LazyImageError::encode_failed("avif", "synthetic failure"))
+        })();
+
+        assert!(result.is_err());
+        assert_eq!(live_images(), 0);
     }
 }
