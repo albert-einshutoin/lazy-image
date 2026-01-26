@@ -36,6 +36,124 @@ pub enum ErrorCategory {
     InternalBug,
 }
 
+/// Fine-grained error codes for diagnostics and recovery guidance.
+///
+/// Ranges:
+/// - E1xx: Input errors
+/// - E2xx: Processing/operation errors
+/// - E3xx: Output errors
+/// - E4xx: Configuration errors
+/// - E9xx: Internal errors
+#[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi", napi)]
+#[cfg_attr(not(feature = "napi"), derive(Copy, Clone))]
+#[repr(u16)]
+pub enum ErrorCode {
+    // Input errors (E1xx)
+    FileNotFound = 100,
+    FileReadFailed = 101,
+    MmapFailed = 102,
+    UnsupportedFormat = 111,
+    CorruptedImage = 130,
+    DecodeFailed = 131,
+    DimensionExceedsLimit = 121,
+    PixelCountExceedsLimit = 122,
+    FirewallViolation = 123,
+
+    // Processing errors (E2xx)
+    InvalidCropBounds = 200,
+    InvalidCropDimensions = 201,
+    InvalidRotationAngle = 202,
+    InvalidResizeDimensions = 203,
+    InvalidResizeFit = 204,
+    UnsupportedColorSpace = 210,
+    ResizeFailed = 299,
+
+    // Output errors (E3xx)
+    EncodeFailed = 300,
+    FileWriteFailed = 301,
+
+    // Configuration errors (E4xx)
+    InvalidArgument = 400,
+    InvalidPreset = 401,
+    InvalidFirewallPolicy = 402,
+
+    // Internal errors (E9xx)
+    SourceConsumed = 900,
+    InternalPanic = 901,
+    Generic = 999,
+}
+
+impl ErrorCode {
+    /// Return string literal representation (e.g., "E100")
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ErrorCode::FileNotFound => "E100",
+            ErrorCode::FileReadFailed => "E101",
+            ErrorCode::MmapFailed => "E102",
+            ErrorCode::UnsupportedFormat => "E111",
+            ErrorCode::CorruptedImage => "E130",
+            ErrorCode::DecodeFailed => "E131",
+            ErrorCode::DimensionExceedsLimit => "E121",
+            ErrorCode::PixelCountExceedsLimit => "E122",
+            ErrorCode::FirewallViolation => "E123",
+            ErrorCode::InvalidCropBounds => "E200",
+            ErrorCode::InvalidCropDimensions => "E201",
+            ErrorCode::InvalidRotationAngle => "E202",
+            ErrorCode::InvalidResizeDimensions => "E203",
+            ErrorCode::InvalidResizeFit => "E204",
+            ErrorCode::UnsupportedColorSpace => "E210",
+            ErrorCode::ResizeFailed => "E299",
+            ErrorCode::EncodeFailed => "E300",
+            ErrorCode::FileWriteFailed => "E301",
+            ErrorCode::InvalidArgument => "E400",
+            ErrorCode::InvalidPreset => "E401",
+            ErrorCode::InvalidFirewallPolicy => "E402",
+            ErrorCode::SourceConsumed => "E900",
+            ErrorCode::InternalPanic => "E901",
+            ErrorCode::Generic => "E999",
+        }
+    }
+
+    /// Map error code to error category.
+    pub fn category(&self) -> ErrorCategory {
+        match self {
+            ErrorCode::FileNotFound => ErrorCategory::UserError,
+            ErrorCode::FileReadFailed => ErrorCategory::ResourceLimit,
+            ErrorCode::MmapFailed => ErrorCategory::ResourceLimit,
+            ErrorCode::UnsupportedFormat => ErrorCategory::CodecError,
+            ErrorCode::CorruptedImage => ErrorCategory::CodecError,
+            ErrorCode::DecodeFailed => ErrorCategory::CodecError,
+            ErrorCode::DimensionExceedsLimit => ErrorCategory::ResourceLimit,
+            ErrorCode::PixelCountExceedsLimit => ErrorCategory::ResourceLimit,
+            ErrorCode::FirewallViolation => ErrorCategory::ResourceLimit,
+            ErrorCode::InvalidCropBounds => ErrorCategory::UserError,
+            ErrorCode::InvalidCropDimensions => ErrorCategory::UserError,
+            ErrorCode::InvalidRotationAngle => ErrorCategory::UserError,
+            ErrorCode::InvalidResizeDimensions => ErrorCategory::UserError,
+            ErrorCode::InvalidResizeFit => ErrorCategory::UserError,
+            ErrorCode::UnsupportedColorSpace => ErrorCategory::CodecError,
+            ErrorCode::ResizeFailed => ErrorCategory::CodecError,
+            ErrorCode::EncodeFailed => ErrorCategory::CodecError,
+            ErrorCode::FileWriteFailed => ErrorCategory::ResourceLimit,
+            ErrorCode::InvalidArgument => ErrorCategory::UserError,
+            ErrorCode::InvalidPreset => ErrorCategory::UserError,
+            ErrorCode::InvalidFirewallPolicy => ErrorCategory::UserError,
+            ErrorCode::SourceConsumed => ErrorCategory::UserError,
+            ErrorCode::InternalPanic => ErrorCategory::InternalBug,
+            ErrorCode::Generic => ErrorCategory::InternalBug,
+        }
+    }
+
+    /// Whether this error is recoverable by the caller.
+    pub fn is_recoverable(&self) -> bool {
+        match self.category() {
+            ErrorCategory::UserError | ErrorCategory::ResourceLimit => true,
+            ErrorCategory::CodecError | ErrorCategory::InternalBug => false,
+        }
+    }
+}
+
 /// lazy-image error types
 ///
 /// All errors are type-safe and provide clear, actionable messages.
@@ -106,7 +224,9 @@ pub enum LazyImageError {
     )]
     InvalidRotationAngle { degrees: i32 },
 
-    #[error("Invalid resize dimensions: width={width:?}, height={height:?}")]
+    #[error(
+        "Invalid resize dimensions: width={width:?}, height={height:?}. Width/height must be between 1 and MAX_DIMENSION."
+    )]
     InvalidResizeDimensions {
         width: Option<u32>,
         height: Option<u32>,
@@ -270,6 +390,84 @@ impl Clone for LazyImageError {
 
 // Constructor Helpers
 impl LazyImageError {
+    /// Fine-grained error code for this error variant (E***)
+    pub fn code(&self) -> ErrorCode {
+        match self {
+            // Input errors (E1xx)
+            Self::FileNotFound { .. } => ErrorCode::FileNotFound,
+            Self::FileReadFailed { .. } => ErrorCode::FileReadFailed,
+            Self::MmapFailed { .. } => ErrorCode::MmapFailed,
+            Self::UnsupportedFormat { .. } => ErrorCode::UnsupportedFormat,
+            Self::CorruptedImage => ErrorCode::CorruptedImage,
+            Self::DecodeFailed { .. } => ErrorCode::DecodeFailed,
+            Self::DimensionExceedsLimit { .. } => ErrorCode::DimensionExceedsLimit,
+            Self::PixelCountExceedsLimit { .. } => ErrorCode::PixelCountExceedsLimit,
+            Self::FirewallViolation { .. } => ErrorCode::FirewallViolation,
+
+            // Processing errors (E2xx)
+            Self::InvalidCropBounds { .. } => ErrorCode::InvalidCropBounds,
+            Self::InvalidCropDimensions { .. } => ErrorCode::InvalidCropDimensions,
+            Self::InvalidRotationAngle { .. } => ErrorCode::InvalidRotationAngle,
+            Self::InvalidResizeDimensions { .. } => ErrorCode::InvalidResizeDimensions,
+            Self::InvalidResizeFit { .. } => ErrorCode::InvalidResizeFit,
+            Self::UnsupportedColorSpace { .. } => ErrorCode::UnsupportedColorSpace,
+            Self::ResizeFailed { .. } => ErrorCode::ResizeFailed,
+
+            // Output errors (E3xx)
+            Self::EncodeFailed { .. } => ErrorCode::EncodeFailed,
+            Self::FileWriteFailed { .. } => ErrorCode::FileWriteFailed,
+
+            // Configuration errors (E4xx)
+            Self::InvalidArgument { .. } => ErrorCode::InvalidArgument,
+            Self::InvalidPreset { .. } => ErrorCode::InvalidPreset,
+            Self::InvalidFirewallPolicy { .. } => ErrorCode::InvalidFirewallPolicy,
+
+            // Internal errors (E9xx)
+            Self::SourceConsumed => ErrorCode::SourceConsumed,
+            Self::InternalPanic { .. } => ErrorCode::InternalPanic,
+            Self::Generic { .. } => ErrorCode::Generic,
+        }
+    }
+
+    /// Short recovery guidance intended for end-user display or logs.
+    pub fn recovery_hint(&self) -> &'static str {
+        match self.code() {
+            // Input errors
+            ErrorCode::FileNotFound => "Verify the input path and ensure the file exists.",
+            ErrorCode::FileReadFailed => "Check file permissions and disk health, then retry.",
+            ErrorCode::MmapFailed => "Free memory or disk resources and confirm file permissions.",
+            ErrorCode::UnsupportedFormat => "Convert the image to a supported format (jpeg, png, webp).",
+            ErrorCode::CorruptedImage => "Re-download or regenerate the image; the file appears corrupted.",
+            ErrorCode::DecodeFailed => "Try opening the file in another viewer or re-encode the source image.",
+            ErrorCode::DimensionExceedsLimit => "Resize the image to fit within the maximum dimension limits.",
+            ErrorCode::PixelCountExceedsLimit => "Reduce resolution or process the image in smaller tiles.",
+            ErrorCode::FirewallViolation => "Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.",
+
+            // Processing errors
+            ErrorCode::InvalidCropBounds => "Ensure crop x/y/width/height stay within the image dimensions.",
+            ErrorCode::InvalidCropDimensions => "Use positive crop width and height greater than zero.",
+            ErrorCode::InvalidRotationAngle => "Use rotation angles in 90-degree increments (0, 90, 180, 270).",
+            ErrorCode::InvalidResizeDimensions => "Provide at least one positive dimension (width or height).",
+            ErrorCode::InvalidResizeFit => "Use fit values: inside, cover, or fill.",
+            ErrorCode::UnsupportedColorSpace => "Convert the image to sRGB or a supported color space before processing.",
+            ErrorCode::ResizeFailed => "Try different resize parameters or re-encode the input before resizing.",
+
+            // Output errors
+            ErrorCode::EncodeFailed => "Adjust output format/quality or try re-encoding the source image.",
+            ErrorCode::FileWriteFailed => "Check output path, permissions, and available disk space.",
+
+            // Configuration errors
+            ErrorCode::InvalidArgument => "Pass a valid argument value as documented for this option.",
+            ErrorCode::InvalidPreset => "Use a supported preset name (thumbnail, avatar, hero, social).",
+            ErrorCode::InvalidFirewallPolicy => "Use firewall policy 'strict' or 'lenient'.",
+
+            // Internal errors
+            ErrorCode::SourceConsumed => "Clone the engine or reload the source before reusing it.",
+            ErrorCode::InternalPanic => "Report this issue with logs; it indicates an unexpected internal error.",
+            ErrorCode::Generic => "Report this issue with full context; an unexpected state occurred.",
+        }
+    }
+
     pub fn file_not_found(path: impl Into<Cow<'static, str>>) -> Self {
         Self::FileNotFound { path: path.into() }
     }
@@ -497,10 +695,12 @@ impl LazyImageError {
 #[cfg(feature = "napi")]
 pub fn create_napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi::JsObject> {
     let category = err.category();
+    let error_code = err.code();
 
     // Create error object with original message (no prefix to avoid breaking changes)
     // Use create_error with message string directly to avoid Status prefix in message
     let err_msg = err.to_string();
+    let message_with_code = format!("[{}] {}", error_code.as_str(), err_msg);
     // Create error with clean message (Status will be added by napi::Error::new, but we'll override it)
     let mut error_obj = env.create_error(napi::Error::new(
         match category {
@@ -509,21 +709,29 @@ pub fn create_napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Resu
             ErrorCategory::ResourceLimit => Status::GenericFailure,
             ErrorCategory::InternalBug => Status::GenericFailure,
         },
-        err_msg.clone(),
+        message_with_code.clone(),
     ))?;
 
-    // Override message property to ensure clean message (without Status prefix)
+    // Override message property to ensure clean message (with code prefix, without Status)
     // napi::Error::new() may include Status in message, so we set message property directly
-    error_obj.set_named_property("message", env.create_string(&err_msg)?)?;
+    error_obj.set_named_property("message", env.create_string(&message_with_code)?)?;
 
-    // Add error.code property (standard pattern, like sharp uses)
+    // Add error.code property (category-level, backward compatible)
     let code_value = env.create_string(category.code())?;
     error_obj.set_named_property("code", code_value)?;
+
+    // Add error.errorCode property (fine-grained classification like E200)
+    let error_code_value = env.create_string(error_code.as_str())?;
+    error_obj.set_named_property("errorCode", error_code_value)?;
 
     // Add error.category property (ErrorCategory enum value as number)
     // Use #[repr(u32)] to get the enum value directly
     let category_value = env.create_uint32(category as u32)?;
     error_obj.set_named_property("category", category_value)?;
+
+    // Add recoveryHint property for user-facing guidance
+    let recovery_hint = env.create_string(err.recovery_hint())?;
+    error_obj.set_named_property("recoveryHint", recovery_hint)?;
 
     Ok(error_obj)
 }
@@ -545,6 +753,7 @@ pub fn napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi
 impl From<LazyImageError> for napi::Error {
     fn from(err: LazyImageError) -> Self {
         let category = err.category();
+        let code = err.code();
         let status = match category {
             ErrorCategory::UserError => Status::InvalidArg,
             ErrorCategory::CodecError => Status::InvalidArg,
@@ -552,8 +761,10 @@ impl From<LazyImageError> for napi::Error {
             ErrorCategory::InternalBug => Status::GenericFailure,
         };
 
-        // Create error with original message only (no prefix)
-        napi::Error::new(status, err.to_string())
+        // Fallback conversion without Env: embed fine-grained code in message so
+        // JavaScript can still classify errors (parseable "[E***]" prefix).
+        let message_with_code = format!("[{}] {}", code.as_str(), err);
+        napi::Error::new(status, message_with_code)
     }
 }
 
@@ -742,6 +953,33 @@ mod tests {
         assert_eq!(
             LazyImageError::generic("test").category(),
             ErrorCategory::InternalBug
+        );
+    }
+
+    #[test]
+    fn test_error_code_mapping() {
+        assert_eq!(
+            LazyImageError::file_not_found("x").code(),
+            ErrorCode::FileNotFound
+        );
+        assert_eq!(
+            LazyImageError::invalid_resize_fit("foo").code(),
+            ErrorCode::InvalidResizeFit
+        );
+        assert_eq!(
+            LazyImageError::encode_failed("jpeg", "oops").code(),
+            ErrorCode::EncodeFailed
+        );
+    }
+
+    #[test]
+    fn test_recovery_hint_present() {
+        let err = LazyImageError::invalid_rotation_angle(45);
+        let hint = err.recovery_hint();
+        assert!(!hint.is_empty());
+        assert!(
+            hint.contains("90"),
+            "recovery hint should mention allowed angles"
         );
     }
 

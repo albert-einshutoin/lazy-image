@@ -274,6 +274,8 @@ async function runTests() {
         } catch (e) {
             threw = true;
             assert.strictEqual(e.code, 'LAZY_IMAGE_USER_ERROR', 'error.code should be UserError');
+            assert.strictEqual(e.errorCode, 'E203', 'fine-grained errorCode should be set');
+            assert(typeof e.recoveryHint === 'string' && e.recoveryHint.length > 0, 'recoveryHint should be present');
             const category = getErrorCategory(e);
             assertCategory(category, ErrorCategory.UserError, 'resize validation should be UserError');
             assert(
@@ -407,7 +409,7 @@ async function runTests() {
         assert.strictEqual(results.length, 1, 'should return one result');
         const result = results[0];
         assert.strictEqual(result.success, false, 'result should be marked as failure');
-        assert.strictEqual(result.errorCode, 'LAZY_IMAGE_USER_ERROR', 'error code should be set');
+        assert.strictEqual(result.errorCode, 'E100', 'errorCode should carry fine-grained code');
         assert.strictEqual(result.errorCategory, ErrorCategory.UserError, 'error category should be UserError');
         assert(result.error && result.error.includes(invalidPath), 'error message should include source path');
     });

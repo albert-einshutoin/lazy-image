@@ -661,6 +661,8 @@ try {
 } catch (error) {
   // Error message includes error code: "[E100] File not found: input.jpg"
   const errorCode = error.message.match(/\[E\d+\]/)?.[0];
+  // Structured properties for programmatic handling
+  const { errorCode: fineCode, recoveryHint } = error;
   
   if (errorCode === '[E100]') {
     console.error('File not found - check the path');
@@ -668,6 +670,10 @@ try {
     console.error('Invalid crop bounds - adjust coordinates');
   } else {
     console.error('Error:', error.message);
+  }
+
+  if (recoveryHint) {
+    console.info(`How to fix: ${recoveryHint}`);
   }
 }
 ```

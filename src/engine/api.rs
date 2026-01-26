@@ -200,14 +200,7 @@ impl ImageEngine {
             if w == 0 || w > crate::engine::MAX_DIMENSION {
                 return Err(napi_err(
                     &env,
-                    LazyImageError::invalid_argument(
-                        "width",
-                        w.to_string(),
-                        format!(
-                            "must be between 1 and {}",
-                            crate::engine::MAX_DIMENSION
-                        ),
-                    ),
+                    LazyImageError::invalid_resize_dimensions(Some(w), height),
                 ));
             }
         }
@@ -215,14 +208,7 @@ impl ImageEngine {
             if h == 0 || h > crate::engine::MAX_DIMENSION {
                 return Err(napi_err(
                     &env,
-                    LazyImageError::invalid_argument(
-                        "height",
-                        h.to_string(),
-                        format!(
-                            "must be between 1 and {}",
-                            crate::engine::MAX_DIMENSION
-                        ),
-                    ),
+                    LazyImageError::invalid_resize_dimensions(width, Some(h)),
                 ));
             }
         }

@@ -852,14 +852,16 @@ impl Task for BatchTask {
                     error_category: None,
                 },
                 Err(err) => {
-                    let category = err.category();
-                    let error_msg = format!("{}: {}", input_path, err);
+                    let error_code = err.code();
+                    let error_msg =
+                        format!("[{}] {}: {}", error_code.as_str(), input_path, err);
+                    let category = error_code.category();
                     BatchResult {
                         source: input_path.clone(),
                         success: false,
                         error: Some(error_msg),
                         output_path: None,
-                        error_code: Some(category.code().to_string()),
+                        error_code: Some(error_code.as_str().to_string()),
                         error_category: Some(category),
                     }
                 }

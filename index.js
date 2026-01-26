@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { ImageEngine, ErrorCategory, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
+const { ImageEngine, ErrorCategory, ErrorCode, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
 function getErrorCategory(err) {
   if (!err) return null
@@ -335,6 +335,7 @@ function getErrorCategory(err) {
 
 module.exports.ImageEngine = ImageEngine
 module.exports.ErrorCategory = ErrorCategory
+module.exports.ErrorCode = ErrorCode
 module.exports.inspect = inspect
 module.exports.inspectFile = inspectFile
 module.exports.version = version
