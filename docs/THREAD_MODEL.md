@@ -8,7 +8,7 @@ lazy-image uses two thread pools:
 
 1. **libuv thread pool** (Node.js) - for I/O operations
 2. **rayon thread pool** (Rust) - for CPU-bound image processing
-   - **fast_image_resize also uses rayon** when its `rayon` feature is enabled (default in this repo). When resize runs inside `processBatch()` we wrap work in our global pool, so fast_image_resize reuses that pool (no二重スレッド). 単発の`toBuffer()`呼び出しはlibuvワーカー上で実行されるため、グローバルrayonプール（デフォルト設定）のみを消費し、オーバーサブスクライブしづらい構成になっています。
+   - **fast_image_resize also uses rayon** when its `rayon` feature is enabled (default in this repo). When resize runs inside `processBatch()` we wrap work in our global pool, so fast_image_resize reuses that pool (no duplicate thread pools). Single `toBuffer()` calls run on libuv worker threads, so they only consume the global rayon pool (default configuration), making it difficult to oversubscribe threads.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -218,6 +218,13 @@ detects a safe thread count when `concurrency=0` (default):
 - Rayon threads: 1 (minimum) → libuv threads may oversubscribe slightly but IO
   rarely saturates CPU in such constrained environments
 
+### Thread Pool Lifecycle
+
+- The rayon pool is created lazily on the first batch workload and reused for the process lifetime.
+- Embedding or test harnesses that reload the addon can drop the pool between runs via the internal
+  `shutdown_global_pool()` hook (Rust-only) so that updated `UV_THREADPOOL_SIZE` or resource limits
+  are honored when the pool is rebuilt.
+
 ### Manual Thread Pool Control
 
 For fine-grained control, set environment variables:
@@ -245,7 +252,7 @@ The default behavior of `processBatch()` now automatically balances thread pools
 **Remaining considerations**:
 - For batch processing, prefer `processBatch()` (pure rayon) over parallel `Promise.all()` with many `toBuffer()` calls
 - In containerized environments, still recommend explicit `concurrency` parameter
-- fast_image_resize の内部並列は「現在アクティブなrayonプール」を利用します。`processBatch()`ではグローバルプール内でresizeを実行するためプールは共有されます。もし独自に`rayon::ThreadPoolBuilder::new().build_global()`を呼んでいる場合は、プールを一つに統一することで二重プールによるオーバーサブスクライブを防げます。
+- fast_image_resize's internal parallelism uses the "currently active rayon pool". Since `processBatch()` executes resize within the global pool, the pools are shared. If you call `rayon::ThreadPoolBuilder::new().build_global()` separately, unify the pools to prevent oversubscription from duplicate pools.
 
 ## References
 
