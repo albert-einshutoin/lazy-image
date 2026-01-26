@@ -158,6 +158,10 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
             ));
         }
 
+        // Pre-check dimensions to prevent OOM from decompression bombs (e.g., WebP with huge dimensions).
+        // This reads only headers and is much cheaper than a full decode attempt.
+        ensure_dimensions_safe(data)?;
+
         image::load_from_memory(data)
             .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))
     })
