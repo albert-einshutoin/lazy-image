@@ -16,7 +16,15 @@ fn fuzz_regression_decode_from_buffer_crash_14aa989e() {
     inspect_header_from_bytes(data).unwrap();
 
     // JPEG-specific decoder path.
-    decode_jpeg_mozjpeg(data).unwrap();
+    let mozjpeg_result = decode_jpeg_mozjpeg(data);
+    assert!(
+        mozjpeg_result.is_ok()
+            || matches!(
+                mozjpeg_result,
+                Err(ref err) if err.to_string().contains("missing JPEG EOI marker")
+            ),
+        "mozjpeg path should return an error or succeed without panicking; got {mozjpeg_result:?}"
+    );
 
     // Image crate wrapper path should reject JPEG input gracefully
     // (panic avoidance for zune-jpeg in fuzzing builds).

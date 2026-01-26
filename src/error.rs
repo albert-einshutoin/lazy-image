@@ -436,35 +436,71 @@ impl LazyImageError {
             ErrorCode::FileNotFound => "Verify the input path and ensure the file exists.",
             ErrorCode::FileReadFailed => "Check file permissions and disk health, then retry.",
             ErrorCode::MmapFailed => "Free memory or disk resources and confirm file permissions.",
-            ErrorCode::UnsupportedFormat => "Convert the image to a supported format (jpeg, png, webp).",
-            ErrorCode::CorruptedImage => "Re-download or regenerate the image; the file appears corrupted.",
-            ErrorCode::DecodeFailed => "Try opening the file in another viewer or re-encode the source image.",
-            ErrorCode::DimensionExceedsLimit => "Resize the image to fit within the maximum dimension limits.",
-            ErrorCode::PixelCountExceedsLimit => "Reduce resolution or process the image in smaller tiles.",
-            ErrorCode::FirewallViolation => "Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.",
+            ErrorCode::UnsupportedFormat => {
+                "Convert the image to a supported format (jpeg, png, webp)."
+            }
+            ErrorCode::CorruptedImage => {
+                "Re-download or regenerate the image; the file appears corrupted."
+            }
+            ErrorCode::DecodeFailed => {
+                "Try opening the file in another viewer or re-encode the source image."
+            }
+            ErrorCode::DimensionExceedsLimit => {
+                "Resize the image to fit within the maximum dimension limits."
+            }
+            ErrorCode::PixelCountExceedsLimit => {
+                "Reduce resolution or process the image in smaller tiles."
+            }
+            ErrorCode::FirewallViolation => {
+                "Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs."
+            }
 
             // Processing errors
-            ErrorCode::InvalidCropBounds => "Ensure crop x/y/width/height stay within the image dimensions.",
-            ErrorCode::InvalidCropDimensions => "Use positive crop width and height greater than zero.",
-            ErrorCode::InvalidRotationAngle => "Use rotation angles in 90-degree increments (0, 90, 180, 270).",
-            ErrorCode::InvalidResizeDimensions => "Provide at least one positive dimension (width or height).",
+            ErrorCode::InvalidCropBounds => {
+                "Ensure crop x/y/width/height stay within the image dimensions."
+            }
+            ErrorCode::InvalidCropDimensions => {
+                "Use positive crop width and height greater than zero."
+            }
+            ErrorCode::InvalidRotationAngle => {
+                "Use rotation angles in 90-degree increments (0, 90, 180, 270)."
+            }
+            ErrorCode::InvalidResizeDimensions => {
+                "Provide at least one positive dimension (width or height)."
+            }
             ErrorCode::InvalidResizeFit => "Use fit values: inside, cover, or fill.",
-            ErrorCode::UnsupportedColorSpace => "Convert the image to sRGB or a supported color space before processing.",
-            ErrorCode::ResizeFailed => "Try different resize parameters or re-encode the input before resizing.",
+            ErrorCode::UnsupportedColorSpace => {
+                "Convert the image to sRGB or a supported color space before processing."
+            }
+            ErrorCode::ResizeFailed => {
+                "Try different resize parameters or re-encode the input before resizing."
+            }
 
             // Output errors
-            ErrorCode::EncodeFailed => "Adjust output format/quality or try re-encoding the source image.",
-            ErrorCode::FileWriteFailed => "Check output path, permissions, and available disk space.",
+            ErrorCode::EncodeFailed => {
+                "Adjust output format/quality or try re-encoding the source image."
+            }
+            ErrorCode::FileWriteFailed => {
+                "Check output path, permissions, and available disk space."
+            }
 
             // Configuration errors
-            ErrorCode::InvalidArgument => "Pass a valid argument value as documented for this option.",
-            ErrorCode::InvalidPreset => "Use a supported preset name (thumbnail, avatar, hero, social).",
+            ErrorCode::InvalidArgument => {
+                "Pass a valid argument value as documented for this option."
+            }
+            ErrorCode::InvalidPreset => {
+                "Use a supported preset name (thumbnail, avatar, hero, social)."
+            }
             ErrorCode::InvalidFirewallPolicy => "Use firewall policy 'strict' or 'lenient'.",
 
             // Internal errors
             ErrorCode::SourceConsumed => "Clone the engine or reload the source before reusing it.",
-            ErrorCode::InternalPanic => "Report this issue with logs; it indicates an unexpected internal error.",
-            ErrorCode::Generic => "Report this issue with full context; an unexpected state occurred.",
+            ErrorCode::InternalPanic => {
+                "Report this issue with logs; it indicates an unexpected internal error."
+            }
+            ErrorCode::Generic => {
+                "Report this issue with full context; an unexpected state occurred."
+            }
         }
     }
 
