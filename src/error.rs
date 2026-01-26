@@ -141,6 +141,13 @@ pub enum LazyImageError {
     #[error("Unknown firewall policy: '{policy}'. Expected strict or lenient")]
     InvalidFirewallPolicy { policy: Cow<'static, str> },
 
+    #[error("Invalid value for {name}: {value}. {reason}")]
+    InvalidArgument {
+        name: Cow<'static, str>,
+        value: Cow<'static, str>,
+        reason: Cow<'static, str>,
+    },
+
     // State Errors
     #[error("Image source already consumed. Use clone() for multi-output scenarios")]
     SourceConsumed,
@@ -240,6 +247,15 @@ impl Clone for LazyImageError {
             Self::InvalidPreset { name } => Self::InvalidPreset { name: name.clone() },
             Self::InvalidFirewallPolicy { policy } => Self::InvalidFirewallPolicy {
                 policy: policy.clone(),
+            },
+            Self::InvalidArgument {
+                name,
+                value,
+                reason,
+            } => Self::InvalidArgument {
+                name: name.clone(),
+                value: value.clone(),
+                reason: reason.clone(),
             },
             Self::SourceConsumed => Self::SourceConsumed,
             Self::InternalPanic { message } => Self::InternalPanic {
@@ -385,6 +401,18 @@ impl LazyImageError {
         }
     }
 
+    pub fn invalid_argument(
+        name: impl Into<Cow<'static, str>>,
+        value: impl Into<Cow<'static, str>>,
+        reason: impl Into<Cow<'static, str>>,
+    ) -> Self {
+        Self::InvalidArgument {
+            name: name.into(),
+            value: value.into(),
+            reason: reason.into(),
+        }
+    }
+
     pub fn source_consumed() -> Self {
         Self::SourceConsumed
     }
@@ -426,6 +454,7 @@ impl LazyImageError {
             | Self::InvalidResizeFit { .. }
             | Self::InvalidPreset { .. }
             | Self::InvalidFirewallPolicy { .. }
+            | Self::InvalidArgument { .. }
             | Self::SourceConsumed => ErrorCategory::UserError,
 
             // CodecError: Format/encoding issues
@@ -602,6 +631,7 @@ mod tests {
         let _ = LazyImageError::unsupported_color_space("CMYK");
         let _ = LazyImageError::encode_failed("jpeg", "test");
         let _ = LazyImageError::invalid_preset("unknown");
+        let _ = LazyImageError::invalid_argument("width", "0", "must be positive");
         let _ = LazyImageError::source_consumed();
         let _ = LazyImageError::internal_panic("test");
         let _ = LazyImageError::generic("test");

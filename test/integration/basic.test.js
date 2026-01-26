@@ -266,6 +266,41 @@ async function runTests() {
         assert(threw, 'should have thrown an error');
     });
 
+    await asyncTest('resize validates dimensions and preserves error category/code', async () => {
+        let threw = false;
+        try {
+            // width = 0 is invalid; should throw synchronously
+            ImageEngine.from(buffer).resize(0);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.code, 'LAZY_IMAGE_USER_ERROR', 'error.code should be UserError');
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.UserError, 'resize validation should be UserError');
+            assert(
+                e.message.includes('width') && e.message.includes('must be between'),
+                `message should mention width bounds: ${e.message}`
+            );
+        }
+        assert(threw, 'should have thrown for invalid resize width');
+    });
+
+    await asyncTest('brightness validates range and preserves error category/code', async () => {
+        let threw = false;
+        try {
+            ImageEngine.from(buffer).brightness(200);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.code, 'LAZY_IMAGE_USER_ERROR', 'error.code should be UserError');
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.UserError, 'brightness validation should be UserError');
+            assert(
+                e.message.includes('brightness') && e.message.includes('-100') && e.message.includes('100'),
+                `message should mention brightness range: ${e.message}`
+            );
+        }
+        assert(threw, 'should have thrown for invalid brightness');
+    });
+
     // Error category tests
     // Note: These tests check for error.code property, which is set by create_napi_error_with_code()
     // Currently, not all error sites use this function, so some tests may fail until all error sites are updated.
@@ -332,13 +367,13 @@ async function runTests() {
     });
 
     await asyncTest('error category: ResourceLimit for file write error', async () => {
-        // ✅ Fix: より確実なテスト: 既存のファイルをディレクトリとして指定（確実にエラーになる）
-        // 既存のファイルをディレクトリとして指定することで、確実にエラーを発生させる
+        // More reliable test: specify existing file as directory (guaranteed to error)
+        // This ensures an error by trying to create a file under an existing file
         let threw = false;
         let category = null;
         try {
-            // 既存のファイルをディレクトリとして指定
-            // ファイルの下にファイルを作成しようとするため、確実にエラーになる
+            // Specify existing file as directory
+            // This will fail because we're trying to create a file under a file
             const invalidPath = path.join(TEST_IMAGE, 'output.jpg');
             await ImageEngine.from(buffer)
                 .resize(100, 100)
@@ -346,7 +381,7 @@ async function runTests() {
         } catch (e) {
             threw = true;
             category = getErrorCategory(e);
-            // ✅ Fix: エラーカテゴリがResourceLimitであることを確認
+            // Verify error category is ResourceLimit
             if (category !== null) {
                 assertCategory(
                     category, 
@@ -356,7 +391,7 @@ async function runTests() {
             }
         }
         
-        // ✅ Fix: エラーが発生することを確認（必須）
+        // Verify that error was thrown (required)
         assert(threw, 'should throw error when trying to write to invalid path');
         assert(category === ErrorCategory.ResourceLimit, 'error category should be ResourceLimit');
     });
@@ -377,9 +412,9 @@ async function runTests() {
         assert(result.error && result.error.includes(invalidPath), 'error message should include source path');
     });
 
-    // Note: InternalBugカテゴリのテストは、実際の内部エラーを発生させるのが困難なため、
-    // 実装上の問題が発生した場合にのみテスト可能です。
-    // 通常の使用では、InternalBugエラーは発生しないはずです。
+    // Note: Testing InternalBug category is difficult because it requires triggering
+    // actual internal errors, which should only happen due to implementation bugs.
+    // In normal usage, InternalBug errors should not occur.
 
     // Preset tests
     await asyncTest('preset("thumbnail") works', async () => {

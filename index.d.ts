@@ -34,8 +34,6 @@ export interface BatchResult {
   errorCode?: string
   errorCategory?: ErrorCategory
 }
-/** Helper to extract ErrorCategory from lazy-image errors (or null otherwise). */
-export declare function getErrorCategory(err: unknown): ErrorCategory | null
 /**
  * Error taxonomy for proper error handling in JavaScript
  *
@@ -289,21 +287,3 @@ export declare class ImageEngine {
    */
   processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
-
-export interface StreamingPipelineOptions {
-  format?: string
-  quality?: number | null
-  ops?: Array<any>
-  ImageEngine?: typeof ImageEngine
-}
-
-export interface StreamingPipeline {
-  writable: NodeJS.WritableStream
-  readable: NodeJS.ReadableStream
-}
-
-/**
- * Disk-backed, bounded-memory helper that stages input to temp files before encoding.
- * Not a true chunk-by-chunk encoder; kept for backward compatibility.
- */
-export function createStreamingPipeline(options?: StreamingPipelineOptions): StreamingPipeline
