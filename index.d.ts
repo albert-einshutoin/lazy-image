@@ -53,6 +53,42 @@ export const enum ErrorCategory {
   /** Library bugs (should not happen) */
   InternalBug = 3
 }
+/**
+ * Fine-grained error codes for diagnostics and recovery guidance.
+ *
+ * Ranges:
+ * - E1xx: Input errors
+ * - E2xx: Processing/operation errors
+ * - E3xx: Output errors
+ * - E4xx: Configuration errors
+ * - E9xx: Internal errors
+ */
+export const enum ErrorCode {
+  FileNotFound = 100,
+  FileReadFailed = 101,
+  MmapFailed = 102,
+  UnsupportedFormat = 111,
+  CorruptedImage = 130,
+  DecodeFailed = 131,
+  DimensionExceedsLimit = 121,
+  PixelCountExceedsLimit = 122,
+  FirewallViolation = 123,
+  InvalidCropBounds = 200,
+  InvalidCropDimensions = 201,
+  InvalidRotationAngle = 202,
+  InvalidResizeDimensions = 203,
+  InvalidResizeFit = 204,
+  UnsupportedColorSpace = 210,
+  ResizeFailed = 299,
+  EncodeFailed = 300,
+  FileWriteFailed = 301,
+  InvalidArgument = 400,
+  InvalidPreset = 401,
+  InvalidFirewallPolicy = 402,
+  SourceConsumed = 900,
+  InternalPanic = 901,
+  Generic = 999
+}
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */

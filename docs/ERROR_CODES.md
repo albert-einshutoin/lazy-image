@@ -62,12 +62,16 @@ try {
 }
 ```
 
+All thrown errors also include:
+- `error.errorCode` — fine-grained classification such as `E200`
+- `error.recoveryHint` — short guidance string describing how to fix the issue
+
 ### Batch Processing Error Metadata
 
 `ImageEngine.processBatch()` returns an array of `BatchResult` objects. Each failed entry now includes:
 
 - `error` – Human-readable message with source context
-- `errorCode` – `LAZY_IMAGE_*` code (same as synchronous errors)
+- `errorCode` – Fine-grained code like `E100`, `E200`, etc.
 - `errorCategory` – `ErrorCategory` enum value
 
 This makes it possible to inspect per-file failures without parsing strings.

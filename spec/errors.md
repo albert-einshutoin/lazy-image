@@ -21,7 +21,7 @@ lazy-image exposes structured errors with category + code for programmatic handl
 - Dependency panic (mozjpeg/libavif/etc.) → `InternalBug / InternalPanic` (E900s) via panic guard.
 
 ## Batch/streaming
-- `processBatch` returns per-file `error`, `errorCode`, `errorCategory` in `BatchResult` entries; success/failure is per item.
+- `processBatch` returns per-file `error`, `errorCode` (E-codes), `errorCategory` in `BatchResult` entries; success/failure is per item.
 - Streaming pipeline surfaces errors via stream `error` events and destroys the output stream on failure.
 
 ## Clone semantics
