@@ -9,6 +9,16 @@ use std::sync::Arc;
 
 const MAX_ICC_SOURCE_BYTES: usize = 8 * 1024 * 1024; // Hard cap to keep fuzz inputs bounded without breaking large images
 
+pub type IccExtractionResult = std::result::Result<Option<Vec<u8>>, LazyImageError>;
+
+fn icc_decode_error(format: &str, reason: &str) -> LazyImageError {
+    LazyImageError::decode_failed(format!("{} ICC extraction failed: {}", format, reason))
+}
+
+fn icc_internal_panic(format: &str, reason: &str) -> LazyImageError {
+    LazyImageError::internal_panic(format!("{} ICC extraction panic: {}", format, reason))
+}
+
 /// Image source - supports both in-memory data and memory-mapped files
 #[derive(Clone, Debug)]
 pub enum Source {
@@ -55,28 +65,57 @@ impl Source {
 
 /// Extract ICC profile from image data.
 /// Supports JPEG (APP2 marker), PNG (iCCP chunk), WebP (ICCP chunk), and AVIF (colr box).
-pub fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
-    if data.len() < 12 || data.len() > MAX_ICC_SOURCE_BYTES {
-        return None;
+/// Returns `Ok(None)` when no ICC profile is present or the format is unsupported.
+/// Returns `Err` for structurally invalid containers or corrupted ICC payloads.
+pub fn extract_icc_profile(data: &[u8]) -> IccExtractionResult {
+    if data.len() < 12 {
+        return Ok(None);
+    }
+    if data.len() > MAX_ICC_SOURCE_BYTES {
+        return Err(icc_decode_error(
+            "general",
+            "input exceeds ICC extraction cap of 8 MiB",
+        ));
     }
 
-    let icc_data = std::panic::catch_unwind(|| {
-        if data.starts_with(&[0xFF, 0xD8]) {
-            extract_icc_from_jpeg(data)
-        } else if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
-            extract_icc_from_png(data)
-        } else if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
-            extract_icc_from_webp(data)
-        } else if is_avif_data(data) {
-            extract_icc_from_avif_safe(data)
-        } else {
-            None
-        }
-    })
-    .ok()
-    .flatten()?;
+    let icc_data = if data.starts_with(&[0xFF, 0xD8]) {
+        guard_icc_extraction("jpeg", || Ok(extract_icc_from_jpeg(data)))?
+    } else if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        guard_icc_extraction("png", || Ok(extract_icc_from_png(data)))?
+    } else if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
+        guard_icc_extraction("webp", || Ok(extract_icc_from_webp(data)))?
+    } else if is_avif_data(data) {
+        guard_icc_extraction("avif", || Ok(extract_icc_from_avif_safe(data)))?
+    } else {
+        return Ok(None);
+    };
 
-    validate_icc_profile(&icc_data).then_some(icc_data)
+    let Some(icc_data) = icc_data else {
+        return Ok(None);
+    };
+
+    if !validate_icc_profile(&icc_data) {
+        return Err(icc_decode_error(
+            "icc",
+            "invalid ICC header (size or signature mismatch)",
+        ));
+    }
+
+    Ok(Some(icc_data))
+}
+
+/// Lossy helper for callers that cannot propagate errors (legacy NAPI constructor).
+/// Panics are still trapped and converted to `None` via the guard.
+pub fn extract_icc_profile_lossy(data: &[u8]) -> Option<Vec<u8>> {
+    guard_icc_extraction("lossy", || extract_icc_profile(data)).unwrap_or(None)
+}
+
+fn guard_icc_extraction<F>(format: &'static str, func: F) -> IccExtractionResult
+where
+    F: FnOnce() -> IccExtractionResult + std::panic::UnwindSafe,
+{
+    std::panic::catch_unwind(func)
+        .map_err(|_| icc_internal_panic(format, "panic during ICC parse"))?
 }
 
 /// Validate ICC profile header
@@ -539,6 +578,10 @@ mod tests {
     use image::{DynamicImage, RgbImage};
     use std::io::Cursor;
 
+    fn extract_icc_ok(data: &[u8]) -> Option<Vec<u8>> {
+        extract_icc_profile(data).unwrap()
+    }
+
     // Helper function to create test images
     fn create_test_image(width: u32, height: u32) -> DynamicImage {
         DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
@@ -598,19 +641,19 @@ mod tests {
 
         #[test]
         fn test_validate_icc_profile_too_small() {
-            let data = vec![0u8; 127]; // 128バイト未満
+            let data = vec![0u8; 127]; // Less than 128 bytes
             assert!(!validate_icc_profile(&data));
         }
 
         #[test]
         fn test_validate_icc_profile_minimal_valid() {
-            // 最小限の有効なICCプロファイル（128バイト）
+            // Minimal valid ICC profile (128 bytes)
             let mut data = vec![0u8; 128];
-            // プロファイルサイズ（最初の4バイト、big-endian）
+            // Profile size (first 4 bytes, big-endian)
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0x80; // 128バイト
+            data[3] = 0x80; // 128 bytes
                             // CMM type (bytes 4-7): "ADBE" (ASCII)
             data[4] = b'A';
             data[5] = b'D';
@@ -640,17 +683,17 @@ mod tests {
         #[test]
         fn test_validate_icc_profile_size_mismatch() {
             let mut data = vec![0u8; 200];
-            // プロファイルサイズを200に設定
+            // Set profile size to 200
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0xC8; // 200バイト
-                            // しかし実際のデータは200バイトなので、これは有効
-                            // サイズが一致しない場合をテスト
+            data[3] = 0xC8; // 200 bytes
+                            // But actual data is 200 bytes, so this is valid
+                            // Test case where size doesn't match
             data[3] = 0x00;
-            data[3] = 0xFF; // 255バイトと設定（実際は200バイト）
+            data[3] = 0xFF; // Set to 255 bytes (actual is 200 bytes)
 
-            // サイズが一致しないので無効
+            // Invalid because size doesn't match
             assert!(!validate_icc_profile(&data));
         }
 
@@ -661,14 +704,14 @@ mod tests {
             data[1] = 0x00;
             data[2] = 0x00;
             data[3] = 0x80;
-            data[8] = 20; // バージョンが大きすぎる
+            data[8] = 20; // Version too large
 
             assert!(!validate_icc_profile(&data));
         }
 
         #[test]
         fn test_extract_icc_from_jpeg_no_profile() {
-            // ICCプロファイルなしのJPEG
+            // JPEG without ICC profile
             let jpeg_data = create_minimal_jpeg();
             let result = extract_icc_from_jpeg(&jpeg_data);
             assert!(result.is_none());
@@ -676,7 +719,7 @@ mod tests {
 
         #[test]
         fn test_extract_icc_from_png_no_profile() {
-            // ICCプロファイルなしのPNG
+            // PNG without ICC profile
             let png_data = create_minimal_png();
             let result = extract_icc_from_png(&png_data);
             assert!(result.is_none());
@@ -684,7 +727,7 @@ mod tests {
 
         #[test]
         fn test_extract_icc_from_webp_no_profile() {
-            // ICCプロファイルなしのWebP
+            // WebP without ICC profile
             let webp_data = create_minimal_webp();
             let result = extract_icc_from_webp(&webp_data);
             assert!(result.is_none());
@@ -694,27 +737,29 @@ mod tests {
         fn test_extract_icc_profile_invalid_data() {
             let invalid_data = vec![0u8; 10];
             let result = extract_icc_profile(&invalid_data);
-            assert!(result.is_none());
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
         }
 
         #[test]
         fn test_extract_icc_profile_jpeg() {
             let jpeg_data = create_minimal_jpeg();
-            // JPEGからICCプロファイルを抽出（存在しない場合）
+            // Extract ICC profile from JPEG (when not present)
             let result = extract_icc_profile(&jpeg_data);
-            // 最小JPEGにはICCプロファイルがない
-            assert!(result.is_none());
+            // Minimal JPEG has no ICC profile
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
         }
 
         // Helper function to create a minimal valid ICC profile (sRGB)
         fn create_minimal_srgb_icc() -> Vec<u8> {
-            // 最小限の有効なsRGB ICCプロファイル（128バイト）
+            // Minimal valid sRGB ICC profile (128 bytes)
             let mut data = vec![0u8; 128];
-            // プロファイルサイズ（最初の4バイト、big-endian）
+            // Profile size (first 4 bytes, big-endian)
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0x80; // 128バイト
+            data[3] = 0x80; // 128 bytes
                             // CMM type (bytes 4-7): "ADBE" (ASCII)
             data[4] = b'A';
             data[5] = b'D';
@@ -765,10 +810,10 @@ mod tests {
             fn test_extract_icc_from_jpeg_with_profile() {
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
-                let extracted = extract_icc_profile(&jpeg);
+                let extracted = extract_icc_ok(&jpeg);
                 assert!(extracted.is_some());
                 let extracted = extracted.unwrap();
-                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                // Minimum ICC profile size is 128 bytes (header)
                 assert!(extracted.len() >= 128);
             }
 
@@ -778,14 +823,14 @@ mod tests {
                 // The direct parser fallback keeps this deterministic across environments.
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
-                let extracted = extract_icc_profile(&png);
+                let extracted = extract_icc_ok(&png);
                 // PNG ICC extraction should return Some when ICC profile is embedded correctly
                 assert!(
                     extracted.is_some(),
                     "PNG ICC extraction should return Some when ICC profile is embedded correctly"
                 );
                 let extracted = extracted.unwrap();
-                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                // Minimum ICC profile size is 128 bytes (header)
                 assert!(extracted.len() >= 128);
                 // Extracted ICC should match original
                 assert_eq!(icc, extracted, "Extracted ICC should match original");
@@ -795,26 +840,26 @@ mod tests {
             fn test_extract_icc_from_webp_with_profile() {
                 let icc = create_minimal_srgb_icc();
                 let webp = create_webp_with_icc(&icc);
-                let extracted = extract_icc_profile(&webp);
+                let extracted = extract_icc_ok(&webp);
                 assert!(extracted.is_some());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_no_icc() {
                 let jpeg = create_minimal_jpeg();
-                let icc = extract_icc_profile(&jpeg);
+                let icc = extract_icc_ok(&jpeg);
                 assert!(icc.is_none());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_non_image() {
-                let icc = extract_icc_profile(b"not an image");
+                let icc = extract_icc_ok(b"not an image");
                 assert!(icc.is_none());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_empty() {
-                let icc = extract_icc_profile(&[]);
+                let icc = extract_icc_ok(&[]);
                 assert!(icc.is_none());
             }
         }
@@ -831,7 +876,7 @@ mod tests {
             #[test]
             fn test_validate_truncated_icc() {
                 let icc = create_minimal_srgb_icc();
-                // 途中で切り詰め
+                // Truncated in the middle
                 let truncated = &icc[..50];
                 assert!(!validate_icc_profile(truncated));
             }
@@ -839,7 +884,7 @@ mod tests {
             #[test]
             fn test_validate_wrong_size_field() {
                 let mut icc = create_minimal_srgb_icc();
-                // サイズフィールド（先頭4バイト）を不正値に
+                // Set size field (first 4 bytes) to invalid value
                 icc[0] = 0xFF;
                 icc[1] = 0xFF;
                 icc[2] = 0xFF;
@@ -849,7 +894,7 @@ mod tests {
 
             #[test]
             fn test_validate_too_short() {
-                assert!(!validate_icc_profile(&[0; 100])); // 128バイト未満
+                assert!(!validate_icc_profile(&[0; 100])); // Less than 128 bytes
             }
 
             #[test]
@@ -863,21 +908,21 @@ mod tests {
 
             #[test]
             fn test_jpeg_roundtrip() {
-                // 1. 元画像からICC抽出
+                // 1. Extract ICC from original image
                 let original_icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+                let extracted_icc = extract_icc_ok(&jpeg).unwrap();
 
-                // 2. 画像デコード
+                // 2. Decode image
                 let img = image::load_from_memory(&jpeg).unwrap();
 
-                // 3. ICCを埋め込んでJPEGエンコード
+                // 3. Encode JPEG with ICC embedded
                 let encoded = encode_jpeg(&img, 80, Some(&extracted_icc)).unwrap();
 
-                // 4. エンコード結果からICC再抽出
-                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+                // 4. Re-extract ICC from encoded result
+                let re_extracted_icc = extract_icc_ok(&encoded).unwrap();
 
-                // 5. 同一性確認
+                // 5. Verify identity
                 assert_eq!(extracted_icc, re_extracted_icc);
             }
 
@@ -920,11 +965,11 @@ mod tests {
             fn test_webp_roundtrip() {
                 let original_icc = create_minimal_srgb_icc();
                 let webp = create_webp_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&webp).unwrap();
+                let extracted_icc = extract_icc_ok(&webp).unwrap();
 
                 let img = image::load_from_memory(&webp).unwrap();
                 let encoded = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
-                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+                let re_extracted_icc = extract_icc_ok(&encoded).unwrap();
 
                 assert_eq!(extracted_icc, re_extracted_icc);
             }
@@ -934,7 +979,7 @@ mod tests {
                 // Test that ICC profile is preserved when converting JPEG to PNG
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
-                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+                let extracted_icc = extract_icc_ok(&jpeg).unwrap();
 
                 // Convert JPEG to PNG with ICC
                 let img = image::load_from_memory(&jpeg).unwrap();
@@ -977,7 +1022,7 @@ mod tests {
                 let webp = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
 
                 // Verify that WebP contains ICC profile
-                let re_extracted = extract_icc_profile(&webp).unwrap();
+                let re_extracted = extract_icc_ok(&webp).unwrap();
                 assert_eq!(
                     extracted_icc, re_extracted,
                     "ICC profile should be preserved in PNG to WebP conversion"
@@ -1000,7 +1045,7 @@ mod tests {
                 assert!(is_avif_data(&avif), "Output should be valid AVIF");
 
                 // Extract ICC profile from AVIF
-                let extracted = extract_icc_profile(&avif);
+                let extracted = extract_icc_ok(&avif);
                 assert!(
                     extracted.is_some(),
                     "AVIF should now preserve ICC profile with libavif"
@@ -1022,7 +1067,7 @@ mod tests {
 
             #[test]
             fn test_avif_encoding_with_icc_does_not_crash() {
-                // ICCプロファイルを渡してもクラッシュしないことを確認
+                // Verify that passing ICC profile does not crash
                 let icc = create_minimal_srgb_icc();
                 let img = create_test_image(100, 100);
                 let result = encode_avif(&img, 60, Some(&icc));
@@ -1031,7 +1076,7 @@ mod tests {
 
             #[test]
             fn test_avif_encoding_without_icc() {
-                // ICC無しでもエンコードできることを確認
+                // Verify that encoding works without ICC
                 let img = create_test_image(100, 100);
                 let avif = encode_avif(&img, 60, None).unwrap();
 
@@ -1039,7 +1084,7 @@ mod tests {
                 assert!(is_avif_data(&avif), "Output should be valid AVIF");
 
                 // Should not have ICC profile
-                let extracted = extract_icc_profile(&avif);
+                let extracted = extract_icc_ok(&avif);
                 assert!(
                     extracted.is_none(),
                     "AVIF without ICC should not have ICC profile"

@@ -757,7 +757,7 @@ impl Task for BatchTask {
                     None
                 };
                 let icc_profile = if keep_metadata {
-                    extract_icc_profile(data).map(Arc::new)
+                    extract_icc_profile(data)?.map(Arc::new)
                 } else {
                     None
                 };

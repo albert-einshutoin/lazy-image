@@ -9,7 +9,7 @@ use super::firewall::FirewallConfig;
 #[cfg(feature = "napi")]
 use super::firewall::FirewallPolicy;
 #[allow(unused_imports)]
-use crate::engine::io::{extract_icc_profile, Source};
+use crate::engine::io::{extract_icc_profile_lossy, Source};
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{
@@ -86,7 +86,7 @@ impl ImageEngine {
         let data = buffer.to_vec();
 
         // Extract ICC profile before any processing
-        let icc_profile = extract_icc_profile(&data).map(Arc::new);
+        let icc_profile = extract_icc_profile_lossy(&data).map(Arc::new);
         let data_arc = Arc::new(data);
 
         ImageEngine {
@@ -144,7 +144,7 @@ impl ImageEngine {
         let mmap_arc = Arc::new(mmap);
 
         // Extract ICC profile from memory-mapped data
-        let icc_profile = extract_icc_profile(mmap_arc.as_ref()).map(Arc::new);
+        let icc_profile = extract_icc_profile_lossy(mmap_arc.as_ref()).map(Arc::new);
 
         Ok(ImageEngine {
             source: Some(Source::Mapped(mmap_arc)),
@@ -858,7 +858,7 @@ impl ImageEngine {
             if let Some(bytes) = source.as_bytes() {
                 // Extract ICC profile if not already extracted
                 if self.icc_profile.is_none() {
-                    self.icc_profile = extract_icc_profile(bytes).map(Arc::new);
+                    self.icc_profile = extract_icc_profile_lossy(bytes).map(Arc::new);
                 }
                 return Ok(bytes);
             }
@@ -905,7 +905,7 @@ impl ImageEngine {
             if let Some(bytes) = source.as_bytes() {
                 // Extract ICC profile if not already extracted
                 if self.icc_profile.is_none() {
-                    self.icc_profile = extract_icc_profile(bytes).map(Arc::new);
+                    self.icc_profile = extract_icc_profile_lossy(bytes).map(Arc::new);
                 }
                 return Ok(bytes);
             }
