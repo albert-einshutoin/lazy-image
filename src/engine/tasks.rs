@@ -7,9 +7,11 @@ use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
-use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
+use crate::engine::encoder::{
+    embed_exif_jpeg, encode_avif, encode_jpeg_with_settings, encode_png, encode_webp,
+};
 #[allow(unused_imports)]
-use crate::engine::io::{extract_icc_profile, Source};
+use crate::engine::io::{extract_exif_raw, extract_icc_profile, Source};
 use crate::engine::memory;
 use crate::engine::pipeline::{apply_ops_tracked, ColorState, IccState};
 #[cfg(feature = "napi")]
@@ -394,11 +396,9 @@ impl EncodeTask {
         } else {
             None // Strip metadata by default for security & smaller files
         };
-        
-        // TODO: Add EXIF embedding here when encoder support is ready
-        // For now, EXIF is handled at the encoder level
-        
-        let result = match &self.format {
+
+        // 4. Encode image to target format
+        let mut result = match &self.format {
             OutputFormat::Jpeg { quality, fast_mode } => {
                 encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)
             }
@@ -406,6 +406,24 @@ impl EncodeTask {
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
+
+        // 5. Embed EXIF metadata if requested (JPEG only for now)
+        if self.keep_exif {
+            if let Some(exif_data) = &self.exif_data {
+                if let OutputFormat::Jpeg { .. } = &self.format {
+                    // Embed EXIF with sanitization:
+                    // - Reset Orientation to 1 if auto_orient was applied
+                    // - Strip GPS tags if strip_gps is true (default)
+                    result = embed_exif_jpeg(
+                        result,
+                        exif_data.as_slice(),
+                        self.auto_orient, // reset orientation if auto-orient was applied
+                        self.strip_gps,
+                    )?;
+                }
+                // TODO: PNG/WebP EXIF embedding (less common, lower priority)
+            }
+        }
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "encode")?;
 
@@ -741,8 +759,8 @@ impl Task for BatchTask {
         let format = &self.format;
         let output_dir = &self.output_dir;
         let keep_icc = self.keep_icc;
-        let _keep_exif = self.keep_exif; // TODO: Implement EXIF preservation in batch
-        let _strip_gps = self.strip_gps;
+        let keep_exif = self.keep_exif;
+        let strip_gps = self.strip_gps;
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
@@ -791,8 +809,12 @@ impl Task for BatchTask {
                 } else {
                     None
                 };
-                // TODO: Extract and preserve EXIF in batch processing
-                // let exif_data = if keep_exif { extract_exif_raw(data).map(Arc::new) } else { None };
+                // Extract EXIF data for preservation (JPEG only)
+                let exif_data = if keep_exif {
+                    extract_exif_raw(data).map(Arc::new)
+                } else {
+                    None
+                };
 
                 let (img, _detected_format) = decode_image(data)?;
                 firewall.enforce_timeout(start_total, "decode")?;
@@ -822,8 +844,8 @@ impl Task for BatchTask {
                 } else {
                     None // Strip metadata by default for security & smaller files
                 };
-                // TODO: Add EXIF embedding here when encoder support is ready
-                let encoded = match format {
+
+                let mut encoded = match format {
                     OutputFormat::Jpeg { quality, fast_mode } => {
                         encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)?
                     }
@@ -831,6 +853,21 @@ impl Task for BatchTask {
                     OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc)?,
                     OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
+
+                // Embed EXIF metadata if requested (JPEG only)
+                if keep_exif {
+                    if let Some(ref exif) = exif_data {
+                        if let OutputFormat::Jpeg { .. } = format {
+                            encoded = embed_exif_jpeg(
+                                encoded,
+                                exif.as_slice(),
+                                self.auto_orient, // reset orientation if auto-orient applied
+                                strip_gps,
+                            )?;
+                        }
+                    }
+                }
+
                 firewall.enforce_timeout(start_total, "encode")?;
 
                 let filename = Path::new(input_path)

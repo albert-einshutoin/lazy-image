@@ -328,171 +328,97 @@ pub fn embed_exif_jpeg(
     })
 }
 
-/// Sanitize raw EXIF bytes:
+/// Sanitize raw EXIF TIFF bytes (Zero-Copy approach):
 /// - Reset Orientation tag to 1 (if reset_orientation is true)
-/// - Strip GPS tags (if strip_gps is true)
-/// 
-/// Returns the sanitized EXIF bytes.
+/// - Strip GPS tags by zeroing GPS IFD pointer (if strip_gps is true)
+///
+/// This operates directly on the TIFF structure without creating temp files.
 fn sanitize_exif_bytes(
     exif: &[u8],
     reset_orientation: bool,
     strip_gps: bool,
 ) -> EncoderResult<Vec<u8>> {
-    use little_exif::exif_tag::ExifTag;
-    use little_exif::filetype::FileExtension;
-    use little_exif::metadata::Metadata as ExifMetadata;
-
-    // Create a minimal JPEG wrapper to use little_exif
-    // This is a workaround since little_exif works with complete files
-    let temp_jpeg = create_temp_jpeg_with_exif(exif)?;
-    
-    // Parse EXIF with little_exif
-    let mut metadata = match ExifMetadata::new_from_vec(&temp_jpeg, FileExtension::JPEG) {
-        Ok(m) => m,
-        Err(_) => {
-            // If parsing fails, return original EXIF unchanged
-            return Ok(exif.to_vec());
-        }
-    };
-
-    // Reset Orientation to 1 (Normal) if requested
-    if reset_orientation {
-        metadata.set_tag(ExifTag::Orientation(vec![1]));
-    }
-
-    // Strip GPS tags if requested (privacy protection)
-    if strip_gps {
-        // Remove GPS-related tags by setting them to empty values
-        // Note: little_exif doesn't have remove_tag, so we clear the values
-        metadata.set_tag(ExifTag::GPSLatitude(vec![]));
-        metadata.set_tag(ExifTag::GPSLongitude(vec![]));
-        metadata.set_tag(ExifTag::GPSTimeStamp(vec![]));
-        metadata.set_tag(ExifTag::GPSDateStamp(String::new()));
-        // GPSAltitude requires uR64 which is complex, so we skip it
-        // The above tags are the most privacy-sensitive
-    }
-
-    // Write back to get sanitized EXIF
-    let mut output_jpeg = temp_jpeg.clone();
-    if metadata.write_to_vec(&mut output_jpeg, FileExtension::JPEG).is_err() {
-        // If writing fails, return original EXIF unchanged
+    // EXIF data is TIFF format - we can modify it directly
+    // Structure: [byte order (2)] [magic 0x002A (2)] [IFD0 offset (4)] [IFD data...]
+    if exif.len() < 8 {
         return Ok(exif.to_vec());
     }
 
-    // Extract the sanitized EXIF from the output JPEG
-    extract_exif_from_jpeg(&output_jpeg).map(|e| e.unwrap_or_else(|| exif.to_vec()))
-}
-
-/// Create a minimal JPEG file with EXIF data for little_exif parsing
-fn create_temp_jpeg_with_exif(exif: &[u8]) -> EncoderResult<Vec<u8>> {
-    // Minimal 1x1 JPEG with EXIF APP1 segment
-    // SOI + APP1 (EXIF) + DQT + SOF0 + DHT + SOS + scan data + EOI
-    
-    let mut jpeg = Vec::new();
-    
-    // SOI
-    jpeg.extend_from_slice(&[0xFF, 0xD8]);
-    
-    // APP1 (EXIF) segment
-    let exif_with_header = {
-        let mut data = Vec::with_capacity(6 + exif.len());
-        data.extend_from_slice(b"Exif\0\0");
-        data.extend_from_slice(exif);
-        data
+    // Determine byte order
+    let is_little_endian = match &exif[0..2] {
+        b"II" => true,
+        b"MM" => false,
+        _ => return Ok(exif.to_vec()), // Unknown byte order, return unchanged
     };
-    let app1_len = (exif_with_header.len() + 2) as u16;
-    jpeg.push(0xFF);
-    jpeg.push(0xE1); // APP1
-    jpeg.push((app1_len >> 8) as u8);
-    jpeg.push((app1_len & 0xFF) as u8);
-    jpeg.extend_from_slice(&exif_with_header);
-    
-    // Add minimal JPEG structure (1x1 pixel)
-    // DQT (Define Quantization Table)
-    jpeg.extend_from_slice(&[
-        0xFF, 0xDB, 0x00, 0x43, 0x00,
-        0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08, 0x07,
-        0x07, 0x07, 0x09, 0x09, 0x08, 0x0A, 0x0C, 0x14,
-        0x0D, 0x0C, 0x0B, 0x0B, 0x0C, 0x19, 0x12, 0x13,
-        0x0F, 0x14, 0x1D, 0x1A, 0x1F, 0x1E, 0x1D, 0x1A,
-        0x1C, 0x1C, 0x20, 0x24, 0x2E, 0x27, 0x20, 0x22,
-        0x2C, 0x23, 0x1C, 0x1C, 0x28, 0x37, 0x29, 0x2C,
-        0x30, 0x31, 0x34, 0x34, 0x34, 0x1F, 0x27, 0x39,
-        0x3D, 0x38, 0x32, 0x3C, 0x2E, 0x33, 0x34, 0x32,
-    ]);
-    
-    // SOF0 (Start of Frame, baseline)
-    jpeg.extend_from_slice(&[
-        0xFF, 0xC0, 0x00, 0x0B, 0x08,
-        0x00, 0x01, // height = 1
-        0x00, 0x01, // width = 1
-        0x01, // 1 component
-        0x01, 0x11, 0x00, // component 1: Y, 1x1 sampling, QT 0
-    ]);
-    
-    // DHT (Define Huffman Table)
-    jpeg.extend_from_slice(&[
-        0xFF, 0xC4, 0x00, 0x1F, 0x00,
-        0x00, 0x01, 0x05, 0x01, 0x01, 0x01, 0x01, 0x01,
-        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-        0x08, 0x09, 0x0A, 0x0B,
-    ]);
-    
-    // SOS (Start of Scan)
-    jpeg.extend_from_slice(&[
-        0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3F, 0x00,
-    ]);
-    
-    // Minimal scan data (1x1 grayscale)
-    jpeg.extend_from_slice(&[0x7F, 0xFF]);
-    
-    // EOI
-    jpeg.extend_from_slice(&[0xFF, 0xD9]);
-    
-    Ok(jpeg)
-}
 
-/// Extract raw EXIF bytes from JPEG (without "Exif\0\0" header)
-fn extract_exif_from_jpeg(jpeg: &[u8]) -> EncoderResult<Option<Vec<u8>>> {
-    const APP1: u8 = 0xE1;
-    const EXIF_ID: &[u8] = b"Exif\0\0";
+    // Helper functions for reading/writing with correct endianness
+    let read_u16 = |data: &[u8], offset: usize| -> u16 {
+        if is_little_endian {
+            u16::from_le_bytes([data[offset], data[offset + 1]])
+        } else {
+            u16::from_be_bytes([data[offset], data[offset + 1]])
+        }
+    };
 
-    if !jpeg.starts_with(&[0xFF, 0xD8]) {
-        return Ok(None);
+    let read_u32 = |data: &[u8], offset: usize| -> u32 {
+        if is_little_endian {
+            u32::from_le_bytes([data[offset], data[offset + 1], data[offset + 2], data[offset + 3]])
+        } else {
+            u32::from_be_bytes([data[offset], data[offset + 1], data[offset + 2], data[offset + 3]])
+        }
+    };
+
+    // Make a mutable copy for modification
+    let mut result = exif.to_vec();
+
+    // Get IFD0 offset
+    let ifd0_offset = read_u32(&result, 4) as usize;
+    if ifd0_offset >= result.len() || ifd0_offset < 8 {
+        return Ok(result);
     }
 
-    let mut i = 2;
-    while i + 3 < jpeg.len() {
-        if jpeg[i] != 0xFF {
-            i += 1;
-            continue;
-        }
-        let marker = jpeg[i + 1];
-        if marker == 0xDA || marker == 0xD9 {
-            break; // SOS or EOI
-        }
-        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 {
-            i += 2;
-            continue;
-        }
-        if i + 3 >= jpeg.len() {
+    // Parse IFD0 to find Orientation and GPS IFD pointer tags
+    let num_entries = read_u16(&result, ifd0_offset) as usize;
+    let mut offset = ifd0_offset + 2;
+
+    const ORIENTATION_TAG: u16 = 0x0112;
+    const GPS_IFD_TAG: u16 = 0x8825;
+
+    for _ in 0..num_entries {
+        if offset + 12 > result.len() {
             break;
         }
-        let len = u16::from_be_bytes([jpeg[i + 2], jpeg[i + 3]]) as usize;
-        if marker == APP1 && len > 8 {
-            let seg_start = i + 4;
-            let seg_end = seg_start + len - 2;
-            if seg_end <= jpeg.len() {
-                let segment = &jpeg[seg_start..seg_end];
-                if segment.starts_with(EXIF_ID) {
-                    return Ok(Some(segment[6..].to_vec()));
-                }
+
+        let tag = read_u16(&result, offset);
+        let tag_type = read_u16(&result, offset + 2);
+        // let count = read_u32(&result, offset + 4);
+        let value_offset = offset + 8;
+
+        // Reset Orientation tag to 1
+        if reset_orientation && tag == ORIENTATION_TAG && tag_type == 3 {
+            // Type 3 = SHORT (2 bytes)
+            if is_little_endian {
+                result[value_offset] = 1;
+                result[value_offset + 1] = 0;
+            } else {
+                result[value_offset] = 0;
+                result[value_offset + 1] = 1;
             }
         }
-        i += 2 + len;
+
+        // Zero out GPS IFD pointer to effectively strip GPS data
+        if strip_gps && tag == GPS_IFD_TAG {
+            // Zero the value/offset field (4 bytes)
+            result[value_offset] = 0;
+            result[value_offset + 1] = 0;
+            result[value_offset + 2] = 0;
+            result[value_offset + 3] = 0;
+        }
+
+        offset += 12; // Each IFD entry is 12 bytes
     }
-    Ok(None)
+
+    Ok(result)
 }
 
 /// Encode to PNG using image crate

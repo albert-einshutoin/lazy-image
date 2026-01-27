@@ -15,7 +15,8 @@ export interface KeepMetadataOptions {
   xmp?: boolean
   /**
    * Strip GPS/location tags from EXIF (default: true for privacy protection)
-   * This is a security-first default that exceeds Sharp's capabilities
+   * This is a security-first default that exceeds Sharp's capabilities.
+   * Note: Only applies when exif: true. Ignored if exif is false/undefined.
    */
   stripGps?: boolean
 }

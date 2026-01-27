@@ -586,6 +586,8 @@ const MAX_EXIF_SOURCE_BYTES: usize = 8 * 1024 * 1024;
 
 /// GPS-related EXIF tags to strip for privacy protection.
 /// These tags can reveal sensitive location information.
+/// Note: Currently used conceptually; actual GPS stripping is done via direct TIFF manipulation in encoder.rs
+#[allow(dead_code)]
 const GPS_TAG_IDS: &[u16] = &[
     0x0000, // GPSVersionID
     0x0001, // GPSLatitudeRef
@@ -622,6 +624,8 @@ const GPS_TAG_IDS: &[u16] = &[
 ];
 
 /// Detect file extension for little_exif from image data magic bytes
+/// Note: Reserved for future PNG/WebP/AVIF EXIF support
+#[allow(dead_code)]
 fn detect_file_extension(data: &[u8]) -> Option<FileExtension> {
     if data.len() < 12 {
         return None;
@@ -670,6 +674,8 @@ fn detect_file_extension(data: &[u8]) -> Option<FileExtension> {
 /// Returns None if EXIF is not present or cannot be parsed.
 ///
 /// Supports: JPEG, PNG, WebP, AVIF, HEIF, TIFF
+/// Note: Reserved for future PNG/WebP/AVIF EXIF support
+#[allow(dead_code)]
 pub fn extract_exif_metadata(data: &[u8]) -> Option<ExifMetadata> {
     if data.len() < 12 || data.len() > MAX_EXIF_SOURCE_BYTES {
         return None;
@@ -684,6 +690,8 @@ pub fn extract_exif_metadata(data: &[u8]) -> Option<ExifMetadata> {
 }
 
 /// Lossy helper for extracting EXIF - returns None on any error or panic.
+/// Note: Reserved for future PNG/WebP/AVIF EXIF support
+#[allow(dead_code)]
 pub fn extract_exif_metadata_lossy(data: &[u8]) -> Option<ExifMetadata> {
     extract_exif_metadata(data)
 }
@@ -707,7 +715,7 @@ pub fn extract_exif_raw(data: &[u8]) -> Option<Vec<u8>> {
     let data_vec = data.to_vec();
 
     std::panic::catch_unwind(|| {
-        let metadata = ExifMetadata::new_from_vec(&data_vec, file_ext).ok()?;
+        let _metadata = ExifMetadata::new_from_vec(&data_vec, file_ext).ok()?;
         // Serialize the metadata to raw bytes
         // little_exif doesn't have direct serialization, so we work with what we have
         // For non-JPEG, we'll store a marker and rely on little_exif at write time
@@ -788,6 +796,9 @@ fn extract_exif_raw_jpeg(data: &[u8]) -> Option<Vec<u8>> {
 /// * `metadata` - EXIF metadata to sanitize
 /// * `reset_orientation` - If true, set Orientation tag to 1 (Normal)
 /// * `strip_gps` - If true, remove all GPS-related tags
+///
+/// Note: Reserved for future PNG/WebP/AVIF EXIF support (JPEG uses direct TIFF manipulation)
+#[allow(dead_code)]
 pub fn sanitize_exif(metadata: &mut ExifMetadata, reset_orientation: bool, strip_gps: bool) {
     if reset_orientation {
         // Set Orientation to 1 (Normal) - pixels are already correctly oriented
@@ -804,7 +815,9 @@ pub fn sanitize_exif(metadata: &mut ExifMetadata, reset_orientation: bool, strip
 
 /// Strip all GPS-related tags from EXIF metadata.
 /// This is called when strip_gps is enabled (default for security).
-fn strip_gps_tags(metadata: &mut ExifMetadata) {
+/// Note: Reserved for future use with little_exif-based approach
+#[allow(dead_code)]
+fn strip_gps_tags(_metadata: &mut ExifMetadata) {
     // little_exif stores tags internally; we need to clear GPS IFD
     // The library doesn't expose direct tag removal, so we use a workaround:
     // Create empty GPS tags to overwrite existing ones
@@ -822,6 +835,8 @@ fn strip_gps_tags(metadata: &mut ExifMetadata) {
 }
 
 /// Check if EXIF metadata contains GPS location data
+/// Note: Reserved for future use
+#[allow(dead_code)]
 pub fn has_gps_data(metadata: &ExifMetadata) -> bool {
     // Check for common GPS tags by examining the raw data
     // get_tag returns an iterator, so we check if it yields any items
