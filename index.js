@@ -312,6 +312,27 @@ if (!nativeBinding) {
 
 const { ImageEngine, ErrorCategory, ErrorCode, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
+function getErrorCategory(err) {
+  if (!err) return null
+  // Prefer explicit category field when present
+  if (typeof err.category === 'number' && err.category >= 0 && err.category <= 3) {
+    return err.category
+  }
+  // Map string code to enum
+  switch (err.code) {
+    case 'LAZY_IMAGE_USER_ERROR':
+      return ErrorCategory.UserError
+    case 'LAZY_IMAGE_CODEC_ERROR':
+      return ErrorCategory.CodecError
+    case 'LAZY_IMAGE_RESOURCE_LIMIT':
+      return ErrorCategory.ResourceLimit
+    case 'LAZY_IMAGE_INTERNAL_BUG':
+      return ErrorCategory.InternalBug
+    default:
+      return null
+  }
+}
+
 module.exports.ImageEngine = ImageEngine
 module.exports.ErrorCategory = ErrorCategory
 module.exports.ErrorCode = ErrorCode
@@ -320,3 +341,5 @@ module.exports.inspectFile = inspectFile
 module.exports.version = version
 module.exports.supportedInputFormats = supportedInputFormats
 module.exports.supportedOutputFormats = supportedOutputFormats
+module.exports.getErrorCategory = getErrorCategory
+module.exports.createStreamingPipeline = require('./streaming/pipeline').createStreamingPipeline
