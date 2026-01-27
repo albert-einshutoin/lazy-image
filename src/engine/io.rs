@@ -71,11 +71,9 @@ pub fn extract_icc_profile(data: &[u8]) -> IccExtractionResult {
     if data.len() < 12 {
         return Ok(None);
     }
+    // For very large inputs, skip ICC parsing to avoid unbounded work but keep processing alive.
     if data.len() > MAX_ICC_SOURCE_BYTES {
-        return Err(icc_decode_error(
-            "general",
-            "input exceeds ICC extraction cap of 8 MiB",
-        ));
+        return Ok(None);
     }
 
     let icc_data = if data.starts_with(&[0xFF, 0xD8]) {
@@ -737,6 +735,15 @@ mod tests {
         fn test_extract_icc_profile_invalid_data() {
             let invalid_data = vec![0u8; 10];
             let result = extract_icc_profile(&invalid_data);
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
+        }
+
+        #[test]
+        fn test_extract_icc_profile_large_input_skips_icc() {
+            // Ensure inputs larger than the fuzz safety cap do not hard-fail.
+            let huge = vec![0u8; MAX_ICC_SOURCE_BYTES + 1];
+            let result = extract_icc_profile(&huge);
             assert!(result.is_ok());
             assert!(result.unwrap().is_none());
         }
