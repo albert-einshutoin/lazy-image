@@ -498,6 +498,102 @@ impl Task for EncodeTask {
     }
 }
 
+// ============================================================================================
+// Tests for coverage when NAPI is disabled (CI runs coverage with --no-default-features)
+// ============================================================================================
+#[cfg(all(test, not(feature = "napi")))]
+mod non_napi_tests {
+    use super::*;
+    use crate::engine::firewall::FirewallConfig;
+    use crate::engine::io::Source;
+    use crate::ops::ResizeFit;
+    use image::{ImageBuffer, ImageFormat, Rgba};
+
+    fn sample_png_bytes() -> Vec<u8> {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(4, 4, Rgba([10, 20, 30, 255]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+        bytes
+    }
+
+    fn make_task_with_decoded(format: OutputFormat) -> EncodeTask {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(4, 4, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+        EncodeTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img)),
+            ops: vec![Operation::Resize {
+                width: Some(2),
+                height: Some(2),
+                fit: ResizeFit::Inside,
+            }],
+            format,
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: true,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+        }
+    }
+
+    #[test]
+    fn process_and_encode_outputs_image() {
+        let mut task = make_task_with_decoded(OutputFormat::Png);
+        let encoded = task.process_and_encode(None).expect("encode should succeed");
+        assert!(!encoded.is_empty());
+    }
+
+    #[test]
+    fn decode_internal_errors_when_source_missing() {
+        let task = EncodeTask {
+            source: None,
+            decoded: None,
+            ops: vec![],
+            format: OutputFormat::Png,
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: true,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+        };
+        let err = task.decode_internal().unwrap_err();
+        assert!(matches!(err, LazyImageError::SourceConsumed));
+    }
+
+    #[test]
+    fn firewall_limits_are_enforced_on_decode() {
+        let png = sample_png_bytes();
+        let mut firewall = FirewallConfig::custom();
+        firewall.max_bytes = Some(1); // smaller than PNG size to force rejection
+
+        let task = EncodeTask {
+            source: Some(Source::Memory(Arc::new(png))),
+            decoded: None,
+            ops: vec![],
+            format: OutputFormat::Png,
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: true,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall,
+        };
+        let err = task.decode_internal().unwrap_err();
+        assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
+    }
+}
+
 #[allow(dead_code)]
 pub struct EncodeWithMetricsTask {
     pub source: Option<Source>,

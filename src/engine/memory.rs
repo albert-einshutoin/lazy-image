@@ -761,3 +761,60 @@ mod tests {
         assert!(est >= resize_bytes);
     }
 }
+
+// Tests that run when `napi` feature is disabled (the CI coverage path uses `--no-default-features`).
+#[cfg(all(test, not(feature = "napi")))]
+mod non_napi_tests {
+    use super::*;
+    use crate::ops::{Operation, OutputFormat, ResizeFit};
+    use image::{ImageBuffer, ImageFormat, Rgba};
+    use std::sync::Arc;
+    use std::thread;
+    use std::time::Duration;
+
+    #[test]
+    fn weighted_semaphore_wakes_waiter_after_drop() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let (tx, rx) = std::sync::mpsc::channel();
+        let sem_wait = Arc::clone(&sem);
+        let handle = thread::spawn(move || {
+            let _permit = sem_wait.acquire(100);
+            tx.send(()).unwrap();
+        });
+
+        // Consume most of the capacity so the spawned thread blocks.
+        let permit = sem.acquire(90);
+        thread::sleep(Duration::from_millis(10));
+        assert!(rx.try_recv().is_err(), "waiter should still be blocked");
+        drop(permit); // release remaining capacity
+        rx.recv_timeout(Duration::from_millis(50))
+            .expect("waiter should wake after release");
+        handle.join().unwrap();
+    }
+
+    #[test]
+    fn estimate_memory_from_header_returns_minimum_for_small_png() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_pixel(2, 2, Rgba([0, 0, 0, 255]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+
+        let estimate =
+            estimate_memory_from_header(&bytes, &[], Some(&OutputFormat::Png)).unwrap();
+        assert!(estimate >= MIN_ESTIMATE_BYTES);
+    }
+
+    #[test]
+    fn cover_resize_estimate_grows_with_target() {
+        let ops = vec![Operation::Resize {
+            width: Some(200),
+            height: Some(200),
+            fit: ResizeFit::Cover,
+        }];
+        let est_small =
+            estimate_memory_from_dimensions_with_context(10, 10, None, &ops, Some(&OutputFormat::Png));
+        let est_large =
+            estimate_memory_from_dimensions_with_context(1000, 1000, None, &ops, Some(&OutputFormat::Png));
+        assert!(est_large >= est_small);
+    }
+}
