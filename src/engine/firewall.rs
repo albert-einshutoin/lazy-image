@@ -170,7 +170,7 @@ impl FirewallConfig {
         if !self.enabled {
             return Ok(());
         }
-        let Some(icc) = extract_icc_profile(data) else {
+        let Some(icc) = extract_icc_profile(data)? else {
             return Ok(());
         };
 
