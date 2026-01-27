@@ -5,7 +5,7 @@
 ## 位置付け
 - Web 向け画像最適化に特化した意図的なエンジン
 - まだ sharp のドロップイン代替ではありません（互換 API が必要なら sharp を使用）
-- セキュリティ優先: EXIF/XMP などのメタデータはデフォルトで削除、ICC は色精度のため保持
+- セキュリティ優先: 全メタデータ（EXIF/XMP/ICC）をデフォルトで削除。`keepMetadata()` で保持可能
 - ゼロコピー入力パス: `fromPath()/processBatch()` → `toFile()` で入力ファイルを JS ヒープへコピーしない
 - AVIF の ICC は v0.9.x（libavif-sys）で保持。<0.9.0 や ravif のみ構成では破棄
 
@@ -16,7 +16,7 @@
 
 ## 主な特徴
 - AVIF/WebP/JPEG/PNG エンコード（AVIFは高速かつ小サイズ）
-- ICC プロファイル保持（AVIFは v0.9.x 以降）
+- ICC/EXIF 保持オプション（AVIFの ICC は v0.9.x 以降、GPS は自動削除）
 - EXIF 自動回転（`autoOrient(false)` で無効化）
 - ディスクバッファ型ストリーミングでメモリを O(1) 近傍に抑制
 - Rust コアによるメモリ安全 & Node.js バインディング (napi-rs)
