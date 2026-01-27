@@ -35,6 +35,18 @@ use std::sync::Arc;
 use napi::bindgen_prelude::*;
 
 #[cfg(feature = "napi")]
+#[derive(Default)]
+#[napi(object)]
+pub struct KeepMetadataOptions {
+    /// Preserve ICC profile (default: true when options are provided)
+    pub icc: Option<bool>,
+    /// EXIF preservation is not implemented yet (will emit runtime warning when requested)
+    pub exif: Option<bool>,
+    /// XMP preservation is not implemented yet (will emit runtime warning when requested)
+    pub xmp: Option<bool>,
+}
+
+#[cfg(feature = "napi")]
 fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
     // Helper to attach code/category consistently when Env is available
     crate::error::napi_error_with_code(env, err).expect("failed to create napi error")
@@ -69,6 +81,8 @@ pub struct ImageEngine {
     /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// Default is false (strip all) for security and smaller file sizes.
     pub(crate) keep_metadata: bool,
+    /// Whether we already emitted a warning about EXIF/XMP being unsupported.
+    pub(crate) metadata_warning_emitted: bool,
     pub(crate) firewall: FirewallConfig,
 }
 
@@ -96,6 +110,7 @@ impl ImageEngine {
             icc_profile,
             auto_orient: true,
             keep_metadata: false, // Strip metadata by default for security & smaller files
+            metadata_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         }
     }
@@ -153,6 +168,7 @@ impl ImageEngine {
             icc_profile,
             auto_orient: true,
             keep_metadata: false, // Strip metadata by default for security & smaller files
+            metadata_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         })
     }
@@ -167,6 +183,7 @@ impl ImageEngine {
             icc_profile: self.icc_profile.clone(),
             auto_orient: self.auto_orient,
             keep_metadata: self.keep_metadata,
+            metadata_warning_emitted: self.metadata_warning_emitted,
             firewall: self.firewall.clone(),
         })
     }
@@ -299,9 +316,26 @@ impl ImageEngine {
     /// By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
     /// Call this method to keep ICC profile when color accuracy is important.
     #[napi(js_name = "keepMetadata")]
-    pub fn keep_metadata(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
-        self.keep_metadata = true;
-        this
+    pub fn keep_metadata(
+        &mut self,
+        env: Env,
+        this: Reference<ImageEngine>,
+        options: Option<KeepMetadataOptions>,
+    ) -> Result<Reference<ImageEngine>> {
+        let opts = options.unwrap_or_default();
+        let icc = opts.icc.unwrap_or(true);
+        let exif = opts.exif.unwrap_or(false);
+        let xmp = opts.xmp.unwrap_or(false);
+
+        if (exif || xmp) && !self.metadata_warning_emitted {
+            // Emit a single runtime warning to avoid log spam.
+            let warning = "keepMetadata: EXIF/XMP preservation is not implemented yet; only ICC profiles are kept. These fields will be stripped.";
+            eprintln!("{}", warning);
+            self.metadata_warning_emitted = true;
+        }
+
+        self.keep_metadata = icc;
+        Ok(this)
     }
 
     /// Enable Image Firewall mode with built-in policies (strict or lenient).

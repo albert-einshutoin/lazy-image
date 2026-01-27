@@ -228,12 +228,11 @@ export declare class ImageEngine {
    */
   autoOrient(enabled: boolean): ImageEngine
   /**
-   * Preserve ICC profile in output.
-   * Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
+   * Preserve metadata in output.
+   * Currently only ICC profile is supported. EXIF and XMP metadata are not preserved (a runtime warning is emitted when requested).
    * By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
-   * Call this method to keep ICC profile when color accuracy is important.
    */
-  keepMetadata(): ImageEngine
+  keepMetadata(options?: { icc?: boolean; exif?: boolean; xmp?: boolean }): ImageEngine
   /**
    * Enable Image Firewall mode with built-in policies (strict or lenient).
    * Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).

@@ -518,7 +518,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.flipH()` | Flip horizontally |
 | `.flipV()` | Flip vertically |
 | `.grayscale()` | Convert to grayscale |
-| `.keepMetadata()` | Preserve ICC profile (stripped by default for security & smaller files). Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved. |
+| `.keepMetadata(options?)` | Preserve ICC (only). EXIF/XMP are not supported; requesting them emits a runtime warning and they will be stripped. |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
