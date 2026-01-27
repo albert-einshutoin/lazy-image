@@ -43,8 +43,6 @@ GPS coordinates are stripped by default when `exif: true` is set. This protects 
 - GPSAltitude
 - GPSTimeStamp / GPSDateStamp
 
-**Note:** `stripGps` only applies when `exif: true`. If `exif` is false or not specified, EXIF data (including GPS) is not preserved regardless of the `stripGps` value.
-
 To preserve GPS data (e.g., for photography workflows), explicitly set `stripGps: false`.
 
 ### Orientation Auto-Reset
