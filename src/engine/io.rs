@@ -699,6 +699,7 @@ pub fn extract_exif_metadata_lossy(data: &[u8]) -> Option<ExifMetadata> {
 /// Extract raw EXIF bytes from image data.
 /// This is used to store EXIF for later embedding without needing to re-parse.
 /// Returns the raw EXIF APP1 segment data (for JPEG) or equivalent for other formats.
+#[allow(dead_code)] // Used in NAPI feature only, not in fuzzing
 pub fn extract_exif_raw(data: &[u8]) -> Option<Vec<u8>> {
     if data.len() < 12 || data.len() > MAX_EXIF_SOURCE_BYTES {
         return None;
@@ -726,6 +727,7 @@ pub fn extract_exif_raw(data: &[u8]) -> Option<Vec<u8>> {
 }
 
 /// Extract raw EXIF APP1 segment from JPEG data
+#[allow(dead_code)] // Used in NAPI feature only, not in fuzzing
 fn extract_exif_raw_jpeg(data: &[u8]) -> Option<Vec<u8>> {
     const APP1: u8 = 0xE1;
     const SOS: u8 = 0xDA;
