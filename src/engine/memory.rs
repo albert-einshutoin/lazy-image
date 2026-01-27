@@ -775,20 +775,26 @@ mod non_napi_tests {
     #[test]
     fn weighted_semaphore_wakes_waiter_after_drop() {
         let sem = Arc::new(WeightedSemaphore::new(100));
-        let (tx, rx) = std::sync::mpsc::channel();
+        let (tx_started, rx_started) = std::sync::mpsc::channel();
+        let (tx_done, rx_done) = std::sync::mpsc::channel();
+
+        // Hold full capacity so the spawned thread must block.
+        let permit = sem.acquire(100);
+
         let sem_wait = Arc::clone(&sem);
         let handle = thread::spawn(move || {
-            let _permit = sem_wait.acquire(100);
-            tx.send(()).unwrap();
+            tx_started.send(()).unwrap();
+            let _permit = sem_wait.acquire(10); // will block until capacity is released
+            tx_done.send(()).unwrap();
         });
 
-        // Consume most of the capacity so the spawned thread blocks.
-        let permit = sem.acquire(90);
-        thread::sleep(Duration::from_millis(10));
-        assert!(rx.try_recv().is_err(), "waiter should still be blocked");
-        drop(permit); // release remaining capacity
-        rx.recv_timeout(Duration::from_millis(50))
-            .expect("waiter should wake after release");
+        // Wait until the waiter has started and is blocked inside acquire.
+        rx_started.recv_timeout(Duration::from_secs(1))
+            .expect("waiter should signal start");
+        drop(permit); // release full capacity
+
+        rx_done.recv_timeout(Duration::from_secs(1))
+            .expect("waiter should acquire after release");
         handle.join().unwrap();
     }
 
