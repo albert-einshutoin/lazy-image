@@ -43,7 +43,7 @@ surface than sharp.
 | Compositing / rich filters | ❌ | ✅ |
 | Animated images | ❌ | ✅ |
 | Streaming pipeline | ❌ | ✅ |
-| Metadata handling | ICC only | ✅ (EXIF/XMP/etc) |
+| Metadata handling | ICC + EXIF (GPS auto-strip) | ✅ (EXIF/XMP/etc) |
 
 For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
 
