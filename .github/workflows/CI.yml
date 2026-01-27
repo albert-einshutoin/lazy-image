@@ -126,8 +126,19 @@ jobs:
   test:
     name: Test
     needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: ubuntu-latest
+            artifact: bindings-x86_64-unknown-linux-gnu
+          - host: macos-14
+            artifact: bindings-aarch64-apple-darwin
+          - host: windows-latest
+            artifact: bindings-x86_64-pc-windows-msvc
+
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -140,13 +151,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install NASM
+      - name: Install NASM (Linux)
+        if: matrix.settings.host == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install NASM (macOS)
+        if: matrix.settings.host == 'macos-14'
+        run: brew install nasm
+
+      - name: Install NASM (Windows)
+        if: matrix.settings.host == 'windows-latest'
+        uses: ilammy/setup-nasm@v1
 
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: bindings-x86_64-unknown-linux-gnu
+          name: ${{ matrix.settings.artifact }}
           path: .
 
       - name: Create test image
@@ -154,6 +174,86 @@ jobs:
 
       - name: Test
         run: npm test
+
+  quality:
+    name: Quality Regression
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bindings-x86_64-unknown-linux-gnu
+          path: .
+
+      - name: Run golden quality suite (SSIM/PSNR)
+        run: node test/integration/golden.test.js
+
+      - name: Run quality metrics smoke
+        run: node test/integration/quality-metrics.test.js
+
+      - name: Run benchmark verification (size/quality guards)
+        run: npm run test:bench:verify
+
+  supply-chain:
+    name: Supply Chain
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download all binding artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: bindings-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate SBOMs
+        run: |
+          cargo metadata --format-version 1 --locked > sbom-cargo.json
+          npm ls --all --json > sbom-npm.json
+
+      - name: Hash compiled bindings
+        run: |
+          find artifacts -name "*.node" -type f -print -exec sha256sum {} \; > binding-hashes.sha256
+
+      - name: Upload supply-chain reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: supply-chain-reports
+          path: |
+            sbom-cargo.json
+            sbom-npm.json
+            binding-hashes.sha256
 
   coverage:
     name: Coverage
