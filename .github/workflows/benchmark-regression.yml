@@ -23,6 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
+    env:
+      IS_INTERNAL_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -58,16 +61,21 @@ jobs:
           node --expose-gc docs/scripts/measure-zero-copy.js > artifacts/benchmark/zero-copy.json
 
       - name: Store benchmark result
+        if: github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: artifacts/benchmark/summary.json
           benchmark-data-dir-path: benchmark-data
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
-          comment-on-pr: true
+          auto-push: ${{ github.event_name != 'pull_request' }}
+          comment-on-pr: ${{ github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true' }}
           fail-on-alert: true
           alert-threshold: '5%'
+
+      - name: Skip write operations on external forks
+        if: github.event_name == 'pull_request' && env.IS_INTERNAL_PR != 'true'
+        run: echo "External fork PR detected; skipped auto-push/comment to avoid write failures."
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
