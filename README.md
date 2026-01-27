@@ -73,6 +73,7 @@ Formal semantics live in `spec/`:
 > 📖 **For comprehensive benchmark documentation**, see [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md) - detailed analysis of AVIF speed advantages and JPEG size optimization.
 
 > 🐳 **Benchmark Environment**: These results are measured in a **Docker environment** to ensure consistent, reproducible conditions that closely match production server environments. You can run the same benchmarks yourself using the [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) repository.
+> ⚙️ **CI Runner Specs**: GitHub Actions `ubuntu-latest` (2-core CPU, 7GB RAM) — the regression workflow uses the same runner profile.
 
 ### 📊 Performance Benchmarks (Large File: 4.5MB PNG)
 

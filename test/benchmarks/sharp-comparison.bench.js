@@ -85,6 +85,7 @@ async function runBenchmark() {
     console.log('─'.repeat(60));
     
     const results = [];
+    const summaryMetrics = [];
     
     // Test formats
     const testCases = [
@@ -127,6 +128,19 @@ async function runBenchmark() {
                 sharp: sharpResult,
                 qualityMetrics: null,
             });
+
+            summaryMetrics.push(
+                {
+                    name: `${name} size (lazy-image)`,
+                    value: lazyResult.size,
+                    unit: 'bytes',
+                },
+                {
+                    name: `${name} time (lazy-image)`,
+                    value: lazyResult.time,
+                    unit: 'ms',
+                }
+            );
             
             console.log(`  ✅ lazy-image: ${formatBytes(lazyResult.size)} bytes (${lazyResult.time}ms)`);
             if (sharpResult) {
@@ -191,6 +205,19 @@ async function runBenchmark() {
             lazy: { size: lazyComplex.length, time: lazyComplexTime },
             sharp: { size: sharpComplex.length, time: sharpComplexTime },
         });
+
+        summaryMetrics.push(
+            {
+                name: 'Complex pipeline size (lazy-image)',
+                value: lazyComplex.length,
+                unit: 'bytes',
+            },
+            {
+                name: 'Complex pipeline time (lazy-image)',
+                value: lazyComplexTime,
+                unit: 'ms',
+            }
+        );
         
         console.log(`  ✅ lazy-image: ${formatBytes(lazyComplex.length)} bytes (${lazyComplexTime}ms)`);
         console.log(`  ✅ sharp:      ${formatBytes(sharpComplex.length)} bytes (${sharpComplexTime}ms)`);
@@ -239,6 +266,16 @@ async function runBenchmark() {
     
     console.log('\n' + '─'.repeat(60));
     console.log('\n✅ Benchmark completed!\n');
+
+    const outputPath = process.env.BENCHMARK_OUTPUT_JSON;
+    if (outputPath) {
+        const dir = path.dirname(outputPath);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(outputPath, JSON.stringify(summaryMetrics, null, 2));
+        console.log(`📄 JSON metrics saved to ${outputPath}`);
+    }
 }
 
 // Cleanup function
