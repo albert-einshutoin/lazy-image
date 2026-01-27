@@ -1,0 +1,47 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *" # daily quality/performance check
+
+env:
+  APP_NAME: lazy-image
+  MACOSX_DEPLOYMENT_TARGET: '10.13'
+
+jobs:
+  bench:
+    name: Benchmark Regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build native binding (Linux)
+        run: npm run build -- --target x86_64-unknown-linux-gnu
+
+      - name: Run benchmark comparison (sharp parity)
+        run: npm run test:bench:compare
+
+      - name: Run quality/size verification
+        run: npm run test:bench:verify
+
+      - name: Smoke performance suite
+        run: npm run test:bench:smoke
