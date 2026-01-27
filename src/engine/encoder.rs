@@ -292,6 +292,135 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     })
 }
 
+/// Embed EXIF metadata into JPEG using img-parts
+/// 
+/// Note: This function expects raw TIFF-format EXIF data (without the "Exif\0\0" header).
+/// Orientation is automatically reset to 1 if auto_orient was applied.
+/// GPS tags are stripped if strip_gps is true (default for privacy).
+pub fn embed_exif_jpeg(
+    jpeg_data: Vec<u8>,
+    exif: &[u8],
+    reset_orientation: bool,
+    strip_gps: bool,
+) -> EncoderResult<Vec<u8>> {
+    run_with_panic_policy("encode:jpeg:embed_exif", || {
+        use img_parts::ImageEXIF;
+        use img_parts::Bytes;
+
+        // Parse JPEG
+        let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
+            LazyImageError::decode_failed(format!("failed to parse JPEG for EXIF: {e}"))
+        })?;
+
+        // Sanitize EXIF data if needed
+        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
+
+        // Set EXIF data (img-parts adds the "Exif\0\0" header automatically for APP1)
+        jpeg.set_exif(Some(Bytes::from(sanitized_exif)));
+
+        // Write output
+        let mut output = Vec::new();
+        jpeg.encoder().write_to(&mut output).map_err(|e| {
+            LazyImageError::encode_failed("jpeg", format!("failed to write JPEG with EXIF: {e}"))
+        })?;
+
+        Ok(output)
+    })
+}
+
+/// Sanitize raw EXIF TIFF bytes (Zero-Copy approach):
+/// - Reset Orientation tag to 1 (if reset_orientation is true)
+/// - Strip GPS tags by zeroing GPS IFD pointer (if strip_gps is true)
+///
+/// This operates directly on the TIFF structure without creating temp files.
+fn sanitize_exif_bytes(
+    exif: &[u8],
+    reset_orientation: bool,
+    strip_gps: bool,
+) -> EncoderResult<Vec<u8>> {
+    // EXIF data is TIFF format - we can modify it directly
+    // Structure: [byte order (2)] [magic 0x002A (2)] [IFD0 offset (4)] [IFD data...]
+    if exif.len() < 8 {
+        return Ok(exif.to_vec());
+    }
+
+    // Determine byte order
+    let is_little_endian = match &exif[0..2] {
+        b"II" => true,
+        b"MM" => false,
+        _ => return Ok(exif.to_vec()), // Unknown byte order, return unchanged
+    };
+
+    // Helper functions for reading/writing with correct endianness
+    let read_u16 = |data: &[u8], offset: usize| -> u16 {
+        if is_little_endian {
+            u16::from_le_bytes([data[offset], data[offset + 1]])
+        } else {
+            u16::from_be_bytes([data[offset], data[offset + 1]])
+        }
+    };
+
+    let read_u32 = |data: &[u8], offset: usize| -> u32 {
+        if is_little_endian {
+            u32::from_le_bytes([data[offset], data[offset + 1], data[offset + 2], data[offset + 3]])
+        } else {
+            u32::from_be_bytes([data[offset], data[offset + 1], data[offset + 2], data[offset + 3]])
+        }
+    };
+
+    // Make a mutable copy for modification
+    let mut result = exif.to_vec();
+
+    // Get IFD0 offset
+    let ifd0_offset = read_u32(&result, 4) as usize;
+    if ifd0_offset >= result.len() || ifd0_offset < 8 {
+        return Ok(result);
+    }
+
+    // Parse IFD0 to find Orientation and GPS IFD pointer tags
+    let num_entries = read_u16(&result, ifd0_offset) as usize;
+    let mut offset = ifd0_offset + 2;
+
+    const ORIENTATION_TAG: u16 = 0x0112;
+    const GPS_IFD_TAG: u16 = 0x8825;
+
+    for _ in 0..num_entries {
+        if offset + 12 > result.len() {
+            break;
+        }
+
+        let tag = read_u16(&result, offset);
+        let tag_type = read_u16(&result, offset + 2);
+        // let count = read_u32(&result, offset + 4);
+        let value_offset = offset + 8;
+
+        // Reset Orientation tag to 1
+        if reset_orientation && tag == ORIENTATION_TAG && tag_type == 3 {
+            // Type 3 = SHORT (2 bytes)
+            if is_little_endian {
+                result[value_offset] = 1;
+                result[value_offset + 1] = 0;
+            } else {
+                result[value_offset] = 0;
+                result[value_offset + 1] = 1;
+            }
+        }
+
+        // Zero out GPS IFD pointer to effectively strip GPS data
+        if strip_gps && tag == GPS_IFD_TAG {
+            // Zero the value/offset field (4 bytes)
+            result[value_offset] = 0;
+            result[value_offset + 1] = 0;
+            result[value_offset + 2] = 0;
+            result[value_offset + 3] = 0;
+        }
+
+        offset += 12; // Each IFD entry is 12 bytes
+    }
+
+    Ok(result)
+}
+
 /// Encode to PNG using image crate
 pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:png", || {

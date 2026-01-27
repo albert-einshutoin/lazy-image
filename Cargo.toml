@@ -31,8 +31,11 @@ image = { version = "0.25", default-features = false, features = [
     "png",
     "webp",
 ] }
-# EXIFパース（Orientationタグ抽出用）
+# EXIF parsing (Orientation tag extraction for auto-orient)
 exif = { package = "kamadak-exif", version = "0.6.1" }
+# EXIF read/write with tag-level access (MIT/Apache-2.0, pure Rust)
+# Used for Orientation reset and GPS stripping - exceeds Sharp's metadata handling
+little_exif = "0.6"
 # PNG optimization
 oxipng = "9.1"
 

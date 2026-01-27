@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- EXIF metadata preservation with `keepMetadata({ exif: true })` (#207)
+  - GPS coordinates stripped by default for privacy protection (`stripGps: true`)
+  - EXIF Orientation auto-reset to 1 after auto-orient to prevent double-rotation
+  - Zero-copy EXIF sanitization via direct TIFF byte manipulation
+  - Currently supports JPEG output; PNG/WebP/AVIF planned for future releases
+
 ### Performance
 - Optimized codec backends (PNG decode via zune-png, WebP decode via libwebp)
   - Faster PNG/WebP decoding with SIMD/native codecs

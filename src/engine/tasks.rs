@@ -7,9 +7,11 @@ use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
-use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
+use crate::engine::encoder::{
+    embed_exif_jpeg, encode_avif, encode_jpeg_with_settings, encode_png, encode_webp,
+};
 #[allow(unused_imports)]
-use crate::engine::io::{extract_icc_profile, Source};
+use crate::engine::io::{extract_exif_raw, extract_icc_profile, Source};
 use crate::engine::memory;
 use crate::engine::pipeline::{apply_ops_tracked, ColorState, IccState};
 #[cfg(feature = "napi")]
@@ -238,12 +240,15 @@ pub struct EncodeTask {
     pub icc_profile: Option<Arc<Vec<u8>>>,
     /// Whether the input originally had an ICC profile (even if stripped)
     pub icc_present: bool,
+    /// Raw EXIF data extracted from source image (for preservation)
+    pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
-    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
-    pub keep_metadata: bool,
-    /// Whether the caller explicitly requested metadata preservation (before firewall rules)
-    pub keep_metadata_requested: bool,
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output (default: false for security)
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF (default: true for privacy protection)
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -385,13 +390,15 @@ impl EncodeTask {
             .enforce_timeout(metrics_recorder.start_total, "process")?;
         metrics_recorder.mark_process_done();
 
-        // 3. Encode - only preserve ICC profile if keep_metadata is true
-        let icc = if self.keep_metadata {
+        // 3. Encode - only preserve ICC profile if keep_icc is true
+        let icc = if self.keep_icc {
             self.icc_profile.as_ref().map(|v| v.as_slice())
         } else {
             None // Strip metadata by default for security & smaller files
         };
-        let result = match &self.format {
+
+        // 4. Encode image to target format
+        let mut result = match &self.format {
             OutputFormat::Jpeg { quality, fast_mode } => {
                 encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)
             }
@@ -399,6 +406,24 @@ impl EncodeTask {
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
+
+        // 5. Embed EXIF metadata if requested (JPEG only for now)
+        if self.keep_exif {
+            if let Some(exif_data) = &self.exif_data {
+                if let OutputFormat::Jpeg { .. } = &self.format {
+                    // Embed EXIF with sanitization:
+                    // - Reset Orientation to 1 if auto_orient was applied
+                    // - Strip GPS tags if strip_gps is true (default)
+                    result = embed_exif_jpeg(
+                        result,
+                        exif_data.as_slice(),
+                        self.auto_orient, // reset orientation if auto-orient was applied
+                        self.strip_gps,
+                    )?;
+                }
+                // TODO: PNG/WebP EXIF embedding (less common, lower priority)
+            }
+        }
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "encode")?;
 
@@ -406,11 +431,11 @@ impl EncodeTask {
         let final_usage = get_resource_usage();
         // Use tracked color state to reason about ICC preservation.
         let icc_present = matches!(final_color_state.icc, IccState::Present);
-        let icc_preserved = self.keep_metadata && icc_present;
+        let icc_preserved = self.keep_icc && icc_present;
         // metadata_stripped: true when source had ICC but we did not preserve it
         let metadata_stripped = icc_present && !icc_preserved;
         let metadata_blocked_by_policy =
-            self.keep_metadata_requested && self.firewall.reject_metadata && icc_present;
+            (self.keep_icc || self.keep_exif) && self.firewall.reject_metadata && icc_present;
         let mut policy_violations = Vec::new();
         if metadata_blocked_by_policy {
             policy_violations.push("firewall_rejected_metadata".to_string());
@@ -482,9 +507,15 @@ pub struct EncodeWithMetricsTask {
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub icc_present: bool,
+    /// Raw EXIF data extracted from source image (for preservation)
+    pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    pub keep_metadata: bool,
-    pub keep_metadata_requested: bool,
+    /// Whether to preserve ICC profile in output
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -506,9 +537,11 @@ impl Task for EncodeWithMetricsTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             icc_present: self.icc_present,
+            exif_data: self.exif_data.clone(),
             auto_orient: self.auto_orient,
-            keep_metadata: self.keep_metadata,
-            keep_metadata_requested: self.keep_metadata_requested,
+            keep_icc: self.keep_icc,
+            keep_exif: self.keep_exif,
+            strip_gps: self.strip_gps,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -560,9 +593,15 @@ pub struct WriteFileTask {
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub icc_present: bool,
+    /// Raw EXIF data extracted from source image (for preservation)
+    pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    pub keep_metadata: bool,
-    pub keep_metadata_requested: bool,
+    /// Whether to preserve ICC profile in output
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     pub output_path: String,
     /// Last error that occurred during compute (for use in reject)
@@ -588,9 +627,11 @@ impl Task for WriteFileTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             icc_present: self.icc_present,
+            exif_data: self.exif_data.clone(),
             auto_orient: self.auto_orient,
-            keep_metadata: self.keep_metadata,
-            keep_metadata_requested: self.keep_metadata_requested,
+            keep_icc: self.keep_icc,
+            keep_exif: self.keep_exif,
+            strip_gps: self.strip_gps,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -683,7 +724,12 @@ pub struct BatchTask {
     pub format: OutputFormat,
     pub concurrency: u32,
     pub auto_orient: bool,
-    pub keep_metadata: bool,
+    /// Whether to preserve ICC profile in output
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -712,7 +758,9 @@ impl Task for BatchTask {
         let ops = &self.ops;
         let format = &self.format;
         let output_dir = &self.output_dir;
-        let keep_metadata = self.keep_metadata;
+        let keep_icc = self.keep_icc;
+        let keep_exif = self.keep_exif;
+        let strip_gps = self.strip_gps;
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
@@ -756,8 +804,14 @@ impl Task for BatchTask {
                 } else {
                     None
                 };
-                let icc_profile = if keep_metadata {
+                let icc_profile = if keep_icc {
                     extract_icc_profile(data)?.map(Arc::new)
+                } else {
+                    None
+                };
+                // Extract EXIF data for preservation (JPEG only)
+                let exif_data = if keep_exif {
+                    extract_exif_raw(data).map(Arc::new)
                 } else {
                     None
                 };
@@ -784,13 +838,14 @@ impl Task for BatchTask {
                 let processed = tracked.image;
                 firewall.enforce_timeout(start_total, "process")?;
 
-                // Encode - only preserve ICC profile if keep_metadata is true
-                let icc = if keep_metadata {
+                // Encode - only preserve ICC profile if keep_icc is true
+                let icc = if keep_icc {
                     icc_profile.as_ref().map(|v| v.as_slice())
                 } else {
                     None // Strip metadata by default for security & smaller files
                 };
-                let encoded = match format {
+
+                let mut encoded = match format {
                     OutputFormat::Jpeg { quality, fast_mode } => {
                         encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)?
                     }
@@ -798,6 +853,21 @@ impl Task for BatchTask {
                     OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc)?,
                     OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
+
+                // Embed EXIF metadata if requested (JPEG only)
+                if keep_exif {
+                    if let Some(ref exif) = exif_data {
+                        if let OutputFormat::Jpeg { .. } = format {
+                            encoded = embed_exif_jpeg(
+                                encoded,
+                                exif.as_slice(),
+                                self.auto_orient, // reset orientation if auto-orient applied
+                                strip_gps,
+                            )?;
+                        }
+                    }
+                }
+
                 firewall.enforce_timeout(start_total, "encode")?;
 
                 let filename = Path::new(input_path)

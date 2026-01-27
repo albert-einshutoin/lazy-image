@@ -24,7 +24,7 @@ This document outlines the development status and future direction of `lazy-imag
 * [x] **WebP Speed Tuning**: Optimize default parameters (Method 6 → 4) to match `sharp`. ✅ **Completed in v0.8.1**
 
 ### ⚡ Optimization & Efficiency (v0.9.x - In Progress)
-* [ ] **Strip Metadata by Default**: Remove Exif/XMP for security and smaller file sizes.
+* [x] **Strip Metadata by Default**: Remove Exif/XMP for security and smaller file sizes. ✅ **Completed in v0.9.x** (GPS auto-strip, EXIF preservation opt-in)
 * [ ] **Binary Size Reduction**: Enable LTO and strip symbols for faster cold starts.
 * [ ] **Documentation Update**: Publish "True Benchmarks" (AVIF speed / JPEG size).
 
@@ -53,10 +53,10 @@ This document outlines the development status and future direction of `lazy-imag
 **Focus:** Winning the benchmarks in all categories (Speed & Size).
 
 
-* **Efficiency: Secure-by-Default Metadata**
+* **Efficiency: Secure-by-Default Metadata** ✅ **Completed**
 * **Goal:** Ensure output files are smaller than `sharp`'s and privacy-safe.
-* **Task:** Implement logic to strip Exif, XMP, and Comments during encoding.
-* **Task:** Add `.keepMetadata()` API for opt-in preservation.
+* **Task:** ~~Implement logic to strip Exif, XMP, and Comments during encoding.~~ Done
+* **Task:** ~~Add `.keepMetadata()` API for opt-in preservation.~~ Done (with GPS auto-strip)
 
 
 * **Deployment: Binary Minimization**
@@ -137,8 +137,8 @@ To maintain focus and stability, the following features are explicitly **out of 
 
 ### ⚡ 最適化と効率性 (v0.9.x - 進行中)
 
-* [ ] **WebP 速度チューニング**: デフォルト設定を最適化し `sharp` と同等の速度へ。
-* [ ] **メタデータ削除のデフォルト化**: Exif/XMPを削除し、セキュリティとサイズを改善。
+* [x] **WebP 速度チューニング**: デフォルト設定を最適化し `sharp` と同等の速度へ。 ✅ **v0.8.1 で完了**
+* [x] **メタデータ削除のデフォルト化**: Exif/XMPを削除し、セキュリティとサイズを改善。 ✅ **v0.9.x で完了** (GPS自動削除、EXIF保持オプトイン)
 * [ ] **バイナリサイズ削減**: LTO有効化によるコールドスタート高速化。
 * [ ] **ドキュメント更新**: 「真実のベンチマーク」（AVIF速度/JPEGサイズ）の公開。
 
@@ -162,10 +162,10 @@ To maintain focus and stability, the following features are explicitly **out of 
 * **タスク:** 重い前処理（preprocessing）をデフォルトで無効化。
 
 
-* **Efficiency: セキュア・デフォルト (メタデータ削除)**
+* **Efficiency: セキュア・デフォルト (メタデータ削除)** ✅ **完了**
 * **ゴール:** `sharp` よりも出力ファイルを小さくし、プライバシーを保護する。
-* **タスク:** エンコード時に Exif, XMP, Comments を自動削除するロジックの実装。
-* **タスク:** `.keepMetadata()` API（オプトイン機能）の追加。
+* **タスク:** ~~エンコード時に Exif, XMP, Comments を自動削除するロジックの実装。~~ 完了
+* **タスク:** ~~`.keepMetadata()` API（オプトイン機能）の追加。~~ 完了 (GPS自動削除付き)
 
 
 * **Deployment: バイナリ最小化**

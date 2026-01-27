@@ -9,7 +9,7 @@
 > **Top-level stance**
 > - Opinionated **web image optimization engine** (performance + safety over feature breadth)
 > - **Not** a drop-in replacement for sharp (yet); use sharp if you need its full API surface
-> - **Security-first defaults**: EXIF/XMP and other metadata are stripped by default; ICC is preserved for color accuracy
+> - **Security-first defaults**: All metadata (EXIF/XMP/ICC) stripped by default; use `keepMetadata()` to preserve
 > - **Zero-copy input path**: `fromPath()/processBatch()` → `toFile()` avoids copying source data into the JS heap
 > - **AVIF ICC**: preserved in v0.9.x (libavif-sys); older <0.9.0 or ravif-only builds drop ICC
 >
@@ -43,7 +43,7 @@ surface than sharp.
 | Compositing / rich filters | ❌ | ✅ |
 | Animated images | ❌ | ✅ |
 | Streaming pipeline | ❌ | ✅ |
-| Metadata handling | ICC only | ✅ (EXIF/XMP/etc) |
+| Metadata handling | ICC + EXIF (GPS auto-strip) | ✅ (EXIF/XMP/etc) |
 
 For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
 
@@ -63,7 +63,7 @@ Formal semantics live in `spec/`:
 - **Zero-copy definition**: `fromPath()` / `processBatch()` → `toFile()` does not copy source data into the JS heap; input is mmapped and processed in Rust. Output buffers are allocated (by design).
 - **Heap budget (input path)**: JS heap increase ≤ **2 MB** for `fromPath → toBufferWithMetrics` (validated via `node --expose-gc docs/scripts/measure-zero-copy.js`).
 - **RSS budget**: `peak_rss ≤ decoded_bytes + 24 MB` (decoded_bytes = width × height × bpp; JPEG bpp=3, PNG/WebP/AVIF bpp=4). Example: 6000×4000 PNG (~24 MP, bpp=4) → decoded ≈ 96 MB, target peak RSS ≤ **120 MB**.
-- **Metadata defaults**: EXIF/XMP and most metadata are stripped by default for safety; ICC is preserved for color accuracy (AVIF requires v0.9.x/libavif-sys to keep ICC).
+- **Metadata defaults**: All metadata (EXIF/XMP/ICC) is stripped by default for security and smaller file sizes. Use `keepMetadata({ icc: true, exif: true })` to preserve. AVIF ICC requires v0.9.x/libavif-sys.
 - **Reproducibility**: Run `node --expose-gc docs/scripts/measure-zero-copy.js` to emit JSON with `rss_delta_mb` / `heap_delta_mb` and confirm the budgets above.
 
 ## 📊 Benchmark Results
@@ -518,7 +518,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.flipH()` | Flip horizontally |
 | `.flipV()` | Flip vertically |
 | `.grayscale()` | Convert to grayscale |
-| `.keepMetadata()` | Preserve ICC profile (stripped by default for security & smaller files). Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved. |
+| `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy (exceeds Sharp). See [Metadata Handling](#metadata-handling). |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
@@ -842,6 +842,37 @@ If you process untrusted images (user avatars, uploads, etc.):
 - ⚠️ **Be cautious with C++ libraries**: Require careful input validation and sandboxing
 
 > 📖 See [SECURITY.md](./SECURITY.md) for vulnerability reporting and security policy.
+
+### Metadata Handling
+
+lazy-image provides security-first metadata handling that **exceeds Sharp's capabilities**:
+
+```typescript
+// Default: Strip all metadata for security
+await ImageEngine.from(buffer).toBuffer('jpeg');
+
+// Preserve ICC (color accuracy) and EXIF (camera info), strip GPS by default
+await ImageEngine.from(buffer)
+  .keepMetadata({ icc: true, exif: true })
+  .toBuffer('jpeg');
+
+// Explicitly preserve GPS for photographers (opt-in)
+await ImageEngine.from(buffer)
+  .keepMetadata({ icc: true, exif: true, stripGps: false })
+  .toBuffer('jpeg');
+```
+
+| Feature | Sharp | lazy-image |
+|---------|-------|------------|
+| Default metadata strip | ❌ Keeps metadata | ✅ Strips by default |
+| GPS auto-strip | ❌ Manual only | ✅ Default enabled |
+| Orientation auto-reset | ❌ Causes double-rotation bugs | ✅ Auto-reset to 1 |
+| API clarity | 😕 Confusing `withMetadata()` | 😀 Explicit options |
+
+**Why this matters:**
+- **Privacy**: User-uploaded photos may contain GPS coordinates, home addresses
+- **Security**: EXIF can contain sensitive device info, software versions
+- **Correctness**: Auto-orient + old Orientation tag = double-rotation on some viewers
 
 ### Image Firewall Mode (Strict & Lenient)
 
