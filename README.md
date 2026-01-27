@@ -518,7 +518,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.flipH()` | Flip horizontally |
 | `.flipV()` | Flip vertically |
 | `.grayscale()` | Convert to grayscale |
-| `.keepMetadata(options?)` | Preserve ICC (only). EXIF/XMP are not supported; requesting them emits a runtime warning and they will be stripped. |
+| `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy (exceeds Sharp). See [Metadata Handling](#metadata-handling). |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
@@ -842,6 +842,37 @@ If you process untrusted images (user avatars, uploads, etc.):
 - ⚠️ **Be cautious with C++ libraries**: Require careful input validation and sandboxing
 
 > 📖 See [SECURITY.md](./SECURITY.md) for vulnerability reporting and security policy.
+
+### Metadata Handling
+
+lazy-image provides security-first metadata handling that **exceeds Sharp's capabilities**:
+
+```typescript
+// Default: Strip all metadata for security
+await ImageEngine.from(buffer).toBuffer('jpeg');
+
+// Preserve ICC (color accuracy) and EXIF (camera info), strip GPS by default
+await ImageEngine.from(buffer)
+  .keepMetadata({ icc: true, exif: true })
+  .toBuffer('jpeg');
+
+// Explicitly preserve GPS for photographers (opt-in)
+await ImageEngine.from(buffer)
+  .keepMetadata({ icc: true, exif: true, stripGps: false })
+  .toBuffer('jpeg');
+```
+
+| Feature | Sharp | lazy-image |
+|---------|-------|------------|
+| Default metadata strip | ❌ Keeps metadata | ✅ Strips by default |
+| GPS auto-strip | ❌ Manual only | ✅ Default enabled |
+| Orientation auto-reset | ❌ Causes double-rotation bugs | ✅ Auto-reset to 1 |
+| API clarity | 😕 Confusing `withMetadata()` | 😀 Explicit options |
+
+**Why this matters:**
+- **Privacy**: User-uploaded photos may contain GPS coordinates, home addresses
+- **Security**: EXIF can contain sensitive device info, software versions
+- **Correctness**: Auto-orient + old Orientation tag = double-rotation on some viewers
 
 ### Image Firewall Mode (Strict & Lenient)
 

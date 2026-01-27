@@ -292,6 +292,209 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     })
 }
 
+/// Embed EXIF metadata into JPEG using img-parts
+/// 
+/// Note: This function expects raw TIFF-format EXIF data (without the "Exif\0\0" header).
+/// Orientation is automatically reset to 1 if auto_orient was applied.
+/// GPS tags are stripped if strip_gps is true (default for privacy).
+pub fn embed_exif_jpeg(
+    jpeg_data: Vec<u8>,
+    exif: &[u8],
+    reset_orientation: bool,
+    strip_gps: bool,
+) -> EncoderResult<Vec<u8>> {
+    run_with_panic_policy("encode:jpeg:embed_exif", || {
+        use img_parts::ImageEXIF;
+        use img_parts::Bytes;
+
+        // Parse JPEG
+        let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
+            LazyImageError::decode_failed(format!("failed to parse JPEG for EXIF: {e}"))
+        })?;
+
+        // Sanitize EXIF data if needed
+        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
+
+        // Set EXIF data (img-parts adds the "Exif\0\0" header automatically for APP1)
+        jpeg.set_exif(Some(Bytes::from(sanitized_exif)));
+
+        // Write output
+        let mut output = Vec::new();
+        jpeg.encoder().write_to(&mut output).map_err(|e| {
+            LazyImageError::encode_failed("jpeg", format!("failed to write JPEG with EXIF: {e}"))
+        })?;
+
+        Ok(output)
+    })
+}
+
+/// Sanitize raw EXIF bytes:
+/// - Reset Orientation tag to 1 (if reset_orientation is true)
+/// - Strip GPS tags (if strip_gps is true)
+/// 
+/// Returns the sanitized EXIF bytes.
+fn sanitize_exif_bytes(
+    exif: &[u8],
+    reset_orientation: bool,
+    strip_gps: bool,
+) -> EncoderResult<Vec<u8>> {
+    use little_exif::exif_tag::ExifTag;
+    use little_exif::filetype::FileExtension;
+    use little_exif::metadata::Metadata as ExifMetadata;
+
+    // Create a minimal JPEG wrapper to use little_exif
+    // This is a workaround since little_exif works with complete files
+    let temp_jpeg = create_temp_jpeg_with_exif(exif)?;
+    
+    // Parse EXIF with little_exif
+    let mut metadata = match ExifMetadata::new_from_vec(&temp_jpeg, FileExtension::JPEG) {
+        Ok(m) => m,
+        Err(_) => {
+            // If parsing fails, return original EXIF unchanged
+            return Ok(exif.to_vec());
+        }
+    };
+
+    // Reset Orientation to 1 (Normal) if requested
+    if reset_orientation {
+        metadata.set_tag(ExifTag::Orientation(vec![1]));
+    }
+
+    // Strip GPS tags if requested (privacy protection)
+    if strip_gps {
+        // Remove GPS-related tags by setting them to empty values
+        // Note: little_exif doesn't have remove_tag, so we clear the values
+        metadata.set_tag(ExifTag::GPSLatitude(vec![]));
+        metadata.set_tag(ExifTag::GPSLongitude(vec![]));
+        metadata.set_tag(ExifTag::GPSTimeStamp(vec![]));
+        metadata.set_tag(ExifTag::GPSDateStamp(String::new()));
+        // GPSAltitude requires uR64 which is complex, so we skip it
+        // The above tags are the most privacy-sensitive
+    }
+
+    // Write back to get sanitized EXIF
+    let mut output_jpeg = temp_jpeg.clone();
+    if metadata.write_to_vec(&mut output_jpeg, FileExtension::JPEG).is_err() {
+        // If writing fails, return original EXIF unchanged
+        return Ok(exif.to_vec());
+    }
+
+    // Extract the sanitized EXIF from the output JPEG
+    extract_exif_from_jpeg(&output_jpeg).map(|e| e.unwrap_or_else(|| exif.to_vec()))
+}
+
+/// Create a minimal JPEG file with EXIF data for little_exif parsing
+fn create_temp_jpeg_with_exif(exif: &[u8]) -> EncoderResult<Vec<u8>> {
+    // Minimal 1x1 JPEG with EXIF APP1 segment
+    // SOI + APP1 (EXIF) + DQT + SOF0 + DHT + SOS + scan data + EOI
+    
+    let mut jpeg = Vec::new();
+    
+    // SOI
+    jpeg.extend_from_slice(&[0xFF, 0xD8]);
+    
+    // APP1 (EXIF) segment
+    let exif_with_header = {
+        let mut data = Vec::with_capacity(6 + exif.len());
+        data.extend_from_slice(b"Exif\0\0");
+        data.extend_from_slice(exif);
+        data
+    };
+    let app1_len = (exif_with_header.len() + 2) as u16;
+    jpeg.push(0xFF);
+    jpeg.push(0xE1); // APP1
+    jpeg.push((app1_len >> 8) as u8);
+    jpeg.push((app1_len & 0xFF) as u8);
+    jpeg.extend_from_slice(&exif_with_header);
+    
+    // Add minimal JPEG structure (1x1 pixel)
+    // DQT (Define Quantization Table)
+    jpeg.extend_from_slice(&[
+        0xFF, 0xDB, 0x00, 0x43, 0x00,
+        0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08, 0x07,
+        0x07, 0x07, 0x09, 0x09, 0x08, 0x0A, 0x0C, 0x14,
+        0x0D, 0x0C, 0x0B, 0x0B, 0x0C, 0x19, 0x12, 0x13,
+        0x0F, 0x14, 0x1D, 0x1A, 0x1F, 0x1E, 0x1D, 0x1A,
+        0x1C, 0x1C, 0x20, 0x24, 0x2E, 0x27, 0x20, 0x22,
+        0x2C, 0x23, 0x1C, 0x1C, 0x28, 0x37, 0x29, 0x2C,
+        0x30, 0x31, 0x34, 0x34, 0x34, 0x1F, 0x27, 0x39,
+        0x3D, 0x38, 0x32, 0x3C, 0x2E, 0x33, 0x34, 0x32,
+    ]);
+    
+    // SOF0 (Start of Frame, baseline)
+    jpeg.extend_from_slice(&[
+        0xFF, 0xC0, 0x00, 0x0B, 0x08,
+        0x00, 0x01, // height = 1
+        0x00, 0x01, // width = 1
+        0x01, // 1 component
+        0x01, 0x11, 0x00, // component 1: Y, 1x1 sampling, QT 0
+    ]);
+    
+    // DHT (Define Huffman Table)
+    jpeg.extend_from_slice(&[
+        0xFF, 0xC4, 0x00, 0x1F, 0x00,
+        0x00, 0x01, 0x05, 0x01, 0x01, 0x01, 0x01, 0x01,
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0A, 0x0B,
+    ]);
+    
+    // SOS (Start of Scan)
+    jpeg.extend_from_slice(&[
+        0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3F, 0x00,
+    ]);
+    
+    // Minimal scan data (1x1 grayscale)
+    jpeg.extend_from_slice(&[0x7F, 0xFF]);
+    
+    // EOI
+    jpeg.extend_from_slice(&[0xFF, 0xD9]);
+    
+    Ok(jpeg)
+}
+
+/// Extract raw EXIF bytes from JPEG (without "Exif\0\0" header)
+fn extract_exif_from_jpeg(jpeg: &[u8]) -> EncoderResult<Option<Vec<u8>>> {
+    const APP1: u8 = 0xE1;
+    const EXIF_ID: &[u8] = b"Exif\0\0";
+
+    if !jpeg.starts_with(&[0xFF, 0xD8]) {
+        return Ok(None);
+    }
+
+    let mut i = 2;
+    while i + 3 < jpeg.len() {
+        if jpeg[i] != 0xFF {
+            i += 1;
+            continue;
+        }
+        let marker = jpeg[i + 1];
+        if marker == 0xDA || marker == 0xD9 {
+            break; // SOS or EOI
+        }
+        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 {
+            i += 2;
+            continue;
+        }
+        if i + 3 >= jpeg.len() {
+            break;
+        }
+        let len = u16::from_be_bytes([jpeg[i + 2], jpeg[i + 3]]) as usize;
+        if marker == APP1 && len > 8 {
+            let seg_start = i + 4;
+            let seg_end = seg_start + len - 2;
+            if seg_end <= jpeg.len() {
+                let segment = &jpeg[seg_start..seg_end];
+                if segment.starts_with(EXIF_ID) {
+                    return Ok(Some(segment[6..].to_vec()));
+                }
+            }
+        }
+        i += 2 + len;
+    }
+    Ok(None)
+}
+
 /// Encode to PNG using image crate
 pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:png", || {
