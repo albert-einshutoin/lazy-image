@@ -57,6 +57,7 @@ Formal semantics live in `spec/`:
 - [Errors](./spec/errors.md) — taxonomy, mappings, JS category helpers
 - [Limits](./spec/limits.md) — dimensions/pixels, firewall bytes/timeout, concurrency
 - [Quality](./spec/quality.md) — SSIM/PSNR gates and repro guidance
+- [Quality Semantics](./docs/QUALITY_SEMANTICS.md) — what `quality` means per format and cross-format equivalence
 - [SemVer & Deprecation Policy](./docs/SEMVER_POLICY.md) — versioning rules, deprecation flow, changelog standard
 
 ### 🔎 Measurable & Verifiable Claims
