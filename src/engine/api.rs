@@ -127,9 +127,9 @@ impl ImageEngine {
             icc_profile,
             exif_data,
             auto_orient: true,
-            keep_icc: false,  // Strip metadata by default for security & smaller files
+            keep_icc: false, // Strip metadata by default for security & smaller files
             keep_exif: false, // Strip EXIF by default for security
-            strip_gps: true,  // Strip GPS by default for privacy (exceeds Sharp)
+            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
             xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         }
@@ -191,9 +191,9 @@ impl ImageEngine {
             icc_profile,
             exif_data,
             auto_orient: true,
-            keep_icc: false,  // Strip metadata by default for security & smaller files
+            keep_icc: false, // Strip metadata by default for security & smaller files
             keep_exif: false, // Strip EXIF by default for security
-            strip_gps: true,  // Strip GPS by default for privacy (exceeds Sharp)
+            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
             xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         })
@@ -362,7 +362,8 @@ impl ImageEngine {
 
         // XMP is not yet supported - emit warning once
         if xmp && !self.xmp_warning_emitted {
-            let warning = "keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.";
+            let warning =
+                "keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.";
             eprintln!("{}", warning);
             self.xmp_warning_emitted = true;
         }

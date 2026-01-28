@@ -639,7 +639,9 @@ fn detect_file_extension(data: &[u8]) -> Option<FileExtension> {
     // PNG: starts with 89 50 4E 47
     // as_zTXt_chunk: true means EXIF is stored in zTXt chunk (standard for PNG)
     if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
-        return Some(FileExtension::PNG { as_zTXt_chunk: true });
+        return Some(FileExtension::PNG {
+            as_zTXt_chunk: true,
+        });
     }
 
     // WebP: RIFF....WEBP
@@ -824,13 +826,13 @@ fn strip_gps_tags(_metadata: &mut ExifMetadata) {
     // The library doesn't expose direct tag removal, so we use a workaround:
     // Create empty GPS tags to overwrite existing ones
     // Note: This is a limitation of little_exif - it doesn't have remove_tag functionality
-    
+
     // For now, we'll set GPS tags to empty/zero values to effectively "strip" them
     // A more robust solution would be to serialize/deserialize without GPS IFD
-    
+
     // The GPS IFD is separate from main EXIF, so we can clear it by setting
     // the GPS IFD pointer to null (not directly supported by little_exif)
-    
+
     // Workaround: We'll handle this at the embedding stage by filtering
     // For the MVP, we mark that GPS should be stripped and handle it during write
     let _ = GPS_TAG_IDS; // Acknowledge the constant is used conceptually

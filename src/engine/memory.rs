@@ -789,24 +789,26 @@ mod non_napi_tests {
         });
 
         // Wait until the waiter has started and is blocked inside acquire.
-        rx_started.recv_timeout(Duration::from_secs(1))
+        rx_started
+            .recv_timeout(Duration::from_secs(1))
             .expect("waiter should signal start");
         drop(permit); // release full capacity
 
-        rx_done.recv_timeout(Duration::from_secs(1))
+        rx_done
+            .recv_timeout(Duration::from_secs(1))
             .expect("waiter should acquire after release");
         handle.join().unwrap();
     }
 
     #[test]
     fn estimate_memory_from_header_returns_minimum_for_small_png() {
-        let img: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_pixel(2, 2, Rgba([0, 0, 0, 255]));
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(2, 2, Rgba([0, 0, 0, 255]));
         let mut bytes = Vec::new();
         img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
             .unwrap();
 
-        let estimate =
-            estimate_memory_from_header(&bytes, &[], Some(&OutputFormat::Png)).unwrap();
+        let estimate = estimate_memory_from_header(&bytes, &[], Some(&OutputFormat::Png)).unwrap();
         assert!(estimate >= MIN_ESTIMATE_BYTES);
     }
 
@@ -817,10 +819,20 @@ mod non_napi_tests {
             height: Some(200),
             fit: ResizeFit::Cover,
         }];
-        let est_small =
-            estimate_memory_from_dimensions_with_context(10, 10, None, &ops, Some(&OutputFormat::Png));
-        let est_large =
-            estimate_memory_from_dimensions_with_context(1000, 1000, None, &ops, Some(&OutputFormat::Png));
+        let est_small = estimate_memory_from_dimensions_with_context(
+            10,
+            10,
+            None,
+            &ops,
+            Some(&OutputFormat::Png),
+        );
+        let est_large = estimate_memory_from_dimensions_with_context(
+            1000,
+            1000,
+            None,
+            &ops,
+            Some(&OutputFormat::Png),
+        );
         assert!(est_large >= est_small);
     }
 }
