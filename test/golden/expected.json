@@ -22,5 +22,17 @@
     "width": 1600,
     "height": 900,
     "format": "png"
+  },
+  "avif_cover_rotate_grayscale": {
+    "pixelHash": "85091a8d87123f6b50f2f247ae2a5d5692dc9a3ceccb7f8a7b56f8c8929db8dd",
+    "width": 1200,
+    "height": 800,
+    "format": "avif"
+  },
+  "jpeg_to_png_flipv": {
+    "pixelHash": "1cdf3206431ced09cfc83fc80d8bd6dc3ec0a43b6d67e6c6b7869f3c1c05b741",
+    "width": 5000,
+    "height": 5000,
+    "format": "png"
   }
 }

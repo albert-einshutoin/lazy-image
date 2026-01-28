@@ -1,15 +1,15 @@
 const { resolveFixture } = require('../helpers/paths');
 
 /**
- * ゴールデンテスト用の代表ケース定義
- * - operations: ImageEngine / sharp 両方に適用可能な簡易DSL
+ * Golden test case definitions
+ * - operations: Simple DSL applicable to both ImageEngine and sharp
  * - output: { format, quality }
- * - thresholds: SSIM/PSNRの下限
+ * - thresholds: Minimum SSIM/PSNR values
  */
 module.exports = [
     {
         name: 'jpeg_resize_inside_1200_q82',
-        description: '5000px級JPEGを1200pxに圧縮リサイズ',
+        description: 'Resize 5000px JPEG to 1200px with compression',
         input: resolveFixture('test_3.2MB_5000x5000.jpg'),
         operations: [
             { op: 'resize', width: 1200, height: null, fit: 'inside' },
@@ -20,7 +20,7 @@ module.exports = [
     },
     {
         name: 'png_cover_rotate_grayscale',
-        description: '高解像度PNGを16:9 cover → 回転 → グレースケール',
+        description: 'High-resolution PNG: 16:9 cover → rotate → grayscale',
         input: resolveFixture('test_4.5MB_5000x5000.png'),
         operations: [
             { op: 'resize', width: 1600, height: 900, fit: 'cover' },
@@ -32,7 +32,7 @@ module.exports = [
     },
     {
         name: 'webp_cover_flip',
-        description: '5000px級JPEG→WebP変換でサイズ優位を確認',
+        description: 'Convert 5000px JPEG to WebP to verify size advantage',
         input: resolveFixture('test_3.2MB_5000x5000.jpg'),
         operations: [
             { op: 'resize', width: 800, height: 800, fit: 'cover' },
@@ -44,7 +44,7 @@ module.exports = [
     },
     {
         name: 'png_cover_no_grayscale',
-        description: 'PNG coverリサイズ（品質のみ比較・グレースケールなし）',
+        description: 'PNG cover resize (quality comparison only, no grayscale)',
         input: resolveFixture('test_4.5MB_5000x5000.png'),
         operations: [
             { op: 'resize', width: 1600, height: 900, fit: 'cover' },
@@ -52,5 +52,28 @@ module.exports = [
         output: { format: 'png' },
         thresholds: { minSsim: 0.98, minPsnr: 30 },
         sizeRatioMax: 0.6,
+    },
+    {
+        name: 'avif_cover_rotate_grayscale',
+        description: 'PNG→AVIF cover resize + 180° rotation + grayscale',
+        input: resolveFixture('test_4.5MB_5000x5000.png'),
+        operations: [
+            { op: 'resize', width: 1200, height: 800, fit: 'cover' },
+            { op: 'rotate', degrees: 180 },
+            { op: 'grayscale' },
+        ],
+        output: { format: 'avif', quality: 60 },
+        thresholds: { minSsim: 0.90, minPsnr: 22 },
+        sizeRatioMax: 1.6,
+    },
+    {
+        name: 'jpeg_to_png_flipv',
+        description: 'JPEG→PNG conversion + vertical flip (pixel hash verification)',
+        input: resolveFixture('test_3.2MB_5000x5000.jpg'),
+        operations: [
+            { op: 'flipV' },
+        ],
+        output: { format: 'png' },
+        thresholds: { minSsim: 0.995, minPsnr: 42 },
     },
 ];
