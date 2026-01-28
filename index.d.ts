@@ -356,9 +356,7 @@ export declare class ImageEngine {
    *
    * Backward compatibility: the legacy positional signature
    *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
-   * is still accepted for now but will be removed in v2.0.0 (wasm).
-   * From v0.9.1, any new options are exposed only via the options object;
-   * the positional signature will not gain additional parameters.
+   * is still accepted for now but will be removed in a future major release.
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
