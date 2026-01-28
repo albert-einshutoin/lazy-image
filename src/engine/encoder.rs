@@ -293,7 +293,7 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 }
 
 /// Embed EXIF metadata into JPEG using img-parts
-/// 
+///
 /// Note: This function expects raw TIFF-format EXIF data (without the "Exif\0\0" header).
 /// Orientation is automatically reset to 1 if auto_orient was applied.
 /// GPS tags are stripped if strip_gps is true (default for privacy).
@@ -304,8 +304,8 @@ pub fn embed_exif_jpeg(
     strip_gps: bool,
 ) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:jpeg:embed_exif", || {
-        use img_parts::ImageEXIF;
         use img_parts::Bytes;
+        use img_parts::ImageEXIF;
 
         // Parse JPEG
         let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
@@ -362,9 +362,19 @@ fn sanitize_exif_bytes(
 
     let read_u32 = |data: &[u8], offset: usize| -> u32 {
         if is_little_endian {
-            u32::from_le_bytes([data[offset], data[offset + 1], data[offset + 2], data[offset + 3]])
+            u32::from_le_bytes([
+                data[offset],
+                data[offset + 1],
+                data[offset + 2],
+                data[offset + 3],
+            ])
         } else {
-            u32::from_be_bytes([data[offset], data[offset + 1], data[offset + 2], data[offset + 3]])
+            u32::from_be_bytes([
+                data[offset],
+                data[offset + 1],
+                data[offset + 2],
+                data[offset + 3],
+            ])
         }
     };
 

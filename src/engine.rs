@@ -44,6 +44,7 @@ pub use encoder::{
     embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
     encode_webp, QualitySettings,
 };
+pub use firewall::FirewallConfig;
 pub use io::{extract_icc_profile, extract_icc_profile_lossy, Source};
 pub use pipeline::{
     apply_ops, calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned,
@@ -394,29 +395,29 @@ mod tests {
             assert!(!validate_icc_profile(&data));
         }
 
-            #[test]
-            fn test_extract_icc_from_jpeg_no_profile() {
-                // JPEG without ICC profile
-                let jpeg_data = create_minimal_jpeg();
-                let result = extract_icc_from_jpeg(&jpeg_data);
-                assert!(result.is_none());
-            }
+        #[test]
+        fn test_extract_icc_from_jpeg_no_profile() {
+            // JPEG without ICC profile
+            let jpeg_data = create_minimal_jpeg();
+            let result = extract_icc_from_jpeg(&jpeg_data);
+            assert!(result.is_none());
+        }
 
-            #[test]
-            fn test_extract_icc_from_png_no_profile() {
-                // PNG without ICC profile
-                let png_data = create_png(2, 2);
-                let result = extract_icc_from_png(&png_data);
-                assert!(result.is_none());
-            }
+        #[test]
+        fn test_extract_icc_from_png_no_profile() {
+            // PNG without ICC profile
+            let png_data = create_png(2, 2);
+            let result = extract_icc_from_png(&png_data);
+            assert!(result.is_none());
+        }
 
-            #[test]
-            fn test_extract_icc_from_webp_no_profile() {
-                // WebP without ICC profile
-                let webp_data = create_minimal_webp();
-                let result = extract_icc_from_webp(&webp_data);
-                assert!(result.is_none());
-            }
+        #[test]
+        fn test_extract_icc_from_webp_no_profile() {
+            // WebP without ICC profile
+            let webp_data = create_minimal_webp();
+            let result = extract_icc_from_webp(&webp_data);
+            assert!(result.is_none());
+        }
 
         #[test]
         fn test_extract_icc_profile_invalid_data() {
@@ -426,15 +427,15 @@ mod tests {
             assert!(result.unwrap().is_none());
         }
 
-            #[test]
-            fn test_extract_icc_profile_jpeg() {
-                let jpeg_data = create_minimal_jpeg();
-                // Extract ICC profile from JPEG (when not present)
-                let result = extract_icc_profile(&jpeg_data);
-                // Minimal JPEG has no ICC profile
-                assert!(result.is_ok());
-                assert!(result.unwrap().is_none());
-            }
+        #[test]
+        fn test_extract_icc_profile_jpeg() {
+            let jpeg_data = create_minimal_jpeg();
+            // Extract ICC profile from JPEG (when not present)
+            let result = extract_icc_profile(&jpeg_data);
+            // Minimal JPEG has no ICC profile
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
+        }
 
         // Helper function to create a minimal valid ICC profile (sRGB)
         fn create_minimal_srgb_icc() -> Vec<u8> {

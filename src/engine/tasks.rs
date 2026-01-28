@@ -545,7 +545,9 @@ mod non_napi_tests {
     #[test]
     fn process_and_encode_outputs_image() {
         let mut task = make_task_with_decoded(OutputFormat::Png);
-        let encoded = task.process_and_encode(None).expect("encode should succeed");
+        let encoded = task
+            .process_and_encode(None)
+            .expect("encode should succeed");
         assert!(!encoded.is_empty());
     }
 

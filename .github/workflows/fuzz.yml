@@ -46,6 +46,10 @@ jobs:
           - inspect_header
           - encode_to_format
           - icc_profile
+          - batch_concurrent
+          - firewall_bypass
+          - metrics_processing
+          - streaming_pipeline
     steps:
       - uses: actions/checkout@v4
 
