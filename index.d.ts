@@ -356,32 +356,7 @@ export declare class ImageEngine {
    *
    * Backward compatibility: the legacy positional signature
    *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
-   * is still accepted for now but will be removed in v2.0.0 (wasm).
-   * From v0.9.1, any new options are exposed only via the options object;
-   * the positional signature will not gain additional parameters.
+   * is still accepted for now but will be removed in a future major release.
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
-}
-
-export function getErrorCategory(err: unknown): ErrorCategory | null
-
-export interface StreamingOperation {
-  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
-  width?: number
-  height?: number
-  fit?: string | null
-  degrees?: number
-  enabled?: boolean
-}
-
-export interface StreamingPipelineOptions {
-  format?: string
-  quality?: number
-  ops?: StreamingOperation[]
-  ImageEngine?: typeof ImageEngine
-}
-
-export function createStreamingPipeline(options: StreamingPipelineOptions): {
-  writable: import('stream').Writable
-  readable: import('stream').Readable
 }
