@@ -3,9 +3,7 @@
 // Pipeline operations: apply_ops, optimize_ops, resize calculations
 
 use crate::error::LazyImageError;
-use crate::ops::{
-    Operation, OperationContract, OperationEffect, OperationRequirement, ResizeFit,
-};
+use crate::ops::{Operation, OperationContract, OperationEffect, OperationRequirement, ResizeFit};
 use fast_image_resize::{self as fir, ImageBufferError, MulDiv, PixelType, ResizeOptions};
 use image::{DynamicImage, RgbImage, RgbaImage};
 use std::borrow::Cow;
