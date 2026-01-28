@@ -124,7 +124,7 @@ jobs:
       # The napi_tests.rs file exists for local development with Node.js installed.
 
   test:
-    name: Test
+    name: Test (Node ${{ matrix.node }})
     needs: build
     strategy:
       fail-fast: false
@@ -136,6 +136,7 @@ jobs:
             artifact: bindings-aarch64-apple-darwin
           - host: windows-latest
             artifact: bindings-x86_64-pc-windows-msvc
+        node: [18, 20, 22]
 
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 20
@@ -146,7 +147,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node }}
 
       - name: Install dependencies
         run: npm ci
