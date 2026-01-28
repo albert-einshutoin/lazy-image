@@ -44,8 +44,8 @@ pub use encoder::{
     embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
     encode_webp, QualitySettings,
 };
-pub use io::{extract_icc_profile, extract_icc_profile_lossy, Source};
 pub use firewall::FirewallConfig;
+pub use io::{extract_icc_profile, extract_icc_profile_lossy, Source};
 pub use pipeline::{
     apply_ops, calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned,
     optimize_ops, ResizeError,

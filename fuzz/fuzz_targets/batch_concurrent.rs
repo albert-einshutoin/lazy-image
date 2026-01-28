@@ -1,9 +1,12 @@
 #![no_main]
 
 use arbitrary::Arbitrary;
+use image::{ImageBuffer, Rgba};
+use lazy_image::engine::encode_png;
 use lazy_image::ops::OutputFormat;
 use libfuzzer_sys::fuzz_target;
 use rayon::prelude::*;
+use rayon::ThreadPoolBuilder;
 
 #[derive(Arbitrary, Debug)]
 struct Input {
@@ -24,12 +27,26 @@ fn format_from_byte(b: u8) -> OutputFormat {
 fuzz_target!(|input: Input| {
     // Cap items to avoid huge allocations
     let items: Vec<u8> = input.items.into_iter().take(256).collect();
-    // Exercise rayon scheduling with a simple map/reduce workload.
-    let _format = format_from_byte(input.format_byte);
-    let sum: usize = items.par_iter().map(|b| (*b as usize) ^ 0xA5).sum();
-
-    // Avoid unused warnings
-    if sum == usize::MAX {
-        panic!("unreachable");
+    if items.is_empty() {
+        return;
     }
+
+    let threads = (input.concurrency_hint as usize).clamp(1, 16);
+    let pool = ThreadPoolBuilder::new().num_threads(threads).build().unwrap();
+    let _format = format_from_byte(input.format_byte);
+
+    // Parallel encode small synthetic images to exercise encoder + thread pool paths.
+    let _sum: usize = pool.install(|| {
+        items
+            .par_iter()
+            .map(|b| {
+                let size = ((*b as u32) % 64).max(1);
+                let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+                    ImageBuffer::from_pixel(size, size, Rgba([*b, b.wrapping_mul(3), 42, 255]));
+                let dyn_img = image::DynamicImage::ImageRgba8(img);
+                let _encoded = encode_png(&dyn_img, None).ok();
+                size as usize
+            })
+            .sum()
+    });
 });
