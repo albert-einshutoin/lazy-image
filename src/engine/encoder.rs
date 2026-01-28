@@ -609,13 +609,15 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
                 .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
             unsafe {
-                let alpha_plane = avif_image.alpha_plane_mut();
+                let alpha_plane = avif_image.alpha_plane_mut().map_err(|e| {
+                    LazyImageError::encode_failed("avif".to_string(), e.to_string())
+                })?;
                 let alpha_row_bytes = avif_image.alpha_row_bytes();
                 for y in 0..height as usize {
                     for x in 0..width as usize {
                         let src_idx = (y * width as usize + x) * 4 + 3;
                         let dst_idx = y * alpha_row_bytes + x;
-                        *alpha_plane.add(dst_idx) = pixels[src_idx];
+                        *alpha_plane.as_ptr().add(dst_idx) = pixels[src_idx];
                     }
                 }
             }

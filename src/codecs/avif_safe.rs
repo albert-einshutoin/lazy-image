@@ -3,11 +3,13 @@
 // Safe abstractions for libavif FFI operations.
 // This module provides RAII-based wrappers that hide raw pointers and
 // eliminate unsafe blocks from the calling code.
+#![deny(unsafe_op_in_unsafe_fn)]
 
 use crate::engine::{MAX_DIMENSION, MAX_PIXELS};
 use crate::error::LazyImageError;
 use libavif_sys::*;
 use std::num::NonZeroU32;
+use std::ptr::NonNull;
 #[cfg(test)]
 use std::{cell::Cell, thread_local};
 
@@ -22,7 +24,7 @@ thread_local! {
 /// Safe wrapper for avifImage that manages its lifetime using RAII.
 /// This eliminates the need for unsafe blocks when working with AVIF images.
 pub struct SafeAvifImage {
-    ptr: *mut avifImage,
+    ptr: Option<NonNull<avifImage>>,
 }
 
 impl SafeAvifImage {
@@ -78,19 +80,15 @@ impl SafeAvifImage {
     ) -> Result<Self, LazyImageError> {
         let (_w, _h) = Self::validate_dimensions(width, height)?;
         let ptr = unsafe { avifImageCreate(width, height, depth, pixel_format) };
-        if ptr.is_null() {
-            return Err(LazyImageError::encode_failed(
-                "avif",
-                "Failed to create AVIF image",
-            ));
-        }
+        let ptr = NonNull::new(ptr)
+            .ok_or_else(|| LazyImageError::encode_failed("avif", "Failed to create AVIF image"))?;
         #[cfg(test)]
         TRACK_DROPS.with(|flag| {
             if flag.get() {
                 LIVE_IMAGES.with(|c| c.set(c.get() + 1));
             }
         });
-        Ok(Self { ptr })
+        Ok(Self { ptr: Some(ptr) })
     }
 
     /// Set color properties for the image.
@@ -101,11 +99,15 @@ impl SafeAvifImage {
         matrix: u16,
         yuv_range: avifRange,
     ) {
+        let image = self
+            .ptr
+            .expect("SafeAvifImage pointer was released before configuration");
         unsafe {
-            (*self.ptr).colorPrimaries = primaries;
-            (*self.ptr).transferCharacteristics = transfer;
-            (*self.ptr).matrixCoefficients = matrix;
-            (*self.ptr).yuvRange = yuv_range;
+            let raw = image.as_ptr();
+            (*raw).colorPrimaries = primaries;
+            (*raw).transferCharacteristics = transfer;
+            (*raw).matrixCoefficients = matrix;
+            (*raw).yuvRange = yuv_range;
         }
     }
 
@@ -117,7 +119,10 @@ impl SafeAvifImage {
     /// # Returns
     /// Returns `Ok(())` on success, or an error if setting the profile fails.
     pub fn set_icc_profile(&mut self, icc: &[u8]) -> Result<(), LazyImageError> {
-        let result = unsafe { avifImageSetProfileICC(self.ptr, icc.as_ptr(), icc.len()) };
+        let image = self.ptr.ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "AVIF image pointer was released")
+        })?;
+        let result = unsafe { avifImageSetProfileICC(image.as_ptr(), icc.as_ptr(), icc.len()) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
@@ -135,7 +140,10 @@ impl SafeAvifImage {
     /// # Returns
     /// Returns `Ok(())` on success, or an error if allocation fails.
     pub fn allocate_planes(&mut self, planes: u32) -> Result<(), LazyImageError> {
-        let result = unsafe { avifImageAllocatePlanes(self.ptr, planes) };
+        let image = self.ptr.ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "AVIF image pointer was released")
+        })?;
+        let result = unsafe { avifImageAllocatePlanes(image.as_ptr(), planes) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
@@ -153,7 +161,10 @@ impl SafeAvifImage {
     /// # Returns
     /// Returns `Ok(())` on success, or an error if conversion fails.
     pub fn rgb_to_yuv(&mut self, rgb: &avifRGBImage) -> Result<(), LazyImageError> {
-        let result = unsafe { avifImageRGBToYUV(self.ptr, rgb) };
+        let image = self.ptr.ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "AVIF image pointer was released")
+        })?;
+        let result = unsafe { avifImageRGBToYUV(image.as_ptr(), rgb) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
@@ -167,15 +178,22 @@ impl SafeAvifImage {
     /// This is needed for copying alpha channel data.
     ///
     /// # Safety
-    /// The caller must ensure that the alpha plane has been allocated
-    /// and that the pointer is valid for the lifetime of the image.
-    pub unsafe fn alpha_plane_mut(&mut self) -> *mut u8 {
-        (*self.ptr).alphaPlane
+    /// Caller must ensure that the alpha plane is allocated and exclusive access is held.
+    pub unsafe fn alpha_plane_mut(&mut self) -> Result<NonNull<u8>, LazyImageError> {
+        let image = self.ptr.ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "AVIF image pointer was released")
+        })?;
+        let plane_ptr = unsafe { (*image.as_ptr()).alphaPlane };
+        NonNull::new(plane_ptr)
+            .ok_or_else(|| LazyImageError::encode_failed("avif", "Alpha plane is not allocated"))
     }
 
     /// Get the alpha row bytes.
     pub fn alpha_row_bytes(&self) -> usize {
-        unsafe { (*self.ptr).alphaRowBytes as usize }
+        let image = self
+            .ptr
+            .expect("SafeAvifImage pointer was released before querying alpha rows");
+        unsafe { (*image.as_ptr()).alphaRowBytes as usize }
     }
 
     /// Get the raw pointer to the avifImage.
@@ -186,6 +204,9 @@ impl SafeAvifImage {
     /// SafeAvifImage is dropped, and that it is not used concurrently.
     pub unsafe fn as_ptr(&self) -> *const avifImage {
         self.ptr
+            .as_ref()
+            .expect("SafeAvifImage pointer was released before FFI use")
+            .as_ptr()
     }
 
     /// Get a mutable raw pointer to the avifImage.
@@ -196,19 +217,25 @@ impl SafeAvifImage {
     /// SafeAvifImage is dropped, and that it is not used concurrently.
     pub unsafe fn as_mut_ptr(&mut self) -> *mut avifImage {
         self.ptr
+            .as_mut()
+            .expect("SafeAvifImage pointer was released before FFI use")
+            .as_ptr()
+    }
+
+    #[cfg(test)]
+    pub fn take_raw_for_test(&mut self) -> *mut avifImage {
+        self.ptr.take().map_or(std::ptr::null_mut(), |p| p.as_ptr())
     }
 }
 
 impl Drop for SafeAvifImage {
     fn drop(&mut self) {
-        unsafe {
-            if !self.ptr.is_null() {
-                avifImageDestroy(self.ptr);
-            }
+        if let Some(ptr) = self.ptr.take() {
+            unsafe { avifImageDestroy(ptr.as_ptr()) };
         }
         #[cfg(test)]
         TRACK_DROPS.with(|flag| {
-            if flag.get() && !self.ptr.is_null() {
+            if flag.get() {
                 LIVE_IMAGES.with(|c| c.set(c.get().saturating_sub(1)));
             }
         });
@@ -217,7 +244,7 @@ impl Drop for SafeAvifImage {
 
 /// Safe wrapper for avifEncoder that manages its lifetime using RAII.
 pub struct SafeAvifEncoder {
-    ptr: *mut avifEncoder,
+    ptr: Option<NonNull<avifEncoder>>,
 }
 
 impl SafeAvifEncoder {
@@ -227,19 +254,16 @@ impl SafeAvifEncoder {
     /// Returns `Ok(SafeAvifEncoder)` on success, or an error if encoder creation fails.
     pub fn new() -> Result<Self, LazyImageError> {
         let ptr = unsafe { avifEncoderCreate() };
-        if ptr.is_null() {
-            return Err(LazyImageError::encode_failed(
-                "avif",
-                "Failed to create AVIF encoder",
-            ));
-        }
+        let ptr = NonNull::new(ptr).ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "Failed to create AVIF encoder")
+        })?;
         #[cfg(test)]
         TRACK_DROPS.with(|flag| {
             if flag.get() {
                 LIVE_ENCODERS.with(|c| c.set(c.get() + 1));
             }
         });
-        Ok(Self { ptr })
+        Ok(Self { ptr: Some(ptr) })
     }
 
     /// Set encoder quality settings.
@@ -250,11 +274,15 @@ impl SafeAvifEncoder {
     /// * `speed` - Encoding speed (0-10, where 0 is slowest/best)
     /// * `max_threads` - Maximum number of threads to use
     pub fn configure(&mut self, quality: u8, quality_alpha: u8, speed: i32, max_threads: i32) {
+        let encoder = self
+            .ptr
+            .expect("SafeAvifEncoder pointer was released before configuration");
         unsafe {
-            (*self.ptr).quality = quality as i32;
-            (*self.ptr).qualityAlpha = quality_alpha as i32;
-            (*self.ptr).speed = speed;
-            (*self.ptr).maxThreads = max_threads;
+            let raw = encoder.as_ptr();
+            (*raw).quality = quality as i32;
+            (*raw).qualityAlpha = quality_alpha as i32;
+            (*raw).speed = speed;
+            (*raw).maxThreads = max_threads;
         }
     }
 
@@ -273,8 +301,17 @@ impl SafeAvifEncoder {
         duration: u64,
         add_image_flags: u32,
     ) -> Result<(), LazyImageError> {
-        let result =
-            unsafe { avifEncoderAddImage(self.ptr, image.as_mut_ptr(), duration, add_image_flags) };
+        let encoder = self
+            .ptr
+            .ok_or_else(|| LazyImageError::encode_failed("avif", "AVIF encoder was released"))?;
+        let result = unsafe {
+            avifEncoderAddImage(
+                encoder.as_ptr(),
+                image.as_mut_ptr(),
+                duration,
+                add_image_flags,
+            )
+        };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
@@ -292,7 +329,10 @@ impl SafeAvifEncoder {
     /// # Returns
     /// Returns `Ok(())` on success, or an error if encoding fails.
     pub fn finish(&mut self, output: &mut SafeAvifRwData) -> Result<(), LazyImageError> {
-        let result = unsafe { avifEncoderFinish(self.ptr, output.as_mut_ptr()) };
+        let encoder = self
+            .ptr
+            .ok_or_else(|| LazyImageError::encode_failed("avif", "AVIF encoder was released"))?;
+        let result = unsafe { avifEncoderFinish(encoder.as_ptr(), output.as_mut_ptr()) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
@@ -301,18 +341,21 @@ impl SafeAvifEncoder {
         }
         Ok(())
     }
+
+    #[cfg(test)]
+    pub fn take_raw_for_test(&mut self) -> *mut avifEncoder {
+        self.ptr.take().map_or(std::ptr::null_mut(), |p| p.as_ptr())
+    }
 }
 
 impl Drop for SafeAvifEncoder {
     fn drop(&mut self) {
-        unsafe {
-            if !self.ptr.is_null() {
-                avifEncoderDestroy(self.ptr);
-            }
+        if let Some(ptr) = self.ptr.take() {
+            unsafe { avifEncoderDestroy(ptr.as_ptr()) };
         }
         #[cfg(test)]
         TRACK_DROPS.with(|flag| {
-            if flag.get() && !self.ptr.is_null() {
+            if flag.get() {
                 LIVE_ENCODERS.with(|c| c.set(c.get().saturating_sub(1)));
             }
         });
@@ -591,11 +634,11 @@ mod tests {
         assert_eq!(live_images(), 1);
 
         // Simulate an external FFI consumer that takes ownership and frees the image.
+        let raw = img.take_raw_for_test();
         unsafe {
-            avifImageDestroy(img.ptr);
+            avifImageDestroy(raw);
         }
         LIVE_IMAGES.with(|c| c.set(0));
-        img.ptr = std::ptr::null_mut();
 
         // Drop must not double free the already-released pointer.
         drop(img);
@@ -608,11 +651,11 @@ mod tests {
         let mut enc = SafeAvifEncoder::new().expect("encoder alloc should work");
         assert_eq!(live_encoders(), 1);
 
+        let raw = enc.take_raw_for_test();
         unsafe {
-            avifEncoderDestroy(enc.ptr);
+            avifEncoderDestroy(raw);
         }
         LIVE_ENCODERS.with(|c| c.set(0));
-        enc.ptr = std::ptr::null_mut();
 
         drop(enc);
         assert_eq!(live_encoders(), 0);
