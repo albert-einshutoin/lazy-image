@@ -332,7 +332,11 @@ async function runTests() {
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_empty');
         try {
-            const results = await engine.processBatch([], testDir, 'jpeg', 80, undefined, 1);
+            const results = await engine.processBatch([], testDir, {
+                format: 'jpeg',
+                quality: 80,
+                concurrency: 1,
+            });
             assert(Array.isArray(results), 'should return array');
             assert(results.length === 0, 'should return empty array for empty input');
         } finally {
@@ -356,12 +360,13 @@ async function runTests() {
         const testDir = resolveTemp('test_batch_concurrency_0');
         try {
             const results = await engine.processBatch(
-                [TEST_IMAGE], 
-                testDir, 
-                'jpeg', 
-                80, 
-                undefined, 
-                0  // concurrency=0 is valid
+                [TEST_IMAGE],
+                testDir,
+                {
+                    format: 'jpeg',
+                    quality: 80,
+                    concurrency: 0, // concurrency=0 is valid
+                }
             );
             assert(results.length === 1, 'should process 1 image');
             assert(results[0].success, 'should succeed with concurrency=0');
@@ -391,7 +396,11 @@ async function runTests() {
         
         try {
             // Concurrency > 1024 should be rejected
-            await engine.processBatch([TEST_IMAGE], testDir, 'jpeg', 80, undefined, 2000);
+            await engine.processBatch([TEST_IMAGE], testDir, {
+                format: 'jpeg',
+                quality: 80,
+                concurrency: 2000,
+            });
         } catch (e) {
             threw = true;
             errorMessage = e.message;

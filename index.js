@@ -314,11 +314,9 @@ const { ImageEngine, ErrorCategory, ErrorCode, inspect, inspectFile, version, su
 
 function getErrorCategory(err) {
   if (!err) return null
-  // Prefer explicit category field when present
   if (typeof err.category === 'number' && err.category >= 0 && err.category <= 3) {
     return err.category
   }
-  // Map string code to enum
   switch (err.code) {
     case 'LAZY_IMAGE_USER_ERROR':
       return ErrorCategory.UserError
