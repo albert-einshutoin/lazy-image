@@ -30,9 +30,9 @@
     "format": "avif"
   },
   "jpeg_to_png_flipv": {
-    "pixelHash": "1cdf3206431ced09cfc83fc80d8bd6dc3ec0a43b6d67e6c6b7869f3c1c05b741",
-    "width": 5000,
-    "height": 5000,
+    "pixelHash": "86a5cbec3bc8194c50c0d3f25a3212a88750b602556cf27fc7a0d4ba839cc22d",
+    "width": 2000,
+    "height": 2000,
     "format": "png"
   }
 }

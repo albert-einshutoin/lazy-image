@@ -68,9 +68,10 @@ module.exports = [
     },
     {
         name: 'jpeg_to_png_flipv',
-        description: 'JPEG→PNG conversion + vertical flip (pixel hash verification)',
+        description: 'JPEG→PNG conversion + resize + vertical flip (pixel hash verification, reduced memory)',
         input: resolveFixture('test_3.2MB_5000x5000.jpg'),
         operations: [
+            { op: 'resize', width: 2000, height: null, fit: 'inside' },
             { op: 'flipV' },
         ],
         output: { format: 'png' },
