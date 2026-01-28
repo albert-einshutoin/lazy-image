@@ -360,3 +360,26 @@ export declare class ImageEngine {
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
+
+export function getErrorCategory(err: unknown): ErrorCategory | null
+
+export interface StreamingOperation {
+  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
+  width?: number
+  height?: number
+  fit?: string | null
+  degrees?: number
+  enabled?: boolean
+}
+
+export interface StreamingPipelineOptions {
+  format?: string
+  quality?: number
+  ops?: StreamingOperation[]
+  ImageEngine?: typeof ImageEngine
+}
+
+export function createStreamingPipeline(options: StreamingPipelineOptions): {
+  writable: import('stream').Writable
+  readable: import('stream').Readable
+}
