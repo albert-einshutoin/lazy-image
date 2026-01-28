@@ -58,7 +58,7 @@ impl OperationContract {
 /// Image operations that can be queued for lazy execution.
 ///
 /// Design principle: each operation is self-contained and stateless.
-/// No references, no lifetimes, no bullshit.
+/// No references, no lifetimes - just plain data.
 #[derive(Clone, Debug)]
 pub enum Operation {
     /// Resize with optional width/height.
