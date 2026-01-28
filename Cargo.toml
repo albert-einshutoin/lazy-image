@@ -77,6 +77,9 @@ tempfile = "3.10"
 # Parallel processing for batch operations
 rayon = "1.8"
 
+# Lightweight static bit flags for operation contracts
+bitflags = "2.6"
+
 # Memory mapping for zero-copy file access
 memmap2 = "0.9"
 

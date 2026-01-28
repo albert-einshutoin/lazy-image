@@ -5,10 +5,60 @@
 
 use std::str::FromStr;
 
+use bitflags::bitflags;
+
+bitflags! {
+    /// Requirements an operation needs before execution.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct OperationRequirement: u32 {
+        /// Pixels must be decoded and available.
+        const DECODED_PIXELS = 0b0001;
+        /// Color state (color space + bit depth) must be tracked/known.
+        const COLOR_STATE = 0b0010;
+        /// Orientation metadata (EXIF Orientation) must be available.
+        const ORIENTATION = 0b0100;
+    }
+}
+
+bitflags! {
+    /// Effects an operation has on the pipeline state.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct OperationEffect: u32 {
+        /// Mutates pixel data (not just metadata).
+        const MUTATES_PIXELS = 0b0001;
+        /// Changes image geometry (dimensions).
+        const CHANGES_GEOMETRY = 0b0010;
+        /// Normalizes or changes color space/bit depth.
+        const NORMALIZES_COLOR = 0b0100;
+    }
+}
+
+/// Static contract describing an operation's prerequisites and side effects.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OperationContract {
+    pub name: &'static str,
+    pub requires: OperationRequirement,
+    pub effects: OperationEffect,
+}
+
+impl OperationContract {
+    pub const fn new(
+        name: &'static str,
+        requires: OperationRequirement,
+        effects: OperationEffect,
+    ) -> Self {
+        Self {
+            name,
+            requires,
+            effects,
+        }
+    }
+}
+
 /// Image operations that can be queued for lazy execution.
 ///
 /// Design principle: each operation is self-contained and stateless.
-/// No references, no lifetimes, no bullshit.
+/// No references, no lifetimes - just plain data.
 #[derive(Clone, Debug)]
 pub enum Operation {
     /// Resize with optional width/height.
@@ -64,6 +114,63 @@ pub enum Operation {
     /// Ensure RGB/RGBA pixel format (not true color space conversion)
     /// This operation only normalizes pixel format, not color space transformation.
     ColorSpace { target: ColorSpace },
+}
+
+impl Operation {
+    /// Return the static contract describing this operation.
+    pub fn contract(&self) -> OperationContract {
+        match self {
+            Operation::Resize { .. } => OperationContract::new(
+                "resize",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
+            ),
+            Operation::Extract { .. } => OperationContract::new(
+                "extract",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
+            ),
+            Operation::Crop { .. } => OperationContract::new(
+                "crop",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
+            ),
+            Operation::Rotate { .. } => OperationContract::new(
+                "rotate",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
+            ),
+            Operation::FlipH | Operation::FlipV => OperationContract::new(
+                "flip",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
+            ),
+            Operation::Brightness { .. } | Operation::Contrast { .. } => OperationContract::new(
+                "tonemap",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::NORMALIZES_COLOR,
+            ),
+            Operation::AutoOrient { .. } => OperationContract::new(
+                "auto_orient",
+                OperationRequirement::DECODED_PIXELS
+                    | OperationRequirement::COLOR_STATE
+                    | OperationRequirement::ORIENTATION,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
+            ),
+            Operation::Grayscale => OperationContract::new(
+                "grayscale",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS
+                    | OperationEffect::CHANGES_GEOMETRY
+                    | OperationEffect::NORMALIZES_COLOR,
+            ),
+            Operation::ColorSpace { .. } => OperationContract::new(
+                "color_space",
+                OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
+                OperationEffect::MUTATES_PIXELS | OperationEffect::NORMALIZES_COLOR,
+            ),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -371,7 +478,7 @@ mod tests {
 
         #[test]
         fn test_quality_range() {
-            // 品質値の範囲テスト（1-100が有効）
+            // Test quality value range (1-100 is valid)
             let format = OutputFormat::from_str("jpeg", Some(1)).unwrap();
             assert!(matches!(format, OutputFormat::Jpeg { quality: 1, .. }));
 
@@ -403,7 +510,7 @@ mod tests {
         fn test_hero_preset() {
             let preset = PresetConfig::get("hero").unwrap();
             assert_eq!(preset.width, Some(1920));
-            assert_eq!(preset.height, None); // アスペクト比維持
+            assert_eq!(preset.height, None); // Maintain aspect ratio
             assert!(matches!(
                 preset.format,
                 OutputFormat::Jpeg { quality: 85, .. }
@@ -414,7 +521,7 @@ mod tests {
         fn test_social_preset() {
             let preset = PresetConfig::get("social").unwrap();
             assert_eq!(preset.width, Some(1200));
-            assert_eq!(preset.height, Some(630)); // OGP標準サイズ
+            assert_eq!(preset.height, Some(630)); // OGP standard size
             assert!(matches!(
                 preset.format,
                 OutputFormat::Jpeg { quality: 80, .. }
@@ -467,7 +574,7 @@ mod tests {
             assert!(PresetConfig::get("unknown").is_none());
             assert!(PresetConfig::get("").is_none());
             assert!(PresetConfig::get("invalid").is_none());
-            assert!(PresetConfig::get("thumbnails").is_none()); // 複数形は無効
+            assert!(PresetConfig::get("thumbnails").is_none()); // Plural form is invalid
         }
 
         #[test]

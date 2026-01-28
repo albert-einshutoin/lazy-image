@@ -3,7 +3,9 @@
 // Pipeline operations: apply_ops, optimize_ops, resize calculations
 
 use crate::error::LazyImageError;
-use crate::ops::{Operation, ResizeFit};
+use crate::ops::{
+    Operation, OperationContract, OperationEffect, OperationRequirement, ResizeFit,
+};
 use fast_image_resize::{self as fir, ImageBufferError, MulDiv, PixelType, ResizeOptions};
 use image::{DynamicImage, RgbImage, RgbaImage};
 use std::borrow::Cow;
@@ -21,6 +23,68 @@ use tracing::debug;
 // This ensures that pipeline errors are properly classified (CodecError, UserError, etc.)
 // rather than being converted to generic InternalBug errors.
 type PipelineResult<T> = std::result::Result<T, LazyImageError>;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct OperationCapabilities {
+    decoded_pixels: bool,
+    color_state_tracked: bool,
+    orientation_available: bool,
+}
+
+impl OperationCapabilities {
+    fn with_defaults() -> Self {
+        Self {
+            decoded_pixels: true,
+            color_state_tracked: true,
+            // EXIF Orientation is parsed during decode; assume available unless stripped.
+            orientation_available: true,
+        }
+    }
+
+    fn meets(&self, contract: &OperationContract) -> bool {
+        (!contract
+            .requires
+            .contains(OperationRequirement::DECODED_PIXELS)
+            || self.decoded_pixels)
+            && (!contract
+                .requires
+                .contains(OperationRequirement::COLOR_STATE)
+                || self.color_state_tracked)
+            && (!contract
+                .requires
+                .contains(OperationRequirement::ORIENTATION)
+                || self.orientation_available)
+    }
+
+    fn apply(&mut self, contract: &OperationContract) {
+        if contract.effects.contains(OperationEffect::NORMALIZES_COLOR) {
+            self.color_state_tracked = true;
+        }
+    }
+}
+
+fn validate_operation_sequence(ops: &[Operation]) -> PipelineResult<()> {
+    let mut caps = OperationCapabilities::with_defaults();
+    validate_operation_sequence_with_caps(ops, &mut caps)
+}
+
+fn validate_operation_sequence_with_caps(
+    ops: &[Operation],
+    caps: &mut OperationCapabilities,
+) -> PipelineResult<()> {
+    for op in ops {
+        let contract = op.contract();
+        if !caps.meets(&contract) {
+            return Err(LazyImageError::invalid_argument(
+                "operation",
+                contract.name,
+                "operation prerequisites are not satisfied (missing required state)",
+            ));
+        }
+        caps.apply(&contract);
+    }
+    Ok(())
+}
 
 fn update_color_state(mut state: ColorState, op: &Operation) -> ColorState {
     match op {
@@ -412,7 +476,8 @@ pub fn apply_ops_tracked<'a>(
     #[cfg(not(feature = "cow-debug"))]
     let log_copy = |_stage: &str, _dims: (u32, u32)| {};
 
-    // Optimize operations first
+    // Validate and optimize operations first
+    validate_operation_sequence(ops)?;
     // Note: This clones ops internally, which is intentional for the immutable engine design.
     // The clone cost is low (ops are small structs) and ensures task isolation.
     let optimized_ops = optimize_ops(ops);
@@ -1115,6 +1180,33 @@ mod tests {
             // 1000:500 = 2:1, 800:400 = 2:1
             let (w, h) = calc_resize_dimensions(1000, 500, Some(800), Some(400));
             assert_eq!((w, h), (800, 400));
+        }
+    }
+
+    mod operation_contract_tests {
+        use super::*;
+
+        #[test]
+        fn validate_sequence_allows_current_ops() {
+            let ops = vec![
+                Operation::Resize {
+                    width: Some(200),
+                    height: Some(100),
+                    fit: ResizeFit::Inside,
+                },
+                Operation::Grayscale,
+                Operation::Rotate { degrees: 90 },
+            ];
+            assert!(validate_operation_sequence(&ops).is_ok());
+        }
+
+        #[test]
+        fn validate_sequence_fails_when_orientation_missing() {
+            let ops = vec![Operation::AutoOrient { orientation: 6 }];
+            let mut caps = OperationCapabilities::with_defaults();
+            caps.orientation_available = false;
+            let result = validate_operation_sequence_with_caps(&ops, &mut caps);
+            assert!(result.is_err(), "should fail without orientation metadata");
         }
     }
 

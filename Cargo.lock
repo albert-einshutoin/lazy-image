@@ -907,6 +907,7 @@ dependencies = [
 name = "lazy-image"
 version = "0.9.0"
 dependencies = [
+ "bitflags",
  "criterion",
  "fast_image_resize",
  "flate2",
