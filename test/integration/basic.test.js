@@ -405,7 +405,11 @@ async function runTests() {
             fs.mkdirSync(tempDir, { recursive: true });
         }
         const invalidPath = '/nonexistent/batch-input.jpg';
-        const results = await engine.processBatch([invalidPath], tempDir, 'jpeg', 80, undefined, 1);
+        const results = await engine.processBatch([invalidPath], tempDir, {
+            format: 'jpeg',
+            quality: 80,
+            concurrency: 1,
+        });
         assert.strictEqual(results.length, 1, 'should return one result');
         const result = results[0];
         assert.strictEqual(result.success, false, 'result should be marked as failure');
@@ -507,10 +511,11 @@ async function runTests() {
             const results = await engine.processBatch(
                 [TEST_IMAGE, TEST_IMAGE],
                 testDir,
-                'jpeg',
-                80,
-                undefined,  // fastMode (optional)
-                2  // concurrency
+                {
+                    format: 'jpeg',
+                    quality: 80,
+                    concurrency: 2, // custom worker count
+                }
             );
             assert(results.length === 2, 'should process 2 images');
             assert(results.every(r => r.success), 'all should succeed');
@@ -535,10 +540,11 @@ async function runTests() {
             const results = await engine.processBatch(
                 [TEST_IMAGE, TEST_IMAGE],
                 testDir,
-                'jpeg',
-                80,
-                undefined,  // fastMode (optional)
-                0  // auto-detect
+                {
+                    format: 'jpeg',
+                    quality: 80,
+                    concurrency: 0, // auto-detect
+                }
             );
             assert(results.length === 2, 'should process 2 images');
             assert(results.every(r => r.success), 'all should succeed');

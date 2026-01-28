@@ -56,10 +56,17 @@ node your-app.js
 ```javascript
 // Default: automatically calculates safe thread count
 // Prevents oversubscription by reserving threads for libuv
-const results = await engine.processBatch(files, outDir, 'webp', 80);
+const results = await engine.processBatch(files, outDir, {
+  format: 'webp',
+  quality: 80,
+});
 
 // Limit concurrency explicitly (memory-constrained environments)
-const results = await engine.processBatch(files, outDir, 'webp', 80, 4);
+const results = await engine.processBatch(files, outDir, {
+  format: 'webp',
+  quality: 80,
+  concurrency: 4,
+});
 ```
 
 - **Concurrency parameter**:
@@ -119,7 +126,11 @@ In containerized environments, Node.js and Rust may see different CPU counts:
 ```javascript
 // In Docker/Kubernetes, don't rely on defaults
 const CONCURRENCY = parseInt(process.env.CONCURRENCY || '4');
-await engine.processBatch(files, outDir, 'webp', 80, CONCURRENCY);
+await engine.processBatch(files, outDir, {
+  format: 'webp',
+  quality: 80,
+  concurrency: CONCURRENCY,
+});
 ```
 
 ### Docker Resource Configuration
@@ -173,11 +184,18 @@ await ImageEngine.from(buffer).toBuffer('jpeg', 80);
 
 ```javascript
 // ✅ Good: Explicit concurrency control (recommended for production)
-await engine.processBatch(files, outDir, 'webp', 80, 4);
+await engine.processBatch(files, outDir, {
+  format: 'webp',
+  quality: 80,
+  concurrency: 4,
+});
 
 // ✅ Also Good: Default now automatically balances threads
 // Safe for most use cases, but explicit is better in containers
-await engine.processBatch(manyLargeFiles, outDir, 'webp', 80);
+await engine.processBatch(manyLargeFiles, outDir, {
+  format: 'webp',
+  quality: 80,
+});
 ```
 
 ### 3. Monitor Memory in Production
@@ -234,7 +252,11 @@ For fine-grained control, set environment variables:
 export UV_THREADPOOL_SIZE=8
 
 # Explicitly set concurrency in code
-await engine.processBatch(files, outDir, 'webp', 80, 4);
+await engine.processBatch(files, outDir, {
+  format: 'webp',
+  quality: 80,
+  concurrency: 4,
+});
 ```
 
 **Best Practice**: The default behavior (`concurrency=0`) automatically respects cgroup/CPU quotas, making it safe for most containerized environments. However, for fine-grained control or memory-constrained environments, explicitly setting `concurrency` is still recommended.

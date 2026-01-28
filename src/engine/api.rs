@@ -860,25 +860,40 @@ impl ImageEngine {
     ///
     /// - inputs: Array of input file paths
     /// - output_dir: Directory to write processed images
-    /// - format: Output format ("jpeg", "png", "webp", "avif")
-    /// - quality: Optional quality (1-100, uses format-specific default if None)
-    /// - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
-    /// - concurrency: Optional number of parallel workers:
-    ///   - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
-    ///     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
-    ///     Ideal for serverless/containerized environments with memory constraints.
-    ///   - 1-1024: Manual override - use specified number of concurrent operations
+    /// - options: Output settings
+    ///   - format: Output format ("jpeg", "png", "webp", "avif")
+    ///   - quality: Optional quality (1-100, uses format-specific default if None)
+    ///   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
+    ///   - concurrency: Optional number of parallel workers:
+    ///     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+    ///       Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+    ///       Ideal for serverless/containerized environments with memory constraints.
+    ///     - 1-1024: Manual override - use specified number of concurrent operations
+    ///
+    /// Backward compatibility: the legacy positional signature
+    ///   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
+    /// is still accepted for now but will be removed in a future major release.
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
         env: Env,
         inputs: Vec<String>,
         output_dir: String,
-        format: String,
+        options_or_format: Either<BatchOptions, String>,
         quality: Option<u8>,
         fast_mode: Option<bool>,
         concurrency: Option<u32>,
     ) -> Result<AsyncTask<BatchTask>> {
+        let (format, quality, fast_mode, concurrency) = match options_or_format {
+            Either::A(options) => (
+                options.format,
+                options.quality,
+                options.fast_mode,
+                options.concurrency,
+            ),
+            Either::B(format) => (format, quality, fast_mode, concurrency),
+        };
+
         let fast_mode = fast_mode.unwrap_or(false);
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
@@ -940,6 +955,20 @@ pub struct PresetResult {
     pub width: Option<u32>,
     /// Target height (None if aspect ratio preserved)
     pub height: Option<u32>,
+}
+
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct BatchOptions {
+    /// Output format ("jpeg", "png", "webp", "avif")
+    pub format: String,
+    /// Optional quality (1-100), uses format default when omitted
+    pub quality: Option<u8>,
+    /// Optional fast mode flag (JPEG only, default: false)
+    pub fast_mode: Option<bool>,
+    /// Optional number of parallel workers:
+    /// 0/undefined = auto-detect, 1-1024 = manual override
+    pub concurrency: Option<u32>,
 }
 
 // =============================================================================

@@ -42,6 +42,19 @@ export interface PresetResult {
   /** Target height (None if aspect ratio preserved) */
   height?: number
 }
+export interface BatchOptions {
+  /** Output format ("jpeg", "png", "webp", "avif") */
+  format: string
+  /** Optional quality (1-100), uses format default when omitted */
+  quality?: number
+  /** Optional fast mode flag (JPEG only, default: false) */
+  fastMode?: boolean
+  /**
+   * Optional number of parallel workers:
+   * 0/undefined = auto-detect, 1-1024 = manual override
+   */
+  concurrency?: number
+}
 export interface BatchResult {
   source: string
   success: boolean
@@ -331,14 +344,44 @@ export declare class ImageEngine {
    *
    * - inputs: Array of input file paths
    * - output_dir: Directory to write processed images
-   * - format: Output format ("jpeg", "png", "webp", "avif")
-   * - quality: Optional quality (1-100, uses format-specific default if None)
-   * - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
-   * - concurrency: Optional number of parallel workers:
-   *   - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
-   *     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
-   *     Ideal for serverless/containerized environments with memory constraints.
-   *   - 1-1024: Manual override - use specified number of concurrent operations
+   * - options: Output settings
+   *   - format: Output format ("jpeg", "png", "webp", "avif")
+   *   - quality: Optional quality (1-100, uses format-specific default if None)
+   *   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
+   *   - concurrency: Optional number of parallel workers:
+   *     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+   *       Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+   *       Ideal for serverless/containerized environments with memory constraints.
+   *     - 1-1024: Manual override - use specified number of concurrent operations
+   *
+   * Backward compatibility: the legacy positional signature
+   *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
+   * is still accepted for now but will be removed in v2.0.0 (wasm).
+   * From v0.9.1, any new options are exposed only via the options object;
+   * the positional signature will not gain additional parameters.
    */
-  processBatch(inputs: Array<string>, outputDir: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+}
+
+export function getErrorCategory(err: unknown): ErrorCategory | null
+
+export interface StreamingOperation {
+  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
+  width?: number
+  height?: number
+  fit?: string | null
+  degrees?: number
+  enabled?: boolean
+}
+
+export interface StreamingPipelineOptions {
+  format?: string
+  quality?: number
+  ops?: StreamingOperation[]
+  ImageEngine?: typeof ImageEngine
+}
+
+export function createStreamingPipeline(options: StreamingPipelineOptions): {
+  writable: import('stream').Writable
+  readable: import('stream').Readable
 }

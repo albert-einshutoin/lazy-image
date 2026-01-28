@@ -454,8 +454,10 @@ const engine = ImageEngine.fromPath('dummy.jpg') // or use any existing image
 const results = await engine.processBatch(
   ['img1.jpg', 'img2.jpg', 'img3.jpg'],
   './output',
-  'webp',
-  80  // quality (optional, uses format default if omitted)
+  {
+    format: 'webp',
+    quality: 80, // optional, uses format default if omitted
+  }
 );
 
 // Control concurrency (v0.7.3+)
@@ -463,9 +465,11 @@ const results = await engine.processBatch(
 const results2 = await engine.processBatch(
   ['img1.jpg', 'img2.jpg', 'img3.jpg'],
   './output',
-  'webp',
-  80,
-  4  // concurrency: number of parallel workers (0 = use CPU cores)
+  {
+    format: 'webp',
+    quality: 80,
+    concurrency: 4, // number of parallel workers (0 = auto)
+  }
 );
 
 results.forEach(r => {
@@ -531,7 +535,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Quality defaults: JPEG=85, WebP=80, AVIF=60. If quality is omitted, format-specific default is used. |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
-| `.processBatch(inputs, outDir, format, quality?, concurrency?)` | Process multiple images in parallel. `inputs`: array of file paths. `concurrency`: number of workers (0 or undefined = CPU cores). Returns array of `BatchResult` |
+| `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. `inputs`: array of file paths. `concurrency`: number of workers (0 or undefined = CPU cores). Returns array of `BatchResult`. Legacy positional signature is deprecated and will be removed in v2.0.0 (wasm). **From v0.9.1, all new options are exposed only via the options object; the positional signature will not receive additional parameters.** |
 | `.clone()` | Clone the engine for multi-output |
 
 ### Utilities

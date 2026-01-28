@@ -59,10 +59,11 @@ async function testTypeSafety() {
     const batchResults = await batchEngine.processBatch(
         [imagePath],
         path.resolve(__dirname, '../../.tmp/type-safety-batch'),
-        'jpeg', // OutputFormat型として扱われる
-        85,
-        undefined, // fastMode (optional)
-        2
+        {
+            format: 'jpeg', // OutputFormat型として扱われる
+            quality: 85,
+            concurrency: 2,
+        }
     );
     
     console.log(`Batch processing: ${batchResults.length} results`);
