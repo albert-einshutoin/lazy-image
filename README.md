@@ -609,6 +609,8 @@ interface OutputWithMetrics {
   metrics: ProcessingMetrics;
 }
 
+```
+
 ## Quality Metrics (SSIM/PSNR)
 
 lazy-image enforces quality parity with sharp via benchmark gates:
