@@ -199,25 +199,6 @@ impl<'m> MetricsRecorder<'m> {
     }
 }
 
-// Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
-#[cfg(feature = "napi")]
-#[allow(dead_code)]
-type EngineResult<T> = Result<T>;
-#[cfg(not(feature = "napi"))]
-type EngineResult<T> = std::result::Result<T, LazyImageError>;
-
-// Helper function to convert LazyImageError to the appropriate error type
-#[cfg(feature = "napi")]
-#[allow(dead_code)]
-fn to_engine_error(err: LazyImageError) -> napi::Error {
-    napi::Error::from(err)
-}
-
-#[cfg(not(feature = "napi"))]
-fn to_engine_error(err: LazyImageError) -> LazyImageError {
-    err
-}
-
 // Re-export BatchResult for api.rs
 #[cfg(feature = "napi")]
 #[napi(object)]
@@ -309,22 +290,10 @@ impl EncodeTask {
         Ok(Cow::Owned(img))
     }
 
-    /// Decode image from source bytes (public API for backward compatibility)
-    /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
-    ///
-    /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
-    /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
-    /// when no mutation is needed (e.g., format conversion only).
-    #[allow(dead_code)] // Used in tests in engine.rs
-    pub(crate) fn decode(&self) -> EngineResult<Cow<'_, DynamicImage>> {
-        self.decode_internal().map_err(to_engine_error)
-    }
-
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
     /// Returns LazyImageError directly (not wrapped in napi::Error) so that
     /// Task::reject can properly create error objects with code/category.
-    #[cfg_attr(not(any(feature = "napi", feature = "stress")), allow(dead_code))]
     pub(crate) fn process_and_encode(
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
@@ -456,6 +425,14 @@ impl EncodeTask {
         );
 
         Ok(result)
+    }
+}
+
+// Test-only helper for decode assertions in engine.rs tests.
+#[cfg(test)]
+impl EncodeTask {
+    pub(crate) fn decode(&self) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
+        self.decode_internal()
     }
 }
 
@@ -596,7 +573,6 @@ mod non_napi_tests {
     }
 }
 
-#[allow(dead_code)]
 pub struct EncodeWithMetricsTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
@@ -682,7 +658,6 @@ impl Task for EncodeWithMetricsTask {
     }
 }
 
-#[allow(dead_code)]
 pub struct WriteFileTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
@@ -814,7 +789,6 @@ impl Task for WriteFileTask {
     }
 }
 
-#[allow(dead_code)]
 pub struct BatchTask {
     pub inputs: Vec<String>,
     pub output_dir: String,
