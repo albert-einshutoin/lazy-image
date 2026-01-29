@@ -236,6 +236,7 @@ Only the binary for your platform is downloaded.
 | `@alberteinshutoin/lazy-image-darwin-x64` | ~8.5 MB | macOS Intel |
 | `@alberteinshutoin/lazy-image-win32-x64-msvc` | ~9.1 MB | Windows x64 |
 | `@alberteinshutoin/lazy-image-linux-x64-gnu` | ~9.1 MB | Linux x64 (glibc) |
+| `@alberteinshutoin/lazy-image-linux-arm64-gnu` | ~9.1 MB (est.) | Linux ARM64 (glibc) |
 | `@alberteinshutoin/lazy-image-linux-x64-musl` | ~9.1 MB | Linux x64 (musl/Alpine) |
 
 **Total download**: ~6-9 MB (one platform only)
@@ -1044,6 +1045,7 @@ This limitation does not affect Linux or macOS.
 | macOS | arm64 (Apple Silicon) | ✅ |
 | Windows | x64 | ✅ |
 | Linux | x64 (glibc) | ✅ |
+| Linux | arm64 (glibc) | ✅ |
 | Linux | x64 (musl/Alpine) | ✅ |
 
 ### Architecture
