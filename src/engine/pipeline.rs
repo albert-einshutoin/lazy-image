@@ -940,7 +940,7 @@ fn fast_resize_internal_impl(
 
     match primary_result {
         Ok(img) => Ok(img),
-        Err(err) if err.to_lowercase().contains("alignment") => resize_with_image_crate_fallback(
+        Err(err) => resize_with_image_crate_fallback(
             &src_pixels,
             src_width,
             src_height,
@@ -949,7 +949,6 @@ fn fast_resize_internal_impl(
             dst_height,
         )
         .map_err(|fallback_err| format!("{err}; image crate fallback failed: {fallback_err}")),
-        Err(err) => Err(err),
     }
 }
 
