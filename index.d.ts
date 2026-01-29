@@ -118,6 +118,27 @@ export const enum ErrorCode {
   InternalPanic = 901,
   Generic = 999
 }
+
+/** Supported output formats for encoding */
+export type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif'
+/** Supported input formats for decoding */
+export type InputFormat =
+  | 'jpeg'
+  | 'jpg'
+  | 'png'
+  | 'webp'
+  | 'avif'
+  | 'gif'
+  | 'tiff'
+  | 'bmp'
+  | 'ico'
+  | 'pnm'
+  | 'tga'
+/** Preset names available in the library */
+export type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
+/** Resize fit options */
+export type ResizeFit = 'inside' | 'cover' | 'fill'
+
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
@@ -188,17 +209,35 @@ export interface ProcessingMetrics {
   metadataStripped: boolean
   /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
   policyViolations: Array<string>
-  /** Time taken to decode the image (milliseconds) - legacy alias of decode_ms */
+  /**
+   * @deprecated Renamed to `decodeMs` and will be removed in v2.0.0.
+   * Time taken to decode the image (milliseconds).
+   */
   decodeTime: number
-  /** Time taken to apply all operations (milliseconds) - legacy alias of ops_ms */
+  /**
+   * @deprecated Renamed to `opsMs` and will be removed in v2.0.0.
+   * Time taken to apply all operations (milliseconds).
+   */
   processTime: number
-  /** Time taken to encode the image (milliseconds) - legacy alias of encode_ms */
+  /**
+   * @deprecated Renamed to `encodeMs` and will be removed in v2.0.0.
+   * Time taken to encode the image (milliseconds).
+   */
   encodeTime: number
-  /** Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss */
+  /**
+   * @deprecated Renamed to `peakRss` and will be removed in v2.0.0.
+   * Peak memory usage during processing (RSS, bytes).
+   */
   memoryPeak: number
-  /** Input size legacy alias (bytes_in) */
+  /**
+   * @deprecated Renamed to `bytesIn` and will be removed in v2.0.0.
+   * Input size in bytes.
+   */
   inputSize: number
-  /** Output size legacy alias (bytes_out) */
+  /**
+   * @deprecated Renamed to `bytesOut` and will be removed in v2.0.0.
+   * Output size in bytes.
+   */
   outputSize: number
 }
 export interface OutputWithMetrics {
@@ -288,7 +327,7 @@ export declare class ImageEngine {
    */
   normalizePixelFormat(): ImageEngine
   /**
-   * Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
+   * @deprecated Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
    * Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
    */
   ensureRgb(): ImageEngine
@@ -364,4 +403,27 @@ export declare class ImageEngine {
    * is still accepted for now but will be removed in a future major release.
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+}
+
+export function getErrorCategory(err: unknown): ErrorCategory | null
+
+export interface StreamingOperation {
+  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
+  width?: number
+  height?: number
+  fit?: string | null
+  degrees?: number
+  enabled?: boolean
+}
+
+export interface StreamingPipelineOptions {
+  format?: string
+  quality?: number
+  ops?: StreamingOperation[]
+  ImageEngine?: typeof ImageEngine
+}
+
+export function createStreamingPipeline(options: StreamingPipelineOptions): {
+  writable: import('stream').Writable
+  readable: import('stream').Readable
 }
