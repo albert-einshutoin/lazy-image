@@ -52,8 +52,6 @@ fn validate_buffer_len(
 #[derive(Debug, Clone, Copy)]
 pub struct QualitySettings {
     quality: f32,
-    #[allow(dead_code)] // Reserved for future use (e.g., WebP/AVIF fast mode)
-    fast_mode: bool, // Fast mode flag for JPEG encoding
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -69,16 +67,6 @@ impl QualitySettings {
         let clamped = quality.min(100);
         Self {
             quality: clamped as f32,
-            fast_mode: false, // Default: high quality mode
-        }
-    }
-
-    /// Create with fast mode option
-    pub fn with_fast_mode(quality: u8, fast_mode: bool) -> Self {
-        let clamped = quality.min(100);
-        Self {
-            quality: clamped as f32,
-            fast_mode,
         }
     }
 

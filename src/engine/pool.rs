@@ -101,8 +101,7 @@ pub fn get_pool() -> Arc<ThreadPool> {
 
 /// Explicitly drop the global thread pool so it can be re-created.
 /// This is primarily used in tests and controlled lifecycles (e.g., module reload).
-#[cfg(feature = "napi")]
-#[allow(dead_code)]
+#[cfg(all(test, feature = "napi"))]
 pub(crate) fn shutdown_global_pool() {
     if let Some(pool) = pool_cell().write().take() {
         drop(pool);
@@ -112,8 +111,7 @@ pub(crate) fn shutdown_global_pool() {
 /// Drop and immediately reinitialize the global thread pool.
 /// Useful for scenarios where environment variables (like UV_THREADPOOL_SIZE)
 /// change at runtime and need to be respected by a fresh pool instance.
-#[cfg(feature = "napi")]
-#[allow(dead_code)]
+#[cfg(all(test, feature = "napi"))]
 pub(crate) fn reinitialize_global_pool() -> Arc<ThreadPool> {
     shutdown_global_pool();
     get_pool()

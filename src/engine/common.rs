@@ -5,20 +5,17 @@
 
 use crate::error::LazyImageError;
 
-#[cfg(feature = "napi")]
-use napi::bindgen_prelude::*;
 use std::any::Any;
 use std::panic::{self, AssertUnwindSafe};
 
 /// Unified Result type that works with or without NAPI.
 /// When NAPI is enabled, uses napi::Result.
 /// When NAPI is disabled, uses std::result::Result<T, LazyImageError>.
-#[cfg(feature = "napi")]
-#[allow(dead_code)]
-pub type EngineResult<T> = Result<T>;
+// Only needed by stress tooling; avoid compiling in non-stress builds to prevent dead_code warnings.
+#[cfg(all(feature = "stress", feature = "napi"))]
+pub type EngineResult<T> = napi::Result<T>;
 
-#[cfg(not(feature = "napi"))]
-#[allow(dead_code)]
+#[cfg(all(feature = "stress", not(feature = "napi")))]
 pub type EngineResult<T> = std::result::Result<T, LazyImageError>;
 
 // to_engine_error removed - it was unused.
@@ -65,7 +62,7 @@ macro_rules! convert_result {
     ($result:expr) => {{
         #[cfg(feature = "napi")]
         {
-            $result.map_err(|e| crate::error::LazyImageError::decode_failed(e.to_string()))?
+            $result.map_err(|e| $crate::error::LazyImageError::decode_failed(e.to_string()))?
         }
         #[cfg(not(feature = "napi"))]
         {

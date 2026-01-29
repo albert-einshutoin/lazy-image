@@ -67,7 +67,6 @@ fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
 ///   .toBuffer('jpeg', 75);
 /// ```
 #[cfg_attr(feature = "napi", napi)]
-#[allow(dead_code)]
 pub struct ImageEngine {
     /// Image source - supports in-memory data and memory-mapped files
     pub(crate) source: Option<Source>,
@@ -975,97 +974,7 @@ pub struct BatchOptions {
 // INTERNAL IMPLEMENTATION
 // =============================================================================
 
-impl ImageEngine {
-    /// Get source as a byte slice - zero-copy for Memory and Mapped sources
-    #[cfg(feature = "napi")]
-    fn ensure_source_slice(&mut self) -> Result<&[u8]> {
-        // Get bytes directly (zero-copy for Memory and Mapped)
-        if let Some(source) = &self.source {
-            if let Some(bytes) = source.as_bytes() {
-                // Extract ICC profile if not already extracted
-                if self.icc_profile.is_none() {
-                    self.icc_profile = extract_icc_profile_lossy(bytes).map(Arc::new);
-                }
-                return Ok(bytes);
-            }
-        }
-        Err(napi::Error::from(LazyImageError::source_consumed()))
-    }
-
-    #[cfg(feature = "napi")]
-    #[allow(dead_code)]
-    fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
-        if self.decoded.is_none() {
-            // Get source bytes as slice - zero-copy for Memory and Mapped
-            let bytes = self.ensure_source_slice()?;
-
-            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
-
-            let (img, _detected_format) =
-                crate::engine::decoder::decode_image(bytes).map_err(napi::Error::from)?;
-
-            // Security check: reject decompression bombs
-            let (w, h) = img.dimensions();
-            crate::engine::decoder::check_dimensions(w, h)?;
-
-            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
-            self.decoded = Some(Arc::new(img));
-        }
-
-        // Safe: we just set it above, use ok_or for safety
-        // Return reference to inner DynamicImage
-        self.decoded
-            .as_ref()
-            .map(|arc| arc.as_ref())
-            .ok_or_else(|| {
-                napi::Error::from(LazyImageError::internal_panic("decode failed unexpectedly"))
-            })
-    }
-
-    /// Get source as a byte slice - zero-copy for Memory and Mapped sources
-    #[cfg(not(feature = "napi"))]
-    #[allow(dead_code)]
-    fn ensure_source_slice(&mut self) -> std::result::Result<&[u8], LazyImageError> {
-        // Get bytes directly (zero-copy for Memory and Mapped)
-        if let Some(source) = &self.source {
-            if let Some(bytes) = source.as_bytes() {
-                // Extract ICC profile if not already extracted
-                if self.icc_profile.is_none() {
-                    self.icc_profile = extract_icc_profile_lossy(bytes).map(Arc::new);
-                }
-                return Ok(bytes);
-            }
-        }
-        Err(LazyImageError::source_consumed())
-    }
-
-    #[cfg(not(feature = "napi"))]
-    #[allow(dead_code)]
-    fn ensure_decoded(&mut self) -> std::result::Result<&DynamicImage, LazyImageError> {
-        if self.decoded.is_none() {
-            // Get source bytes as slice - zero-copy for Memory and Mapped
-            let bytes = self.ensure_source_slice()?;
-
-            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
-
-            let (img, _detected_format) = crate::engine::decoder::decode_image(bytes)?;
-
-            // Security check: reject decompression bombs
-            let (w, h) = img.dimensions();
-            crate::engine::decoder::check_dimensions(w, h)?;
-
-            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
-            self.decoded = Some(Arc::new(img));
-        }
-
-        // Safe: we just set it above, use ok_or for safety
-        // Return reference to inner DynamicImage
-        self.decoded
-            .as_ref()
-            .map(|arc| arc.as_ref())
-            .ok_or_else(|| LazyImageError::internal_panic("decode failed unexpectedly"))
-    }
-}
+impl ImageEngine {}
 
 #[cfg(test)]
 mod tests {

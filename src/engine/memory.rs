@@ -37,7 +37,6 @@ const BPP_AVIF: u64 = 4;
 const BPP_UNKNOWN: u64 = 4;
 
 /// Minimum safe concurrency when memory is very constrained
-#[allow(dead_code)]
 const MIN_SAFE_CONCURRENCY: usize = 1;
 
 /// Maximum safe concurrency based on memory (even if CPU allows more)
@@ -299,7 +298,6 @@ fn estimate_memory_from_dimensions_with_context(
 
 /// Simple wrapper for callers without format/ops context (kept for compatibility in tests)
 #[cfg(test)]
-#[allow(dead_code)]
 pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
     estimate_memory_from_dimensions_with_context(width, height, None, &[], None)
 }
