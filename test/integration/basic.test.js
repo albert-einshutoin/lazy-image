@@ -216,6 +216,22 @@ async function runTests() {
         }
     });
 
+    await asyncTest('toBufferWithPreset() applies preset defaults', async () => {
+        const result = await ImageEngine.from(buffer).toBufferWithPreset('thumbnail');
+        assert(result.length > 0, 'output should have content');
+    });
+
+    await asyncTest('toFileWithPreset() writes file with preset defaults', async () => {
+        const outPath = resolveTemp('preset_output.webp');
+        try {
+            const bytes = await ImageEngine.fromPath(TEST_IMAGE).toFileWithPreset(outPath, 'avatar');
+            assert(bytes > 0, 'file should be written');
+            assert(fs.existsSync(outPath), 'output file should exist');
+        } finally {
+            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        }
+    });
+
     await asyncTest('fromPath() works', async () => {
         const result = await ImageEngine.fromPath(TEST_IMAGE)
             .resize(100)

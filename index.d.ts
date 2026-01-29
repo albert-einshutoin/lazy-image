@@ -42,6 +42,42 @@ export interface PresetResult {
   /** Target height (None if aspect ratio preserved) */
   height?: number
 }
+/** Result of applying a preset and encoding to buffer */
+export interface PresetBufferResult {
+  /** Encoded image data */
+  data: Buffer
+  /** Recommended output format */
+  format: string
+  /** Recommended quality (None for PNG) */
+  quality?: number
+  /** Target width (None if aspect ratio preserved) */
+  width?: number
+  /** Target height (None if aspect ratio preserved) */
+  height?: number
+}
+
+/** Supported output formats for encoding */
+export type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif'
+
+/** Supported input formats for decoding */
+export type InputFormat =
+  | 'jpeg'
+  | 'jpg'
+  | 'png'
+  | 'webp'
+  | 'avif'
+  | 'gif'
+  | 'tiff'
+  | 'bmp'
+  | 'ico'
+  | 'pnm'
+  | 'tga'
+
+/** Preset names available in the library */
+export type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
+
+/** Resize fit options */
+export type ResizeFit = 'inside' | 'cover' | 'fill'
 export interface BatchOptions {
   /** Output format ("jpeg", "png", "webp", "avif") */
   format: string
@@ -118,27 +154,6 @@ export const enum ErrorCode {
   InternalPanic = 901,
   Generic = 999
 }
-
-/** Supported output formats for encoding */
-export type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif'
-/** Supported input formats for decoding */
-export type InputFormat =
-  | 'jpeg'
-  | 'jpg'
-  | 'png'
-  | 'webp'
-  | 'avif'
-  | 'gif'
-  | 'tiff'
-  | 'bmp'
-  | 'ico'
-  | 'pnm'
-  | 'tga'
-/** Preset names available in the library */
-export type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
-/** Resize fit options */
-export type ResizeFit = 'inside' | 'cover' | 'fill'
-
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
@@ -209,35 +224,17 @@ export interface ProcessingMetrics {
   metadataStripped: boolean
   /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
   policyViolations: Array<string>
-  /**
-   * @deprecated Renamed to `decodeMs` and will be removed in v2.0.0.
-   * Time taken to decode the image (milliseconds).
-   */
+  /** Time taken to decode the image (milliseconds) - legacy alias of decode_ms */
   decodeTime: number
-  /**
-   * @deprecated Renamed to `opsMs` and will be removed in v2.0.0.
-   * Time taken to apply all operations (milliseconds).
-   */
+  /** Time taken to apply all operations (milliseconds) - legacy alias of ops_ms */
   processTime: number
-  /**
-   * @deprecated Renamed to `encodeMs` and will be removed in v2.0.0.
-   * Time taken to encode the image (milliseconds).
-   */
+  /** Time taken to encode the image (milliseconds) - legacy alias of encode_ms */
   encodeTime: number
-  /**
-   * @deprecated Renamed to `peakRss` and will be removed in v2.0.0.
-   * Peak memory usage during processing (RSS, bytes).
-   */
+  /** Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss */
   memoryPeak: number
-  /**
-   * @deprecated Renamed to `bytesIn` and will be removed in v2.0.0.
-   * Input size in bytes.
-   */
+  /** Input size legacy alias (bytes_in) */
   inputSize: number
-  /**
-   * @deprecated Renamed to `bytesOut` and will be removed in v2.0.0.
-   * Output size in bytes.
-   */
+  /** Output size legacy alias (bytes_out) */
   outputSize: number
 }
 export interface OutputWithMetrics {
@@ -327,7 +324,7 @@ export declare class ImageEngine {
    */
   normalizePixelFormat(): ImageEngine
   /**
-   * @deprecated Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
+   * Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
    * Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
    */
   ensureRgb(): ImageEngine
@@ -354,6 +351,11 @@ export declare class ImageEngine {
    */
   toBuffer(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>
   /**
+   * Convenience: encode using the last applied preset by name.
+   * Equivalent to calling `preset(name)` then `toBuffer(preset.format, preset.quality)`.
+   */
+  toBufferWithPreset(presetName: string): Promise<Buffer>
+  /**
    * Encode to buffer asynchronously with performance metrics.
    * Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
    *
@@ -361,6 +363,11 @@ export declare class ImageEngine {
    * The source data is cloned internally, allowing multiple format outputs.
    */
   toBufferWithMetrics(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>
+  /**
+   * Convenience: encode with metrics using a preset name.
+   * Equivalent to `preset(name)` then `toBufferWithMetrics(preset.format, preset.quality)`.
+   */
+  toBufferWithMetricsPreset(presetName: string): Promise<OutputWithMetrics>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -372,6 +379,8 @@ export declare class ImageEngine {
    * Returns the number of bytes written.
    */
   toFile(path: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
+  /** Convenience: encode to file using the preset's recommended format/quality. */
+  toFileWithPreset(path: string, presetName: string): Promise<number>
   /**
    * Get image dimensions WITHOUT full decoding.
    * For file paths, reads only the header bytes (extremely fast).
@@ -403,27 +412,4 @@ export declare class ImageEngine {
    * is still accepted for now but will be removed in a future major release.
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
-}
-
-export function getErrorCategory(err: unknown): ErrorCategory | null
-
-export interface StreamingOperation {
-  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
-  width?: number
-  height?: number
-  fit?: string | null
-  degrees?: number
-  enabled?: boolean
-}
-
-export interface StreamingPipelineOptions {
-  format?: string
-  quality?: number
-  ops?: StreamingOperation[]
-  ImageEngine?: typeof ImageEngine
-}
-
-export function createStreamingPipeline(options: StreamingPipelineOptions): {
-  writable: import('stream').Writable
-  readable: import('stream').Readable
 }
