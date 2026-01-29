@@ -188,17 +188,35 @@ export interface ProcessingMetrics {
   metadataStripped: boolean
   /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
   policyViolations: Array<string>
-  /** Time taken to decode the image (milliseconds) - legacy alias of decode_ms */
+  /**
+   * @deprecated Renamed to `decodeMs` and will be removed in v2.0.0.
+   * Time taken to decode the image (milliseconds).
+   */
   decodeTime: number
-  /** Time taken to apply all operations (milliseconds) - legacy alias of ops_ms */
+  /**
+   * @deprecated Renamed to `opsMs` and will be removed in v2.0.0.
+   * Time taken to apply all operations (milliseconds).
+   */
   processTime: number
-  /** Time taken to encode the image (milliseconds) - legacy alias of encode_ms */
+  /**
+   * @deprecated Renamed to `encodeMs` and will be removed in v2.0.0.
+   * Time taken to encode the image (milliseconds).
+   */
   encodeTime: number
-  /** Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss */
+  /**
+   * @deprecated Renamed to `peakRss` and will be removed in v2.0.0.
+   * Peak memory usage during processing (RSS, bytes).
+   */
   memoryPeak: number
-  /** Input size legacy alias (bytes_in) */
+  /**
+   * @deprecated Renamed to `bytesIn` and will be removed in v2.0.0.
+   * Input size in bytes.
+   */
   inputSize: number
-  /** Output size legacy alias (bytes_out) */
+  /**
+   * @deprecated Renamed to `bytesOut` and will be removed in v2.0.0.
+   * Output size in bytes.
+   */
   outputSize: number
 }
 export interface OutputWithMetrics {

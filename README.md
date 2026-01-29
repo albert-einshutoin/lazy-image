@@ -588,12 +588,18 @@ interface ProcessingMetrics {
   iccPreserved: boolean;     // ICC profile preserved
   metadataStripped: boolean; // metadata stripped (by default or policy)
   policyViolations: string[];// non-fatal Image Firewall actions
-  // Legacy aliases preserved for compatibility
+  // Legacy aliases (deprecated; will be removed in v2.0.0)
+  /** @deprecated use decodeMs */
   decodeTime: number;
+  /** @deprecated use opsMs */
   processTime: number;
+  /** @deprecated use encodeMs */
   encodeTime: number;
+  /** @deprecated use peakRss */
   memoryPeak: number;
+  /** @deprecated use bytesIn */
   inputSize: number;
+  /** @deprecated use bytesOut */
   outputSize: number;
 }
 
@@ -608,6 +614,10 @@ lazy-image enforces quality parity with sharp via benchmark gates:
 
 - SSIM ≥ 0.995
 - PSNR ≥ 40 dB
+
+### Deprecation plan for legacy metrics fields
+- `decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize` are deprecated aliases of the `*Ms`/`peakRss`/`bytesIn`/`bytesOut` fields.
+- They will remain until **v2.0.0**, after which they are scheduled for removal. Migrate to the new names now to avoid breaking changes.
 
 `npm run test:js` runs `test/benchmarks/sharp-comparison.bench.js`, comparing outputs against sharp under identical settings; it fails if either metric drops below the thresholds. Integration test `test/integration/quality-metrics.test.js` smoke-tests the metric calculations.
 
