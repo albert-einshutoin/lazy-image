@@ -528,7 +528,8 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy (exceeds Sharp). See [Metadata Handling](#metadata-handling). |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
-| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
+| `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without any color space conversion. Use a color management library for ICC transforms. |
+| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Legacy alias that only normalizes RGB/RGBA. Use `.normalizePixelFormat()` instead. |
 | `.preset(name)` | Apply preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) |
 
 ### Output

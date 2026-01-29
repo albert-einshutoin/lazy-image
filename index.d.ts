@@ -188,35 +188,17 @@ export interface ProcessingMetrics {
   metadataStripped: boolean
   /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
   policyViolations: Array<string>
-  /**
-   * @deprecated Renamed to `decodeMs` and will be removed in v2.0.0.
-   * Time taken to decode the image (milliseconds).
-   */
+  /** Time taken to decode the image (milliseconds) - legacy alias of decode_ms */
   decodeTime: number
-  /**
-   * @deprecated Renamed to `opsMs` and will be removed in v2.0.0.
-   * Time taken to apply all operations (milliseconds).
-   */
+  /** Time taken to apply all operations (milliseconds) - legacy alias of ops_ms */
   processTime: number
-  /**
-   * @deprecated Renamed to `encodeMs` and will be removed in v2.0.0.
-   * Time taken to encode the image (milliseconds).
-   */
+  /** Time taken to encode the image (milliseconds) - legacy alias of encode_ms */
   encodeTime: number
-  /**
-   * @deprecated Renamed to `peakRss` and will be removed in v2.0.0.
-   * Peak memory usage during processing (RSS, bytes).
-   */
+  /** Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss */
   memoryPeak: number
-  /**
-   * @deprecated Renamed to `bytesIn` and will be removed in v2.0.0.
-   * Input size in bytes.
-   */
+  /** Input size legacy alias (bytes_in) */
   inputSize: number
-  /**
-   * @deprecated Renamed to `bytesOut` and will be removed in v2.0.0.
-   * Output size in bytes.
-   */
+  /** Output size legacy alias (bytes_out) */
   outputSize: number
 }
 export interface OutputWithMetrics {
@@ -300,9 +282,14 @@ export declare class ImageEngine {
   /** Adjust contrast (-100 to 100) */
   contrast(value: number): ImageEngine
   /**
-   * Ensure the image is in RGB/RGBA format (pixel format conversion, not color space transformation)
-   * Note: This does NOT perform ICC color profile conversion - it only ensures the pixel format.
-   * For true color space conversion with ICC profiles, use a dedicated color management library.
+   * Normalize pixel format to RGB/RGBA without performing any color space transformation.
+   * This does not apply ICC profile conversion; it only guarantees the pixel layout is RGB/RGBA.
+   * Use a dedicated color management library for true color space conversions.
+   */
+  normalizePixelFormat(): ImageEngine
+  /**
+   * Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
+   * Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
    */
   ensureRgb(): ImageEngine
   /**
@@ -377,27 +364,4 @@ export declare class ImageEngine {
    * is still accepted for now but will be removed in a future major release.
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
-}
-
-export function getErrorCategory(err: unknown): ErrorCategory | null
-
-export interface StreamingOperation {
-  op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
-  width?: number
-  height?: number
-  fit?: string | null
-  degrees?: number
-  enabled?: boolean
-}
-
-export interface StreamingPipelineOptions {
-  format?: string
-  quality?: number
-  ops?: StreamingOperation[]
-  ImageEngine?: typeof ImageEngine
-}
-
-export function createStreamingPipeline(options: StreamingPipelineOptions): {
-  writable: import('stream').Writable
-  readable: import('stream').Readable
 }

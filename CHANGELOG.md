@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docs: README fully English; added `README.ja.md` for Japanese summary (#255)
 - Docs: SECURITY policy expanded with CVE/dependency update guidance (#197)
 - Docs: Added `spec/` directory for resize/metadata/errors/limits/quality semantics (#193)
+- API: Added `normalizePixelFormat()` and deprecated legacy `ensureRgb()` alias to clarify pixel-format-only normalization (no color space conversion) (#259)
 
 ---
 

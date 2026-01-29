@@ -527,17 +527,28 @@ impl ImageEngine {
         Ok(this)
     }
 
-    /// Ensure the image is in RGB/RGBA format (pixel format conversion, not color space transformation)
-    /// Note: This does NOT perform ICC color profile conversion - it only ensures the pixel format.
-    /// For true color space conversion with ICC profiles, use a dedicated color management library.
-    #[napi(js_name = "ensureRgb")]
-    pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
-        // Ensure RGB/RGBA pixel format (pixel format normalization, not color space conversion)
-        // For true color space conversion with ICC profiles, use a dedicated color management library.
+    /// Normalize pixel format to RGB/RGBA without performing any color space transformation.
+    /// This does not apply ICC profile conversion; it only guarantees the pixel layout is RGB/RGBA.
+    /// Use a dedicated color management library for true color space conversions.
+    #[napi(js_name = "normalizePixelFormat")]
+    pub fn normalize_pixel_format(
+        &mut self,
+        this: Reference<ImageEngine>,
+    ) -> Result<Reference<ImageEngine>> {
+        // Normalize to RGB/RGBA pixel format (no color space conversion or ICC processing)
         self.ops.push(Operation::ColorSpace {
             target: crate::ops::ColorSpace::Srgb,
         });
         Ok(this)
+    }
+
+    /// Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
+    /// Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
+    #[allow(deprecated)]
+    #[deprecated(note = "Use normalizePixelFormat; will be removed in v1.0.0.")]
+    #[napi(js_name = "ensureRgb")]
+    pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
+        self.normalize_pixel_format(this)
     }
 
     // =========================================================================
