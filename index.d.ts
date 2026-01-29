@@ -118,6 +118,27 @@ export const enum ErrorCode {
   InternalPanic = 901,
   Generic = 999
 }
+
+/** Supported output formats for encoding */
+export type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif'
+/** Supported input formats for decoding */
+export type InputFormat =
+  | 'jpeg'
+  | 'jpg'
+  | 'png'
+  | 'webp'
+  | 'avif'
+  | 'gif'
+  | 'tiff'
+  | 'bmp'
+  | 'ico'
+  | 'pnm'
+  | 'tga'
+/** Preset names available in the library */
+export type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
+/** Resize fit options */
+export type ResizeFit = 'inside' | 'cover' | 'fill'
+
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
@@ -300,9 +321,14 @@ export declare class ImageEngine {
   /** Adjust contrast (-100 to 100) */
   contrast(value: number): ImageEngine
   /**
-   * Ensure the image is in RGB/RGBA format (pixel format conversion, not color space transformation)
-   * Note: This does NOT perform ICC color profile conversion - it only ensures the pixel format.
-   * For true color space conversion with ICC profiles, use a dedicated color management library.
+   * Normalize pixel format to RGB/RGBA without performing any color space transformation.
+   * This does not apply ICC profile conversion; it only guarantees the pixel layout is RGB/RGBA.
+   * Use a dedicated color management library for true color space conversions.
+   */
+  normalizePixelFormat(): ImageEngine
+  /**
+   * @deprecated Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
+   * Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
    */
   ensureRgb(): ImageEngine
   /**
