@@ -13,16 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - EXIF Orientation auto-reset to 1 after auto-orient to prevent double-rotation
   - Zero-copy EXIF sanitization via direct TIFF byte manipulation
   - Currently supports JPEG output; PNG/WebP/AVIF planned for future releases
+- Fused Extract operation (resize+crop) with zero-allocation pipeline path and memory model support (#240)
+- Benchmarks for resize+crop vs sharp plus JS integration tests covering fusion path (#240)
+- Docs: Documented deprecation plan for `ProcessingMetrics` legacy aliases (`decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize`). Marked as `@deprecated` in `index.d.ts`; scheduled for removal in v2.0.0. Migrate to `decodeMs`, `opsMs`, `encodeMs`, `peakRss`, `bytesIn`, `bytesOut`.
 
 ### Performance
 - Optimized codec backends (PNG decode via zune-png, WebP decode via libwebp)
   - Faster PNG/WebP decoding with SIMD/native codecs
   - Fallback to image crate for large PNGs (>16,384px) and animated WebP to preserve compatibility
   - Added safety checks to keep MAX_DIMENSION enforcement consistent
-
-### Added
-- Fused Extract operation (resize+crop) with zero-allocation pipeline path and memory model support (#240)
-- Benchmarks for resize+crop vs sharp plus JS integration tests covering fusion path (#240)
 
 ### Changed
 - Memory semaphore switched to `parking_lot` mutex/condvar for reduced contention under load; added contention benchmark (#241)
