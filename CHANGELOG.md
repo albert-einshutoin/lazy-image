@@ -112,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Telemetry metrics for performance monitoring (#86)
-  - Added `toBufferWithMetrics()` method to return processing metrics
+- Added `toBufferWithMetrics()` method to return processing metrics
+- Added preset convenience methods: `toBufferWithPreset()`, `toBufferWithMetricsPreset()`, `toFileWithPreset()`
   - Added `ProcessingMetrics` interface with decode time, process time, encode time, memory peak, CPU time, and compression ratio
   - Added `OutputWithMetrics` interface combining output data and metrics
 - Smart concurrency with auto memory cap detection (#85)

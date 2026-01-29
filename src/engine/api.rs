@@ -17,7 +17,7 @@ use crate::engine::tasks::{
 };
 use crate::error::LazyImageError;
 #[cfg(not(feature = "napi"))]
-use crate::ops::Operation;
+use crate::ops::{Operation, PresetConfig};
 #[cfg(feature = "napi")]
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 #[cfg(feature = "napi")]
@@ -76,6 +76,8 @@ pub struct ImageEngine {
     pub(crate) decoded: Option<Arc<DynamicImage>>,
     /// Queued operations
     pub(crate) ops: Vec<Operation>,
+    /// Last applied preset (used by toPresetBuffer/toPresetFile convenience APIs)
+    pub(crate) last_preset: Option<PresetConfig>,
     /// ICC color profile extracted from source image
     pub(crate) icc_profile: Option<Arc<Vec<u8>>>,
     /// Raw EXIF data extracted from source image (for preservation)
@@ -123,6 +125,7 @@ impl ImageEngine {
             source: Some(Source::Memory(data_arc)),
             decoded: None,
             ops: Vec::new(),
+            last_preset: None,
             icc_profile,
             exif_data,
             auto_orient: true,
@@ -187,6 +190,7 @@ impl ImageEngine {
             source: Some(Source::Mapped(mmap_arc)),
             decoded: None,
             ops: Vec::new(),
+            last_preset: None,
             icc_profile,
             exif_data,
             auto_orient: true,
@@ -205,6 +209,7 @@ impl ImageEngine {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
+            last_preset: self.last_preset.clone(),
             icc_profile: self.icc_profile.clone(),
             exif_data: self.exif_data.clone(),
             auto_orient: self.auto_orient,
@@ -594,6 +599,9 @@ impl ImageEngine {
             OutputFormat::Avif { quality } => ("avif", Some(*quality)),
         };
 
+        // Store last preset for convenience helpers
+        self.last_preset = Some(config.clone());
+
         Ok(PresetResult {
             format: format_str.to_string(),
             quality,
@@ -667,6 +675,41 @@ impl ImageEngine {
         }))
     }
 
+    /// Convenience: encode using the last applied preset by name.
+    /// Equivalent to calling `preset(name)` then `toBuffer(preset.format, preset.quality)`.
+    #[napi(js_name = "toBufferWithPreset", ts_return_type = "Promise<Buffer>")]
+    pub fn to_buffer_with_preset(
+        &mut self,
+        env: Env,
+        preset_name: String,
+    ) -> Result<AsyncTask<EncodeTask>> {
+        let preset = match PresetConfig::get(&preset_name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        // Apply resize ops in-place, mirroring preset()
+        self.ops.push(Operation::Resize {
+            width: preset.width,
+            height: preset.height,
+            fit: ResizeFit::Inside,
+        });
+
+        self.last_preset = Some(preset.clone());
+
+        let (format_str, quality, fast_mode) = match &preset.format {
+            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Png => ("png", None, None),
+            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
+            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+        };
+
+        self.to_buffer(env, format_str.to_string(), quality, fast_mode)
+    }
+
     /// Encode to buffer asynchronously with performance metrics.
     /// Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
     ///
@@ -724,6 +767,43 @@ impl ImageEngine {
             #[cfg(feature = "napi")]
             last_error: None,
         }))
+    }
+
+    /// Convenience: encode with metrics using a preset name.
+    /// Equivalent to `preset(name)` then `toBufferWithMetrics(preset.format, preset.quality)`.
+    #[napi(
+        js_name = "toBufferWithMetricsPreset",
+        ts_return_type = "Promise<OutputWithMetrics>"
+    )]
+    pub fn to_buffer_with_metrics_preset(
+        &mut self,
+        env: Env,
+        preset_name: String,
+    ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
+        let preset = match PresetConfig::get(&preset_name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        self.ops.push(Operation::Resize {
+            width: preset.width,
+            height: preset.height,
+            fit: ResizeFit::Inside,
+        });
+
+        self.last_preset = Some(preset.clone());
+
+        let (format_str, quality, fast_mode) = match &preset.format {
+            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Png => ("png", None, None),
+            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
+            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+        };
+
+        self.to_buffer_with_metrics(env, format_str.to_string(), quality, fast_mode)
     }
 
     /// Encode and write directly to a file asynchronously.
@@ -788,6 +868,40 @@ impl ImageEngine {
             #[cfg(feature = "napi")]
             last_error: None,
         }))
+    }
+
+    /// Convenience: encode to file using the preset's recommended format/quality.
+    #[napi(js_name = "toFileWithPreset", ts_return_type = "Promise<number>")]
+    pub fn to_file_with_preset(
+        &mut self,
+        env: Env,
+        path: String,
+        preset_name: String,
+    ) -> Result<AsyncTask<WriteFileTask>> {
+        let preset = match PresetConfig::get(&preset_name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        self.ops.push(Operation::Resize {
+            width: preset.width,
+            height: preset.height,
+            fit: ResizeFit::Inside,
+        });
+
+        self.last_preset = Some(preset.clone());
+
+        let (format_str, quality, fast_mode) = match &preset.format {
+            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Png => ("png", None, None),
+            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
+            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+        };
+
+        self.to_file(env, path, format_str.to_string(), quality, fast_mode)
     }
 
     // =========================================================================
@@ -957,6 +1071,22 @@ pub struct Dimensions {
 /// Result of applying a preset, contains recommended output settings
 #[napi(object)]
 pub struct PresetResult {
+    /// Recommended output format
+    pub format: String,
+    /// Recommended quality (None for PNG)
+    pub quality: Option<u8>,
+    /// Target width (None if aspect ratio preserved)
+    pub width: Option<u32>,
+    /// Target height (None if aspect ratio preserved)
+    pub height: Option<u32>,
+}
+
+#[cfg(feature = "napi")]
+/// Result of applying a preset and encoding to buffer
+#[napi(object)]
+pub struct PresetBufferResult {
+    /// Encoded image data
+    pub data: Buffer,
     /// Recommended output format
     pub format: String,
     /// Recommended quality (None for PNG)

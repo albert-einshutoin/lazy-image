@@ -490,12 +490,8 @@ results.forEach(r => {
 // Use built-in presets for common use cases
 const engine = ImageEngine.fromPath('photo.jpg');
 
-// Apply preset and get recommended settings
-const preset = engine.preset('thumbnail');
-// preset = { format: 'webp', quality: 75, width: 150, height: 150 }
-
-// Use the preset settings
-const buffer = await engine.toBuffer(preset.format, preset.quality);
+// Apply preset and encode in one call
+const buffer = await ImageEngine.from(buffer).toBufferWithPreset('thumbnail');
 
 // Available presets:
 // - 'thumbnail': 150x150, WebP q75 (gallery thumbnails)
