@@ -3,7 +3,12 @@
  * Verifies that type definitions work correctly.
  */
 import * as path from 'path';
-import { ImageEngine, OutputFormat, InputFormat, PresetName, ImageMetadata, PresetResult, ResizeFit } from '../../index';
+import { ImageEngine, ImageMetadata, PresetResult } from '../../index';
+
+// Local type aliases for API string literals (not exported from index.d.ts)
+type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif';
+type ResizeFit = 'inside' | 'cover' | 'fill';
+type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');

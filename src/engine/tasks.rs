@@ -725,8 +725,11 @@ impl Task for WriteFileTask {
         let output_dir = std::path::Path::new(&self.output_path)
             .parent()
             .ok_or_else(|| {
-                let lazy_err =
-                    LazyImageError::internal_panic("output path has no parent directory");
+                let lazy_err = LazyImageError::invalid_argument(
+                    "path",
+                    self.output_path.clone(),
+                    "output path must include a parent directory",
+                );
                 self.last_error = Some(lazy_err.clone());
                 napi::Error::from(lazy_err)
             })?;
