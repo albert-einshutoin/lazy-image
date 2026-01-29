@@ -5,7 +5,7 @@
 use crate::error::LazyImageError;
 use crate::ops::{Operation, OperationContract, OperationEffect, OperationRequirement, ResizeFit};
 use fast_image_resize::{self as fir, ImageBufferError, MulDiv, PixelType, ResizeOptions};
-use image::{DynamicImage, RgbImage, RgbaImage};
+use image::{imageops::FilterType, DynamicImage, RgbImage, RgbaImage};
 use std::borrow::Cow;
 
 #[cfg(feature = "cow-debug")]
@@ -916,7 +916,7 @@ fn fast_resize_internal_impl(
         ));
     }
 
-    match fir::images::Image::from_slice_u8(
+    let primary_result = match fir::images::Image::from_slice_u8(
         src_width,
         src_height,
         src_pixels.as_mut_slice(),
@@ -936,6 +936,20 @@ fn fast_resize_internal_impl(
             resize_with_source_image(aligned_image, pixel_type, dst_width, dst_height, options)
         }
         Err(other) => Err(format!("fir source image error: {other:?}")),
+    };
+
+    match primary_result {
+        Ok(img) => Ok(img),
+        Err(err) if err.to_lowercase().contains("alignment") => resize_with_image_crate_fallback(
+            &src_pixels,
+            src_width,
+            src_height,
+            pixel_type,
+            dst_width,
+            dst_height,
+        )
+        .map_err(|fallback_err| format!("{err}; image crate fallback failed: {fallback_err}")),
+        Err(err) => Err(err),
     }
 }
 
@@ -956,6 +970,34 @@ fn copy_pixels_to_aligned_image(
     }
     aligned_buffer.copy_from_slice(&src_pixels[..required_bytes]);
     Ok(aligned_image)
+}
+
+fn resize_with_image_crate_fallback(
+    src_pixels: &[u8],
+    src_width: u32,
+    src_height: u32,
+    pixel_type: PixelType,
+    dst_width: u32,
+    dst_height: u32,
+) -> std::result::Result<DynamicImage, String> {
+    let filter = FilterType::Lanczos3;
+    match pixel_type {
+        PixelType::U8x3 => {
+            let rgb = RgbImage::from_raw(src_width, src_height, src_pixels.to_vec())
+                .ok_or_else(|| "failed to build rgb image for fallback resize".to_string())?;
+            Ok(DynamicImage::ImageRgb8(image::imageops::resize(
+                &rgb, dst_width, dst_height, filter,
+            )))
+        }
+        PixelType::U8x4 => {
+            let rgba = RgbaImage::from_raw(src_width, src_height, src_pixels.to_vec())
+                .ok_or_else(|| "failed to build rgba image for fallback resize".to_string())?;
+            Ok(DynamicImage::ImageRgba8(image::imageops::resize(
+                &rgba, dst_width, dst_height, filter,
+            )))
+        }
+        _ => Err("fallback resize supports only U8x3/U8x4 pixel types".to_string()),
+    }
 }
 
 fn resize_with_source_image<'a>(
@@ -1178,6 +1220,56 @@ mod tests {
             // 1000:500 = 2:1, 800:400 = 2:1
             let (w, h) = calc_resize_dimensions(1000, 500, Some(800), Some(400));
             assert_eq!((w, h), (800, 400));
+        }
+    }
+
+    mod resize_fallback_tests {
+        use super::*;
+
+        fn generate_pixels(count: usize) -> Vec<u8> {
+            (0..count).map(|i| (i % 251) as u8).collect()
+        }
+
+        #[test]
+        fn image_crate_fallback_resizes_rgb() {
+            let src_width = 8;
+            let src_height = 4;
+            let pixel_type = PixelType::U8x3;
+            let src_pixels = generate_pixels((src_width * src_height) as usize * pixel_type.size());
+
+            let resized = resize_with_image_crate_fallback(
+                &src_pixels,
+                src_width,
+                src_height,
+                pixel_type,
+                4,
+                2,
+            )
+            .expect("fallback resize should succeed for RGB");
+
+            assert_eq!(resized.dimensions(), (4, 2));
+            assert!(matches!(resized, DynamicImage::ImageRgb8(_)));
+        }
+
+        #[test]
+        fn image_crate_fallback_resizes_rgba() {
+            let src_width = 6;
+            let src_height = 3;
+            let pixel_type = PixelType::U8x4;
+            let src_pixels = generate_pixels((src_width * src_height) as usize * pixel_type.size());
+
+            let resized = resize_with_image_crate_fallback(
+                &src_pixels,
+                src_width,
+                src_height,
+                pixel_type,
+                3,
+                2,
+            )
+            .expect("fallback resize should succeed for RGBA");
+
+            assert_eq!(resized.dimensions(), (3, 2));
+            assert!(matches!(resized, DynamicImage::ImageRgba8(_)));
         }
     }
 
