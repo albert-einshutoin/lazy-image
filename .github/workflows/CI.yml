@@ -44,6 +44,14 @@ jobs:
               sudo apt-get update
               sudo apt-get install -y nasm
               npm run build -- --target x86_64-unknown-linux-gnu
+
+          # Linux (glibc, ARM64)
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            build: |
+              sudo apt-get update
+              sudo apt-get install -y gcc-aarch64-linux-gnu nasm
+              npm run build -- --target aarch64-unknown-linux-gnu
           
           # Linux (musl)
           - host: ubuntu-latest
@@ -374,6 +382,7 @@ jobs:
             ["aarch64-apple-darwin"]="darwin-arm64"
             ["x86_64-pc-windows-msvc"]="win32-x64-msvc"
             ["x86_64-unknown-linux-gnu"]="linux-x64-gnu"
+            ["aarch64-unknown-linux-gnu"]="linux-arm64-gnu"
             ["x86_64-unknown-linux-musl"]="linux-x64-musl"
           )
           
@@ -423,7 +432,7 @@ jobs:
           echo ""
           
           # Check if all required platforms are present
-          required_platforms=("darwin-x64" "darwin-arm64" "win32-x64-msvc" "linux-x64-gnu" "linux-x64-musl")
+          required_platforms=("darwin-x64" "darwin-arm64" "win32-x64-msvc" "linux-x64-gnu" "linux-arm64-gnu" "linux-x64-musl")
           missing=0
           for platform in "${required_platforms[@]}"; do
             if [ ! -f "npm/$platform/lazy-image.$platform.node" ]; then
