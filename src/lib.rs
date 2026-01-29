@@ -130,6 +130,13 @@ pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
 /// This is the recommended way for server-side metadata inspection.
 #[napi(js_name = "inspectFile")]
 pub fn inspect_file(env: Env, path: String) -> Result<ImageMetadata> {
+    if path.trim().is_empty() {
+        return Err(crate::error::napi_error_with_code(
+            &env,
+            LazyImageError::invalid_argument("path", "<empty>", "path must not be empty"),
+        )?);
+    }
+
     let metadata = match inspect_header_from_path(&path) {
         Ok(metadata) => metadata,
         Err(err) => {

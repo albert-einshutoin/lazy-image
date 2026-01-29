@@ -16,10 +16,10 @@ use crate::engine::tasks::{
     BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
 };
 use crate::error::LazyImageError;
-#[cfg(not(feature = "napi"))]
-use crate::ops::{Operation, PresetConfig};
 #[cfg(feature = "napi")]
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
+#[cfg(not(feature = "napi"))]
+use crate::ops::{Operation, PresetConfig};
 #[cfg(feature = "napi")]
 use image::ImageReader;
 use image::{DynamicImage, GenericImageView};
@@ -54,6 +54,260 @@ pub struct KeepMetadataOptions {
 fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
     // Helper to attach code/category consistently when Env is available
     crate::error::napi_error_with_code(env, err).expect("failed to create napi error")
+}
+
+#[cfg(feature = "napi")]
+mod validation {
+    use super::*;
+    use std::path::Path;
+
+    #[derive(Debug, PartialEq, Eq)]
+    pub enum LimitUpdate {
+        Unchanged,
+        Disable,
+        Set(u64),
+    }
+
+    fn number_label(v: f64) -> String {
+        if v.is_nan() {
+            "NaN".to_string()
+        } else if v.is_infinite() && v.is_sign_positive() {
+            "Infinity".to_string()
+        } else if v.is_infinite() && v.is_sign_negative() {
+            "-Infinity".to_string()
+        } else {
+            v.to_string()
+        }
+    }
+
+    pub fn ensure_finite_integer(
+        name: &'static str,
+        value: f64,
+    ) -> std::result::Result<i64, LazyImageError> {
+        if !value.is_finite() {
+            return Err(LazyImageError::invalid_argument(
+                name,
+                number_label(value),
+                "must be a finite number",
+            ));
+        }
+        if value.fract() != 0.0 {
+            return Err(LazyImageError::invalid_argument(
+                name,
+                value.to_string(),
+                "must be an integer",
+            ));
+        }
+        if value.abs() > (i64::MAX as f64) {
+            return Err(LazyImageError::invalid_argument(
+                name,
+                value.to_string(),
+                "is too large",
+            ));
+        }
+        Ok(value as i64)
+    }
+
+    fn sanitize_dimension(
+        name: &'static str,
+        raw: Option<f64>,
+        allow_zero: bool,
+    ) -> std::result::Result<Option<u32>, LazyImageError> {
+        match raw {
+            None => Ok(None),
+            Some(v) => {
+                let int = ensure_finite_integer(name, v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_resize_dimensions(Some(0), None));
+                }
+                let value_u32 = u32::try_from(int)
+                    .map_err(|_| LazyImageError::invalid_resize_dimensions(None, None))?;
+                if !allow_zero && value_u32 == 0 {
+                    return Err(LazyImageError::invalid_resize_dimensions(Some(0), None));
+                }
+                if value_u32 > crate::engine::MAX_DIMENSION {
+                    return Err(LazyImageError::invalid_resize_dimensions(
+                        Some(value_u32),
+                        None,
+                    ));
+                }
+                Ok(Some(value_u32))
+            }
+        }
+    }
+
+    pub fn sanitize_resize_dimensions(
+        width: Option<f64>,
+        height: Option<f64>,
+    ) -> std::result::Result<(Option<u32>, Option<u32>), LazyImageError> {
+        let width = sanitize_dimension("width", width, false)?;
+        let height = sanitize_dimension("height", height, false)?;
+
+        if width.is_none() && height.is_none() {
+            return Err(LazyImageError::invalid_resize_dimensions(None, None));
+        }
+
+        Ok((width, height))
+    }
+
+    pub fn sanitize_crop(
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    ) -> std::result::Result<(u32, u32, u32, u32), LazyImageError> {
+        let x_i = ensure_finite_integer("x", x)?;
+        let y_i = ensure_finite_integer("y", y)?;
+        let width_i = ensure_finite_integer("width", width)?;
+        let height_i = ensure_finite_integer("height", height)?;
+
+        if x_i < 0 || y_i < 0 {
+            return Err(LazyImageError::invalid_argument(
+                "crop offset",
+                format!("x={x_i}, y={y_i}"),
+                "must be zero or positive",
+            ));
+        }
+
+        if width_i <= 0 || height_i <= 0 {
+            let w = u32::try_from(width_i.max(0)).unwrap_or(0);
+            let h = u32::try_from(height_i.max(0)).unwrap_or(0);
+            return Err(LazyImageError::invalid_crop_dimensions(w, h));
+        }
+
+        let width_u32 = u32::try_from(width_i)
+            .map_err(|_| LazyImageError::invalid_crop_dimensions(u32::MAX, u32::MAX))?;
+        let height_u32 = u32::try_from(height_i)
+            .map_err(|_| LazyImageError::invalid_crop_dimensions(u32::MAX, u32::MAX))?;
+
+        if width_u32 > crate::engine::MAX_DIMENSION || height_u32 > crate::engine::MAX_DIMENSION {
+            return Err(LazyImageError::invalid_crop_dimensions(
+                width_u32, height_u32,
+            ));
+        }
+
+        let x_u32 = u32::try_from(x_i).map_err(|_| {
+            LazyImageError::invalid_argument("x", x_i.to_string(), "must fit into u32")
+        })?;
+        let y_u32 = u32::try_from(y_i).map_err(|_| {
+            LazyImageError::invalid_argument("y", y_i.to_string(), "must fit into u32")
+        })?;
+
+        Ok((x_u32, y_u32, width_u32, height_u32))
+    }
+
+    pub fn sanitize_quality(
+        quality: Option<f64>,
+    ) -> std::result::Result<Option<u8>, LazyImageError> {
+        match quality {
+            None => Ok(None),
+            Some(v) => {
+                let int = ensure_finite_integer("quality", v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_argument(
+                        "quality",
+                        int.to_string(),
+                        "must be >= 0",
+                    ));
+                }
+                let clamped = int.min(100);
+                let value = u8::try_from(clamped).map_err(|_| {
+                    LazyImageError::invalid_argument("quality", int.to_string(), "must be <= 255")
+                })?;
+                Ok(Some(value))
+            }
+        }
+    }
+
+    pub fn sanitize_concurrency(
+        concurrency: Option<f64>,
+    ) -> std::result::Result<u32, LazyImageError> {
+        match concurrency {
+            None => Ok(0),
+            Some(v) => {
+                let int = ensure_finite_integer("concurrency", v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_argument(
+                        "concurrency",
+                        int.to_string(),
+                        "must be >= 0",
+                    ));
+                }
+                let value = u32::try_from(int).map_err(|_| {
+                    LazyImageError::invalid_argument(
+                        "concurrency",
+                        int.to_string(),
+                        "must be within u32 range",
+                    )
+                })?;
+
+                if value > crate::engine::MAX_CONCURRENCY as u32 {
+                    return Err(LazyImageError::internal_panic(format!(
+                        "invalid concurrency value: {} (must be 0 or 1-{})",
+                        value,
+                        crate::engine::MAX_CONCURRENCY
+                    )));
+                }
+
+                Ok(value)
+            }
+        }
+    }
+
+    pub fn sanitize_limit(
+        name: &'static str,
+        value: Option<f64>,
+    ) -> std::result::Result<LimitUpdate, LazyImageError> {
+        match value {
+            None => Ok(LimitUpdate::Unchanged),
+            Some(v) => {
+                let int = ensure_finite_integer(name, v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_argument(
+                        name,
+                        int.to_string(),
+                        "must be >= 0",
+                    ));
+                }
+                if int == 0 {
+                    return Ok(LimitUpdate::Disable);
+                }
+                let value = u64::try_from(int).map_err(|_| {
+                    LazyImageError::invalid_argument(name, int.to_string(), "must fit within u64")
+                })?;
+                Ok(LimitUpdate::Set(value))
+            }
+        }
+    }
+
+    pub fn validate_output_path(path: &str) -> std::result::Result<(), LazyImageError> {
+        if path.trim().is_empty() {
+            return Err(LazyImageError::invalid_argument(
+                "path",
+                "<empty>",
+                "output path must not be empty",
+            ));
+        }
+
+        let path_buf = Path::new(path);
+        let parent = path_buf.parent().ok_or_else(|| {
+            LazyImageError::invalid_argument(
+                "path",
+                path.to_string(),
+                "must include a parent directory",
+            )
+        })?;
+
+        if !parent.exists() {
+            return Err(LazyImageError::invalid_argument(
+                "path",
+                path.to_string(),
+                "parent directory does not exist",
+            ));
+        }
+
+        Ok(())
+    }
 }
 
 /// The main image processing engine.
@@ -146,6 +400,13 @@ impl ImageEngine {
         use memmap2::Mmap;
         use std::fs::File;
 
+        if path.trim().is_empty() {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument("path", "<empty>", "path must not be empty"),
+            ));
+        }
+
         let path_buf = PathBuf::from(&path);
 
         // Validate that the file exists (fast check, no read)
@@ -235,8 +496,8 @@ impl ImageEngine {
         &mut self,
         env: Env,
         this: Reference<ImageEngine>,
-        width: Option<u32>,
-        height: Option<u32>,
+        width: Option<f64>,
+        height: Option<f64>,
         fit: Option<String>,
     ) -> Result<Reference<ImageEngine>> {
         let fit_mode = if let Some(value) = fit {
@@ -246,22 +507,8 @@ impl ImageEngine {
             ResizeFit::default()
         };
 
-        if let Some(w) = width {
-            if w == 0 || w > crate::engine::MAX_DIMENSION {
-                return Err(napi_err(
-                    &env,
-                    LazyImageError::invalid_resize_dimensions(Some(w), height),
-                ));
-            }
-        }
-        if let Some(h) = height {
-            if h == 0 || h > crate::engine::MAX_DIMENSION {
-                return Err(napi_err(
-                    &env,
-                    LazyImageError::invalid_resize_dimensions(width, Some(h)),
-                ));
-            }
-        }
+        let (width, height) =
+            validation::sanitize_resize_dimensions(width, height).map_err(|e| napi_err(&env, e))?;
 
         self.ops.push(Operation::Resize {
             width,
@@ -275,19 +522,22 @@ impl ImageEngine {
     #[napi]
     pub fn crop(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
-        x: u32,
-        y: u32,
-        width: u32,
-        height: u32,
-    ) -> Reference<ImageEngine> {
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    ) -> Result<Reference<ImageEngine>> {
+        let (x, y, width, height) =
+            validation::sanitize_crop(x, y, width, height).map_err(|e| napi_err(&env, e))?;
         self.ops.push(Operation::Crop {
             x,
             y,
             width,
             height,
         });
-        this
+        Ok(this)
     }
 
     /// Rotate by degrees (90, 180, 270 only)
@@ -447,42 +697,28 @@ impl ImageEngine {
             self.firewall.policy = FirewallPolicy::Custom;
         }
 
-        if let Some(max_pixels) = options.max_pixels {
-            if max_pixels == 0 {
-                self.firewall.max_pixels = None;
-            } else {
-                self.firewall.max_pixels = Some(max_pixels as u64);
-            }
+        match validation::sanitize_limit("maxPixels", options.max_pixels)
+            .map_err(|e| napi_err(&env, e))?
+        {
+            validation::LimitUpdate::Unchanged => {}
+            validation::LimitUpdate::Disable => self.firewall.max_pixels = None,
+            validation::LimitUpdate::Set(value) => self.firewall.max_pixels = Some(value),
         }
 
-        if let Some(max_bytes) = options.max_bytes {
-            if max_bytes == 0 {
-                self.firewall.max_bytes = None;
-            } else {
-                self.firewall.max_bytes = Some(max_bytes as u64);
-            }
+        match validation::sanitize_limit("maxBytes", options.max_bytes)
+            .map_err(|e| napi_err(&env, e))?
+        {
+            validation::LimitUpdate::Unchanged => {}
+            validation::LimitUpdate::Disable => self.firewall.max_bytes = None,
+            validation::LimitUpdate::Set(value) => self.firewall.max_bytes = Some(value),
         }
 
-        if let Some(timeout) = options.timeout_ms {
-            if timeout == 0 {
-                self.firewall.timeout_ms = None;
-            } else {
-                self.firewall.timeout_ms = Some(timeout as u64);
-            }
-        }
-
-        // Validate that user did not exceed internal hard limits
-        if let Some(max_pixels) = self.firewall.max_pixels {
-            if max_pixels == 0 {
-                return Err(napi_err(
-                    &env,
-                    LazyImageError::invalid_argument(
-                        "maxPixels",
-                        "0",
-                        "set to a positive value or omit to disable",
-                    ),
-                ));
-            }
+        match validation::sanitize_limit("timeoutMs", options.timeout_ms)
+            .map_err(|e| napi_err(&env, e))?
+        {
+            validation::LimitUpdate::Unchanged => {}
+            validation::LimitUpdate::Disable => self.firewall.timeout_ms = None,
+            validation::LimitUpdate::Set(value) => self.firewall.timeout_ms = Some(value),
         }
 
         Ok(this)
@@ -494,18 +730,22 @@ impl ImageEngine {
         &mut self,
         env: Env,
         this: Reference<ImageEngine>,
-        value: i32,
+        value: f64,
     ) -> Result<Reference<ImageEngine>> {
-        if value < -100 || value > 100 {
-            return Err(napi_err(
-                &env,
-                LazyImageError::invalid_argument(
-                    "brightness",
-                    value.to_string(),
-                    "expected value between -100 and 100",
-                ),
-            ));
-        }
+        let value = validation::ensure_finite_integer("brightness", value)
+            .and_then(|int| {
+                if int < -100 || int > 100 {
+                    Err(LazyImageError::invalid_argument(
+                        "brightness",
+                        int.to_string(),
+                        "expected value between -100 and 100",
+                    ))
+                } else {
+                    Ok(int as i32)
+                }
+            })
+            .map_err(|e| napi_err(&env, e))?;
+
         self.ops.push(Operation::Brightness { value });
         Ok(this)
     }
@@ -516,18 +756,22 @@ impl ImageEngine {
         &mut self,
         env: Env,
         this: Reference<ImageEngine>,
-        value: i32,
+        value: f64,
     ) -> Result<Reference<ImageEngine>> {
-        if value < -100 || value > 100 {
-            return Err(napi_err(
-                &env,
-                LazyImageError::invalid_argument(
-                    "contrast",
-                    value.to_string(),
-                    "expected value between -100 and 100",
-                ),
-            ));
-        }
+        let value = validation::ensure_finite_integer("contrast", value)
+            .and_then(|int| {
+                if int < -100 || int > 100 {
+                    Err(LazyImageError::invalid_argument(
+                        "contrast",
+                        int.to_string(),
+                        "expected value between -100 and 100",
+                    ))
+                } else {
+                    Ok(int as i32)
+                }
+            })
+            .map_err(|e| napi_err(&env, e))?;
+
         self.ops.push(Operation::Contrast { value });
         Ok(this)
     }
@@ -626,10 +870,11 @@ impl ImageEngine {
         &mut self,
         env: Env,
         format: String,
-        quality: Option<u8>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -707,7 +952,12 @@ impl ImageEngine {
             OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
         };
 
-        self.to_buffer(env, format_str.to_string(), quality, fast_mode)
+        self.to_buffer(
+            env,
+            format_str.to_string(),
+            quality.map(|q| q as f64),
+            fast_mode,
+        )
     }
 
     /// Encode to buffer asynchronously with performance metrics.
@@ -720,10 +970,11 @@ impl ImageEngine {
         &mut self,
         env: Env,
         format: String,
-        quality: Option<u8>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -803,7 +1054,12 @@ impl ImageEngine {
             OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
         };
 
-        self.to_buffer_with_metrics(env, format_str.to_string(), quality, fast_mode)
+        self.to_buffer_with_metrics(
+            env,
+            format_str.to_string(),
+            quality.map(|q| q as f64),
+            fast_mode,
+        )
     }
 
     /// Encode and write directly to a file asynchronously.
@@ -820,10 +1076,13 @@ impl ImageEngine {
         env: Env,
         path: String,
         format: String,
-        quality: Option<u8>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
+
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -901,7 +1160,13 @@ impl ImageEngine {
             OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
         };
 
-        self.to_file(env, path, format_str.to_string(), quality, fast_mode)
+        self.to_file(
+            env,
+            path,
+            format_str.to_string(),
+            quality.map(|q| q as f64),
+            fast_mode,
+        )
     }
 
     // =========================================================================
@@ -1004,10 +1269,21 @@ impl ImageEngine {
         inputs: Vec<String>,
         output_dir: String,
         options_or_format: Either<BatchOptions, String>,
-        quality: Option<u8>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
-        concurrency: Option<u32>,
+        concurrency: Option<f64>,
     ) -> Result<AsyncTask<BatchTask>> {
+        if output_dir.trim().is_empty() {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "outputDir",
+                    "<empty>",
+                    "output directory must not be empty",
+                ),
+            ));
+        }
+
         let (format, quality, fast_mode, concurrency) = match options_or_format {
             Either::A(options) => (
                 options.format,
@@ -1019,6 +1295,10 @@ impl ImageEngine {
         };
 
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        let concurrency =
+            validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
+
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -1034,7 +1314,7 @@ impl ImageEngine {
             output_dir,
             ops,
             format: output_format,
-            concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
+            concurrency,
             keep_icc,
             keep_exif,
             strip_gps: self.strip_gps,
@@ -1055,9 +1335,9 @@ pub struct SanitizeOptions {
 #[cfg(feature = "napi")]
 #[napi(object)]
 pub struct FirewallLimitOptions {
-    pub max_pixels: Option<u32>,
-    pub max_bytes: Option<u32>,
-    pub timeout_ms: Option<u32>,
+    pub max_pixels: Option<f64>,
+    pub max_bytes: Option<f64>,
+    pub timeout_ms: Option<f64>,
 }
 
 #[cfg(feature = "napi")]
@@ -1103,12 +1383,12 @@ pub struct BatchOptions {
     /// Output format ("jpeg", "png", "webp", "avif")
     pub format: String,
     /// Optional quality (1-100), uses format default when omitted
-    pub quality: Option<u8>,
+    pub quality: Option<f64>,
     /// Optional fast mode flag (JPEG only, default: false)
     pub fast_mode: Option<bool>,
     /// Optional number of parallel workers:
     /// 0/undefined = auto-detect, 1-1024 = manual override
-    pub concurrency: Option<u32>,
+    pub concurrency: Option<f64>,
 }
 
 // =============================================================================

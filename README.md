@@ -55,6 +55,7 @@ Formal semantics live in `spec/`:
 - [Resize](./spec/resize.md) — fit/inside/cover/fill, rounding rules, limits
 - [Metadata](./spec/metadata.md) — ICC/EXIF/XMP handling, defaults, AVIF notes
 - [Errors](./spec/errors.md) — taxonomy, mappings, JS category helpers
+- [Input Validation](./docs/INPUT_VALIDATION.md) — runtime rules for JS-facing parameters
 - [Limits](./spec/limits.md) — dimensions/pixels, firewall bytes/timeout, concurrency
 - [Quality](./spec/quality.md) — SSIM/PSNR gates and repro guidance
 - [Quality Semantics](./docs/QUALITY_SEMANTICS.md) — what `quality` means per format and cross-format equivalence

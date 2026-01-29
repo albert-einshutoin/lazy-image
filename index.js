@@ -310,13 +310,17 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
+const { createStreamingPipeline } = require('./streaming/pipeline')
+
 const { ImageEngine, ErrorCategory, ErrorCode, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 
-function getErrorCategory(err) {
-  if (!err || typeof err !== 'object') return null
-  if (typeof err.category !== 'undefined') return err.category
-  if (typeof err.code === 'string') {
-    switch (err.code) {
+function getErrorCategory(error) {
+  if (!error) return null
+  if (typeof error.category === 'number') {
+    return error.category
+  }
+  if (typeof error.code === 'string') {
+    switch (error.code) {
       case 'LAZY_IMAGE_USER_ERROR':
         return ErrorCategory.UserError
       case 'LAZY_IMAGE_CODEC_ERROR':
@@ -326,19 +330,10 @@ function getErrorCategory(err) {
       case 'LAZY_IMAGE_INTERNAL_BUG':
         return ErrorCategory.InternalBug
       default:
-        return null
+        break
     }
   }
   return null
-}
-
-function createStreamingPipeline(options) {
-  const { createStreamingPipeline: impl } = require('./streaming/pipeline')
-  const opts = options || {}
-  if (!opts.ImageEngine) {
-    opts.ImageEngine = ImageEngine
-  }
-  return impl(opts)
 }
 
 module.exports.ImageEngine = ImageEngine
@@ -350,4 +345,5 @@ module.exports.version = version
 module.exports.supportedInputFormats = supportedInputFormats
 module.exports.supportedOutputFormats = supportedOutputFormats
 module.exports.getErrorCategory = getErrorCategory
-module.exports.createStreamingPipeline = createStreamingPipeline
+module.exports.createStreamingPipeline = (options) =>
+  createStreamingPipeline({ ...options, ImageEngine })
