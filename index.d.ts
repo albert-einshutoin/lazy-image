@@ -55,6 +55,29 @@ export interface PresetBufferResult {
   /** Target height (None if aspect ratio preserved) */
   height?: number
 }
+
+/** Supported output formats for encoding */
+export type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif'
+
+/** Supported input formats for decoding */
+export type InputFormat =
+  | 'jpeg'
+  | 'jpg'
+  | 'png'
+  | 'webp'
+  | 'avif'
+  | 'gif'
+  | 'tiff'
+  | 'bmp'
+  | 'ico'
+  | 'pnm'
+  | 'tga'
+
+/** Preset names available in the library */
+export type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
+
+/** Resize fit options */
+export type ResizeFit = 'inside' | 'cover' | 'fill'
 export interface BatchOptions {
   /** Output format ("jpeg", "png", "webp", "avif") */
   format: string
