@@ -55,7 +55,7 @@ webp = "0.3"
 # This is acceptable until zune-png 0.5 is released (currently only 0.4 available).
 # TODO: Upgrade to zune-png 0.5 when available to unify zune-core versions.
 zune-png = "0.4"
-zune-core = "0.4"
+zune-core = "0.5"
 
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
