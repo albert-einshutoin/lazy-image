@@ -69,7 +69,10 @@ jobs:
           benchmark-data-dir-path: benchmark-data
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: ${{ github.event_name != 'pull_request' }}
-          comment-on-pr: ${{ github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true' }}
+          # comment-always replaces invalid 'comment-on-pr' option
+          comment-always: ${{ github.event_name == 'pull_request' && env.IS_INTERNAL_PR == 'true' }}
+          # Skip fetch on first run when gh-pages branch doesn't exist yet
+          skip-fetch-gh-pages: true
           # Do not fail main on regression so merge/push does not break CI; results still stored and visible
           fail-on-alert: false
           alert-threshold: '5%'
