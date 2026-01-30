@@ -100,7 +100,7 @@ parking_lot = "0.12"
 tikv-jemallocator = { version = "0.6", optional = true, features = ["disable_initial_exec_tls"] }
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.8"
 proptest = "1.4"
 
 [[bench]]
