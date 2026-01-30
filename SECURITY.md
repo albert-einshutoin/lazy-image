@@ -4,9 +4,30 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.7.x   | :white_check_mark: |
-| 0.6.x   | :white_check_mark: |
-| < 0.6   | :x:                |
+| 0.9.x   | :white_check_mark: |
+| 0.8.x   | :white_check_mark: |
+| < 0.8   | :x:                |
+
+## Reporting a Vulnerability
+
+If you discover a security vulnerability, please report it privately.
+
+**Preferred channels**
+- GitHub Security Advisory: [Report a vulnerability](https://github.com/albert-einshutoin/lazy-image/security/advisories/new)
+- Email: einstein.4s.1110@gmail.com (use for embargoed findings or if GSA is unavailable)
+
+**What to include**
+- Affected version(s) and environment
+- Reproduction steps and minimal proof-of-concept
+- Impact assessment (confidentiality/integrity/availability)
+- Suggested fixes or mitigations (if any)
+
+**Response targets**
+- Acknowledge: within 72 hours
+- Triage & severity: within 7 days
+- Fix & patch release: depends on severity (see CVE/patch policy below)
+
+Please avoid public issue trackers until a fix is released.
 
 ## Security Measures
 
@@ -32,38 +53,26 @@ lazy-image implements several security measures to protect against common vulner
 - Structured error handling with error codes for programmatic handling
 - Graceful handling of corrupted or malformed images
 
-## Reporting a Vulnerability
+## CVE and Patch Policy
 
-If you discover a security vulnerability, please report it responsibly:
+- **CVE assignment**: For confirmed vulnerabilities with CVSS ≥ 4.0 (Medium+), we will request a CVE via the GitHub Security Advisory workflow and publish the advisory once a fix is available.
+- **Patch releases**:
+  - Critical/High: security patch release within 14 days of confirmation.
+  - Medium: patch in the next scheduled minor/patch release (target ≤ 30 days).
+  - Low: fixed opportunistically in a regular release.
+- **Backports**: Security fixes are backported to all supported lines (0.9.x and 0.8.x). Unsupported versions (<0.8) are not patched; users must upgrade.
+- **Disclosure**: Public disclosure occurs after a fix is released and packages are available. If coordinated disclosure is requested, we honor reasonable embargoes up to 90 days.
+- **Credit**: We credit reporters in the advisory unless anonymity is requested.
 
-### DO
+## Dependency Security Updates
 
-1. **Email directly**: Report security issues privately to the maintainers
-2. **Include details**: Provide steps to reproduce, impact assessment, and any proof-of-concept
-3. **Allow time**: Give us reasonable time to address the issue before public disclosure
+Key upstreams: mozjpeg, libwebp, libavif-sys/rav1e, image crate.
 
-### DON'T
-
-- Open a public GitHub issue for security vulnerabilities
-- Disclose the vulnerability publicly before it's fixed
-- Exploit the vulnerability beyond what's needed to demonstrate it
-
-### Response Timeline
-
-- **Initial response**: Within 72 hours
-- **Triage and assessment**: Within 1 week
-- **Fix development**: Depends on severity
-  - Critical/High: Target fix within 1-2 weeks
-  - Medium: Target fix in next minor release
-  - Low: Target fix in next major release
-
-### After Reporting
-
-1. We will acknowledge receipt of your report
-2. We will investigate and validate the vulnerability
-3. We will develop and test a fix
-4. We will release a patched version
-5. We will credit you in the release notes (unless you prefer to remain anonymous)
+- We monitor upstream security advisories (CVE feeds, GitHub Security Advisories, distro trackers).
+- **Critical/High upstream CVEs**: update dependency and release a patched version within 14 days.
+- **Medium upstream CVEs**: update in the next regular release (target ≤ 30 days).
+- **Low/Informational**: update during routine maintenance.
+- Dependency updates follow semver-compatible ranges where possible; otherwise, changelog will call out breaking impacts.
 
 ## Security Best Practices for Users
 
