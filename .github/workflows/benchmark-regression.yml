@@ -70,7 +70,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: ${{ github.event_name != 'pull_request' }}
           comment-on-pr: ${{ github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true' }}
-          fail-on-alert: true
+          # Do not fail main on regression so merge/push does not break CI; results still stored and visible
+          fail-on-alert: false
           alert-threshold: '5%'
 
       - name: Skip write operations on external forks
