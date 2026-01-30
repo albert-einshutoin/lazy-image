@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.0] - 2026-01-30
+
+### Added
+- EXIF metadata preservation with `keepMetadata({ exif: true })` (#207)
+  - GPS coordinates stripped by default for privacy protection (`stripGps: true`)
+  - EXIF Orientation auto-reset to 1 after auto-orient to prevent double-rotation
+  - Zero-copy EXIF sanitization via direct TIFF byte manipulation
+  - Currently supports JPEG output; PNG/WebP/AVIF planned for future releases
+- Fused Extract operation (resize+crop) with zero-allocation pipeline path and memory model support (#240)
+- Benchmarks for resize+crop vs sharp plus JS integration tests covering fusion path (#240)
+- Docs: Documented deprecation plan for `ProcessingMetrics` legacy aliases (`decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize`). Marked as `@deprecated` in `index.d.ts`; scheduled for removal in v2.0.0. Migrate to `decodeMs`, `opsMs`, `encodeMs`, `peakRss`, `bytesIn`, `bytesOut`.
+
+### Performance
+- Optimized codec backends (PNG decode via zune-png, WebP decode via libwebp)
+  - Faster PNG/WebP decoding with SIMD/native codecs
+  - Fallback to image crate for large PNGs (>16,384px) and animated WebP to preserve compatibility
+  - Added safety checks to keep MAX_DIMENSION enforcement consistent
+
+### Changed
+- Memory semaphore switched to `parking_lot` mutex/condvar for reduced contention under load; added contention benchmark (#241)
+- Added ColorState tracking for pipeline operations (color space / bit depth / transfer / ICC) to prepare for safer color-handling (#169)
+- Docs: Clarified `createStreamingPipeline()` is disk-backed bounded-memory (not true chunk streaming); name retained for compatibility (#260)
+- Documentation corrected: AVIF now preserves ICC profiles in v0.9.0+ via libavif-sys; pre-0.9.0 ravif-only builds still drop ICC (#256)
+- API: `processBatch()` now uses an options object `{ format, quality?, fastMode?, concurrency? }`; legacy positional signature remains but is deprecated and scheduled for removal in v2.0.0 (wasm). Starting v0.9.1, new options will only be added to the options object (positional signature is frozen) (#258)
+- Ops: Added operation contracts, validator, and `docs/OPERATIONS.md` documenting prerequisites/effects (#201)
+- Docs: README positioning strengthened with security defaults, zero-copy definition, and measurable RSS/heap targets (#195)
+- Docs: README fully English; added `README.ja.md` for Japanese summary (#255)
+- Docs: SECURITY policy expanded with CVE/dependency update guidance (#197)
+- Docs: Added `spec/` directory for resize/metadata/errors/limits/quality semantics (#193)
+- API: Added `normalizePixelFormat()` and deprecated legacy `ensureRgb()` alias to clarify pixel-format-only normalization (no color space conversion) (#259)
+- Docs: README Benchmark section replaced with Performance & Trade-offs (lazy-image vs sharp summary table, Which one to choose, Philosophy)
+
+---
+
 ## [0.9.0] - 2026-01-21
 
 ### Added
@@ -73,7 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved API consistency
 
 ### Fixed
-- EXIFパーサ依存をcrates.io配布の`kamadak-exif`に変更しビルド再現性を確保 (#231)
+- Changed EXIF parser dependency to `kamadak-exif` from crates.io to ensure build reproducibility (#231)
 - Fixed PNG ICC profile tests (#218, #164)
 - Fixed tests that were always passing (#217, #216)
 
@@ -83,7 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Telemetry metrics for performance monitoring (#86)
-  - Added `toBufferWithMetrics()` method to return processing metrics
+- Added `toBufferWithMetrics()` method to return processing metrics
+- Added preset convenience methods: `toBufferWithPreset()`, `toBufferWithMetricsPreset()`, `toFileWithPreset()`
   - Added `ProcessingMetrics` interface with decode time, process time, encode time, memory peak, CPU time, and compression ratio
   - Added `OutputWithMetrics` interface combining output data and metrics
 - Smart concurrency with auto memory cap detection (#85)
@@ -99,7 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.8.6] - 2026-01-XX
+## [0.8.6] - 2026-01-13
 
 ### Changed
 - Version bump to 0.8.6
@@ -329,7 +364,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.7...v0.9.0
 [0.8.7]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.5...v0.8.6

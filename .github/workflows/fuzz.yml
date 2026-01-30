@@ -1,6 +1,14 @@
 name: Fuzz
 
 on:
+  pull_request:
+    paths:
+      - "fuzz/**"
+      - "src/**"
+      - ".github/workflows/fuzz.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "package-lock.json"
   schedule:
     # Run nightly at 3:00 UTC
     - cron: '0 3 * * *'
@@ -18,12 +26,17 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # Fuzz duration: 5 minutes per target for scheduled runs
-  FUZZ_DURATION: ${{ github.event.inputs.fuzz_duration || '300' }}
+  FUZZ_DURATION: ${{ github.event_name == 'pull_request' && '60' || github.event.inputs.fuzz_duration || '300' }}
+  FUZZ_SANITIZER: address
 
 jobs:
   fuzz:
     name: Fuzz ${{ matrix.target }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write      # For cache save
+      issues: write       # For creating issues on crash
     strategy:
       fail-fast: false
       matrix:
@@ -33,6 +46,10 @@ jobs:
           - inspect_header
           - encode_to_format
           - icc_profile
+          - batch_concurrent
+          - firewall_bypass
+          - metrics_processing
+          - streaming_pipeline
     steps:
       - uses: actions/checkout@v4
 
@@ -47,7 +64,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake nasm
+          sudo apt-get install -y cmake nasm clang lld
 
       - name: Cache cargo registry
         uses: actions/cache@v4
@@ -77,18 +94,35 @@ jobs:
             cp -r fuzz/seeds/* fuzz/corpus/${{ matrix.target }}/ 2>/dev/null || true
           fi
 
+      - name: Build fuzzer
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        env:
+          RUSTFLAGS: "-Zsanitizer=address"
+          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
+        run: |
+          cd fuzz
+          cargo +nightly fuzz build --sanitizer=${FUZZ_SANITIZER} ${{ matrix.target }}
+
       - name: Run fuzzer
-        if: ${{ github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
+        env:
+          RUSTFLAGS: "-Zsanitizer=address"
+          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
         run: |
           cd fuzz
           # Run with memory limit (2GB) and length limit (1MB)
-          timeout ${FUZZ_DURATION}s cargo +nightly fuzz run ${{ matrix.target }} -- \
+          # Timeout applies only to fuzzer execution, not build time
+          timeout ${FUZZ_DURATION}s cargo +nightly fuzz run --sanitizer=${FUZZ_SANITIZER} ${{ matrix.target }} -- \
             -max_len=1048576 \
             -rss_limit_mb=2048 \
             -max_total_time=${FUZZ_DURATION} \
             || EXIT_CODE=$?
-          # Exit code 77 = timeout (expected), 0 = normal
-          if [ "${EXIT_CODE:-0}" != "0" ] && [ "${EXIT_CODE:-0}" != "77" ]; then
+          # Exit codes that indicate successful completion:
+          #   0 = normal completion (no crashes found)
+          #  77 = libFuzzer reached max_total_time (expected - means no crashes in time limit)
+          # 124 = timeout command terminated after time limit (expected - means no crashes in time limit)
+          # Any other exit code indicates a real failure (crash, memory error, etc.)
+          if [ "${EXIT_CODE:-0}" != "0" ] && [ "${EXIT_CODE:-0}" != "77" ] && [ "${EXIT_CODE:-0}" != "124" ]; then
             exit $EXIT_CODE
           fi
 
@@ -113,6 +147,9 @@ jobs:
     needs: fuzz
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      contents: read
+      issues: write       # For creating issues on crash
     steps:
       - name: Download all crash artifacts
         uses: actions/download-artifact@v4
@@ -135,7 +172,7 @@ jobs:
           fi
 
       - name: Create issue on crash
-        if: steps.check_crashes.outputs.has_crashes == 'true'
+        if: steps.check_crashes.outputs.has_crashes == 'true' && github.event_name != 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
