@@ -1,5 +1,5 @@
 /**
- * 型安全性の実際の動作確認
+ * Runtime verification of type-safety behavior.
  */
 
 const { resolveFixture, resolveRoot } = require('../helpers/paths');
@@ -11,7 +11,7 @@ async function testTypeSafetyInPractice() {
     
     const imagePath = resolveFixture('test_input.jpg');
     
-    // 有効なフォーマットのテスト
+    // Valid formats test
     console.log('✅ Valid formats test:');
     const validFormats = ['jpeg', 'jpg', 'webp'];
     
@@ -26,7 +26,7 @@ async function testTypeSafetyInPractice() {
         }
     }
     
-    // プリセットテスト
+    // Preset test
     console.log('\n✅ Valid presets test:');
     const validPresets = ['thumbnail', 'avatar', 'hero', 'social'];
     
@@ -40,15 +40,18 @@ async function testTypeSafetyInPractice() {
             console.log(`    Quality: ${preset.quality}`);
             console.log(`    Size: ${preset.width}x${preset.height}`);
             
-            // TypeScriptでは型安全、JavaScriptでは実行時エラーチェック
+            // Type-safe in TypeScript; runtime checks in JavaScript
             const buffer = await engine.toBuffer(preset.format, preset.quality);
             console.log(`    Result: ${buffer.length} bytes`);
+
+            const convenience = await ImageEngine.fromPath(imagePath).toBufferWithPreset(presetName);
+            console.log(`    Convenience result: ${convenience.length} bytes`);
         } catch (e) {
             console.log(`  ${presetName}: Error - ${e.message}`);
         }
     }
     
-    // 無効な値のテスト（実行時エラー）
+    // Invalid values test (should fail at runtime)
     console.log('\n❌ Invalid values test (should fail at runtime):');
     
     try {

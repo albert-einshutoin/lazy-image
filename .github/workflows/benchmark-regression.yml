@@ -1,0 +1,85 @@
+name: Benchmark Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  APP_NAME: lazy-image
+  MACOSX_DEPLOYMENT_TARGET: '10.13'
+
+jobs:
+  benchmark:
+    name: Benchmark Regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      IS_INTERNAL_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build native binding (Linux)
+        run: npm run build -- --target x86_64-unknown-linux-gnu
+
+      - name: Run benchmark comparison (captures JSON)
+        env:
+          BENCHMARK_OUTPUT_JSON: artifacts/benchmark/summary.json
+        run: |
+          mkdir -p artifacts/benchmark
+          npm run test:bench:compare
+
+      - name: Run zero-copy verification
+        run: |
+          mkdir -p artifacts/benchmark
+          node --expose-gc docs/scripts/measure-zero-copy.js > artifacts/benchmark/zero-copy.json
+
+      - name: Store benchmark result
+        if: github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: artifacts/benchmark/summary.json
+          benchmark-data-dir-path: benchmark-data
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.event_name != 'pull_request' }}
+          comment-on-pr: ${{ github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true' }}
+          fail-on-alert: true
+          alert-threshold: '5%'
+
+      - name: Skip write operations on external forks
+        if: github.event_name == 'pull_request' && env.IS_INTERNAL_PR != 'true'
+        run: echo "External fork PR detected; skipped auto-push/comment to avoid write failures."
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-regression
+          path: artifacts/benchmark
+          if-no-files-found: error

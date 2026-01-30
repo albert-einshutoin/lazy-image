@@ -5,24 +5,310 @@
 
 // BatchResult is used in ts_return_type attribute (line 446) - compiler can't detect this
 // Source is used via Source::Memory and Source::Mapped
-use super::firewall::{FirewallConfig, FirewallPolicy};
+use super::firewall::FirewallConfig;
+#[cfg(feature = "napi")]
+use super::firewall::FirewallPolicy;
 #[allow(unused_imports)]
-use crate::engine::io::{extract_icc_profile, Source};
+use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, Source};
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{
     BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
 };
 use crate::error::LazyImageError;
+#[cfg(feature = "napi")]
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
-use image::{DynamicImage, GenericImageView, ImageReader};
+#[cfg(not(feature = "napi"))]
+use crate::ops::{Operation, PresetConfig};
+#[cfg(feature = "napi")]
+use image::ImageReader;
+use image::{DynamicImage, GenericImageView};
+#[cfg(feature = "napi")]
 use std::io::Cursor;
+#[cfg(feature = "napi")]
 use std::path::PathBuf;
+#[cfg(feature = "napi")]
 use std::str::FromStr;
 use std::sync::Arc;
 
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
+
+#[cfg(feature = "napi")]
+#[derive(Default)]
+#[napi(object)]
+pub struct KeepMetadataOptions {
+    /// Preserve ICC profile (default: true when options are provided)
+    pub icc: Option<bool>,
+    /// Preserve EXIF metadata (camera info, settings, etc.)
+    /// Note: Orientation tag is automatically reset to 1 after auto-orient
+    pub exif: Option<bool>,
+    /// XMP preservation is not implemented yet (will emit runtime warning when requested)
+    pub xmp: Option<bool>,
+    /// Strip GPS/location tags from EXIF (default: true for privacy protection)
+    /// This is a security-first default that exceeds Sharp's capabilities
+    pub strip_gps: Option<bool>,
+}
+
+#[cfg(feature = "napi")]
+fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
+    // Helper to attach code/category consistently when Env is available
+    crate::error::napi_error_with_code(env, err).expect("failed to create napi error")
+}
+
+#[cfg(feature = "napi")]
+mod validation {
+    use super::*;
+    use std::path::Path;
+
+    #[derive(Debug, PartialEq, Eq)]
+    pub enum LimitUpdate {
+        Unchanged,
+        Disable,
+        Set(u64),
+    }
+
+    fn number_label(v: f64) -> String {
+        if v.is_nan() {
+            "NaN".to_string()
+        } else if v.is_infinite() && v.is_sign_positive() {
+            "Infinity".to_string()
+        } else if v.is_infinite() && v.is_sign_negative() {
+            "-Infinity".to_string()
+        } else {
+            v.to_string()
+        }
+    }
+
+    pub fn ensure_finite_integer(
+        name: &'static str,
+        value: f64,
+    ) -> std::result::Result<i64, LazyImageError> {
+        if !value.is_finite() {
+            return Err(LazyImageError::invalid_argument(
+                name,
+                number_label(value),
+                "must be a finite number",
+            ));
+        }
+        if value.fract() != 0.0 {
+            return Err(LazyImageError::invalid_argument(
+                name,
+                value.to_string(),
+                "must be an integer",
+            ));
+        }
+        if value.abs() > (i64::MAX as f64) {
+            return Err(LazyImageError::invalid_argument(
+                name,
+                value.to_string(),
+                "is too large",
+            ));
+        }
+        Ok(value as i64)
+    }
+
+    fn sanitize_dimension(
+        name: &'static str,
+        raw: Option<f64>,
+        allow_zero: bool,
+    ) -> std::result::Result<Option<u32>, LazyImageError> {
+        match raw {
+            None => Ok(None),
+            Some(v) => {
+                let int = ensure_finite_integer(name, v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_resize_dimensions(Some(0), None));
+                }
+                let value_u32 = u32::try_from(int)
+                    .map_err(|_| LazyImageError::invalid_resize_dimensions(None, None))?;
+                if !allow_zero && value_u32 == 0 {
+                    return Err(LazyImageError::invalid_resize_dimensions(Some(0), None));
+                }
+                if value_u32 > crate::engine::MAX_DIMENSION {
+                    return Err(LazyImageError::invalid_resize_dimensions(
+                        Some(value_u32),
+                        None,
+                    ));
+                }
+                Ok(Some(value_u32))
+            }
+        }
+    }
+
+    pub fn sanitize_resize_dimensions(
+        width: Option<f64>,
+        height: Option<f64>,
+    ) -> std::result::Result<(Option<u32>, Option<u32>), LazyImageError> {
+        let width = sanitize_dimension("width", width, false)?;
+        let height = sanitize_dimension("height", height, false)?;
+
+        if width.is_none() && height.is_none() {
+            return Err(LazyImageError::invalid_resize_dimensions(None, None));
+        }
+
+        Ok((width, height))
+    }
+
+    pub fn sanitize_crop(
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    ) -> std::result::Result<(u32, u32, u32, u32), LazyImageError> {
+        let x_i = ensure_finite_integer("x", x)?;
+        let y_i = ensure_finite_integer("y", y)?;
+        let width_i = ensure_finite_integer("width", width)?;
+        let height_i = ensure_finite_integer("height", height)?;
+
+        if x_i < 0 || y_i < 0 {
+            return Err(LazyImageError::invalid_argument(
+                "crop offset",
+                format!("x={x_i}, y={y_i}"),
+                "must be zero or positive",
+            ));
+        }
+
+        if width_i <= 0 || height_i <= 0 {
+            let w = u32::try_from(width_i.max(0)).unwrap_or(0);
+            let h = u32::try_from(height_i.max(0)).unwrap_or(0);
+            return Err(LazyImageError::invalid_crop_dimensions(w, h));
+        }
+
+        let width_u32 = u32::try_from(width_i)
+            .map_err(|_| LazyImageError::invalid_crop_dimensions(u32::MAX, u32::MAX))?;
+        let height_u32 = u32::try_from(height_i)
+            .map_err(|_| LazyImageError::invalid_crop_dimensions(u32::MAX, u32::MAX))?;
+
+        if width_u32 > crate::engine::MAX_DIMENSION || height_u32 > crate::engine::MAX_DIMENSION {
+            return Err(LazyImageError::invalid_crop_dimensions(
+                width_u32, height_u32,
+            ));
+        }
+
+        let x_u32 = u32::try_from(x_i).map_err(|_| {
+            LazyImageError::invalid_argument("x", x_i.to_string(), "must fit into u32")
+        })?;
+        let y_u32 = u32::try_from(y_i).map_err(|_| {
+            LazyImageError::invalid_argument("y", y_i.to_string(), "must fit into u32")
+        })?;
+
+        Ok((x_u32, y_u32, width_u32, height_u32))
+    }
+
+    pub fn sanitize_quality(
+        quality: Option<f64>,
+    ) -> std::result::Result<Option<u8>, LazyImageError> {
+        match quality {
+            None => Ok(None),
+            Some(v) => {
+                let int = ensure_finite_integer("quality", v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_argument(
+                        "quality",
+                        int.to_string(),
+                        "must be >= 0",
+                    ));
+                }
+                let clamped = int.min(100);
+                let value = u8::try_from(clamped).map_err(|_| {
+                    LazyImageError::invalid_argument("quality", int.to_string(), "must be <= 255")
+                })?;
+                Ok(Some(value))
+            }
+        }
+    }
+
+    pub fn sanitize_concurrency(
+        concurrency: Option<f64>,
+    ) -> std::result::Result<u32, LazyImageError> {
+        match concurrency {
+            None => Ok(0),
+            Some(v) => {
+                let int = ensure_finite_integer("concurrency", v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_argument(
+                        "concurrency",
+                        int.to_string(),
+                        "must be >= 0",
+                    ));
+                }
+                let value = u32::try_from(int).map_err(|_| {
+                    LazyImageError::invalid_argument(
+                        "concurrency",
+                        int.to_string(),
+                        "must be within u32 range",
+                    )
+                })?;
+
+                if value > crate::engine::MAX_CONCURRENCY as u32 {
+                    return Err(LazyImageError::internal_panic(format!(
+                        "invalid concurrency value: {} (must be 0 or 1-{})",
+                        value,
+                        crate::engine::MAX_CONCURRENCY
+                    )));
+                }
+
+                Ok(value)
+            }
+        }
+    }
+
+    pub fn sanitize_limit(
+        name: &'static str,
+        value: Option<f64>,
+    ) -> std::result::Result<LimitUpdate, LazyImageError> {
+        match value {
+            None => Ok(LimitUpdate::Unchanged),
+            Some(v) => {
+                let int = ensure_finite_integer(name, v)?;
+                if int < 0 {
+                    return Err(LazyImageError::invalid_argument(
+                        name,
+                        int.to_string(),
+                        "must be >= 0",
+                    ));
+                }
+                if int == 0 {
+                    return Ok(LimitUpdate::Disable);
+                }
+                let value = u64::try_from(int).map_err(|_| {
+                    LazyImageError::invalid_argument(name, int.to_string(), "must fit within u64")
+                })?;
+                Ok(LimitUpdate::Set(value))
+            }
+        }
+    }
+
+    pub fn validate_output_path(path: &str) -> std::result::Result<(), LazyImageError> {
+        if path.trim().is_empty() {
+            return Err(LazyImageError::invalid_argument(
+                "path",
+                "<empty>",
+                "output path must not be empty",
+            ));
+        }
+
+        let path_buf = Path::new(path);
+        let parent = path_buf.parent().ok_or_else(|| {
+            LazyImageError::invalid_argument(
+                "path",
+                path.to_string(),
+                "must include a parent directory",
+            )
+        })?;
+
+        if !parent.exists() {
+            return Err(LazyImageError::invalid_argument(
+                "path",
+                path.to_string(),
+                "parent directory does not exist",
+            ));
+        }
+
+        Ok(())
+    }
+}
 
 /// The main image processing engine.
 ///
@@ -35,7 +321,6 @@ use napi::bindgen_prelude::*;
 ///   .toBuffer('jpeg', 75);
 /// ```
 #[cfg_attr(feature = "napi", napi)]
-#[allow(dead_code)]
 pub struct ImageEngine {
     /// Image source - supports in-memory data and memory-mapped files
     pub(crate) source: Option<Source>,
@@ -45,14 +330,26 @@ pub struct ImageEngine {
     pub(crate) decoded: Option<Arc<DynamicImage>>,
     /// Queued operations
     pub(crate) ops: Vec<Operation>,
+    /// Last applied preset (used by toPresetBuffer/toPresetFile convenience APIs)
+    pub(crate) last_preset: Option<PresetConfig>,
     /// ICC color profile extracted from source image
     pub(crate) icc_profile: Option<Arc<Vec<u8>>>,
+    /// Raw EXIF data extracted from source image (for preservation)
+    /// Stored as raw bytes to avoid serialization issues with little_exif::Metadata
+    pub(crate) exif_data: Option<Arc<Vec<u8>>>,
     /// Whether to auto-apply EXIF Orientation (default: true)
     pub(crate) auto_orient: bool,
     /// Whether to preserve ICC profile in output.
-    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
     /// Default is false (strip all) for security and smaller file sizes.
-    pub(crate) keep_metadata: bool,
+    pub(crate) keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output.
+    /// Default is false (strip all) for security and smaller file sizes.
+    pub(crate) keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF (default: true for privacy)
+    /// This is a security-first feature that exceeds Sharp's capabilities.
+    pub(crate) strip_gps: bool,
+    /// Whether we already emitted a warning about XMP being unsupported.
+    pub(crate) xmp_warning_emitted: bool,
     pub(crate) firewall: FirewallConfig,
 }
 
@@ -64,22 +361,32 @@ impl ImageEngine {
     // =========================================================================
 
     /// Create engine from a buffer. Decoding is lazy.
-    /// Extracts ICC profile from the source image if present.
+    /// Extracts ICC profile and EXIF metadata from the source image if present.
     #[napi(factory)]
     pub fn from(buffer: Buffer) -> Self {
         let data = buffer.to_vec();
 
         // Extract ICC profile before any processing
-        let icc_profile = extract_icc_profile(&data).map(Arc::new);
+        let icc_profile = extract_icc_profile_lossy(&data).map(Arc::new);
+
+        // Extract raw EXIF data for potential preservation
+        // We store raw bytes to avoid serialization complexity
+        let exif_data = extract_exif_raw(&data).map(Arc::new);
+
         let data_arc = Arc::new(data);
 
         ImageEngine {
             source: Some(Source::Memory(data_arc)),
             decoded: None,
             ops: Vec::new(),
+            last_preset: None,
             icc_profile,
+            exif_data,
             auto_orient: true,
-            keep_metadata: false, // Strip metadata by default for security & smaller files
+            keep_icc: false, // Strip metadata by default for security & smaller files
+            keep_exif: false, // Strip EXIF by default for security
+            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
+            xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         }
     }
@@ -92,6 +399,13 @@ impl ImageEngine {
     pub fn from_path(env: Env, path: String) -> Result<Self> {
         use memmap2::Mmap;
         use std::fs::File;
+
+        if path.trim().is_empty() {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument("path", "<empty>", "path must not be empty"),
+            ));
+        }
 
         let path_buf = PathBuf::from(&path);
 
@@ -113,10 +427,8 @@ impl ImageEngine {
         };
 
         // Safety: We assume the file won't be modified externally during processing.
-        // This is a common assumption in image processing libraries.
-        // For production use, consider adding file locking (flock) if needed.
-        // Note: On Windows, memory-mapped files cannot be deleted while mapped.
-        // This is a platform limitation that should be documented for users.
+        // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
+        // For concurrent access concerns, use a copy path or file locking.
         let mmap = unsafe {
             match Mmap::map(&file) {
                 Ok(mmap) => mmap,
@@ -130,15 +442,23 @@ impl ImageEngine {
         let mmap_arc = Arc::new(mmap);
 
         // Extract ICC profile from memory-mapped data
-        let icc_profile = extract_icc_profile(mmap_arc.as_ref()).map(Arc::new);
+        let icc_profile = extract_icc_profile_lossy(mmap_arc.as_ref()).map(Arc::new);
+
+        // Extract raw EXIF data for potential preservation
+        let exif_data = extract_exif_raw(mmap_arc.as_ref()).map(Arc::new);
 
         Ok(ImageEngine {
             source: Some(Source::Mapped(mmap_arc)),
             decoded: None,
             ops: Vec::new(),
+            last_preset: None,
             icc_profile,
+            exif_data,
             auto_orient: true,
-            keep_metadata: false, // Strip metadata by default for security & smaller files
+            keep_icc: false, // Strip metadata by default for security & smaller files
+            keep_exif: false, // Strip EXIF by default for security
+            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
+            xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         })
     }
@@ -150,9 +470,14 @@ impl ImageEngine {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
+            last_preset: self.last_preset.clone(),
             icc_profile: self.icc_profile.clone(),
+            exif_data: self.exif_data.clone(),
             auto_orient: self.auto_orient,
-            keep_metadata: self.keep_metadata,
+            keep_icc: self.keep_icc,
+            keep_exif: self.keep_exif,
+            strip_gps: self.strip_gps,
+            xmp_warning_emitted: self.xmp_warning_emitted,
             firewall: self.firewall.clone(),
         })
     }
@@ -169,16 +494,21 @@ impl ImageEngine {
     #[napi]
     pub fn resize(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
-        width: Option<u32>,
-        height: Option<u32>,
+        width: Option<f64>,
+        height: Option<f64>,
         fit: Option<String>,
     ) -> Result<Reference<ImageEngine>> {
         let fit_mode = if let Some(value) = fit {
-            ResizeFit::from_str(&value).map_err(|_| LazyImageError::invalid_resize_fit(value))?
+            ResizeFit::from_str(&value)
+                .map_err(|_| napi_err(&env, LazyImageError::invalid_resize_fit(value)))?
         } else {
             ResizeFit::default()
         };
+
+        let (width, height) =
+            validation::sanitize_resize_dimensions(width, height).map_err(|e| napi_err(&env, e))?;
 
         self.ops.push(Operation::Resize {
             width,
@@ -192,26 +522,42 @@ impl ImageEngine {
     #[napi]
     pub fn crop(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
-        x: u32,
-        y: u32,
-        width: u32,
-        height: u32,
-    ) -> Reference<ImageEngine> {
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    ) -> Result<Reference<ImageEngine>> {
+        let (x, y, width, height) =
+            validation::sanitize_crop(x, y, width, height).map_err(|e| napi_err(&env, e))?;
         self.ops.push(Operation::Crop {
             x,
             y,
             width,
             height,
         });
-        this
+        Ok(this)
     }
 
     /// Rotate by degrees (90, 180, 270 only)
     #[napi]
-    pub fn rotate(&mut self, this: Reference<ImageEngine>, degrees: i32) -> Reference<ImageEngine> {
-        self.ops.push(Operation::Rotate { degrees });
-        this
+    pub fn rotate(
+        &mut self,
+        env: Env,
+        this: Reference<ImageEngine>,
+        degrees: i32,
+    ) -> Result<Reference<ImageEngine>> {
+        match degrees {
+            0 | 90 | 180 | 270 | -90 | -180 | -270 => {
+                self.ops.push(Operation::Rotate { degrees });
+                Ok(this)
+            }
+            other => Err(napi_err(
+                &env,
+                LazyImageError::invalid_rotation_angle(other),
+            )),
+        }
     }
 
     /// Flip horizontally
@@ -248,14 +594,38 @@ impl ImageEngine {
         this
     }
 
-    /// Preserve ICC profile in output.
-    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
-    /// By default, all metadata is stripped for security (no GPS leak) and smaller file sizes.
-    /// Call this method to keep ICC profile when color accuracy is important.
+    /// Preserve metadata in output.
+    /// - ICC profile: Preserved when `icc: true` (default when options provided)
+    /// - EXIF: Preserved when `exif: true`. Orientation is auto-reset to 1 after auto-orient.
+    /// - GPS: Stripped by default when `stripGps: true` (privacy-first, exceeds Sharp)
+    /// - XMP: Not yet supported (emits warning)
+    ///
+    /// By default, all metadata is stripped for security and smaller file sizes.
     #[napi(js_name = "keepMetadata")]
-    pub fn keep_metadata(&mut self, this: Reference<ImageEngine>) -> Reference<ImageEngine> {
-        self.keep_metadata = true;
-        this
+    pub fn keep_metadata(
+        &mut self,
+        _env: Env,
+        this: Reference<ImageEngine>,
+        options: Option<KeepMetadataOptions>,
+    ) -> Result<Reference<ImageEngine>> {
+        let opts = options.unwrap_or_default();
+        let icc = opts.icc.unwrap_or(true);
+        let exif = opts.exif.unwrap_or(false);
+        let xmp = opts.xmp.unwrap_or(false);
+        let strip_gps = opts.strip_gps.unwrap_or(true); // Default: strip GPS for privacy
+
+        // XMP is not yet supported - emit warning once
+        if xmp && !self.xmp_warning_emitted {
+            let warning =
+                "keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.";
+            eprintln!("{}", warning);
+            self.xmp_warning_emitted = true;
+        }
+
+        self.keep_icc = icc;
+        self.keep_exif = exif;
+        self.strip_gps = strip_gps;
+        Ok(this)
     }
 
     /// Enable Image Firewall mode with built-in policies (strict or lenient).
@@ -264,6 +634,7 @@ impl ImageEngine {
     #[napi]
     pub fn sanitize(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
         options: Option<SanitizeOptions>,
     ) -> Result<Reference<ImageEngine>> {
@@ -274,24 +645,36 @@ impl ImageEngine {
         let policy = match lowered.as_str() {
             "strict" => FirewallPolicy::Strict,
             "lenient" => FirewallPolicy::Lenient,
-            _ => return Err(LazyImageError::invalid_firewall_policy(requested).into()),
+            _ => {
+                return Err(napi_err(
+                    &env,
+                    LazyImageError::invalid_firewall_policy(requested),
+                ))
+            }
         };
 
         self.firewall = FirewallConfig::apply_policy(policy);
         if self.firewall.reject_metadata {
-            self.keep_metadata = false;
+            self.keep_icc = false;
+            self.keep_exif = false;
             self.icc_profile = None;
+            self.exif_data = None;
         }
 
         if let Some(decoded) = &self.decoded {
             self.firewall
-                .enforce_pixels(decoded.width(), decoded.height())?;
+                .enforce_pixels(decoded.width(), decoded.height())
+                .map_err(|e| napi_err(&env, e))?;
         }
 
         if let Some(source) = &self.source {
-            self.firewall.enforce_source_len(source.len())?;
+            self.firewall
+                .enforce_source_len(source.len())
+                .map_err(|e| napi_err(&env, e))?;
             if let Some(bytes) = source.as_bytes() {
-                self.firewall.scan_metadata(bytes)?;
+                self.firewall
+                    .scan_metadata(bytes)
+                    .map_err(|e| napi_err(&env, e))?;
             }
         }
 
@@ -303,6 +686,7 @@ impl ImageEngine {
     #[napi]
     pub fn limits(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
         options: FirewallLimitOptions,
     ) -> Result<Reference<ImageEngine>> {
@@ -313,28 +697,28 @@ impl ImageEngine {
             self.firewall.policy = FirewallPolicy::Custom;
         }
 
-        if let Some(max_pixels) = options.max_pixels {
-            if max_pixels == 0 {
-                self.firewall.max_pixels = None;
-            } else {
-                self.firewall.max_pixels = Some(max_pixels as u64);
-            }
+        match validation::sanitize_limit("maxPixels", options.max_pixels)
+            .map_err(|e| napi_err(&env, e))?
+        {
+            validation::LimitUpdate::Unchanged => {}
+            validation::LimitUpdate::Disable => self.firewall.max_pixels = None,
+            validation::LimitUpdate::Set(value) => self.firewall.max_pixels = Some(value),
         }
 
-        if let Some(max_bytes) = options.max_bytes {
-            if max_bytes == 0 {
-                self.firewall.max_bytes = None;
-            } else {
-                self.firewall.max_bytes = Some(max_bytes as u64);
-            }
+        match validation::sanitize_limit("maxBytes", options.max_bytes)
+            .map_err(|e| napi_err(&env, e))?
+        {
+            validation::LimitUpdate::Unchanged => {}
+            validation::LimitUpdate::Disable => self.firewall.max_bytes = None,
+            validation::LimitUpdate::Set(value) => self.firewall.max_bytes = Some(value),
         }
 
-        if let Some(timeout) = options.timeout_ms {
-            if timeout == 0 {
-                self.firewall.timeout_ms = None;
-            } else {
-                self.firewall.timeout_ms = Some(timeout as u64);
-            }
+        match validation::sanitize_limit("timeoutMs", options.timeout_ms)
+            .map_err(|e| napi_err(&env, e))?
+        {
+            validation::LimitUpdate::Unchanged => {}
+            validation::LimitUpdate::Disable => self.firewall.timeout_ms = None,
+            validation::LimitUpdate::Set(value) => self.firewall.timeout_ms = Some(value),
         }
 
         Ok(this)
@@ -344,33 +728,76 @@ impl ImageEngine {
     #[napi]
     pub fn brightness(
         &mut self,
+        env: Env,
         this: Reference<ImageEngine>,
-        value: i32,
-    ) -> Reference<ImageEngine> {
-        let clamped = value.clamp(-100, 100);
-        self.ops.push(Operation::Brightness { value: clamped });
-        this
+        value: f64,
+    ) -> Result<Reference<ImageEngine>> {
+        let value = validation::ensure_finite_integer("brightness", value)
+            .and_then(|int| {
+                if int < -100 || int > 100 {
+                    Err(LazyImageError::invalid_argument(
+                        "brightness",
+                        int.to_string(),
+                        "expected value between -100 and 100",
+                    ))
+                } else {
+                    Ok(int as i32)
+                }
+            })
+            .map_err(|e| napi_err(&env, e))?;
+
+        self.ops.push(Operation::Brightness { value });
+        Ok(this)
     }
 
     /// Adjust contrast (-100 to 100)
     #[napi]
-    pub fn contrast(&mut self, this: Reference<ImageEngine>, value: i32) -> Reference<ImageEngine> {
-        let clamped = value.clamp(-100, 100);
-        self.ops.push(Operation::Contrast { value: clamped });
-        this
+    pub fn contrast(
+        &mut self,
+        env: Env,
+        this: Reference<ImageEngine>,
+        value: f64,
+    ) -> Result<Reference<ImageEngine>> {
+        let value = validation::ensure_finite_integer("contrast", value)
+            .and_then(|int| {
+                if int < -100 || int > 100 {
+                    Err(LazyImageError::invalid_argument(
+                        "contrast",
+                        int.to_string(),
+                        "expected value between -100 and 100",
+                    ))
+                } else {
+                    Ok(int as i32)
+                }
+            })
+            .map_err(|e| napi_err(&env, e))?;
+
+        self.ops.push(Operation::Contrast { value });
+        Ok(this)
     }
 
-    /// Ensure the image is in RGB/RGBA format (pixel format conversion, not color space transformation)
-    /// Note: This does NOT perform ICC color profile conversion - it only ensures the pixel format.
-    /// For true color space conversion with ICC profiles, use a dedicated color management library.
-    #[napi(js_name = "ensureRgb")]
-    pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
-        // Ensure RGB/RGBA pixel format (pixel format normalization, not color space conversion)
-        // For true color space conversion with ICC profiles, use a dedicated color management library.
+    /// Normalize pixel format to RGB/RGBA without performing any color space transformation.
+    /// This does not apply ICC profile conversion; it only guarantees the pixel layout is RGB/RGBA.
+    /// Use a dedicated color management library for true color space conversions.
+    #[napi(js_name = "normalizePixelFormat")]
+    pub fn normalize_pixel_format(
+        &mut self,
+        this: Reference<ImageEngine>,
+    ) -> Result<Reference<ImageEngine>> {
+        // Normalize to RGB/RGBA pixel format (no color space conversion or ICC processing)
         self.ops.push(Operation::ColorSpace {
             target: crate::ops::ColorSpace::Srgb,
         });
         Ok(this)
+    }
+
+    /// Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
+    /// Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
+    #[allow(deprecated)]
+    #[deprecated(note = "Use normalizePixelFormat; will be removed in v1.0.0.")]
+    #[napi(js_name = "ensureRgb")]
+    pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
+        self.normalize_pixel_format(this)
     }
 
     // =========================================================================
@@ -416,6 +843,9 @@ impl ImageEngine {
             OutputFormat::Avif { quality } => ("avif", Some(*quality)),
         };
 
+        // Store last preset for convenience helpers
+        self.last_preset = Some(config.clone());
+
         Ok(PresetResult {
             format: format_str.to_string(),
             quality,
@@ -440,10 +870,11 @@ impl ImageEngine {
         &mut self,
         env: Env,
         format: String,
-        quality: Option<u8>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -456,12 +887,17 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_metadata_requested = self.keep_metadata;
-        let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
+        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
+        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile.is_some();
-        let icc_profile = if keep_metadata {
+        let icc_profile = if keep_icc {
             self.icc_profile.clone()
+        } else {
+            None
+        };
+        let exif_data = if keep_exif {
+            self.exif_data.clone()
         } else {
             None
         };
@@ -473,13 +909,55 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             icc_present,
+            exif_data,
             auto_orient,
-            keep_metadata,
-            keep_metadata_requested,
+            keep_icc,
+            keep_exif,
+            strip_gps: self.strip_gps,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
         }))
+    }
+
+    /// Convenience: encode using the last applied preset by name.
+    /// Equivalent to calling `preset(name)` then `toBuffer(preset.format, preset.quality)`.
+    #[napi(js_name = "toBufferWithPreset", ts_return_type = "Promise<Buffer>")]
+    pub fn to_buffer_with_preset(
+        &mut self,
+        env: Env,
+        preset_name: String,
+    ) -> Result<AsyncTask<EncodeTask>> {
+        let preset = match PresetConfig::get(&preset_name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        // Apply resize ops in-place, mirroring preset()
+        self.ops.push(Operation::Resize {
+            width: preset.width,
+            height: preset.height,
+            fit: ResizeFit::Inside,
+        });
+
+        self.last_preset = Some(preset.clone());
+
+        let (format_str, quality, fast_mode) = match &preset.format {
+            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Png => ("png", None, None),
+            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
+            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+        };
+
+        self.to_buffer(
+            env,
+            format_str.to_string(),
+            quality.map(|q| q as f64),
+            fast_mode,
+        )
     }
 
     /// Encode to buffer asynchronously with performance metrics.
@@ -492,10 +970,11 @@ impl ImageEngine {
         &mut self,
         env: Env,
         format: String,
-        quality: Option<u8>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -508,12 +987,17 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_metadata_requested = self.keep_metadata;
-        let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
+        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
+        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile.is_some();
-        let icc_profile = if keep_metadata {
+        let icc_profile = if keep_icc {
             self.icc_profile.clone()
+        } else {
+            None
+        };
+        let exif_data = if keep_exif {
+            self.exif_data.clone()
         } else {
             None
         };
@@ -525,13 +1009,57 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             icc_present,
+            exif_data,
             auto_orient,
-            keep_metadata,
-            keep_metadata_requested,
+            keep_icc,
+            keep_exif,
+            strip_gps: self.strip_gps,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
         }))
+    }
+
+    /// Convenience: encode with metrics using a preset name.
+    /// Equivalent to `preset(name)` then `toBufferWithMetrics(preset.format, preset.quality)`.
+    #[napi(
+        js_name = "toBufferWithMetricsPreset",
+        ts_return_type = "Promise<OutputWithMetrics>"
+    )]
+    pub fn to_buffer_with_metrics_preset(
+        &mut self,
+        env: Env,
+        preset_name: String,
+    ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
+        let preset = match PresetConfig::get(&preset_name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        self.ops.push(Operation::Resize {
+            width: preset.width,
+            height: preset.height,
+            fit: ResizeFit::Inside,
+        });
+
+        self.last_preset = Some(preset.clone());
+
+        let (format_str, quality, fast_mode) = match &preset.format {
+            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Png => ("png", None, None),
+            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
+            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+        };
+
+        self.to_buffer_with_metrics(
+            env,
+            format_str.to_string(),
+            quality.map(|q| q as f64),
+            fast_mode,
+        )
     }
 
     /// Encode and write directly to a file asynchronously.
@@ -548,10 +1076,13 @@ impl ImageEngine {
         env: Env,
         path: String,
         format: String,
-        quality: Option<u8>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
     ) -> Result<AsyncTask<WriteFileTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
+
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -564,12 +1095,17 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_metadata_requested = self.keep_metadata;
-        let keep_metadata = keep_metadata_requested && !self.firewall.reject_metadata;
+        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
+        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile.is_some();
-        let icc_profile = if keep_metadata {
+        let icc_profile = if keep_icc {
             self.icc_profile.clone()
+        } else {
+            None
+        };
+        let exif_data = if keep_exif {
+            self.exif_data.clone()
         } else {
             None
         };
@@ -581,14 +1117,56 @@ impl ImageEngine {
             format: output_format,
             icc_profile,
             icc_present,
+            exif_data,
             auto_orient,
-            keep_metadata,
-            keep_metadata_requested,
+            keep_icc,
+            keep_exif,
+            strip_gps: self.strip_gps,
             firewall: self.firewall.clone(),
             output_path: path,
             #[cfg(feature = "napi")]
             last_error: None,
         }))
+    }
+
+    /// Convenience: encode to file using the preset's recommended format/quality.
+    #[napi(js_name = "toFileWithPreset", ts_return_type = "Promise<number>")]
+    pub fn to_file_with_preset(
+        &mut self,
+        env: Env,
+        path: String,
+        preset_name: String,
+    ) -> Result<AsyncTask<WriteFileTask>> {
+        let preset = match PresetConfig::get(&preset_name) {
+            Some(config) => config,
+            None => {
+                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        self.ops.push(Operation::Resize {
+            width: preset.width,
+            height: preset.height,
+            fit: ResizeFit::Inside,
+        });
+
+        self.last_preset = Some(preset.clone());
+
+        let (format_str, quality, fast_mode) = match &preset.format {
+            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Png => ("png", None, None),
+            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
+            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+        };
+
+        self.to_file(
+            env,
+            path,
+            format_str.to_string(),
+            quality.map(|q| q as f64),
+            fast_mode,
+        )
     }
 
     // =========================================================================
@@ -671,26 +1249,56 @@ impl ImageEngine {
     ///
     /// - inputs: Array of input file paths
     /// - output_dir: Directory to write processed images
-    /// - format: Output format ("jpeg", "png", "webp", "avif")
-    /// - quality: Optional quality (1-100, uses format-specific default if None)
-    /// - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
-    /// - concurrency: Optional number of parallel workers:
-    ///   - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
-    ///     Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
-    ///     Ideal for serverless/containerized environments with memory constraints.
-    ///   - 1-1024: Manual override - use specified number of concurrent operations
+    /// - options: Output settings
+    ///   - format: Output format ("jpeg", "png", "webp", "avif")
+    ///   - quality: Optional quality (1-100, uses format-specific default if None)
+    ///   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
+    ///   - concurrency: Optional number of parallel workers:
+    ///     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+    ///       Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+    ///       Ideal for serverless/containerized environments with memory constraints.
+    ///     - 1-1024: Manual override - use specified number of concurrent operations
+    ///
+    /// Backward compatibility: the legacy positional signature
+    ///   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
+    /// is still accepted for now but will be removed in a future major release.
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
         env: Env,
         inputs: Vec<String>,
         output_dir: String,
-        format: String,
-        quality: Option<u8>,
+        options_or_format: Either<BatchOptions, String>,
+        quality: Option<f64>,
         fast_mode: Option<bool>,
-        concurrency: Option<u32>,
+        concurrency: Option<f64>,
     ) -> Result<AsyncTask<BatchTask>> {
+        if output_dir.trim().is_empty() {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "outputDir",
+                    "<empty>",
+                    "output directory must not be empty",
+                ),
+            ));
+        }
+
+        let (format, quality, fast_mode, concurrency) = match options_or_format {
+            Either::A(options) => (
+                options.format,
+                options.quality,
+                options.fast_mode,
+                options.concurrency,
+            ),
+            Either::B(format) => (format, quality, fast_mode, concurrency),
+        };
+
         let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        let concurrency =
+            validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
+
         let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
             Ok(format) => format,
             Err(_e) => {
@@ -699,13 +1307,17 @@ impl ImageEngine {
             }
         };
         let ops = self.ops.clone();
+        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
+        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         Ok(AsyncTask::new(BatchTask {
             inputs,
             output_dir,
             ops,
             format: output_format,
-            concurrency: concurrency.unwrap_or(0), // 0 = use default (CPU cores)
-            keep_metadata: self.keep_metadata && !self.firewall.reject_metadata,
+            concurrency,
+            keep_icc,
+            keep_exif,
+            strip_gps: self.strip_gps,
             auto_orient: self.auto_orient,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
@@ -723,9 +1335,9 @@ pub struct SanitizeOptions {
 #[cfg(feature = "napi")]
 #[napi(object)]
 pub struct FirewallLimitOptions {
-    pub max_pixels: Option<u32>,
-    pub max_bytes: Option<u32>,
-    pub timeout_ms: Option<u32>,
+    pub max_pixels: Option<f64>,
+    pub max_bytes: Option<f64>,
+    pub timeout_ms: Option<f64>,
 }
 
 #[cfg(feature = "napi")]
@@ -749,107 +1361,48 @@ pub struct PresetResult {
     pub height: Option<u32>,
 }
 
+#[cfg(feature = "napi")]
+/// Result of applying a preset and encoding to buffer
+#[napi(object)]
+pub struct PresetBufferResult {
+    /// Encoded image data
+    pub data: Buffer,
+    /// Recommended output format
+    pub format: String,
+    /// Recommended quality (None for PNG)
+    pub quality: Option<u8>,
+    /// Target width (None if aspect ratio preserved)
+    pub width: Option<u32>,
+    /// Target height (None if aspect ratio preserved)
+    pub height: Option<u32>,
+}
+
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct BatchOptions {
+    /// Output format ("jpeg", "png", "webp", "avif")
+    pub format: String,
+    /// Optional quality (1-100), uses format default when omitted
+    pub quality: Option<f64>,
+    /// Optional fast mode flag (JPEG only, default: false)
+    pub fast_mode: Option<bool>,
+    /// Optional number of parallel workers:
+    /// 0/undefined = auto-detect, 1-1024 = manual override
+    pub concurrency: Option<f64>,
+}
+
 // =============================================================================
 // INTERNAL IMPLEMENTATION
 // =============================================================================
 
-impl ImageEngine {
-    /// Get source as a byte slice - zero-copy for Memory and Mapped sources
-    #[cfg(feature = "napi")]
-    fn ensure_source_slice(&mut self) -> Result<&[u8]> {
-        // Get bytes directly (zero-copy for Memory and Mapped)
-        if let Some(source) = &self.source {
-            if let Some(bytes) = source.as_bytes() {
-                // Extract ICC profile if not already extracted
-                if self.icc_profile.is_none() {
-                    self.icc_profile = extract_icc_profile(bytes).map(Arc::new);
-                }
-                return Ok(bytes);
-            }
-        }
-        Err(napi::Error::from(LazyImageError::source_consumed()))
-    }
-
-    #[cfg(feature = "napi")]
-    #[allow(dead_code)]
-    fn ensure_decoded(&mut self) -> Result<&DynamicImage> {
-        if self.decoded.is_none() {
-            // Get source bytes as slice - zero-copy for Memory and Mapped
-            let bytes = self.ensure_source_slice()?;
-
-            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
-
-            let (img, _detected_format) =
-                crate::engine::decoder::decode_image(bytes).map_err(napi::Error::from)?;
-
-            // Security check: reject decompression bombs
-            let (w, h) = img.dimensions();
-            crate::engine::decoder::check_dimensions(w, h)?;
-
-            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
-            self.decoded = Some(Arc::new(img));
-        }
-
-        // Safe: we just set it above, use ok_or for safety
-        // Return reference to inner DynamicImage
-        self.decoded
-            .as_ref()
-            .map(|arc| arc.as_ref())
-            .ok_or_else(|| {
-                napi::Error::from(LazyImageError::internal_panic("decode failed unexpectedly"))
-            })
-    }
-
-    /// Get source as a byte slice - zero-copy for Memory and Mapped sources
-    #[cfg(not(feature = "napi"))]
-    #[allow(dead_code)]
-    fn ensure_source_slice(&mut self) -> std::result::Result<&[u8], LazyImageError> {
-        // Get bytes directly (zero-copy for Memory and Mapped)
-        if let Some(source) = &self.source {
-            if let Some(bytes) = source.as_bytes() {
-                // Extract ICC profile if not already extracted
-                if self.icc_profile.is_none() {
-                    self.icc_profile = extract_icc_profile(bytes).map(Arc::new);
-                }
-                return Ok(bytes);
-            }
-        }
-        Err(LazyImageError::source_consumed())
-    }
-
-    #[cfg(not(feature = "napi"))]
-    #[allow(dead_code)]
-    fn ensure_decoded(&mut self) -> std::result::Result<&DynamicImage, LazyImageError> {
-        if self.decoded.is_none() {
-            // Get source bytes as slice - zero-copy for Memory and Mapped
-            let bytes = self.ensure_source_slice()?;
-
-            crate::engine::decoder::ensure_dimensions_safe(bytes)?;
-
-            let (img, _detected_format) = crate::engine::decoder::decode_image(bytes)?;
-
-            // Security check: reject decompression bombs
-            let (w, h) = img.dimensions();
-            crate::engine::decoder::check_dimensions(w, h)?;
-
-            // Wrap in Arc for sharing (enables Cow::Borrowed in decode())
-            self.decoded = Some(Arc::new(img));
-        }
-
-        // Safe: we just set it above, use ok_or for safety
-        // Return reference to inner DynamicImage
-        self.decoded
-            .as_ref()
-            .map(|arc| arc.as_ref())
-            .ok_or_else(|| LazyImageError::internal_panic("decode failed unexpectedly"))
-    }
-}
+impl ImageEngine {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::engine::pipeline::fast_resize_owned;
-    use image::{DynamicImage, GenericImageView, RgbImage};
+    #[allow(unused_imports)]
+    use image::GenericImageView;
+    use image::{DynamicImage, RgbImage};
 
     fn create_test_image(width: u32, height: u32) -> DynamicImage {
         DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
