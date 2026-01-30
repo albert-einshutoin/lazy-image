@@ -30,7 +30,7 @@ You can query at runtime with `supportedInputFormats()` and
 | Rich filters (blur/sharpen/tint/etc) | ❌ | ✅ |
 | Animated images (GIF/WebP) | ❌ | ✅ |
 | Streaming pipeline | ❌ | ✅ |
-| Metadata | ICC only | ✅ (EXIF/XMP/etc) |
+| Metadata | ICC + EXIF (GPS auto-strip) | ✅ (EXIF/XMP/etc) |
 | AVIF encoding | ✅ (focus area) | ✅ |
 
 ## Non-goals

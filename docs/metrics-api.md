@@ -42,7 +42,7 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`.
 - **formatIn / formatOut**: Detected input format (nullable) and requested output format.
 - **iccPreserved / metadataStripped**: Whether ICC profile was preserved or stripped.
 - **policyViolations**: Non-fatal Image Firewall actions that altered output (e.g., forced metadata strip under strict policy).
-- **Legacy aliases**: `decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize` map 1:1 to the new fields for compatibility.
+- **Legacy aliases** (deprecated): `decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize` map 1:1 to the new fields. They will be removed in v2.0.0; migrate to `decodeMs`, `opsMs`, `encodeMs`, `peakRss`, `bytesIn`, `bytesOut`.
 
 ## Validation
 
@@ -53,3 +53,4 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`.
 
 - Additive changes only within minor versions. Breaking changes (field removal/rename or semantic shifts) require a new `version` value.
 - Downstream clients should gate on `version` and ignore unknown fields to remain forward compatible.
+- Legacy aliases are supported through v1.x with @deprecated annotations in `index.d.ts`. Removal is planned for v2.0.0.
