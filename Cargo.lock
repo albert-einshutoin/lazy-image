@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "lazy-image"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "bitflags",
  "criterion",
@@ -931,7 +931,7 @@ dependencies = [
  "tikv-jemallocator",
  "tracing",
  "webp",
- "zune-core 0.4.12",
+ "zune-core 0.5.1",
  "zune-png",
 ]
 
