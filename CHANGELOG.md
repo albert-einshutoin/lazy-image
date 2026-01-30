@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.10.0] - 2026-01-30
+
 ### Added
 - EXIF metadata preservation with `keepMetadata({ exif: true })` (#207)
   - GPS coordinates stripped by default for privacy protection (`stripGps: true`)
@@ -35,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docs: SECURITY policy expanded with CVE/dependency update guidance (#197)
 - Docs: Added `spec/` directory for resize/metadata/errors/limits/quality semantics (#193)
 - API: Added `normalizePixelFormat()` and deprecated legacy `ensureRgb()` alias to clarify pixel-format-only normalization (no color space conversion) (#259)
+- Docs: README Benchmark section replaced with Performance & Trade-offs (lazy-image vs sharp summary table, Which one to choose, Philosophy)
 
 ---
 
@@ -359,7 +364,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.7...v0.9.0
 [0.8.7]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/albert-einshutoin/lazy-image/compare/v0.8.5...v0.8.6
