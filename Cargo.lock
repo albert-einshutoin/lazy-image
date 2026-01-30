@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "lazy-image"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "bitflags",
  "criterion",
@@ -927,7 +927,7 @@ dependencies = [
  "proptest",
  "rayon",
  "tempfile",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "tikv-jemallocator",
  "tracing",
  "webp",
