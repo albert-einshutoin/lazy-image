@@ -1,14 +1,19 @@
 /**
- * TypeScript型安全性テストファイル
- * 型定義が正しく動作するかを確認
+ * TypeScript type-safety test file.
+ * Verifies that type definitions work correctly.
  */
 import * as path from 'path';
-import { ImageEngine, OutputFormat, InputFormat, PresetName, ImageMetadata, PresetResult, ResizeFit } from '../../index';
+import { ImageEngine, ImageMetadata, PresetResult } from '../../index';
+
+// Local type aliases for API string literals (not exported from index.d.ts)
+type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif';
+type ResizeFit = 'inside' | 'cover' | 'fill';
+type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
     
-    // 型安全なOutputFormat使用例
+    // Type-safe OutputFormat usage
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];
     
     const fitModes: ResizeFit[] = ['inside', 'cover', 'fill'];
@@ -16,21 +21,21 @@ async function testTypeSafety() {
         const format = validFormats[index];
         console.log(`Testing format: ${format}`);
         
-        // これらは型安全でコンパイルエラーにならない
+        // These are type-safe and do not cause compile errors
         const engine = ImageEngine.fromPath(imagePath);
         const fitMode = fitModes[index % fitModes.length];
         const result = await engine.resize(400, 300, fitMode).toBuffer(format, 80);
         console.log(`✅ ${format}: ${result.length} bytes`);
     }
 
-    // 明示的なResizeFit型の利用例
+    // Explicit ResizeFit type usage
     const coverFit: ResizeFit = 'cover';
     await ImageEngine.fromPath(imagePath).resize(300, 300, coverFit).toBuffer('jpeg', 75);
 
-    // 大文字フォーマットも許容
+    // Uppercase format is also accepted
     await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);
     
-    // プリセットも型安全
+    // Presets are also type-safe
     const validPresets: PresetName[] = ['thumbnail', 'avatar', 'hero', 'social'];
     
     for (const presetName of validPresets) {
@@ -38,65 +43,67 @@ async function testTypeSafety() {
         const preset: PresetResult = engine.preset(presetName);
         
         console.log(`Preset ${presetName}:`);
-        console.log(`  Format: ${preset.format}`); // OutputFormat型
+        console.log(`  Format: ${preset.format}`);
         console.log(`  Quality: ${preset.quality}`);
         console.log(`  Size: ${preset.width}x${preset.height}`);
         
-        // プリセット結果を使用
+        // Use preset result
         const buffer = await engine.toBuffer(preset.format, preset.quality || undefined);
         console.log(`✅ ${presetName}: ${buffer.length} bytes`);
+
+        const convenience = await ImageEngine.fromPath(imagePath).toBufferWithPreset(presetName);
+        console.log(`✅ convenience ${presetName}: ${convenience.length} bytes`);
     }
 
-    // 大文字プリセットも許容
+    // Uppercase preset name is also accepted
     ImageEngine.fromPath(imagePath).preset('Avatar');
     
-    // メタデータ取得も型安全
+    // Metadata inspection is also type-safe
     const metadata: ImageMetadata = await import('../../index').then(m => m.inspectFile(imagePath));
     console.log(`Image: ${metadata.width}x${metadata.height}, format: ${metadata.format}`);
     
-    // バッチ処理も型安全
+    // Batch processing is also type-safe
     const batchEngine = ImageEngine.fromPath(imagePath).resize(200, 200);
     const batchResults = await batchEngine.processBatch(
         [imagePath],
         path.resolve(__dirname, '../../.tmp/type-safety-batch'),
-        'jpeg', // OutputFormat型として扱われる
-        85,
-        undefined, // fastMode (optional)
-        2
+        {
+            format: 'jpeg',
+            quality: 85,
+            concurrency: 2,
+        }
     );
     
     console.log(`Batch processing: ${batchResults.length} results`);
     
-    // 以下はコンパイルエラーになるべき例（コメントアウト）
+    // The following should cause compile errors (commented out)
     /*
-    // ❌ 無効なフォーマット
+    // ❌ Invalid format
     await engine.toBuffer('invalid_format', 80);
     
-    // ❌ 無効なプリセット
+    // ❌ Invalid preset
     const invalidPreset = engine.preset('invalid_preset');
     
-    // ❌ 型の不一致
-    const wrongType: string = preset.format; // OutputFormat型をstring型に代入はできない（strictモード）
+    // ❌ Type mismatch (OutputFormat cannot be assigned to string in strict mode)
+    const wrongType: string = preset.format;
     */
     
     console.log('✅ All type safety tests passed!');
 }
 
-// IDE補完テスト用関数
+// IDE autocomplete test helper
 function testIDECompletion() {
     const engine = ImageEngine.fromPath('test.jpg');
     
-    // これらでIDE補完が効くはず（実際の実装では有効な値を使用）
-    engine.toBuffer('jpeg', 80); // 'jpeg', 'png', 'webp', 'avif'が補完候補に出るはず
-    engine.preset('thumbnail'); // 'thumbnail', 'avatar', 'hero', 'social'が補完候補に出るはず
+    // These should trigger IDE autocomplete (use valid values in real usage)
+    engine.toBuffer('jpeg', 80); // Autocomplete: 'jpeg', 'png', 'webp', 'avif'
+    engine.preset('thumbnail'); // Autocomplete: 'thumbnail', 'avatar', 'hero', 'social'
     
-    // 型推論テスト
+    // Type inference test: preset.format inferred as OutputFormat, preset.quality as number | undefined
     const preset = engine.preset('thumbnail');
-    // preset.format は OutputFormat型として推論されるべき
-    // preset.quality は number | undefined として推論されるべき
 }
 
-// エラーハンドリングテスト
+// Error handling test
 async function testErrorHandling() {
     try {
         const engine = ImageEngine.fromPath('nonexistent.jpg');
