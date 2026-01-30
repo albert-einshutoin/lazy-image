@@ -7,12 +7,16 @@ use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
-use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
-use crate::engine::io::{extract_icc_profile, Source};
+use crate::engine::encoder::{
+    embed_exif_jpeg, encode_avif, encode_jpeg_with_settings, encode_png, encode_webp,
+};
+#[allow(unused_imports)]
+use crate::engine::io::{extract_exif_raw, extract_icc_profile, Source};
 use crate::engine::memory;
-use crate::engine::pipeline::apply_ops;
+use crate::engine::pipeline::{apply_ops_tracked, ColorState, IccState};
 #[cfg(feature = "napi")]
 use crate::engine::pool;
+#[allow(unused_imports)]
 use crate::error::{ErrorCategory, LazyImageError};
 use crate::ops::{Operation, OutputFormat};
 use crate::PROCESSING_METRICS_VERSION;
@@ -109,9 +113,8 @@ fn format_to_string(fmt: ImageFormat) -> String {
     .to_string()
 }
 
-/// 統一的なメトリクス測定を行うヘルパー。
-/// decode -> process -> encode の各区間をミリ秒で計測し、
-/// CPU/メモリや入出力サイズも一箇所で設定する。
+/// Helper for unified metrics collection.
+/// Measures decode -> process -> encode in milliseconds and sets CPU/memory and I/O sizes in one place.
 struct MetricsRecorder<'m> {
     metrics: Option<&'m mut crate::ProcessingMetrics>,
     start_total: Instant,
@@ -130,10 +133,6 @@ impl<'m> MetricsRecorder<'m> {
             usage_start: get_resource_usage(),
             input_size,
         }
-    }
-
-    fn memory_usage_start(&self) -> Option<u64> {
-        self.usage_start.as_ref().map(|u| u.memory_rss)
     }
 
     fn mark_decode_done(&mut self) {
@@ -160,15 +159,15 @@ impl<'m> MetricsRecorder<'m> {
         context: MetricsContext,
     ) {
         if let Some(m) = self.metrics.as_deref_mut() {
-            // encode 区間
+            // Encode stage
             m.encode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
             m.encode_time = m.encode_ms;
-            // 全体
+            // Whole pipeline
             m.total_ms = self.start_total.elapsed().as_secs_f64() * 1000.0;
             m.processing_time = m.total_ms / 1000.0;
             m.version = PROCESSING_METRICS_VERSION.to_string();
 
-            // CPU / メモリ
+            // CPU / memory
             if let (Some(start), Some(end)) = (self.usage_start.as_ref(), usage_end.as_ref()) {
                 m.cpu_time = (end.cpu_time - start.cpu_time).max(0.0);
                 m.peak_rss = end.memory_rss.min(u32::MAX as u64) as u32;
@@ -179,7 +178,7 @@ impl<'m> MetricsRecorder<'m> {
             }
             m.memory_peak = m.peak_rss;
 
-            // 入出力サイズと圧縮率
+            // Input/output sizes and compression ratio
             m.bytes_in = self.input_size.min(u32::MAX as u64) as u32;
             m.bytes_out = (output_len as u64).min(u32::MAX as u64) as u32;
             m.input_size = m.bytes_in;
@@ -190,7 +189,7 @@ impl<'m> MetricsRecorder<'m> {
                 0.0
             };
 
-            // 形式 & メタデータ
+            // Formats & metadata
             m.format_in = context.input_format;
             m.format_out = context.output_format;
             m.icc_preserved = context.icc_preserved;
@@ -198,23 +197,6 @@ impl<'m> MetricsRecorder<'m> {
             m.policy_violations = context.policy_violations;
         }
     }
-}
-
-// Type alias for Result - use napi::Result when napi is enabled, otherwise use standard Result
-#[cfg(feature = "napi")]
-type EngineResult<T> = Result<T>;
-#[cfg(not(feature = "napi"))]
-type EngineResult<T> = std::result::Result<T, LazyImageError>;
-
-// Helper function to convert LazyImageError to the appropriate error type
-#[cfg(feature = "napi")]
-fn to_engine_error(err: LazyImageError) -> napi::Error {
-    napi::Error::from(err)
-}
-
-#[cfg(not(feature = "napi"))]
-fn to_engine_error(err: LazyImageError) -> LazyImageError {
-    err
 }
 
 // Re-export BatchResult for api.rs
@@ -229,7 +211,7 @@ pub struct BatchResult {
     pub error_category: Option<ErrorCategory>,
 }
 
-pub(crate) struct EncodeTask {
+pub struct EncodeTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc. decode() returns Cow::Borrowed pointing here,
     /// enabling true Copy-on-Write in apply_ops (no deep copy for format-only conversion).
@@ -239,12 +221,15 @@ pub(crate) struct EncodeTask {
     pub icc_profile: Option<Arc<Vec<u8>>>,
     /// Whether the input originally had an ICC profile (even if stripped)
     pub icc_present: bool,
+    /// Raw EXIF data extracted from source image (for preservation)
+    pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
     /// Whether to preserve ICC profile in output (default: false for security & smaller files)
-    /// Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved.
-    pub keep_metadata: bool,
-    /// Whether the caller explicitly requested metadata preservation (before firewall rules)
-    pub keep_metadata_requested: bool,
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output (default: false for security)
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF (default: true for privacy protection)
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -305,21 +290,10 @@ impl EncodeTask {
         Ok(Cow::Owned(img))
     }
 
-    /// Decode image from source bytes (public API for backward compatibility)
-    /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
-    ///
-    /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
-    /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
-    /// when no mutation is needed (e.g., format conversion only).
-    pub(crate) fn decode(&self) -> EngineResult<Cow<'_, DynamicImage>> {
-        self.decode_internal().map_err(to_engine_error)
-    }
-
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
     /// Returns LazyImageError directly (not wrapped in napi::Error) so that
     /// Task::reject can properly create error objects with code/category.
-    #[cfg_attr(not(any(feature = "napi", feature = "stress")), allow(dead_code))]
     pub(crate) fn process_and_encode(
         &mut self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
@@ -343,13 +317,13 @@ impl EncodeTask {
         // keep guard alive for entire processing scope
         let _permit_guard = permit;
 
-        // メトリクス測定を一元化
+        // Centralize metrics recording
         let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
 
         // Pre-read orientation from EXIF header (before full decode)
         let orientation = if self.auto_orient {
             if let Some(bytes) = input_bytes {
-                // Enforce byte limit & metadata scan prior to EXIF解析 to honor firewall settings
+                // Enforce byte limit & metadata scan before EXIF parsing to honor firewall settings
                 self.firewall.enforce_source_len(bytes.len())?;
                 self.firewall.scan_metadata(bytes)?;
                 crate::engine::decoder::detect_exif_orientation(bytes)
@@ -369,21 +343,31 @@ impl EncodeTask {
         // 2. Apply operations
         let mut effective_ops = self.ops.clone();
         if let Some(o) = orientation {
-            // 挿入位置は最先頭: ユーザー指定オペレーションより前に正規化する
+            // Insert at the very beginning to normalize before user operations
             effective_ops.insert(0, Operation::AutoOrient { orientation: o });
         }
-        let processed = apply_ops(img, &effective_ops)?;
+        let icc_state = if self.icc_present {
+            IccState::Present
+        } else {
+            IccState::Absent
+        };
+        let initial_state = ColorState::from_dynamic_image(&img, icc_state);
+        let tracked = apply_ops_tracked(img, &effective_ops, initial_state)?;
+        let final_color_state = tracked.state;
+        let processed = tracked.image;
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "process")?;
         metrics_recorder.mark_process_done();
 
-        // 3. Encode - only preserve ICC profile if keep_metadata is true
-        let icc = if self.keep_metadata {
+        // 3. Encode - only preserve ICC profile if keep_icc is true
+        let icc = if self.keep_icc {
             self.icc_profile.as_ref().map(|v| v.as_slice())
         } else {
             None // Strip metadata by default for security & smaller files
         };
-        let result = match &self.format {
+
+        // 4. Encode image to target format
+        let mut result = match &self.format {
             OutputFormat::Jpeg { quality, fast_mode } => {
                 encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)
             }
@@ -391,22 +375,36 @@ impl EncodeTask {
             OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
             OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
         }?;
+
+        // 5. Embed EXIF metadata if requested (JPEG only for now)
+        if self.keep_exif {
+            if let Some(exif_data) = &self.exif_data {
+                if let OutputFormat::Jpeg { .. } = &self.format {
+                    // Embed EXIF with sanitization:
+                    // - Reset Orientation to 1 if auto_orient was applied
+                    // - Strip GPS tags if strip_gps is true (default)
+                    result = embed_exif_jpeg(
+                        result,
+                        exif_data.as_slice(),
+                        self.auto_orient, // reset orientation if auto-orient was applied
+                        self.strip_gps,
+                    )?;
+                }
+                // TODO: PNG/WebP EXIF embedding (less common, lower priority)
+            }
+        }
         self.firewall
             .enforce_timeout(metrics_recorder.start_total, "encode")?;
 
         // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
-        memory::record_memory_observation(
-            estimated_memory,
-            metrics_recorder.memory_usage_start(),
-            final_usage.as_ref().map(|u| u.memory_rss),
-        );
-        let icc_present = self.icc_present;
-        let icc_preserved = self.keep_metadata && icc_present;
+        // Use tracked color state to reason about ICC preservation.
+        let icc_present = matches!(final_color_state.icc, IccState::Present);
+        let icc_preserved = self.keep_icc && icc_present;
         // metadata_stripped: true when source had ICC but we did not preserve it
         let metadata_stripped = icc_present && !icc_preserved;
         let metadata_blocked_by_policy =
-            self.keep_metadata_requested && self.firewall.reject_metadata && icc_present;
+            (self.keep_icc || self.keep_exif) && self.firewall.reject_metadata && icc_present;
         let mut policy_violations = Vec::new();
         if metadata_blocked_by_policy {
             policy_violations.push("firewall_rejected_metadata".to_string());
@@ -427,6 +425,14 @@ impl EncodeTask {
         );
 
         Ok(result)
+    }
+}
+
+// Test-only helper for decode assertions in engine.rs tests.
+#[cfg(test)]
+impl EncodeTask {
+    pub(crate) fn decode(&self) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
+        self.decode_internal()
     }
 }
 
@@ -469,7 +475,105 @@ impl Task for EncodeTask {
     }
 }
 
-pub(crate) struct EncodeWithMetricsTask {
+// ============================================================================================
+// Tests for coverage when NAPI is disabled (CI runs coverage with --no-default-features)
+// ============================================================================================
+#[cfg(all(test, not(feature = "napi")))]
+mod non_napi_tests {
+    use super::*;
+    use crate::engine::firewall::FirewallConfig;
+    use crate::engine::io::Source;
+    use crate::ops::ResizeFit;
+    use image::{ImageBuffer, ImageFormat, Rgba};
+
+    fn sample_png_bytes() -> Vec<u8> {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(4, 4, Rgba([10, 20, 30, 255]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+        bytes
+    }
+
+    fn make_task_with_decoded(format: OutputFormat) -> EncodeTask {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(4, 4, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+        EncodeTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img)),
+            ops: vec![Operation::Resize {
+                width: Some(2),
+                height: Some(2),
+                fit: ResizeFit::Inside,
+            }],
+            format,
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: true,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+        }
+    }
+
+    #[test]
+    fn process_and_encode_outputs_image() {
+        let mut task = make_task_with_decoded(OutputFormat::Png);
+        let encoded = task
+            .process_and_encode(None)
+            .expect("encode should succeed");
+        assert!(!encoded.is_empty());
+    }
+
+    #[test]
+    fn decode_internal_errors_when_source_missing() {
+        let task = EncodeTask {
+            source: None,
+            decoded: None,
+            ops: vec![],
+            format: OutputFormat::Png,
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: true,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+        };
+        let err = task.decode_internal().unwrap_err();
+        assert!(matches!(err, LazyImageError::SourceConsumed));
+    }
+
+    #[test]
+    fn firewall_limits_are_enforced_on_decode() {
+        let png = sample_png_bytes();
+        let mut firewall = FirewallConfig::custom();
+        firewall.max_bytes = Some(1); // smaller than PNG size to force rejection
+
+        let task = EncodeTask {
+            source: Some(Source::Memory(Arc::new(png))),
+            decoded: None,
+            ops: vec![],
+            format: OutputFormat::Png,
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: true,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall,
+        };
+        let err = task.decode_internal().unwrap_err();
+        assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
+    }
+}
+
+pub struct EncodeWithMetricsTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
@@ -477,9 +581,15 @@ pub(crate) struct EncodeWithMetricsTask {
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub icc_present: bool,
+    /// Raw EXIF data extracted from source image (for preservation)
+    pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    pub keep_metadata: bool,
-    pub keep_metadata_requested: bool,
+    /// Whether to preserve ICC profile in output
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -501,9 +611,11 @@ impl Task for EncodeWithMetricsTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             icc_present: self.icc_present,
+            exif_data: self.exif_data.clone(),
             auto_orient: self.auto_orient,
-            keep_metadata: self.keep_metadata,
-            keep_metadata_requested: self.keep_metadata_requested,
+            keep_icc: self.keep_icc,
+            keep_exif: self.keep_exif,
+            strip_gps: self.strip_gps,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -546,7 +658,7 @@ impl Task for EncodeWithMetricsTask {
     }
 }
 
-pub(crate) struct WriteFileTask {
+pub struct WriteFileTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
     pub decoded: Option<Arc<DynamicImage>>,
@@ -554,9 +666,15 @@ pub(crate) struct WriteFileTask {
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
     pub icc_present: bool,
+    /// Raw EXIF data extracted from source image (for preservation)
+    pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    pub keep_metadata: bool,
-    pub keep_metadata_requested: bool,
+    /// Whether to preserve ICC profile in output
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     pub output_path: String,
     /// Last error that occurred during compute (for use in reject)
@@ -582,9 +700,11 @@ impl Task for WriteFileTask {
             format: self.format.clone(),
             icc_profile: self.icc_profile.clone(),
             icc_present: self.icc_present,
+            exif_data: self.exif_data.clone(),
             auto_orient: self.auto_orient,
-            keep_metadata: self.keep_metadata,
-            keep_metadata_requested: self.keep_metadata_requested,
+            keep_icc: self.keep_icc,
+            keep_exif: self.keep_exif,
+            strip_gps: self.strip_gps,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -605,8 +725,11 @@ impl Task for WriteFileTask {
         let output_dir = std::path::Path::new(&self.output_path)
             .parent()
             .ok_or_else(|| {
-                let lazy_err =
-                    LazyImageError::internal_panic("output path has no parent directory");
+                let lazy_err = LazyImageError::invalid_argument(
+                    "path",
+                    self.output_path.clone(),
+                    "output path must include a parent directory",
+                );
                 self.last_error = Some(lazy_err.clone());
                 napi::Error::from(lazy_err)
             })?;
@@ -669,14 +792,19 @@ impl Task for WriteFileTask {
     }
 }
 
-pub(crate) struct BatchTask {
+pub struct BatchTask {
     pub inputs: Vec<String>,
     pub output_dir: String,
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub concurrency: u32,
     pub auto_orient: bool,
-    pub keep_metadata: bool,
+    /// Whether to preserve ICC profile in output
+    pub keep_icc: bool,
+    /// Whether to preserve EXIF metadata in output
+    pub keep_exif: bool,
+    /// Whether to strip GPS tags from EXIF
+    pub strip_gps: bool,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -705,7 +833,9 @@ impl Task for BatchTask {
         let ops = &self.ops;
         let format = &self.format;
         let output_dir = &self.output_dir;
-        let keep_metadata = self.keep_metadata;
+        let keep_icc = self.keep_icc;
+        let keep_exif = self.keep_exif;
+        let strip_gps = self.strip_gps;
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
@@ -725,8 +855,8 @@ impl Task for BatchTask {
                 };
 
                 // Safety: We assume the file won't be modified externally during processing.
-                // This is a common assumption in image processing libraries.
-                // Note: On Windows, memory-mapped files cannot be deleted while mapped.
+                // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
+                // On Windows, deleting a memory-mapped file fails (platform limitation).
                 let mmap = unsafe {
                     Mmap::map(&file)
                         .map_err(|e| LazyImageError::mmap_failed(input_path.clone(), e))?
@@ -742,7 +872,6 @@ impl Task for BatchTask {
                         .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
                 let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
 
-                let usage_start = get_resource_usage();
                 let start_total = std::time::Instant::now();
 
                 let orientation = if self.auto_orient {
@@ -750,8 +879,14 @@ impl Task for BatchTask {
                 } else {
                     None
                 };
-                let icc_profile = if keep_metadata {
-                    extract_icc_profile(data).map(Arc::new)
+                let icc_profile = if keep_icc {
+                    extract_icc_profile(data)?.map(Arc::new)
+                } else {
+                    None
+                };
+                // Extract EXIF data for preservation (JPEG only)
+                let exif_data = if keep_exif {
+                    extract_exif_raw(data).map(Arc::new)
                 } else {
                     None
                 };
@@ -768,16 +903,24 @@ impl Task for BatchTask {
                     effective_ops.insert(0, Operation::AutoOrient { orientation: o });
                 }
 
-                let processed = apply_ops(Cow::Owned(img), &effective_ops)?;
+                let icc_state = if icc_profile.is_some() {
+                    IccState::Present
+                } else {
+                    IccState::Absent
+                };
+                let initial_state = ColorState::from_dynamic_image(&img, icc_state);
+                let tracked = apply_ops_tracked(Cow::Owned(img), &effective_ops, initial_state)?;
+                let processed = tracked.image;
                 firewall.enforce_timeout(start_total, "process")?;
 
-                // Encode - only preserve ICC profile if keep_metadata is true
-                let icc = if keep_metadata {
+                // Encode - only preserve ICC profile if keep_icc is true
+                let icc = if keep_icc {
                     icc_profile.as_ref().map(|v| v.as_slice())
                 } else {
                     None // Strip metadata by default for security & smaller files
                 };
-                let encoded = match format {
+
+                let mut encoded = match format {
                     OutputFormat::Jpeg { quality, fast_mode } => {
                         encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)?
                     }
@@ -785,14 +928,22 @@ impl Task for BatchTask {
                     OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc)?,
                     OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
                 };
-                firewall.enforce_timeout(start_total, "encode")?;
 
-                let usage_end = get_resource_usage();
-                memory::record_memory_observation(
-                    estimated_memory,
-                    usage_start.as_ref().map(|u| u.memory_rss),
-                    usage_end.as_ref().map(|u| u.memory_rss),
-                );
+                // Embed EXIF metadata if requested (JPEG only)
+                if keep_exif {
+                    if let Some(ref exif) = exif_data {
+                        if let OutputFormat::Jpeg { .. } = format {
+                            encoded = embed_exif_jpeg(
+                                encoded,
+                                exif.as_slice(),
+                                self.auto_orient, // reset orientation if auto-orient applied
+                                strip_gps,
+                            )?;
+                        }
+                    }
+                }
+
+                firewall.enforce_timeout(start_total, "encode")?;
 
                 let filename = Path::new(input_path)
                     .file_name()
@@ -846,14 +997,15 @@ impl Task for BatchTask {
                     error_category: None,
                 },
                 Err(err) => {
-                    let category = err.category();
-                    let error_msg = format!("{}: {}", input_path, err);
+                    let error_code = err.code();
+                    let error_msg = format!("[{}] {}: {}", error_code.as_str(), input_path, err);
+                    let category = error_code.category();
                     BatchResult {
                         source: input_path.clone(),
                         success: false,
                         error: Some(error_msg),
                         output_path: None,
-                        error_code: Some(category.code().to_string()),
+                        error_code: Some(error_code.as_str().to_string()),
                         error_category: Some(category),
                     }
                 }

@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-// リポジトリルートへのパスを共通で扱うヘルパー
+// Shared path helpers relative to repository root
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
 const TEST_DIR = path.join(ROOT_DIR, 'test');
 const FIXTURES_DIR = path.join(TEST_DIR, 'fixtures');
