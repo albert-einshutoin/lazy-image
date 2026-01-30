@@ -42,7 +42,7 @@
     "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.0",
+    "@napi-rs/cli": "^3.5.1",
     "@types/node": "^25.0.2",
     "sharp": "^0.34.5",
     "ssim.js": "^3.5.0",
