@@ -78,7 +78,7 @@ jobs:
         run: echo "External fork PR detected; skipped auto-push/comment to avoid write failures."
 
       - name: Upload benchmark artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: benchmark-regression
           path: artifacts/benchmark
