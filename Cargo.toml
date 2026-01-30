@@ -37,7 +37,7 @@ exif = { package = "kamadak-exif", version = "0.6.1" }
 # Used for Orientation reset and GPS stripping - exceeds Sharp's metadata handling
 little_exif = "0.6"
 # PNG optimization
-oxipng = "9.1"
+oxipng = "10.1"
 
 # SIMD-accelerated image resizing - this is where we catch libvips
 # Enable rayon feature to allow parallel resize paths
