@@ -66,7 +66,7 @@ tracing = { version = "0.1", default-features = false, features = ["std"], optio
 once_cell = { version = "1.19", optional = true }
 
 # ICC profile extraction from image containers
-img-parts = "0.3"
+img-parts = "0.4"
 
 # Compression for PNG ICC chunks (used in extract_icc_from_png_direct)
 flate2 = "1.0"
