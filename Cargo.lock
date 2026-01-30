@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "lazy-image"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "bitflags",
  "criterion",
@@ -2434,10 +2434,10 @@ dependencies = [
 
 [[package]]
 name = "zune-png"
-version = "0.4.10"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d29c085769c6f29effea890f093120ac019375fdc789d2a496ba8ba96c77509"
+checksum = "af6dc406edc296451b9597ee98643df8606396066d8f0864682c266eda16f310"
 dependencies = [
- "zune-core 0.4.12",
+ "zune-core 0.5.1",
  "zune-inflate",
 ]
