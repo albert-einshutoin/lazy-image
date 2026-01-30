@@ -173,7 +173,7 @@ jobs:
 
       - name: Create issue on crash
         if: steps.check_crashes.outputs.has_crashes == 'true' && github.event_name != 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
