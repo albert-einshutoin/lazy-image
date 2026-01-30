@@ -8,11 +8,11 @@
 use crate::engine::pipeline::calc_resize_dimensions;
 use crate::ops::{Operation, OutputFormat, ResizeFit};
 use image::ImageFormat;
+use parking_lot::{Condvar, Mutex};
 #[cfg(feature = "napi")]
 use std::fs;
 use std::io::Cursor;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, Condvar, Mutex, OnceLock};
+use std::sync::{Arc, OnceLock};
 
 /// Estimated memory per image operation (in bytes)
 /// 100MB keeps backwards compatibility for fallback paths; dynamic estimates are preferred.
@@ -28,13 +28,6 @@ const MIN_ESTIMATE_BYTES: u64 = 24 * 1024 * 1024; // 24MB
 /// Overhead for decode/temporary buffers (heuristic)
 const DECODE_OVERHEAD_BYTES: u64 = 8 * 1024 * 1024;
 const FILTER_OVERHEAD_BYTES: u64 = 4 * 1024 * 1024;
-
-/// Moving-average tuning factor to self-correct estimates using observed RSS.
-/// Stored as fixed-point (scale = 1000) to avoid floating point atomics.
-const TUNING_SCALE: u64 = 1000;
-const TUNING_MIN: u64 = 500; // 0.5x
-const TUNING_MAX: u64 = 4000; // 4x
-static ESTIMATE_TUNING: AtomicU64 = AtomicU64::new(TUNING_SCALE);
 
 /// Default bytes-per-pixel assumptions per format (decoded)
 const BPP_JPEG: u64 = 3; // YCbCr → RGB
@@ -77,11 +70,11 @@ impl WeightedSemaphore {
     }
 
     pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
-        let mut available = self.state.lock().unwrap();
+        let mut available = self.state.lock();
         // clamp absurd weights to capacity to avoid deadlock
         let need = weight.min(self.capacity);
         while *available < need {
-            available = self.cvar.wait(available).unwrap();
+            self.cvar.wait(&mut available);
         }
         *available -= need;
         MemoryPermit {
@@ -91,10 +84,12 @@ impl WeightedSemaphore {
     }
 
     fn release(&self, weight: u64) {
-        let mut available = self.state.lock().unwrap();
+        let mut available = self.state.lock();
         let freed = (*available).saturating_add(weight).min(self.capacity);
         *available = freed;
-        // notify_all to avoid starvation when waiters have heterogeneous weights
+        // notify_all: When waiters have heterogeneous weights, notify_one can cause starvation.
+        // Benchmarks showed wake spikes are acceptable, so we wake all waiters and prioritize
+        // fairness through immediate re-contention.
         self.cvar.notify_all();
     }
 }
@@ -147,14 +142,6 @@ fn default_bpp(format: Option<ImageFormat>) -> u64 {
         Some(ImageFormat::Avif) => BPP_AVIF,
         _ => BPP_UNKNOWN,
     }
-}
-
-fn tuned(bytes: u64) -> u64 {
-    let scale = ESTIMATE_TUNING
-        .load(Ordering::Relaxed)
-        .max(TUNING_MIN)
-        .min(TUNING_MAX);
-    bytes.saturating_mul(scale).saturating_add(TUNING_SCALE - 1) / TUNING_SCALE
 }
 
 /// Reserve memory for OS / runtime based on container/host limit
@@ -221,6 +208,29 @@ fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u3
                 }
             }
         }
+        Operation::Extract {
+            width,
+            height,
+            fit,
+            crop_width,
+            crop_height,
+            ..
+        } => {
+            let target_resize = (
+                width.unwrap_or(dims.0).max(1),
+                height.unwrap_or(dims.1).max(1),
+            );
+            let (resize_w, resize_h) = match fit {
+                ResizeFit::Fill => target_resize,
+                ResizeFit::Inside => calc_resize_dimensions(dims.0, dims.1, *width, *height),
+                ResizeFit::Cover => {
+                    calc_cover_resize_dimensions(dims.0, dims.1, target_resize.0, target_resize.1)
+                }
+            };
+            let final_w = (*crop_width).max(1).min(resize_w);
+            let final_h = (*crop_height).max(1).min(resize_h);
+            ((final_w, final_h), 4, FILTER_OVERHEAD_BYTES)
+        }
         Operation::Crop { width, height, .. } => {
             let w = (*width).max(1).min(dims.0);
             let h = (*height).max(1).min(dims.1);
@@ -252,6 +262,8 @@ fn estimate_memory_from_dimensions_with_context(
     ops: &[Operation],
     output_format: Option<&OutputFormat>,
 ) -> u64 {
+    // Deterministic model: Calculate peak memory directly from input pixel count × BPP
+    // and pipeline intermediate buffer count. No learning or observation-based corrections.
     let mut current_dims = (width, height);
     let mut current_bpp = default_bpp(format);
 
@@ -281,10 +293,11 @@ fn estimate_memory_from_dimensions_with_context(
     let output_bytes = bytes_for_image(current_dims.0, current_dims.1, output_bpp);
     peak = peak.max(current_bytes.saturating_add(output_bytes / 4));
 
-    tuned(peak.max(MIN_ESTIMATE_BYTES))
+    peak.max(MIN_ESTIMATE_BYTES)
 }
 
 /// Simple wrapper for callers without format/ops context (kept for compatibility in tests)
+#[cfg(test)]
 pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
     estimate_memory_from_dimensions_with_context(width, height, None, &[], None)
 }
@@ -320,42 +333,6 @@ pub fn parse_header(bytes: &[u8]) -> Option<HeaderEstimate> {
         }
     }
     None
-}
-
-/// Record observed RSS to self-correct future estimates (moving average with clamp).
-pub fn record_memory_observation(predicted: u64, start_rss: Option<u64>, end_rss: Option<u64>) {
-    if predicted == 0 {
-        return;
-    }
-    let observed = match (start_rss, end_rss) {
-        (Some(start), Some(end)) => end.saturating_sub(start),
-        (None, Some(end)) => end,
-        _ => return,
-    };
-    if observed == 0 {
-        return;
-    }
-
-    let ratio = (observed as f64 / predicted as f64).clamp(
-        TUNING_MIN as f64 / TUNING_SCALE as f64,
-        TUNING_MAX as f64 / TUNING_SCALE as f64,
-    );
-    let scaled = (ratio * TUNING_SCALE as f64).round() as u64;
-
-    let mut previous = ESTIMATE_TUNING.load(Ordering::Relaxed);
-    loop {
-        let blended = ((previous * 4).saturating_add(scaled)) / 5;
-        let clamped = blended.clamp(TUNING_MIN, TUNING_MAX);
-        match ESTIMATE_TUNING.compare_exchange(
-            previous,
-            clamped,
-            Ordering::Relaxed,
-            Ordering::Relaxed,
-        ) {
-            Ok(_) => break,
-            Err(actual) => previous = actual,
-        }
-    }
 }
 
 /// Detects available memory from container limits or system memory
@@ -733,11 +710,11 @@ mod tests {
         let sem = Arc::new(WeightedSemaphore::new(100));
         let permit = sem.acquire(60);
         {
-            let remaining = *sem.state.lock().unwrap();
+            let remaining = *sem.state.lock();
             assert_eq!(remaining, 40);
         }
         drop(permit);
-        let remaining = *sem.state.lock().unwrap();
+        let remaining = *sem.state.lock();
         assert_eq!(remaining, 100);
     }
 
@@ -771,18 +748,7 @@ mod tests {
     }
 
     #[test]
-    fn test_record_memory_observation_adjusts_scale() {
-        ESTIMATE_TUNING.store(TUNING_SCALE, Ordering::Relaxed);
-        let predicted = 20 * 1024 * 1024;
-        // Observed delta is 50MB -> expected scale > 1.0
-        record_memory_observation(predicted, Some(100 * 1024 * 1024), Some(150 * 1024 * 1024));
-        let scale = ESTIMATE_TUNING.load(Ordering::Relaxed);
-        assert!(scale > TUNING_SCALE);
-    }
-
-    #[test]
     fn test_cover_resize_accounts_intermediate() {
-        ESTIMATE_TUNING.store(TUNING_SCALE, Ordering::Relaxed);
         let ops = vec![Operation::Resize {
             width: Some(1000),
             height: Some(1000),
@@ -791,5 +757,80 @@ mod tests {
         let est = estimate_memory_from_dimensions_with_context(100, 10_000, None, &ops, None);
         let resize_bytes = bytes_for_image(1000, 10_000, 4);
         assert!(est >= resize_bytes);
+    }
+}
+
+// Tests that run when `napi` feature is disabled (the CI coverage path uses `--no-default-features`).
+#[cfg(all(test, not(feature = "napi")))]
+mod non_napi_tests {
+    use super::*;
+    use crate::ops::{Operation, OutputFormat, ResizeFit};
+    use image::{ImageBuffer, ImageFormat, Rgba};
+    use std::sync::Arc;
+    use std::thread;
+    use std::time::Duration;
+
+    #[test]
+    fn weighted_semaphore_wakes_waiter_after_drop() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let (tx_started, rx_started) = std::sync::mpsc::channel();
+        let (tx_done, rx_done) = std::sync::mpsc::channel();
+
+        // Hold full capacity so the spawned thread must block.
+        let permit = sem.acquire(100);
+
+        let sem_wait = Arc::clone(&sem);
+        let handle = thread::spawn(move || {
+            tx_started.send(()).unwrap();
+            let _permit = sem_wait.acquire(10); // will block until capacity is released
+            tx_done.send(()).unwrap();
+        });
+
+        // Wait until the waiter has started and is blocked inside acquire.
+        rx_started
+            .recv_timeout(Duration::from_secs(1))
+            .expect("waiter should signal start");
+        drop(permit); // release full capacity
+
+        rx_done
+            .recv_timeout(Duration::from_secs(1))
+            .expect("waiter should acquire after release");
+        handle.join().unwrap();
+    }
+
+    #[test]
+    fn estimate_memory_from_header_returns_minimum_for_small_png() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(2, 2, Rgba([0, 0, 0, 255]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+
+        let estimate = estimate_memory_from_header(&bytes, &[], Some(&OutputFormat::Png)).unwrap();
+        assert!(estimate >= MIN_ESTIMATE_BYTES);
+    }
+
+    #[test]
+    fn cover_resize_estimate_grows_with_target() {
+        let ops = vec![Operation::Resize {
+            width: Some(200),
+            height: Some(200),
+            fit: ResizeFit::Cover,
+        }];
+        let est_small = estimate_memory_from_dimensions_with_context(
+            10,
+            10,
+            None,
+            &ops,
+            Some(&OutputFormat::Png),
+        );
+        let est_large = estimate_memory_from_dimensions_with_context(
+            1000,
+            1000,
+            None,
+            &ops,
+            Some(&OutputFormat::Png),
+        );
+        assert!(est_large >= est_small);
     }
 }
