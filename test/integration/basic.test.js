@@ -216,6 +216,22 @@ async function runTests() {
         }
     });
 
+    await asyncTest('toBufferWithPreset() applies preset defaults', async () => {
+        const result = await ImageEngine.from(buffer).toBufferWithPreset('thumbnail');
+        assert(result.length > 0, 'output should have content');
+    });
+
+    await asyncTest('toFileWithPreset() writes file with preset defaults', async () => {
+        const outPath = resolveTemp('preset_output.webp');
+        try {
+            const bytes = await ImageEngine.fromPath(TEST_IMAGE).toFileWithPreset(outPath, 'avatar');
+            assert(bytes > 0, 'file should be written');
+            assert(fs.existsSync(outPath), 'output file should exist');
+        } finally {
+            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        }
+    });
+
     await asyncTest('fromPath() works', async () => {
         const result = await ImageEngine.fromPath(TEST_IMAGE)
             .resize(100)
@@ -264,6 +280,43 @@ async function runTests() {
             threw = true;
         }
         assert(threw, 'should have thrown an error');
+    });
+
+    await asyncTest('resize validates dimensions and preserves error category/code', async () => {
+        let threw = false;
+        try {
+            // width = 0 is invalid; should throw synchronously
+            ImageEngine.from(buffer).resize(0);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.code, 'LAZY_IMAGE_USER_ERROR', 'error.code should be UserError');
+            assert.strictEqual(e.errorCode, 'E203', 'fine-grained errorCode should be set');
+            assert(typeof e.recoveryHint === 'string' && e.recoveryHint.length > 0, 'recoveryHint should be present');
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.UserError, 'resize validation should be UserError');
+            assert(
+                e.message.includes('width') && e.message.includes('must be between'),
+                `message should mention width bounds: ${e.message}`
+            );
+        }
+        assert(threw, 'should have thrown for invalid resize width');
+    });
+
+    await asyncTest('brightness validates range and preserves error category/code', async () => {
+        let threw = false;
+        try {
+            ImageEngine.from(buffer).brightness(200);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.code, 'LAZY_IMAGE_USER_ERROR', 'error.code should be UserError');
+            const category = getErrorCategory(e);
+            assertCategory(category, ErrorCategory.UserError, 'brightness validation should be UserError');
+            assert(
+                e.message.includes('brightness') && e.message.includes('-100') && e.message.includes('100'),
+                `message should mention brightness range: ${e.message}`
+            );
+        }
+        assert(threw, 'should have thrown for invalid brightness');
     });
 
     // Error category tests
@@ -332,13 +385,13 @@ async function runTests() {
     });
 
     await asyncTest('error category: ResourceLimit for file write error', async () => {
-        // ✅ Fix: より確実なテスト: 既存のファイルをディレクトリとして指定（確実にエラーになる）
-        // 既存のファイルをディレクトリとして指定することで、確実にエラーを発生させる
+        // More reliable test: specify existing file as directory (guaranteed to error)
+        // This ensures an error by trying to create a file under an existing file
         let threw = false;
         let category = null;
         try {
-            // 既存のファイルをディレクトリとして指定
-            // ファイルの下にファイルを作成しようとするため、確実にエラーになる
+            // Specify existing file as directory
+            // This will fail because we're trying to create a file under a file
             const invalidPath = path.join(TEST_IMAGE, 'output.jpg');
             await ImageEngine.from(buffer)
                 .resize(100, 100)
@@ -346,7 +399,7 @@ async function runTests() {
         } catch (e) {
             threw = true;
             category = getErrorCategory(e);
-            // ✅ Fix: エラーカテゴリがResourceLimitであることを確認
+            // Verify error category is ResourceLimit
             if (category !== null) {
                 assertCategory(
                     category, 
@@ -356,7 +409,7 @@ async function runTests() {
             }
         }
         
-        // ✅ Fix: エラーが発生することを確認（必須）
+        // Verify that error was thrown (required)
         assert(threw, 'should throw error when trying to write to invalid path');
         assert(category === ErrorCategory.ResourceLimit, 'error category should be ResourceLimit');
     });
@@ -368,18 +421,22 @@ async function runTests() {
             fs.mkdirSync(tempDir, { recursive: true });
         }
         const invalidPath = '/nonexistent/batch-input.jpg';
-        const results = await engine.processBatch([invalidPath], tempDir, 'jpeg', 80, undefined, 1);
+        const results = await engine.processBatch([invalidPath], tempDir, {
+            format: 'jpeg',
+            quality: 80,
+            concurrency: 1,
+        });
         assert.strictEqual(results.length, 1, 'should return one result');
         const result = results[0];
         assert.strictEqual(result.success, false, 'result should be marked as failure');
-        assert.strictEqual(result.errorCode, 'LAZY_IMAGE_USER_ERROR', 'error code should be set');
+        assert.strictEqual(result.errorCode, 'E100', 'errorCode should carry fine-grained code');
         assert.strictEqual(result.errorCategory, ErrorCategory.UserError, 'error category should be UserError');
         assert(result.error && result.error.includes(invalidPath), 'error message should include source path');
     });
 
-    // Note: InternalBugカテゴリのテストは、実際の内部エラーを発生させるのが困難なため、
-    // 実装上の問題が発生した場合にのみテスト可能です。
-    // 通常の使用では、InternalBugエラーは発生しないはずです。
+    // Note: Testing InternalBug category is difficult because it requires triggering
+    // actual internal errors, which should only happen due to implementation bugs.
+    // In normal usage, InternalBug errors should not occur.
 
     // Preset tests
     await asyncTest('preset("thumbnail") works', async () => {
@@ -470,10 +527,11 @@ async function runTests() {
             const results = await engine.processBatch(
                 [TEST_IMAGE, TEST_IMAGE],
                 testDir,
-                'jpeg',
-                80,
-                undefined,  // fastMode (optional)
-                2  // concurrency
+                {
+                    format: 'jpeg',
+                    quality: 80,
+                    concurrency: 2, // custom worker count
+                }
             );
             assert(results.length === 2, 'should process 2 images');
             assert(results.every(r => r.success), 'all should succeed');
@@ -498,10 +556,11 @@ async function runTests() {
             const results = await engine.processBatch(
                 [TEST_IMAGE, TEST_IMAGE],
                 testDir,
-                'jpeg',
-                80,
-                undefined,  // fastMode (optional)
-                0  // auto-detect
+                {
+                    format: 'jpeg',
+                    quality: 80,
+                    concurrency: 0, // auto-detect
+                }
             );
             assert(results.length === 2, 'should process 2 images');
             assert(results.every(r => r.success), 'all should succeed');

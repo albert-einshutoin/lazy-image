@@ -97,7 +97,7 @@ mod tests {
     }
 
     // Note: Methods requiring Reference (resize, crop, rotate, flip_h, flip_v,
-    // grayscale, keep_metadata, contrast, ensure_rgb, preset) cannot be tested
-    // here as they require NAPI JavaScript context. These are covered by
-    // test/integration/*.test.js which runs in Node.js environment.
+    // grayscale, keep_metadata, contrast, normalize_pixel_format/ensure_rgb, preset)
+    // cannot be tested here as they require NAPI JavaScript context. These are
+    // covered by test/integration/*.test.js which runs in Node.js environment.
 }
