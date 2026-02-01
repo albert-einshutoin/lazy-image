@@ -3,10 +3,21 @@
 // I/O operations: Source enum, file loading, and ICC profile extraction
 
 use crate::error::LazyImageError;
-use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
 use libavif_sys::*;
 use memmap2::Mmap;
 use std::sync::Arc;
+
+const MAX_ICC_SOURCE_BYTES: usize = 8 * 1024 * 1024; // Hard cap to keep fuzz inputs bounded without breaking large images
+
+pub type IccExtractionResult = std::result::Result<Option<Vec<u8>>, LazyImageError>;
+
+fn icc_decode_error(format: &str, reason: &str) -> LazyImageError {
+    LazyImageError::decode_failed(format!("{} ICC extraction failed: {}", format, reason))
+}
+
+fn icc_internal_panic(format: &str, reason: &str) -> LazyImageError {
+    LazyImageError::internal_panic(format!("{} ICC extraction panic: {}", format, reason))
+}
 
 /// Image source - supports both in-memory data and memory-mapped files
 #[derive(Clone, Debug)]
@@ -19,7 +30,7 @@ pub enum Source {
 
 impl Source {
     /// Load the actual bytes from the source
-    /// Note: For Mapped sources, this converts to Vec<u8> (defeats zero-copy).
+    /// Note: For Mapped sources, this converts to `Vec<u8>` (defeats zero-copy).
     /// Prefer using as_bytes() for zero-copy access when possible.
     #[deprecated(
         note = "Use as_bytes() for zero-copy access. This method defeats zero-copy by converting Mapped to Vec<u8>."
@@ -53,36 +64,56 @@ impl Source {
 }
 
 /// Extract ICC profile from image data.
-/// Supports JPEG (APP2 marker), PNG (iCCP chunk), and WebP (ICCP chunk).
-pub fn extract_icc_profile(data: &[u8]) -> Option<Vec<u8>> {
-    // Check magic bytes to determine format
+/// Supports JPEG (APP2 marker), PNG (iCCP chunk), WebP (ICCP chunk), and AVIF (colr box).
+/// Returns `Ok(None)` when no ICC profile is present or the format is unsupported.
+/// Returns `Err` for structurally invalid containers or corrupted ICC payloads.
+pub fn extract_icc_profile(data: &[u8]) -> IccExtractionResult {
     if data.len() < 12 {
-        return None;
+        return Ok(None);
+    }
+    // For very large inputs, skip ICC parsing to avoid unbounded work but keep processing alive.
+    if data.len() > MAX_ICC_SOURCE_BYTES {
+        return Ok(None);
     }
 
-    let icc_data = if data[0] == 0xFF && data[1] == 0xD8 {
-        // JPEG: starts with 0xFF 0xD8
-        extract_icc_from_jpeg(data)?
-    } else if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 {
-        // PNG: starts with 0x89 0x50 0x4E 0x47
-        extract_icc_from_png(data)?
-    } else if &data[0..4] == b"RIFF" && data.len() >= 12 && &data[8..12] == b"WEBP" {
-        // WebP: starts with "RIFF" then 4 bytes size then "WEBP"
-        extract_icc_from_webp(data)?
+    let icc_data = if data.starts_with(&[0xFF, 0xD8]) {
+        guard_icc_extraction("jpeg", || Ok(extract_icc_from_jpeg(data)))?
+    } else if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        guard_icc_extraction("png", || Ok(extract_icc_from_png(data)))?
+    } else if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
+        guard_icc_extraction("webp", || Ok(extract_icc_from_webp(data)))?
     } else if is_avif_data(data) {
-        // AVIF: ISOBMFF-based format with 'ftyp' box containing 'avif' brand
-        extract_icc_from_avif(data)?
+        guard_icc_extraction("avif", || Ok(extract_icc_from_avif_safe(data)))?
     } else {
-        return None;
+        return Ok(None);
     };
 
-    // Validate extracted ICC profile
-    if validate_icc_profile(&icc_data) {
-        Some(icc_data)
-    } else {
-        // Invalid ICC profile - skip it
-        None
+    let Some(icc_data) = icc_data else {
+        return Ok(None);
+    };
+
+    if !validate_icc_profile(&icc_data) {
+        return Err(icc_decode_error(
+            "icc",
+            "invalid ICC header (size or signature mismatch)",
+        ));
     }
+
+    Ok(Some(icc_data))
+}
+
+/// Lossy helper for callers that cannot propagate errors (legacy NAPI constructor).
+/// Panics are still trapped and converted to `None` via the guard.
+pub fn extract_icc_profile_lossy(data: &[u8]) -> Option<Vec<u8>> {
+    guard_icc_extraction("lossy", || extract_icc_profile(data)).unwrap_or(None)
+}
+
+fn guard_icc_extraction<F>(format: &'static str, func: F) -> IccExtractionResult
+where
+    F: FnOnce() -> IccExtractionResult + std::panic::UnwindSafe,
+{
+    std::panic::catch_unwind(func)
+        .map_err(|_| icc_internal_panic(format, "panic during ICC parse"))?
 }
 
 /// Validate ICC profile header
@@ -185,23 +216,161 @@ pub(crate) fn is_avif_data(data: &[u8]) -> bool {
     false
 }
 
-/// Extract ICC profile from JPEG data
+/// Extract ICC profile from JPEG data using a guarded APP2 parser.
 pub(crate) fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
-    use img_parts::Bytes;
-    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
-    let jpeg = Jpeg::from_bytes(Bytes::copy_from_slice(data)).ok()?;
-    jpeg.icc_profile().map(|icc| icc.to_vec())
+    if !is_well_formed_jpeg(data) {
+        return None;
+    }
+    extract_icc_from_jpeg_app2(data)
 }
 
-/// Extract ICC profile from PNG data
-pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
-    use img_parts::Bytes;
-    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
-    let img_parts_icc = Png::from_bytes(Bytes::copy_from_slice(data))
-        .ok()
-        .and_then(|png| png.icc_profile().map(|icc| icc.to_vec()));
+/// Minimal JPEG structure check to avoid handing obviously malformed buffers to parsers.
+fn is_well_formed_jpeg(data: &[u8]) -> bool {
+    const SOI: u8 = 0xD8;
+    const EOI: u8 = 0xD9;
+    const SOS: u8 = 0xDA;
 
-    img_parts_icc.or_else(|| extract_icc_from_png_direct(data))
+    if data.len() < 4 || data[0] != 0xFF || data[1] != SOI {
+        return false;
+    }
+
+    let mut i = 2; // after SOI
+    while i + 1 < data.len() {
+        if data[i] != 0xFF {
+            return false;
+        }
+        while i < data.len() && data[i] == 0xFF {
+            i += 1;
+        }
+        if i >= data.len() {
+            return false;
+        }
+        let marker = data[i];
+        i += 1;
+
+        // Standalone markers without length
+        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 || marker == EOI {
+            if marker == EOI {
+                return true;
+            }
+            continue;
+        }
+
+        if i + 1 >= data.len() {
+            return false;
+        }
+        let seg_len = u16::from_be_bytes([data[i], data[i + 1]]) as usize;
+        if seg_len < 2 {
+            return false;
+        }
+        if i + seg_len > data.len() {
+            return false;
+        }
+        i += seg_len;
+
+        if marker == SOS {
+            // Require at least one byte of scan data
+            return i < data.len();
+        }
+    }
+    false
+}
+
+/// Extract ICC profile from APP2 segments following the ICC.1 spec.
+fn extract_icc_from_jpeg_app2(data: &[u8]) -> Option<Vec<u8>> {
+    const APP2: u8 = 0xE2;
+    const SOS: u8 = 0xDA;
+    const EOI: u8 = 0xD9;
+    const ICC_ID: &[u8] = b"ICC_PROFILE\0";
+
+    let mut i = 2; // skip SOI
+    let mut count_expected: Option<u8> = None;
+    let mut segments: Vec<(u8, Vec<u8>)> = Vec::new();
+
+    while i + 1 < data.len() {
+        if data[i] != 0xFF {
+            return None;
+        }
+        while i < data.len() && data[i] == 0xFF {
+            i += 1;
+        }
+        if i >= data.len() {
+            return None;
+        }
+        let marker = data[i];
+        i += 1;
+
+        if marker == SOS || marker == EOI {
+            break; // stop before compressed scan or explicit end
+        }
+        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 {
+            continue; // standalone marker
+        }
+
+        if i + 1 >= data.len() {
+            return None;
+        }
+        let seg_len = u16::from_be_bytes([data[i], data[i + 1]]) as usize;
+        if seg_len < 2 || i + seg_len > data.len() {
+            return None;
+        }
+        i += 2;
+        let seg_end = i + seg_len - 2;
+        if seg_end > data.len() {
+            return None;
+        }
+
+        if marker == APP2 && seg_len >= 16 {
+            let segment = &data[i..seg_end];
+            if segment.len() >= 14 && segment.starts_with(ICC_ID) {
+                let seq = segment[12];
+                let count = segment[13];
+                if seq == 0 || count == 0 {
+                    // invalid numbering, skip
+                } else {
+                    if let Some(expected) = count_expected {
+                        if expected != count {
+                            return None;
+                        }
+                    } else {
+                        count_expected = Some(count);
+                    }
+                    let payload = segment[14..].to_vec();
+                    segments.push((seq, payload));
+                }
+            }
+        }
+
+        i = seg_end;
+    }
+
+    let total_segments = count_expected?;
+    if segments.is_empty() || segments.len() != total_segments as usize {
+        return None;
+    }
+
+    segments.sort_by_key(|(seq, _)| *seq);
+    for (expected_seq, (seq, _)) in (1u8..=total_segments).zip(segments.iter()) {
+        if *seq != expected_seq {
+            return None;
+        }
+    }
+
+    let total_len: usize = segments.iter().map(|(_, payload)| payload.len()).sum();
+    if total_len > MAX_ICC_SOURCE_BYTES {
+        return None;
+    }
+
+    let mut combined = Vec::with_capacity(total_len);
+    for (_, payload) in segments {
+        combined.extend_from_slice(&payload);
+    }
+    Some(combined)
+}
+
+/// Extract ICC profile from PNG data using a deterministic parser (iCCP chunk).
+pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
+    extract_icc_from_png_direct(data)
 }
 
 /// Extract ICC profile from PNG iCCP chunk by directly parsing PNG structure
@@ -287,19 +456,56 @@ pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
     None
 }
 
-/// Extract ICC profile from WebP data
+/// Extract ICC profile from WebP data by walking RIFF chunks and reading ICCP.
 pub(crate) fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
-    use img_parts::webp::WebP;
-    use img_parts::Bytes;
-    // Use copy_from_slice to avoid creating intermediate Vec before Bytes conversion
-    let webp = WebP::from_bytes(Bytes::copy_from_slice(data)).ok()?;
-    webp.icc_profile().map(|icc| icc.to_vec())
+    extract_icc_from_webp_riff(data)
 }
 
-/// Extract ICC profile from AVIF data using libavif
+/// Extract ICC profile from WebP RIFF container without invoking img-parts.
+fn extract_icc_from_webp_riff(data: &[u8]) -> Option<Vec<u8>> {
+    if data.len() < 12 || !data.starts_with(b"RIFF") || &data[8..12] != b"WEBP" {
+        return None;
+    }
+
+    // RIFF chunk size is bytes 4..8 (little-endian) but we only validate bounds defensively.
+    let mut offset = 12;
+    while offset + 8 <= data.len() {
+        let chunk_id = &data[offset..offset + 4];
+        let size = u32::from_le_bytes([
+            data[offset + 4],
+            data[offset + 5],
+            data[offset + 6],
+            data[offset + 7],
+        ]) as usize;
+        offset = offset
+            .checked_add(8)
+            .filter(|&v| v <= data.len())
+            .unwrap_or(data.len());
+
+        if offset + size > data.len() {
+            break;
+        }
+
+        if chunk_id == b"ICCP" {
+            return Some(data[offset..offset + size].to_vec());
+        }
+
+        // Chunks are padded to even sizes.
+        let padded = if size % 2 == 0 { size } else { size + 1 };
+        offset = offset.saturating_add(padded);
+    }
+
+    None
+}
+
+/// Extract ICC profile from AVIF data using libavif with panic and size guards.
 /// libavif-sys is always available (not dependent on napi feature)
-fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
-    unsafe {
+fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
+    if data.len() > MAX_ICC_SOURCE_BYTES {
+        return None;
+    }
+
+    std::panic::catch_unwind(|| unsafe {
         // Create decoder
         let decoder = avifDecoderCreate();
         if decoder.is_null() {
@@ -318,6 +524,9 @@ fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
             }
         }
         let _decoder_guard = AvifDecoderGuard(decoder);
+
+        // Keep fuzz runs single-threaded to reduce nondeterminism and memory overhead.
+        (*decoder).maxThreads = 1;
 
         // Set decode data
         let result = avifDecoderSetIOMemory(decoder, data.as_ptr(), data.len());
@@ -349,17 +558,179 @@ fn extract_icc_from_avif(data: &[u8]) -> Option<Vec<u8>> {
             return None;
         }
 
+        if icc_size > MAX_ICC_SOURCE_BYTES {
+            return None;
+        }
+
         let icc_data = std::slice::from_raw_parts(icc_ptr, icc_size).to_vec();
         Some(icc_data)
+    })
+    .ok()
+    .flatten()
+}
+
+// =============================================================================
+// EXIF METADATA EXTRACTION AND SANITIZATION
+// =============================================================================
+//
+// Uses little_exif for tag-level EXIF access, enabling:
+// - Orientation tag reset after auto-orient (prevents double-rotation bugs)
+// - GPS tag stripping by default (privacy-first, exceeds Sharp's capabilities)
+
+use little_exif::filetype::FileExtension;
+use little_exif::metadata::Metadata as ExifMetadata;
+
+/// Maximum EXIF data size to process (prevent DoS from malicious inputs)
+const MAX_EXIF_SOURCE_BYTES: usize = 8 * 1024 * 1024;
+
+/// Detect file extension for little_exif from image data magic bytes
+/// Note: Reserved for future PNG/WebP/AVIF EXIF support
+fn detect_file_extension(data: &[u8]) -> Option<FileExtension> {
+    if data.len() < 12 {
+        return None;
     }
+
+    // JPEG: starts with FF D8
+    if data.starts_with(&[0xFF, 0xD8]) {
+        return Some(FileExtension::JPEG);
+    }
+
+    // PNG: starts with 89 50 4E 47
+    // as_zTXt_chunk: true means EXIF is stored in zTXt chunk (standard for PNG)
+    if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        return Some(FileExtension::PNG {
+            as_zTXt_chunk: true,
+        });
+    }
+
+    // WebP: RIFF....WEBP
+    if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
+        return Some(FileExtension::WEBP);
+    }
+
+    // AVIF/HEIF: ISOBMFF with ftyp box - little_exif uses HEIF for both
+    if &data[4..8] == b"ftyp" {
+        let brand = &data[8..12];
+        if brand == b"avif"
+            || brand == b"avis"
+            || brand == b"heic"
+            || brand == b"heix"
+            || brand == b"mif1"
+        {
+            return Some(FileExtension::HEIF);
+        }
+    }
+
+    // TIFF: II (little-endian) or MM (big-endian)
+    if (data.starts_with(b"II") && data[2] == 0x2A && data[3] == 0x00)
+        || (data.starts_with(b"MM") && data[2] == 0x00 && data[3] == 0x2A)
+    {
+        return Some(FileExtension::TIFF);
+    }
+
+    None
+}
+
+/// Extract raw EXIF bytes from image data.
+/// This is used to store EXIF for later embedding without needing to re-parse.
+/// Returns the raw EXIF APP1 segment data (for JPEG) or equivalent for other formats.
+pub fn extract_exif_raw(data: &[u8]) -> Option<Vec<u8>> {
+    if data.len() < 12 || data.len() > MAX_EXIF_SOURCE_BYTES {
+        return None;
+    }
+
+    // For JPEG, extract raw APP1 segment containing EXIF
+    if data.starts_with(&[0xFF, 0xD8]) {
+        return extract_exif_raw_jpeg(data);
+    }
+
+    // For other formats, we'll extract EXIF using little_exif and serialize
+    // This is a fallback that may not preserve all metadata perfectly
+    let file_ext = detect_file_extension(data)?;
+    let data_vec = data.to_vec();
+
+    std::panic::catch_unwind(|| {
+        let _metadata = ExifMetadata::new_from_vec(&data_vec, file_ext).ok()?;
+        // Serialize the metadata to raw bytes
+        // little_exif doesn't have direct serialization, so we work with what we have
+        // For non-JPEG, we'll store a marker and rely on little_exif at write time
+        Some(data_vec) // Store original for now, sanitize at write time
+    })
+    .ok()
+    .flatten()
+}
+
+/// Extract raw EXIF APP1 segment from JPEG data
+fn extract_exif_raw_jpeg(data: &[u8]) -> Option<Vec<u8>> {
+    const APP1: u8 = 0xE1;
+    const SOS: u8 = 0xDA;
+    const EOI: u8 = 0xD9;
+    const EXIF_ID: &[u8] = b"Exif\0\0";
+
+    if !data.starts_with(&[0xFF, 0xD8]) {
+        return None;
+    }
+
+    let mut i = 2; // skip SOI
+
+    while i + 1 < data.len() {
+        if data[i] != 0xFF {
+            return None;
+        }
+        while i < data.len() && data[i] == 0xFF {
+            i += 1;
+        }
+        if i >= data.len() {
+            return None;
+        }
+        let marker = data[i];
+        i += 1;
+
+        if marker == SOS || marker == EOI {
+            break; // stop before compressed scan or explicit end
+        }
+        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 {
+            continue; // standalone marker
+        }
+
+        if i + 1 >= data.len() {
+            return None;
+        }
+        let seg_len = u16::from_be_bytes([data[i], data[i + 1]]) as usize;
+        if seg_len < 2 || i + seg_len > data.len() {
+            return None;
+        }
+        i += 2;
+        let seg_end = i + seg_len - 2;
+        if seg_end > data.len() {
+            return None;
+        }
+
+        // Check for EXIF APP1 segment
+        if marker == APP1 && seg_len >= 8 {
+            let segment = &data[i..seg_end];
+            if segment.starts_with(EXIF_ID) {
+                // Return the entire EXIF data (without the EXIF identifier)
+                return Some(segment[6..].to_vec());
+            }
+        }
+
+        i = seg_end;
+    }
+
+    None
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
-    use image::{DynamicImage, GenericImageView, RgbImage};
+    use image::{DynamicImage, RgbImage};
     use std::io::Cursor;
+
+    fn extract_icc_ok(data: &[u8]) -> Option<Vec<u8>> {
+        extract_icc_profile(data).unwrap()
+    }
 
     // Helper function to create test images
     fn create_test_image(width: u32, height: u32) -> DynamicImage {
@@ -420,19 +791,19 @@ mod tests {
 
         #[test]
         fn test_validate_icc_profile_too_small() {
-            let data = vec![0u8; 127]; // 128バイト未満
+            let data = vec![0u8; 127]; // Less than 128 bytes
             assert!(!validate_icc_profile(&data));
         }
 
         #[test]
         fn test_validate_icc_profile_minimal_valid() {
-            // 最小限の有効なICCプロファイル（128バイト）
+            // Minimal valid ICC profile (128 bytes)
             let mut data = vec![0u8; 128];
-            // プロファイルサイズ（最初の4バイト、big-endian）
+            // Profile size (first 4 bytes, big-endian)
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0x80; // 128バイト
+            data[3] = 0x80; // 128 bytes
                             // CMM type (bytes 4-7): "ADBE" (ASCII)
             data[4] = b'A';
             data[5] = b'D';
@@ -462,17 +833,17 @@ mod tests {
         #[test]
         fn test_validate_icc_profile_size_mismatch() {
             let mut data = vec![0u8; 200];
-            // プロファイルサイズを200に設定
+            // Set profile size to 200
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0xC8; // 200バイト
-                            // しかし実際のデータは200バイトなので、これは有効
-                            // サイズが一致しない場合をテスト
+            data[3] = 0xC8; // 200 bytes
+                            // But actual data is 200 bytes, so this is valid
+                            // Test case where size doesn't match
             data[3] = 0x00;
-            data[3] = 0xFF; // 255バイトと設定（実際は200バイト）
+            data[3] = 0xFF; // Set to 255 bytes (actual is 200 bytes)
 
-            // サイズが一致しないので無効
+            // Invalid because size doesn't match
             assert!(!validate_icc_profile(&data));
         }
 
@@ -483,14 +854,14 @@ mod tests {
             data[1] = 0x00;
             data[2] = 0x00;
             data[3] = 0x80;
-            data[8] = 20; // バージョンが大きすぎる
+            data[8] = 20; // Version too large
 
             assert!(!validate_icc_profile(&data));
         }
 
         #[test]
         fn test_extract_icc_from_jpeg_no_profile() {
-            // ICCプロファイルなしのJPEG
+            // JPEG without ICC profile
             let jpeg_data = create_minimal_jpeg();
             let result = extract_icc_from_jpeg(&jpeg_data);
             assert!(result.is_none());
@@ -498,7 +869,7 @@ mod tests {
 
         #[test]
         fn test_extract_icc_from_png_no_profile() {
-            // ICCプロファイルなしのPNG
+            // PNG without ICC profile
             let png_data = create_minimal_png();
             let result = extract_icc_from_png(&png_data);
             assert!(result.is_none());
@@ -506,7 +877,7 @@ mod tests {
 
         #[test]
         fn test_extract_icc_from_webp_no_profile() {
-            // ICCプロファイルなしのWebP
+            // WebP without ICC profile
             let webp_data = create_minimal_webp();
             let result = extract_icc_from_webp(&webp_data);
             assert!(result.is_none());
@@ -516,27 +887,38 @@ mod tests {
         fn test_extract_icc_profile_invalid_data() {
             let invalid_data = vec![0u8; 10];
             let result = extract_icc_profile(&invalid_data);
-            assert!(result.is_none());
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
+        }
+
+        #[test]
+        fn test_extract_icc_profile_large_input_skips_icc() {
+            // Ensure inputs larger than the fuzz safety cap do not hard-fail.
+            let huge = vec![0u8; MAX_ICC_SOURCE_BYTES + 1];
+            let result = extract_icc_profile(&huge);
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
         }
 
         #[test]
         fn test_extract_icc_profile_jpeg() {
             let jpeg_data = create_minimal_jpeg();
-            // JPEGからICCプロファイルを抽出（存在しない場合）
+            // Extract ICC profile from JPEG (when not present)
             let result = extract_icc_profile(&jpeg_data);
-            // 最小JPEGにはICCプロファイルがない
-            assert!(result.is_none());
+            // Minimal JPEG has no ICC profile
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
         }
 
         // Helper function to create a minimal valid ICC profile (sRGB)
         fn create_minimal_srgb_icc() -> Vec<u8> {
-            // 最小限の有効なsRGB ICCプロファイル（128バイト）
+            // Minimal valid sRGB ICC profile (128 bytes)
             let mut data = vec![0u8; 128];
-            // プロファイルサイズ（最初の4バイト、big-endian）
+            // Profile size (first 4 bytes, big-endian)
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0x80; // 128バイト
+            data[3] = 0x80; // 128 bytes
                             // CMM type (bytes 4-7): "ADBE" (ASCII)
             data[4] = b'A';
             data[5] = b'D';
@@ -587,10 +969,10 @@ mod tests {
             fn test_extract_icc_from_jpeg_with_profile() {
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
-                let extracted = extract_icc_profile(&jpeg);
+                let extracted = extract_icc_ok(&jpeg);
                 assert!(extracted.is_some());
                 let extracted = extracted.unwrap();
-                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                // Minimum ICC profile size is 128 bytes (header)
                 assert!(extracted.len() >= 128);
             }
 
@@ -600,14 +982,14 @@ mod tests {
                 // The direct parser fallback keeps this deterministic across environments.
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
-                let extracted = extract_icc_profile(&png);
+                let extracted = extract_icc_ok(&png);
                 // PNG ICC extraction should return Some when ICC profile is embedded correctly
                 assert!(
                     extracted.is_some(),
                     "PNG ICC extraction should return Some when ICC profile is embedded correctly"
                 );
                 let extracted = extracted.unwrap();
-                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                // Minimum ICC profile size is 128 bytes (header)
                 assert!(extracted.len() >= 128);
                 // Extracted ICC should match original
                 assert_eq!(icc, extracted, "Extracted ICC should match original");
@@ -617,26 +999,26 @@ mod tests {
             fn test_extract_icc_from_webp_with_profile() {
                 let icc = create_minimal_srgb_icc();
                 let webp = create_webp_with_icc(&icc);
-                let extracted = extract_icc_profile(&webp);
+                let extracted = extract_icc_ok(&webp);
                 assert!(extracted.is_some());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_no_icc() {
                 let jpeg = create_minimal_jpeg();
-                let icc = extract_icc_profile(&jpeg);
+                let icc = extract_icc_ok(&jpeg);
                 assert!(icc.is_none());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_non_image() {
-                let icc = extract_icc_profile(b"not an image");
+                let icc = extract_icc_ok(b"not an image");
                 assert!(icc.is_none());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_empty() {
-                let icc = extract_icc_profile(&[]);
+                let icc = extract_icc_ok(&[]);
                 assert!(icc.is_none());
             }
         }
@@ -653,7 +1035,7 @@ mod tests {
             #[test]
             fn test_validate_truncated_icc() {
                 let icc = create_minimal_srgb_icc();
-                // 途中で切り詰め
+                // Truncated in the middle
                 let truncated = &icc[..50];
                 assert!(!validate_icc_profile(truncated));
             }
@@ -661,7 +1043,7 @@ mod tests {
             #[test]
             fn test_validate_wrong_size_field() {
                 let mut icc = create_minimal_srgb_icc();
-                // サイズフィールド（先頭4バイト）を不正値に
+                // Set size field (first 4 bytes) to invalid value
                 icc[0] = 0xFF;
                 icc[1] = 0xFF;
                 icc[2] = 0xFF;
@@ -671,7 +1053,7 @@ mod tests {
 
             #[test]
             fn test_validate_too_short() {
-                assert!(!validate_icc_profile(&[0; 100])); // 128バイト未満
+                assert!(!validate_icc_profile(&[0; 100])); // Less than 128 bytes
             }
 
             #[test]
@@ -685,21 +1067,21 @@ mod tests {
 
             #[test]
             fn test_jpeg_roundtrip() {
-                // 1. 元画像からICC抽出
+                // 1. Extract ICC from original image
                 let original_icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+                let extracted_icc = extract_icc_ok(&jpeg).unwrap();
 
-                // 2. 画像デコード
+                // 2. Decode image
                 let img = image::load_from_memory(&jpeg).unwrap();
 
-                // 3. ICCを埋め込んでJPEGエンコード
+                // 3. Encode JPEG with ICC embedded
                 let encoded = encode_jpeg(&img, 80, Some(&extracted_icc)).unwrap();
 
-                // 4. エンコード結果からICC再抽出
-                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+                // 4. Re-extract ICC from encoded result
+                let re_extracted_icc = extract_icc_ok(&encoded).unwrap();
 
-                // 5. 同一性確認
+                // 5. Verify identity
                 assert_eq!(extracted_icc, re_extracted_icc);
             }
 
@@ -742,11 +1124,11 @@ mod tests {
             fn test_webp_roundtrip() {
                 let original_icc = create_minimal_srgb_icc();
                 let webp = create_webp_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&webp).unwrap();
+                let extracted_icc = extract_icc_ok(&webp).unwrap();
 
                 let img = image::load_from_memory(&webp).unwrap();
                 let encoded = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
-                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+                let re_extracted_icc = extract_icc_ok(&encoded).unwrap();
 
                 assert_eq!(extracted_icc, re_extracted_icc);
             }
@@ -756,7 +1138,7 @@ mod tests {
                 // Test that ICC profile is preserved when converting JPEG to PNG
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
-                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+                let extracted_icc = extract_icc_ok(&jpeg).unwrap();
 
                 // Convert JPEG to PNG with ICC
                 let img = image::load_from_memory(&jpeg).unwrap();
@@ -799,7 +1181,7 @@ mod tests {
                 let webp = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
 
                 // Verify that WebP contains ICC profile
-                let re_extracted = extract_icc_profile(&webp).unwrap();
+                let re_extracted = extract_icc_ok(&webp).unwrap();
                 assert_eq!(
                     extracted_icc, re_extracted,
                     "ICC profile should be preserved in PNG to WebP conversion"
@@ -822,7 +1204,7 @@ mod tests {
                 assert!(is_avif_data(&avif), "Output should be valid AVIF");
 
                 // Extract ICC profile from AVIF
-                let extracted = extract_icc_profile(&avif);
+                let extracted = extract_icc_ok(&avif);
                 assert!(
                     extracted.is_some(),
                     "AVIF should now preserve ICC profile with libavif"
@@ -844,7 +1226,7 @@ mod tests {
 
             #[test]
             fn test_avif_encoding_with_icc_does_not_crash() {
-                // ICCプロファイルを渡してもクラッシュしないことを確認
+                // Verify that passing ICC profile does not crash
                 let icc = create_minimal_srgb_icc();
                 let img = create_test_image(100, 100);
                 let result = encode_avif(&img, 60, Some(&icc));
@@ -853,7 +1235,7 @@ mod tests {
 
             #[test]
             fn test_avif_encoding_without_icc() {
-                // ICC無しでもエンコードできることを確認
+                // Verify that encoding works without ICC
                 let img = create_test_image(100, 100);
                 let avif = encode_avif(&img, 60, None).unwrap();
 
@@ -861,7 +1243,7 @@ mod tests {
                 assert!(is_avif_data(&avif), "Output should be valid AVIF");
 
                 // Should not have ICC profile
-                let extracted = extract_icc_profile(&avif);
+                let extracted = extract_icc_ok(&avif);
                 assert!(
                     extracted.is_none(),
                     "AVIF without ICC should not have ICC profile"

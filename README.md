@@ -6,9 +6,15 @@
 >
 > Smaller files. Better quality. Memory-efficient. Powered by Rust + mozjpeg + AVIF.
 >
-> **Positioning**: lazy-image is an **opinionated web image optimization engine**.
-> It is **not a drop-in replacement for sharp**. If you need sharp-compatible APIs
-> or a broad image editing feature set, use sharp.
+> **Top-level stance**
+> - Opinionated **web image optimization engine** (performance + safety over feature breadth)
+> - **Not** a drop-in replacement for sharp (yet); use sharp if you need its full API surface
+> - **Security-first defaults**: All metadata (EXIF/XMP/ICC) stripped by default; use `keepMetadata()` to preserve
+> - **Zero-copy input path**: `fromPath()/processBatch()` → `toFile()` avoids copying source data into the JS heap
+> - **AVIF ICC**: preserved in v0.9.x (libavif-sys); older <0.9.0 or ravif-only builds drop ICC
+>
+> Looking for Japanese? See the Japanese summary in [README.ja.md](./README.ja.md).
+> mmap safety: `fromPath` memory-maps files; do not modify/delete/resize mapped files while processing. For mutable inputs, use a copy or `from(Buffer)`.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -37,103 +43,69 @@ surface than sharp.
 | Compositing / rich filters | ❌ | ✅ |
 | Animated images | ❌ | ✅ |
 | Streaming pipeline | ❌ | ✅ |
-| Metadata handling | ICC only | ✅ (EXIF/XMP/etc) |
+| Metadata handling | ICC + EXIF (GPS auto-strip) | ✅ (EXIF/XMP/etc) |
 
 For a full matrix and migration notes, see [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
 
-## 📊 Benchmark Results
+## 📑 Specification
 
-**vs sharp (libvips + mozjpeg)**
+Formal semantics live in `spec/`:
 
-> 📖 **For comprehensive benchmark documentation**, see [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md) - detailed analysis of AVIF speed advantages and JPEG size optimization.
+- [Pipeline](./spec/pipeline.md) — operation ordering, fusion rules, and crop/resize boundary handling
+- [Resize](./spec/resize.md) — fit/inside/cover/fill, rounding rules, limits
+- [Metadata](./spec/metadata.md) — ICC/EXIF/XMP handling, defaults, AVIF notes
+- [Errors](./spec/errors.md) — taxonomy, mappings, JS category helpers
+- [Input Validation](./docs/INPUT_VALIDATION.md) — runtime rules for JS-facing parameters
+- [Limits](./spec/limits.md) — dimensions/pixels, firewall bytes/timeout, concurrency
+- [Quality](./spec/quality.md) — SSIM/PSNR gates and repro guidance
+- [Quality Semantics](./docs/QUALITY_SEMANTICS.md) — what `quality` means per format and cross-format equivalence
+- [SemVer & Deprecation Policy](./docs/SEMVER_POLICY.md) — versioning rules, deprecation flow, changelog standard
 
-> 🐳 **Benchmark Environment**: These results are measured in a **Docker environment** to ensure consistent, reproducible conditions that closely match production server environments. You can run the same benchmarks yourself using the [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) repository.
+### 🔎 Measurable & Verifiable Claims
 
-### 📊 Performance Benchmarks (Large File: 4.5MB PNG)
+- **Zero-copy definition**: `fromPath()` / `processBatch()` → `toFile()` does not copy source data into the JS heap; input is mmapped and processed in Rust. Output buffers are allocated (by design).
+- **Heap budget (input path)**: JS heap increase ≤ **2 MB** for `fromPath → toBufferWithMetrics` (validated via `node --expose-gc docs/scripts/measure-zero-copy.js`).
+- **RSS budget**: `peak_rss ≤ decoded_bytes + 24 MB` (decoded_bytes = width × height × bpp; JPEG bpp=3, PNG/WebP/AVIF bpp=4). Example: 6000×4000 PNG (~24 MP, bpp=4) → decoded ≈ 96 MB, target peak RSS ≤ **120 MB**.
+- **Metadata defaults**: All metadata (EXIF/XMP/ICC) is stripped by default for security and smaller file sizes. Use `keepMetadata({ icc: true, exif: true })` to preserve. AVIF ICC requires v0.9.x/libavif-sys.
+- **Reproducibility**: Run `node --expose-gc docs/scripts/measure-zero-copy.js` to emit JSON with `rss_delta_mb` / `heap_delta_mb` and confirm the budgets above.
 
-lazy-image outperforms sharp in **AVIF generation speed** and **JPEG compression efficiency**.
+## ⚖️ Performance & Trade-offs: lazy-image vs sharp
 
-| Scenario | Format | lazy-image | sharp | Verdict |
+We believe in **radical transparency**. `lazy-image` is not a replacement for `sharp` in every scenario. It is a specialized engine designed for **Cloud-Native efficiency** (Bandwidth & Memory) rather than raw throughput.
+
+We benchmarked both libraries on typical server workloads (Linux/x64). Here is the honest breakdown to help you choose the right tool.
+
+### 📊 Benchmark Summary (Large Image 5000x5000px)
+
+| Feature | Metric | 🦀 lazy-image | 🔪 sharp (libvips) | The Verdict |
 | :--- | :--- | :--- | :--- | :--- |
-| **Speed (No Resize)** | **AVIF** | **10,013ms** 🚀 | 63,544ms | **6.3x Faster** |
-| | JPEG | 1,120ms | **127ms** | Slower (Optimized for size) |
-| | WebP | 5,891ms | **1,559ms** | Slower |
-| **File Size (No Resize)** | **JPEG** | **1.2 MB** 📉 | 1.6 MB | **-25.0%** ✅ |
-| | **AVIF** | **744.8 KB** 📉 | 1.2 MB | **-37.9%** ✅ |
-| | WebP | 1.1 MB | **1.1 MB** | Comparable |
-| **Speed (Resize 800×600)** | **AVIF** | **382ms** ⚡ | 818ms | **2.1x Faster** |
-| | JPEG | 95ms | **71ms** | Slower (Optimized for size) |
-| | WebP | 237ms | **94ms** | Slower |
-| **File Size (Resize 800×600)** | **JPEG** | **30.8 KB** 📉 | 28.6 KB | +7.7% |
-| | **AVIF** | **23.8 KB** 📉 | 13.5 KB | +76.3% |
-| | WebP | 31.7 KB | **17.5 KB** | +81.1% |
+| **AVIF Generation** | Time | **🚀 13.3s** | 🐢 47.4s | **Lazy-image is ~3.5x Faster**. Sharp struggles with large AVIFs. |
+| **JPEG Compression** | File Size | **📉 1.1 MB** | 1.5 MB | **Lazy-image saves ~26% bandwidth**. We trade CPU time for smaller files. |
+| **JPEG Encoding** | Speed | 🐢 1.2s | **🚀 0.3s** | **Sharp is ~4x Faster**. Sharp prioritizes speed; we prioritize compression. |
+| **Memory Safety** | Peak RSS | **🛡️ 713 MB** | ⚠️ 2,416 MB | **Lazy-image uses ~70% less memory** via Zero-Copy (Format conversion). |
+| **WebP Resize** | Speed | 320ms | **🚀 134ms** | **Sharp is ~2.5x Faster**. For high-throughput WebP resizing, Sharp is king. |
 
-> *Tested with `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000), quality: JPEG 80, WebP 80, AVIF 60. Resize to 800×600 (fit inside).*
+> *Full benchmark data is available in [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md).*
 
-**Processing Speed Note**: lazy-image prioritizes compression ratio (smaller file sizes) over raw encoding speed for JPEG. This results in significantly smaller files (20-25% reduction) to save bandwidth costs, at the expense of longer processing times. For WebP (v0.8.1+), encoding speed has been optimized (method 4, single pass) but is still slower than sharp. **For AVIF, lazy-image is consistently faster (6.3x for large files) and produces smaller files (38% reduction) than sharp**, making it ideal for next-generation image formats.
+---
 
-<details>
-<summary>📋 Benchmark Test Environment (Click to expand)</summary>
+### 🤔 Which one should I choose?
 
-| Item | Version/Spec |
-|------|--------------|
-| **Environment** | Docker (Docker Compose) |
-| **Node.js** | v22.x |
-| **sharp** | 0.34.x |
-| **Test Image** | `test/fixtures/test_4.5MB_5000x5000.png` (4.5MB PNG, 5000×5000) |
-| **Output Size** | 800×600 (fit inside, aspect ratio maintained) |
-| **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
-| **Platform** | Docker container (Linux) |
+Engineers should pick the tool that matches their bottleneck.
 
-**How to reproduce:**
+#### ✅ Choose `lazy-image` if:
+* **You run on Serverless (AWS Lambda / Cloud Run):** You need to avoid OOM (Out-of-Memory) crashes and cold-start penalties.
+* **You pay for Bandwidth (CDN / S3):** A 25% reduction in JPEG size saves terabytes of transfer costs at scale.
+* **You are adopting AVIF:** You need a production-ready AVIF encoder that doesn't timeout on large files.
+* **Safety is priority:** You prefer Rust's memory safety guarantees over C++ performance.
 
-**Option 1: Docker environment (recommended - matches production conditions)**
-```bash
-# Clone the benchmark repository
-git clone https://github.com/albert-einshutoin/lazy-image-test.git
-cd lazy-image-test/backend
-npm install
-cd ..
-docker-compose up --build
+#### ✅ Choose `sharp` if:
+* **You run on heavy Persistent Servers:** You have plenty of RAM and CPU cores to spare.
+* **Throughput is king:** You need to resize thousands of JPEGs/WebPs per second and don't care about file size optimization.
+* **You don't use AVIF:** You stick to legacy formats and need maximum resizing speed.
 
-# Then POST an image to http://localhost:4000/api/benchmark
-```
-
-**Option 2: Local benchmark scripts**
-```bash
-npm run test:bench:compare
-```
-
-> **Note**: Benchmark results may vary depending on the hardware, Node.js version, and sharp version. Docker environment results are more representative of production server conditions. For detailed benchmark specifications, see [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test).
-
-</details>
-
-### Key Advantages
-
-```
-AVIF: 6.3x faster encoding (large files) + 38% smaller files
-JPEG: 20-25% smaller files (optimized for compression ratio)
-WebP: Optimized in v0.8.1+ (method 4, single pass)
-Memory: Zero-copy architecture for format conversions
-```
-
-**Summary**: lazy-image excels at **AVIF generation** (both speed and file size) - **6.3x faster** than sharp for large files with **38% smaller** output. For JPEG, lazy-image produces **20-25% smaller files** at the cost of longer processing times. For WebP (v0.8.1+), encoding speed has been optimized but is still slower than sharp.
-
-### Format Conversion Efficiency (No Resize)
-
-When converting formats without resizing, lazy-image's CoW architecture delivers exceptional performance for AVIF:
-
-| Conversion | lazy-image | sharp | Speed | File Size |
-|------------|------------|-------|-------|-----------|
-| **PNG → AVIF** | 10,013ms | 63,544ms | **6.3x faster** ⚡ | **-37.9%** ✅ |
-| **PNG → JPEG** | 1,120ms | **127ms** | 0.11x slower 🐢 | **-25.0%** ✅ |
-| **PNG → WebP** | 5,891ms | **1,559ms** | 0.26x slower 🐢 | Comparable |
-
-> *Pure format conversion without pixel manipulation. 4.5MB PNG (5000×5000) input from `test/fixtures/test_4.5MB_5000x5000.png`.*
-> 
-> *\* WebP encoding optimized in v0.8.1: settings adjusted (method 4, single pass) to improve speed. AVIF shows the strongest performance advantage - lazy-image is 6.3x faster than sharp for large files.*
-
-**Why the difference?** lazy-image's zero-copy architecture avoids intermediate buffer allocations during format conversion, making it ideal for batch processing pipelines.
+### 💡 Our Philosophy
+`lazy-image` purposely sacrifices raw JPEG/WebP encoding speed to achieve **maximum compression ratio** and **memory stability**. We are "Slow to encode, Fast to load."
 
 ---
 
@@ -141,8 +113,8 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 
 - 🏆 **AVIF support** - Next-gen format, 30% smaller than WebP
 - 🚀 **Smaller files** than sharp (mozjpeg + libwebp + ravif)
-- 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB)
-- 🔄 **EXIF auto-orientation** - Defaultで正しい向きに補正、`autoOrient(false)`で無効化可能
+- 🎨 **ICC color profiles** - Preserves color accuracy (P3, Adobe RGB). **AVIF now preserves ICC via libavif-sys (v0.9.0+); legacy (<0.9.0) ravif builds dropped ICC.**
+- 🔄 **EXIF auto-orientation** - Automatically corrects orientation by default; use `autoOrient(false)` to disable
 - 💾 **Memory-efficient** - Direct file I/O bypasses Node.js heap
 - 🌊 **Streaming (bounded-memory, disk-backed)** - Process huge inputs via streams without heap blow-up
 - 🔗 **Fluent API** with method chaining
@@ -160,7 +132,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 | Design Choice | Rationale |
 |---------------|-----------|
 | **8-bit output** | Web browsers don't benefit from 16-bit; reduces file size |
-| **AVIF with ICC** | Full ICC profile support via libavif |
+| **AVIF with ICC** | ✅ ICC preservation supported via libavif-sys (v0.9.0+); legacy ravif builds dropped ICC |
 | **Fixed rotation angles** | 90°/180°/270° covers 99% of use cases; simpler implementation |
 | **No artistic filters** | Focused scope: compression, not image editing |
 | **No animation** | Static image optimization only; use ffmpeg for video/GIF |
@@ -179,7 +151,7 @@ lazy-image makes intentional tradeoffs for web optimization:
 
 ### Format Limitations
 
-- **AVIF color profiles**: AVIF format fully supports ICC color profiles via libavif. All formats (JPEG/PNG/WebP/AVIF) preserve color accuracy.
+- **AVIF color profiles**: ICC is preserved in v0.9.0+ (libavif-sys backend). If you are pinned to <0.9.0 or a custom ravif-only build, ICC will be dropped—upgrade or convert to sRGB before encoding AVIF.
 - **Input formats**: 16-bit images are automatically converted to 8-bit (by design, not a bug).
 
 ### Feature Limitations
@@ -208,6 +180,7 @@ Only the binary for your platform is downloaded.
 | `@alberteinshutoin/lazy-image-darwin-x64` | ~8.5 MB | macOS Intel |
 | `@alberteinshutoin/lazy-image-win32-x64-msvc` | ~9.1 MB | Windows x64 |
 | `@alberteinshutoin/lazy-image-linux-x64-gnu` | ~9.1 MB | Linux x64 (glibc) |
+| `@alberteinshutoin/lazy-image-linux-arm64-gnu` | ~9.1 MB (est.) | Linux ARM64 (glibc) |
 | `@alberteinshutoin/lazy-image-linux-x64-musl` | ~9.1 MB | Linux x64 (musl/Alpine) |
 
 **Total download**: ~6-9 MB (one platform only)
@@ -410,7 +383,7 @@ console.log(metrics);
 // }
 ```
 
-詳しい計測境界と保証事項は `docs/METRICS_CONTRACT.md` を参照してください。
+For detailed measurement boundaries and guarantees, see `docs/METRICS_CONTRACT.md`.
 
 ### Batch Processing (v0.6.0+)
 
@@ -428,8 +401,10 @@ const engine = ImageEngine.fromPath('dummy.jpg') // or use any existing image
 const results = await engine.processBatch(
   ['img1.jpg', 'img2.jpg', 'img3.jpg'],
   './output',
-  'webp',
-  80  // quality (optional, uses format default if omitted)
+  {
+    format: 'webp',
+    quality: 80, // optional, uses format default if omitted
+  }
 );
 
 // Control concurrency (v0.7.3+)
@@ -437,9 +412,11 @@ const results = await engine.processBatch(
 const results2 = await engine.processBatch(
   ['img1.jpg', 'img2.jpg', 'img3.jpg'],
   './output',
-  'webp',
-  80,
-  4  // concurrency: number of parallel workers (0 = use CPU cores)
+  {
+    format: 'webp',
+    quality: 80,
+    concurrency: 4, // number of parallel workers (0 = auto)
+  }
 );
 
 results.forEach(r => {
@@ -457,12 +434,8 @@ results.forEach(r => {
 // Use built-in presets for common use cases
 const engine = ImageEngine.fromPath('photo.jpg');
 
-// Apply preset and get recommended settings
-const preset = engine.preset('thumbnail');
-// preset = { format: 'webp', quality: 75, width: 150, height: 150 }
-
-// Use the preset settings
-const buffer = await engine.toBuffer(preset.format, preset.quality);
+// Apply preset and encode in one call
+const buffer = await ImageEngine.from(buffer).toBufferWithPreset('thumbnail');
 
 // Available presets:
 // - 'thumbnail': 150x150, WebP q75 (gallery thumbnails)
@@ -492,10 +465,11 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.flipH()` | Flip horizontally |
 | `.flipV()` | Flip vertically |
 | `.grayscale()` | Convert to grayscale |
-| `.keepMetadata()` | Preserve ICC profile (stripped by default for security & smaller files). Note: Currently only ICC profile is supported. EXIF and XMP metadata are not preserved. |
+| `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy (exceeds Sharp). See [Metadata Handling](#metadata-handling). |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
-| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Will be removed in v1.0. Only ensures RGB/RGBA format. |
+| `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without any color space conversion. Use a color management library for ICC transforms. |
+| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Legacy alias that only normalizes RGB/RGBA. Use `.normalizePixelFormat()` instead. |
 | `.preset(name)` | Apply preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) |
 
 ### Output
@@ -505,7 +479,7 @@ const buffer = await engine.toBuffer(preset.format, preset.quality);
 | `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Quality defaults: JPEG=85, WebP=80, AVIF=60. If quality is omitted, format-specific default is used. |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. Quality defaults: JPEG=85, WebP=80, AVIF=60 |
-| `.processBatch(inputs, outDir, format, quality?, concurrency?)` | Process multiple images in parallel. `inputs`: array of file paths. `concurrency`: number of workers (0 or undefined = CPU cores). Returns array of `BatchResult` |
+| `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. `inputs`: array of file paths. `concurrency`: number of workers (0 or undefined = CPU cores). Returns array of `BatchResult`. Legacy positional signature is deprecated and will be removed in v2.0.0 (wasm). **From v0.9.1, all new options are exposed only via the options object; the positional signature will not receive additional parameters.** |
 | `.clone()` | Clone the engine for multi-output |
 
 ### Utilities
@@ -555,12 +529,18 @@ interface ProcessingMetrics {
   iccPreserved: boolean;     // ICC profile preserved
   metadataStripped: boolean; // metadata stripped (by default or policy)
   policyViolations: string[];// non-fatal Image Firewall actions
-  // Legacy aliases preserved for compatibility
+  // Legacy aliases (deprecated; will be removed in v2.0.0)
+  /** @deprecated use decodeMs */
   decodeTime: number;
+  /** @deprecated use opsMs */
   processTime: number;
+  /** @deprecated use encodeMs */
   encodeTime: number;
+  /** @deprecated use peakRss */
   memoryPeak: number;
+  /** @deprecated use bytesIn */
   inputSize: number;
+  /** @deprecated use bytesOut */
   outputSize: number;
 }
 
@@ -569,17 +549,22 @@ interface OutputWithMetrics {
   metrics: ProcessingMetrics;
 }
 
-## 品質メトリクス (SSIM/PSNR)
+```
 
-lazy-image は sharp との品質パリティを維持するため、ベンチマークで以下の品質ゲートを設けています:
+## Quality Metrics (SSIM/PSNR)
+
+lazy-image enforces quality parity with sharp via benchmark gates:
 
 - SSIM ≥ 0.995
 - PSNR ≥ 40 dB
 
-`npm run test:js` で実行されるベンチマーク (`test/benchmarks/sharp-comparison.bench.js`) は、同一条件で生成した sharp 出力と比較し、上記閾値を下回ると失敗します。  
-統合テスト `test/integration/quality-metrics.test.js` では品質メトリクス計算の健全性をスモークテストしています。
+### Deprecation plan for legacy metrics fields
+- `decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize` are deprecated aliases of the `*Ms`/`peakRss`/`bytesIn`/`bytesOut` fields.
+- They will remain until **v2.0.0**, after which they are scheduled for removal. Migrate to the new names now to avoid breaking changes.
 
-※ 現時点では品質メトリクスは内部ベンチ・テスト専用です。アプリ側で品質指標を取得したい場合は別IssueでAPI公開を検討してください。
+`npm run test:js` runs `test/benchmarks/sharp-comparison.bench.js`, comparing outputs against sharp under identical settings; it fails if either metric drops below the thresholds. Integration test `test/integration/quality-metrics.test.js` smoke-tests the metric calculations.
+
+These metrics are currently internal (bench/test only). If you need programmatic access in applications, open an issue to discuss an API surface.
 
 interface BatchResult {
   source: string;
@@ -637,6 +622,8 @@ try {
 } catch (error) {
   // Error message includes error code: "[E100] File not found: input.jpg"
   const errorCode = error.message.match(/\[E\d+\]/)?.[0];
+  // Structured properties for programmatic handling
+  const { errorCode: fineCode, recoveryHint } = error;
   
   if (errorCode === '[E100]') {
     console.error('File not found - check the path');
@@ -645,10 +632,14 @@ try {
   } else {
     console.error('Error:', error.message);
   }
+
+  if (recoveryHint) {
+    console.info(`How to fix: ${recoveryHint}`);
+  }
 }
 ```
 
-#### Streaming (bounded-memory, disk-backed)
+#### Streaming (disk-backed, bounded-memory)
 
 ```javascript
 const { createStreamingPipeline } = require('@alberteinshutoin/lazy-image');
@@ -667,7 +658,9 @@ readable.on('finish', () => console.log('done'));
 readable.on('error', console.error);
 ```
 
-> Note: This pipeline keeps memory使用を O(1) 近傍に抑えるため、一時ファイルを用いたストリーミングです。真の逐次エンコードが必要な場合も、APIはこのまま後方互換で拡張予定です。
+> What this does: stages input to a temp file, processes via `ImageEngine.fromPath`, and streams the encoded result from another temp file.  
+> What this does **not** do: real-time chunked encoding; latency includes downloading to disk first.  
+> Naming: kept as `createStreamingPipeline()` for compatibility; a future true streaming encoder will be exposed as a separate API.
 
 #### Rust
 
@@ -810,6 +803,37 @@ If you process untrusted images (user avatars, uploads, etc.):
 
 > 📖 See [SECURITY.md](./SECURITY.md) for vulnerability reporting and security policy.
 
+### Metadata Handling
+
+lazy-image provides security-first metadata handling that **exceeds Sharp's capabilities**:
+
+```typescript
+// Default: Strip all metadata for security
+await ImageEngine.from(buffer).toBuffer('jpeg');
+
+// Preserve ICC (color accuracy) and EXIF (camera info), strip GPS by default
+await ImageEngine.from(buffer)
+  .keepMetadata({ icc: true, exif: true })
+  .toBuffer('jpeg');
+
+// Explicitly preserve GPS for photographers (opt-in)
+await ImageEngine.from(buffer)
+  .keepMetadata({ icc: true, exif: true, stripGps: false })
+  .toBuffer('jpeg');
+```
+
+| Feature | Sharp | lazy-image |
+|---------|-------|------------|
+| Default metadata strip | ❌ Keeps metadata | ✅ Strips by default |
+| GPS auto-strip | ❌ Manual only | ✅ Default enabled |
+| Orientation auto-reset | ❌ Causes double-rotation bugs | ✅ Auto-reset to 1 |
+| API clarity | 😕 Confusing `withMetadata()` | 😀 Explicit options |
+
+**Why this matters:**
+- **Privacy**: User-uploaded photos may contain GPS coordinates, home addresses
+- **Security**: EXIF can contain sensitive device info, software versions
+- **Correctness**: Auto-orient + old Orientation tag = double-rotation on some viewers
+
 ### Image Firewall Mode (Strict & Lenient)
 
 **This is a major differentiator vs sharp.** lazy-image provides production-ready input sanitization that other libraries lack.
@@ -919,17 +943,22 @@ lazy-image implements a **Copy-on-Write (CoW)** architecture to minimize memory 
 2. **Zero-Copy Memory Mapping**: Both `fromPath()` and `processBatch()` use memory mapping (mmap) for zero-copy file access. This bypasses the Node.js heap entirely, making it ideal for processing large images in memory-constrained environments.
 3. **Zero-Copy Conversions**: For format conversions (e.g., PNG → WebP) without pixel manipulation (resize/crop), **no pixel buffer allocation or copy occurs**. The engine reuses the decoded buffer directly.
 4. **Smart Cloning**: `.clone()` operations are instant and memory-free until a destructive operation is applied.
+5. **Definition & Verification**: The meaning, scope, and measurement methods of "zero-copy" are documented in [docs/ZERO_COPY.md](./docs/ZERO_COPY.md). Run `node --expose-gc docs/scripts/measure-zero-copy.js` to verify JS heap increase ≤2MB / RSS estimates.
+6. **File Modification Contract**: If a file is modified or deleted externally while memory-mapped, the result is undefined (decode errors, corruption, OS-dependent behavior). Do not modify source files during processing. On Windows, memory-mapped files cannot be deleted while mapped.
 
 ### Color Management
 
-ICC color profiles are automatically extracted and embedded during processing.
+> ✅ **AVIF preserves ICC profiles in v0.9.0+ (libavif-sys backend).**  
+> For versions <0.9.0 or custom builds that disable libavif-sys in favor of ravif-only, ICC will be dropped. Upgrade to retain ICC or convert to sRGB before encoding.
+
+ICC color profiles are automatically extracted and embedded during processing (except AVIF).
 
 | Format | ICC Profile Support | Notes |
 |--------|---------------------|-------|
 | JPEG   | ✅ Full support | Extracted and embedded |
 | PNG    | ✅ Full support | Via iCCP chunk |
 | WebP   | ✅ Full support | Via ICCP chunk |
-| AVIF   | ✅ Full support | Via libavif ICC profile embedding |
+| AVIF   | ✅ Preserved (v0.9.0+ libavif-sys) | On <0.9.0 or ravif-only builds, ICC is dropped |
 
 ### Platform Notes
 
@@ -939,10 +968,10 @@ ICC color profiles are automatically extracted and embedded during processing.
 
 **Impact**: If you use `fromPath()` to process a file and then try to delete or replace that file while the `ImageEngine` instance is still in scope, the operation will fail on Windows.
 
-**Workaround**: 
-- Ensure the `ImageEngine` instance is dropped before attempting to delete/replace the file
-- Use `from()` with a Buffer if you need to delete the source file immediately after processing
-- For batch processing, process files sequentially or ensure engines are dropped before file cleanup
+**Recommended usage (Windows)**:
+- Do not modify or delete the source file while processing. Wait for the engine to be dropped (out of scope) before deleting.
+- If you need to delete immediately after processing, use `fs.readFileSync` → `ImageEngine.from(buffer)` to use the heap path, or copy to a temporary directory before processing and deletion.
+- For `processBatch()`, similarly keep input files until batch completion.
 
 **Example**:
 ```javascript
@@ -969,6 +998,7 @@ This limitation does not affect Linux or macOS.
 | macOS | arm64 (Apple Silicon) | ✅ |
 | Windows | x64 | ✅ |
 | Linux | x64 (glibc) | ✅ |
+| Linux | arm64 (glibc) | ✅ |
 | Linux | x64 (musl/Alpine) | ✅ |
 
 ### Architecture
@@ -1004,10 +1034,10 @@ npm run build
 
 # Run tests
 npm run test:js       # JavaScript specs (custom runner)
-npm run test:types    # TypeScript 型チェック
-npm run test:bench    # ベンチマークスクリプト
+npm run test:types    # TypeScript type checking
+npm run test:bench    # Benchmark scripts
 npm run test:rust     # Cargo tests
-npm test              # JS + Rust をまとめて実行
+npm test              # Run JS + Rust tests together
 ```
 
 ### Benchmark Testing
@@ -1016,30 +1046,29 @@ For production-like benchmark testing, see the [Benchmark Test Environment](#-be
 
 ### Fuzzing
 
-セキュリティクリティカルな入口 (`inspect`, decoder) については `cargo-fuzz` による
-自動テストを用意しています。セットアップと実行方法は [FUZZING.md](./FUZZING.md)
-を参照してください。
+Security-critical entry points (`inspect`, decoder) are tested with `cargo-fuzz`.
+See [FUZZING.md](./FUZZING.md) for setup and execution instructions.
 
 ### Memory Leak Detection
 
-Rust だけで動作するストレステスト (`examples/stress_test.rs`) を用意し、AddressSanitizer でメモリリーク検知を行えます。
+A Rust-only stress test (`examples/stress_test.rs`) is available for memory leak detection with AddressSanitizer.
 
 ```bash
-# 通常実行（デフォルト 200 ループ）
+# Normal execution (default 200 iterations)
 cargo run --example stress_test --no-default-features --features stress
 
-# ループ回数を指定
+# Specify iteration count
 cargo run --example stress_test --no-default-features --features stress -- 500
 
-# AddressSanitizer を利用（推奨）
+# Use AddressSanitizer (recommended)
 RUSTFLAGS="-Zsanitizer=address" \
   ASAN_OPTIONS="detect_leaks=1:abort_on_error=1:symbolize=1" \
   cargo +nightly run --example stress_test --no-default-features --features stress -- 5
 ```
 
-**Note:** CI では AddressSanitizer を使用しています。Valgrind は遅いため非推奨です。
+**Note:** CI uses AddressSanitizer. Valgrind is not recommended due to performance.
 
-※ CI のサニタイザージョブでは実行時間を抑えるため `--iterations 5` を使用しています。
+Note: CI sanitizer jobs use `--iterations 5` to reduce execution time.
 
 ### Requirements
 
@@ -1062,7 +1091,7 @@ Built on the shoulders of giants:
 - [mozjpeg](https://github.com/mozilla/mozjpeg) - Mozilla's JPEG encoder
 - [libwebp](https://chromium.googlesource.com/webm/libwebp) - Google's WebP codec
 - [ravif](https://github.com/kornelski/ravif) - Pure Rust AVIF encoder
-- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer（`rayon` feature有効化で並列リサイズ）
+- [fast_image_resize](https://github.com/Cykooz/fast_image_resize) - SIMD-accelerated resizer (enable the `rayon` feature for parallel resize)
 - [img-parts](https://github.com/paolobarbolini/img-parts) - Image container manipulation
 - [napi-rs](https://napi.rs/) - Rust bindings for Node.js
 

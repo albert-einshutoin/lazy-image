@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
@@ -14,6 +14,7 @@ napi = ["dep:napi", "dep:napi-derive"]
 jemalloc = ["dep:tikv-jemallocator"]
 fuzzing = []
 stress = []
+cow-debug = ["tracing", "once_cell"]
 
 [[example]]
 name = "stress_test"
@@ -30,8 +31,11 @@ image = { version = "0.25", default-features = false, features = [
     "png",
     "webp",
 ] }
-# EXIFパース（Orientationタグ抽出用）
+# EXIF parsing (Orientation tag extraction for auto-orient)
 exif = { package = "kamadak-exif", version = "0.6.1" }
+# EXIF read/write with tag-level access (MIT/Apache-2.0, pure Rust)
+# Used for Orientation reset and GPS stripping - exceeds Sharp's metadata handling
+little_exif = "0.6"
 # PNG optimization
 oxipng = "9.1"
 
@@ -45,9 +49,21 @@ mozjpeg = "0.10"
 # WebP encoding
 webp = "0.3"
 
+# PNG decoding (SIMD最適化デコーダ)
+# Note: zune-png 0.4 uses zune-core 0.4, while zune-jpeg uses zune-core 0.5
+# This results in two versions of zune-core in Cargo.lock (0.4.12 and 0.5.1).
+# This is acceptable until zune-png 0.5 is released (currently only 0.4 available).
+# TODO: Upgrade to zune-png 0.5 when available to unify zune-core versions.
+zune-png = "0.4"
+zune-core = "0.4"
+
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
 libavif-sys = { version = "0.17", default-features = false, features = ["codec-rav1e"] }
+
+# Debug/logging (only used when cow-debug feature is enabled)
+tracing = { version = "0.1", default-features = false, features = ["std"], optional = true }
+once_cell = { version = "1.19", optional = true }
 
 # ICC profile extraction from image containers
 img-parts = "0.3"
@@ -61,6 +77,9 @@ tempfile = "3.10"
 # Parallel processing for batch operations
 rayon = "1.8"
 
+# Lightweight static bit flags for operation contracts
+bitflags = "2.6"
+
 # Memory mapping for zero-copy file access
 memmap2 = "0.9"
 
@@ -69,6 +88,9 @@ thiserror = "1.0"
 
 # System calls for CPU time and memory tracking
 libc = "0.2"
+
+# Fast mutex/condvar for contention-heavy semaphore
+parking_lot = "0.12"
 
 # Memory allocator optimization - jemalloc for better performance
 # Note: jemalloc is not supported on Windows/MSVC, so we use target-specific dependencies
@@ -83,6 +105,10 @@ proptest = "1.4"
 
 [[bench]]
 name = "benchmark"
+harness = false
+
+[[bench]]
+name = "memory_semaphore"
 harness = false
 
 # 【重要】依存関係（mozjpeg, ravif等）はデバッグビルド時も最適化する

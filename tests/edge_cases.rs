@@ -234,6 +234,7 @@ mod corrupted_image_tests {
 }
 
 mod non_image_tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]
@@ -448,6 +449,7 @@ mod extreme_aspect_ratio_tests {
 }
 
 mod decoder_error_tests {
+    #[allow(unused_imports)]
     use super::*;
     use lazy_image::engine::Source;
     use std::sync::Arc;

@@ -1,7 +1,7 @@
 /**
- * ゴールデンテストスイート
- * - ピクセルハッシュでビット単位の回帰を検知
- * - sharpリファレンスとのSSIM/PSNRで画質回帰を数値監視
+ * Golden test suite
+ * - Detects bit-level regressions using pixel hash
+ * - Monitors quality regressions numerically with SSIM/PSNR against sharp reference
  */
 
 const fs = require('fs');
@@ -17,11 +17,11 @@ let failed = 0;
 
 async function runCase(testCase) {
     const baseline = expected[testCase.name];
-    assert(baseline, `expected.json にケース ${testCase.name} の基準がありません`);
+    assert(baseline, `expected.json missing baseline for case ${testCase.name}`);
 
     const input = fs.readFileSync(testCase.input);
 
-    // lazy-image 出力
+    // lazy-image output
     const engine = applyOperationsToEngine(ImageEngine.from(input), testCase.operations);
     const output = await engine.toBuffer(
         testCase.output.format,
@@ -32,12 +32,12 @@ async function runCase(testCase) {
     assert.strictEqual(
         hash,
         baseline.pixelHash,
-        `${testCase.name}: ピクセルハッシュ不一致 (expected ${baseline.pixelHash}, got ${hash})`,
+        `${testCase.name}: pixel hash mismatch (expected ${baseline.pixelHash}, got ${hash})`,
     );
     assert.strictEqual(info.width, baseline.width, `${testCase.name}: width mismatch`);
     assert.strictEqual(info.height, baseline.height, `${testCase.name}: height mismatch`);
 
-    // sharpリファレンスとの画質比較
+    // Quality comparison with sharp reference
     const reference = await renderSharpReference(input, testCase.operations, testCase.output);
     const { psnr, ssim } = await calculateQualityMetrics(reference, output);
     const sizeRatio = output.length / reference.length;

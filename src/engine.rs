@@ -44,7 +44,8 @@ pub use encoder::{
     embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
     encode_webp, QualitySettings,
 };
-pub use io::{extract_icc_profile, Source};
+pub use firewall::FirewallConfig;
+pub use io::{extract_icc_profile, extract_icc_profile_lossy, Source};
 pub use pipeline::{
     apply_ops, calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned,
     optimize_ops, ResizeError,
@@ -90,6 +91,10 @@ mod tests {
         DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
             image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
         }))
+    }
+
+    fn extract_icc_ok(data: &[u8]) -> Option<Vec<u8>> {
+        extract_icc_profile(data).unwrap()
     }
 
     fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
@@ -189,16 +194,16 @@ mod tests {
 
         #[test]
         fn test_rounding_behavior() {
-            // 奇数サイズでの丸め動作確認
+            // Test rounding behavior with odd sizes
             let (w, h) = calc_resize_dimensions(101, 51, Some(50), None);
             assert_eq!(w, 50);
-            // 101:51 ≈ 50:25.2... → 25に丸められるべき
+            // 101:51 ≈ 50:25.2... → should round to 25
             assert_eq!(h, 25);
         }
 
         #[test]
         fn test_aspect_ratio_preservation_wide() {
-            // 横長画像
+            // Wide image
             let (w, h) = calc_resize_dimensions(2000, 1000, Some(1000), None);
             assert_eq!(w, 1000);
             assert_eq!(h, 500);
@@ -206,7 +211,7 @@ mod tests {
 
         #[test]
         fn test_aspect_ratio_preservation_tall() {
-            // 縦長画像
+            // Tall image
             let (w, h) = calc_resize_dimensions(1000, 2000, None, Some(1000));
             assert_eq!(w, 500);
             assert_eq!(h, 1000);
@@ -221,9 +226,9 @@ mod tests {
 
         #[test]
         fn test_both_dimensions_wide_image_fits_inside() {
-            // 横長画像（6000×4000）を800×600にリサイズ
-            // アスペクト比: 6000/4000 = 1.5 > 800/600 = 1.333...
-            // → 幅に合わせて800×533になるべき
+            // Resize wide image (6000×4000) to 800×600
+            // Aspect ratio: 6000/4000 = 1.5 > 800/600 = 1.333...
+            // → Should fit to 800×533 based on width
             let (w, h) = calc_resize_dimensions(6000, 4000, Some(800), Some(600));
             assert_eq!(w, 800);
             assert_eq!(h, 533); // 4000 * (800/6000) = 533.33... → 533
@@ -231,9 +236,9 @@ mod tests {
 
         #[test]
         fn test_both_dimensions_tall_image_fits_inside() {
-            // 縦長画像（4000×6000）を800×600にリサイズ
-            // アスペクト比: 4000/6000 = 0.666... < 800/600 = 1.333...
-            // → 高さに合わせて400×600になるべき
+            // Resize tall image (4000×6000) to 800×600
+            // Aspect ratio: 4000/6000 = 0.666... < 800/600 = 1.333...
+            // → Should fit to 400×600 based on height
             let (w, h) = calc_resize_dimensions(4000, 6000, Some(800), Some(600));
             assert_eq!(w, 400); // 4000 * (600/6000) = 400
             assert_eq!(h, 600);
@@ -241,7 +246,7 @@ mod tests {
 
         #[test]
         fn test_both_dimensions_same_aspect_ratio() {
-            // 同じアスペクト比の場合は指定サイズそのまま
+            // When aspect ratios match, use specified size as-is
             // 1000:500 = 2:1, 800:400 = 2:1
             let (w, h) = calc_resize_dimensions(1000, 500, Some(800), Some(400));
             assert_eq!((w, h), (800, 400));
@@ -254,8 +259,8 @@ mod tests {
         #[test]
         fn test_check_dimensions_valid() {
             assert!(check_dimensions(1920, 1080).is_ok());
-            // 32768 x 32768 = 1,073,741,824 > MAX_PIXELS(100,000,000) なのでエラーになる
-            // MAX_DIMENSIONチェックは通るが、MAX_PIXELSチェックで弾かれる
+            // 32768 x 32768 = 1,073,741,824 > MAX_PIXELS(100,000,000) so should error
+            // MAX_DIMENSION check passes, but MAX_PIXELS check rejects it
             let result = check_dimensions(32768, 32768);
             assert!(result.is_err());
             assert!(result.unwrap_err().to_string().contains("exceeds max"));
@@ -291,9 +296,9 @@ mod tests {
 
         #[test]
         fn test_check_dimensions_at_max_dimension() {
-            // 境界値: 32768 x 32768 = 1,073,741,824 > MAX_PIXELS
-            // しかし、MAX_DIMENSIONチェックが先に来るので、これはOK
-            // 実際にはMAX_PIXELSチェックで弾かれる
+            // Boundary: 32768 x 32768 = 1,073,741,824 > MAX_PIXELS
+            // However, MAX_DIMENSION check comes first, so this would be OK
+            // Actually rejected by MAX_PIXELS check
             let result = check_dimensions(32768, 32768);
             // 32768 * 32768 = 1,073,741,824 > 100,000,000
             assert!(result.is_err());
@@ -307,8 +312,8 @@ mod tests {
 
         #[test]
         fn test_check_dimensions_zero_dimension() {
-            // 0次元は技術的には無効だが、check_dimensionsではチェックしない
-            // image crateが処理する
+            // Zero dimension is technically invalid, but check_dimensions doesn't check it
+            // image crate handles it
             assert!(check_dimensions(0, 100).is_ok()); // 0 * 100 = 0 < MAX_PIXELS
         }
     }
@@ -328,7 +333,7 @@ mod tests {
 
         #[test]
         fn test_validate_icc_profile_minimal_valid() {
-            // 最小限の有効なICCプロファイル（128バイト）
+            // Minimal valid ICC profile (128 bytes)
             let mut data = vec![0u8; 128];
             // プロファイルサイズ（最初の4バイト、big-endian）
             data[0] = 0x00;
@@ -364,17 +369,17 @@ mod tests {
         #[test]
         fn test_validate_icc_profile_size_mismatch() {
             let mut data = vec![0u8; 200];
-            // プロファイルサイズを200に設定
+            // Set profile size to 200
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0xC8; // 200バイト
-                            // しかし実際のデータは200バイトなので、これは有効
-                            // サイズが一致しない場合をテスト
+            data[3] = 0xC8; // 200 bytes
+                            // But actual data is 200 bytes, so this is valid
+                            // Test case where size doesn't match
             data[3] = 0x00;
-            data[3] = 0xFF; // 255バイトと設定（実際は200バイト）
+            data[3] = 0xFF; // Set to 255 bytes (actual is 200 bytes)
 
-            // サイズが一致しないので無効
+            // Invalid because size doesn't match
             assert!(!validate_icc_profile(&data));
         }
 
@@ -385,14 +390,14 @@ mod tests {
             data[1] = 0x00;
             data[2] = 0x00;
             data[3] = 0x80;
-            data[8] = 20; // バージョンが大きすぎる
+            data[8] = 20; // Version too large
 
             assert!(!validate_icc_profile(&data));
         }
 
         #[test]
         fn test_extract_icc_from_jpeg_no_profile() {
-            // ICCプロファイルなしのJPEG
+            // JPEG without ICC profile
             let jpeg_data = create_minimal_jpeg();
             let result = extract_icc_from_jpeg(&jpeg_data);
             assert!(result.is_none());
@@ -400,7 +405,7 @@ mod tests {
 
         #[test]
         fn test_extract_icc_from_png_no_profile() {
-            // ICCプロファイルなしのPNG
+            // PNG without ICC profile
             let png_data = create_png(2, 2);
             let result = extract_icc_from_png(&png_data);
             assert!(result.is_none());
@@ -408,7 +413,7 @@ mod tests {
 
         #[test]
         fn test_extract_icc_from_webp_no_profile() {
-            // ICCプロファイルなしのWebP
+            // WebP without ICC profile
             let webp_data = create_minimal_webp();
             let result = extract_icc_from_webp(&webp_data);
             assert!(result.is_none());
@@ -418,27 +423,29 @@ mod tests {
         fn test_extract_icc_profile_invalid_data() {
             let invalid_data = vec![0u8; 10];
             let result = extract_icc_profile(&invalid_data);
-            assert!(result.is_none());
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
         }
 
         #[test]
         fn test_extract_icc_profile_jpeg() {
             let jpeg_data = create_minimal_jpeg();
-            // JPEGからICCプロファイルを抽出（存在しない場合）
+            // Extract ICC profile from JPEG (when not present)
             let result = extract_icc_profile(&jpeg_data);
-            // 最小JPEGにはICCプロファイルがない
-            assert!(result.is_none());
+            // Minimal JPEG has no ICC profile
+            assert!(result.is_ok());
+            assert!(result.unwrap().is_none());
         }
 
         // Helper function to create a minimal valid ICC profile (sRGB)
         fn create_minimal_srgb_icc() -> Vec<u8> {
-            // 最小限の有効なsRGB ICCプロファイル（128バイト）
+            // Minimal valid sRGB ICC profile (128 bytes)
             let mut data = vec![0u8; 128];
-            // プロファイルサイズ（最初の4バイト、big-endian）
+            // Profile size (first 4 bytes, big-endian)
             data[0] = 0x00;
             data[1] = 0x00;
             data[2] = 0x00;
-            data[3] = 0x80; // 128バイト
+            data[3] = 0x80; // 128 bytes
                             // CMM type (bytes 4-7): "ADBE" (ASCII)
             data[4] = b'A';
             data[5] = b'D';
@@ -489,10 +496,10 @@ mod tests {
             fn test_extract_icc_from_jpeg_with_profile() {
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
-                let extracted = extract_icc_profile(&jpeg);
+                let extracted = extract_icc_ok(&jpeg);
                 assert!(extracted.is_some());
                 let extracted = extracted.unwrap();
-                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                // Minimum ICC profile size is 128 bytes (header)
                 assert!(extracted.len() >= 128);
             }
 
@@ -502,14 +509,14 @@ mod tests {
                 // when they are embedded using the correct format (raw ICC profile data).
                 let icc = create_minimal_srgb_icc();
                 let png = create_png_with_icc(&icc);
-                let extracted = extract_icc_profile(&png);
+                let extracted = extract_icc_ok(&png);
                 // PNG ICC extraction should now work with img-parts
                 assert!(
                     extracted.is_some(),
                     "PNG ICC extraction should return Some when ICC profile is embedded correctly"
                 );
                 let extracted = extracted.unwrap();
-                // ICCプロファイルの最小サイズは128バイト（ヘッダー）
+                // Minimum ICC profile size is 128 bytes (header)
                 assert!(extracted.len() >= 128);
                 // Extracted ICC should match original
                 assert_eq!(icc, extracted, "Extracted ICC should match original");
@@ -519,26 +526,26 @@ mod tests {
             fn test_extract_icc_from_webp_with_profile() {
                 let icc = create_minimal_srgb_icc();
                 let webp = create_webp_with_icc(&icc);
-                let extracted = extract_icc_profile(&webp);
+                let extracted = extract_icc_ok(&webp);
                 assert!(extracted.is_some());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_no_icc() {
                 let jpeg = create_minimal_jpeg();
-                let icc = extract_icc_profile(&jpeg);
+                let icc = extract_icc_ok(&jpeg);
                 assert!(icc.is_none());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_non_image() {
-                let icc = extract_icc_profile(b"not an image");
+                let icc = extract_icc_ok(b"not an image");
                 assert!(icc.is_none());
             }
 
             #[test]
             fn test_extract_icc_returns_none_for_empty() {
-                let icc = extract_icc_profile(&[]);
+                let icc = extract_icc_ok(&[]);
                 assert!(icc.is_none());
             }
         }
@@ -587,21 +594,21 @@ mod tests {
 
             #[test]
             fn test_jpeg_roundtrip() {
-                // 1. 元画像からICC抽出
+                // 1. Extract ICC from original image
                 let original_icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+                let extracted_icc = extract_icc_ok(&jpeg).unwrap();
 
-                // 2. 画像デコード
+                // 2. Decode image
                 let img = image::load_from_memory(&jpeg).unwrap();
 
-                // 3. ICCを埋め込んでJPEGエンコード
+                // 3. Encode JPEG with ICC embedded
                 let encoded = encode_jpeg(&img, 80, Some(&extracted_icc)).unwrap();
 
-                // 4. エンコード結果からICC再抽出
-                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+                // 4. Re-extract ICC from encoded result
+                let re_extracted_icc = extract_icc_ok(&encoded).unwrap();
 
-                // 5. 同一性確認
+                // 5. Verify identity
                 assert_eq!(extracted_icc, re_extracted_icc);
             }
 
@@ -644,11 +651,11 @@ mod tests {
             fn test_webp_roundtrip() {
                 let original_icc = create_minimal_srgb_icc();
                 let webp = create_webp_with_icc(&original_icc);
-                let extracted_icc = extract_icc_profile(&webp).unwrap();
+                let extracted_icc = extract_icc_ok(&webp).unwrap();
 
                 let img = image::load_from_memory(&webp).unwrap();
                 let encoded = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
-                let re_extracted_icc = extract_icc_profile(&encoded).unwrap();
+                let re_extracted_icc = extract_icc_ok(&encoded).unwrap();
 
                 assert_eq!(extracted_icc, re_extracted_icc);
             }
@@ -658,7 +665,7 @@ mod tests {
                 // Test that ICC profile is preserved when converting JPEG to PNG
                 let icc = create_minimal_srgb_icc();
                 let jpeg = create_jpeg_with_icc(&icc);
-                let extracted_icc = extract_icc_profile(&jpeg).unwrap();
+                let extracted_icc = extract_icc_ok(&jpeg).unwrap();
 
                 // Convert JPEG to PNG with ICC
                 let img = image::load_from_memory(&jpeg).unwrap();
@@ -701,7 +708,7 @@ mod tests {
                 let webp = encode_webp(&img, 80, Some(&extracted_icc)).unwrap();
 
                 // Verify that WebP contains ICC profile
-                let re_extracted = extract_icc_profile(&webp).unwrap();
+                let re_extracted = extract_icc_ok(&webp).unwrap();
                 assert_eq!(
                     extracted_icc, re_extracted,
                     "ICC profile should be preserved in PNG to WebP conversion"
@@ -725,7 +732,7 @@ mod tests {
                 assert!(is_avif_data(&avif), "Output should be valid AVIF");
 
                 // Extract ICC profile from AVIF
-                let extracted = extract_icc_profile(&avif);
+                let extracted = extract_icc_ok(&avif);
                 assert!(
                     extracted.is_some(),
                     "AVIF should now preserve ICC profile with libavif"
@@ -747,7 +754,7 @@ mod tests {
 
             #[test]
             fn test_avif_encoding_with_icc_does_not_crash() {
-                // ICCプロファイルを渡してもクラッシュしないことを確認
+                // Verify that passing ICC profile does not crash
                 let icc = create_minimal_srgb_icc();
                 let img = create_test_image(100, 100);
                 let result = encode_avif(&img, 60, Some(&icc));
@@ -756,7 +763,7 @@ mod tests {
 
             #[test]
             fn test_avif_encoding_without_icc() {
-                // ICC無しでもエンコードできることを確認
+                // Verify that encoding works without ICC
                 let img = create_test_image(100, 100);
                 let avif = encode_avif(&img, 60, None).unwrap();
 
@@ -764,7 +771,7 @@ mod tests {
                 assert!(is_avif_data(&avif), "Output should be valid AVIF");
 
                 // Should not have ICC profile
-                let extracted = extract_icc_profile(&avif);
+                let extracted = extract_icc_ok(&avif);
                 assert!(
                     extracted.is_none(),
                     "AVIF without ICC should not have ICC profile"
@@ -870,7 +877,7 @@ mod tests {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 90 }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
-            assert_eq!(result.dimensions(), (50, 100)); // 幅と高さが入れ替わる
+            assert_eq!(result.dimensions(), (50, 100)); // Width and height swapped
         }
 
         #[test]
@@ -878,7 +885,7 @@ mod tests {
             let img = create_test_image(100, 50);
             let ops = vec![Operation::Rotate { degrees: 180 }];
             let result = apply_ops(Cow::Owned(img), &ops).unwrap();
-            assert_eq!(result.dimensions(), (100, 50)); // サイズは変わらない
+            assert_eq!(result.dimensions(), (100, 50)); // Size unchanged
         }
 
         #[test]
@@ -1127,9 +1134,9 @@ mod tests {
         fn test_encode_jpeg_produces_valid_jpeg() {
             let img = create_test_image(100, 100);
             let result = encode_jpeg(&img, 80, None).unwrap();
-            // JPEGマジックバイト確認
+            // Verify JPEG magic bytes
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
-            // JPEGエンドマーカー確認
+            // Verify JPEG end marker
             assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
         }
 
@@ -1138,8 +1145,8 @@ mod tests {
             let img = create_test_image(100, 100);
             let high_quality = encode_jpeg(&img, 95, None).unwrap();
             let low_quality = encode_jpeg(&img, 50, None).unwrap();
-            // 高品質の方が通常は大きい（ただし、画像内容によっては逆転する可能性もある）
-            // 少なくとも両方とも有効なJPEGであることを確認
+            // Higher quality is usually larger (though content may reverse this)
+            // At least verify both are valid JPEGs
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
             assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
@@ -1149,7 +1156,7 @@ mod tests {
         #[test]
         fn test_encode_jpeg_with_icc() {
             let img = create_test_image(100, 100);
-            // 最小限の有効なICCプロファイル
+            // Minimal valid ICC profile
             let mut icc_data = vec![0u8; 128];
             icc_data[0] = 0x00;
             icc_data[1] = 0x00;
@@ -1181,7 +1188,7 @@ mod tests {
         fn test_encode_png_produces_valid_png() {
             let img = create_test_image(100, 100);
             let result = encode_png(&img, None).unwrap();
-            // PNGマジックバイト確認
+            // Verify PNG magic bytes
             assert_eq!(
                 &result[0..8],
                 &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
@@ -1225,7 +1232,7 @@ mod tests {
         fn test_encode_webp_produces_valid_webp() {
             let img = create_test_image(100, 100);
             let result = encode_webp(&img, 80, None).unwrap();
-            // WebPマジックバイト確認 (RIFF....WEBP)
+            // Verify WebP magic bytes (RIFF....WEBP)
             assert_eq!(&result[0..4], b"RIFF");
             assert_eq!(&result[8..12], b"WEBP");
         }
@@ -1265,9 +1272,9 @@ mod tests {
         fn test_encode_avif_produces_valid_avif() {
             let img = create_test_image(100, 100);
             let result = encode_avif(&img, 60, None).unwrap();
-            // AVIFは先頭にftypボックス
+            // AVIF has ftyp box at the beginning
             assert!(result.len() > 12);
-            // "ftyp"が含まれることを確認
+            // Verify "ftyp" is present
             let has_ftyp = result.windows(4).any(|w| w == b"ftyp");
             assert!(has_ftyp);
         }
@@ -1277,7 +1284,7 @@ mod tests {
             let img = create_test_image(100, 100);
             let high_quality = encode_avif(&img, 80, None).unwrap();
             let low_quality = encode_avif(&img, 40, None).unwrap();
-            // 両方とも有効なAVIFであることを確認
+            // Verify both are valid AVIF
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
         }
@@ -1311,14 +1318,14 @@ mod tests {
 
         #[test]
         fn test_decode_jpeg_mozjpeg_invalid_data() {
-            let invalid_data = vec![0xFF, 0xD8, 0x00]; // 不完全なJPEG
+            let invalid_data = vec![0xFF, 0xD8, 0x00]; // Incomplete JPEG
             let result = decode_jpeg_mozjpeg(&invalid_data);
             assert!(result.is_err());
         }
 
         #[test]
         fn test_decode_with_image_crate() {
-            // PNGデータでdecode()がimage crateを使うことを確認
+            // Verify that decode() uses image crate for PNG data
             let png_data = create_minimal_png();
             use crate::engine::io::Source;
             let task = EncodeTask {
@@ -1328,9 +1335,11 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 icc_present: false,
+                exif_data: None,
                 auto_orient: true,
-                keep_metadata: false,
-                keep_metadata_requested: false,
+                keep_icc: false,
+                keep_exif: false,
+                strip_gps: true,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1352,9 +1361,11 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 icc_present: false,
+                exif_data: None,
                 auto_orient: true,
-                keep_metadata: false,
-                keep_metadata_requested: false,
+                keep_icc: false,
+                keep_exif: false,
+                strip_gps: true,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1374,9 +1385,11 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 icc_present: false,
+                exif_data: None,
                 auto_orient: true,
-                keep_metadata: false,
-                keep_metadata_requested: false,
+                keep_icc: false,
+                keep_exif: false,
+                strip_gps: true,
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1403,9 +1416,11 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 icc_present: false,
+                exif_data: None,
                 auto_orient: true,
-                keep_metadata: false,
-                keep_metadata_requested: false,
+                keep_icc: false,
+                keep_exif: false,
+                strip_gps: true,
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1428,9 +1443,11 @@ mod tests {
                 format: OutputFormat::Png,
                 icc_profile: None,
                 icc_present: false,
+                exif_data: None,
                 auto_orient: true,
-                keep_metadata: false,
-                keep_metadata_requested: false,
+                keep_icc: false,
+                keep_exif: false,
+                strip_gps: true,
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,

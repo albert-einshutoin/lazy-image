@@ -11,6 +11,7 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4"
 arbitrary = { version = "1", features = ["derive"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+rayon = "1.8"
 
 [dependencies.lazy-image]
 path = ".."
@@ -36,3 +37,19 @@ path = "fuzz_targets/encode_to_format.rs"
 [[bin]]
 name = "icc_profile"
 path = "fuzz_targets/icc_profile.rs"
+
+[[bin]]
+name = "firewall_bypass"
+path = "fuzz_targets/firewall_bypass.rs"
+
+[[bin]]
+name = "batch_concurrent"
+path = "fuzz_targets/batch_concurrent.rs"
+
+[[bin]]
+name = "streaming_pipeline"
+path = "fuzz_targets/streaming_pipeline.rs"
+
+[[bin]]
+name = "metrics_processing"
+path = "fuzz_targets/metrics_processing.rs"
