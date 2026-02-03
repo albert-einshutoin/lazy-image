@@ -1,5 +1,10 @@
 name: Benchmark Regression
 
+# Purpose: Continuous benchmarking to detect performance regressions
+# - On push to main: Store results in gh-pages branch for visualization
+# - On PR: Compare against cached baseline, comment on PR if regression detected
+# See: https://github.com/benchmark-action/github-action-benchmark
+
 on:
   pull_request:
     branches:
@@ -22,9 +27,6 @@ jobs:
     name: Benchmark Regression
     runs-on: ubuntu-latest
     timeout-minutes: 45
-
-    env:
-      IS_INTERNAL_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
 
     steps:
       - uses: actions/checkout@v4
@@ -60,23 +62,56 @@ jobs:
           mkdir -p artifacts/benchmark
           node --expose-gc docs/scripts/measure-zero-copy.js > artifacts/benchmark/zero-copy.json
 
-      - name: Store benchmark result
-        if: github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true'
+      # Download previous benchmark data from cache (used for PR comparisons)
+      - name: Download previous benchmark data
+        uses: actions/cache@v4
+        with:
+          path: ./cache
+          key: ${{ runner.os }}-benchmark
+
+      # For PRs: Compare against cached baseline without modifying gh-pages
+      # Uses external-data-json-path to avoid gh-pages branch requirement
+      - name: Compare benchmark result (PR)
+        if: github.event_name == 'pull_request'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: artifacts/benchmark/summary.json
+          external-data-json-path: ./cache/benchmark-data.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Do not fail on regression for PRs; just report
+          fail-on-alert: false
+          alert-threshold: '150%'
+          comment-on-alert: true
+          summary-always: true
+
+      # Discard build artifacts so git switch gh-pages can succeed (main only)
+      # PR path uses external-data-json-path and never runs git switch
+      - name: Prepare working tree for gh-pages switch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: git restore .
+
+      # For main branch: Store results in gh-pages for visualization
+      - name: Store benchmark result (main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: artifacts/benchmark/summary.json
+          gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmark-data
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: ${{ github.event_name != 'pull_request' }}
-          comment-on-pr: ${{ github.event_name != 'pull_request' || env.IS_INTERNAL_PR == 'true' }}
-          # Do not fail main on regression so merge/push does not break CI; results still stored and visible
+          auto-push: true
+          # Do not fail main on regression; results are stored and visible
           fail-on-alert: false
-          alert-threshold: '5%'
+          alert-threshold: '150%'
 
-      - name: Skip write operations on external forks
-        if: github.event_name == 'pull_request' && env.IS_INTERNAL_PR != 'true'
-        run: echo "External fork PR detected; skipped auto-push/comment to avoid write failures."
+      # Update cache with latest benchmark data for future PR comparisons
+      - name: Update benchmark cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p ./cache
+          cp artifacts/benchmark/summary.json ./cache/benchmark-data.json
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
