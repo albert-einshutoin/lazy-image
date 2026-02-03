@@ -85,6 +85,12 @@ jobs:
           comment-on-alert: true
           summary-always: true
 
+      # Discard build artifacts so git switch gh-pages can succeed (main only)
+      # PR path uses external-data-json-path and never runs git switch
+      - name: Prepare working tree for gh-pages switch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: git restore .
+
       # For main branch: Store results in gh-pages for visualization
       - name: Store benchmark result (main)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
