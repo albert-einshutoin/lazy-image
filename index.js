@@ -313,6 +313,28 @@ if (!nativeBinding) {
 const { ImageEngine, ErrorCategory, ErrorCode, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
 const { createStreamingPipeline } = require('./streaming/pipeline')
 
+function getErrorCategory(error) {
+  if (!error) return null
+  if (typeof error.category === 'number') {
+    return error.category
+  }
+  if (typeof error.code === 'string') {
+    switch (error.code) {
+      case 'LAZY_IMAGE_USER_ERROR':
+        return ErrorCategory.UserError
+      case 'LAZY_IMAGE_CODEC_ERROR':
+        return ErrorCategory.CodecError
+      case 'LAZY_IMAGE_RESOURCE_LIMIT':
+        return ErrorCategory.ResourceLimit
+      case 'LAZY_IMAGE_INTERNAL_BUG':
+        return ErrorCategory.InternalBug
+      default:
+        break
+    }
+  }
+  return null
+}
+
 module.exports.ImageEngine = ImageEngine
 module.exports.ErrorCategory = ErrorCategory
 module.exports.ErrorCode = ErrorCode
@@ -321,3 +343,6 @@ module.exports.inspectFile = inspectFile
 module.exports.version = version
 module.exports.supportedInputFormats = supportedInputFormats
 module.exports.supportedOutputFormats = supportedOutputFormats
+module.exports.getErrorCategory = getErrorCategory
+module.exports.createStreamingPipeline = (options) =>
+  createStreamingPipeline({ ...options, ImageEngine })
