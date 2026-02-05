@@ -164,6 +164,11 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
             ));
         }
 
+        // WebP: route to libwebp to avoid image crate OOM on malformed inputs.
+        if is_webp_riff(data) {
+            return decode_webp_libwebp(data);
+        }
+
         // Pre-check dimensions to prevent OOM from decompression bombs (e.g., WebP with huge dimensions).
         // This reads only headers and is much cheaper than a full decode attempt.
         ensure_dimensions_safe(data)?;
@@ -368,7 +373,7 @@ pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
 /// Inspect encoded bytes and ensure the image dimensions are safe before decoding.
 pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
     // WebP: parse bitstream features directly to avoid image crate OOM on malformed headers.
-    if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
+    if is_webp_riff(bytes) {
         let features = BitstreamFeatures::new(bytes).ok_or_else(|| {
             LazyImageError::decode_failed("webp: failed to read bitstream features")
         })?;
@@ -387,6 +392,10 @@ pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
         }
     }
     Ok(())
+}
+
+fn is_webp_riff(bytes: &[u8]) -> bool {
+    bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP"
 }
 
 /// Extract EXIF Orientation tag (1-8). Returns None if missing or invalid.
@@ -432,6 +441,19 @@ mod tests {
     fn test_ensure_dimensions_safe_allows_small_image() {
         let data = encode_png(64, 64);
         assert!(ensure_dimensions_safe(&data).is_ok());
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_allows_small_webp() {
+        let data = encode_webp(16, 16);
+        assert!(ensure_dimensions_safe(&data).is_ok());
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_rejects_invalid_webp_header() {
+        let data = b"RIFF\0\0\0\0WEBP".to_vec();
+        let err = ensure_dimensions_safe(&data).unwrap_err();
+        assert!(matches!(err, LazyImageError::DecodeFailed { .. }));
     }
 
     #[test]
