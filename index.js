@@ -30,35 +30,13 @@ function isMusl() {
 
 switch (platform) {
   case 'android':
-    switch (arch) {
-      case 'arm64':
-        localFileExisted = existsSync(join(__dirname, 'lazy-image.android-arm64.node'))
-        try {
-          if (localFileExisted) {
-            nativeBinding = require('./lazy-image.android-arm64.node')
-          } else {
-            nativeBinding = require('@alberteinshutoin/lazy-image-android-arm64')
-          }
-        } catch (e) {
-          loadError = e
-        }
-        break
-      case 'arm':
-        localFileExisted = existsSync(join(__dirname, 'lazy-image.android-arm-eabi.node'))
-        try {
-          if (localFileExisted) {
-            nativeBinding = require('./lazy-image.android-arm-eabi.node')
-          } else {
-            nativeBinding = require('@alberteinshutoin/lazy-image-android-arm-eabi')
-          }
-        } catch (e) {
-          loadError = e
-        }
-        break
-      default:
-        throw new Error(`Unsupported architecture on Android ${arch}`)
-    }
-    break
+    // Android is not currently supported.
+    // The NAPI-RS template includes Android cases, but we don't build for Android.
+    throw new Error(
+      `Android is not currently supported by lazy-image. ` +
+      `Supported platforms: macOS (x64, arm64), Windows (x64), Linux (x64, arm64). ` +
+      `File an issue at https://github.com/albert-einshutoin/lazy-image/issues if you need Android support.`
+    )
   case 'win32':
     switch (arch) {
       case 'x64':
@@ -76,33 +54,19 @@ switch (platform) {
         }
         break
       case 'ia32':
-        localFileExisted = existsSync(
-          join(__dirname, 'lazy-image.win32-ia32-msvc.node')
+        // Windows 32-bit is not currently supported.
+        throw new Error(
+          `Windows 32-bit (ia32) is not currently supported by lazy-image. ` +
+          `Please use Windows x64.`
         )
-        try {
-          if (localFileExisted) {
-            nativeBinding = require('./lazy-image.win32-ia32-msvc.node')
-          } else {
-            nativeBinding = require('@alberteinshutoin/lazy-image-win32-ia32-msvc')
-          }
-        } catch (e) {
-          loadError = e
-        }
-        break
       case 'arm64':
-        localFileExisted = existsSync(
-          join(__dirname, 'lazy-image.win32-arm64-msvc.node')
+        // Windows ARM64 is not currently supported.
+        // See: https://github.com/albert-einshutoin/lazy-image/issues/334
+        throw new Error(
+          `Windows ARM64 is not currently supported by lazy-image. ` +
+          `Please use Windows x64 or file an issue at https://github.com/albert-einshutoin/lazy-image/issues ` +
+          `if you need Windows ARM64 support.`
         )
-        try {
-          if (localFileExisted) {
-            nativeBinding = require('./lazy-image.win32-arm64-msvc.node')
-          } else {
-            nativeBinding = require('@alberteinshutoin/lazy-image-win32-arm64-msvc')
-          }
-        } catch (e) {
-          loadError = e
-        }
-        break
       default:
         throw new Error(`Unsupported architecture on Windows: ${arch}`)
     }
@@ -149,20 +113,12 @@ switch (platform) {
     }
     break
   case 'freebsd':
-    if (arch !== 'x64') {
-      throw new Error(`Unsupported architecture on FreeBSD: ${arch}`)
-    }
-    localFileExisted = existsSync(join(__dirname, 'lazy-image.freebsd-x64.node'))
-    try {
-      if (localFileExisted) {
-        nativeBinding = require('./lazy-image.freebsd-x64.node')
-      } else {
-        nativeBinding = require('@alberteinshutoin/lazy-image-freebsd-x64')
-      }
-    } catch (e) {
-      loadError = e
-    }
-    break
+    // FreeBSD is not currently supported.
+    throw new Error(
+      `FreeBSD is not currently supported by lazy-image. ` +
+      `Supported platforms: macOS (x64, arm64), Windows (x64), Linux (x64, arm64). ` +
+      `File an issue at https://github.com/albert-einshutoin/lazy-image/issues if you need FreeBSD support.`
+    )
   case 'linux':
     switch (arch) {
       case 'x64':
@@ -224,77 +180,14 @@ switch (platform) {
         }
         break
       case 'arm':
-        if (isMusl()) {
-          localFileExisted = existsSync(
-            join(__dirname, 'lazy-image.linux-arm-musleabihf.node')
-          )
-          try {
-            if (localFileExisted) {
-              nativeBinding = require('./lazy-image.linux-arm-musleabihf.node')
-            } else {
-              nativeBinding = require('@alberteinshutoin/lazy-image-linux-arm-musleabihf')
-            }
-          } catch (e) {
-            loadError = e
-          }
-        } else {
-          localFileExisted = existsSync(
-            join(__dirname, 'lazy-image.linux-arm-gnueabihf.node')
-          )
-          try {
-            if (localFileExisted) {
-              nativeBinding = require('./lazy-image.linux-arm-gnueabihf.node')
-            } else {
-              nativeBinding = require('@alberteinshutoin/lazy-image-linux-arm-gnueabihf')
-            }
-          } catch (e) {
-            loadError = e
-          }
-        }
-        break
       case 'riscv64':
-        if (isMusl()) {
-          localFileExisted = existsSync(
-            join(__dirname, 'lazy-image.linux-riscv64-musl.node')
-          )
-          try {
-            if (localFileExisted) {
-              nativeBinding = require('./lazy-image.linux-riscv64-musl.node')
-            } else {
-              nativeBinding = require('@alberteinshutoin/lazy-image-linux-riscv64-musl')
-            }
-          } catch (e) {
-            loadError = e
-          }
-        } else {
-          localFileExisted = existsSync(
-            join(__dirname, 'lazy-image.linux-riscv64-gnu.node')
-          )
-          try {
-            if (localFileExisted) {
-              nativeBinding = require('./lazy-image.linux-riscv64-gnu.node')
-            } else {
-              nativeBinding = require('@alberteinshutoin/lazy-image-linux-riscv64-gnu')
-            }
-          } catch (e) {
-            loadError = e
-          }
-        }
-        break
       case 's390x':
-        localFileExisted = existsSync(
-          join(__dirname, 'lazy-image.linux-s390x-gnu.node')
+        // These Linux architectures are not currently supported.
+        throw new Error(
+          `Linux ${arch} is not currently supported by lazy-image. ` +
+          `Supported Linux architectures: x64, arm64. ` +
+          `File an issue at https://github.com/albert-einshutoin/lazy-image/issues if you need ${arch} support.`
         )
-        try {
-          if (localFileExisted) {
-            nativeBinding = require('./lazy-image.linux-s390x-gnu.node')
-          } else {
-            nativeBinding = require('@alberteinshutoin/lazy-image-linux-s390x-gnu')
-          }
-        } catch (e) {
-          loadError = e
-        }
-        break
       default:
         throw new Error(`Unsupported architecture on Linux: ${arch}`)
     }
