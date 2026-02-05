@@ -367,6 +367,19 @@ pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
 
 /// Inspect encoded bytes and ensure the image dimensions are safe before decoding.
 pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
+    // WebP: parse bitstream features directly to avoid image crate OOM on malformed headers.
+    if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
+        let features = BitstreamFeatures::new(bytes).ok_or_else(|| {
+            LazyImageError::decode_failed("webp: failed to read bitstream features")
+        })?;
+        return check_dimensions(features.width(), features.height());
+    }
+
+    // PNG: read header directly when available to avoid full decode.
+    if let Ok((width, height)) = read_png_dimensions(bytes) {
+        return check_dimensions(width, height);
+    }
+
     let cursor = Cursor::new(bytes);
     if let Ok(reader) = ImageReader::new(cursor).with_guessed_format() {
         if let Ok((width, height)) = reader.into_dimensions() {
