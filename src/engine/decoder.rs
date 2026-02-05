@@ -30,7 +30,13 @@ type DecoderResult<T> = std::result::Result<T, LazyImageError>;
 /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
 pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:mozjpeg", || {
-        if !data.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
+        // EOI marker (0xFF 0xD9) is at the end of valid JPEGs.
+        // Only check the last 256 bytes for O(1) performance instead of O(n).
+        // See: https://github.com/albert-einshutoin/lazy-image/issues/332
+        const EOI_CHECK_LEN: usize = 256;
+        let check_start = data.len().saturating_sub(EOI_CHECK_LEN);
+        let tail = &data[check_start..];
+        if !tail.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
             return Err(LazyImageError::decode_failed(
                 "mozjpeg: missing JPEG EOI marker",
             ));
