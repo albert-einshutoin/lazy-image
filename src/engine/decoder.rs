@@ -387,9 +387,12 @@ pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
 
     let cursor = Cursor::new(bytes);
     if let Ok(reader) = ImageReader::new(cursor).with_guessed_format() {
-        if let Ok((width, height)) = reader.into_dimensions() {
-            return check_dimensions(width, height);
-        }
+        return reader
+            .into_dimensions()
+            .map_err(|_| {
+                LazyImageError::decode_failed("decode failed: could not read image dimensions")
+            })
+            .and_then(|(width, height)| check_dimensions(width, height));
     }
     Ok(())
 }
