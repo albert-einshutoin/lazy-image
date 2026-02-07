@@ -20,6 +20,14 @@ pub const MAX_DIMENSION: u32 = 32768;
 /// 100 megapixels = 400MB uncompressed RGBA. Beyond this is likely malicious.
 pub const MAX_PIXELS: u64 = 100_000_000;
 
+/// When built with `fuzzing` feature, decode paths use these stricter limits so that
+/// a single decode cannot push RSS over CI's 2GB cap. This tests lazy-image's
+/// "bounded memory" property: we reject inputs that would exceed a decode budget.
+#[cfg(feature = "fuzzing")]
+pub const FUZZ_MAX_DIMENSION: u32 = 2048;
+#[cfg(feature = "fuzzing")]
+pub const FUZZ_MAX_PIXELS: u64 = 4_000_000; // ~16MB RGBA; keeps fuzz run under 2GB RSS
+
 // =============================================================================
 // MODULE DECOMPOSITION
 // =============================================================================
