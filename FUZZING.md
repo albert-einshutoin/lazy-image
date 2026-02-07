@@ -63,6 +63,8 @@ Fuzzing runs under a **strict 2GB RSS cap** in CI. Rather than raising the limit
 
 Any input that would decode to larger dimensions is rejected before allocation. That keeps the fuzz run under 2GB and **tests lazy-image's bounded-memory property**: we verify that decode paths respect a cap instead of allowing unbounded growth on adversarial input.
 
+The **decode_from_buffer** harness enforces this at the harness level: it calls `ensure_dimensions_safe(data)` before running any full decode (`decode_jpeg_mozjpeg` or `decode_with_image_crate`). Inputs that fail this check (unknown format, invalid header, or dimensions exceeding the fuzz budget) are skipped without decoding, so CI never OOMs from a single large input regardless of decoder internals.
+
 For CI and local runs:
 
 ```bash
