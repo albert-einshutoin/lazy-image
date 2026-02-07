@@ -45,6 +45,7 @@ const MAX_MEMORY_BASED_CONCURRENCY: usize = 16;
 /// Fallback memory capacity when detection fails (aligned with previous conservative limit)
 const FALLBACK_SEMAPHORE_CAPACITY: u64 =
     ESTIMATED_MEMORY_PER_OPERATION * MAX_MEMORY_BASED_CONCURRENCY as u64;
+const ESTIMATE_CACHE_MAX_ENTRIES: usize = 256;
 
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -64,8 +65,8 @@ struct SemaphoreState {
     waiters: VecDeque<Waiter>,
 }
 
-/// In-memory weighted semaphore for byte-based backpressure
-/// Uses fair FIFO queue with targeted notifications to avoid thundering herd
+/// In-memory weighted semaphore for byte-based backpressure.
+/// Uses a fair FIFO queue and wake-all handoff for correctness.
 #[derive(Debug)]
 pub struct WeightedSemaphore {
     capacity: u64,
@@ -138,23 +139,20 @@ impl WeightedSemaphore {
         // Return capacity
         state.available = state.available.saturating_add(weight).min(self.capacity);
 
-        // Targeted wake: try to satisfy waiters in FIFO order
+        let mut woke_any = false;
+        // Fair wake: satisfy waiters in FIFO order.
         while let Some(waiter) = state.waiters.front() {
             if state.available >= waiter.weight {
                 let waiter = state.waiters.pop_front().unwrap();
                 state.available -= waiter.weight;
-
-                // Signal this specific waiter
+                woke_any = true;
                 waiter.ready.store(true, Ordering::Release);
-                self.cvar.notify_one(); // Wake the thread waiting on this flag
             } else {
                 break; // Can't satisfy next waiter, stop
             }
         }
 
-        // If we couldn't wake anyone but have capacity, wake all to recheck
-        // (handles edge cases where weights don't align perfectly)
-        if !state.waiters.is_empty() && state.available > 0 {
+        if woke_any || (!state.waiters.is_empty() && state.available > 0) {
             self.cvar.notify_all();
         }
     }
@@ -408,6 +406,11 @@ pub fn estimate_memory_from_header(
 
         // Try to cache (non-fatal if lock fails)
         if let Some(mut cache) = get_estimate_cache().try_lock() {
+            if cache.len() >= ESTIMATE_CACHE_MAX_ENTRIES {
+                if let Some(old_key) = cache.keys().next().cloned() {
+                    cache.remove(&old_key);
+                }
+            }
             cache.insert(cache_key, estimate);
         }
 
@@ -815,11 +818,11 @@ mod tests {
         let sem = Arc::new(WeightedSemaphore::new(100));
         let permit = sem.acquire(60);
         {
-            let remaining = *sem.state.lock();
+            let remaining = sem.state.lock().available;
             assert_eq!(remaining, 40);
         }
         drop(permit);
-        let remaining = *sem.state.lock();
+        let remaining = sem.state.lock().available;
         assert_eq!(remaining, 100);
     }
 
