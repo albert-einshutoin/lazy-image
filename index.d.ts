@@ -399,9 +399,9 @@ export declare class ImageEngine {
    *     - 1-1024: Manual override - use specified number of concurrent operations
    *
    * Backward compatibility: the legacy positional signature
-  *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
-  * is still accepted for now but will be removed in a future major release.
-  */
+   *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
+   * is still accepted for now but will be removed in a future major release.
+   */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
 

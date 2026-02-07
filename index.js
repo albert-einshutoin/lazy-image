@@ -310,9 +310,8 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { createStreamingPipeline } = require('./streaming/pipeline')
-
 const { ImageEngine, ErrorCategory, ErrorCode, inspect, inspectFile, version, supportedInputFormats, supportedOutputFormats } = nativeBinding
+const { createStreamingPipeline } = require('./streaming/pipeline')
 
 function getErrorCategory(error) {
   if (!error) return null

@@ -30,7 +30,13 @@ type DecoderResult<T> = std::result::Result<T, LazyImageError>;
 /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
 pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:mozjpeg", || {
-        if !data.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
+        // EOI marker (0xFF 0xD9) is at the end of valid JPEGs.
+        // Only check the last 256 bytes for O(1) performance instead of O(n).
+        // See: https://github.com/albert-einshutoin/lazy-image/issues/332
+        const EOI_CHECK_LEN: usize = 256;
+        let check_start = data.len().saturating_sub(EOI_CHECK_LEN);
+        let tail = &data[check_start..];
+        if !tail.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
             return Err(LazyImageError::decode_failed(
                 "mozjpeg: missing JPEG EOI marker",
             ));
@@ -156,6 +162,11 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
             return Err(LazyImageError::decode_failed(
                 "jpeg: use mozjpeg decoder path",
             ));
+        }
+
+        // WebP: route to libwebp to avoid image crate OOM on malformed inputs.
+        if is_webp_riff(data) {
+            return decode_webp_libwebp(data);
         }
 
         // Pre-check dimensions to prevent OOM from decompression bombs (e.g., WebP with huge dimensions).
@@ -361,13 +372,33 @@ pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
 
 /// Inspect encoded bytes and ensure the image dimensions are safe before decoding.
 pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
+    // WebP: parse bitstream features directly to avoid image crate OOM on malformed headers.
+    if is_webp_riff(bytes) {
+        let features = BitstreamFeatures::new(bytes).ok_or_else(|| {
+            LazyImageError::decode_failed("webp: failed to read bitstream features")
+        })?;
+        return check_dimensions(features.width(), features.height());
+    }
+
+    // PNG: read header directly when available to avoid full decode.
+    if let Ok((width, height)) = read_png_dimensions(bytes) {
+        return check_dimensions(width, height);
+    }
+
     let cursor = Cursor::new(bytes);
     if let Ok(reader) = ImageReader::new(cursor).with_guessed_format() {
-        if let Ok((width, height)) = reader.into_dimensions() {
-            return check_dimensions(width, height);
-        }
+        return reader
+            .into_dimensions()
+            .map_err(|_| {
+                LazyImageError::decode_failed("decode failed: could not read image dimensions")
+            })
+            .and_then(|(width, height)| check_dimensions(width, height));
     }
     Ok(())
+}
+
+fn is_webp_riff(bytes: &[u8]) -> bool {
+    bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP"
 }
 
 /// Extract EXIF Orientation tag (1-8). Returns None if missing or invalid.
@@ -413,6 +444,19 @@ mod tests {
     fn test_ensure_dimensions_safe_allows_small_image() {
         let data = encode_png(64, 64);
         assert!(ensure_dimensions_safe(&data).is_ok());
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_allows_small_webp() {
+        let data = encode_webp(16, 16);
+        assert!(ensure_dimensions_safe(&data).is_ok());
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_rejects_invalid_webp_header() {
+        let data = b"RIFF\0\0\0\0WEBP".to_vec();
+        let err = ensure_dimensions_safe(&data).unwrap_err();
+        assert!(matches!(err, LazyImageError::DecodeFailed { .. }));
     }
 
     #[test]

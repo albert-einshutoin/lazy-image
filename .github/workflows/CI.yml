@@ -436,6 +436,8 @@ jobs:
           echo ""
           
           # Check if all required platforms are present
+          # Note: Must match package.json optionalDependencies
+          # See: https://github.com/albert-einshutoin/lazy-image/issues/333
           required_platforms=("darwin-x64" "darwin-arm64" "win32-x64-msvc" "linux-x64-gnu" "linux-arm64-gnu" "linux-x64-musl")
           missing=0
           for platform in "${required_platforms[@]}"; do
@@ -494,7 +496,7 @@ jobs:
         run: |
           # Verify structure
           echo "=== Verifying structure ==="
-          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-x64-musl; do
+          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-arm64-gnu linux-x64-musl; do
             if [ -f "npm/$platform/lazy-image.$platform.node" ] && [ -f "npm/$platform/package.json" ]; then
               echo "✅ npm/$platform/ - both .node and package.json exist"
             else
@@ -506,7 +508,7 @@ jobs:
           # Verify package.json contents
           echo ""
           echo "=== Verifying package.json contents ==="
-          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-x64-musl; do
+          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-arm64-gnu linux-x64-musl; do
             echo "Package: $platform"
             cat "npm/$platform/package.json" | jq -r '.name, .version, .main' || cat "npm/$platform/package.json"
             echo ""
