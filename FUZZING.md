@@ -58,8 +58,8 @@ RUSTFLAGS="-Zsanitizer=address" \
 
 Fuzzing runs under a **strict 2GB RSS cap** in CI. Rather than raising the limit, the engine enforces a **decode budget** when built with the `fuzzing` feature:
 
-- **FUZZ_MAX_DIMENSION** = 2048 (per side)
-- **FUZZ_MAX_PIXELS** = 4,000,000 (~16MB RGBA)
+- **FUZZ_MAX_DIMENSION** = 1024 (per side)
+- **FUZZ_MAX_PIXELS** = 1,000,000 (~4MB RGBA)
 
 Any input that would decode to larger dimensions is rejected before allocation. That keeps the fuzz run under 2GB and **tests lazy-image's bounded-memory property**: we verify that decode paths respect a cap instead of allowing unbounded growth on adversarial input.
 
