@@ -30,7 +30,7 @@
     "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:types",
     "test:js:specs": "node test/integration/run.js",
     "test:js:type-safety": "node test/type-safety/runtime-type-safety.test.js",
-    "test:types": "tsc --noEmit test/type-safety/typescript-typecheck.test.ts",
+    "test:types": "tsc --noEmit",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
     "test:bench:compare": "node test/benchmarks/sharp-comparison.bench.js",
     "test:bench:verify": "node test/benchmarks/readme-verification.bench.js",

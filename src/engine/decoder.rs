@@ -529,9 +529,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "fuzzing"))]
     fn test_decode_png_fallback_to_image_crate_for_large_dimensions() {
         // PNG with dimensions > 16,384 (zune-png limit) but < MAX_DIMENSION (32,768)
-        // Should fallback to image crate
+        // Should fallback to image crate. Skipped in fuzz build (FUZZ_MAX_DIMENSION=2048).
         const ZUNE_PNG_MAX_DIM: u32 = 16384;
         let large_png = encode_png(ZUNE_PNG_MAX_DIM + 100, 100);
         let (img, fmt) = decode_image(&large_png).unwrap();
