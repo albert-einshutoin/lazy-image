@@ -21,12 +21,12 @@ pub const MAX_DIMENSION: u32 = 32768;
 pub const MAX_PIXELS: u64 = 100_000_000;
 
 /// When built with `fuzzing` feature, decode paths use these stricter limits so that
-/// a single decode cannot push RSS over CI's 2GB cap. This tests lazy-image's
-/// "bounded memory" property: we reject inputs that would exceed a decode budget.
+/// decode_from_buffer stays under CI's 2GB RSS (ASan + corpus overhead). This tests
+/// lazy-image's "bounded memory" property: we reject inputs that would exceed a decode budget.
 #[cfg(feature = "fuzzing")]
-pub const FUZZ_MAX_DIMENSION: u32 = 2048;
+pub const FUZZ_MAX_DIMENSION: u32 = 1024;
 #[cfg(feature = "fuzzing")]
-pub const FUZZ_MAX_PIXELS: u64 = 4_000_000; // ~16MB RGBA; keeps fuzz run under 2GB RSS
+pub const FUZZ_MAX_PIXELS: u64 = 1_000_000; // ~4MB RGBA; keeps fuzz run under 2GB with ASan
 
 // =============================================================================
 // MODULE DECOMPOSITION
@@ -334,23 +334,23 @@ mod tests {
 
         #[test]
         fn test_check_dimensions_fuzz_allows_at_limit() {
-            // FUZZ_MAX_DIMENSION=2048, FUZZ_MAX_PIXELS=4M. 2000x2000 = 4M exactly.
-            assert!(check_dimensions(2000, 2000).is_ok());
-            assert!(check_dimensions(2048, 1).is_ok());
-            assert!(check_dimensions(1, 2048).is_ok());
+            // FUZZ_MAX_DIMENSION=1024, FUZZ_MAX_PIXELS=1M. 1000x1000 = 1M exactly.
+            assert!(check_dimensions(1000, 1000).is_ok());
+            assert!(check_dimensions(1024, 1).is_ok());
+            assert!(check_dimensions(1, 1024).is_ok());
         }
 
         #[test]
         fn test_check_dimensions_fuzz_rejects_over_dimension() {
-            let result = check_dimensions(2049, 1);
+            let result = check_dimensions(1025, 1);
             assert!(result.is_err());
             assert!(result.unwrap_err().to_string().contains("exceeds maximum"));
         }
 
         #[test]
         fn test_check_dimensions_fuzz_rejects_over_pixels() {
-            // 2048*2048 = 4,194,304 > FUZZ_MAX_PIXELS(4,000,000)
-            let result = check_dimensions(2048, 2048);
+            // 1024*1024 = 1,048,576 > FUZZ_MAX_PIXELS(1,000,000)
+            let result = check_dimensions(1024, 1024);
             assert!(result.is_err());
             assert!(result.unwrap_err().to_string().contains("exceeds max"));
         }
