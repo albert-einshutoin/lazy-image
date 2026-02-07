@@ -25,7 +25,7 @@
 
 #[cfg(feature = "napi")]
 use crate::engine::memory;
-#[cfg(feature = "napi")]
+#[cfg(all(test, feature = "napi"))]
 use parking_lot::RwLock;
 #[cfg(feature = "napi")]
 use rayon::ThreadPool;
@@ -44,10 +44,15 @@ pub const MAX_CONCURRENCY: usize = 1024;
 #[cfg(feature = "napi")]
 const MIN_RAYON_THREADS: usize = 1;
 
-#[cfg(feature = "napi")]
+// Production: Use OnceLock directly for lock-free access after initialization
+// Test: Keep RwLock variant for shutdown_global_pool() functionality
+#[cfg(all(not(test), feature = "napi"))]
+pub(crate) static GLOBAL_THREAD_POOL: OnceLock<Arc<ThreadPool>> = OnceLock::new();
+
+#[cfg(all(test, feature = "napi"))]
 pub(crate) static GLOBAL_THREAD_POOL: OnceLock<RwLock<Option<Arc<ThreadPool>>>> = OnceLock::new();
 
-#[cfg(feature = "napi")]
+#[cfg(all(test, feature = "napi"))]
 fn pool_cell() -> &'static RwLock<Option<Arc<ThreadPool>>> {
     GLOBAL_THREAD_POOL.get_or_init(|| RwLock::new(None))
 }
@@ -80,7 +85,14 @@ fn build_pool() -> Arc<ThreadPool> {
     )
 }
 
-#[cfg(feature = "napi")]
+// Production: Lock-free access via OnceLock::get_or_init()
+#[cfg(all(not(test), feature = "napi"))]
+pub fn get_pool() -> Arc<ThreadPool> {
+    Arc::clone(GLOBAL_THREAD_POOL.get_or_init(build_pool))
+}
+
+// Test: Keep double-check locking for shutdown_global_pool() compatibility
+#[cfg(all(test, feature = "napi"))]
 pub fn get_pool() -> Arc<ThreadPool> {
     {
         let guard = pool_cell().read();
