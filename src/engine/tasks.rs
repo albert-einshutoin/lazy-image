@@ -1026,18 +1026,25 @@ impl Task for BatchTask {
             return Err(napi::Error::from(lazy_err));
         }
 
-        // Note: effective_concurrency is not used for manual chunking anymore.
-        // Memory backpressure is handled automatically by WeightedSemaphore,
-        // and Rayon's work-stealing scheduler manages thread utilization.
-        // The concurrency parameter now primarily affects the thread pool size
-        // (see pool::calculate_optimal_concurrency() for CPU/memory-based limits).
+        let effective_concurrency = if self.concurrency == 0 {
+            pool::calculate_optimal_concurrency()
+        } else {
+            self.concurrency as usize
+        };
 
-        // Use global thread pool with Rayon's work-stealing scheduler
-        // Memory backpressure is automatically handled by WeightedSemaphore in process_and_encode()
-        // (see memory.rs:72-84 for acquire/release logic)
-        // This eliminates sequential chunk processing that leaves threads idle between chunks
+        // Keep API contract: manual concurrency caps in-flight operations.
+        // Memory backpressure is still handled by WeightedSemaphore.
         let results: Vec<BatchResult> = pool::get_pool().install(|| {
-            self.inputs.par_iter().map(process_one).collect()
+            if effective_concurrency >= self.inputs.len() {
+                self.inputs.par_iter().map(process_one).collect()
+            } else {
+                self.inputs
+                    .chunks(effective_concurrency)
+                    .flat_map(|chunk| {
+                        chunk.par_iter().map(process_one).collect::<Vec<_>>()
+                    })
+                    .collect()
+            }
         });
 
         Ok(results)

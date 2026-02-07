@@ -1012,7 +1012,7 @@ fn is_fully_opaque(image: &fir::images::Image, pixel_type: PixelType, width: u32
     // Size threshold: Only check large images (≥1MP)
     // For small images, premultiply is cheap (SIMD-optimized), skip the scan
     const THRESHOLD_PIXELS: u32 = 1_000_000; // 1 megapixel
-    if width * height < THRESHOLD_PIXELS {
+    if (width as u64).saturating_mul(height as u64) < THRESHOLD_PIXELS as u64 {
         return false; // Assume not opaque, do premultiply (it's fast anyway)
     }
 
