@@ -2086,6 +2086,53 @@ mod tests {
                 pixel[3]
             );
         }
+
+        #[test]
+        fn test_is_fully_opaque_skips_small_image_scan() {
+            let width = 512;
+            let height = 512; // < 1MP
+            let mut pixels = vec![255u8; (width * height * 4) as usize];
+            let image = fir::images::Image::from_slice_u8(
+                width,
+                height,
+                pixels.as_mut_slice(),
+                PixelType::U8x4,
+            )
+            .expect("valid RGBA image");
+
+            assert!(
+                !is_fully_opaque(&image, PixelType::U8x4, width, height),
+                "small RGBA images should skip opacity scan"
+            );
+        }
+
+        #[test]
+        fn test_is_fully_opaque_scans_large_image() {
+            let width = 1000;
+            let height = 1000; // = 1MP
+            let mut pixels = vec![255u8; (width * height * 4) as usize];
+            let image = fir::images::Image::from_slice_u8(
+                width,
+                height,
+                pixels.as_mut_slice(),
+                PixelType::U8x4,
+            )
+            .expect("valid RGBA image");
+
+            assert!(is_fully_opaque(&image, PixelType::U8x4, width, height));
+        }
+
+        #[test]
+        fn test_is_fully_opaque_uses_wide_multiplication_for_threshold() {
+            let mut pixels = vec![255u8; 4];
+            let image = fir::images::Image::from_slice_u8(1, 1, pixels.as_mut_slice(), PixelType::U8x4)
+                .expect("valid RGBA image");
+
+            assert!(
+                is_fully_opaque(&image, PixelType::U8x4, u32::MAX, u32::MAX),
+                "overflow-safe pixel count should not force small-image fast path"
+            );
+        }
     }
 
     #[test]
