@@ -110,11 +110,10 @@ jobs:
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
         run: |
           cd fuzz
+          # Strict 2GB RSS cap for all targets. decode_from_buffer stays under it
+          # via fuzz-time decode caps (FUZZ_MAX_DIMENSION / FUZZ_MAX_PIXELS) in the engine.
           RSS_LIMIT_MB=2048
-          if [ "${{ matrix.target }}" = "decode_from_buffer" ]; then
-            RSS_LIMIT_MB=3072
-          fi
-          # Run with memory limit (2-3GB depending on target) and length limit (1MB)
+          # Run with memory limit (2GB) and length limit (1MB)
           # Timeout applies only to fuzzer execution, not build time
           timeout ${FUZZ_DURATION}s cargo +nightly fuzz run --sanitizer=${FUZZ_SANITIZER} ${{ matrix.target }} -- \
             -max_len=1048576 \

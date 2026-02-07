@@ -353,19 +353,23 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
 
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
+/// In fuzz builds, uses stricter limits (FUZZ_MAX_DIMENSION / FUZZ_MAX_PIXELS) so that
+/// decode never exceeds a small memory budget and CI stays under 2GB RSS.
 pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
-    use super::MAX_PIXELS;
-    if width > MAX_DIMENSION || height > MAX_DIMENSION {
+    #[cfg(feature = "fuzzing")]
+    let (max_dim, max_pix) = (crate::engine::FUZZ_MAX_DIMENSION, crate::engine::FUZZ_MAX_PIXELS);
+    #[cfg(not(feature = "fuzzing"))]
+    let (max_dim, max_pix) = (crate::engine::MAX_DIMENSION, crate::engine::MAX_PIXELS);
+
+    if width > max_dim || height > max_dim {
         return Err(LazyImageError::dimension_exceeds_limit(
             width.max(height),
-            MAX_DIMENSION,
+            max_dim,
         ));
     }
     let pixels = width as u64 * height as u64;
-    if pixels > MAX_PIXELS {
-        return Err(LazyImageError::pixel_count_exceeds_limit(
-            pixels, MAX_PIXELS,
-        ));
+    if pixels > max_pix {
+        return Err(LazyImageError::pixel_count_exceeds_limit(pixels, max_pix));
     }
     Ok(())
 }
