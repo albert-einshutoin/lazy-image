@@ -47,7 +47,10 @@ mod tasks;
 
 // Re-export commonly used types and functions
 pub use api::ImageEngine;
-pub use decoder::{check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, detect_format};
+pub use decoder::{
+    check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, detect_format,
+    ensure_dimensions_safe,
+};
 pub use encoder::{
     embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
     encode_webp, QualitySettings,
