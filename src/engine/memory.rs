@@ -866,6 +866,35 @@ mod tests {
         let resize_bytes = bytes_for_image(1000, 10_000, 4);
         assert!(est >= resize_bytes);
     }
+
+    #[test]
+    fn test_estimate_cache_has_bounded_size() {
+        {
+            let mut cache = get_estimate_cache().lock();
+            cache.clear();
+        }
+
+        for width in 1..=(ESTIMATE_CACHE_MAX_ENTRIES as u32 + 32) {
+            let img: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> =
+                image::ImageBuffer::from_pixel(width, 1, image::Rgba([0, 0, 0, 255]));
+            let mut bytes = Vec::new();
+            img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+                .expect("png encode should succeed");
+
+            let estimate = estimate_memory_from_header(&bytes, &[], None);
+            assert!(estimate.is_some());
+        }
+
+        let cache_len = get_estimate_cache().lock().len();
+        assert!(
+            cache_len <= ESTIMATE_CACHE_MAX_ENTRIES,
+            "cache size {} should be <= {}",
+            cache_len,
+            ESTIMATE_CACHE_MAX_ENTRIES
+        );
+
+        get_estimate_cache().lock().clear();
+    }
 }
 
 // Tests that run when `napi` feature is disabled (the CI coverage path uses `--no-default-features`).
