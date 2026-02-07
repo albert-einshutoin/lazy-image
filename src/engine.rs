@@ -297,12 +297,14 @@ mod tests {
         }
 
         #[test]
+        #[cfg(not(feature = "fuzzing"))]
         fn test_check_dimensions_at_pixel_boundary() {
-            // ちょうど100,000,000ピクセル = OK
+            // ちょうど100,000,000ピクセル = OK (production limits only; fuzz uses 4M cap)
             assert!(check_dimensions(10000, 10000).is_ok());
         }
 
         #[test]
+        #[cfg(not(feature = "fuzzing"))]
         fn test_check_dimensions_at_max_dimension() {
             // Boundary: 32768 x 32768 = 1,073,741,824 > MAX_PIXELS
             // However, MAX_DIMENSION check comes first, so this would be OK
@@ -323,6 +325,34 @@ mod tests {
             // Zero dimension is technically invalid, but check_dimensions doesn't check it
             // image crate handles it
             assert!(check_dimensions(0, 100).is_ok()); // 0 * 100 = 0 < MAX_PIXELS
+        }
+    }
+
+    #[cfg(feature = "fuzzing")]
+    mod fuzz_limit_tests {
+        use super::*;
+
+        #[test]
+        fn test_check_dimensions_fuzz_allows_at_limit() {
+            // FUZZ_MAX_DIMENSION=2048, FUZZ_MAX_PIXELS=4M. 2000x2000 = 4M exactly.
+            assert!(check_dimensions(2000, 2000).is_ok());
+            assert!(check_dimensions(2048, 1).is_ok());
+            assert!(check_dimensions(1, 2048).is_ok());
+        }
+
+        #[test]
+        fn test_check_dimensions_fuzz_rejects_over_dimension() {
+            let result = check_dimensions(2049, 1);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds maximum"));
+        }
+
+        #[test]
+        fn test_check_dimensions_fuzz_rejects_over_pixels() {
+            // 2048*2048 = 4,194,304 > FUZZ_MAX_PIXELS(4,000,000)
+            let result = check_dimensions(2048, 2048);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds max"));
         }
     }
 
