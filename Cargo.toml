@@ -84,7 +84,7 @@ bitflags = "2.6"
 memmap2 = "0.9"
 
 # Error handling
-thiserror = "1.0"
+thiserror = "2.0"
 
 # System calls for CPU time and memory tracking
 libc = "0.2"
