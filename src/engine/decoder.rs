@@ -12,6 +12,7 @@ use image::{
 use mozjpeg::Decompress;
 use std::io::Cursor;
 use webp::{BitstreamFeatures, Decoder as WebPDecoder};
+use zune_png::zune_core::bytestream::ZCursor;
 use zune_png::zune_core::colorspace::ColorSpace;
 use zune_png::zune_core::options::DecoderOptions;
 use zune_png::zune_core::result::DecodingResult;
@@ -203,17 +204,16 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
         }
 
         let options = DecoderOptions::default().png_set_strip_to_8bit(true);
-        let mut decoder = PngDecoder::new_with_options(data, options);
+        let mut decoder = PngDecoder::new_with_options(ZCursor::new(data), options);
         let pixels = decoder
             .decode()
             .map_err(|e| LazyImageError::decode_failed(format!("png: decode failed: {e}")))?;
 
-        let info = decoder
-            .get_info()
+        let (width_usize, height_usize) = decoder
+            .dimensions()
             .ok_or_else(|| LazyImageError::decode_failed("png: missing header info"))?;
-
-        let width = info.width as u32;
-        let height = info.height as u32;
+        let width = width_usize as u32;
+        let height = height_usize as u32;
         check_dimensions(width, height)?;
 
         let buf = match pixels {
@@ -226,7 +226,7 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
         };
 
         let colorspace = decoder
-            .get_colorspace()
+            .colorspace()
             .ok_or_else(|| LazyImageError::decode_failed("png: missing colorspace"))?;
 
         let img = match colorspace {
