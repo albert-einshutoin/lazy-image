@@ -21,6 +21,10 @@ adversarial inputs never trigger panics or memory-safety bugs.
 | `pipeline_ops` | Tests image operations pipeline | `apply_ops` (resize, crop, rotate, flip, brightness, contrast) |
 | `inspect_header` | Critical attack surface – header-only metadata parsing | `inspect_header_from_bytes` |
 | `icc_profile` | Tests ICC profile extraction from various containers | `extract_icc_profile` (JPEG, PNG, WebP, AVIF) |
+| `firewall_bypass` | Tests Image Firewall bounds checking with arbitrary configs | `FirewallConfig::enforce_pixels`, `FirewallConfig::enforce_source_len` |
+| `batch_concurrent` | Tests concurrent encoding via rayon thread pool | `encode_png` with parallel workers |
+| `streaming_pipeline` | Tests incremental/chunked decode-then-encode paths | `decode_with_image_crate`, `encode_png` (streaming-like feeding) |
+| `metrics_processing` | Tests `ProcessingMetrics` struct under fuzzed field values | `encode_png`, `encode_webp`, `ProcessingMetrics` accumulation |
 
 Seed corpora live in `fuzz/seeds/` (tiny.jpg, tiny.png, tiny.webp) and can be
 expanded with additional minimal samples for better coverage.
@@ -35,7 +39,7 @@ cargo +nightly fuzz run decode_from_buffer
 cargo +nightly fuzz run decode_from_buffer -- -max_total_time=60
 
 # Run all targets for 1 minute each
-for target in decode_from_buffer encode_to_format pipeline_ops inspect_header icc_profile; do
+for target in decode_from_buffer encode_to_format pipeline_ops inspect_header icc_profile firewall_bypass batch_concurrent streaming_pipeline metrics_processing; do
   cargo +nightly fuzz run $target -- -max_total_time=60
 done
 ```

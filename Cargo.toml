@@ -36,12 +36,13 @@ exif = { package = "kamadak-exif", version = "0.6.1" }
 # EXIF read/write with tag-level access (MIT/Apache-2.0, pure Rust)
 # Used for Orientation reset and GPS stripping - exceeds Sharp's metadata handling
 little_exif = "0.6"
-# PNG optimization
-oxipng = "10.1"
+# PNG optimization (disable default features to avoid clap/zopfli bloat)
+oxipng = { version = "10.1", default-features = false, features = ["parallel"] }
 
 # SIMD-accelerated image resizing - this is where we catch libvips
-# Enable rayon feature to allow parallel resize paths
-fast_image_resize = { version = "6", features = ["rayon"] }
+# Enable rayon feature to allow parallel resize paths; disable default to avoid pulling in
+# the `image` crate interop (we use fir::images::Image directly)
+fast_image_resize = { version = "6", default-features = false, features = ["rayon"] }
 
 # High-quality JPEG encoding - the core of our advantage over sharp
 mozjpeg = "0.10"
@@ -116,5 +117,32 @@ opt-level = 3
 [profile.release]
 lto = true
 codegen-units = 1
-opt-level = 3
+opt-level = "s"
 strip = true
+
+# Aggressively optimize non-codec dependencies for size in release builds.
+# These crates aren't in hot image-processing loops, so "z" is safe.
+[profile.release.package.oxipng]
+opt-level = "z"
+[profile.release.package.image]
+opt-level = "z"
+[profile.release.package.png]
+opt-level = "z"
+[profile.release.package.rayon]
+opt-level = "z"
+[profile.release.package.rayon-core]
+opt-level = "z"
+[profile.release.package.flate2]
+opt-level = "z"
+[profile.release.package.miniz_oxide]
+opt-level = "z"
+[profile.release.package.little_exif]
+opt-level = "z"
+[profile.release.package.kamadak-exif]
+opt-level = "z"
+[profile.release.package.img-parts]
+opt-level = "z"
+[profile.release.package.napi]
+opt-level = "z"
+[profile.release.package.napi-sys]
+opt-level = "z"
