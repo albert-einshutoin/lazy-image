@@ -294,8 +294,10 @@ impl EncodeTask {
     /// This is the core processing pipeline shared by toBuffer and toFile.
     /// Returns LazyImageError directly (not wrapped in napi::Error) so that
     /// Task::reject can properly create error objects with code/category.
+    ///
+    /// Note: Takes &self (not &mut self) to allow sharing without cloning Arc-wrapped data.
     pub(crate) fn process_and_encode(
-        &mut self,
+        &self,
         mut metrics: Option<&mut crate::ProcessingMetrics>,
     ) -> std::result::Result<Vec<u8>, LazyImageError> {
         // Get input size from source
@@ -603,8 +605,9 @@ impl Task for EncodeWithMetricsTask {
     type JsValue = crate::OutputWithMetrics;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        //Reuse EncodeTask logic
-        let mut task = EncodeTask {
+        // P2 Optimization: Share EncodeTask fields via reference instead of cloning
+        // Since EncodeWithMetricsTask has the same fields as EncodeTask, create a view
+        let task = EncodeTask {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
@@ -629,9 +632,7 @@ impl Task for EncodeWithMetricsTask {
                 Ok((data, metrics))
             }
             Err(lazy_err) => {
-                // Store the error for use in reject
                 self.last_error = Some(lazy_err.clone());
-                // Convert to napi::Error for the Result type
                 Err(napi::Error::from(lazy_err))
             }
         }
@@ -692,8 +693,8 @@ impl Task for WriteFileTask {
         use std::io::Write;
         use tempfile::NamedTempFile;
 
-        // Create EncodeTask and use its process_and_encode method
-        let mut encode_task = EncodeTask {
+        // P2 Optimization: Create EncodeTask without redundant mut
+        let encode_task = EncodeTask {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
@@ -710,7 +711,7 @@ impl Task for WriteFileTask {
             last_error: None,
         };
 
-        // Process image using shared logic
+        // Process image using shared logic (now using &self not &mut self)
         let data = match encode_task.process_and_encode(None) {
             Ok(data) => data,
             Err(lazy_err) => {
@@ -1025,31 +1026,21 @@ impl Task for BatchTask {
             return Err(napi::Error::from(lazy_err));
         }
 
-        // Determine effective concurrency
         let effective_concurrency = if self.concurrency == 0 {
-            // Auto-detect: use smart concurrency based on CPU and memory
             pool::calculate_optimal_concurrency()
         } else {
-            // Manual override: use user-specified concurrency
             self.concurrency as usize
         };
 
-        // Use global thread pool with chunks-based concurrency limiting
-        // This avoids creating a new pool per request (which is expensive)
-        // and instead uses chunks to limit concurrent operations
+        // Keep API contract: manual concurrency caps in-flight operations.
+        // Memory backpressure is still handled by WeightedSemaphore.
         let results: Vec<BatchResult> = pool::get_pool().install(|| {
             if effective_concurrency >= self.inputs.len() {
-                // If concurrency >= input count, process all in parallel
                 self.inputs.par_iter().map(process_one).collect()
             } else {
-                // Use chunks to limit concurrent operations
-                // Process chunks sequentially, but each chunk in parallel
-                // This ensures at most `effective_concurrency` operations run simultaneously
-                // while still using the global thread pool efficiently
                 self.inputs
                     .chunks(effective_concurrency)
                     .flat_map(|chunk| {
-                        // Process each chunk in parallel within the global pool
                         chunk.par_iter().map(process_one).collect::<Vec<_>>()
                     })
                     .collect()

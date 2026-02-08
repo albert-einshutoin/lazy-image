@@ -45,12 +45,32 @@ const MAX_MEMORY_BASED_CONCURRENCY: usize = 16;
 /// Fallback memory capacity when detection fails (aligned with previous conservative limit)
 const FALLBACK_SEMAPHORE_CAPACITY: u64 =
     ESTIMATED_MEMORY_PER_OPERATION * MAX_MEMORY_BASED_CONCURRENCY as u64;
+const ESTIMATE_CACHE_MAX_ENTRIES: usize = 256;
 
-/// In-memory weighted semaphore for byte-based backpressure
+use std::collections::{HashMap, VecDeque};
+use std::sync::atomic::{AtomicBool, Ordering};
+
+/// Waiter entry in the fair queue
+/// Stores the required weight and a flag to signal readiness
+#[derive(Debug)]
+struct Waiter {
+    weight: u64,
+    ready: Arc<AtomicBool>,
+}
+
+/// State protected by mutex
+#[derive(Debug)]
+struct SemaphoreState {
+    available: u64,
+    waiters: VecDeque<Waiter>,
+}
+
+/// In-memory weighted semaphore for byte-based backpressure.
+/// Uses a fair FIFO queue and wake-all handoff for correctness.
 #[derive(Debug)]
 pub struct WeightedSemaphore {
     capacity: u64,
-    state: Mutex<u64>, // available bytes
+    state: Mutex<SemaphoreState>,
     cvar: Condvar,
 }
 
@@ -64,33 +84,77 @@ impl WeightedSemaphore {
     pub fn new(capacity: u64) -> Self {
         Self {
             capacity,
-            state: Mutex::new(capacity),
+            state: Mutex::new(SemaphoreState {
+                available: capacity,
+                waiters: VecDeque::new(),
+            }),
             cvar: Condvar::new(),
         }
     }
 
     pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
-        let mut available = self.state.lock();
-        // clamp absurd weights to capacity to avoid deadlock
-        let need = weight.min(self.capacity);
-        while *available < need {
-            self.cvar.wait(&mut available);
-        }
-        *available -= need;
-        MemoryPermit {
-            sem: Arc::clone(self),
-            weight: need,
+        let need = weight.min(self.capacity); // clamp absurd weights to avoid deadlock
+
+        let ready_flag = {
+            let mut state = self.state.lock();
+
+            // Fast path: if capacity available, acquire immediately
+            if state.available >= need {
+                state.available -= need;
+                return MemoryPermit {
+                    sem: Arc::clone(self),
+                    weight: need,
+                };
+            }
+
+            // Slow path: enqueue and wait
+            let ready = Arc::new(AtomicBool::new(false));
+            state.waiters.push_back(Waiter {
+                weight: need,
+                ready: Arc::clone(&ready),
+            });
+            ready
+        };
+
+        // Wait for our turn (FIFO fairness)
+        loop {
+            if ready_flag.load(Ordering::Acquire) {
+                return MemoryPermit {
+                    sem: Arc::clone(self),
+                    weight: need,
+                };
+            }
+
+            // Sleep briefly before checking again
+            let mut guard = self.state.lock();
+            if !ready_flag.load(Ordering::Acquire) {
+                self.cvar.wait(&mut guard);
+            }
         }
     }
 
     fn release(&self, weight: u64) {
-        let mut available = self.state.lock();
-        let freed = (*available).saturating_add(weight).min(self.capacity);
-        *available = freed;
-        // notify_all: When waiters have heterogeneous weights, notify_one can cause starvation.
-        // Benchmarks showed wake spikes are acceptable, so we wake all waiters and prioritize
-        // fairness through immediate re-contention.
-        self.cvar.notify_all();
+        let mut state = self.state.lock();
+
+        // Return capacity
+        state.available = state.available.saturating_add(weight).min(self.capacity);
+
+        let mut woke_any = false;
+        // Fair wake: satisfy waiters in FIFO order.
+        while let Some(waiter) = state.waiters.front() {
+            if state.available >= waiter.weight {
+                let waiter = state.waiters.pop_front().unwrap();
+                state.available -= waiter.weight;
+                woke_any = true;
+                waiter.ready.store(true, Ordering::Release);
+            } else {
+                break; // Can't satisfy next waiter, stop
+            }
+        }
+
+        if woke_any || (!state.waiters.is_empty() && state.available > 0) {
+            self.cvar.notify_all();
+        }
     }
 }
 
@@ -303,20 +367,64 @@ pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
 }
 
 /// Lightweight header parse; returns None if dimensions can't be read.
+/// Cache for memory estimates keyed by (width, height, format)
+/// No LRU needed - image dimensions are discrete (~20-50 common sizes)
+type EstimateCache = Mutex<HashMap<(u32, u32, Option<ImageFormat>), u64>>;
+static ESTIMATE_CACHE: OnceLock<EstimateCache> = OnceLock::new();
+
+fn get_estimate_cache() -> &'static EstimateCache {
+    ESTIMATE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
 pub fn estimate_memory_from_header(
     bytes: &[u8],
     ops: &[Operation],
     output_format: Option<&OutputFormat>,
 ) -> Option<u64> {
-    parse_header(bytes).map(|header| {
-        estimate_memory_from_dimensions_with_context(
+    let header = parse_header(bytes)?;
+
+    // Only cache if ops are empty (common case for simple operations)
+    // Complex pipelines with operations are computed fresh
+    if ops.is_empty() && output_format.is_none() {
+        let cache_key = (header.width, header.height, header.format);
+
+        // Try cache first (parking_lot try_lock returns Option)
+        if let Some(cache) = get_estimate_cache().try_lock() {
+            if let Some(&cached) = cache.get(&cache_key) {
+                return Some(cached);
+            }
+        }
+
+        // Compute estimate
+        let estimate = estimate_memory_from_dimensions_with_context(
             header.width,
             header.height,
             header.format,
             ops,
             output_format,
-        )
-    })
+        );
+
+        // Try to cache (non-fatal if lock fails)
+        if let Some(mut cache) = get_estimate_cache().try_lock() {
+            if cache.len() >= ESTIMATE_CACHE_MAX_ENTRIES {
+                if let Some(old_key) = cache.keys().next().cloned() {
+                    cache.remove(&old_key);
+                }
+            }
+            cache.insert(cache_key, estimate);
+        }
+
+        Some(estimate)
+    } else {
+        // Don't cache complex pipelines
+        Some(estimate_memory_from_dimensions_with_context(
+            header.width,
+            header.height,
+            header.format,
+            ops,
+            output_format,
+        ))
+    }
 }
 
 /// Parse width/height/format from input bytes without full decode.
@@ -710,11 +818,11 @@ mod tests {
         let sem = Arc::new(WeightedSemaphore::new(100));
         let permit = sem.acquire(60);
         {
-            let remaining = *sem.state.lock();
+            let remaining = sem.state.lock().available;
             assert_eq!(remaining, 40);
         }
         drop(permit);
-        let remaining = *sem.state.lock();
+        let remaining = sem.state.lock().available;
         assert_eq!(remaining, 100);
     }
 
@@ -757,6 +865,35 @@ mod tests {
         let est = estimate_memory_from_dimensions_with_context(100, 10_000, None, &ops, None);
         let resize_bytes = bytes_for_image(1000, 10_000, 4);
         assert!(est >= resize_bytes);
+    }
+
+    #[test]
+    fn test_estimate_cache_has_bounded_size() {
+        {
+            let mut cache = get_estimate_cache().lock();
+            cache.clear();
+        }
+
+        for width in 1..=(ESTIMATE_CACHE_MAX_ENTRIES as u32 + 32) {
+            let img: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> =
+                image::ImageBuffer::from_pixel(width, 1, image::Rgba([0, 0, 0, 255]));
+            let mut bytes = Vec::new();
+            img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+                .expect("png encode should succeed");
+
+            let estimate = estimate_memory_from_header(&bytes, &[], None);
+            assert!(estimate.is_some());
+        }
+
+        let cache_len = get_estimate_cache().lock().len();
+        assert!(
+            cache_len <= ESTIMATE_CACHE_MAX_ENTRIES,
+            "cache size {} should be <= {}",
+            cache_len,
+            ESTIMATE_CACHE_MAX_ENTRIES
+        );
+
+        get_estimate_cache().lock().clear();
     }
 }
 
