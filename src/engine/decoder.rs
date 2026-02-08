@@ -12,11 +12,10 @@ use image::{
 use mozjpeg::Decompress;
 use std::io::Cursor;
 use webp::{BitstreamFeatures, Decoder as WebPDecoder};
-use zune_core::colorspace::ColorSpace;
-use zune_core::options::DecoderOptions;
+use zune_png::zune_core::colorspace::ColorSpace;
+use zune_png::zune_core::options::DecoderOptions;
+use zune_png::zune_core::result::DecodingResult;
 use zune_png::PngDecoder;
-
-use crate::engine::MAX_DIMENSION;
 
 // Type alias for Result - always use LazyImageError to preserve error taxonomy
 // This ensures that decode errors are properly classified (CodecError, ResourceLimit, etc.)
@@ -218,7 +217,7 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
         check_dimensions(width, height)?;
 
         let buf = match pixels {
-            zune_core::result::DecodingResult::U8(v) => v,
+            DecodingResult::U8(v) => v,
             _ => {
                 return Err(LazyImageError::decode_failed(
                     "png: unexpected non-U8 pixel buffer",
@@ -357,7 +356,10 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
 /// decode never exceeds a small memory budget and CI stays under 2GB RSS.
 pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
     #[cfg(feature = "fuzzing")]
-    let (max_dim, max_pix) = (crate::engine::FUZZ_MAX_DIMENSION, crate::engine::FUZZ_MAX_PIXELS);
+    let (max_dim, max_pix) = (
+        crate::engine::FUZZ_MAX_DIMENSION,
+        crate::engine::FUZZ_MAX_PIXELS,
+    );
     #[cfg(not(feature = "fuzzing"))]
     let (max_dim, max_pix) = (crate::engine::MAX_DIMENSION, crate::engine::MAX_PIXELS);
 
