@@ -20,6 +20,14 @@ pub const MAX_DIMENSION: u32 = 32768;
 /// 100 megapixels = 400MB uncompressed RGBA. Beyond this is likely malicious.
 pub const MAX_PIXELS: u64 = 100_000_000;
 
+/// When built with `fuzzing` feature, decode paths use these stricter limits so that
+/// decode_from_buffer stays under CI's 2GB RSS (ASan + corpus overhead). This tests
+/// lazy-image's "bounded memory" property: we reject inputs that would exceed a decode budget.
+#[cfg(feature = "fuzzing")]
+pub const FUZZ_MAX_DIMENSION: u32 = 1024;
+#[cfg(feature = "fuzzing")]
+pub const FUZZ_MAX_PIXELS: u64 = 1_000_000; // ~4MB RGBA; keeps fuzz run under 2GB with ASan
+
 // =============================================================================
 // MODULE DECOMPOSITION
 // =============================================================================
@@ -39,7 +47,10 @@ mod tasks;
 
 // Re-export commonly used types and functions
 pub use api::ImageEngine;
-pub use decoder::{check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, detect_format};
+pub use decoder::{
+    check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, detect_format,
+    ensure_dimensions_safe,
+};
 pub use encoder::{
     embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
     encode_webp, QualitySettings,
@@ -289,12 +300,14 @@ mod tests {
         }
 
         #[test]
+        #[cfg(not(feature = "fuzzing"))]
         fn test_check_dimensions_at_pixel_boundary() {
-            // ちょうど100,000,000ピクセル = OK
+            // ちょうど100,000,000ピクセル = OK (production limits only; fuzz uses 4M cap)
             assert!(check_dimensions(10000, 10000).is_ok());
         }
 
         #[test]
+        #[cfg(not(feature = "fuzzing"))]
         fn test_check_dimensions_at_max_dimension() {
             // Boundary: 32768 x 32768 = 1,073,741,824 > MAX_PIXELS
             // However, MAX_DIMENSION check comes first, so this would be OK
@@ -315,6 +328,34 @@ mod tests {
             // Zero dimension is technically invalid, but check_dimensions doesn't check it
             // image crate handles it
             assert!(check_dimensions(0, 100).is_ok()); // 0 * 100 = 0 < MAX_PIXELS
+        }
+    }
+
+    #[cfg(feature = "fuzzing")]
+    mod fuzz_limit_tests {
+        use super::*;
+
+        #[test]
+        fn test_check_dimensions_fuzz_allows_at_limit() {
+            // FUZZ_MAX_DIMENSION=1024, FUZZ_MAX_PIXELS=1M. 1000x1000 = 1M exactly.
+            assert!(check_dimensions(1000, 1000).is_ok());
+            assert!(check_dimensions(1024, 1).is_ok());
+            assert!(check_dimensions(1, 1024).is_ok());
+        }
+
+        #[test]
+        fn test_check_dimensions_fuzz_rejects_over_dimension() {
+            let result = check_dimensions(1025, 1);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds maximum"));
+        }
+
+        #[test]
+        fn test_check_dimensions_fuzz_rejects_over_pixels() {
+            // 1024*1024 = 1,048,576 > FUZZ_MAX_PIXELS(1,000,000)
+            let result = check_dimensions(1024, 1024);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().to_string().contains("exceeds max"));
         }
     }
 

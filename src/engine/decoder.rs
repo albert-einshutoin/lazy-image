@@ -353,19 +353,23 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
 
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
+/// In fuzz builds, uses stricter limits (FUZZ_MAX_DIMENSION / FUZZ_MAX_PIXELS) so that
+/// decode never exceeds a small memory budget and CI stays under 2GB RSS.
 pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
-    use super::MAX_PIXELS;
-    if width > MAX_DIMENSION || height > MAX_DIMENSION {
+    #[cfg(feature = "fuzzing")]
+    let (max_dim, max_pix) = (crate::engine::FUZZ_MAX_DIMENSION, crate::engine::FUZZ_MAX_PIXELS);
+    #[cfg(not(feature = "fuzzing"))]
+    let (max_dim, max_pix) = (crate::engine::MAX_DIMENSION, crate::engine::MAX_PIXELS);
+
+    if width > max_dim || height > max_dim {
         return Err(LazyImageError::dimension_exceeds_limit(
             width.max(height),
-            MAX_DIMENSION,
+            max_dim,
         ));
     }
     let pixels = width as u64 * height as u64;
-    if pixels > MAX_PIXELS {
-        return Err(LazyImageError::pixel_count_exceeds_limit(
-            pixels, MAX_PIXELS,
-        ));
+    if pixels > max_pix {
+        return Err(LazyImageError::pixel_count_exceeds_limit(pixels, max_pix));
     }
     Ok(())
 }
@@ -525,9 +529,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "fuzzing"))]
     fn test_decode_png_fallback_to_image_crate_for_large_dimensions() {
         // PNG with dimensions > 16,384 (zune-png limit) but < MAX_DIMENSION (32,768)
-        // Should fallback to image crate
+        // Should fallback to image crate. Skipped in fuzz build (FUZZ_MAX_DIMENSION=2048).
         const ZUNE_PNG_MAX_DIM: u32 = 16384;
         let large_png = encode_png(ZUNE_PNG_MAX_DIM + 100, 100);
         let (img, fmt) = decode_image(&large_png).unwrap();

@@ -146,8 +146,9 @@ mod large_image_tests {
     }
 
     #[test]
+    #[cfg(not(feature = "fuzzing"))]
     fn test_max_pixels_boundary() {
-        // 10000x10000 = 100,000,000 はOK
+        // 10000x10000 = 100,000,000 はOK (production only; fuzz uses 4M cap)
         let result = check_dimensions(10000, 10000);
         assert!(result.is_ok());
     }
@@ -161,15 +162,17 @@ mod large_image_tests {
     }
 
     #[test]
+    #[cfg(not(feature = "fuzzing"))]
     fn test_extreme_aspect_ratio_wide() {
-        // 32768x1 - MAX_DIMENSION内、MAX_PIXELS内
+        // 32768x1 - MAX_DIMENSION内、MAX_PIXELS内 (fuzz uses 2048 cap)
         let result = check_dimensions(32768, 1);
         assert!(result.is_ok());
     }
 
     #[test]
+    #[cfg(not(feature = "fuzzing"))]
     fn test_extreme_aspect_ratio_tall() {
-        // 1x32768 - MAX_DIMENSION内、MAX_PIXELS内
+        // 1x32768 - MAX_DIMENSION内、MAX_PIXELS内 (fuzz uses 2048 cap)
         let result = check_dimensions(1, 32768);
         assert!(result.is_ok());
     }

@@ -54,9 +54,18 @@ RUSTFLAGS="-Zsanitizer=address" \
   cargo +nightly fuzz run inspect_header -- -max_total_time=60
 ```
 
-### Memory limits
+### Memory limits and decode budget (lazy-image strength)
 
-For CI/resource-constrained environments, use memory limits:
+Fuzzing runs under a **strict 2GB RSS cap** in CI. Rather than raising the limit, the engine enforces a **decode budget** when built with the `fuzzing` feature:
+
+- **FUZZ_MAX_DIMENSION** = 1024 (per side)
+- **FUZZ_MAX_PIXELS** = 1,000,000 (~4MB RGBA)
+
+Any input that would decode to larger dimensions is rejected before allocation. That keeps the fuzz run under 2GB and **tests lazy-image's bounded-memory property**: we verify that decode paths respect a cap instead of allowing unbounded growth on adversarial input.
+
+The **decode_from_buffer** harness enforces this at the harness level: it calls `ensure_dimensions_safe(data)` before running any full decode (`decode_jpeg_mozjpeg` or `decode_with_image_crate`). Inputs that fail this check (unknown format, invalid header, or dimensions exceeding the fuzz budget) are skipped without decoding, so CI never OOMs from a single large input regardless of decoder internals.
+
+For CI and local runs:
 
 ```bash
 cargo +nightly fuzz run encode_to_format -- \
@@ -70,8 +79,8 @@ cargo +nightly fuzz run encode_to_format -- \
 Fuzzing runs automatically via GitHub Actions (`.github/workflows/fuzz.yml`):
 
 - **Schedule**: Nightly at 3:00 UTC
-- **Duration**: 5 minutes per target
-- **Memory limit**: 2GB RSS
+- **Duration**: 5 minutes per target (60s on PRs)
+- **Memory limit**: 2GB RSS for all targets; decode targets stay under it via fuzz-time decode caps
 - **Crash handling**: Auto-creates GitHub issues with `bug`, `security`, `fuzz-crash` labels
 
 ### Manual trigger
