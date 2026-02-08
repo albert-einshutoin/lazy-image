@@ -24,7 +24,7 @@ use image::{DynamicImage, GenericImageView, ImageFormat};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 #[cfg(feature = "napi")]
-use napi::{Env, JsBuffer, Task};
+use napi::{bindgen_prelude::BufferSlice, Env, Task};
 #[cfg(feature = "napi")]
 use rayon::prelude::*;
 use std::borrow::Cow;
@@ -444,7 +444,7 @@ impl EncodeTask {
 #[napi]
 impl Task for EncodeTask {
     type Output = Vec<u8>;
-    type JsValue = JsBuffer;
+    type JsValue = napi::bindgen_prelude::Buffer;
 
     fn compute(&mut self) -> Result<Self::Output> {
         match self.process_and_encode(None) {
@@ -462,7 +462,7 @@ impl Task for EncodeTask {
     }
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
-        env.create_buffer_with_data(output).map(|b| b.into_raw())
+        BufferSlice::from_data(&env, output)?.into_buffer(&env)
     }
 
     fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
@@ -640,7 +640,7 @@ impl Task for EncodeWithMetricsTask {
 
     fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
         let (data, metrics) = output;
-        let js_buffer = env.create_buffer_with_data(data)?.into_raw();
+        let js_buffer = BufferSlice::from_data(&env, data)?.into_buffer(&env)?;
         Ok(crate::OutputWithMetrics {
             data: js_buffer,
             metrics,
