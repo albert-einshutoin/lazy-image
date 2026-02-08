@@ -356,6 +356,6 @@ impl Default for ProcessingMetrics {
 #[cfg(feature = "napi")]
 #[napi(object)]
 pub struct OutputWithMetrics {
-    pub data: napi::JsBuffer,
+    pub data: napi::bindgen_prelude::Buffer,
     pub metrics: ProcessingMetrics,
 }
