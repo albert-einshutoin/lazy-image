@@ -79,6 +79,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: 1.88.0
           targets: ${{ matrix.settings.target }}
 
       - name: Install NASM (macOS)
@@ -116,6 +117,8 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
 
       - name: Install NASM (Linux)
         if: matrix.host == 'ubuntu-latest'
@@ -239,6 +242,8 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
 
       - name: Install dependencies
         run: npm ci
@@ -278,6 +283,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: 1.88.0
           components: llvm-tools-preview
 
       - name: Install cargo-llvm-cov
