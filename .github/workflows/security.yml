@@ -18,6 +18,8 @@ jobs:
       
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
       
       - name: Install cargo-audit
         run: cargo install cargo-audit
@@ -68,4 +70,3 @@ jobs:
       
       - name: Run npm audit
         run: npm audit --audit-level=high
-
