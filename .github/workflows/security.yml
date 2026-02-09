@@ -28,7 +28,7 @@ jobs:
       
       - name: Create issue on failure
         if: failure() && github.event_name == 'schedule'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const title = '🚨 Security vulnerability detected in dependencies';
