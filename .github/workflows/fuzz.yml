@@ -51,7 +51,7 @@ jobs:
           - metrics_processing
           - streaming_pipeline
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Rust nightly
         uses: dtolnay/rust-toolchain@nightly
