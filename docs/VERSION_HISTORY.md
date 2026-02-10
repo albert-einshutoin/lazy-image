@@ -2,6 +2,7 @@
 
 | Version | Features |
 |---------|----------|
+| v0.10.1 | Release 0.10.1 (version bump). |
 | v0.10.0 | EXIF metadata preservation (keepMetadata, GPS strip, Orientation reset), Fused resize+crop (zero-allocation), ProcessingMetrics legacy aliases deprecated (→ decodeMs/opsMs/peakRss/bytesIn/bytesOut in v2), Optimized codec backends (zune-png, libwebp), parking_lot memory semaphore, ColorState tracking, processBatch options object (positional deprecated), normalizePixelFormat() (ensureRgb deprecated), spec/ directory, README positioning & Performance & Trade-offs, SECURITY.md, README.ja.md |
 | v0.9.0 | Streaming architecture, EXIF auto-orientation, Image Firewall, Quality metrics (SSIM/PSNR), Metrics API v1.0.0, Memory estimate model, Weighted semaphore, Golden test suite, Parallel resize, PNG compression with oxipng, Unified format detection, Cgroup detection, Fuzzing CI |
 | v0.8.7 | Telemetry metrics, Smart concurrency with auto memory cap detection, Performance optimizations |
