@@ -405,3 +405,40 @@ export declare function supportedOutputFormats(): Array<string>
 
 /** Get library version */
 export declare function version(): string
+
+/**
+ * Classify a lazy-image error into a high-level ErrorCategory.
+ *
+ * - Returns null for non-lazy-image errors (no lazy-image metadata)
+ * - Prefers explicit category on the error object when available
+ * - Falls back to error.code / error.errorCode when necessary
+ */
+export declare function getErrorCategory(err: unknown): ErrorCategory | null
+
+/**
+ * Disk-backed, bounded-memory streaming pipeline.
+ *
+ * This API stages input to a temporary file, runs ImageEngine.fromPath()
+ * on it, and streams the encoded result from another temporary file.
+ * It is NOT true chunk-by-chunk encoding, but keeps memory usage ~O(1).
+ */
+export declare function createStreamingPipeline(options: {
+  format?: string
+  quality?: number
+  ops?: Array<{
+    op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
+    width?: number
+    height?: number
+    fit?: string
+    degrees?: number
+    enabled?: boolean
+  }>
+  /**
+   * Optional ImageEngine class to use.
+   * When omitted, the default exported ImageEngine is used.
+   */
+  ImageEngine?: typeof ImageEngine
+}): {
+  writable: NodeJS.WritableStream
+  readable: NodeJS.ReadableStream
+}

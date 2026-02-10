@@ -584,3 +584,113 @@ module.exports.inspectFile = nativeBinding.inspectFile
 module.exports.supportedInputFormats = nativeBinding.supportedInputFormats
 module.exports.supportedOutputFormats = nativeBinding.supportedOutputFormats
 module.exports.version = nativeBinding.version
+
+// High-level helpers and streaming API
+const { createStreamingPipeline } = require('./streaming/pipeline')
+
+/**
+ * Classify a lazy-image error into a high-level ErrorCategory.
+ *
+ * - Returns null for non-lazy-image errors (no category information)
+ * - Prefers explicit category on the error object when available
+ * - Falls back to error.code / error.errorCode when necessary
+ */
+function getErrorCategory(err) {
+  if (!err) return null
+
+  const { ErrorCategory, ErrorCode } = nativeBinding
+
+  // 1. Explicit category on the error object (preferred)
+  if (typeof err.errorCategory === 'number') {
+    return err.errorCategory
+  }
+  if (typeof err.category === 'number') {
+    return err.category
+  }
+
+  // 2. error.code string such as "LAZY_IMAGE_USER_ERROR"
+  if (typeof err.code === 'string') {
+    switch (err.code) {
+      case 'LAZY_IMAGE_USER_ERROR':
+        return ErrorCategory.UserError
+      case 'LAZY_IMAGE_CODEC_ERROR':
+        return ErrorCategory.CodecError
+      case 'LAZY_IMAGE_RESOURCE_LIMIT':
+        return ErrorCategory.ResourceLimit
+      case 'LAZY_IMAGE_INTERNAL_BUG':
+        return ErrorCategory.InternalBug
+      default:
+        break
+    }
+  }
+
+  // 3. Fine-grained errorCode such as "E203" or numeric enum value
+  let numericCode = null
+  if (typeof err.errorCode === 'string' && /^E[0-9]{3}$/.test(err.errorCode)) {
+    numericCode = parseInt(err.errorCode.slice(1), 10)
+  } else if (typeof err.errorCode === 'number') {
+    numericCode = err.errorCode
+  }
+
+  if (numericCode != null && Number.isFinite(numericCode)) {
+    // First try exact ErrorCode mapping from docs/ERROR_CODES.md
+    switch (numericCode) {
+      // UserError: invalid input that the user can fix
+      case ErrorCode.FileNotFound:
+      case ErrorCode.InvalidCropBounds:
+      case ErrorCode.InvalidCropDimensions:
+      case ErrorCode.InvalidRotationAngle:
+      case ErrorCode.InvalidResizeDimensions:
+      case ErrorCode.InvalidResizeFit:
+      case ErrorCode.InvalidArgument:
+      case ErrorCode.InvalidPreset:
+      case ErrorCode.InvalidFirewallPolicy:
+      case ErrorCode.SourceConsumed:
+        return ErrorCategory.UserError
+
+      // CodecError: format/encoding issues
+      case ErrorCode.UnsupportedFormat:
+      case ErrorCode.DecodeFailed:
+      case ErrorCode.CorruptedImage:
+      case ErrorCode.EncodeFailed:
+      case ErrorCode.UnsupportedColorSpace:
+      case ErrorCode.ResizeFailed:
+        return ErrorCategory.CodecError
+
+      // ResourceLimit: resource constraints
+      case ErrorCode.DimensionExceedsLimit:
+      case ErrorCode.PixelCountExceedsLimit:
+      case ErrorCode.FileReadFailed:
+      case ErrorCode.MmapFailed:
+      case ErrorCode.FileWriteFailed:
+      case ErrorCode.FirewallViolation:
+        return ErrorCategory.ResourceLimit
+
+      // InternalBug: library bugs
+      case ErrorCode.InternalPanic:
+      case ErrorCode.Generic:
+        return ErrorCategory.InternalBug
+      default:
+        break
+    }
+
+    // As a last resort, fall back to error code ranges:
+    // E1xx/E2xx/E4xx → UserError, E3xx → ResourceLimit, E9xx → InternalBug
+    const bucket = Math.floor(numericCode / 100)
+    if (bucket === 1 || bucket === 2 || bucket === 4) {
+      return ErrorCategory.UserError
+    }
+    if (bucket === 3) {
+      return ErrorCategory.ResourceLimit
+    }
+    if (bucket === 9) {
+      return ErrorCategory.InternalBug
+    }
+  }
+
+  // Non-lazy-image errors or legacy errors without metadata
+  return null
+}
+
+module.exports.getErrorCategory = getErrorCategory
+module.exports.createStreamingPipeline = createStreamingPipeline
