@@ -67,7 +67,7 @@ jobs:
           sudo apt-get install -y cmake nasm clang lld
 
       - name: Cache cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -79,7 +79,7 @@ jobs:
 
       - name: Download corpus
         continue-on-error: true
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: fuzz/corpus/${{ matrix.target }}
           key: corpus-${{ matrix.target }}-${{ github.run_id }}
@@ -110,11 +110,14 @@ jobs:
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:malloc_context_size=15"
         run: |
           cd fuzz
+          # Strict 2GB RSS cap for all targets. decode_from_buffer stays under it
+          # via fuzz-time decode caps (FUZZ_MAX_DIMENSION / FUZZ_MAX_PIXELS) in the engine.
+          RSS_LIMIT_MB=2048
           # Run with memory limit (2GB) and length limit (1MB)
           # Timeout applies only to fuzzer execution, not build time
           timeout ${FUZZ_DURATION}s cargo +nightly fuzz run --sanitizer=${FUZZ_SANITIZER} ${{ matrix.target }} -- \
             -max_len=1048576 \
-            -rss_limit_mb=2048 \
+            -rss_limit_mb=${RSS_LIMIT_MB} \
             -max_total_time=${FUZZ_DURATION} \
             || EXIT_CODE=$?
           # Exit codes that indicate successful completion:
@@ -128,14 +131,14 @@ jobs:
 
       - name: Save corpus
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: fuzz/corpus/${{ matrix.target }}
           key: corpus-${{ matrix.target }}-${{ github.run_id }}
 
       - name: Upload crash artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: crash-${{ matrix.target }}
           path: |
@@ -152,7 +155,7 @@ jobs:
       issues: write       # For creating issues on crash
     steps:
       - name: Download all crash artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: crash-*
           merge-multiple: true
@@ -173,7 +176,7 @@ jobs:
 
       - name: Create issue on crash
         if: steps.check_crashes.outputs.has_crashes == 'true' && github.event_name != 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');

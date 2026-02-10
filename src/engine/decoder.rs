@@ -12,11 +12,11 @@ use image::{
 use mozjpeg::Decompress;
 use std::io::Cursor;
 use webp::{BitstreamFeatures, Decoder as WebPDecoder};
-use zune_core::colorspace::ColorSpace;
-use zune_core::options::DecoderOptions;
+use zune_png::zune_core::bytestream::ZCursor;
+use zune_png::zune_core::colorspace::ColorSpace;
+use zune_png::zune_core::options::DecoderOptions;
+use zune_png::zune_core::result::DecodingResult;
 use zune_png::PngDecoder;
-
-use crate::engine::MAX_DIMENSION;
 
 // Type alias for Result - always use LazyImageError to preserve error taxonomy
 // This ensures that decode errors are properly classified (CodecError, ResourceLimit, etc.)
@@ -30,7 +30,13 @@ type DecoderResult<T> = std::result::Result<T, LazyImageError>;
 /// This is SIGNIFICANTLY faster than image crate's pure Rust decoder
 pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:mozjpeg", || {
-        if !data.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
+        // EOI marker (0xFF 0xD9) is at the end of valid JPEGs.
+        // Only check the last 256 bytes for O(1) performance instead of O(n).
+        // See: https://github.com/albert-einshutoin/lazy-image/issues/332
+        const EOI_CHECK_LEN: usize = 256;
+        let check_start = data.len().saturating_sub(EOI_CHECK_LEN);
+        let tail = &data[check_start..];
+        if !tail.windows(2).any(|pair| pair == [0xFF, 0xD9]) {
             return Err(LazyImageError::decode_failed(
                 "mozjpeg: missing JPEG EOI marker",
             ));
@@ -158,6 +164,11 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
             ));
         }
 
+        // WebP: route to libwebp to avoid image crate OOM on malformed inputs.
+        if is_webp_riff(data) {
+            return decode_webp_libwebp(data);
+        }
+
         // Pre-check dimensions to prevent OOM from decompression bombs (e.g., WebP with huge dimensions).
         // This reads only headers and is much cheaper than a full decode attempt.
         ensure_dimensions_safe(data)?;
@@ -193,21 +204,20 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
         }
 
         let options = DecoderOptions::default().png_set_strip_to_8bit(true);
-        let mut decoder = PngDecoder::new_with_options(data, options);
+        let mut decoder = PngDecoder::new_with_options(ZCursor::new(data), options);
         let pixels = decoder
             .decode()
             .map_err(|e| LazyImageError::decode_failed(format!("png: decode failed: {e}")))?;
 
-        let info = decoder
-            .get_info()
+        let (width_usize, height_usize) = decoder
+            .dimensions()
             .ok_or_else(|| LazyImageError::decode_failed("png: missing header info"))?;
-
-        let width = info.width as u32;
-        let height = info.height as u32;
+        let width = width_usize as u32;
+        let height = height_usize as u32;
         check_dimensions(width, height)?;
 
         let buf = match pixels {
-            zune_core::result::DecodingResult::U8(v) => v,
+            DecodingResult::U8(v) => v,
             _ => {
                 return Err(LazyImageError::decode_failed(
                     "png: unexpected non-U8 pixel buffer",
@@ -216,7 +226,7 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
         };
 
         let colorspace = decoder
-            .get_colorspace()
+            .colorspace()
             .ok_or_else(|| LazyImageError::decode_failed("png: missing colorspace"))?;
 
         let img = match colorspace {
@@ -342,32 +352,59 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
 
 /// Check if image dimensions are within safe limits.
 /// Returns an error if the image is too large (potential decompression bomb).
+/// In fuzz builds, uses stricter limits (FUZZ_MAX_DIMENSION / FUZZ_MAX_PIXELS) so that
+/// decode never exceeds a small memory budget and CI stays under 2GB RSS.
 pub fn check_dimensions(width: u32, height: u32) -> DecoderResult<()> {
-    use super::MAX_PIXELS;
-    if width > MAX_DIMENSION || height > MAX_DIMENSION {
+    #[cfg(feature = "fuzzing")]
+    let (max_dim, max_pix) = (
+        crate::engine::FUZZ_MAX_DIMENSION,
+        crate::engine::FUZZ_MAX_PIXELS,
+    );
+    #[cfg(not(feature = "fuzzing"))]
+    let (max_dim, max_pix) = (crate::engine::MAX_DIMENSION, crate::engine::MAX_PIXELS);
+
+    if width > max_dim || height > max_dim {
         return Err(LazyImageError::dimension_exceeds_limit(
             width.max(height),
-            MAX_DIMENSION,
+            max_dim,
         ));
     }
     let pixels = width as u64 * height as u64;
-    if pixels > MAX_PIXELS {
-        return Err(LazyImageError::pixel_count_exceeds_limit(
-            pixels, MAX_PIXELS,
-        ));
+    if pixels > max_pix {
+        return Err(LazyImageError::pixel_count_exceeds_limit(pixels, max_pix));
     }
     Ok(())
 }
 
 /// Inspect encoded bytes and ensure the image dimensions are safe before decoding.
 pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
+    // WebP: parse bitstream features directly to avoid image crate OOM on malformed headers.
+    if is_webp_riff(bytes) {
+        let features = BitstreamFeatures::new(bytes).ok_or_else(|| {
+            LazyImageError::decode_failed("webp: failed to read bitstream features")
+        })?;
+        return check_dimensions(features.width(), features.height());
+    }
+
+    // PNG: read header directly when available to avoid full decode.
+    if let Ok((width, height)) = read_png_dimensions(bytes) {
+        return check_dimensions(width, height);
+    }
+
     let cursor = Cursor::new(bytes);
     if let Ok(reader) = ImageReader::new(cursor).with_guessed_format() {
-        if let Ok((width, height)) = reader.into_dimensions() {
-            return check_dimensions(width, height);
-        }
+        return reader
+            .into_dimensions()
+            .map_err(|_| {
+                LazyImageError::decode_failed("decode failed: could not read image dimensions")
+            })
+            .and_then(|(width, height)| check_dimensions(width, height));
     }
     Ok(())
+}
+
+fn is_webp_riff(bytes: &[u8]) -> bool {
+    bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP"
 }
 
 /// Extract EXIF Orientation tag (1-8). Returns None if missing or invalid.
@@ -413,6 +450,19 @@ mod tests {
     fn test_ensure_dimensions_safe_allows_small_image() {
         let data = encode_png(64, 64);
         assert!(ensure_dimensions_safe(&data).is_ok());
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_allows_small_webp() {
+        let data = encode_webp(16, 16);
+        assert!(ensure_dimensions_safe(&data).is_ok());
+    }
+
+    #[test]
+    fn test_ensure_dimensions_safe_rejects_invalid_webp_header() {
+        let data = b"RIFF\0\0\0\0WEBP".to_vec();
+        let err = ensure_dimensions_safe(&data).unwrap_err();
+        assert!(matches!(err, LazyImageError::DecodeFailed { .. }));
     }
 
     #[test]
@@ -481,9 +531,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "fuzzing"))]
     fn test_decode_png_fallback_to_image_crate_for_large_dimensions() {
         // PNG with dimensions > 16,384 (zune-png limit) but < MAX_DIMENSION (32,768)
-        // Should fallback to image crate
+        // Should fallback to image crate. Skipped in fuzz build (FUZZ_MAX_DIMENSION=2048).
         const ZUNE_PNG_MAX_DIM: u32 = 16384;
         let large_png = encode_png(ZUNE_PNG_MAX_DIM + 100, 100);
         let (img, fmt) = decode_image(&large_png).unwrap();

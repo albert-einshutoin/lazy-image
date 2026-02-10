@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "repository": {
@@ -27,10 +27,10 @@
   "scripts": {
     "build": "napi build --platform --release",
     "test": "npm run test:js && npm run test:rust",
-    "test:js": "npm run test:js:specs && npm run test:js:type-safety",
+    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:types",
     "test:js:specs": "node test/integration/run.js",
     "test:js:type-safety": "node test/type-safety/runtime-type-safety.test.js",
-    "test:types": "tsc --noEmit test/type-safety/typescript-typecheck.test.ts",
+    "test:types": "tsc --noEmit",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
     "test:bench:compare": "node test/benchmarks/sharp-comparison.bench.js",
     "test:bench:verify": "node test/benchmarks/readme-verification.bench.js",
@@ -42,8 +42,8 @@
     "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.0",
-    "@types/node": "^25.0.2",
+    "@napi-rs/cli": "^3.5.1",
+    "@types/node": "^25.1.0",
     "sharp": "^0.34.5",
     "ssim.js": "^3.5.0",
     "typescript": "^5.6.3"
@@ -66,12 +66,12 @@
     }
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "0.10.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "0.10.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.10.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.10.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.10.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.10.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.10.1",
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.10.1",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.10.1",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.10.1",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.10.1",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.10.1"
   },
   "engines": {
     "node": ">= 18"

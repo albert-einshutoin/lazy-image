@@ -729,7 +729,7 @@ impl LazyImageError {
 /// This function should be used when Env is available to add custom properties.
 /// For code that doesn't have Env, use the From<LazyImageError> for napi::Error implementation.
 #[cfg(feature = "napi")]
-pub fn create_napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi::JsObject> {
+pub fn create_napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi::bindgen_prelude::Object> {
     let category = err.category();
     let error_code = err.code();
 
@@ -778,7 +778,7 @@ pub fn create_napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Resu
 #[cfg(feature = "napi")]
 pub fn napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi::Error> {
     let error_obj = create_napi_error_with_code(env, err)?;
-    let js_unknown = error_obj.into_unknown();
+    let js_unknown = error_obj.into_unknown(env)?;
     Ok(napi::Error::from(js_unknown))
 }
 

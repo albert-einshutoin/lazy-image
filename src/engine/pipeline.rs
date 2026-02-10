@@ -999,6 +999,29 @@ fn resize_with_image_crate_fallback(
     }
 }
 
+/// Check if an RGBA image is fully opaque (all alpha values are 255)
+/// For RGB images, always returns true (no alpha channel)
+///
+/// Only checks images ≥1MP - for smaller images, the check overhead exceeds
+/// the premultiply cost (SIMD premultiply is very fast for small images)
+fn is_fully_opaque(image: &fir::images::Image, pixel_type: PixelType, width: u32, height: u32) -> bool {
+    if pixel_type != PixelType::U8x4 {
+        return true; // RGB images have no alpha channel
+    }
+
+    // Size threshold: Only check large images (≥1MP)
+    // For small images, premultiply is cheap (SIMD-optimized), skip the scan
+    const THRESHOLD_PIXELS: u32 = 1_000_000; // 1 megapixel
+    if (width as u64).saturating_mul(height as u64) < THRESHOLD_PIXELS as u64 {
+        return false; // Assume not opaque, do premultiply (it's fast anyway)
+    }
+
+    // Check every 4th byte (alpha channel) in RGBA data
+    // Conservative: if any alpha < 255, return false
+    let buffer = image.buffer();
+    buffer.iter().skip(3).step_by(4).all(|&alpha| alpha == 255)
+}
+
 fn resize_with_source_image<'a>(
     mut src_image: fir::images::Image<'a>,
     pixel_type: PixelType,
@@ -1008,9 +1031,16 @@ fn resize_with_source_image<'a>(
 ) -> std::result::Result<DynamicImage, String> {
     let mut dst_image = fir::images::Image::new(dst_width, dst_height, pixel_type);
 
+    // Optimization: Skip premultiply/unpremultiply for fully opaque images
+    // Check if all alpha values are 255 (fully opaque)
+    // Only checks large images (≥1MP) where the benefit outweighs the scan cost
+    let src_width = src_image.width();
+    let src_height = src_image.height();
+    let needs_premultiply = requires_premultiply(pixel_type)
+        && !is_fully_opaque(&src_image, pixel_type, src_width, src_height);
+
     let mul_div = MulDiv::default();
-    let premultiply = requires_premultiply(pixel_type);
-    if premultiply {
+    if needs_premultiply {
         mul_div
             .multiply_alpha_inplace(&mut src_image)
             .map_err(|e| format!("failed to premultiply alpha: {e}"))?;
@@ -1021,7 +1051,7 @@ fn resize_with_source_image<'a>(
         .resize(&src_image, &mut dst_image, &options)
         .map_err(|e| format!("fir resize error: {e:?}"))?;
 
-    if premultiply {
+    if needs_premultiply {
         mul_div
             .divide_alpha_inplace(&mut dst_image)
             .map_err(|e| format!("failed to unpremultiply alpha: {e}"))?;
@@ -2054,6 +2084,53 @@ mod tests {
                 pixel[3] > 100,
                 "alpha should remain non-zero, got {}",
                 pixel[3]
+            );
+        }
+
+        #[test]
+        fn test_is_fully_opaque_skips_small_image_scan() {
+            let width = 512;
+            let height = 512; // < 1MP
+            let mut pixels = vec![255u8; (width * height * 4) as usize];
+            let image = fir::images::Image::from_slice_u8(
+                width,
+                height,
+                pixels.as_mut_slice(),
+                PixelType::U8x4,
+            )
+            .expect("valid RGBA image");
+
+            assert!(
+                !is_fully_opaque(&image, PixelType::U8x4, width, height),
+                "small RGBA images should skip opacity scan"
+            );
+        }
+
+        #[test]
+        fn test_is_fully_opaque_scans_large_image() {
+            let width = 1000;
+            let height = 1000; // = 1MP
+            let mut pixels = vec![255u8; (width * height * 4) as usize];
+            let image = fir::images::Image::from_slice_u8(
+                width,
+                height,
+                pixels.as_mut_slice(),
+                PixelType::U8x4,
+            )
+            .expect("valid RGBA image");
+
+            assert!(is_fully_opaque(&image, PixelType::U8x4, width, height));
+        }
+
+        #[test]
+        fn test_is_fully_opaque_uses_wide_multiplication_for_threshold() {
+            let mut pixels = vec![255u8; 4];
+            let image = fir::images::Image::from_slice_u8(1, 1, pixels.as_mut_slice(), PixelType::U8x4)
+                .expect("valid RGBA image");
+
+            assert!(
+                is_fully_opaque(&image, PixelType::U8x4, u32::MAX, u32::MAX),
+                "overflow-safe pixel count should not force small-image fast path"
             );
         }
     }
