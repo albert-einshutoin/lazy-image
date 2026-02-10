@@ -67,7 +67,7 @@ once_cell = { version = "1.19", optional = true }
 img-parts = "0.4"
 
 # Compression for PNG ICC chunks (used in extract_icc_from_png_direct)
-flate2 = "1.0"
+flate2 = "1.1"
 
 # Temporary file handling
 tempfile = "3.10"
