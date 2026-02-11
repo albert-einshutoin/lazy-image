@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770721103807,
+  "lastUpdate": 1770820497521,
   "repoUrl": "https://github.com/albert-einshutoin/lazy-image",
   "entries": {
     "Benchmark": [
@@ -127,6 +127,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "Complex pipeline time (lazy-image)",
             "value": 187,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "75466198+albert-einshutoin@users.noreply.github.com",
+            "name": "Albert Einshutoin",
+            "username": "albert-einshutoin"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e2f3174ddbe1eef3a90dd3d1b1fb6bcb53aeeeb6",
+          "message": "Merge pull request #365 from albert-einshutoin/release/v0.10.2\n\nRelease v0.10.2",
+          "timestamp": "2026-02-11T23:30:48+09:00",
+          "tree_id": "9daa36ec755f1be236f149b180f46eba42f0a7e8",
+          "url": "https://github.com/albert-einshutoin/lazy-image/commit/e2f3174ddbe1eef3a90dd3d1b1fb6bcb53aeeeb6"
+        },
+        "date": 1770820497182,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "JPEG size (lazy-image)",
+            "value": 31518,
+            "unit": "bytes"
+          },
+          {
+            "name": "JPEG time (lazy-image)",
+            "value": 151,
+            "unit": "ms"
+          },
+          {
+            "name": "WebP size (lazy-image)",
+            "value": 32448,
+            "unit": "bytes"
+          },
+          {
+            "name": "WebP time (lazy-image)",
+            "value": 476,
+            "unit": "ms"
+          },
+          {
+            "name": "AVIF size (lazy-image)",
+            "value": 28666,
+            "unit": "bytes"
+          },
+          {
+            "name": "AVIF time (lazy-image)",
+            "value": 1046,
+            "unit": "ms"
+          },
+          {
+            "name": "Complex pipeline size (lazy-image)",
+            "value": 27129,
+            "unit": "bytes"
+          },
+          {
+            "name": "Complex pipeline time (lazy-image)",
+            "value": 181,
             "unit": "ms"
           }
         ]
