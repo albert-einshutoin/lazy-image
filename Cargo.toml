@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.10.1"
+version = "0.10.2"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
@@ -67,10 +67,10 @@ once_cell = { version = "1.19", optional = true }
 img-parts = "0.4"
 
 # Compression for PNG ICC chunks (used in extract_icc_from_png_direct)
-flate2 = "1.0"
+flate2 = "1.1"
 
 # Temporary file handling
-tempfile = "3.10"
+tempfile = "3.25"
 
 # Parallel processing for batch operations
 rayon = "1.8"
@@ -99,7 +99,7 @@ tikv-jemallocator = { version = "0.6", optional = true, features = ["disable_ini
 
 [dev-dependencies]
 criterion = "0.8"
-proptest = "1.4"
+proptest = "1.10"
 
 [[bench]]
 name = "benchmark"
