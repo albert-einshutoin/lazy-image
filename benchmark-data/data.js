@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1770820497521,
+  "lastUpdate": 1770864520977,
   "repoUrl": "https://github.com/albert-einshutoin/lazy-image",
   "entries": {
     "Benchmark": [
@@ -191,6 +191,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "Complex pipeline time (lazy-image)",
             "value": 181,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "75466198+albert-einshutoin@users.noreply.github.com",
+            "name": "Albert Einshutoin",
+            "username": "albert-einshutoin"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7de9b545985916519958a9fc577136ed3f792f0b",
+          "message": "Merge pull request #380 from albert-einshutoin/fix/lockfile-integrity-sync\n\nfix: refresh lockfile integrity hashes for 0.10.2 tarballs",
+          "timestamp": "2026-02-12T11:44:31+09:00",
+          "tree_id": "fdc27dd71018891ebe4a737462d68b0a26ef3a65",
+          "url": "https://github.com/albert-einshutoin/lazy-image/commit/7de9b545985916519958a9fc577136ed3f792f0b"
+        },
+        "date": 1770864520249,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "JPEG size (lazy-image)",
+            "value": 31518,
+            "unit": "bytes"
+          },
+          {
+            "name": "JPEG time (lazy-image)",
+            "value": 168,
+            "unit": "ms"
+          },
+          {
+            "name": "WebP size (lazy-image)",
+            "value": 32448,
+            "unit": "bytes"
+          },
+          {
+            "name": "WebP time (lazy-image)",
+            "value": 462,
+            "unit": "ms"
+          },
+          {
+            "name": "AVIF size (lazy-image)",
+            "value": 28666,
+            "unit": "bytes"
+          },
+          {
+            "name": "AVIF time (lazy-image)",
+            "value": 1037,
+            "unit": "ms"
+          },
+          {
+            "name": "Complex pipeline size (lazy-image)",
+            "value": 27129,
+            "unit": "bytes"
+          },
+          {
+            "name": "Complex pipeline time (lazy-image)",
+            "value": 186,
             "unit": "ms"
           }
         ]
