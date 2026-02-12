@@ -178,6 +178,25 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
     })
 }
 
+/// zune-png's internal dimension limit (16,384px per axis).
+///
+/// This is a library-imposed constraint that cannot be changed from outside.
+/// Images exceeding this limit but still within [`MAX_DIMENSION`](crate::engine::MAX_DIMENSION)
+/// are decoded via the image crate fallback path, which applies `check_dimensions()` after decode.
+///
+/// **Safety invariant**: `ZUNE_PNG_MAX_DIM` ≤ `MAX_DIMENSION`. If zune-png rejects an image,
+/// the fallback path is guaranteed to accept it (up to `MAX_DIMENSION`). A compile-time
+/// assertion below enforces this.
+const ZUNE_PNG_MAX_DIM: u32 = 16384;
+
+// Compile-time assertion: zune-png's limit must not exceed the global MAX_DIMENSION.
+// If it did, zune-png could accept images that the global check_dimensions() would reject,
+// creating a decompression bomb bypass in the zune-png path.
+const _: () = assert!(
+    ZUNE_PNG_MAX_DIM <= crate::engine::MAX_DIMENSION,
+    "ZUNE_PNG_MAX_DIM must be <= MAX_DIMENSION to ensure consistent dimension enforcement"
+);
+
 /// Decode PNG using zune-png (SIMD-optimized decoder). 16-bit input is downsampled to 8-bit.
 /// Falls back to image crate if:
 /// - Image dimensions exceed zune-png's limit (16,384px)
@@ -185,10 +204,6 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
 /// - Decode fails for any reason
 pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:png", || {
-        // zune-png has a default dimension limit of 16,384px
-        // Check dimensions first to avoid unnecessary decode attempt
-        // If exceeds zune-png limit but within MAX_DIMENSION, fallback to image crate
-        const ZUNE_PNG_MAX_DIM: u32 = 16384;
 
         // Try to read dimensions from PNG header without full decode
         if let Ok((width, height)) = read_png_dimensions(data) {
@@ -533,13 +548,28 @@ mod tests {
     #[test]
     #[cfg(not(feature = "fuzzing"))]
     fn test_decode_png_fallback_to_image_crate_for_large_dimensions() {
-        // PNG with dimensions > 16,384 (zune-png limit) but < MAX_DIMENSION (32,768)
+        // PNG with dimensions > ZUNE_PNG_MAX_DIM (16,384) but < MAX_DIMENSION (32,768)
         // Should fallback to image crate. Skipped in fuzz build (FUZZ_MAX_DIMENSION=2048).
-        const ZUNE_PNG_MAX_DIM: u32 = 16384;
-        let large_png = encode_png(ZUNE_PNG_MAX_DIM + 100, 100);
+        let large_png = encode_png(super::ZUNE_PNG_MAX_DIM + 100, 100);
         let (img, fmt) = decode_image(&large_png).unwrap();
         assert_eq!(fmt, Some(ImageFormat::Png));
         // Should decode successfully via image crate fallback
-        assert_eq!(img.dimensions(), (ZUNE_PNG_MAX_DIM + 100, 100));
+        assert_eq!(img.dimensions(), (super::ZUNE_PNG_MAX_DIM + 100, 100));
+    }
+
+    #[test]
+    #[cfg(not(feature = "fuzzing"))]
+    fn test_decode_png_rejects_beyond_max_dimension() {
+        // PNG with dimensions > MAX_DIMENSION should be rejected even via fallback
+        let over_max = crate::engine::MAX_DIMENSION + 1;
+        let big_png = encode_png(over_max, 1);
+        let err = decode_image(&big_png).unwrap_err();
+        assert!(matches!(err, LazyImageError::DimensionExceedsLimit { .. }));
+    }
+
+    #[test]
+    fn test_zune_png_limit_lte_max_dimension() {
+        // Runtime sanity check matching the compile-time assertion
+        assert!(super::ZUNE_PNG_MAX_DIM <= crate::engine::MAX_DIMENSION);
     }
 }
