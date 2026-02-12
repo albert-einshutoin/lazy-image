@@ -578,7 +578,6 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
 // - GPS tag stripping by default (privacy-first, exceeds Sharp's capabilities)
 
 use little_exif::filetype::FileExtension;
-use little_exif::metadata::Metadata as ExifMetadata;
 
 /// Maximum EXIF data size to process (prevent DoS from malicious inputs)
 const MAX_EXIF_SOURCE_BYTES: usize = 8 * 1024 * 1024;
@@ -644,20 +643,11 @@ pub fn extract_exif_raw(data: &[u8]) -> Option<Vec<u8>> {
         return extract_exif_raw_jpeg(data);
     }
 
-    // For other formats, we'll extract EXIF using little_exif and serialize
-    // This is a fallback that may not preserve all metadata perfectly
-    let file_ext = detect_file_extension(data)?;
-    let data_vec = data.to_vec();
-
-    std::panic::catch_unwind(|| {
-        let _metadata = ExifMetadata::new_from_vec(&data_vec, file_ext).ok()?;
-        // Serialize the metadata to raw bytes
-        // little_exif doesn't have direct serialization, so we work with what we have
-        // For non-JPEG, we'll store a marker and rely on little_exif at write time
-        Some(data_vec) // Store original for now, sanitize at write time
-    })
-    .ok()
-    .flatten()
+    // EXIF extraction for non-JPEG formats is not yet implemented.
+    // Returning None prevents the entire file buffer from being stored as "EXIF data",
+    // which wastes memory and can bypass firewall metadata size limits.
+    // JPEG EXIF extraction is handled above via extract_exif_raw_jpeg().
+    None
 }
 
 /// Extract raw EXIF APP1 segment from JPEG data
@@ -1249,6 +1239,60 @@ mod tests {
                     "AVIF without ICC should not have ICC profile"
                 );
             }
+        }
+    }
+
+    mod exif_raw_tests {
+        use super::*;
+
+        #[test]
+        fn extract_exif_raw_returns_none_for_png() {
+            let png = create_minimal_png();
+            assert!(
+                extract_exif_raw(&png).is_none(),
+                "extract_exif_raw should return None for PNG data"
+            );
+        }
+
+        #[test]
+        fn extract_exif_raw_returns_none_for_webp() {
+            let webp = create_minimal_webp();
+            assert!(
+                extract_exif_raw(&webp).is_none(),
+                "extract_exif_raw should return None for WebP data"
+            );
+        }
+
+        #[test]
+        fn extract_exif_raw_returns_none_for_jpeg_without_exif() {
+            let jpeg = create_minimal_jpeg();
+            assert!(
+                extract_exif_raw(&jpeg).is_none(),
+                "extract_exif_raw should return None for JPEG without EXIF"
+            );
+        }
+
+        #[test]
+        fn extract_exif_raw_returns_data_for_jpeg_with_exif() {
+            let jpeg = create_minimal_jpeg();
+            // Inject an EXIF APP1 segment after SOI
+            let exif_header = b"Exif\0\0";
+            let payload = [0xAA; 20];
+            let seg_len = (2 + exif_header.len() + payload.len()) as u16;
+            let mut modified = Vec::new();
+            modified.extend_from_slice(&jpeg[..2]); // SOI
+            modified.push(0xFF);
+            modified.push(0xE1); // APP1
+            modified.extend_from_slice(&seg_len.to_be_bytes());
+            modified.extend_from_slice(exif_header);
+            modified.extend_from_slice(&payload);
+            modified.extend_from_slice(&jpeg[2..]);
+
+            let result = extract_exif_raw(&modified);
+            assert!(
+                result.is_some(),
+                "extract_exif_raw should return EXIF data for JPEG with EXIF"
+            );
         }
     }
 }
