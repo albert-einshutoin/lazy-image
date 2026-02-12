@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.10.1"
+version = "0.10.2"
 edition = "2021"
 description = "Next-gen image processing engine - faster, smaller, better than sharp"
 license = "MIT"
