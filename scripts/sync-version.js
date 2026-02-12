@@ -79,6 +79,11 @@ function syncPackageLock(pkg) {
             /-[0-9]+\.[0-9]+\.[0-9]+\.tgz$/,
             `-${pkg.version}.tgz`
           );
+          // Clear integrity so next `npm install` regenerates it for the new tarball.
+          // Otherwise npm ci can fail with integrity mismatch after publish.
+          if (entry.integrity) {
+            delete entry.integrity;
+          }
         }
         changed = true;
       }
