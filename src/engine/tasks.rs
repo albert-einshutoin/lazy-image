@@ -1032,20 +1032,34 @@ impl Task for BatchTask {
             self.concurrency as usize
         };
 
-        // Keep API contract: manual concurrency caps in-flight operations.
+        // Use rayon's work-stealing for optimal scheduling.
         // Memory backpressure is still handled by WeightedSemaphore.
-        let results: Vec<BatchResult> = pool::get_pool().install(|| {
-            if effective_concurrency >= self.inputs.len() {
+        //
+        // When effective_concurrency < inputs.len(), we build a temporary thread
+        // pool with exactly `effective_concurrency` threads to honor the user's
+        // cap while letting rayon's work-stealing avoid the idle-thread problem
+        // that manual chunks() had (slow items blocked entire chunks, and the
+        // last chunk often had fewer items than threads).
+        let results: Vec<BatchResult> = if effective_concurrency >= self.inputs.len() {
+            pool::get_pool().install(|| {
                 self.inputs.par_iter().map(process_one).collect()
-            } else {
-                self.inputs
-                    .chunks(effective_concurrency)
-                    .flat_map(|chunk| {
-                        chunk.par_iter().map(process_one).collect::<Vec<_>>()
+            })
+        } else {
+            match rayon::ThreadPoolBuilder::new()
+                .num_threads(effective_concurrency)
+                .build()
+            {
+                Ok(scoped_pool) => scoped_pool.install(|| {
+                    self.inputs.par_iter().map(process_one).collect()
+                }),
+                Err(_) => {
+                    // Fallback to global pool if scoped pool creation fails
+                    pool::get_pool().install(|| {
+                        self.inputs.par_iter().map(process_one).collect()
                     })
-                    .collect()
+                }
             }
-        });
+        };
 
         Ok(results)
     }
