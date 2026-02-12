@@ -53,3 +53,11 @@ path = "fuzz_targets/streaming_pipeline.rs"
 [[bin]]
 name = "metrics_processing"
 path = "fuzz_targets/metrics_processing.rs"
+
+[[bin]]
+name = "decode_avif"
+path = "fuzz_targets/decode_avif.rs"
+
+[[bin]]
+name = "exif_parse"
+path = "fuzz_targets/exif_parse.rs"
