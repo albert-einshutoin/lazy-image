@@ -108,3 +108,33 @@ These numbers are reproducible via the measurement script; open an issue/PR if y
   fs.unlinkSync(tmp); // Original file remains unchanged
   ```
 - **Batch processing**: Keep input files during `processBatch()` execution and delete after completion (after confirming that the scope has exited and mmap is closed).
+
+## Caveats and Platform-Specific Behavior
+
+### SIGBUS Risk with Memory-Mapped Files
+
+`fromPath()` uses memory-mapped I/O (`mmap`) for zero-copy access. If the underlying file is **modified or deleted** while processing is in progress, the OS may deliver a `SIGBUS` signal (Unix) or access violation (Windows), which **terminates the process without recovery**.
+
+**At-risk environments:**
+- Shared volumes (NFS, CIFS/SMB)
+- FUSE filesystems (S3-FUSE, gcsfuse, sshfs)
+- Concurrent writers to the same file
+- Temporary files that may be cleaned up by external processes
+
+**Mitigation:**
+- Use `ImageEngine.from(buffer)` instead of `fromPath()` when files may change during processing
+- Use file locking (`flock`) if concurrent access is expected
+- Copy files to a local temporary directory before processing
+
+### Windows Memory Detection
+
+`detect_system_memory()` returns `None` on Windows. Batch processing falls back to CPU-only concurrency estimation, which may cause OOM with many concurrent large images. Consider setting explicit concurrency limits on Windows.
+
+### Serverless Cold Start
+
+First invocation has additional overhead:
+- jemalloc initialization (~1-2ms)
+- rayon thread pool creation via `OnceLock` (~1-3ms)
+- First codec initialization (format-dependent)
+
+Subsequent invocations reuse the thread pool and have no initialization overhead.
