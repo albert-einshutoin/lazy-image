@@ -577,13 +577,15 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
 // - Orientation tag reset after auto-orient (prevents double-rotation bugs)
 // - GPS tag stripping by default (privacy-first, exceeds Sharp's capabilities)
 
+#[allow(unused_imports)]
 use little_exif::filetype::FileExtension;
 
 /// Maximum EXIF data size to process (prevent DoS from malicious inputs)
 const MAX_EXIF_SOURCE_BYTES: usize = 8 * 1024 * 1024;
 
-/// Detect file extension for little_exif from image data magic bytes
-/// Note: Reserved for future PNG/WebP/AVIF EXIF support
+/// Detect file extension for little_exif from image data magic bytes.
+/// Note: Reserved for future PNG/WebP/AVIF EXIF support.
+#[allow(dead_code)]
 fn detect_file_extension(data: &[u8]) -> Option<FileExtension> {
     if data.len() < 12 {
         return None;
