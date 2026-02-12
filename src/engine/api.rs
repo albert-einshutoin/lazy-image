@@ -791,15 +791,6 @@ impl ImageEngine {
         Ok(this)
     }
 
-    /// Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
-    /// Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
-    #[allow(deprecated)]
-    #[deprecated(note = "Use normalizePixelFormat; will be removed in v1.0.0.")]
-    #[napi(js_name = "ensureRgb")]
-    pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
-        self.normalize_pixel_format(this)
-    }
-
     // =========================================================================
     // PRESETS - Common configurations for web optimization
     // =========================================================================

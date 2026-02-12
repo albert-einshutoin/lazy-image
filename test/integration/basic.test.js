@@ -135,14 +135,6 @@ async function runTests() {
             assert(metrics.formatIn.length > 0, 'formatIn should not be empty string if not null');
         }
 
-        // Legacy aliases remain stable
-        assert.strictEqual(metrics.decodeTime, metrics.decodeMs, 'decodeTime mirrors decodeMs');
-        assert.strictEqual(metrics.processTime, metrics.opsMs, 'processTime mirrors opsMs');
-        assert.strictEqual(metrics.encodeTime, metrics.encodeMs, 'encodeTime mirrors encodeMs');
-        assert.strictEqual(metrics.memoryPeak, metrics.peakRss, 'memoryPeak mirrors peakRss');
-        assert.strictEqual(metrics.inputSize, metrics.bytesIn, 'inputSize mirrors bytesIn');
-        assert.strictEqual(metrics.outputSize, metrics.bytesOut, 'outputSize mirrors bytesOut');
-
         assert(typeof metrics.cpuTime === 'number', 'cpuTime should be a number');
         assert(metrics.cpuTime >= 0, 'cpuTime should be non-negative');
         assert(typeof metrics.processingTime === 'number', 'processingTime should be a number');

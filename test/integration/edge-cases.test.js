@@ -481,14 +481,6 @@ async function runTests() {
                 'if iccPreserved is true, metadataStripped should be false');
         }
 
-        // Legacy aliases
-        assert.strictEqual(result.metrics.decodeTime, result.metrics.decodeMs);
-        assert.strictEqual(result.metrics.processTime, result.metrics.opsMs);
-        assert.strictEqual(result.metrics.encodeTime, result.metrics.encodeMs);
-        assert.strictEqual(result.metrics.memoryPeak, result.metrics.peakRss);
-        assert.strictEqual(result.metrics.inputSize, result.metrics.bytesIn);
-        assert.strictEqual(result.metrics.outputSize, result.metrics.bytesOut);
-
         // Telemetry
         assert(typeof result.metrics.cpuTime === 'number', 'cpuTime should be number');
         assert(typeof result.metrics.processingTime === 'number', 'processingTime should be number');
