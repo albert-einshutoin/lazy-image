@@ -65,12 +65,13 @@ These numbers are reproducible via the measurement script; open an issue/PR if y
 
 ## Behavior when files are modified or deleted during mmap
 
-- **Contract**: It is assumed that the source file will not be modified or deleted during processing (modification is undefined behavior).
-- **Possible outcomes**: Decode failure, corrupted images, OS-dependent SIGBUS/SIGSEGV (Linux/macOS), or deletion failure on Windows.
+- **Contract**: Source files must not be modified or deleted while processing is in progress.
+- **Possible outcomes on Linux/macOS**: decode failure, corrupted images, or a fatal `SIGBUS`/`SIGSEGV` if mapped pages become invalid (for example due to truncation).
+- **Possible outcomes on Windows**: deletion typically fails while the mapping is active; concurrent modification can still cause decode failure or corrupted output.
 - **Recommendations**:
-  - In environments where modification is a concern, use copy paths such as `from(Buffer)` or copy to a temporary directory before processing.
-  - To prevent concurrent writes on shared storage, use OS locks (equivalent to `flock`).
-  - On Windows, files cannot be deleted while mmap is active, so keep the file until processing completes or use `from(Buffer)`.
+  - If files may change during processing, use copy paths such as `from(Buffer)` or copy to a temporary local path first.
+  - To prevent concurrent writes on shared storage, use file locking (for example, `flock`-equivalent OS locks).
+  - On Windows, keep source files until processing completes, or switch to `from(Buffer)` when immediate deletion is required.
 
 ## Additional mmap safety assumptions (fromPath/processBatch)
 
@@ -111,20 +112,9 @@ These numbers are reproducible via the measurement script; open an issue/PR if y
 
 ## Caveats and Platform-Specific Behavior
 
-### SIGBUS Risk with Memory-Mapped Files
-
-`fromPath()` uses memory-mapped I/O (`mmap`) for zero-copy access. If the underlying file is **modified or deleted** while processing is in progress, the OS may deliver a `SIGBUS` signal (Unix) or access violation (Windows), which **terminates the process without recovery**.
-
-**At-risk environments:**
-- Shared volumes (NFS, CIFS/SMB)
-- FUSE filesystems (S3-FUSE, gcsfuse, sshfs)
-- Concurrent writers to the same file
-- Temporary files that may be cleaned up by external processes
-
-**Mitigation:**
-- Use `ImageEngine.from(buffer)` instead of `fromPath()` when files may change during processing
-- Use file locking (`flock`) if concurrent access is expected
-- Copy files to a local temporary directory before processing
+For mmap safety requirements and failure modes, see:
+- `Behavior when files are modified or deleted during mmap`
+- `Additional mmap safety assumptions (fromPath/processBatch)`
 
 ### Windows Memory Detection
 
