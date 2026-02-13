@@ -138,7 +138,6 @@ impl<'m> MetricsRecorder<'m> {
     fn mark_decode_done(&mut self) {
         if let Some(m) = self.metrics.as_deref_mut() {
             m.decode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
-            m.decode_time = m.decode_ms;
             self.stage_start = Instant::now();
         }
     }
@@ -146,7 +145,6 @@ impl<'m> MetricsRecorder<'m> {
     fn mark_process_done(&mut self) {
         if let Some(m) = self.metrics.as_deref_mut() {
             m.ops_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
-            m.process_time = m.ops_ms;
             self.stage_start = Instant::now();
         }
     }
@@ -161,7 +159,6 @@ impl<'m> MetricsRecorder<'m> {
         if let Some(m) = self.metrics.as_deref_mut() {
             // Encode stage
             m.encode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
-            m.encode_time = m.encode_ms;
             // Whole pipeline
             m.total_ms = self.start_total.elapsed().as_secs_f64() * 1000.0;
             m.processing_time = m.total_ms / 1000.0;
@@ -176,13 +173,10 @@ impl<'m> MetricsRecorder<'m> {
                 m.peak_rss =
                     ((w as u64 * h as u64 * 4) + output_len as u64).min(u32::MAX as u64) as u32;
             }
-            m.memory_peak = m.peak_rss;
 
             // Input/output sizes and compression ratio
             m.bytes_in = self.input_size.min(u32::MAX as u64) as u32;
             m.bytes_out = (output_len as u64).min(u32::MAX as u64) as u32;
-            m.input_size = m.bytes_in;
-            m.output_size = m.bytes_out;
             m.compression_ratio = if m.bytes_in > 0 {
                 m.bytes_out as f64 / m.bytes_in as f64
             } else {
