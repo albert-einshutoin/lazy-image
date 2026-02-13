@@ -191,13 +191,6 @@ impl FirewallConfig {
 
         // --- EXIF metadata scanning ---
         if let Some(exif_size) = scan_exif_size(data) {
-            if self.reject_metadata {
-                return Err(LazyImageError::firewall_violation(
-                    "Image Firewall: embedded EXIF metadata blocked under strict policy. \
-                     Use .sanitize({ policy: 'lenient' }) to allow EXIF metadata.",
-                ));
-            }
-
             if let Some(limit) = self.exif_max_bytes {
                 if exif_size > limit {
                     return Err(LazyImageError::firewall_violation(format!(
@@ -281,7 +274,7 @@ fn scan_exif_size(data: &[u8]) -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::{GenericImageView, ImageBuffer, Rgb};
+    use image::{ImageBuffer, Rgb};
     use img_parts::{png::Png, Bytes, ImageICC};
 
     fn build_icc_payload(len: usize) -> Vec<u8> {
@@ -379,17 +372,10 @@ mod tests {
     }
 
     #[test]
-    fn strict_policy_rejects_jpeg_with_exif() {
+    fn strict_policy_allows_small_exif() {
         let cfg = FirewallConfig::strict();
         let jpeg = jpeg_with_exif(100);
-        let result = cfg.scan_metadata(&jpeg);
-        assert!(result.is_err());
-        let err_msg = result.unwrap_err().to_string();
-        assert!(
-            err_msg.contains("EXIF metadata blocked"),
-            "Expected EXIF rejection message, got: {}",
-            err_msg
-        );
+        assert!(cfg.scan_metadata(&jpeg).is_ok());
     }
 
     #[test]
