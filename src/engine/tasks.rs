@@ -1032,33 +1032,56 @@ impl Task for BatchTask {
             self.concurrency as usize
         };
 
-        // Use rayon's work-stealing for optimal scheduling.
+        // Use the shared rayon pool to avoid per-call pool construction overhead.
         // Memory backpressure is still handled by WeightedSemaphore.
         //
-        // When effective_concurrency < inputs.len(), we build a temporary thread
-        // pool with exactly `effective_concurrency` threads to honor the user's
-        // cap while letting rayon's work-stealing avoid the idle-thread problem
-        // that manual chunks() had (slow items blocked entire chunks, and the
-        // last chunk often had fewer items than threads).
+        // When effective_concurrency < inputs.len(), run exactly that many worker
+        // tasks on the global pool and pull work dynamically via an atomic index.
+        // This preserves the concurrency cap while avoiding chunk-induced tail latency.
         let results: Vec<BatchResult> = if effective_concurrency >= self.inputs.len() {
-            pool::get_pool().install(|| {
-                self.inputs.par_iter().map(process_one).collect()
-            })
+            pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
         } else {
-            match rayon::ThreadPoolBuilder::new()
-                .num_threads(effective_concurrency)
-                .build()
-            {
-                Ok(scoped_pool) => scoped_pool.install(|| {
-                    self.inputs.par_iter().map(process_one).collect()
-                }),
-                Err(_) => {
-                    // Fallback to global pool if scoped pool creation fails
-                    pool::get_pool().install(|| {
-                        self.inputs.par_iter().map(process_one).collect()
-                    })
-                }
-            }
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            use std::sync::{Arc, Mutex};
+
+            let next_index = Arc::new(AtomicUsize::new(0));
+            let indexed_results = Arc::new(Mutex::new(Vec::<(usize, BatchResult)>::with_capacity(
+                self.inputs.len(),
+            )));
+
+            pool::get_pool().install(|| {
+                rayon::scope(|scope| {
+                    for _ in 0..effective_concurrency {
+                        let next_index = Arc::clone(&next_index);
+                        let indexed_results = Arc::clone(&indexed_results);
+                        let inputs = &self.inputs;
+                        scope.spawn(move |_| loop {
+                            let idx = next_index.fetch_add(1, Ordering::Relaxed);
+                            if idx >= inputs.len() {
+                                break;
+                            }
+
+                            let result = process_one(&inputs[idx]);
+                            let mut guard = indexed_results
+                                .lock()
+                                .unwrap_or_else(|poisoned| poisoned.into_inner());
+                            guard.push((idx, result));
+                        });
+                    }
+                });
+            });
+
+            let mut indexed_results = {
+                let mut guard = indexed_results
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                std::mem::take(&mut *guard)
+            };
+            indexed_results.sort_unstable_by_key(|(idx, _)| *idx);
+            indexed_results
+                .into_iter()
+                .map(|(_, result)| result)
+                .collect()
         };
 
         Ok(results)
