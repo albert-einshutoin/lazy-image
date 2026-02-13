@@ -1032,20 +1032,57 @@ impl Task for BatchTask {
             self.concurrency as usize
         };
 
-        // Keep API contract: manual concurrency caps in-flight operations.
+        // Use the shared rayon pool to avoid per-call pool construction overhead.
         // Memory backpressure is still handled by WeightedSemaphore.
-        let results: Vec<BatchResult> = pool::get_pool().install(|| {
-            if effective_concurrency >= self.inputs.len() {
-                self.inputs.par_iter().map(process_one).collect()
-            } else {
-                self.inputs
-                    .chunks(effective_concurrency)
-                    .flat_map(|chunk| {
-                        chunk.par_iter().map(process_one).collect::<Vec<_>>()
-                    })
-                    .collect()
-            }
-        });
+        //
+        // When effective_concurrency < inputs.len(), run exactly that many worker
+        // tasks on the global pool and pull work dynamically via an atomic index.
+        // This preserves the concurrency cap while avoiding chunk-induced tail latency.
+        let results: Vec<BatchResult> = if effective_concurrency >= self.inputs.len() {
+            pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
+        } else {
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            use std::sync::{Arc, Mutex};
+
+            let next_index = Arc::new(AtomicUsize::new(0));
+            let indexed_results = Arc::new(Mutex::new(Vec::<(usize, BatchResult)>::with_capacity(
+                self.inputs.len(),
+            )));
+
+            pool::get_pool().install(|| {
+                rayon::scope(|scope| {
+                    for _ in 0..effective_concurrency {
+                        let next_index = Arc::clone(&next_index);
+                        let indexed_results = Arc::clone(&indexed_results);
+                        let inputs = &self.inputs;
+                        scope.spawn(move |_| loop {
+                            let idx = next_index.fetch_add(1, Ordering::Relaxed);
+                            if idx >= inputs.len() {
+                                break;
+                            }
+
+                            let result = process_one(&inputs[idx]);
+                            let mut guard = indexed_results
+                                .lock()
+                                .unwrap_or_else(|poisoned| poisoned.into_inner());
+                            guard.push((idx, result));
+                        });
+                    }
+                });
+            });
+
+            let mut indexed_results = {
+                let mut guard = indexed_results
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                std::mem::take(&mut *guard)
+            };
+            indexed_results.sort_unstable_by_key(|(idx, _)| *idx);
+            indexed_results
+                .into_iter()
+                .map(|(_, result)| result)
+                .collect()
+        };
 
         Ok(results)
     }
