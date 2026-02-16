@@ -79,7 +79,7 @@ await ImageEngine.from(buf).resize(800).toBuffer('jpeg', 80);
 ### Zero config
 
 - No `LD_LIBRARY_PATH` or system libvips.
-- Single static binary (mozjpeg, libwebp, ravif linked in).
+- Single static binary (mozjpeg, libwebp; AVIF via `avif` feature).
 - Main npm package ~15 KB + one platform binary.
 
 **Ideal for**: AWS Lambda, Vercel Edge, Cloudflare Workers, Google Cloud Functions.

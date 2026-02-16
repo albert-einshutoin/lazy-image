@@ -32,7 +32,7 @@ Full API reference for lazy-image. For a quick start, see [README.md](../README.
 
 | Method | Description |
 |--------|-------------|
-| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Default quality: JPEG=85, WebP=80, AVIF=60. |
+| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` (AVIF requires build feature `avif`). Default quality: JPEG=85, WebP=80, AVIF=60. |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |

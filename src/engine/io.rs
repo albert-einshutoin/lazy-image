@@ -3,6 +3,7 @@
 // I/O operations: Source enum, file loading, and ICC profile extraction
 
 use crate::error::LazyImageError;
+#[cfg(feature = "avif")]
 use libavif_sys::*;
 use memmap2::Mmap;
 use std::sync::Arc;
@@ -432,7 +433,8 @@ fn extract_icc_from_webp_riff(data: &[u8]) -> Option<Vec<u8>> {
 }
 
 /// Extract ICC profile from AVIF data using libavif with panic and size guards.
-/// libavif-sys is always available (not dependent on napi feature)
+/// Enabled only when the `avif` feature is active.
+#[cfg(feature = "avif")]
 fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
     if data.len() > MAX_ICC_SOURCE_BYTES {
         return None;
@@ -500,6 +502,11 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
     })
     .ok()
     .flatten()
+}
+
+#[cfg(not(feature = "avif"))]
+fn extract_icc_from_avif_safe(_data: &[u8]) -> Option<Vec<u8>> {
+    None
 }
 
 // =============================================================================
@@ -649,7 +656,9 @@ fn extract_exif_raw_jpeg(data: &[u8]) -> Option<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
+    #[cfg(feature = "avif")]
+    use crate::engine::encoder::encode_avif;
+    use crate::engine::encoder::{encode_jpeg, encode_png, encode_webp};
     use image::{DynamicImage, RgbImage};
     use std::io::Cursor;
 
@@ -1114,6 +1123,7 @@ mod tests {
             }
         }
 
+        #[cfg(feature = "avif")]
         mod avif_icc_tests {
             use super::*;
 

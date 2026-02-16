@@ -9,9 +9,10 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["napi", "jemalloc"]
+default = ["napi", "jemalloc", "avif"]
 napi = ["dep:napi", "dep:napi-derive"]
 jemalloc = ["dep:tikv-jemallocator"]
+avif = ["dep:libavif-sys"]
 fuzzing = []
 stress = []
 cow-debug = ["tracing", "once_cell"]
@@ -57,7 +58,7 @@ zune-core = "0.5"
 
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
-libavif-sys = { version = "0.17", default-features = false, features = ["codec-rav1e"] }
+libavif-sys = { version = "0.17", default-features = false, features = ["codec-rav1e"], optional = true }
 
 # Debug/logging (only used when cow-debug feature is enabled)
 tracing = { version = "0.1", default-features = false, features = ["std"], optional = true }
