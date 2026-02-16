@@ -135,6 +135,8 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 | **Error codes** | [docs/ERROR_CODES.md](./docs/ERROR_CODES.md) |
 | **Benchmarks (raw data)** | [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md) |
 | **Binary size comparison (AVIF on/off)** | [docs/BINARY_SIZE.md](./docs/BINARY_SIZE.md) |
+| **Benchmark snapshots log** | [docs/BENCHMARK_RESULTS.md](./docs/BENCHMARK_RESULTS.md) |
+| **Benchmark operations** | [docs/BENCHMARK_OPERATIONS.md](./docs/BENCHMARK_OPERATIONS.md) |
 
 ---
 

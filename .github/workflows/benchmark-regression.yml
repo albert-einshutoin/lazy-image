@@ -1,32 +1,38 @@
 name: Benchmark Regression
 
-# Purpose: Continuous benchmarking to detect performance regressions
-# - On push to main: Store results in gh-pages branch for visualization
-# - On PR: Compare against cached baseline, comment on PR if regression detected
-# See: https://github.com/benchmark-action/github-action-benchmark
-
 on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      fail_on_regression:
+        description: "Fail workflow when regression threshold is exceeded"
+        required: false
+        default: false
+        type: boolean
+      speed_threshold_pct:
+        description: "Speed regression threshold (%)"
+        required: false
+        default: "15"
+        type: string
+      size_threshold_pct:
+        description: "Size regression threshold (%)"
+        required: false
+        default: "5"
+        type: string
+  schedule:
+    - cron: "0 3 * * 1" # Weekly Monday 03:00 UTC
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 env:
   APP_NAME: lazy-image
-  MACOSX_DEPLOYMENT_TARGET: '10.13'
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
 
 jobs:
   benchmark:
     name: Benchmark Regression
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v6
@@ -51,68 +57,41 @@ jobs:
       - name: Build native binding (Linux)
         run: npm run build -- --target x86_64-unknown-linux-gnu
 
-      - name: Run benchmark comparison (captures JSON)
+      - name: Run benchmark baseline suite (JSON output)
         env:
-          BENCHMARK_OUTPUT_JSON: artifacts/benchmark/summary.json
+          BENCHMARK_OUTPUT_JSON: artifacts/benchmark/sharp-comparison.json
         run: |
           mkdir -p artifacts/benchmark
           npm run test:bench:compare
 
-      - name: Run zero-copy verification
+      - name: Run extended benchmark suite (#405)
         run: |
-          mkdir -p artifacts/benchmark
+          npm run test:bench:extended | tee artifacts/benchmark/extended.log
+
+      - name: Run zero-copy measurement
+        run: |
           node --expose-gc docs/scripts/measure-zero-copy.js > artifacts/benchmark/zero-copy.json
 
-      # Download previous benchmark data from cache (used for PR comparisons)
-      - name: Download previous benchmark data
-        uses: actions/cache@v5
-        with:
-          path: ./cache
-          key: ${{ runner.os }}-benchmark
-
-      # For PRs: Compare against cached baseline without modifying gh-pages
-      # Uses external-data-json-path to avoid gh-pages branch requirement
-      - name: Compare benchmark result (PR)
-        if: github.event_name == 'pull_request'
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          tool: 'customSmallerIsBetter'
-          output-file-path: artifacts/benchmark/summary.json
-          external-data-json-path: ./cache/benchmark-data.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Do not fail on regression for PRs; just report
-          fail-on-alert: false
-          alert-threshold: '150%'
-          comment-on-alert: true
-          summary-always: true
-
-      # Discard build artifacts so git switch gh-pages can succeed (main only)
-      # PR path uses external-data-json-path and never runs git switch
-      - name: Prepare working tree for gh-pages switch
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: git restore .
-
-      # For main branch: Store results in gh-pages for visualization
-      - name: Store benchmark result (main)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          tool: 'customSmallerIsBetter'
-          output-file-path: artifacts/benchmark/summary.json
-          gh-pages-branch: gh-pages
-          benchmark-data-dir-path: benchmark-data
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
-          # Do not fail main on regression; results are stored and visible
-          fail-on-alert: false
-          alert-threshold: '150%'
-
-      # Update cache with latest benchmark data for future PR comparisons
-      - name: Update benchmark cache
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Compare benchmark result against baseline
+        env:
+          FAIL_ON_REGRESSION: ${{ github.event_name == 'workflow_dispatch' && inputs.fail_on_regression || 'false' }}
+          SPEED_THRESHOLD: ${{ github.event_name == 'workflow_dispatch' && inputs.speed_threshold_pct || '15' }}
+          SIZE_THRESHOLD: ${{ github.event_name == 'workflow_dispatch' && inputs.size_threshold_pct || '5' }}
         run: |
-          mkdir -p ./cache
-          cp artifacts/benchmark/summary.json ./cache/benchmark-data.json
+          MODE="warn"
+          if [ "$FAIL_ON_REGRESSION" = "true" ]; then MODE="fail"; fi
+
+          node scripts/bench/check-regression.js \
+            --baseline .github/benchmarks/baseline.json \
+            --current artifacts/benchmark/sharp-comparison.json \
+            --output artifacts/benchmark/regression-summary.md \
+            --json-output artifacts/benchmark/regression-summary.json \
+            --mode "$MODE" \
+            --speed-threshold "$SPEED_THRESHOLD" \
+            --size-threshold "$SIZE_THRESHOLD"
+
+      - name: Publish summary
+        run: cat artifacts/benchmark/regression-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v6
