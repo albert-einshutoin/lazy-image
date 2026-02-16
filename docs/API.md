@@ -13,7 +13,7 @@ Full API reference for lazy-image. For a quick start, see [README.md](../README.
 
 | Method | Description |
 |--------|-------------|
-| `.resize(width?, height?, fit?)` | Resize image (`fit`: `'inside'` default, `'cover'` to crop + fill, `'fill'` to ignore aspect ratio) |
+| `.resize(options)` / `.resize(width?, height?, fit?)` | Resize image (`fit`: `'inside'` default, `'cover'` to crop + fill, `'fill'` to ignore aspect ratio) |
 | `.crop(x, y, width, height)` | Crop a region |
 | `.rotate(degrees)` | Rotate (90, 180, 270) |
 | `.flipH()` | Flip horizontally |
@@ -74,6 +74,12 @@ interface ImageMetadata {
 interface Dimensions {
   width: number;
   height: number;
+}
+
+interface ResizeOptions {
+  width?: number;
+  height?: number;
+  fit?: 'inside' | 'cover' | 'fill';
 }
 
 interface PresetResult {

@@ -34,6 +34,7 @@ export declare class ImageEngine {
    * - "cover": maintain aspect ratio and crop to fill the box
    * - "fill": ignore aspect ratio and force exact dimensions
    */
+  resize(options: ResizeOptions): ImageEngine
   resize(width?: number | undefined | null, height?: number | undefined | null, fit?: string | undefined | null): ImageEngine
   /** Crop a region from the image. */
   crop(x: number, y: number, width: number, height: number): ImageEngine
@@ -300,6 +301,15 @@ export interface KeepMetadataOptions {
    * This is a security-first default that exceeds Sharp's capabilities
    */
   stripGps?: boolean
+}
+
+export interface ResizeOptions {
+  /** Target width in pixels */
+  width?: number
+  /** Target height in pixels */
+  height?: number
+  /** Resize fit mode */
+  fit?: 'inside' | 'cover' | 'fill'
 }
 
 export interface OutputWithMetrics {

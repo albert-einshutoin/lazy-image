@@ -51,6 +51,18 @@ pub struct KeepMetadataOptions {
 }
 
 #[cfg(feature = "napi")]
+#[derive(Default)]
+#[napi(object)]
+pub struct ResizeOptions {
+    /// Target width in pixels
+    pub width: Option<f64>,
+    /// Target height in pixels
+    pub height: Option<f64>,
+    /// Resize fit mode: inside (default), cover, fill
+    pub fit: Option<String>,
+}
+
+#[cfg(feature = "napi")]
 fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
     // Helper to attach code/category consistently when Env is available
     crate::error::napi_error_with_code(env, err).expect("failed to create napi error")
@@ -491,15 +503,24 @@ impl ImageEngine {
     /// - "inside" (default): maintain aspect ratio and fit within the box
     /// - "cover": maintain aspect ratio and crop to fill the box
     /// - "fill": ignore aspect ratio and force exact dimensions
+    ///
+    /// Supports both signatures:
+    /// - resize({ width?, height?, fit? })
+    /// - resize(width?, height?, fit?)
     #[napi]
     pub fn resize(
         &mut self,
         env: Env,
         this: Reference<ImageEngine>,
-        width: Option<f64>,
+        options_or_width: Either<ResizeOptions, Option<f64>>,
         height: Option<f64>,
         fit: Option<String>,
     ) -> Result<Reference<ImageEngine>> {
+        let (width, height, fit) = match options_or_width {
+            Either::A(options) => (options.width, options.height, options.fit),
+            Either::B(width) => (width, height, fit),
+        };
+
         let fit_mode = if let Some(value) = fit {
             ResizeFit::from_str(&value)
                 .map_err(|_| napi_err(&env, LazyImageError::invalid_resize_fit(value)))?

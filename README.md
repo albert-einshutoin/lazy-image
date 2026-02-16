@@ -71,7 +71,7 @@ Platform-specific binaries (~6–9 MB per platform) are installed automatically.
 
 ```javascript
 await ImageEngine.fromPath('photo.jpg')
-  .resize(800, null)
+  .resize({ width: 800, fit: 'inside' }) // positional args also supported
   .toFile('thumb.jpg', 'jpeg', 85);
 ```
 
@@ -79,7 +79,7 @@ await ImageEngine.fromPath('photo.jpg')
 
 ```javascript
 const buffer = await ImageEngine.fromPath('input.png')
-  .resize(600, null)
+  .resize({ width: 600 })
   .toBuffer('webp', 80);
 ```
 
