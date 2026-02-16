@@ -75,6 +75,23 @@ async function runTests() {
         // Note: For very small images (1x1), resizing may increase file size
     });
 
+    await asyncTest('resize options object works', async () => {
+        const result = await ImageEngine.from(buffer)
+            .resize({ width: 120, fit: 'cover' })
+            .toBuffer('jpeg', 80);
+        const meta = inspect(result);
+        assert.strictEqual(meta.width, 120, 'resize({ width }) should set output width');
+    });
+
+    await asyncTest('resize options object takes precedence over trailing positional args', async () => {
+        const result = await ImageEngine.from(buffer)
+            .resize({ width: 120 }, 50, 'fill')
+            .toBuffer('jpeg', 80);
+        const meta = inspect(result);
+        assert.strictEqual(meta.width, 120, 'width from options should be used');
+        assert.notStrictEqual(meta.height, 50, 'trailing positional args should be ignored when options object is used');
+    });
+
     await asyncTest('WebP encoding works', async () => {
         const result = await ImageEngine.from(buffer).resize(100).toBuffer('webp', 80);
         assert(result.length > 0, 'output should have content');

@@ -31,6 +31,7 @@ async function testTypeSafety() {
     // Explicit ResizeFit type usage
     const coverFit: ResizeFit = 'cover';
     await ImageEngine.fromPath(imagePath).resize(300, 300, coverFit).toBuffer('jpeg', 75);
+    await ImageEngine.fromPath(imagePath).resize({ width: 320, fit: coverFit }).toBuffer('jpeg', 75);
 
     // Uppercase format is also accepted
     await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);
