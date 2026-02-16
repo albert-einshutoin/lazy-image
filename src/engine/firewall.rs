@@ -142,6 +142,22 @@ impl FirewallConfig {
         Ok(())
     }
 
+    /// Check whether the wall-clock time since `started_at` exceeds the
+    /// configured timeout and, if so, return a `FirewallViolation`.
+    ///
+    /// **Best-effort, inter-stage only.** This function is called *between*
+    /// pipeline stages (after decode, after processing ops, after encode) —
+    /// never *during* a stage.  A single long-running codec operation (e.g.
+    /// complex progressive JPEG decode, large rav1e AVIF encode) can run
+    /// well past the timeout because there is no preemption inside the
+    /// underlying C/Rust codec libraries.
+    ///
+    /// Implications:
+    ///   - The timeout value is a **lower bound** on when a violation can be
+    ///     detected, not an upper bound on total wall-clock time.
+    ///   - For hard, wall-clock guarantees callers should wrap the entire
+    ///     pipeline in an external watchdog timer (e.g. `setTimeout` /
+    ///     `AbortController` on the JS side, or `tokio::time::timeout`).
     pub fn enforce_timeout(
         &self,
         started_at: Instant,
@@ -369,6 +385,47 @@ mod tests {
         };
         let fake_start = Instant::now() - std::time::Duration::from_millis(5);
         assert!(cfg.enforce_timeout(fake_start, "decode").is_err());
+    }
+
+    /// Documents that `enforce_timeout` is **inter-stage**: it detects elapsed
+    /// time at the point of call, but cannot interrupt a codec that is still
+    /// running.  A stage that started before the deadline and finishes after
+    /// it will only be caught by the *next* `enforce_timeout` call.
+    #[test]
+    fn timeout_is_inter_stage_best_effort() {
+        let cfg = FirewallConfig {
+            enabled: true,
+            policy: FirewallPolicy::Custom,
+            max_pixels: None,
+            max_bytes: None,
+            timeout_ms: Some(50),
+            reject_metadata: false,
+            metadata_max_bytes: None,
+            exif_max_bytes: None,
+        };
+
+        let started = Instant::now();
+
+        // Immediately after start the timeout has not elapsed.
+        assert!(
+            cfg.enforce_timeout(started, "decode").is_ok(),
+            "enforce_timeout must pass when elapsed < limit"
+        );
+
+        // Simulate a slow codec stage by sleeping past the deadline.
+        std::thread::sleep(std::time::Duration::from_millis(60));
+
+        // The violation is only detected at the *next* inter-stage check.
+        let result = cfg.enforce_timeout(started, "process");
+        assert!(
+            result.is_err(),
+            "enforce_timeout must fire at the next inter-stage checkpoint"
+        );
+        let msg = result.unwrap_err().to_string();
+        assert!(
+            msg.contains("process"),
+            "error should name the stage where the check ran, got: {msg}"
+        );
     }
 
     #[test]
