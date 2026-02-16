@@ -1,6 +1,6 @@
 // lib.rs
 //
-// lazy-image: A next-generation image processing engine for Node.js
+// lazy-image: Web image optimization engine for Node.js
 //
 // Design goals:
 // - Faster than sharp

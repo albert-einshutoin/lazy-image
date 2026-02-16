@@ -5,7 +5,7 @@ It strictly separates "Completed" from "Planned" tasks, details specific goals f
 
 # 🗺️ lazy-image Roadmap
 
-> **Vision:** To be the most efficient, secure, and portable image processing engine for the cloud age.
+> **Vision:** To be the most efficient, secure, and portable web image optimization engine for the cloud age.
 
 This document outlines the development status and future direction of `lazy-image`. We follow Semantic Versioning.
 
@@ -121,7 +121,7 @@ To maintain focus and stability, the following features are explicitly **out of 
 
 # 🗺️ lazy-image ロードマップ
 
-> **ビジョン:** クラウド時代における、最も効率的で、安全で、ポータブルな画像処理エンジンとなること。
+> **ビジョン:** クラウド時代における、最も効率的で、安全で、ポータブルなWeb画像最適化エンジンとなること。
 
 本ドキュメントは `lazy-image` の開発状況と将来の方向性を定義します。本プロジェクトはセマンティックバージョニングに従います。
 

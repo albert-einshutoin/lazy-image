@@ -476,7 +476,7 @@ jobs:
               const pkg = {
                 name: '$pkg_name',
                 version: '$VERSION',
-                description: 'Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg',
+                description: 'Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg',
                 main: 'lazy-image.${platform}.node',
                 os: ['$os_part'],
                 cpu: ['$cpu_part'],
