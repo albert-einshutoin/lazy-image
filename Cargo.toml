@@ -76,7 +76,7 @@ tempfile = "3.25"
 rayon = "1.8"
 
 # Lightweight static bit flags for operation contracts
-bitflags = "2.6"
+bitflags = "2.11"
 
 # Memory mapping for zero-copy file access
 memmap2 = "0.9"
