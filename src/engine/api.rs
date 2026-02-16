@@ -675,6 +675,21 @@ impl ImageEngine {
                 self.firewall
                     .scan_metadata(bytes)
                     .map_err(|e| napi_err(&env, e))?;
+
+                // When the image is not yet decoded (lazy path, e.g. fromPath),
+                // read the header to check dimensions against the firewall policy.
+                // This ensures sanitize() rejects oversized images immediately for
+                // both from(buffer) and fromPath(path) construction paths.
+                if self.decoded.is_none() {
+                    let cursor = Cursor::new(bytes);
+                    if let Ok(reader) = ImageReader::new(cursor).with_guessed_format() {
+                        if let Ok((w, h)) = reader.into_dimensions() {
+                            self.firewall
+                                .enforce_pixels(w, h)
+                                .map_err(|e| napi_err(&env, e))?;
+                        }
+                    }
+                }
             }
         }
 

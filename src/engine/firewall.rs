@@ -434,6 +434,66 @@ mod tests {
         assert_eq!(size.unwrap(), 208);
     }
 
+    /// Verify that header-based dimension check catches oversized images
+    /// without full decode. This simulates the sanitize() lazy-path fix (#370):
+    /// read dimensions from header, then enforce_pixels() against the firewall policy.
+    #[test]
+    fn enforce_pixels_rejects_oversized_image_from_header() {
+        use image::{ImageFormat, ImageReader};
+        use std::io::Cursor;
+
+        // Create a 3000x3000 image (9M pixels, exceeds strict's 40M? No — 9M < 40M).
+        // Use a custom policy with a 1M pixel limit to trigger rejection.
+        let img = image::DynamicImage::ImageRgb8(ImageBuffer::from_fn(200, 200, |x, y| {
+            Rgb([x as u8, y as u8, 0])
+        }));
+        let mut png_data = Vec::new();
+        img.write_to(&mut Cursor::new(&mut png_data), ImageFormat::Png)
+            .unwrap();
+
+        let cfg = FirewallConfig {
+            enabled: true,
+            policy: FirewallPolicy::Custom,
+            max_pixels: Some(10_000), // 10k pixels — 200×200=40k exceeds this
+            max_bytes: None,
+            timeout_ms: None,
+            reject_metadata: false,
+            metadata_max_bytes: None,
+            exif_max_bytes: None,
+        };
+
+        // Simulate lazy-path sanitize: read header → enforce_pixels
+        let cursor = Cursor::new(&png_data);
+        let reader = ImageReader::new(cursor).with_guessed_format().unwrap();
+        let (w, h) = reader.into_dimensions().unwrap();
+        let result = cfg.enforce_pixels(w, h);
+        assert!(
+            result.is_err(),
+            "enforce_pixels should reject 200x200 (40k pixels) against 10k limit"
+        );
+    }
+
+    /// Verify that enforce_pixels allows images within limits when reading from header.
+    #[test]
+    fn enforce_pixels_allows_small_image_from_header() {
+        use image::{ImageFormat, ImageReader};
+        use std::io::Cursor;
+
+        let img = image::DynamicImage::ImageRgb8(ImageBuffer::from_fn(10, 10, |x, y| {
+            Rgb([x as u8, y as u8, 0])
+        }));
+        let mut png_data = Vec::new();
+        img.write_to(&mut Cursor::new(&mut png_data), ImageFormat::Png)
+            .unwrap();
+
+        let cfg = FirewallConfig::strict(); // strict: 40M pixels
+
+        let cursor = Cursor::new(&png_data);
+        let reader = ImageReader::new(cursor).with_guessed_format().unwrap();
+        let (w, h) = reader.into_dimensions().unwrap();
+        assert!(cfg.enforce_pixels(w, h).is_ok());
+    }
+
     #[test]
     fn scan_exif_size_returns_none_for_jpeg_without_exif() {
         let img = image::DynamicImage::ImageRgb8(ImageBuffer::from_fn(2, 2, |x, y| {
