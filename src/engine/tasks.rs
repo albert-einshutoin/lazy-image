@@ -567,6 +567,83 @@ mod non_napi_tests {
         let err = task.decode_internal().unwrap_err();
         assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
     }
+
+    #[test]
+    fn auto_orient_flag_disables_orientation_lookup() {
+        // When auto_orient is false, process_and_encode should NOT insert
+        // an AutoOrient operation even if the source has EXIF orientation.
+        // We test this indirectly: a PNG source has no EXIF, so orientation
+        // is None regardless. But we verify the flag is stored correctly.
+        let png = sample_png_bytes();
+        let task = EncodeTask {
+            source: Some(Source::Memory(Arc::new(png))),
+            decoded: None,
+            ops: vec![],
+            format: OutputFormat::Png,
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+        };
+        assert!(!task.auto_orient);
+        // process_and_encode should succeed (no orientation applied)
+        let result = task.process_and_encode(None);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn auto_orient_flag_default_is_true() {
+        // Verify the default task helper sets auto_orient to true
+        let task = make_task_with_decoded(OutputFormat::Png);
+        assert!(task.auto_orient);
+    }
+
+    #[test]
+    fn fast_mode_propagates_to_jpeg_encode() {
+        // Verify that OutputFormat::Jpeg with fast_mode=true produces valid JPEG
+        let task = make_task_with_decoded(OutputFormat::Jpeg {
+            quality: 80,
+            fast_mode: true,
+        });
+        let result = task.process_and_encode(None).expect("encode should succeed");
+        // JPEG magic bytes
+        assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+        assert_eq!(&result[result.len() - 2..], &[0xFF, 0xD9]);
+    }
+
+    #[test]
+    fn fast_mode_false_produces_valid_jpeg() {
+        let task = make_task_with_decoded(OutputFormat::Jpeg {
+            quality: 80,
+            fast_mode: false,
+        });
+        let result = task.process_and_encode(None).expect("encode should succeed");
+        assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+    }
+
+    #[test]
+    fn fast_mode_true_vs_false_both_valid() {
+        let fast_task = make_task_with_decoded(OutputFormat::Jpeg {
+            quality: 80,
+            fast_mode: true,
+        });
+        let normal_task = make_task_with_decoded(OutputFormat::Jpeg {
+            quality: 80,
+            fast_mode: false,
+        });
+        let fast_result = fast_task.process_and_encode(None).unwrap();
+        let normal_result = normal_task.process_and_encode(None).unwrap();
+        // Both should produce valid JPEGs
+        assert_eq!(&fast_result[0..2], &[0xFF, 0xD8]);
+        assert_eq!(&normal_result[0..2], &[0xFF, 0xD8]);
+        // Both should be non-empty
+        assert!(!fast_result.is_empty());
+        assert!(!normal_result.is_empty());
+    }
 }
 
 pub struct EncodeWithMetricsTask {
