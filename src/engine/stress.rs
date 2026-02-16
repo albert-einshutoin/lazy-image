@@ -43,7 +43,8 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         Operation::Grayscale,
     ];
 
-    let formats = [
+    #[cfg(feature = "avif")]
+    let formats = vec![
         OutputFormat::Jpeg {
             quality: 82,
             fast_mode: false,
@@ -51,6 +52,15 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         OutputFormat::Png,
         OutputFormat::WebP { quality: 74 },
         OutputFormat::Avif { quality: 60 },
+    ];
+    #[cfg(not(feature = "avif"))]
+    let formats = vec![
+        OutputFormat::Jpeg {
+            quality: 82,
+            fast_mode: false,
+        },
+        OutputFormat::Png,
+        OutputFormat::WebP { quality: 74 },
     ];
 
     // Decode the image once
