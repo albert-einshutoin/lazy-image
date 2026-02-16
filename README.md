@@ -55,6 +55,30 @@ Benchmarks and details: [docs/PERFORMANCE.md](./docs/PERFORMANCE.md). Full compa
 
 ---
 
+## Cost Savings Example (ROI)
+
+Assume:
+- average image size before optimization: **1.0 MB**
+- average reduction with lazy-image: **25%**
+- CDN transfer rate: **$0.085/GB** (example: CloudFront pay-as-you-go, US/EU next 9TB tier)
+
+| Scenario | Transfer with sharp | Transfer with lazy-image | Monthly savings |
+|---|---:|---:|---:|
+| 1M image deliveries / month | 976.6 GB | 732.4 GB | **$20.75** |
+| 10M image deliveries / month | 9.54 TB | 7.15 TB | **$207.52** |
+| 100M image deliveries / month | 95.37 TB | 71.53 TB | **$2,075.20** |
+
+Break-even intuition:
+- Encoding overhead is paid **once per generated image**
+- Bandwidth savings are realized **every time the image is delivered**
+- If each generated image is viewed multiple times, lazy-image generally wins quickly
+
+Use the interactive calculator:
+- [docs/roi-calculator.html](./docs/roi-calculator.html)
+- Methodology and formulas: [docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md)
+
+---
+
 ## Installation
 
 ```bash
@@ -105,6 +129,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 | **Troubleshooting** | [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) |
 | **Security policy & reporting** | [SECURITY.md](./SECURITY.md) |
 | **Roadmap & scope** | [docs/ROADMAP.md](./docs/ROADMAP.md) |
+| **ROI calculator methodology** | [docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md) |
 | **Version history** | [docs/VERSION_HISTORY.md](./docs/VERSION_HISTORY.md) |
 | **Specification (spec/)** | [spec/pipeline.md](./spec/pipeline.md), [spec/resize.md](./spec/resize.md), [spec/errors.md](./spec/errors.md), [spec/limits.md](./spec/limits.md), [spec/quality.md](./spec/quality.md), [spec/metadata.md](./spec/metadata.md) |
 | **Error codes** | [docs/ERROR_CODES.md](./docs/ERROR_CODES.md) |
