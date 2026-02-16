@@ -330,12 +330,8 @@ mod tests {
         // is always available. Verify it is a valid semver string.
         let version = env!("CARGO_PKG_VERSION");
         assert!(!version.is_empty(), "CARGO_PKG_VERSION must be non-empty");
-        let parts: Vec<&str> = version.split('.').collect();
-        assert_eq!(parts.len(), 3, "version should have major.minor.patch");
-        for part in &parts {
-            part.parse::<u32>()
-                .unwrap_or_else(|_| panic!("version part '{part}' should be numeric"));
-        }
+        semver::Version::parse(version)
+            .unwrap_or_else(|_| panic!("version '{version}' should be valid semver"));
     }
 
     #[test]
