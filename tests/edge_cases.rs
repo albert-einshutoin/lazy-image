@@ -313,6 +313,7 @@ mod quality_boundary_tests {
     }
 
     #[test]
+    #[cfg(feature = "avif")]
     fn test_quality_avif_0() {
         let img = create_test_image(100, 100);
         // AVIFはquality=0も受け入れる（rav1eの実装では品質0も有効）
@@ -325,10 +326,22 @@ mod quality_boundary_tests {
     }
 
     #[test]
+    #[cfg(feature = "avif")]
     fn test_quality_avif_100() {
         let img = create_test_image(100, 100);
         let result = encode_avif(&img, 100, None);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    #[cfg(not(feature = "avif"))]
+    fn test_quality_avif_is_unsupported_without_feature() {
+        let img = create_test_image(100, 100);
+        let result = encode_avif(&img, 60, None);
+        assert!(matches!(
+            result,
+            Err(LazyImageError::UnsupportedFormat { .. })
+        ));
     }
 }
 
@@ -588,10 +601,22 @@ mod encoder_error_tests {
     }
 
     #[test]
+    #[cfg(feature = "avif")]
     fn test_encode_avif_invalid_quality() {
         let img = create_test_image(100, 100);
         // quality > 100 はクランプされ、エンコードは成功する
         let result = encode_avif(&img, 150, None);
         assert!(result.is_ok(), "encode_avif should accept quality > 100");
+    }
+
+    #[test]
+    #[cfg(not(feature = "avif"))]
+    fn test_encode_avif_returns_unsupported_without_feature() {
+        let img = create_test_image(100, 100);
+        let result = encode_avif(&img, 80, None);
+        assert!(matches!(
+            result,
+            Err(LazyImageError::UnsupportedFormat { .. })
+        ));
     }
 }

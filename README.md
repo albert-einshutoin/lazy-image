@@ -134,6 +134,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 | **Specification (spec/)** | [spec/pipeline.md](./spec/pipeline.md), [spec/resize.md](./spec/resize.md), [spec/errors.md](./spec/errors.md), [spec/limits.md](./spec/limits.md), [spec/quality.md](./spec/quality.md), [spec/metadata.md](./spec/metadata.md) |
 | **Error codes** | [docs/ERROR_CODES.md](./docs/ERROR_CODES.md) |
 | **Benchmarks (raw data)** | [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md) |
+| **Binary size comparison (AVIF on/off)** | [docs/BINARY_SIZE.md](./docs/BINARY_SIZE.md) |
 
 ---
 

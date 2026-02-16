@@ -257,10 +257,13 @@ impl OutputFormat {
                 let q = quality.unwrap_or(80); // WebP default: 80
                 Ok(Self::WebP { quality: q })
             }
+            #[cfg(feature = "avif")]
             "avif" => {
                 let q = quality.unwrap_or(60); // AVIF default: 60 (high compression efficiency)
                 Ok(Self::Avif { quality: q })
             }
+            #[cfg(not(feature = "avif"))]
+            "avif" => Err("unsupported format: avif (built without avif feature)".to_string()),
             other => Err(format!("unsupported format: {other}")),
         }
     }
@@ -400,12 +403,14 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_avif_with_quality() {
             let format = OutputFormat::from_str("avif", Some(70)).unwrap();
             assert!(matches!(format, OutputFormat::Avif { quality: 70 }));
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_avif_default_quality() {
             let format = OutputFormat::from_str("avif", None).unwrap();
             assert!(matches!(format, OutputFormat::Avif { quality: 60 }));
@@ -444,9 +449,18 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_case_insensitive_avif() {
             assert!(OutputFormat::from_str("AVIF", None).is_ok());
             assert!(OutputFormat::from_str("Avif", None).is_ok());
+        }
+
+        #[test]
+        #[cfg(not(feature = "avif"))]
+        fn test_avif_is_unsupported_without_feature() {
+            let err = OutputFormat::from_str("avif", Some(60)).unwrap_err();
+            assert!(err.contains("unsupported format"));
+            assert!(err.contains("without avif feature"));
         }
 
         #[test]
@@ -519,8 +533,11 @@ mod tests {
             let png = OutputFormat::from_str_with_options("png", None, true).unwrap();
             assert!(matches!(png, OutputFormat::Png));
 
-            let avif = OutputFormat::from_str_with_options("avif", Some(60), true).unwrap();
-            assert!(matches!(avif, OutputFormat::Avif { quality: 60 }));
+            #[cfg(feature = "avif")]
+            {
+                let avif = OutputFormat::from_str_with_options("avif", Some(60), true).unwrap();
+                assert!(matches!(avif, OutputFormat::Avif { quality: 60 }));
+            }
         }
 
         #[test]
