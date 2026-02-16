@@ -622,3 +622,17 @@ jobs:
           npm publish --access public --provenance --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create or Update GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists. Updating flags..."
+            gh release edit "$TAG" --draft=false --prerelease=false
+          else
+            echo "Creating release $TAG..."
+            gh release create "$TAG" --generate-notes
+          fi
