@@ -2,7 +2,7 @@
 name = "lazy-image"
 version = "0.10.2"
 edition = "2021"
-description = "Next-gen image processing engine - faster, smaller, better than sharp"
+description = "Web image optimization engine - smaller outputs than sharp, powered by Rust + mozjpeg"
 license = "MIT"
 
 [lib]
