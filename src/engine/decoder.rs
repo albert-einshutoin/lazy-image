@@ -80,7 +80,9 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
 
 /// Minimal JPEG structure validation to avoid handing obviously malformed buffers to libjpeg.
 /// Walks markers until SOS, ensuring declared segment lengths stay within the buffer.
-fn validate_jpeg_structure(data: &[u8]) -> DecoderResult<()> {
+///
+/// Also used by `io.rs` to gate ICC extraction from JPEG APP2 segments.
+pub(crate) fn validate_jpeg_structure(data: &[u8]) -> DecoderResult<()> {
     const SOI: u8 = 0xD8;
     const EOI: u8 = 0xD9;
     const SOS: u8 = 0xDA;

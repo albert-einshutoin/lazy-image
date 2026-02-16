@@ -201,62 +201,12 @@ pub(crate) fn is_avif_data(data: &[u8]) -> bool {
 
 /// Extract ICC profile from JPEG data using a guarded APP2 parser.
 pub(crate) fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
-    if !is_well_formed_jpeg(data) {
+    // Reuse the canonical JPEG structure validator from the decoder module.
+    // If the structure is invalid, skip ICC extraction entirely.
+    if crate::engine::decoder::validate_jpeg_structure(data).is_err() {
         return None;
     }
     extract_icc_from_jpeg_app2(data)
-}
-
-/// Minimal JPEG structure check to avoid handing obviously malformed buffers to parsers.
-fn is_well_formed_jpeg(data: &[u8]) -> bool {
-    const SOI: u8 = 0xD8;
-    const EOI: u8 = 0xD9;
-    const SOS: u8 = 0xDA;
-
-    if data.len() < 4 || data[0] != 0xFF || data[1] != SOI {
-        return false;
-    }
-
-    let mut i = 2; // after SOI
-    while i + 1 < data.len() {
-        if data[i] != 0xFF {
-            return false;
-        }
-        while i < data.len() && data[i] == 0xFF {
-            i += 1;
-        }
-        if i >= data.len() {
-            return false;
-        }
-        let marker = data[i];
-        i += 1;
-
-        // Standalone markers without length
-        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 || marker == EOI {
-            if marker == EOI {
-                return true;
-            }
-            continue;
-        }
-
-        if i + 1 >= data.len() {
-            return false;
-        }
-        let seg_len = u16::from_be_bytes([data[i], data[i + 1]]) as usize;
-        if seg_len < 2 {
-            return false;
-        }
-        if i + seg_len > data.len() {
-            return false;
-        }
-        i += seg_len;
-
-        if marker == SOS {
-            // Require at least one byte of scan data
-            return i < data.len();
-        }
-    }
-    false
 }
 
 /// Extract ICC profile from APP2 segments following the ICC.1 spec.
