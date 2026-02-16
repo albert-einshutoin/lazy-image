@@ -237,7 +237,18 @@ node test/benchmarks/convert-only.bench.js
 
 # Run README verification benchmark
 npm run test:bench:verify
+
+# Run AVIF quality/speed matrix
+npm run test:bench:avif
+
+# Run memory tracking benchmark (RSS delta vs estimate)
+npm run test:bench:memory
+
+# Run cold-start benchmark (require + first toBuffer)
+npm run test:bench:cold-start
 ```
+
+For reproducible snapshots, record outputs in [docs/BENCHMARK_RESULTS.md](./BENCHMARK_RESULTS.md).
 
 ---
 
@@ -284,4 +295,3 @@ Choose sharp when:
 ---
 
 *Last updated: Based on lazy-image v0.8.1 and sharp v0.34.x*
-
