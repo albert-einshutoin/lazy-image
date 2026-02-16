@@ -249,6 +249,7 @@ npm run test:bench:cold-start
 ```
 
 For reproducible snapshots, record outputs in [docs/BENCHMARK_RESULTS.md](./BENCHMARK_RESULTS.md).
+For ongoing CI/threshold operation rules, see [docs/BENCHMARK_OPERATIONS.md](./BENCHMARK_OPERATIONS.md).
 
 ---
 
