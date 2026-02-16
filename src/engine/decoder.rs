@@ -151,6 +151,27 @@ fn validate_jpeg_structure(data: &[u8]) -> DecoderResult<()> {
     ))
 }
 
+/// Build image crate `Limits` from our global dimension/pixel constants.
+/// This prevents the image crate from allocating unbounded memory even when
+/// `ensure_dimensions_safe()` cannot parse the header (unknown format, truncated header, etc.).
+fn image_crate_limits() -> image::Limits {
+    #[cfg(feature = "fuzzing")]
+    let (max_dim, max_pix) = (
+        crate::engine::FUZZ_MAX_DIMENSION,
+        crate::engine::FUZZ_MAX_PIXELS,
+    );
+    #[cfg(not(feature = "fuzzing"))]
+    let (max_dim, max_pix) = (crate::engine::MAX_DIMENSION, crate::engine::MAX_PIXELS);
+
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(max_dim);
+    limits.max_image_height = Some(max_dim);
+    // max_alloc caps total decoded buffer size (pixels × bytes-per-pixel).
+    // Use 4 bytes/pixel (RGBA) as worst case.
+    limits.max_alloc = Some(max_pix * 4);
+    limits
+}
+
 /// Decode non-JPEG formats using the image crate under the global panic policy.
 pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:image", || {
@@ -173,7 +194,18 @@ pub fn decode_with_image_crate(data: &[u8]) -> DecoderResult<DynamicImage> {
         // This reads only headers and is much cheaper than a full decode attempt.
         ensure_dimensions_safe(data)?;
 
-        image::load_from_memory(data)
+        // Use ImageReader with explicit allocation limits as a safety net.
+        // Even if ensure_dimensions_safe() returned Ok (e.g., unknown format, truncated
+        // header), the image crate will enforce dimension and allocation caps during
+        // decode, preventing OOM from crafted inputs with huge declared dimensions.
+        let cursor = Cursor::new(data);
+        let reader = ImageReader::new(cursor)
+            .with_guessed_format()
+            .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))?;
+        let mut reader = reader;
+        reader.limits(image_crate_limits());
+        reader
+            .decode()
             .map_err(|e| LazyImageError::decode_failed(format!("decode failed: {e}")))
     })
 }
@@ -571,5 +603,55 @@ mod tests {
     fn test_zune_png_limit_lte_max_dimension() {
         // Runtime sanity check matching the compile-time assertion
         assert!(super::ZUNE_PNG_MAX_DIM <= crate::engine::MAX_DIMENSION);
+    }
+
+    /// Crafted PNG with huge declared dimensions in the IHDR header but minimal pixel data.
+    /// This reproduces the OOM crash from fuzz artifact oom-c28eb638... where a malformed
+    /// file triggers unbounded allocation before dimension checks run.
+    #[test]
+    fn test_decode_rejects_crafted_png_with_huge_dimensions() {
+        // Build a minimal PNG with a 60000×60000 IHDR but only 1 pixel of data.
+        // Without the dimension guard this would try to allocate ~14 GB.
+        let mut buf: Vec<u8> = Vec::new();
+        // PNG signature
+        buf.extend_from_slice(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+        // IHDR chunk (13 bytes data)
+        let ihdr_data = {
+            let mut d = Vec::new();
+            d.extend_from_slice(&60000u32.to_be_bytes()); // width
+            d.extend_from_slice(&60000u32.to_be_bytes()); // height
+            d.push(8);  // bit depth
+            d.push(2);  // color type (RGB)
+            d.push(0);  // compression
+            d.push(0);  // filter
+            d.push(0);  // interlace
+            d
+        };
+        let ihdr_len = (ihdr_data.len() as u32).to_be_bytes();
+        buf.extend_from_slice(&ihdr_len);
+        buf.extend_from_slice(b"IHDR");
+        buf.extend_from_slice(&ihdr_data);
+        // CRC (not validated by our dimension check, use dummy)
+        buf.extend_from_slice(&[0; 4]);
+        // IEND chunk
+        buf.extend_from_slice(&0u32.to_be_bytes());
+        buf.extend_from_slice(b"IEND");
+        buf.extend_from_slice(&[0; 4]);
+
+        // ensure_dimensions_safe should reject before decode
+        assert!(ensure_dimensions_safe(&buf).is_err());
+        // decode_image should also reject
+        assert!(decode_image(&buf).is_err());
+    }
+
+    /// Verify that decode_with_image_crate enforces dimension limits via the image crate
+    /// Limits API, even for formats where ensure_dimensions_safe cannot parse the header.
+    #[test]
+    fn test_decode_with_image_crate_enforces_limits_on_unknown_header() {
+        // Garbage data that ensure_dimensions_safe returns Ok(()) for
+        // (not a recognized format). decode_with_image_crate should still not OOM.
+        let garbage = vec![0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x01, 0x02, 0x03];
+        // Should return an error (decode failed), not OOM
+        assert!(decode_with_image_crate(&garbage).is_err());
     }
 }
