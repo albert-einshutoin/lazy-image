@@ -12,6 +12,7 @@
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 use std::borrow::Cow;
+use std::sync::Arc;
 use thiserror::Error;
 
 /// Error taxonomy for proper error handling in JavaScript
@@ -168,21 +169,21 @@ pub enum LazyImageError {
     FileReadFailed {
         path: Cow<'static, str>,
         #[source]
-        source: std::io::Error,
+        source: Arc<std::io::Error>,
     },
 
     #[error("Failed to memory-map file '{path}': {source}")]
     MmapFailed {
         path: Cow<'static, str>,
         #[source]
-        source: std::io::Error,
+        source: Arc<std::io::Error>,
     },
 
     #[error("Failed to write file '{path}': {source}")]
     FileWriteFailed {
         path: Cow<'static, str>,
         #[source]
-        source: std::io::Error,
+        source: Arc<std::io::Error>,
     },
 
     // Decode Errors
@@ -287,15 +288,15 @@ impl Clone for LazyImageError {
             Self::FileNotFound { path } => Self::FileNotFound { path: path.clone() },
             Self::FileReadFailed { path, source } => Self::FileReadFailed {
                 path: path.clone(),
-                source: std::io::Error::new(source.kind(), source.to_string()),
+                source: Arc::clone(source),
             },
             Self::MmapFailed { path, source } => Self::MmapFailed {
                 path: path.clone(),
-                source: std::io::Error::new(source.kind(), source.to_string()),
+                source: Arc::clone(source),
             },
             Self::FileWriteFailed { path, source } => Self::FileWriteFailed {
                 path: path.clone(),
-                source: std::io::Error::new(source.kind(), source.to_string()),
+                source: Arc::clone(source),
             },
             Self::UnsupportedFormat { format } => Self::UnsupportedFormat {
                 format: format.clone(),
@@ -511,21 +512,21 @@ impl LazyImageError {
     pub fn file_read_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
         Self::FileReadFailed {
             path: path.into(),
-            source,
+            source: Arc::new(source),
         }
     }
 
     pub fn mmap_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
         Self::MmapFailed {
             path: path.into(),
-            source,
+            source: Arc::new(source),
         }
     }
 
     pub fn file_write_failed(path: impl Into<Cow<'static, str>>, source: std::io::Error) -> Self {
         Self::FileWriteFailed {
             path: path.into(),
-            source,
+            source: Arc::new(source),
         }
     }
 
@@ -1017,6 +1018,85 @@ mod tests {
             hint.contains("90"),
             "recovery hint should mention allowed angles"
         );
+    }
+
+    #[test]
+    fn test_clone_preserves_io_error_chain() {
+        use std::error::Error as StdError;
+
+        // Build an io::Error with a chained source
+        let inner = std::io::Error::new(std::io::ErrorKind::PermissionDenied, "inner cause");
+        let outer = std::io::Error::new(inner.kind(), inner);
+
+        let err = LazyImageError::file_read_failed("/tmp/test.jpg", outer);
+        let cloned = err.clone();
+
+        // Display messages must be identical
+        assert_eq!(err.to_string(), cloned.to_string());
+
+        // The source() chain must survive cloning
+        let orig_source = err.source().expect("original should have a source");
+        let clone_source = cloned.source().expect("clone should have a source");
+        assert_eq!(orig_source.to_string(), clone_source.to_string());
+
+        // The inner source of the io::Error should also survive
+        let orig_inner = orig_source.source();
+        let clone_inner = clone_source.source();
+        assert_eq!(orig_inner.is_some(), clone_inner.is_some());
+        if let (Some(a), Some(b)) = (orig_inner, clone_inner) {
+            assert_eq!(a.to_string(), b.to_string());
+        }
+    }
+
+    #[test]
+    fn test_clone_preserves_io_error_kind_for_all_io_variants() {
+        let kinds = [
+            std::io::ErrorKind::NotFound,
+            std::io::ErrorKind::PermissionDenied,
+            std::io::ErrorKind::Other,
+        ];
+
+        for kind in &kinds {
+            let io_err = std::io::Error::new(*kind, "test message");
+            let err = LazyImageError::file_read_failed("a.jpg", io_err);
+            let cloned = err.clone();
+            // Verify display is identical (error kind + message preserved)
+            assert_eq!(err.to_string(), cloned.to_string());
+
+            let io_err = std::io::Error::new(*kind, "test message");
+            let err = LazyImageError::mmap_failed("b.jpg", io_err);
+            let cloned = err.clone();
+            assert_eq!(err.to_string(), cloned.to_string());
+
+            let io_err = std::io::Error::new(*kind, "test message");
+            let err = LazyImageError::file_write_failed("c.jpg", io_err);
+            let cloned = err.clone();
+            assert_eq!(err.to_string(), cloned.to_string());
+        }
+    }
+
+    #[test]
+    fn test_clone_shares_arc_identity() {
+        let err = LazyImageError::file_read_failed(
+            "test.jpg",
+            std::io::Error::new(std::io::ErrorKind::NotFound, "gone"),
+        );
+        let cloned = err.clone();
+
+        // Both should point to the same Arc allocation
+        if let (
+            LazyImageError::FileReadFailed {
+                source: ref s1, ..
+            },
+            LazyImageError::FileReadFailed {
+                source: ref s2, ..
+            },
+        ) = (&err, &cloned)
+        {
+            assert!(Arc::ptr_eq(s1, s2), "clone should share the same Arc");
+        } else {
+            panic!("expected FileReadFailed variants");
+        }
     }
 
     #[cfg(feature = "napi")]
