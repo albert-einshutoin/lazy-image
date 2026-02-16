@@ -107,8 +107,10 @@ Input sanitization for untrusted images (decompression bombs, slowloris-style in
 |------------|----------|----------|----------------|
 | Max pixels | 40 MP    | 75 MP    | 1 GP           |
 | Max bytes  | 32 MB    | 48 MB    | Unlimited      |
-| Timeout    | 5 s      | 30 s     | Unlimited      |
+| Timeout¹   | 5 s      | 30 s     | Unlimited      |
 | ICC        | Blocked  | 512 KB   | Allowed        |
+
+¹ **Best-effort, inter-stage.** Timeout is checked between decode → process → encode stages, not during them. A single slow codec call (e.g. large AVIF encode) can exceed the limit. For hard wall-clock guarantees wrap the call in an external watchdog (`setTimeout` / `AbortController`).
 
 Override with `.limits({ maxPixels, maxBytes, timeoutMs })`. Violations throw with clear messages and recovery hints.
 
