@@ -106,6 +106,13 @@ export declare class ImageEngine {
    */
   toBuffer(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>
   /**
+   * Encode using a high-level profile.
+   * - size-first: smaller output priority
+   * - balanced: default balance
+   * - speed-first: lower latency priority
+   */
+  toBufferProfile(format: string, profile?: EncodeProfile, quality?: number | undefined | null): Promise<Buffer>
+  /**
    * Convenience: encode using the last applied preset by name.
    * Equivalent to calling `preset(name)` then `toBuffer(preset.format, preset.quality)`.
    */
@@ -118,6 +125,8 @@ export declare class ImageEngine {
    * The source data is cloned internally, allowing multiple format outputs.
    */
   toBufferWithMetrics(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>
+  /** Encode with metrics using a high-level profile. */
+  toBufferWithMetricsProfile(format: string, profile?: EncodeProfile, quality?: number | undefined | null): Promise<OutputWithMetrics>
   /**
    * Convenience: encode with metrics using a preset name.
    * Equivalent to `preset(name)` then `toBufferWithMetrics(preset.format, preset.quality)`.
@@ -134,6 +143,8 @@ export declare class ImageEngine {
    * Returns the number of bytes written.
    */
   toFile(path: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
+  /** Encode to file using a high-level profile. */
+  toFileProfile(path: string, format: string, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
   /** Convenience: encode to file using the preset's recommended format/quality. */
   toFileWithPreset(path: string, presetName: string): Promise<number>
   /**
@@ -258,6 +269,14 @@ export interface FirewallLimitOptions {
   maxPixels?: number
   maxBytes?: number
   timeoutMs?: number
+}
+
+export type EncodeProfile = 'size-first' | 'balanced' | 'speed-first'
+
+export interface ResolvedEncodeProfile {
+  format: string
+  quality?: number
+  fastMode: boolean
 }
 
 /** Image metadata returned by inspect() */
@@ -435,3 +454,9 @@ export declare function createStreamingPipeline(options: {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream
 }
+
+/**
+ * Resolve encoder options from high-level profile.
+ * Returns normalized `{ format, quality, fastMode }`.
+ */
+export declare function resolveEncodeProfile(format: string, profile?: EncodeProfile, quality?: number | undefined | null): ResolvedEncodeProfile

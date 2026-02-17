@@ -33,8 +33,11 @@ Full API reference for lazy-image. For a quick start, see [README.md](../README.
 | Method | Description |
 |--------|-------------|
 | `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` (AVIF requires build feature `avif`). Default quality: JPEG=85, WebP=80, AVIF=60. |
+| `.toBufferProfile(format, profile, quality?)` | Encode using high-level profile: `'size-first'`, `'balanced'`, `'speed-first'`. |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
+| `.toBufferWithMetricsProfile(format, profile, quality?)` | Profile-based encode with metrics. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
+| `.toFileProfile(path, format, profile, quality?)` | Profile-based file encode. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |
 | `.clone()` | Clone the engine for multi-output (e.g. same pipeline to JPEG + WebP + AVIF). |
 
@@ -46,6 +49,7 @@ Full API reference for lazy-image. For a quick start, see [README.md](../README.
 | `inspectFile(path)` | **Recommended**: Get metadata from file without loading into memory |
 | `.dimensions()` | Get `{ width, height }` (requires decode) |
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
+| `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
 | `createStreamingPipeline({ format, quality, ops })` | Disk-backed bounded-memory pipeline. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#streaming). |
 
 ---
