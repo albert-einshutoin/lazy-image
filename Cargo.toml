@@ -122,6 +122,11 @@ codegen-units = 1
 opt-level = 3
 strip = true
 
+# WASM build profile (future use): inherit release and prioritize binary size
+[profile.release-wasm]
+inherits = "release"
+opt-level = "s"
+
 # Aggressively optimize non-codec dependencies for size in release builds.
 # These crates aren't in hot image-processing loops, so "z" is safe.
 [profile.release.package.oxipng]
