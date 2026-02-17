@@ -9,10 +9,8 @@
 - 遅さの主因は `decode` や `resize` ではなく **`encode` 段**。
 - 特に `WebP` と `AVIF` が `sharp` 比で遅く、`JPEG` はほぼ同等か勝てる条件がある。
 - 現行 `release opt-level = "s"` は速度面で不利。`opt-level = 3` で実測改善。
-- ただし WASM 想定ではサイズ最適化が必要なため、`release`（Node向け）と `release-wasm`（WASM向け）を分離運用する。
 - AVIF を高速側に振ると速度は大幅改善するが、サイズ優位性は悪化。
 - 品質判定は「原画像との距離」ではなく「sharp 出力との距離」なので、失敗理由の解釈に注意。
-- `lazy-image` の真価は「最速」単独ではなく、**メモリ安全性/OOM耐性 + 運用制御 + 十分な性能**の総合値にある。
 
 ## 3. 再現ベンチ結果
 
@@ -86,46 +84,12 @@
 4. 目的特化
 - 「最低レイテンシ」より「配信サイズ最適化」を重視するワークロードに適合。
 
-## 6.1 メモリ安全性/OOM耐性の実測と意味付け
-本調査では、速度だけでなく「小さなサーバーで落ちずに回る」ことを `lazy-image` の中核価値として扱う。
-
-### 実測1: メモリトラッキングベンチ (`npm run test:bench:memory`)
-- 入力: `test_4.5MB_5000x5000.png`
-- シナリオ平均（6 runs, warmup 1）
-  - `jpeg-noops-q80`: Avg RSS delta `7.4MB`, Avg metrics.peakRss `327.6MB`, Avg time `635.6ms`
-  - `webp-resize800-q80`: Avg RSS delta `5.2MB`, Avg metrics.peakRss `377.9MB`, Avg time `160.0ms`
-  - `jpeg-resize-rotate-gray-q75`: Avg RSS delta `7.5MB`, Avg metrics.peakRss `430.2MB`, Avg time `89.4ms`
-
-所見:
-- `rss delta` は小さく抑制されており、処理中ピークは `metrics.peakRss` で監視可能。
-- 速度改善を行う際も、`peakRss` を同時監視しないと `lazy-image` の価値を毀損する。
-
-### 実測2: Zero-copy 計測 (`node --expose-gc docs/scripts/measure-zero-copy.js`)
-- `heap_delta_mb: 0`
-- `rss_delta_mb: 34.6`
-- `peak_rss_metrics_mb: 169`
-
-所見:
-- V8 ヒープ膨張を抑え、OSメモリ管理側に寄せる設計意図と整合。
-- Nodeワーカー多重時に、ヒープ起因GCスパイクを避けやすい。
-
-### 実測3: OOM/境界系の安全テスト (`node test/integration/edge-cases.test.js`)
-- 結果: `31 passed, 0 failed`
-- oversized/invalid/empty 入力、過大並列、極端パラメータを拒否または安全処理できることを確認。
-
-### 方針
-- `sharp` と同等以上を目指す指標は「速度のみ」ではなく以下の複合KPIにする。
-  1. Throughput (`total_ms`, `encode_ms`)
-  2. Memory safety (`peakRss`, `rss delta`, OOM/境界入力テスト通過率)
-  3. Output value (size diff, quality)
-
 ## 7. 何を変えれば良いか (優先順位)
 
 ### P0 (すぐやる)
 1. `profile.release.opt-level` を速度重視へ変更
 - 候補: `3` または `z`/`s`とのハイブリッドを再設計。
 - まずは `3` で CI ベンチ回帰を測る。
- - 併せて `release-wasm` を用意し、WASM では `opt-level = "s"` を維持する。
 
 2. ベンチ評価軸を二層化
 - `sharp一致` と `原画像基準` を分離。
@@ -145,7 +109,6 @@
 
 3. README/Docs の期待値を更新
 - 「何が速く、何が遅いか」をフォーマット別に明記。
- - 「速度」だけでなく「最小メモリ環境での安定運用」を選定軸として明記。
 
 ### P2 (中期)
 1. プリセットAPI強化
@@ -162,29 +125,8 @@
   - 複合処理での安定性能
 - AVIF/WebP は「絶対最速」ではなく「目的別プリセット」で勝つ。
 
-## 8.1 WASM化を見据えたビルド戦略（価値を崩さないための分離）
-現時点で WASM を本番提供していなくても、最適化方針は先に分離しておく。
-
-- Node/NAPI（現行主戦場）: `profile.release` を速度優先 (`opt-level = 3`)
-- WASM（将来）: `profile.release-wasm` をサイズ優先 (`opt-level = "s"`)
-
-この分離により、
-- 現在の速度改善を阻害せず、
-- 将来の配布サイズ要件（WASM）にも後戻りなく対応できる。
-
 ## 9. 現時点の推奨アクション
 1. `opt-level=3` を暫定採用し、CI ベンチで regressions を確認。
 2. AVIF に `speed-first` プリセットを追加 (デフォルトは現行)。
 3. ベンチ評価を `sharp一致` + `原画像基準` の2軸に分離。
 4. WebP は thread_level 以外の本命パラメータ探索へ移行。
-5. CI の必須監視に `peakRss` と OOM/境界テスト通過を追加し、「速いが落ちる」最適化を禁止する。
-
-## 10. 真価を見失わないためのガードレール
-`lazy-image` の改善は、以下を同時に満たすものだけ採用する。
-
-1. 速度: 対象シナリオで有意改善（例: `encode_ms` 改善）
-2. 安全: OOM/境界系テストの退行なし
-3. メモリ: `peakRss` の悪化が許容範囲内
-4. 価値: 出力サイズ優位または運用制御価値（Firewall/metadata）を毀損しない
-
-このルールにより、「sharp 追従のために lazy-image らしさを失う」ことを防ぐ。
