@@ -226,6 +226,38 @@ jobs:
       - name: Run benchmark verification (size/quality guards)
         run: npm run test:bench:verify
 
+  perf-safety:
+    name: Perf Safety Gate
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: bindings-x86_64-unknown-linux-gnu
+          path: .
+
+      - name: Run perf + memory regression gate
+        run: npm run test:bench:perf-safety-gate
+
+      - name: Run edge-case safety suite (OOM/bounds)
+        run: node test/integration/edge-cases.test.js
+
   supply-chain:
     name: Supply Chain
     needs: build
