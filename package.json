@@ -44,7 +44,8 @@
     "test:rust": "cargo test --no-default-features",
     "version": "node scripts/sync-version.js",
     "prepublishOnly": "napi prepublish --skip-gh-release",
-    "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js"
+    "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js",
+    "test:bench:quality-dual-axis": "node test/benchmarks/quality-dual-axis.bench.js"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.1",
