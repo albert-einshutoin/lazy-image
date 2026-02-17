@@ -694,3 +694,91 @@ function getErrorCategory(err) {
 
 module.exports.getErrorCategory = getErrorCategory
 module.exports.createStreamingPipeline = createStreamingPipeline
+
+const DEFAULT_QUALITY_BY_FORMAT = {
+  jpeg: 85,
+  jpg: 85,
+  webp: 80,
+  avif: 60,
+}
+
+const ENCODE_PROFILE_CONFIG = {
+  'size-first': {
+    jpeg: { qualityDelta: -8, fastMode: false },
+    webp: { qualityDelta: -8, fastMode: false },
+    avif: { qualityDelta: -6, fastMode: false },
+    png: { qualityDelta: 0, fastMode: false },
+  },
+  balanced: {
+    jpeg: { qualityDelta: 0, fastMode: false },
+    webp: { qualityDelta: 0, fastMode: false },
+    avif: { qualityDelta: 0, fastMode: false },
+    png: { qualityDelta: 0, fastMode: false },
+  },
+  'speed-first': {
+    jpeg: { qualityDelta: -10, fastMode: true },
+    webp: { qualityDelta: -10, fastMode: false },
+    avif: { qualityDelta: -10, fastMode: false },
+    png: { qualityDelta: 0, fastMode: false },
+  },
+}
+
+function clampQuality(v) {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return undefined
+  return Math.max(0, Math.min(100, Math.round(n)))
+}
+
+/**
+ * Resolve encoder options from high-level profile.
+ * Returns normalized `{ format, quality, fastMode }` usable in toBuffer/toFile APIs.
+ */
+function resolveEncodeProfile(format, profile = 'balanced', quality) {
+  const normalizedFormat = String(format || '').toLowerCase()
+  if (!['jpeg', 'jpg', 'png', 'webp', 'avif'].includes(normalizedFormat)) {
+    throw new Error(`Unsupported format for profile: ${format}`)
+  }
+
+  const normalizedProfile = String(profile || 'balanced').toLowerCase()
+  if (!Object.prototype.hasOwnProperty.call(ENCODE_PROFILE_CONFIG, normalizedProfile)) {
+    throw new Error(`Unsupported encode profile: ${profile}`)
+  }
+
+  const profileConfig = ENCODE_PROFILE_CONFIG[normalizedProfile]
+  const formatKey = normalizedFormat === 'jpg' ? 'jpeg' : normalizedFormat
+  const baseQuality = clampQuality(quality) ?? DEFAULT_QUALITY_BY_FORMAT[formatKey]
+  const delta = (profileConfig[formatKey] || profileConfig.png).qualityDelta
+  const resolvedQuality = baseQuality == null ? undefined : clampQuality(baseQuality + delta)
+  const fastMode = Boolean((profileConfig[formatKey] || profileConfig.png).fastMode)
+
+  return {
+    format: normalizedFormat,
+    quality: resolvedQuality,
+    fastMode,
+  }
+}
+
+module.exports.resolveEncodeProfile = resolveEncodeProfile
+
+if (nativeBinding && nativeBinding.ImageEngine && nativeBinding.ImageEngine.prototype) {
+  const p = nativeBinding.ImageEngine.prototype
+
+  p.toBufferProfile = function toBufferProfile(format, profile = 'balanced', quality) {
+    const resolved = resolveEncodeProfile(format, profile, quality)
+    return this.toBuffer(resolved.format, resolved.quality, resolved.fastMode)
+  }
+
+  p.toBufferWithMetricsProfile = function toBufferWithMetricsProfile(
+    format,
+    profile = 'balanced',
+    quality
+  ) {
+    const resolved = resolveEncodeProfile(format, profile, quality)
+    return this.toBufferWithMetrics(resolved.format, resolved.quality, resolved.fastMode)
+  }
+
+  p.toFileProfile = function toFileProfile(path, format, profile = 'balanced', quality) {
+    const resolved = resolveEncodeProfile(format, profile, quality)
+    return this.toFile(path, resolved.format, resolved.quality, resolved.fastMode)
+  }
+}
