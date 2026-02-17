@@ -119,7 +119,7 @@ opt-level = 3
 [profile.release]
 lto = true
 codegen-units = 1
-opt-level = "s"
+opt-level = 3
 strip = true
 
 # Aggressively optimize non-codec dependencies for size in release builds.
