@@ -5,21 +5,21 @@
       "name": "jpeg-resize800-q80",
       "format": "jpeg",
       "quality": 80,
-      "encodeMsBaseline": 25,
+      "encodeMsBaseline": 50,
       "peakRssMbBaseline": 420
     },
     {
       "name": "webp-resize800-q80",
       "format": "webp",
       "quality": 80,
-      "encodeMsBaseline": 150,
+      "encodeMsBaseline": 360,
       "peakRssMbBaseline": 430
     },
     {
       "name": "avif-resize800-q60",
       "format": "avif",
       "quality": 60,
-      "encodeMsBaseline": 520,
+      "encodeMsBaseline": 1000,
       "peakRssMbBaseline": 430
     }
   ]
