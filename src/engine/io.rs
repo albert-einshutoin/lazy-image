@@ -3,6 +3,7 @@
 // I/O operations: Source enum, file loading, and ICC profile extraction
 
 use crate::error::LazyImageError;
+#[cfg(feature = "avif")]
 use libavif_sys::*;
 use memmap2::Mmap;
 use std::sync::Arc;
@@ -29,23 +30,6 @@ pub enum Source {
 }
 
 impl Source {
-    /// Load the actual bytes from the source
-    /// Note: For Mapped sources, this converts to `Vec<u8>` (defeats zero-copy).
-    /// Prefer using as_bytes() for zero-copy access when possible.
-    #[deprecated(
-        note = "Use as_bytes() for zero-copy access. This method defeats zero-copy by converting Mapped to Vec<u8>."
-    )]
-    pub fn load(&self) -> std::result::Result<Arc<Vec<u8>>, LazyImageError> {
-        match self {
-            Source::Memory(data) => Ok(data.clone()),
-            Source::Mapped(mmap) => {
-                // WARNING: This defeats zero-copy by converting to Vec<u8>
-                // For zero-copy access, use as_bytes() instead
-                Ok(Arc::new(mmap.as_ref().to_vec()))
-            }
-        }
-    }
-
     /// Get the bytes directly - zero-copy for both Memory and Mapped sources
     pub fn as_bytes(&self) -> Option<&[u8]> {
         match self {
@@ -218,62 +202,12 @@ pub(crate) fn is_avif_data(data: &[u8]) -> bool {
 
 /// Extract ICC profile from JPEG data using a guarded APP2 parser.
 pub(crate) fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
-    if !is_well_formed_jpeg(data) {
+    // Reuse the canonical JPEG structure validator from the decoder module.
+    // If the structure is invalid, skip ICC extraction entirely.
+    if crate::engine::decoder::validate_jpeg_structure(data).is_err() {
         return None;
     }
     extract_icc_from_jpeg_app2(data)
-}
-
-/// Minimal JPEG structure check to avoid handing obviously malformed buffers to parsers.
-fn is_well_formed_jpeg(data: &[u8]) -> bool {
-    const SOI: u8 = 0xD8;
-    const EOI: u8 = 0xD9;
-    const SOS: u8 = 0xDA;
-
-    if data.len() < 4 || data[0] != 0xFF || data[1] != SOI {
-        return false;
-    }
-
-    let mut i = 2; // after SOI
-    while i + 1 < data.len() {
-        if data[i] != 0xFF {
-            return false;
-        }
-        while i < data.len() && data[i] == 0xFF {
-            i += 1;
-        }
-        if i >= data.len() {
-            return false;
-        }
-        let marker = data[i];
-        i += 1;
-
-        // Standalone markers without length
-        if (0xD0..=0xD7).contains(&marker) || marker == 0x01 || marker == EOI {
-            if marker == EOI {
-                return true;
-            }
-            continue;
-        }
-
-        if i + 1 >= data.len() {
-            return false;
-        }
-        let seg_len = u16::from_be_bytes([data[i], data[i + 1]]) as usize;
-        if seg_len < 2 {
-            return false;
-        }
-        if i + seg_len > data.len() {
-            return false;
-        }
-        i += seg_len;
-
-        if marker == SOS {
-            // Require at least one byte of scan data
-            return i < data.len();
-        }
-    }
-    false
 }
 
 /// Extract ICC profile from APP2 segments following the ICC.1 spec.
@@ -499,7 +433,8 @@ fn extract_icc_from_webp_riff(data: &[u8]) -> Option<Vec<u8>> {
 }
 
 /// Extract ICC profile from AVIF data using libavif with panic and size guards.
-/// libavif-sys is always available (not dependent on napi feature)
+/// Enabled only when the `avif` feature is active.
+#[cfg(feature = "avif")]
 fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
     if data.len() > MAX_ICC_SOURCE_BYTES {
         return None;
@@ -569,6 +504,11 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
     .flatten()
 }
 
+#[cfg(not(feature = "avif"))]
+fn extract_icc_from_avif_safe(_data: &[u8]) -> Option<Vec<u8>> {
+    None
+}
+
 // =============================================================================
 // EXIF METADATA EXTRACTION AND SANITIZATION
 // =============================================================================
@@ -577,14 +517,15 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
 // - Orientation tag reset after auto-orient (prevents double-rotation bugs)
 // - GPS tag stripping by default (privacy-first, exceeds Sharp's capabilities)
 
+#[allow(unused_imports)]
 use little_exif::filetype::FileExtension;
-use little_exif::metadata::Metadata as ExifMetadata;
 
 /// Maximum EXIF data size to process (prevent DoS from malicious inputs)
 const MAX_EXIF_SOURCE_BYTES: usize = 8 * 1024 * 1024;
 
-/// Detect file extension for little_exif from image data magic bytes
-/// Note: Reserved for future PNG/WebP/AVIF EXIF support
+/// Detect file extension for little_exif from image data magic bytes.
+/// Note: Reserved for future PNG/WebP/AVIF EXIF support.
+#[allow(dead_code)]
 fn detect_file_extension(data: &[u8]) -> Option<FileExtension> {
     if data.len() < 12 {
         return None;
@@ -644,20 +585,11 @@ pub fn extract_exif_raw(data: &[u8]) -> Option<Vec<u8>> {
         return extract_exif_raw_jpeg(data);
     }
 
-    // For other formats, we'll extract EXIF using little_exif and serialize
-    // This is a fallback that may not preserve all metadata perfectly
-    let file_ext = detect_file_extension(data)?;
-    let data_vec = data.to_vec();
-
-    std::panic::catch_unwind(|| {
-        let _metadata = ExifMetadata::new_from_vec(&data_vec, file_ext).ok()?;
-        // Serialize the metadata to raw bytes
-        // little_exif doesn't have direct serialization, so we work with what we have
-        // For non-JPEG, we'll store a marker and rely on little_exif at write time
-        Some(data_vec) // Store original for now, sanitize at write time
-    })
-    .ok()
-    .flatten()
+    // EXIF extraction for non-JPEG formats is not yet implemented.
+    // Returning None prevents the entire file buffer from being stored as "EXIF data",
+    // which wastes memory and can bypass firewall metadata size limits.
+    // JPEG EXIF extraction is handled above via extract_exif_raw_jpeg().
+    None
 }
 
 /// Extract raw EXIF APP1 segment from JPEG data
@@ -724,7 +656,9 @@ fn extract_exif_raw_jpeg(data: &[u8]) -> Option<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
+    #[cfg(feature = "avif")]
+    use crate::engine::encoder::encode_avif;
+    use crate::engine::encoder::{encode_jpeg, encode_png, encode_webp};
     use image::{DynamicImage, RgbImage};
     use std::io::Cursor;
 
@@ -1189,6 +1123,7 @@ mod tests {
             }
         }
 
+        #[cfg(feature = "avif")]
         mod avif_icc_tests {
             use super::*;
 
@@ -1249,6 +1184,60 @@ mod tests {
                     "AVIF without ICC should not have ICC profile"
                 );
             }
+        }
+    }
+
+    mod exif_raw_tests {
+        use super::*;
+
+        #[test]
+        fn extract_exif_raw_returns_none_for_png() {
+            let png = create_minimal_png();
+            assert!(
+                extract_exif_raw(&png).is_none(),
+                "extract_exif_raw should return None for PNG data"
+            );
+        }
+
+        #[test]
+        fn extract_exif_raw_returns_none_for_webp() {
+            let webp = create_minimal_webp();
+            assert!(
+                extract_exif_raw(&webp).is_none(),
+                "extract_exif_raw should return None for WebP data"
+            );
+        }
+
+        #[test]
+        fn extract_exif_raw_returns_none_for_jpeg_without_exif() {
+            let jpeg = create_minimal_jpeg();
+            assert!(
+                extract_exif_raw(&jpeg).is_none(),
+                "extract_exif_raw should return None for JPEG without EXIF"
+            );
+        }
+
+        #[test]
+        fn extract_exif_raw_returns_data_for_jpeg_with_exif() {
+            let jpeg = create_minimal_jpeg();
+            // Inject an EXIF APP1 segment after SOI
+            let exif_header = b"Exif\0\0";
+            let payload = [0xAA; 20];
+            let seg_len = (2 + exif_header.len() + payload.len()) as u16;
+            let mut modified = Vec::new();
+            modified.extend_from_slice(&jpeg[..2]); // SOI
+            modified.push(0xFF);
+            modified.push(0xE1); // APP1
+            modified.extend_from_slice(&seg_len.to_be_bytes());
+            modified.extend_from_slice(exif_header);
+            modified.extend_from_slice(&payload);
+            modified.extend_from_slice(&jpeg[2..]);
+
+            let result = extract_exif_raw(&modified);
+            assert!(
+                result.is_some(),
+                "extract_exif_raw should return EXIF data for JPEG with EXIF"
+            );
         }
     }
 }

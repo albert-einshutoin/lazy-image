@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>lazy-image ROI Calculator</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --danger: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #eef2ff 0%, var(--bg) 30%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.7rem; }
+    p { margin: 0 0 10px; line-height: 1.55; }
+    .muted { color: var(--muted); font-size: 0.95rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.98rem;
+      color: var(--text);
+      background: #fff;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: #fff;
+    }
+    .k { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .v { font-size: 1.2rem; font-weight: 800; }
+    .highlight {
+      border-color: #99f6e4;
+      background: var(--accent-soft);
+    }
+    .negative {
+      color: var(--danger);
+    }
+    .positive {
+      color: var(--accent);
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 1.4rem; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>lazy-image ROI Calculator</h1>
+      <p>Estimate how much CDN transfer cost you can save by reducing average image size.</p>
+      <p class="muted">Formula details: <a href="./ROI_CALCULATOR.md">ROI_CALCULATOR.md</a></p>
+      <div class="grid">
+        <div>
+          <label for="images">Image deliveries per month</label>
+          <input id="images" type="number" min="0" step="1000" value="10000000" />
+        </div>
+        <div>
+          <label for="sizeMb">Average size before optimization (MB)</label>
+          <input id="sizeMb" type="number" min="0" step="0.01" value="1.0" />
+        </div>
+        <div>
+          <label for="reduction">Average reduction (%)</label>
+          <input id="reduction" type="number" min="0" max="95" step="1" value="25" />
+        </div>
+        <div>
+          <label for="cdnCost">CDN transfer cost ($/GB)</label>
+          <input id="cdnCost" type="number" min="0" step="0.001" value="0.085" />
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <p><strong>Break-even model</strong> (optional): compare bandwidth savings vs. one-time encoding overhead.</p>
+      <div class="grid">
+        <div>
+          <label for="unique">Unique generated images per month</label>
+          <input id="unique" type="number" min="0" step="100" value="100000" />
+        </div>
+        <div>
+          <label for="extraMs">Extra encode time vs sharp (ms/image)</label>
+          <input id="extraMs" type="number" min="0" step="1" value="120" />
+        </div>
+        <div>
+          <label for="cpuRate">Compute cost ($ per vCPU-hour)</label>
+          <input id="cpuRate" type="number" min="0" step="0.001" value="0.04" />
+        </div>
+      </div>
+      <p class="muted">If your workload is pre-generated or cached heavily, encoding overhead impact is usually smaller.</p>
+    </section>
+
+    <section class="card">
+      <h2>Results</h2>
+      <div class="result-grid">
+        <div class="stat">
+          <div class="k">Transfer before</div>
+          <div class="v" id="beforeGb">-</div>
+        </div>
+        <div class="stat">
+          <div class="k">Transfer after</div>
+          <div class="v" id="afterGb">-</div>
+        </div>
+        <div class="stat">
+          <div class="k">Data saved</div>
+          <div class="v" id="savedGb">-</div>
+        </div>
+        <div class="stat highlight">
+          <div class="k">Bandwidth savings / month</div>
+          <div class="v positive" id="monthlySavings">-</div>
+        </div>
+        <div class="stat">
+          <div class="k">Bandwidth savings / year</div>
+          <div class="v positive" id="yearlySavings">-</div>
+        </div>
+        <div class="stat">
+          <div class="k">Extra encode compute / month</div>
+          <div class="v" id="encodeCost">-</div>
+        </div>
+        <div class="stat highlight">
+          <div class="k">Net savings / month</div>
+          <div class="v" id="netSavings">-</div>
+        </div>
+        <div class="stat">
+          <div class="k">Break-even views per image</div>
+          <div class="v" id="breakevenViews">-</div>
+        </div>
+      </div>
+      <p class="muted" id="interpretation"></p>
+    </section>
+  </main>
+
+  <script>
+    const ids = ["images", "sizeMb", "reduction", "cdnCost", "unique", "extraMs", "cpuRate"];
+
+    function n(id) {
+      return Number(document.getElementById(id).value || 0);
+    }
+
+    function fmtGb(v) {
+      if (!Number.isFinite(v)) return "-";
+      return `${v.toLocaleString(undefined, { maximumFractionDigits: 2 })} GB`;
+    }
+
+    function fmtUsd(v) {
+      if (!Number.isFinite(v)) return "-";
+      return `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function calc() {
+      const images = n("images");
+      const sizeMb = n("sizeMb");
+      const reductionPct = Math.max(0, Math.min(95, n("reduction")));
+      const cdnCost = n("cdnCost");
+      const unique = n("unique");
+      const extraMs = n("extraMs");
+      const cpuRate = n("cpuRate");
+
+      const beforeGb = images * sizeMb / 1024;
+      const afterGb = beforeGb * (1 - reductionPct / 100);
+      const savedGb = beforeGb - afterGb;
+      const monthlySavings = savedGb * cdnCost;
+      const yearlySavings = monthlySavings * 12;
+
+      const encodeHours = unique * extraMs / (1000 * 60 * 60);
+      const encodeCost = encodeHours * cpuRate;
+      const netSavings = monthlySavings - encodeCost;
+
+      const savingsPerViewPerImage = (sizeMb / 1024) * (reductionPct / 100) * cdnCost;
+      const encodeCostPerImage = extraMs / (1000 * 60 * 60) * cpuRate;
+      const breakevenViews = savingsPerViewPerImage > 0 ? encodeCostPerImage / savingsPerViewPerImage : Infinity;
+
+      document.getElementById("beforeGb").textContent = fmtGb(beforeGb);
+      document.getElementById("afterGb").textContent = fmtGb(afterGb);
+      document.getElementById("savedGb").textContent = fmtGb(savedGb);
+      document.getElementById("monthlySavings").textContent = fmtUsd(monthlySavings);
+      document.getElementById("yearlySavings").textContent = fmtUsd(yearlySavings);
+      document.getElementById("encodeCost").textContent = fmtUsd(encodeCost);
+
+      const netEl = document.getElementById("netSavings");
+      netEl.textContent = fmtUsd(netSavings);
+      netEl.className = `v ${netSavings >= 0 ? "positive" : "negative"}`;
+
+      const breakEl = document.getElementById("breakevenViews");
+      breakEl.textContent = Number.isFinite(breakevenViews)
+        ? breakevenViews.toLocaleString(undefined, { maximumFractionDigits: 2 })
+        : "-";
+
+      const text = netSavings >= 0
+        ? `Estimated monthly net savings are positive. With current assumptions, break-even is around ${breakEl.textContent} views per generated image.`
+        : "Estimated monthly net savings are negative. Re-check reduction %, CDN rate, and compute assumptions.";
+      document.getElementById("interpretation").textContent = text;
+    }
+
+    ids.forEach((id) => {
+      document.getElementById(id).addEventListener("input", calc);
+    });
+
+    calc();
+  </script>
+</body>
+</html>

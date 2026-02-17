@@ -75,6 +75,23 @@ async function runTests() {
         // Note: For very small images (1x1), resizing may increase file size
     });
 
+    await asyncTest('resize options object works', async () => {
+        const result = await ImageEngine.from(buffer)
+            .resize({ width: 120, fit: 'cover' })
+            .toBuffer('jpeg', 80);
+        const meta = inspect(result);
+        assert.strictEqual(meta.width, 120, 'resize({ width }) should set output width');
+    });
+
+    await asyncTest('resize options object takes precedence over trailing positional args', async () => {
+        const result = await ImageEngine.from(buffer)
+            .resize({ width: 120 }, 50, 'fill')
+            .toBuffer('jpeg', 80);
+        const meta = inspect(result);
+        assert.strictEqual(meta.width, 120, 'width from options should be used');
+        assert.notStrictEqual(meta.height, 50, 'trailing positional args should be ignored when options object is used');
+    });
+
     await asyncTest('WebP encoding works', async () => {
         const result = await ImageEngine.from(buffer).resize(100).toBuffer('webp', 80);
         assert(result.length > 0, 'output should have content');
@@ -134,14 +151,6 @@ async function runTests() {
         if (metrics.formatIn !== null) {
             assert(metrics.formatIn.length > 0, 'formatIn should not be empty string if not null');
         }
-
-        // Legacy aliases remain stable
-        assert.strictEqual(metrics.decodeTime, metrics.decodeMs, 'decodeTime mirrors decodeMs');
-        assert.strictEqual(metrics.processTime, metrics.opsMs, 'processTime mirrors opsMs');
-        assert.strictEqual(metrics.encodeTime, metrics.encodeMs, 'encodeTime mirrors encodeMs');
-        assert.strictEqual(metrics.memoryPeak, metrics.peakRss, 'memoryPeak mirrors peakRss');
-        assert.strictEqual(metrics.inputSize, metrics.bytesIn, 'inputSize mirrors bytesIn');
-        assert.strictEqual(metrics.outputSize, metrics.bytesOut, 'outputSize mirrors bytesOut');
 
         assert(typeof metrics.cpuTime === 'number', 'cpuTime should be a number');
         assert(metrics.cpuTime >= 0, 'cpuTime should be non-negative');

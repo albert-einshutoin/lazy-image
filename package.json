@@ -1,7 +1,7 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.10.2",
-  "description": "Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg",
+  "version": "0.11.0",
+  "description": "Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -35,6 +35,11 @@
     "test:bench:compare": "node test/benchmarks/sharp-comparison.bench.js",
     "test:bench:verify": "node test/benchmarks/readme-verification.bench.js",
     "test:bench:smoke": "node test/benchmarks/pipeline-smoke.bench.js",
+    "test:bench:avif": "node test/benchmarks/avif-comparison.bench.js",
+    "test:bench:memory": "node test/benchmarks/memory-tracking.bench.js",
+    "test:bench:cold-start": "node test/benchmarks/cold-start.bench.js",
+    "test:bench:extended": "npm run test:bench:avif && npm run test:bench:memory && npm run test:bench:cold-start",
+    "test:bench:regression-check": "node scripts/bench/check-regression.js",
     "test:clean": "rm -rf .tmp/",
     "test:rust": "cargo test --no-default-features",
     "version": "node scripts/sync-version.js",
@@ -66,12 +71,12 @@
     }
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "0.10.2",
-    "@alberteinshutoin/lazy-image-darwin-x64": "0.10.2",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.10.2",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.10.2",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.10.2",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.10.2"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.11.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.11.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.11.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.11.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.11.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.11.0"
   },
   "engines": {
     "node": ">= 18"

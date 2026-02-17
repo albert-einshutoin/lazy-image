@@ -1,6 +1,6 @@
 // lib.rs
 //
-// lazy-image: A next-generation image processing engine for Node.js
+// lazy-image: Web image optimization engine for Node.js
 //
 // Design goals:
 // - Faster than sharp
@@ -169,13 +169,25 @@ pub fn supported_input_formats() -> Vec<String> {
 /// Get supported output formats
 #[napi]
 pub fn supported_output_formats() -> Vec<String> {
-    vec![
-        "jpeg".to_string(),
-        "jpg".to_string(),
-        "png".to_string(),
-        "webp".to_string(),
-        "avif".to_string(),
-    ]
+    #[cfg(feature = "avif")]
+    {
+        vec![
+            "jpeg".to_string(),
+            "jpg".to_string(),
+            "png".to_string(),
+            "webp".to_string(),
+            "avif".to_string(),
+        ]
+    }
+    #[cfg(not(feature = "avif"))]
+    {
+        vec![
+            "jpeg".to_string(),
+            "jpg".to_string(),
+            "png".to_string(),
+            "webp".to_string(),
+        ]
+    }
 }
 
 /// Metrics payload version. Keep in sync with docs/metrics-schema.json
@@ -222,20 +234,6 @@ pub struct ProcessingMetrics {
     pub metadata_stripped: bool,
     /// Non-fatal policy rejections (e.g., strict policy forcing metadata strip)
     pub policy_violations: Vec<String>,
-    // ----------------------------------------------------------------------
-    // Legacy fields preserved for backward compatibility
-    /// Time taken to decode the image (milliseconds) - legacy alias of decode_ms
-    pub decode_time: f64,
-    /// Time taken to apply all operations (milliseconds) - legacy alias of ops_ms
-    pub process_time: f64,
-    /// Time taken to encode the image (milliseconds) - legacy alias of encode_ms
-    pub encode_time: f64,
-    /// Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss
-    pub memory_peak: u32,
-    /// Input size legacy alias (bytes_in)
-    pub input_size: u32,
-    /// Output size legacy alias (bytes_out)
-    pub output_size: u32,
 }
 
 #[cfg(not(feature = "napi"))]
@@ -277,20 +275,6 @@ pub struct ProcessingMetrics {
     pub metadata_stripped: bool,
     /// Non-fatal policy rejections (e.g., strict policy forcing metadata strip)
     pub policy_violations: Vec<String>,
-    // ----------------------------------------------------------------------
-    // Legacy fields preserved for backward compatibility
-    /// Time taken to decode the image (milliseconds) - legacy alias of decode_ms
-    pub decode_time: f64,
-    /// Time taken to apply all operations (milliseconds) - legacy alias of ops_ms
-    pub process_time: f64,
-    /// Time taken to encode the image (milliseconds) - legacy alias of encode_ms
-    pub encode_time: f64,
-    /// Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss
-    pub memory_peak: u32,
-    /// Input size legacy alias (bytes_in)
-    pub input_size: u32,
-    /// Output size legacy alias (bytes_out)
-    pub output_size: u32,
 }
 
 #[cfg(feature = "napi")]
@@ -313,12 +297,6 @@ impl Default for ProcessingMetrics {
             icc_preserved: false,
             metadata_stripped: true,
             policy_violations: Vec::new(),
-            decode_time: 0.0,
-            process_time: 0.0,
-            encode_time: 0.0,
-            memory_peak: 0,
-            input_size: 0,
-            output_size: 0,
         }
     }
 }
@@ -343,12 +321,6 @@ impl Default for ProcessingMetrics {
             icc_preserved: false,
             metadata_stripped: true,
             policy_violations: Vec::new(),
-            decode_time: 0.0,
-            process_time: 0.0,
-            encode_time: 0.0,
-            memory_peak: 0,
-            input_size: 0,
-            output_size: 0,
         }
     }
 }
@@ -358,4 +330,43 @@ impl Default for ProcessingMetrics {
 pub struct OutputWithMetrics {
     pub data: napi::bindgen_prelude::Buffer,
     pub metrics: ProcessingMetrics,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cargo_pkg_version_is_semver() {
+        // version() is NAPI-only, but the underlying env!("CARGO_PKG_VERSION")
+        // is always available. Verify it is a valid semver string.
+        let version = env!("CARGO_PKG_VERSION");
+        assert!(!version.is_empty(), "CARGO_PKG_VERSION must be non-empty");
+        semver::Version::parse(version)
+            .unwrap_or_else(|_| panic!("version '{version}' should be valid semver"));
+    }
+
+    #[test]
+    fn test_processing_metrics_version_constant() {
+        assert_eq!(PROCESSING_METRICS_VERSION, "1.0.0");
+    }
+
+    #[test]
+    fn test_processing_metrics_default() {
+        let m = ProcessingMetrics::default();
+        assert_eq!(m.version, PROCESSING_METRICS_VERSION);
+        assert_eq!(m.decode_ms, 0.0);
+        assert_eq!(m.ops_ms, 0.0);
+        assert_eq!(m.encode_ms, 0.0);
+        assert_eq!(m.total_ms, 0.0);
+        assert_eq!(m.peak_rss, 0);
+        assert_eq!(m.bytes_in, 0);
+        assert_eq!(m.bytes_out, 0);
+        assert_eq!(m.compression_ratio, 0.0);
+        assert!(m.format_in.is_none());
+        assert!(m.format_out.is_empty());
+        assert!(!m.icc_preserved);
+        assert!(m.metadata_stripped);
+        assert!(m.policy_violations.is_empty());
+    }
 }

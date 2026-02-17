@@ -257,10 +257,13 @@ impl OutputFormat {
                 let q = quality.unwrap_or(80); // WebP default: 80
                 Ok(Self::WebP { quality: q })
             }
+            #[cfg(feature = "avif")]
             "avif" => {
                 let q = quality.unwrap_or(60); // AVIF default: 60 (high compression efficiency)
                 Ok(Self::Avif { quality: q })
             }
+            #[cfg(not(feature = "avif"))]
+            "avif" => Err("unsupported format: avif (built without avif feature)".to_string()),
             other => Err(format!("unsupported format: {other}")),
         }
     }
@@ -400,12 +403,14 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_avif_with_quality() {
             let format = OutputFormat::from_str("avif", Some(70)).unwrap();
             assert!(matches!(format, OutputFormat::Avif { quality: 70 }));
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_avif_default_quality() {
             let format = OutputFormat::from_str("avif", None).unwrap();
             assert!(matches!(format, OutputFormat::Avif { quality: 60 }));
@@ -444,9 +449,18 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_case_insensitive_avif() {
             assert!(OutputFormat::from_str("AVIF", None).is_ok());
             assert!(OutputFormat::from_str("Avif", None).is_ok());
+        }
+
+        #[test]
+        #[cfg(not(feature = "avif"))]
+        fn test_avif_is_unsupported_without_feature() {
+            let err = OutputFormat::from_str("avif", Some(60)).unwrap_err();
+            assert!(err.contains("unsupported format"));
+            assert!(err.contains("without avif feature"));
         }
 
         #[test]
@@ -484,6 +498,81 @@ mod tests {
 
             let format = OutputFormat::from_str("jpeg", Some(100)).unwrap();
             assert!(matches!(format, OutputFormat::Jpeg { quality: 100, .. }));
+        }
+
+        #[test]
+        fn test_from_str_with_options_fast_mode_true() {
+            let format = OutputFormat::from_str_with_options("jpeg", Some(80), true).unwrap();
+            match format {
+                OutputFormat::Jpeg { quality, fast_mode } => {
+                    assert_eq!(quality, 80);
+                    assert!(fast_mode);
+                }
+                _ => panic!("expected Jpeg variant"),
+            }
+        }
+
+        #[test]
+        fn test_from_str_with_options_fast_mode_false() {
+            let format = OutputFormat::from_str_with_options("jpeg", Some(80), false).unwrap();
+            match format {
+                OutputFormat::Jpeg { quality, fast_mode } => {
+                    assert_eq!(quality, 80);
+                    assert!(!fast_mode);
+                }
+                _ => panic!("expected Jpeg variant"),
+            }
+        }
+
+        #[test]
+        fn test_from_str_with_options_fast_mode_ignored_for_non_jpeg() {
+            // fast_mode only applies to JPEG; other formats should parse OK
+            let webp = OutputFormat::from_str_with_options("webp", Some(80), true).unwrap();
+            assert!(matches!(webp, OutputFormat::WebP { quality: 80 }));
+
+            let png = OutputFormat::from_str_with_options("png", None, true).unwrap();
+            assert!(matches!(png, OutputFormat::Png));
+
+            #[cfg(feature = "avif")]
+            {
+                let avif = OutputFormat::from_str_with_options("avif", Some(60), true).unwrap();
+                assert!(matches!(avif, OutputFormat::Avif { quality: 60 }));
+            }
+        }
+
+        #[test]
+        fn test_from_str_default_fast_mode_is_false() {
+            // from_str (no fast_mode) should default to fast_mode=false
+            let format = OutputFormat::from_str("jpeg", Some(85)).unwrap();
+            match format {
+                OutputFormat::Jpeg { fast_mode, .. } => {
+                    assert!(!fast_mode, "from_str should default fast_mode to false");
+                }
+                _ => panic!("expected Jpeg variant"),
+            }
+        }
+
+        #[test]
+        fn test_as_str_all_formats() {
+            assert_eq!(
+                OutputFormat::Jpeg {
+                    quality: 80,
+                    fast_mode: false
+                }
+                .as_str(),
+                "jpeg"
+            );
+            assert_eq!(
+                OutputFormat::Jpeg {
+                    quality: 80,
+                    fast_mode: true
+                }
+                .as_str(),
+                "jpeg"
+            );
+            assert_eq!(OutputFormat::Png.as_str(), "png");
+            assert_eq!(OutputFormat::WebP { quality: 80 }.as_str(), "webp");
+            assert_eq!(OutputFormat::Avif { quality: 60 }.as_str(), "avif");
         }
     }
 

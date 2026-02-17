@@ -48,15 +48,15 @@ mod tasks;
 // Re-export commonly used types and functions
 pub use api::ImageEngine;
 pub use decoder::{
-    check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate, detect_format,
-    ensure_dimensions_safe,
+    check_dimensions, decode_image, decode_jpeg_mozjpeg, decode_with_image_crate,
+    detect_exif_orientation, detect_format, ensure_dimensions_safe,
 };
 pub use encoder::{
     embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
     encode_webp, QualitySettings,
 };
 pub use firewall::FirewallConfig;
-pub use io::{extract_icc_profile, extract_icc_profile_lossy, Source};
+pub use io::{extract_exif_raw, extract_icc_profile, extract_icc_profile_lossy, Source};
 pub use pipeline::{
     apply_ops, calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned,
     optimize_ops, ResizeError,
@@ -757,6 +757,7 @@ mod tests {
             }
         }
 
+        #[cfg(feature = "avif")]
         mod avif_icc_tests {
             use super::*;
             use crate::engine::io::is_avif_data;
@@ -1310,6 +1311,7 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_encode_avif_produces_valid_avif() {
             let img = create_test_image(100, 100);
             let result = encode_avif(&img, 60, None).unwrap();
@@ -1321,6 +1323,7 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_encode_avif_quality_affects_size() {
             let img = create_test_image(100, 100);
             let high_quality = encode_avif(&img, 80, None).unwrap();
@@ -1328,6 +1331,14 @@ mod tests {
             // Verify both are valid AVIF
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
+        }
+
+        #[test]
+        #[cfg(not(feature = "avif"))]
+        fn test_encode_avif_returns_unsupported_without_feature() {
+            let img = create_test_image(100, 100);
+            let result = encode_avif(&img, 60, None);
+            assert!(result.is_err());
         }
 
         #[test]

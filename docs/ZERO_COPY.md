@@ -65,12 +65,13 @@ These numbers are reproducible via the measurement script; open an issue/PR if y
 
 ## Behavior when files are modified or deleted during mmap
 
-- **Contract**: It is assumed that the source file will not be modified or deleted during processing (modification is undefined behavior).
-- **Possible outcomes**: Decode failure, corrupted images, OS-dependent SIGBUS/SIGSEGV (Linux/macOS), or deletion failure on Windows.
+- **Contract**: Source files must not be modified or deleted while processing is in progress.
+- **Possible outcomes on Linux/macOS**: decode failure, corrupted images, or a fatal `SIGBUS`/`SIGSEGV` if mapped pages become invalid (for example due to truncation).
+- **Possible outcomes on Windows**: deletion typically fails while the mapping is active; concurrent modification can still cause decode failure or corrupted output.
 - **Recommendations**:
-  - In environments where modification is a concern, use copy paths such as `from(Buffer)` or copy to a temporary directory before processing.
-  - To prevent concurrent writes on shared storage, use OS locks (equivalent to `flock`).
-  - On Windows, files cannot be deleted while mmap is active, so keep the file until processing completes or use `from(Buffer)`.
+  - If files may change during processing, use copy paths such as `from(Buffer)` or copy to a temporary local path first.
+  - To prevent concurrent writes on shared storage, use file locking (for example, `flock`-equivalent OS locks).
+  - On Windows, keep source files until processing completes, or switch to `from(Buffer)` when immediate deletion is required.
 
 ## Additional mmap safety assumptions (fromPath/processBatch)
 
@@ -108,3 +109,22 @@ These numbers are reproducible via the measurement script; open an issue/PR if y
   fs.unlinkSync(tmp); // Original file remains unchanged
   ```
 - **Batch processing**: Keep input files during `processBatch()` execution and delete after completion (after confirming that the scope has exited and mmap is closed).
+
+## Caveats and Platform-Specific Behavior
+
+For mmap safety requirements and failure modes, see:
+- `Behavior when files are modified or deleted during mmap`
+- `Additional mmap safety assumptions (fromPath/processBatch)`
+
+### Windows Memory Detection
+
+`detect_system_memory()` returns `None` on Windows. Batch processing falls back to CPU-only concurrency estimation, which may cause OOM with many concurrent large images. Consider setting explicit concurrency limits on Windows.
+
+### Serverless Cold Start
+
+First invocation has additional overhead:
+- jemalloc initialization (~1-2ms)
+- rayon thread pool creation via `OnceLock` (~1-3ms)
+- First codec initialization (format-dependent)
+
+Subsequent invocations reuse the thread pool and have no initialization overhead.

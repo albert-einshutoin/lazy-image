@@ -2,14 +2,17 @@
 //
 // Encoder operations: JPEG (mozjpeg), PNG, WebP, AVIF with quality settings
 
+#[cfg(feature = "avif")]
 use crate::codecs::avif_safe::{create_rgb_image, SafeAvifEncoder, SafeAvifImage, SafeAvifRwData};
 use crate::engine::check_dimensions;
 use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
 use image::{DynamicImage, GenericImageView, ImageFormat};
 use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
+#[cfg(feature = "avif")]
 use libavif_sys::*;
 use mozjpeg::{ColorSpace, Compress, ScanMode};
+#[cfg(feature = "avif")]
 use std::cmp;
 use std::io::Cursor;
 
@@ -546,6 +549,7 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 ///
 /// This function uses safe abstractions from `codecs::avif_safe` to minimize
 /// unsafe blocks and improve memory safety.
+#[cfg(feature = "avif")]
 pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:avif", || {
         use std::borrow::Cow;
@@ -639,6 +643,17 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
 
         Ok(output.to_vec())
     })
+}
+
+#[cfg(not(feature = "avif"))]
+pub fn encode_avif(
+    _img: &DynamicImage,
+    _quality: u8,
+    _icc: Option<&[u8]>,
+) -> EncoderResult<Vec<u8>> {
+    Err(LazyImageError::unsupported_format(
+        "avif (built without avif feature)",
+    ))
 }
 
 #[cfg(test)]
@@ -869,6 +884,7 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_encode_avif_produces_valid_avif() {
             let img = create_test_image(100, 100);
             let result = encode_avif(&img, 60, None).unwrap();
@@ -880,6 +896,7 @@ mod tests {
         }
 
         #[test]
+        #[cfg(feature = "avif")]
         fn test_encode_avif_quality_affects_size() {
             let img = create_test_image(100, 100);
             let high_quality = encode_avif(&img, 80, None).unwrap();
@@ -887,6 +904,17 @@ mod tests {
             // Both outputs should be valid AVIF
             assert!(high_quality.len() > 0);
             assert!(low_quality.len() > 0);
+        }
+
+        #[test]
+        #[cfg(not(feature = "avif"))]
+        fn test_encode_avif_returns_unsupported_without_feature() {
+            let img = create_test_image(100, 100);
+            let err = encode_avif(&img, 60, None).unwrap_err();
+            assert!(matches!(
+                err,
+                crate::error::LazyImageError::UnsupportedFormat { .. }
+            ));
         }
 
         #[test]

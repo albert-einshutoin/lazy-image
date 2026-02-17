@@ -2,11 +2,13 @@
 
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/239496c7-ad7f-4649-b130-8ed0a65481f7" />
 
-> **Web-optimized image processing engine for Node.js.** Smaller files than sharp. Memory-safe Rust core.
->
-> - **Not** a drop-in replacement for sharp — use sharp if you need its full API.
-> - **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. Zero-copy path: `fromPath()`/`processBatch()` → `toFile()`.
-> - Japanese: [README.ja.md](./README.ja.md). **mmap**: Do not modify/delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
+> **Web image optimization engine for Node.js.** Rust core, smaller outputs than sharp.
+
+lazy-image reduces image file sizes by 20-30% compared to sharp, trading encoding speed for smaller outputs. Ideal for CDN-heavy workloads where bandwidth costs matter more than CPU costs.
+
+- **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
+- **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. Zero-copy path: `fromPath()`/`processBatch()` → `toFile()`.
+- Japanese: [README.ja.md](./README.ja.md). **mmap**: Do not modify/delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -31,14 +33,49 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 ---
 
-## When to Use (vs sharp)
+## Choose lazy-image if / Choose sharp if
 
-| Your priority | Use |
-|---------------|-----|
-| Smaller files, less memory, serverless, AVIF | **lazy-image** |
-| Max throughput, broad formats, drop-in API | **sharp** |
+| **Choose lazy-image if** | **Choose sharp if** |
+|---|---|
+| You pay for bandwidth (CDN, S3, CloudFront) | You need maximum encoding throughput |
+| You run in serverless / memory-constrained envs | You need a broad image editing API |
+| You want AVIF with good defaults | You need drop-in API compatibility |
+| You want smaller outputs over faster encodes | You need GIF, SVG, or TIFF support |
+
+**Key differentiators:**
+
+1. **File size optimization** — mozjpeg + libwebp + ravif produce 20-30% smaller outputs than sharp's defaults
+2. **Memory efficiency** — zero-copy mmap architecture; no pixel data copied to the JS heap
+3. **Security-first** — GPS auto-strip, Image Firewall, Rust memory safety
+4. **AVIF excellence** — ravif encoder with quality-optimized defaults
+
+**What lazy-image does NOT compete on:** raw encoding speed (sharp/libvips is faster), feature breadth (no drawing, compositing, or GIF), API compatibility with sharp.
 
 Benchmarks and details: [docs/PERFORMANCE.md](./docs/PERFORMANCE.md). Full compatibility matrix: [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
+
+---
+
+## Cost Savings Example (ROI)
+
+Assume:
+- average image size before optimization: **1.0 MB**
+- average reduction with lazy-image: **25%**
+- CDN transfer rate: **$0.085/GB** (example: CloudFront pay-as-you-go, US/EU next 9TB tier)
+
+| Scenario | Transfer with sharp | Transfer with lazy-image | Monthly savings |
+|---|---:|---:|---:|
+| 1M image deliveries / month | 976.6 GB | 732.4 GB | **$20.75** |
+| 10M image deliveries / month | 9.54 TB | 7.15 TB | **$207.52** |
+| 100M image deliveries / month | 95.37 TB | 71.53 TB | **$2,075.20** |
+
+Break-even intuition:
+- Encoding overhead is paid **once per generated image**
+- Bandwidth savings are realized **every time the image is delivered**
+- If each generated image is viewed multiple times, lazy-image generally wins quickly
+
+Use the interactive calculator:
+- [docs/roi-calculator.html](./docs/roi-calculator.html)
+- Methodology and formulas: [docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md)
 
 ---
 
@@ -58,7 +95,7 @@ Platform-specific binaries (~6–9 MB per platform) are installed automatically.
 
 ```javascript
 await ImageEngine.fromPath('photo.jpg')
-  .resize(800, null)
+  .resize({ width: 800, fit: 'inside' }) // positional args also supported
   .toFile('thumb.jpg', 'jpeg', 85);
 ```
 
@@ -66,7 +103,7 @@ await ImageEngine.fromPath('photo.jpg')
 
 ```javascript
 const buffer = await ImageEngine.fromPath('input.png')
-  .resize(600, null)
+  .resize({ width: 600 })
   .toBuffer('webp', 80);
 ```
 
@@ -92,16 +129,20 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 | **Troubleshooting** | [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) |
 | **Security policy & reporting** | [SECURITY.md](./SECURITY.md) |
 | **Roadmap & scope** | [docs/ROADMAP.md](./docs/ROADMAP.md) |
+| **ROI calculator methodology** | [docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md) |
 | **Version history** | [docs/VERSION_HISTORY.md](./docs/VERSION_HISTORY.md) |
 | **Specification (spec/)** | [spec/pipeline.md](./spec/pipeline.md), [spec/resize.md](./spec/resize.md), [spec/errors.md](./spec/errors.md), [spec/limits.md](./spec/limits.md), [spec/quality.md](./spec/quality.md), [spec/metadata.md](./spec/metadata.md) |
 | **Error codes** | [docs/ERROR_CODES.md](./docs/ERROR_CODES.md) |
 | **Benchmarks (raw data)** | [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md) |
+| **Binary size comparison (AVIF on/off)** | [docs/BINARY_SIZE.md](./docs/BINARY_SIZE.md) |
+| **Benchmark snapshots log** | [docs/BENCHMARK_RESULTS.md](./docs/BENCHMARK_RESULTS.md) |
+| **Benchmark operations** | [docs/BENCHMARK_OPERATIONS.md](./docs/BENCHMARK_OPERATIONS.md) |
 
 ---
 
 ## Features (summary)
 
-AVIF · Smaller JPEG/WebP (mozjpeg, libwebp) · ICC profiles (AVIF in v0.9.x) · EXIF auto-orient · Zero-copy file I/O · Bounded-memory streaming · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles (AVIF in v0.9.x) · EXIF auto-orient · Zero-copy file I/O · Bounded-memory streaming · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ---
 

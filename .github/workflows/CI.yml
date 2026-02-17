@@ -17,6 +17,12 @@ on:
       - 'v*'
   pull_request:
   workflow_dispatch:  # Allow manual trigger
+    inputs:
+      dry_run:
+        description: 'Skip npm publish and GitHub Release creation/update'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -72,7 +78,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -160,7 +166,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
 
@@ -201,7 +207,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -236,7 +242,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -293,7 +299,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y nasm
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -361,7 +367,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org
@@ -476,7 +482,7 @@ jobs:
               const pkg = {
                 name: '$pkg_name',
                 version: '$VERSION',
-                description: 'Next-generation image processing engine - smaller files than sharp, powered by Rust + mozjpeg',
+                description: 'Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg',
                 main: 'lazy-image.${platform}.node',
                 os: ['$os_part'],
                 cpu: ['$cpu_part'],
@@ -538,6 +544,7 @@ jobs:
           done
 
       - name: Publish platform packages
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
           set +e  # Don't exit on error, we want to try all packages
           published=0
@@ -613,6 +620,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish main package
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
           # Remove .node files from main package (they're in platform packages now)
           rm -f *.node
@@ -622,3 +630,22 @@ jobs:
           npm publish --access public --provenance --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run summary
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          echo "dry_run=true: skipped npm publish and GitHub Release creation/update."
+
+      - name: Create or Update GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && (github.event_name != 'workflow_dispatch' || !inputs.dry_run) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists. Updating flags..."
+            gh release edit "$TAG" --draft=false --prerelease=false
+          else
+            echo "Creating release $TAG..."
+            gh release create "$TAG" --generate-notes
+          fi

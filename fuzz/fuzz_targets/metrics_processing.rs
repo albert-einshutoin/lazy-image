@@ -38,10 +38,4 @@ fuzz_target!(|m: MetricsInput| {
         metrics.bytes_out as f64 / metrics.bytes_in as f64
     };
     metrics.processing_time = metrics.total_ms / 1000.0;
-    metrics.decode_time = metrics.decode_ms;
-    metrics.process_time = metrics.ops_ms;
-    metrics.encode_time = metrics.encode_ms;
-    metrics.memory_peak = metrics.peak_rss;
-    metrics.input_size = metrics.bytes_in;
-    metrics.output_size = metrics.bytes_out;
 });

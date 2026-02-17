@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "metrics": {
+    "JPEG size (lazy-image)": 31518,
+    "JPEG time (lazy-image)": 87,
+    "WebP size (lazy-image)": 32448,
+    "WebP time (lazy-image)": 176,
+    "AVIF size (lazy-image)": 28678,
+    "AVIF time (lazy-image)": 535,
+    "Complex pipeline size (lazy-image)": 27129,
+    "Complex pipeline time (lazy-image)": 84
+  }
+}

@@ -34,6 +34,7 @@ export declare class ImageEngine {
    * - "cover": maintain aspect ratio and crop to fill the box
    * - "fill": ignore aspect ratio and force exact dimensions
    */
+  resize(options: ResizeOptions): ImageEngine
   resize(width?: number | undefined | null, height?: number | undefined | null, fit?: string | undefined | null): ImageEngine
   /** Crop a region from the image. */
   crop(x: number, y: number, width: number, height: number): ImageEngine
@@ -82,11 +83,6 @@ export declare class ImageEngine {
    * Use a dedicated color management library for true color space conversions.
    */
   normalizePixelFormat(): ImageEngine
-  /**
-   * Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
-   * Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
-   */
-  ensureRgb(): ImageEngine
   /**
    * Apply a built-in preset for common use cases.
    *
@@ -307,6 +303,15 @@ export interface KeepMetadataOptions {
   stripGps?: boolean
 }
 
+export interface ResizeOptions {
+  /** Target width in pixels */
+  width?: number
+  /** Target height in pixels */
+  height?: number
+  /** Resize fit mode */
+  fit?: 'inside' | 'cover' | 'fill'
+}
+
 export interface OutputWithMetrics {
   data: Buffer
   metrics: ProcessingMetrics
@@ -379,22 +384,10 @@ export interface ProcessingMetrics {
   metadataStripped: boolean
   /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
   policyViolations: Array<string>
-  /** Time taken to decode the image (milliseconds) - legacy alias of decode_ms */
-  decodeTime: number
-  /** Time taken to apply all operations (milliseconds) - legacy alias of ops_ms */
-  processTime: number
-  /** Time taken to encode the image (milliseconds) - legacy alias of encode_ms */
-  encodeTime: number
-  /** Peak memory usage during processing (RSS, bytes) - legacy alias of peak_rss */
-  memoryPeak: number
-  /** Input size legacy alias (bytes_in) */
-  inputSize: number
-  /** Output size legacy alias (bytes_out) */
-  outputSize: number
 }
 
 export interface SanitizeOptions {
-  policy?: string
+  policy?: 'strict' | 'lenient'
 }
 
 /** Get supported input formats */

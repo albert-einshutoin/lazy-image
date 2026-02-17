@@ -14,7 +14,7 @@ If you need broad image editing features or a sharp-compatible API, use sharp.
 ## Supported Formats
 
 - **Input**: jpeg/jpg, png, webp
-- **Output**: jpeg/jpg, png, webp, avif
+- **Output**: jpeg/jpg, png, webp, avif (optional at build time via Cargo feature `avif`)
 
 You can query at runtime with `supportedInputFormats()` and
 `supportedOutputFormats()`.

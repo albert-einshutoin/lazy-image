@@ -51,6 +51,18 @@ pub struct KeepMetadataOptions {
 }
 
 #[cfg(feature = "napi")]
+#[derive(Default)]
+#[napi(object)]
+pub struct ResizeOptions {
+    /// Target width in pixels
+    pub width: Option<f64>,
+    /// Target height in pixels
+    pub height: Option<f64>,
+    /// Resize fit mode: inside (default), cover, fill
+    pub fit: Option<String>,
+}
+
+#[cfg(feature = "napi")]
 fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
     // Helper to attach code/category consistently when Env is available
     crate::error::napi_error_with_code(env, err).expect("failed to create napi error")
@@ -491,15 +503,24 @@ impl ImageEngine {
     /// - "inside" (default): maintain aspect ratio and fit within the box
     /// - "cover": maintain aspect ratio and crop to fill the box
     /// - "fill": ignore aspect ratio and force exact dimensions
+    ///
+    /// Supports both signatures:
+    /// - resize({ width?, height?, fit? })
+    /// - resize(width?, height?, fit?)
     #[napi]
     pub fn resize(
         &mut self,
         env: Env,
         this: Reference<ImageEngine>,
-        width: Option<f64>,
+        options_or_width: Either<ResizeOptions, Option<f64>>,
         height: Option<f64>,
         fit: Option<String>,
     ) -> Result<Reference<ImageEngine>> {
+        let (width, height, fit) = match options_or_width {
+            Either::A(options) => (options.width, options.height, options.fit),
+            Either::B(width) => (width, height, fit),
+        };
+
         let fit_mode = if let Some(value) = fit {
             ResizeFit::from_str(&value)
                 .map_err(|_| napi_err(&env, LazyImageError::invalid_resize_fit(value)))?
@@ -675,6 +696,21 @@ impl ImageEngine {
                 self.firewall
                     .scan_metadata(bytes)
                     .map_err(|e| napi_err(&env, e))?;
+
+                // When the image is not yet decoded (lazy path, e.g. fromPath),
+                // read the header to check dimensions against the firewall policy.
+                // This ensures sanitize() rejects oversized images immediately for
+                // both from(buffer) and fromPath(path) construction paths.
+                if self.decoded.is_none() {
+                    let cursor = Cursor::new(bytes);
+                    if let Ok(reader) = ImageReader::new(cursor).with_guessed_format() {
+                        if let Ok((w, h)) = reader.into_dimensions() {
+                            self.firewall
+                                .enforce_pixels(w, h)
+                                .map_err(|e| napi_err(&env, e))?;
+                        }
+                    }
+                }
             }
         }
 
@@ -789,15 +825,6 @@ impl ImageEngine {
             target: crate::ops::ColorSpace::Srgb,
         });
         Ok(this)
-    }
-
-    /// Deprecated: Use `normalizePixelFormat` instead. Scheduled for removal in v1.0.0.
-    /// Kept for backward compatibility; behavior is identical to `normalizePixelFormat`.
-    #[allow(deprecated)]
-    #[deprecated(note = "Use normalizePixelFormat; will be removed in v1.0.0.")]
-    #[napi(js_name = "ensureRgb")]
-    pub fn ensure_rgb(&mut self, this: Reference<ImageEngine>) -> Result<Reference<ImageEngine>> {
-        self.normalize_pixel_format(this)
     }
 
     // =========================================================================

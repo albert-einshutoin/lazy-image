@@ -13,7 +13,7 @@ Full API reference for lazy-image. For a quick start, see [README.md](../README.
 
 | Method | Description |
 |--------|-------------|
-| `.resize(width?, height?, fit?)` | Resize image (`fit`: `'inside'` default, `'cover'` to crop + fill, `'fill'` to ignore aspect ratio) |
+| `.resize(options)` / `.resize(width?, height?, fit?)` | Resize image (`fit`: `'inside'` default, `'cover'` to crop + fill, `'fill'` to ignore aspect ratio) |
 | `.crop(x, y, width, height)` | Crop a region |
 | `.rotate(degrees)` | Rotate (90, 180, 270) |
 | `.flipH()` | Flip horizontally |
@@ -32,7 +32,7 @@ Full API reference for lazy-image. For a quick start, see [README.md](../README.
 
 | Method | Description |
 |--------|-------------|
-| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'`. Default quality: JPEG=85, WebP=80, AVIF=60. |
+| `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` (AVIF requires build feature `avif`). Default quality: JPEG=85, WebP=80, AVIF=60. |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |
@@ -74,6 +74,12 @@ interface ImageMetadata {
 interface Dimensions {
   width: number;
   height: number;
+}
+
+interface ResizeOptions {
+  width?: number;
+  height?: number;
+  fit?: 'inside' | 'cover' | 'fill';
 }
 
 interface PresetResult {

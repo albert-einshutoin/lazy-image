@@ -1692,6 +1692,77 @@ mod tests {
         }
 
         #[test]
+        fn test_auto_orient_identity() {
+            // Orientation 1 = no transformation
+            let img = create_test_image(60, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 1 }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (60, 40));
+        }
+
+        #[test]
+        fn test_auto_orient_rotate_180() {
+            // Orientation 3 = rotate 180
+            let img = create_test_image(60, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 3 }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (60, 40));
+        }
+
+        #[test]
+        fn test_auto_orient_flip_vertical() {
+            // Orientation 4 = flip vertical
+            let img = create_test_image(60, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 4 }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (60, 40));
+        }
+
+        #[test]
+        fn test_auto_orient_transpose() {
+            // Orientation 5 = transpose (rotate 90 CW + flip horizontal)
+            let img = create_test_image(80, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 5 }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            // Transpose swaps width/height
+            assert_eq!(result.dimensions(), (40, 80));
+        }
+
+        #[test]
+        fn test_auto_orient_transverse() {
+            // Orientation 7 = transverse (rotate 270 CW + flip horizontal)
+            let img = create_test_image(80, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 7 }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            // Transverse swaps width/height
+            assert_eq!(result.dimensions(), (40, 80));
+        }
+
+        #[test]
+        fn test_auto_orient_rotate_270() {
+            // Orientation 8 = rotate 270 CW
+            let img = create_test_image(80, 40);
+            let ops = vec![Operation::AutoOrient { orientation: 8 }];
+            let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+            assert_eq!(result.dimensions(), (40, 80));
+        }
+
+        #[test]
+        fn test_auto_orient_invalid_orientation_ignored() {
+            // Invalid orientation values (0, 9, 255) should be silently ignored
+            for orientation in [0, 9, 255] {
+                let img = create_test_image(60, 40);
+                let ops = vec![Operation::AutoOrient { orientation }];
+                let result = apply_ops(Cow::Owned(img), &ops).unwrap();
+                assert_eq!(
+                    result.dimensions(),
+                    (60, 40),
+                    "orientation {orientation} should be no-op"
+                );
+            }
+        }
+
+        #[test]
         fn test_flip_h() {
             let img = create_test_image(100, 100);
             let ops = vec![Operation::FlipH];

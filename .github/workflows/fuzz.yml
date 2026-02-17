@@ -50,6 +50,8 @@ jobs:
           - firewall_bypass
           - metrics_processing
           - streaming_pipeline
+          - decode_avif
+          - exif_parse
     steps:
       - uses: actions/checkout@v6
 
