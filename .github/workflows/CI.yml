@@ -17,6 +17,12 @@ on:
       - 'v*'
   pull_request:
   workflow_dispatch:  # Allow manual trigger
+    inputs:
+      dry_run:
+        description: 'Skip npm publish and GitHub Release creation/update'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -538,6 +544,7 @@ jobs:
           done
 
       - name: Publish platform packages
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
           set +e  # Don't exit on error, we want to try all packages
           published=0
@@ -613,6 +620,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish main package
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
           # Remove .node files from main package (they're in platform packages now)
           rm -f *.node
@@ -623,8 +631,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Dry run summary
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          echo "dry_run=true: skipped npm publish and GitHub Release creation/update."
+
       - name: Create or Update GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && (github.event_name != 'workflow_dispatch' || !inputs.dry_run) }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
