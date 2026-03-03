@@ -2,11 +2,13 @@
 //
 // I/O operations: Source enum, file loading, and ICC profile extraction
 
+use super::memory::{self, MemoryPermit};
 use crate::error::LazyImageError;
 #[cfg(feature = "avif")]
 use libavif_sys::*;
 use memmap2::Mmap;
 use std::fs::File;
+use std::io::Read;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -56,6 +58,44 @@ impl AsRef<[u8]> for MmapGuard {
     }
 }
 
+/// Guard for file-backed in-memory data.
+/// When loaded via `load_file_safe`, this retains a semaphore permit so
+/// source-byte heap usage participates in memory backpressure.
+pub struct MemoryGuard {
+    data: Vec<u8>,
+    _permit: Option<MemoryPermit>,
+}
+
+impl MemoryGuard {
+    pub fn new(data: Vec<u8>) -> Self {
+        Self {
+            data,
+            _permit: None,
+        }
+    }
+
+    fn with_permit(data: Vec<u8>, permit: MemoryPermit) -> Self {
+        Self {
+            data,
+            _permit: Some(permit),
+        }
+    }
+}
+
+impl std::fmt::Debug for MemoryGuard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MemoryGuard")
+            .field("len", &self.data.len())
+            .finish()
+    }
+}
+
+impl AsRef<[u8]> for MemoryGuard {
+    fn as_ref(&self) -> &[u8] {
+        &self.data
+    }
+}
+
 /// Delegates to the centralized platform module for advisory file locking.
 fn try_shared_lock(file: &File) -> bool {
     super::platform::try_shared_lock(file)
@@ -65,16 +105,21 @@ fn try_shared_lock(file: &File) -> bool {
 #[derive(Clone, Debug)]
 pub enum Source {
     /// In-memory image data (from Buffer)
-    Memory(Arc<Vec<u8>>),
+    Memory(Arc<MemoryGuard>),
     /// Memory-mapped file with fd retention for advisory lock persistence
     Mapped(Arc<MmapGuard>),
 }
 
 impl Source {
+    /// Create an in-memory source from owned bytes.
+    pub fn from_vec(data: Vec<u8>) -> Self {
+        Self::Memory(Arc::new(MemoryGuard::new(data)))
+    }
+
     /// Get the bytes directly - zero-copy for both Memory and Mapped sources
     pub fn as_bytes(&self) -> Option<&[u8]> {
         match self {
-            Source::Memory(data) => Some(data.as_slice()),
+            Source::Memory(data) => Some(data.as_ref().as_ref()),
             Source::Mapped(guard) => Some(guard.as_ref()),
         }
     }
@@ -82,7 +127,7 @@ impl Source {
     /// Get the length of the source data
     pub fn len(&self) -> usize {
         match self {
-            Source::Memory(data) => data.len(),
+            Source::Memory(data) => data.as_ref().as_ref().len(),
             Source::Mapped(guard) => guard.len(),
         }
     }
@@ -100,7 +145,7 @@ impl Source {
 pub fn load_file_safe(path: &Path) -> Result<Source, LazyImageError> {
     let path_str = path.to_string_lossy();
 
-    let file = File::open(path).map_err(|e| {
+    let mut file = File::open(path).map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
             LazyImageError::file_not_found(path_str.to_string())
         } else {
@@ -108,40 +153,44 @@ pub fn load_file_safe(path: &Path) -> Result<Source, LazyImageError> {
         }
     })?;
 
-    let metadata = file.metadata().map_err(|e| {
-        LazyImageError::file_read_failed(path_str.to_string(), e)
-    })?;
+    let metadata = file
+        .metadata()
+        .map_err(|e| LazyImageError::file_read_failed(path_str.to_string(), e))?;
 
     let file_size = metadata.len();
 
     if file_size <= MMAP_SIZE_THRESHOLD {
-        // Small/medium files: read into memory for safety
-        let data = std::fs::read(path).map_err(|e| {
-            LazyImageError::file_read_failed(path_str.to_string(), e)
-        })?;
-        return Ok(Source::Memory(Arc::new(data)));
+        return load_open_file_into_memory(&mut file, file_size, path_str.as_ref());
     }
 
     // Large files: attempt mmap with advisory lock
     if !try_shared_lock(&file) {
-        // Lock failed (file held exclusively by another process).
-        // Fall back to reading into memory.
-        let data = std::fs::read(path).map_err(|e| {
-            LazyImageError::file_read_failed(path_str.to_string(), e)
-        })?;
-        return Ok(Source::Memory(Arc::new(data)));
+        return load_open_file_into_memory(&mut file, file_size, path_str.as_ref());
     }
 
     // Safety: We hold an advisory shared lock on the file descriptor.
     // Cooperative writers that respect flock will not modify the file.
     // The fd is retained in MmapGuard so the lock persists until Source is dropped.
     let mmap = unsafe {
-        Mmap::map(&file).map_err(|e| {
-            LazyImageError::mmap_failed(path_str.to_string(), e)
-        })?
+        Mmap::map(&file).map_err(|e| LazyImageError::mmap_failed(path_str.to_string(), e))?
     };
 
     Ok(Source::Mapped(Arc::new(MmapGuard { mmap, _file: file })))
+}
+
+fn load_open_file_into_memory(
+    file: &mut File,
+    file_size: u64,
+    path: &str,
+) -> Result<Source, LazyImageError> {
+    let permit = memory::memory_semaphore().acquire(file_size);
+    let mut data = Vec::new();
+    if let Err(e) = file.read_to_end(&mut data) {
+        return Err(LazyImageError::file_read_failed(path.to_string(), e));
+    }
+    Ok(Source::Memory(Arc::new(MemoryGuard::with_permit(
+        data, permit,
+    ))))
 }
 
 /// Extract ICC profile from image data.

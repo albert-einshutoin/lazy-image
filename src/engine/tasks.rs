@@ -551,7 +551,7 @@ mod non_napi_tests {
         firewall.max_bytes = Some(1); // smaller than PNG size to force rejection
 
         let task = EncodeTask {
-            source: Some(Source::Memory(Arc::new(png))),
+            source: Some(Source::from_vec(png)),
             decoded: None,
             ops: vec![],
             format: OutputFormat::Png,
@@ -576,7 +576,7 @@ mod non_napi_tests {
         // is None regardless. But we verify the flag is stored correctly.
         let png = sample_png_bytes();
         let task = EncodeTask {
-            source: Some(Source::Memory(Arc::new(png))),
+            source: Some(Source::from_vec(png)),
             decoded: None,
             ops: vec![],
             format: OutputFormat::Png,
@@ -911,19 +911,20 @@ impl Task for BatchTask {
                 // Safe file loading: reads small files into memory, uses mmap
                 // with advisory locks only for very large files (>256 MB)
                 let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
-                let data = source
-                    .as_bytes()
-                    .expect("source always has bytes");
+                let data = source.as_bytes().expect("source always has bytes");
 
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
 
-                let estimated_memory =
-                    memory::estimate_memory_from_header(data, &ops, Some(format))
-                        .unwrap_or_else(|| {
-                            let detected_fmt = crate::engine::decoder::detect_format(data);
-                            memory::estimate_fallback_from_file_size(data.len() as u64, detected_fmt)
-                        });
+                let estimated_memory = memory::estimate_memory_from_header(
+                    data,
+                    &ops,
+                    Some(format),
+                )
+                .unwrap_or_else(|| {
+                    let detected_fmt = crate::engine::decoder::detect_format(data);
+                    memory::estimate_fallback_from_file_size(data.len() as u64, detected_fmt)
+                });
                 let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
 
                 let start_total = std::time::Instant::now();

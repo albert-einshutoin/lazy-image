@@ -1382,7 +1382,7 @@ mod tests {
             let png_data = create_minimal_png();
             use crate::engine::io::Source;
             let task = EncodeTask {
-                source: Some(Source::Memory(Arc::new(png_data))),
+                source: Some(Source::from_vec(png_data)),
                 decoded: None,
                 ops: vec![],
                 format: OutputFormat::Png,
@@ -1463,7 +1463,7 @@ mod tests {
             firewall.max_bytes = Some(1);
 
             let task = EncodeTask {
-                source: Some(Source::Memory(Arc::new(png_data))),
+                source: Some(Source::from_vec(png_data)),
                 decoded: None,
                 ops: vec![],
                 format: OutputFormat::Png,
@@ -1490,7 +1490,7 @@ mod tests {
             firewall.max_pixels = Some(1);
 
             let task = EncodeTask {
-                source: Some(Source::Memory(Arc::new(png_data))),
+                source: Some(Source::from_vec(png_data)),
                 decoded: None,
                 ops: vec![],
                 format: OutputFormat::Png,

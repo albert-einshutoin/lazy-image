@@ -385,10 +385,8 @@ impl ImageEngine {
         // We store raw bytes to avoid serialization complexity
         let exif_data = extract_exif_raw(&data).map(Arc::new);
 
-        let data_arc = Arc::new(data);
-
         ImageEngine {
-            source: Some(Source::Memory(data_arc)),
+            source: Some(Source::from_vec(data)),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
