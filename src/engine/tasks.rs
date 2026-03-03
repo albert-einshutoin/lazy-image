@@ -263,7 +263,10 @@ fn process_and_encode_from_parts(
                 .and_then(|b| crate::engine::decoder::detect_format(b));
             memory::estimate_fallback_from_file_size(input_size, detected_format)
         });
-    let permit = memory::memory_semaphore().acquire(estimated_memory);
+    let source_reserved = source.map(|s| s.reserved_memory_bytes()).unwrap_or(0);
+    let sem = memory::memory_semaphore();
+    let additional_memory = estimated_memory.min(sem.capacity().saturating_sub(source_reserved));
+    let permit = sem.acquire(additional_memory);
     // keep guard alive for entire processing scope
     let _permit_guard = permit;
 
@@ -925,7 +928,11 @@ impl Task for BatchTask {
                     let detected_fmt = crate::engine::decoder::detect_format(data);
                     memory::estimate_fallback_from_file_size(data.len() as u64, detected_fmt)
                 });
-                let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
+                let source_reserved = source.reserved_memory_bytes();
+                let sem = memory::memory_semaphore();
+                let additional_memory =
+                    estimated_memory.min(sem.capacity().saturating_sub(source_reserved));
+                let _permit_guard = sem.acquire(additional_memory);
 
                 let start_total = std::time::Instant::now();
 

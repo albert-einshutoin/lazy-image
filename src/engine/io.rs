@@ -63,6 +63,7 @@ impl AsRef<[u8]> for MmapGuard {
 /// source-byte heap usage participates in memory backpressure.
 pub struct MemoryGuard {
     data: Vec<u8>,
+    reserved_bytes: u64,
     _permit: Option<MemoryPermit>,
 }
 
@@ -70,15 +71,21 @@ impl MemoryGuard {
     pub fn new(data: Vec<u8>) -> Self {
         Self {
             data,
+            reserved_bytes: 0,
             _permit: None,
         }
     }
 
-    fn with_permit(data: Vec<u8>, permit: MemoryPermit) -> Self {
+    fn with_permit(data: Vec<u8>, permit: MemoryPermit, reserved_bytes: u64) -> Self {
         Self {
             data,
+            reserved_bytes,
             _permit: Some(permit),
         }
+    }
+
+    fn reserved_bytes(&self) -> u64 {
+        self.reserved_bytes
     }
 }
 
@@ -129,6 +136,14 @@ impl Source {
         match self {
             Source::Memory(data) => data.as_ref().as_ref().len(),
             Source::Mapped(guard) => guard.len(),
+        }
+    }
+
+    /// Bytes already reserved in the weighted semaphore for this source.
+    pub fn reserved_memory_bytes(&self) -> u64 {
+        match self {
+            Source::Memory(data) => data.reserved_bytes(),
+            Source::Mapped(_) => 0,
         }
     }
 }
@@ -183,13 +198,17 @@ fn load_open_file_into_memory(
     file_size: u64,
     path: &str,
 ) -> Result<Source, LazyImageError> {
-    let permit = memory::memory_semaphore().acquire(file_size);
+    let sem = memory::memory_semaphore();
+    let reserved_bytes = file_size.min(sem.capacity());
+    let permit = sem.acquire(file_size);
     let mut data = Vec::new();
     if let Err(e) = file.read_to_end(&mut data) {
         return Err(LazyImageError::file_read_failed(path.to_string(), e));
     }
     Ok(Source::Memory(Arc::new(MemoryGuard::with_permit(
-        data, permit,
+        data,
+        permit,
+        reserved_bytes,
     ))))
 }
 

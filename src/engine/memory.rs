@@ -92,6 +92,10 @@ impl WeightedSemaphore {
         }
     }
 
+    pub fn capacity(&self) -> u64 {
+        self.capacity
+    }
+
     pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
         let need = weight.min(self.capacity); // clamp absurd weights to avoid deadlock
 
@@ -214,7 +218,9 @@ fn default_bpp(format: Option<ImageFormat>) -> u64 {
 /// Resolve the effective BPP: prefer header-parsed value, fall back to format heuristic.
 #[allow(dead_code)] // Used via tasks.rs when napi feature is enabled
 fn effective_bpp(header: &HeaderEstimate) -> u64 {
-    header.decoded_bpp.unwrap_or_else(|| default_bpp(header.format))
+    header
+        .decoded_bpp
+        .unwrap_or_else(|| default_bpp(header.format))
 }
 
 // ---------------------------------------------------------------------------
@@ -274,11 +280,19 @@ fn parse_png_bpp(bytes: &[u8]) -> Option<u64> {
     let bpp = match color_type {
         0 => {
             // Grayscale
-            if bit_depth <= 8 { 1 } else { 2 }
+            if bit_depth <= 8 {
+                1
+            } else {
+                2
+            }
         }
         2 => {
             // RGB
-            if bit_depth <= 8 { 3 } else { 6 }
+            if bit_depth <= 8 {
+                3
+            } else {
+                6
+            }
         }
         3 => {
             // Palette (indexed) → expanded to RGB during decode
@@ -286,11 +300,19 @@ fn parse_png_bpp(bytes: &[u8]) -> Option<u64> {
         }
         4 => {
             // Grayscale + Alpha
-            if bit_depth <= 8 { 2 } else { 4 }
+            if bit_depth <= 8 {
+                2
+            } else {
+                4
+            }
         }
         6 => {
             // RGBA
-            if bit_depth <= 8 { 4 } else { 8 }
+            if bit_depth <= 8 {
+                4
+            } else {
+                8
+            }
         }
         _ => return None,
     };
@@ -517,9 +539,9 @@ pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
 }
 
 /// Lightweight header parse; returns None if dimensions can't be read.
-/// Cache for memory estimates keyed by (width, height, format)
+/// Cache for memory estimates keyed by (width, height, format, effective_bpp)
 /// No LRU needed - image dimensions are discrete (~20-50 common sizes)
-type EstimateCache = Mutex<HashMap<(u32, u32, Option<ImageFormat>), u64>>;
+type EstimateCache = Mutex<HashMap<(u32, u32, Option<ImageFormat>, u64), u64>>;
 static ESTIMATE_CACHE: OnceLock<EstimateCache> = OnceLock::new();
 
 fn get_estimate_cache() -> &'static EstimateCache {
@@ -536,7 +558,12 @@ pub fn estimate_memory_from_header(
     // Only cache if ops are empty (common case for simple operations)
     // Complex pipelines with operations are computed fresh
     if ops.is_empty() && output_format.is_none() {
-        let cache_key = (header.width, header.height, header.format);
+        let cache_key = (
+            header.width,
+            header.height,
+            header.format,
+            effective_bpp(&header),
+        );
 
         // Try cache first (parking_lot try_lock returns Option)
         if let Some(cache) = get_estimate_cache().try_lock() {
@@ -1020,6 +1047,37 @@ mod tests {
 
         get_estimate_cache().lock().clear();
     }
+
+    #[test]
+    fn test_estimate_cache_keeps_distinct_bpp_variants_separate() {
+        {
+            let mut cache = get_estimate_cache().lock();
+            cache.clear();
+        }
+
+        let gray: image::ImageBuffer<image::Luma<u8>, Vec<u8>> =
+            image::ImageBuffer::from_pixel(8, 8, image::Luma([128]));
+        let mut gray_bytes = Vec::new();
+        gray.write_to(&mut std::io::Cursor::new(&mut gray_bytes), ImageFormat::Png)
+            .expect("grayscale png encode should succeed");
+
+        let rgb: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+            image::ImageBuffer::from_pixel(8, 8, image::Rgb([0, 0, 0]));
+        let mut rgb_bytes = Vec::new();
+        rgb.write_to(&mut std::io::Cursor::new(&mut rgb_bytes), ImageFormat::Png)
+            .expect("rgb png encode should succeed");
+
+        assert!(estimate_memory_from_header(&gray_bytes, &[], None).is_some());
+        assert!(estimate_memory_from_header(&rgb_bytes, &[], None).is_some());
+
+        assert_eq!(
+            get_estimate_cache().lock().len(),
+            2,
+            "cache should keep separate entries for distinct decoded BPP variants"
+        );
+
+        get_estimate_cache().lock().clear();
+    }
 }
 
 // Tests that run when `napi` feature is disabled (the CI coverage path uses `--no-default-features`).
@@ -1143,7 +1201,11 @@ mod non_napi_tests {
             .unwrap();
 
         let header = parse_header(&bytes).unwrap();
-        assert_eq!(header.decoded_bpp, Some(3), "RGB PNG header should have decoded_bpp=3");
+        assert_eq!(
+            header.decoded_bpp,
+            Some(3),
+            "RGB PNG header should have decoded_bpp=3"
+        );
     }
 
     #[test]
@@ -1160,7 +1222,10 @@ mod non_napi_tests {
     #[test]
     fn fallback_estimate_clamped_to_max() {
         let huge = estimate_fallback_from_file_size(1_000_000_000, Some(ImageFormat::Jpeg)); // 1GB
-        assert_eq!(huge, MAX_FALLBACK_ESTIMATE, "estimate should be clamped to max");
+        assert_eq!(
+            huge, MAX_FALLBACK_ESTIMATE,
+            "estimate should be clamped to max"
+        );
     }
 
     #[test]
@@ -1169,10 +1234,20 @@ mod non_napi_tests {
         // The estimate for grayscale should be lower for the same dimensions
         let ops: Vec<Operation> = Vec::new();
         let gray_est = estimate_memory_from_dimensions_with_bpp(
-            4000, 4000, Some(1), Some(ImageFormat::Jpeg), &ops, None,
+            4000,
+            4000,
+            Some(1),
+            Some(ImageFormat::Jpeg),
+            &ops,
+            None,
         );
         let rgb_est = estimate_memory_from_dimensions_with_bpp(
-            4000, 4000, Some(3), Some(ImageFormat::Jpeg), &ops, None,
+            4000,
+            4000,
+            Some(3),
+            Some(ImageFormat::Jpeg),
+            &ops,
+            None,
         );
         assert!(
             gray_est < rgb_est,
