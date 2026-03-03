@@ -683,40 +683,11 @@ fn detect_cgroup_v1_memory() -> Option<u64> {
     None
 }
 
-/// Detects system memory (fallback when not in container)
+/// Detects system memory (fallback when not in container).
+/// Delegates to the centralized platform module for OS-specific detection.
 #[cfg(feature = "napi")]
 fn detect_system_memory() -> Option<u64> {
-    #[cfg(target_os = "linux")]
-    {
-        // Linux: read from /proc/meminfo
-        if let Ok(content) = fs::read_to_string("/proc/meminfo") {
-            for line in content.lines() {
-                if line.starts_with("MemTotal:") {
-                    if let Some(kb_str) = line.split_whitespace().nth(1) {
-                        if let Ok(kb) = kb_str.parse::<u64>() {
-                            return Some(kb * 1024); // Convert KB to bytes
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        // macOS: use sysctl
-        use std::process::Command;
-        if let Ok(output) = Command::new("sysctl").arg("-n").arg("hw.memsize").output() {
-            if let Ok(memory_str) = String::from_utf8(output.stdout) {
-                if let Ok(memory) = memory_str.trim().parse::<u64>() {
-                    return Some(memory);
-                }
-            }
-        }
-    }
-
-    // Windows and other platforms: not implemented yet
-    None
+    super::platform::detect_system_memory()
 }
 
 #[cfg(feature = "napi")]

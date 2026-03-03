@@ -56,23 +56,9 @@ impl AsRef<[u8]> for MmapGuard {
     }
 }
 
-/// Try to acquire a non-blocking shared advisory lock on a file.
-/// Returns true if the lock was acquired, false otherwise.
-#[cfg(unix)]
-#[allow(dead_code)] // Used by load_file_safe when napi feature is enabled
+/// Delegates to the centralized platform module for advisory file locking.
 fn try_shared_lock(file: &File) -> bool {
-    use std::os::unix::io::AsRawFd;
-    let fd = file.as_raw_fd();
-    // LOCK_SH: shared lock, LOCK_NB: non-blocking
-    unsafe { libc::flock(fd, libc::LOCK_SH | libc::LOCK_NB) == 0 }
-}
-
-/// On Windows, mmap prevents file modification at the OS level.
-/// No advisory locking needed.
-#[cfg(not(unix))]
-#[allow(dead_code)] // Used by load_file_safe when napi feature is enabled
-fn try_shared_lock(_file: &File) -> bool {
-    true // Windows mmap inherently prevents modification
+    super::platform::try_shared_lock(file)
 }
 
 /// Image source - supports both in-memory data and memory-mapped files

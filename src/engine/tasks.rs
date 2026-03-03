@@ -31,58 +31,12 @@ use std::borrow::Cow;
 use std::sync::Arc;
 use std::time::Instant;
 
-/// Resource usage information for telemetry
-#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
-#[derive(Clone, Copy)]
-struct ResourceUsage {
-    cpu_time: f64,   // User + system CPU time in seconds
-    memory_rss: u64, // Resident set size in bytes
-}
+// Resource usage delegates to the centralized platform module.
+use super::platform;
+type ResourceUsage = platform::ResourceUsage;
 
-/// Get current process resource usage (CPU time and RSS memory)
-/// Returns None on unsupported platforms or if getrusage fails
-#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
 fn get_resource_usage() -> Option<ResourceUsage> {
-    use libc::{getrusage, rusage, RUSAGE_SELF};
-    use std::mem;
-
-    unsafe {
-        let mut usage: rusage = mem::zeroed();
-        if getrusage(RUSAGE_SELF, &mut usage) == 0 {
-            // CPU time = user time + system time
-            let cpu_time = usage.ru_utime.tv_sec as f64
-                + usage.ru_utime.tv_usec as f64 / 1_000_000.0
-                + usage.ru_stime.tv_sec as f64
-                + usage.ru_stime.tv_usec as f64 / 1_000_000.0;
-
-            // RSS memory (resident set size) in bytes
-            // On Linux, ru_maxrss is in KB; on macOS/FreeBSD, it's in bytes
-            #[cfg(target_os = "linux")]
-            let memory_rss = usage.ru_maxrss as u64 * 1024;
-            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-            let memory_rss = usage.ru_maxrss as u64;
-
-            Some(ResourceUsage {
-                cpu_time,
-                memory_rss,
-            })
-        } else {
-            None
-        }
-    }
-}
-
-/// Get current process resource usage (stub for unsupported platforms)
-#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
-fn get_resource_usage() -> Option<ResourceUsage> {
-    None
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
-#[derive(Clone, Copy)]
-struct ResourceUsage {
-    cpu_time: f64,
-    memory_rss: u64,
+    platform::get_resource_usage()
 }
 
 #[derive(Default)]

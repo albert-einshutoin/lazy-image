@@ -41,6 +41,7 @@ mod firewall;
 mod io;
 mod memory;
 mod pipeline;
+mod platform;
 mod pool;
 mod stress;
 mod tasks;
