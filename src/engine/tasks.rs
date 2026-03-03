@@ -945,30 +945,15 @@ impl Task for BatchTask {
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
-                // Use memory mapping for zero-copy access (same as from_path)
-                use memmap2::Mmap;
-                use std::fs::File;
+                use std::path::Path;
                 use std::sync::Arc;
 
-                let file = match File::open(input_path) {
-                    Ok(file) => file,
-                    Err(e) => {
-                        if e.kind() == std::io::ErrorKind::NotFound {
-                            return Err(LazyImageError::file_not_found(input_path.clone()));
-                        }
-                        return Err(LazyImageError::file_read_failed(input_path.clone(), e));
-                    }
-                };
-
-                // Safety: We assume the file won't be modified externally during processing.
-                // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
-                // On Windows, deleting a memory-mapped file fails (platform limitation).
-                let mmap = unsafe {
-                    Mmap::map(&file)
-                        .map_err(|e| LazyImageError::mmap_failed(input_path.clone(), e))?
-                };
-                let mmap_arc = Arc::new(mmap);
-                let data = mmap_arc.as_ref();
+                // Safe file loading: reads small files into memory, uses mmap
+                // with advisory locks only for very large files (>256 MB)
+                let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
+                let data = source
+                    .as_bytes()
+                    .expect("source always has bytes");
 
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;

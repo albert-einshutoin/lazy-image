@@ -9,7 +9,7 @@ use super::firewall::FirewallConfig;
 #[cfg(feature = "napi")]
 use super::firewall::FirewallPolicy;
 #[allow(unused_imports)]
-use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, Source};
+use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_safe, Source};
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{
@@ -404,14 +404,11 @@ impl ImageEngine {
     }
 
     /// Create engine from a file path.
-    /// **ZERO-COPY MEMORY MAPPING**: Uses mmap to map the file into memory.
-    /// This enables true zero-copy access - OS pages in only what's needed.
+    /// **Safe file loading**: reads small/medium files into memory to prevent SIGBUS;
+    /// uses mmap with advisory locks only for very large files (>256 MB).
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
     pub fn from_path(env: Env, path: String) -> Result<Self> {
-        use memmap2::Mmap;
-        use std::fs::File;
-
         if path.trim().is_empty() {
             return Err(napi_err(
                 &env,
@@ -421,46 +418,19 @@ impl ImageEngine {
 
         let path_buf = PathBuf::from(&path);
 
-        // Validate that the file exists (fast check, no read)
-        if !path_buf.exists() {
-            return Err(crate::error::napi_error_with_code(
-                &env,
-                LazyImageError::file_not_found(path.clone()),
-            )?);
-        }
-
-        // Open file and create memory map
-        let file = match File::open(&path_buf) {
-            Ok(file) => file,
-            Err(e) => {
-                let lazy_err = LazyImageError::file_read_failed(path.clone(), e);
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
+        let source = match load_file_safe(&path_buf) {
+            Ok(s) => s,
+            Err(e) => return Err(crate::error::napi_error_with_code(&env, e)?),
         };
 
-        // Safety: We assume the file won't be modified externally during processing.
-        // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
-        // For concurrent access concerns, use a copy path or file locking.
-        let mmap = unsafe {
-            match Mmap::map(&file) {
-                Ok(mmap) => mmap,
-                Err(e) => {
-                    let lazy_err = LazyImageError::mmap_failed(path.clone(), e);
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-                }
-            }
-        };
+        let data = source.as_bytes().expect("source always has bytes");
 
-        let mmap_arc = Arc::new(mmap);
-
-        // Extract ICC profile from memory-mapped data
-        let icc_profile = extract_icc_profile_lossy(mmap_arc.as_ref()).map(Arc::new);
-
-        // Extract raw EXIF data for potential preservation
-        let exif_data = extract_exif_raw(mmap_arc.as_ref()).map(Arc::new);
+        // Extract ICC profile and EXIF from loaded data
+        let icc_profile = extract_icc_profile_lossy(data).map(Arc::new);
+        let exif_data = extract_exif_raw(data).map(Arc::new);
 
         Ok(ImageEngine {
-            source: Some(Source::Mapped(mmap_arc)),
+            source: Some(source),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
