@@ -298,11 +298,17 @@ fn process_and_encode_from_parts(
     let input_bytes = source.and_then(|s| s.as_bytes());
     let input_format = input_bytes.and_then(detect_input_format);
 
-    // Memory backpressure: estimate before decode and acquire weighted permit
+    // Memory backpressure: estimate before decode and acquire weighted permit.
+    // Use file-size-based fallback instead of hard-coded 100MB when header parsing fails.
     let estimated_memory = source
         .and_then(|s| s.as_bytes())
         .and_then(|bytes| memory::estimate_memory_from_header(bytes, ops, Some(format)))
-        .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
+        .unwrap_or_else(|| {
+            let detected_format = source
+                .and_then(|s| s.as_bytes())
+                .and_then(|b| crate::engine::decoder::detect_format(b));
+            memory::estimate_fallback_from_file_size(input_size, detected_format)
+        });
     let permit = memory::memory_semaphore().acquire(estimated_memory);
     // keep guard alive for entire processing scope
     let _permit_guard = permit;
@@ -960,7 +966,10 @@ impl Task for BatchTask {
 
                 let estimated_memory =
                     memory::estimate_memory_from_header(data, &ops, Some(format))
-                        .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
+                        .unwrap_or_else(|| {
+                            let detected_fmt = crate::engine::decoder::detect_format(data);
+                            memory::estimate_fallback_from_file_size(data.len() as u64, detected_fmt)
+                        });
                 let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
 
                 let start_total = std::time::Instant::now();
