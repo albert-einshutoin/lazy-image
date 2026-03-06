@@ -305,8 +305,7 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
             }
             other => {
                 return Err(LazyImageError::decode_failed(format!(
-                    "png: unsupported colorspace {:?}, fallback to image crate",
-                    other
+                    "png: unsupported colorspace {other:?}, fallback to image crate"
                 )))
             }
         };

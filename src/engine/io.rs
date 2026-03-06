@@ -22,11 +22,11 @@ const MMAP_SIZE_THRESHOLD: u64 = 256 * 1024 * 1024; // 256 MB
 pub type IccExtractionResult = std::result::Result<Option<Vec<u8>>, LazyImageError>;
 
 fn icc_decode_error(format: &str, reason: &str) -> LazyImageError {
-    LazyImageError::decode_failed(format!("{} ICC extraction failed: {}", format, reason))
+    LazyImageError::decode_failed(format!("{format} ICC extraction failed: {reason}"))
 }
 
 fn icc_internal_panic(format: &str, reason: &str) -> LazyImageError {
-    LazyImageError::internal_panic(format!("{} ICC extraction panic: {}", format, reason))
+    LazyImageError::internal_panic(format!("{format} ICC extraction panic: {reason}"))
 }
 
 /// Guard that holds a memory-mapped file and its file descriptor.
