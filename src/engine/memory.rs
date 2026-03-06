@@ -239,21 +239,43 @@ fn parse_jpeg_bpp(bytes: &[u8]) -> Option<u64> {
             i += 1;
             continue;
         }
-        let marker = bytes[i + 1];
+        let mut marker_idx = i + 1;
+        while marker_idx < bytes.len() && bytes[marker_idx] == 0xFF {
+            marker_idx += 1;
+        }
+        if marker_idx >= bytes.len() {
+            break;
+        }
+        let marker = bytes[marker_idx];
+        if marker == 0x00 {
+            i = marker_idx + 1;
+            continue;
+        }
+        if marker == 0xD9 || marker == 0xDA {
+            break;
+        }
+        if marker == 0x01 || (0xD0..=0xD7).contains(&marker) {
+            i = marker_idx + 1;
+            continue;
+        }
         // SOF0 (baseline), SOF1 (extended), SOF2 (progressive), SOF3 (lossless)
         if matches!(marker, 0xC0 | 0xC1 | 0xC2 | 0xC3) {
             // SOF payload: length(2) + precision(1) + height(2) + width(2) + num_components(1)
-            if i + 9 < bytes.len() {
-                let num_components = bytes[i + 9] as u64;
+            if marker_idx + 8 < bytes.len() {
+                let num_components = bytes[marker_idx + 8] as u64;
                 // JPEG components: 1=grayscale→1bpp, 3=YCbCr→3bpp (decoded to RGB), 4=CMYK→4bpp
                 return Some(num_components.max(1).min(4));
             }
             return None;
         }
         // Skip non-SOF markers
-        if i + 3 < bytes.len() {
-            let seg_len = u16::from_be_bytes([bytes[i + 2], bytes[i + 3]]) as usize;
-            i += 2 + seg_len;
+        if marker_idx + 2 < bytes.len() {
+            let seg_len =
+                u16::from_be_bytes([bytes[marker_idx + 1], bytes[marker_idx + 2]]) as usize;
+            if seg_len < 2 {
+                return None;
+            }
+            i = marker_idx + 1 + seg_len;
         } else {
             break;
         }
@@ -295,8 +317,12 @@ fn parse_png_bpp(bytes: &[u8]) -> Option<u64> {
             }
         }
         3 => {
-            // Palette (indexed) → expanded to RGB during decode
-            3
+            // Palette (indexed) → expanded to RGB/RGBA during decode depending on tRNS
+            if png_palette_has_transparency(bytes) {
+                4
+            } else {
+                3
+            }
         }
         4 => {
             // Grayscale + Alpha
@@ -317,6 +343,33 @@ fn parse_png_bpp(bytes: &[u8]) -> Option<u64> {
         _ => return None,
     };
     Some(bpp)
+}
+
+fn png_palette_has_transparency(bytes: &[u8]) -> bool {
+    let mut offset = 8;
+    while offset + 8 <= bytes.len() {
+        let chunk_len = u32::from_be_bytes([
+            bytes[offset],
+            bytes[offset + 1],
+            bytes[offset + 2],
+            bytes[offset + 3],
+        ]) as usize;
+        let chunk_type = &bytes[offset + 4..offset + 8];
+        let data_start = offset + 8;
+        let data_end = data_start.saturating_add(chunk_len);
+        let next = data_end.saturating_add(4);
+        if next > bytes.len() {
+            break;
+        }
+        if chunk_type == b"tRNS" {
+            return true;
+        }
+        if chunk_type == b"IDAT" || chunk_type == b"IEND" {
+            return false;
+        }
+        offset = next;
+    }
+    false
 }
 
 /// Parse WebP BitstreamFeatures to determine if alpha channel is present.

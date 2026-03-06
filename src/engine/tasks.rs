@@ -258,6 +258,9 @@ fn process_and_encode_from_parts(
         .and_then(|s| s.as_bytes())
         .and_then(|bytes| memory::estimate_memory_from_header(bytes, ops, Some(format)))
         .unwrap_or_else(|| {
+            if source.is_none() {
+                return memory::ESTIMATED_MEMORY_PER_OPERATION;
+            }
             let detected_format = source
                 .and_then(|s| s.as_bytes())
                 .and_then(|b| crate::engine::decoder::detect_format(b));
@@ -910,6 +913,11 @@ impl Task for BatchTask {
             let result = (|| -> std::result::Result<String, LazyImageError> {
                 use std::path::Path;
                 use std::sync::Arc;
+
+                let input_len = fs::metadata(input_path)
+                    .map_err(|e| LazyImageError::file_read_failed(input_path.clone(), e))?
+                    .len() as usize;
+                firewall.enforce_source_len(input_len)?;
 
                 // Safe file loading: reads small files into memory, uses mmap
                 // with advisory locks only for very large files (>256 MB)
