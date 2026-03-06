@@ -915,7 +915,13 @@ impl Task for BatchTask {
                 use std::sync::Arc;
 
                 let input_len = fs::metadata(input_path)
-                    .map_err(|e| LazyImageError::file_read_failed(input_path.clone(), e))?
+                    .map_err(|e| {
+                        if e.kind() == std::io::ErrorKind::NotFound {
+                            LazyImageError::file_not_found(input_path.clone())
+                        } else {
+                            LazyImageError::file_read_failed(input_path.clone(), e)
+                        }
+                    })?
                     .len() as usize;
                 firewall.enforce_source_len(input_len)?;
 
