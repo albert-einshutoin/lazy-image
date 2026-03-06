@@ -387,7 +387,7 @@ async function runTests() {
     
     await asyncTest('processBatch rejects concurrency > 1024 (UserError)', async () => {
         // concurrency > MAX_CONCURRENCY (1024) must error
-        // Results in internal_panic error in src/engine/tasks.rs:688-695
+        // Results in invalid_argument / UserError
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_high_concurrency');
         let threw = false;
