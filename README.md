@@ -9,6 +9,7 @@ lazy-image reduces image file sizes by 20-30% compared to sharp, trading encodin
 - **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
 - **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. Zero-copy path: `fromPath()`/`processBatch()` → `toFile()`.
 - Japanese: [README.ja.md](./README.ja.md). **mmap**: Do not modify/delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
+- Lazy contract: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) explains what is deferred vs eager.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -113,6 +114,8 @@ const buffer = await ImageEngine.fromPath('input.png')
 const { inspectFile } = require('@alberteinshutoin/lazy-image');
 const meta = inspectFile('input.jpg'); // { width, height, format }
 ```
+
+`lazy-image` defers full pixel decode, transforms, and encoding until `toBuffer()` / `toFile()`. Constructors still do source setup and metadata extraction; see [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md).
 
 More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API.md).
 

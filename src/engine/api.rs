@@ -372,8 +372,9 @@ impl ImageEngine {
     // CONSTRUCTORS
     // =========================================================================
 
-    /// Create engine from a buffer. Decoding is lazy.
-    /// Extracts ICC profile and EXIF metadata from the source image if present.
+    /// Create engine from a buffer.
+    /// Full pixel decode and queued operations are deferred until output methods run.
+    /// ICC profile and EXIF metadata are extracted eagerly during construction.
     #[napi(factory)]
     pub fn from(buffer: Buffer) -> Self {
         let data = buffer.to_vec();
@@ -402,8 +403,10 @@ impl ImageEngine {
     }
 
     /// Create engine from a file path.
-    /// **Safe file loading**: reads small/medium files into memory to prevent SIGBUS;
-    /// uses mmap with advisory locks only for very large files (>256 MB).
+    /// Full pixel decode and queued operations are deferred until output methods run.
+    /// Construction still performs safe file loading and eager ICC/EXIF extraction.
+    /// Small/medium files are read into memory to prevent SIGBUS; very large files (>256 MB)
+    /// use mmap with advisory locks.
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
     pub fn from_path(env: Env, path: String) -> Result<Self> {

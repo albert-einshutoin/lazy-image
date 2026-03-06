@@ -8,6 +8,7 @@
 - セキュリティ優先: 全メタデータ（EXIF/XMP/ICC）をデフォルトで削除。`keepMetadata()` で保持可能
 - ゼロコピー入力パス: `fromPath()/processBatch()` → `toFile()` で入力ファイルを JS ヒープへコピーしない
 - AVIF の ICC は v0.9.x（libavif-sys）で保持。<0.9.0 や ravif のみ構成では破棄
+- `lazy` の意味: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) を参照（constructor は無作業ではない）
 
 ## 計測可能な指標
 - JS ヒープ増加: `fromPath → toBufferWithMetrics` で **2MB 以下**（`node --expose-gc docs/scripts/measure-zero-copy.js` で検証）
