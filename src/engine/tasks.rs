@@ -268,8 +268,10 @@ fn process_and_encode_from_parts(
         });
     let source_reserved = source.map(|s| s.reserved_memory_bytes()).unwrap_or(0);
     let sem = memory::memory_semaphore();
-    let additional_memory = estimated_memory.min(sem.capacity().saturating_sub(source_reserved));
-    let permit = sem.acquire(additional_memory);
+    let total_memory = estimated_memory
+        .saturating_add(source_reserved)
+        .min(sem.capacity());
+    let permit = sem.acquire(total_memory);
     // keep guard alive for entire processing scope
     let _permit_guard = permit;
 
@@ -944,9 +946,10 @@ impl Task for BatchTask {
                 });
                 let source_reserved = source.reserved_memory_bytes();
                 let sem = memory::memory_semaphore();
-                let additional_memory =
-                    estimated_memory.min(sem.capacity().saturating_sub(source_reserved));
-                let _permit_guard = sem.acquire(additional_memory);
+                let total_memory = estimated_memory
+                    .saturating_add(source_reserved)
+                    .min(sem.capacity());
+                let _permit_guard = sem.acquire(total_memory);
 
                 let start_total = std::time::Instant::now();
 

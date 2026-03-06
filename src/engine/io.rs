@@ -2,7 +2,7 @@
 //
 // I/O operations: Source enum, file loading, and ICC profile extraction
 
-use super::memory::{self, MemoryPermit};
+use super::memory;
 use crate::error::LazyImageError;
 #[cfg(feature = "avif")]
 use libavif_sys::*;
@@ -59,12 +59,11 @@ impl AsRef<[u8]> for MmapGuard {
 }
 
 /// Guard for file-backed in-memory data.
-/// When loaded via `load_file_safe`, this retains a semaphore permit so
-/// source-byte heap usage participates in memory backpressure.
+/// `reserved_bytes` tracks heap bytes that must be budgeted when this source
+/// later enters the decode/encode pipeline.
 pub struct MemoryGuard {
     data: Vec<u8>,
     reserved_bytes: u64,
-    _permit: Option<MemoryPermit>,
 }
 
 impl MemoryGuard {
@@ -72,15 +71,13 @@ impl MemoryGuard {
         Self {
             data,
             reserved_bytes: 0,
-            _permit: None,
         }
     }
 
-    fn with_permit(data: Vec<u8>, permit: MemoryPermit, reserved_bytes: u64) -> Self {
+    fn with_reserved_bytes(data: Vec<u8>, reserved_bytes: u64) -> Self {
         Self {
             data,
             reserved_bytes,
-            _permit: Some(permit),
         }
     }
 
@@ -200,14 +197,16 @@ fn load_open_file_into_memory(
 ) -> Result<Source, LazyImageError> {
     let sem = memory::memory_semaphore();
     let reserved_bytes = file_size.min(sem.capacity());
-    let permit = sem.acquire(file_size);
+    // Bound the read_to_end heap spike, but do not retain the permit for the
+    // entire Source lifetime. Processing re-acquires source bytes together
+    // with decode/encode memory to avoid idle-source semaphore deadlocks.
+    let _load_permit = sem.acquire(file_size);
     let mut data = Vec::new();
     if let Err(e) = file.read_to_end(&mut data) {
         return Err(LazyImageError::file_read_failed(path.to_string(), e));
     }
-    Ok(Source::Memory(Arc::new(MemoryGuard::with_permit(
+    Ok(Source::Memory(Arc::new(MemoryGuard::with_reserved_bytes(
         data,
-        permit,
         reserved_bytes,
     ))))
 }
