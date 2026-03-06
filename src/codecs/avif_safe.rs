@@ -269,8 +269,8 @@ impl SafeAvifEncoder {
     /// Set encoder quality settings.
     ///
     /// # Arguments
-    /// * `quality` - Quality value (0-100)
-    /// * `quality_alpha` - Alpha quality value (0-100)
+    /// * `quality` - Quality value (1-100)
+    /// * `quality_alpha` - Alpha quality value (1-100)
     /// * `speed` - Encoding speed (0-10, where 0 is slowest/best)
     /// * `max_threads` - Maximum number of threads to use
     pub fn configure(&mut self, quality: u8, quality_alpha: u8, speed: i32, max_threads: i32) {

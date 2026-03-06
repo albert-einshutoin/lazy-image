@@ -221,6 +221,14 @@ pub enum OutputFormat {
 }
 
 impl OutputFormat {
+    fn validate_quality(quality: u8) -> Result<u8, String> {
+        if (1..=100).contains(&quality) {
+            Ok(quality)
+        } else {
+            Err(format!("invalid quality: {quality}. must be 1-100"))
+        }
+    }
+
     /// Create OutputFormat from string with format-specific default quality.
     ///
     /// Default quality by format (when quality is None):
@@ -237,7 +245,7 @@ impl OutputFormat {
     ///
     /// # Arguments
     /// * `format` - Output format string (jpeg, png, webp, avif)
-    /// * `quality` - Quality value (0-100, None uses format-specific default)
+    /// * `quality` - Quality value (1-100, None uses format-specific default)
     /// * `fast_mode` - Fast mode flag (only applies to JPEG, default: false)
     pub fn from_str_with_options(
         format: &str,
@@ -246,20 +254,34 @@ impl OutputFormat {
     ) -> Result<Self, String> {
         match format.to_lowercase().as_str() {
             "jpeg" | "jpg" => {
-                let q = quality.unwrap_or(85); // JPEG default: 85
+                let q = quality
+                    .map(Self::validate_quality)
+                    .transpose()?
+                    .unwrap_or(85); // JPEG default: 85
                 Ok(Self::Jpeg {
                     quality: q,
                     fast_mode,
                 })
             }
-            "png" => Ok(Self::Png),
+            "png" => {
+                if let Some(quality) = quality {
+                    Self::validate_quality(quality)?;
+                }
+                Ok(Self::Png)
+            }
             "webp" => {
-                let q = quality.unwrap_or(80); // WebP default: 80
+                let q = quality
+                    .map(Self::validate_quality)
+                    .transpose()?
+                    .unwrap_or(80); // WebP default: 80
                 Ok(Self::WebP { quality: q })
             }
             #[cfg(feature = "avif")]
             "avif" => {
-                let q = quality.unwrap_or(60); // AVIF default: 60 (high compression efficiency)
+                let q = quality
+                    .map(Self::validate_quality)
+                    .transpose()?
+                    .unwrap_or(60); // AVIF default: 60 (high compression efficiency)
                 Ok(Self::Avif { quality: q })
             }
             #[cfg(not(feature = "avif"))]
@@ -498,6 +520,18 @@ mod tests {
 
             let format = OutputFormat::from_str("jpeg", Some(100)).unwrap();
             assert!(matches!(format, OutputFormat::Jpeg { quality: 100, .. }));
+        }
+
+        #[test]
+        fn test_quality_below_range_is_rejected() {
+            let err = OutputFormat::from_str("jpeg", Some(0)).unwrap_err();
+            assert!(err.contains("must be 1-100"));
+        }
+
+        #[test]
+        fn test_quality_above_range_is_rejected() {
+            let err = OutputFormat::from_str("jpeg", Some(101)).unwrap_err();
+            assert!(err.contains("must be 1-100"));
         }
 
         #[test]
