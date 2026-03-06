@@ -179,20 +179,15 @@ pub enum ColorSpace {
     Srgb,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub enum ResizeFit {
     /// Maintain aspect ratio while fitting inside the bounding box (default)
+    #[default]
     Inside,
     /// Maintain aspect ratio but ensure the bounding box is fully covered (may crop)
     Cover,
     /// Ignore aspect ratio and force exact dimensions
     Fill,
-}
-
-impl Default for ResizeFit {
-    fn default() -> Self {
-        ResizeFit::Inside
-    }
 }
 
 impl FromStr for ResizeFit {

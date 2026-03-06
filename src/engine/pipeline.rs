@@ -2,6 +2,8 @@
 //
 // Pipeline operations: apply_ops, optimize_ops, resize calculations
 
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 use crate::error::LazyImageError;
 use crate::ops::{Operation, OperationContract, OperationEffect, OperationRequirement, ResizeFit};
 use fast_image_resize::{self as fir, ImageBufferError, MulDiv, PixelType, ResizeOptions};
@@ -139,6 +141,7 @@ pub enum TransferFn {
 }
 
 /// Presence of ICC profile.
+#[cfg_attr(not(feature = "napi"), allow(dead_code))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IccState {
     Present,
@@ -191,6 +194,7 @@ impl ColorState {
 }
 
 /// Image plus tracked color state.
+#[cfg_attr(not(feature = "napi"), allow(dead_code))]
 pub struct ColorTrackedImage<'a> {
     pub image: Cow<'a, DynamicImage>,
     pub state: ColorState,
@@ -1004,7 +1008,12 @@ fn resize_with_image_crate_fallback(
 ///
 /// Only checks images ≥1MP - for smaller images, the check overhead exceeds
 /// the premultiply cost (SIMD premultiply is very fast for small images)
-fn is_fully_opaque(image: &fir::images::Image, pixel_type: PixelType, width: u32, height: u32) -> bool {
+fn is_fully_opaque(
+    image: &fir::images::Image,
+    pixel_type: PixelType,
+    width: u32,
+    height: u32,
+) -> bool {
     if pixel_type != PixelType::U8x4 {
         return true; // RGB images have no alpha channel
     }
@@ -2196,8 +2205,9 @@ mod tests {
         #[test]
         fn test_is_fully_opaque_uses_wide_multiplication_for_threshold() {
             let mut pixels = vec![255u8; 4];
-            let image = fir::images::Image::from_slice_u8(1, 1, pixels.as_mut_slice(), PixelType::U8x4)
-                .expect("valid RGBA image");
+            let image =
+                fir::images::Image::from_slice_u8(1, 1, pixels.as_mut_slice(), PixelType::U8x4)
+                    .expect("valid RGBA image");
 
             assert!(
                 is_fully_opaque(&image, PixelType::U8x4, u32::MAX, u32::MAX),

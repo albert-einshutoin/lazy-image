@@ -730,7 +730,10 @@ impl LazyImageError {
 /// This function should be used when Env is available to add custom properties.
 /// For code that doesn't have Env, use the From<LazyImageError> for napi::Error implementation.
 #[cfg(feature = "napi")]
-pub fn create_napi_error_with_code(env: &Env, err: LazyImageError) -> napi::Result<napi::bindgen_prelude::Object> {
+pub fn create_napi_error_with_code(
+    env: &Env,
+    err: LazyImageError,
+) -> napi::Result<napi::bindgen_prelude::Object<'_>> {
     let category = err.category();
     let error_code = err.code();
 
@@ -1085,12 +1088,8 @@ mod tests {
 
         // Both should point to the same Arc allocation
         if let (
-            LazyImageError::FileReadFailed {
-                source: ref s1, ..
-            },
-            LazyImageError::FileReadFailed {
-                source: ref s2, ..
-            },
+            LazyImageError::FileReadFailed { source: ref s1, .. },
+            LazyImageError::FileReadFailed { source: ref s2, .. },
         ) = (&err, &cloned)
         {
             assert!(Arc::ptr_eq(s1, s2), "clone should share the same Arc");
@@ -1129,7 +1128,10 @@ mod tests {
         assert_eq!(err.code().is_recoverable(), expected_recoverable);
         assert_eq!(err.is_recoverable(), expected_recoverable);
         let hint = err.recovery_hint();
-        assert!(!hint.is_empty(), "recovery_hint must be non-empty for {expected_str}");
+        assert!(
+            !hint.is_empty(),
+            "recovery_hint must be non-empty for {expected_str}"
+        );
         let display = err.to_string();
         for substr in display_contains {
             assert!(

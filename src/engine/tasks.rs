@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 // src/engine/tasks.rs
 //
 // Async task implementations for NAPI.
@@ -231,6 +233,7 @@ fn decode_internal_from_parts<'a>(
     Ok(Cow::Owned(img))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn process_and_encode_from_parts(
     source: Option<&Source>,
     decoded: Option<&Arc<DynamicImage>>,
@@ -244,7 +247,7 @@ fn process_and_encode_from_parts(
     keep_exif: bool,
     strip_gps: bool,
     firewall: &FirewallConfig,
-    mut metrics: Option<&mut crate::ProcessingMetrics>,
+    metrics: Option<&mut crate::ProcessingMetrics>,
 ) -> std::result::Result<Vec<u8>, LazyImageError> {
     // Get input size from source
     // Use len() method which works for both Memory and Mapped sources
@@ -263,7 +266,7 @@ fn process_and_encode_from_parts(
             }
             let detected_format = source
                 .and_then(|s| s.as_bytes())
-                .and_then(|b| crate::engine::decoder::detect_format(b));
+                .and_then(crate::engine::decoder::detect_format);
             memory::estimate_fallback_from_file_size(input_size, detected_format)
         });
     let source_reserved = source.map(|s| s.reserved_memory_bytes()).unwrap_or(0);
@@ -276,7 +279,7 @@ fn process_and_encode_from_parts(
     let _permit_guard = permit;
 
     // Centralize metrics recording
-    let mut metrics_recorder = MetricsRecorder::new(metrics.as_deref_mut(), input_size);
+    let mut metrics_recorder = MetricsRecorder::new(metrics, input_size);
 
     // Pre-read orientation from EXIF header (before full decode)
     let orientation = if auto_orient {

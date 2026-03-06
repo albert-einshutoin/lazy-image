@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 // src/engine/api.rs
 //
 // ImageEngine structure and NAPI implementation.
@@ -15,14 +17,17 @@ use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_s
 use crate::engine::tasks::{
     BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
 };
+#[cfg(feature = "napi")]
 use crate::error::LazyImageError;
 #[cfg(feature = "napi")]
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 #[cfg(not(feature = "napi"))]
 use crate::ops::{Operation, PresetConfig};
+use image::DynamicImage;
+#[cfg(feature = "napi")]
+use image::GenericImageView;
 #[cfg(feature = "napi")]
 use image::ImageReader;
-use image::{DynamicImage, GenericImageView};
 #[cfg(feature = "napi")]
 use std::io::Cursor;
 #[cfg(feature = "napi")]

@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 // src/engine/platform.rs
 //
 // Centralized OS-level abstractions. All platform-specific `#[cfg]` blocks
@@ -194,8 +196,14 @@ mod tests {
             assert!(mem.is_some(), "memory detection should succeed on this OS");
             let bytes = mem.unwrap();
             // Sanity: at least 256 MB, at most 64 TB
-            assert!(bytes >= 256 * 1024 * 1024, "detected memory too small: {bytes}");
-            assert!(bytes <= 64 * 1024 * 1024 * 1024 * 1024u64, "detected memory too large: {bytes}");
+            assert!(
+                bytes >= 256 * 1024 * 1024,
+                "detected memory too small: {bytes}"
+            );
+            assert!(
+                bytes <= 64 * 1024 * 1024 * 1024 * 1024u64,
+                "detected memory too large: {bytes}"
+            );
         }
     }
 
@@ -203,7 +211,10 @@ mod tests {
     fn try_shared_lock_succeeds_on_temp_file() {
         let tmp = tempfile::NamedTempFile::new().unwrap();
         let file = tmp.as_file();
-        assert!(try_shared_lock(file), "shared lock on temp file should succeed");
+        assert!(
+            try_shared_lock(file),
+            "shared lock on temp file should succeed"
+        );
     }
 
     #[test]
@@ -212,7 +223,10 @@ mod tests {
             // CPU time should be non-negative
             assert!(usage.cpu_time >= 0.0, "CPU time should be non-negative");
             // RSS should be > 0 for a running process
-            assert!(usage.memory_rss > 0, "RSS should be positive for running process");
+            assert!(
+                usage.memory_rss > 0,
+                "RSS should be positive for running process"
+            );
         }
         // On unsupported platforms, None is acceptable
     }
