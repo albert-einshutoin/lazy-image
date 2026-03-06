@@ -675,7 +675,7 @@ function getErrorCategory(err) {
     }
 
     // As a last resort, fall back to error code ranges:
-    // E1xx/E2xx/E4xx → UserError, E3xx → ResourceLimit, E9xx → InternalBug
+    // E1xx/E2xx/E4xx -> UserError, E3xx -> ResourceLimit, E9xx -> InternalBug
     const bucket = Math.floor(numericCode / 100)
     if (bucket === 1 || bucket === 2 || bucket === 4) {
       return ErrorCategory.UserError

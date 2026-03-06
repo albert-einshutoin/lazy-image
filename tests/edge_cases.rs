@@ -468,13 +468,12 @@ mod decoder_error_tests {
     #[allow(unused_imports)]
     use super::*;
     use lazy_image::engine::Source;
-    use std::sync::Arc;
 
     #[test]
     fn test_source_as_bytes_memory() {
         // Memoryソースのas_bytes()は成功する（zero-copy）
         let data = vec![0xFF, 0xD8, 0x00, 0x01];
-        let memory_source = Source::Memory(Arc::new(data.clone()));
+        let memory_source = Source::from_vec(data.clone());
         let bytes = memory_source.as_bytes();
         assert!(bytes.is_some());
         assert_eq!(bytes.unwrap(), data.as_slice());
@@ -483,14 +482,14 @@ mod decoder_error_tests {
     #[test]
     fn test_source_as_bytes() {
         let data = vec![0xFF, 0xD8];
-        let memory_source = Source::Memory(Arc::new(data.clone()));
+        let memory_source = Source::from_vec(data.clone());
         assert_eq!(memory_source.as_bytes(), Some(data.as_slice()));
     }
 
     #[test]
     fn test_source_len() {
         let data = vec![0u8; 100];
-        let memory_source = Source::Memory(Arc::new(data));
+        let memory_source = Source::from_vec(data);
         assert_eq!(memory_source.len(), 100);
     }
 }

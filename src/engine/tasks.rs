@@ -31,58 +31,12 @@ use std::borrow::Cow;
 use std::sync::Arc;
 use std::time::Instant;
 
-/// Resource usage information for telemetry
-#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
-#[derive(Clone, Copy)]
-struct ResourceUsage {
-    cpu_time: f64,   // User + system CPU time in seconds
-    memory_rss: u64, // Resident set size in bytes
-}
+// Resource usage delegates to the centralized platform module.
+use super::platform;
+type ResourceUsage = platform::ResourceUsage;
 
-/// Get current process resource usage (CPU time and RSS memory)
-/// Returns None on unsupported platforms or if getrusage fails
-#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
 fn get_resource_usage() -> Option<ResourceUsage> {
-    use libc::{getrusage, rusage, RUSAGE_SELF};
-    use std::mem;
-
-    unsafe {
-        let mut usage: rusage = mem::zeroed();
-        if getrusage(RUSAGE_SELF, &mut usage) == 0 {
-            // CPU time = user time + system time
-            let cpu_time = usage.ru_utime.tv_sec as f64
-                + usage.ru_utime.tv_usec as f64 / 1_000_000.0
-                + usage.ru_stime.tv_sec as f64
-                + usage.ru_stime.tv_usec as f64 / 1_000_000.0;
-
-            // RSS memory (resident set size) in bytes
-            // On Linux, ru_maxrss is in KB; on macOS/FreeBSD, it's in bytes
-            #[cfg(target_os = "linux")]
-            let memory_rss = usage.ru_maxrss as u64 * 1024;
-            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-            let memory_rss = usage.ru_maxrss as u64;
-
-            Some(ResourceUsage {
-                cpu_time,
-                memory_rss,
-            })
-        } else {
-            None
-        }
-    }
-}
-
-/// Get current process resource usage (stub for unsupported platforms)
-#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
-fn get_resource_usage() -> Option<ResourceUsage> {
-    None
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "freebsd")))]
-#[derive(Clone, Copy)]
-struct ResourceUsage {
-    cpu_time: f64,
-    memory_rss: u64,
+    platform::get_resource_usage()
 }
 
 #[derive(Default)]
@@ -298,12 +252,26 @@ fn process_and_encode_from_parts(
     let input_bytes = source.and_then(|s| s.as_bytes());
     let input_format = input_bytes.and_then(detect_input_format);
 
-    // Memory backpressure: estimate before decode and acquire weighted permit
+    // Memory backpressure: estimate before decode and acquire weighted permit.
+    // Use file-size-based fallback instead of hard-coded 100MB when header parsing fails.
     let estimated_memory = source
         .and_then(|s| s.as_bytes())
         .and_then(|bytes| memory::estimate_memory_from_header(bytes, ops, Some(format)))
-        .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
-    let permit = memory::memory_semaphore().acquire(estimated_memory);
+        .unwrap_or_else(|| {
+            if source.is_none() {
+                return memory::ESTIMATED_MEMORY_PER_OPERATION;
+            }
+            let detected_format = source
+                .and_then(|s| s.as_bytes())
+                .and_then(|b| crate::engine::decoder::detect_format(b));
+            memory::estimate_fallback_from_file_size(input_size, detected_format)
+        });
+    let source_reserved = source.map(|s| s.reserved_memory_bytes()).unwrap_or(0);
+    let sem = memory::memory_semaphore();
+    let total_memory = estimated_memory
+        .saturating_add(source_reserved)
+        .min(sem.capacity());
+    let permit = sem.acquire(total_memory);
     // keep guard alive for entire processing scope
     let _permit_guard = permit;
 
@@ -591,7 +559,7 @@ mod non_napi_tests {
         firewall.max_bytes = Some(1); // smaller than PNG size to force rejection
 
         let task = EncodeTask {
-            source: Some(Source::Memory(Arc::new(png))),
+            source: Some(Source::from_vec(png)),
             decoded: None,
             ops: vec![],
             format: OutputFormat::Png,
@@ -616,7 +584,7 @@ mod non_napi_tests {
         // is None regardless. But we verify the flag is stored correctly.
         let png = sample_png_bytes();
         let task = EncodeTask {
-            source: Some(Source::Memory(Arc::new(png))),
+            source: Some(Source::from_vec(png)),
             decoded: None,
             ops: vec![],
             format: OutputFormat::Png,
@@ -945,38 +913,43 @@ impl Task for BatchTask {
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = (|| -> std::result::Result<String, LazyImageError> {
-                // Use memory mapping for zero-copy access (same as from_path)
-                use memmap2::Mmap;
-                use std::fs::File;
+                use std::path::Path;
                 use std::sync::Arc;
 
-                let file = match File::open(input_path) {
-                    Ok(file) => file,
-                    Err(e) => {
+                let input_len = fs::metadata(input_path)
+                    .map_err(|e| {
                         if e.kind() == std::io::ErrorKind::NotFound {
-                            return Err(LazyImageError::file_not_found(input_path.clone()));
+                            LazyImageError::file_not_found(input_path.clone())
+                        } else {
+                            LazyImageError::file_read_failed(input_path.clone(), e)
                         }
-                        return Err(LazyImageError::file_read_failed(input_path.clone(), e));
-                    }
-                };
+                    })?
+                    .len() as usize;
+                firewall.enforce_source_len(input_len)?;
 
-                // Safety: We assume the file won't be modified externally during processing.
-                // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
-                // On Windows, deleting a memory-mapped file fails (platform limitation).
-                let mmap = unsafe {
-                    Mmap::map(&file)
-                        .map_err(|e| LazyImageError::mmap_failed(input_path.clone(), e))?
-                };
-                let mmap_arc = Arc::new(mmap);
-                let data = mmap_arc.as_ref();
+                // Safe file loading: reads small files into memory, uses mmap
+                // with advisory locks only for very large files (>256 MB)
+                let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
+                let data = source.as_bytes().expect("source always has bytes");
 
                 firewall.enforce_source_len(data.len())?;
                 firewall.scan_metadata(data)?;
 
-                let estimated_memory =
-                    memory::estimate_memory_from_header(data, &ops, Some(format))
-                        .unwrap_or(memory::ESTIMATED_MEMORY_PER_OPERATION);
-                let _permit_guard = memory::memory_semaphore().acquire(estimated_memory);
+                let estimated_memory = memory::estimate_memory_from_header(
+                    data,
+                    &ops,
+                    Some(format),
+                )
+                .unwrap_or_else(|| {
+                    let detected_fmt = crate::engine::decoder::detect_format(data);
+                    memory::estimate_fallback_from_file_size(data.len() as u64, detected_fmt)
+                });
+                let source_reserved = source.reserved_memory_bytes();
+                let sem = memory::memory_semaphore();
+                let total_memory = estimated_memory
+                    .saturating_add(source_reserved)
+                    .min(sem.capacity());
+                let _permit_guard = sem.acquire(total_memory);
 
                 let start_total = std::time::Instant::now();
 

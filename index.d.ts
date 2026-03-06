@@ -20,8 +20,8 @@ export declare class ImageEngine {
   static from(buffer: Buffer): ImageEngine
   /**
    * Create engine from a file path.
-   * **ZERO-COPY MEMORY MAPPING**: Uses mmap to map the file into memory.
-   * This enables true zero-copy access - OS pages in only what's needed.
+   * **Safe file loading**: reads small/medium files into memory to prevent SIGBUS;
+   * uses mmap with advisory locks only for very large files (>256 MB).
    * This is the recommended way for server-side processing of large images.
    */
   static fromPath(path: string): ImageEngine
@@ -33,9 +33,13 @@ export declare class ImageEngine {
    * - "inside" (default): maintain aspect ratio and fit within the box
    * - "cover": maintain aspect ratio and crop to fill the box
    * - "fill": ignore aspect ratio and force exact dimensions
+   *
+   * Supports both signatures:
+   * - resize({ width?, height?, fit? })
+   * - resize(width?, height?, fit?)
    */
   resize(options: ResizeOptions): ImageEngine
-  resize(width?: number | undefined | null, height?: number | undefined | null, fit?: string | undefined | null): ImageEngine
+  resize(width?: number | undefined | null, height?: number | undefined | null, fit?: ResizeFit | undefined | null): ImageEngine
   /** Crop a region from the image. */
   crop(x: number, y: number, width: number, height: number): ImageEngine
   /** Rotate by degrees (90, 180, 270 only) */
@@ -322,15 +326,6 @@ export interface KeepMetadataOptions {
   stripGps?: boolean
 }
 
-export interface ResizeOptions {
-  /** Target width in pixels */
-  width?: number
-  /** Target height in pixels */
-  height?: number
-  /** Resize fit mode */
-  fit?: 'inside' | 'cover' | 'fill'
-}
-
 export interface OutputWithMetrics {
   data: Buffer
   metrics: ProcessingMetrics
@@ -405,6 +400,15 @@ export interface ProcessingMetrics {
   policyViolations: Array<string>
 }
 
+export interface ResizeOptions {
+  /** Target width in pixels */
+  width?: number
+  /** Target height in pixels */
+  height?: number
+  /** Resize fit mode */
+  fit?: ResizeFit
+}
+
 export interface SanitizeOptions {
   policy?: 'strict' | 'lenient'
 }
@@ -417,6 +421,8 @@ export declare function supportedOutputFormats(): Array<string>
 
 /** Get library version */
 export declare function version(): string
+
+export type ResizeFit = 'inside' | 'cover' | 'fill'
 
 /**
  * Classify a lazy-image error into a high-level ErrorCategory.
@@ -441,7 +447,7 @@ export declare function createStreamingPipeline(options: {
     op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
     width?: number
     height?: number
-    fit?: string
+    fit?: ResizeFit
     degrees?: number
     enabled?: boolean
   }>
