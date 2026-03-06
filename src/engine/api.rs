@@ -254,11 +254,11 @@ mod validation {
                 })?;
 
                 if value > crate::engine::MAX_CONCURRENCY as u32 {
-                    return Err(LazyImageError::internal_panic(format!(
-                        "invalid concurrency value: {} (must be 0 or 1-{})",
-                        value,
-                        crate::engine::MAX_CONCURRENCY
-                    )));
+                    return Err(LazyImageError::invalid_argument(
+                        "concurrency",
+                        value.to_string(),
+                        format!("must be 0 or 1-{}", crate::engine::MAX_CONCURRENCY),
+                    ));
                 }
 
                 Ok(value)

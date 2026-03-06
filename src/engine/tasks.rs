@@ -1095,11 +1095,11 @@ impl Task for BatchTask {
         // concurrency = 0 means "use default" (auto-detected via CPU and memory)
         // concurrency = 1..MAX_CONCURRENCY means "use specified number of concurrent operations"
         if self.concurrency > pool::MAX_CONCURRENCY as u32 {
-            let lazy_err = LazyImageError::internal_panic(format!(
-                "invalid concurrency value: {} (must be 0 or 1-{})",
-                self.concurrency,
-                pool::MAX_CONCURRENCY
-            ));
+            let lazy_err = LazyImageError::invalid_argument(
+                "concurrency",
+                self.concurrency.to_string(),
+                format!("must be 0 or 1-{}", pool::MAX_CONCURRENCY),
+            );
             self.last_error = Some(lazy_err.clone());
             return Err(napi::Error::from(lazy_err));
         }
