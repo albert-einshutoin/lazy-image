@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 // src/engine/api.rs
 //
 // ImageEngine structure and NAPI implementation.
@@ -21,11 +23,11 @@ use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 #[cfg(not(feature = "napi"))]
 use crate::ops::{Operation, PresetConfig};
-#[cfg(feature = "napi")]
-use image::ImageReader;
 use image::DynamicImage;
 #[cfg(feature = "napi")]
 use image::GenericImageView;
+#[cfg(feature = "napi")]
+use image::ImageReader;
 #[cfg(feature = "napi")]
 use std::io::Cursor;
 #[cfg(feature = "napi")]

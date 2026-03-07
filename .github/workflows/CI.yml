@@ -138,6 +138,28 @@ jobs:
       # NAPI functionality is tested via JavaScript integration tests in the 'test' job.
       # The napi_tests.rs file exists for local development with Node.js installed.
 
+  rust-quality:
+    name: Rust Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
+          components: clippy, rustfmt
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Run Clippy
+        run: cargo clippy --no-default-features -- -D warnings
+
   test:
     name: Test (Node ${{ matrix.node }})
     needs: build
@@ -384,6 +406,7 @@ jobs:
       id-token: write  # Required for OIDC authentication
     needs:
       - build
+      - rust-quality
       - test-rust
       - test
       - quality

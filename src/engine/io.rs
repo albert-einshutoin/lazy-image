@@ -22,11 +22,11 @@ const MMAP_SIZE_THRESHOLD: u64 = 256 * 1024 * 1024; // 256 MB
 pub type IccExtractionResult = std::result::Result<Option<Vec<u8>>, LazyImageError>;
 
 fn icc_decode_error(format: &str, reason: &str) -> LazyImageError {
-    LazyImageError::decode_failed(format!("{} ICC extraction failed: {}", format, reason))
+    LazyImageError::decode_failed(format!("{format} ICC extraction failed: {reason}"))
 }
 
 fn icc_internal_panic(format: &str, reason: &str) -> LazyImageError {
-    LazyImageError::internal_panic(format!("{} ICC extraction panic: {}", format, reason))
+    LazyImageError::internal_panic(format!("{format} ICC extraction panic: {reason}"))
 }
 
 /// Guard that holds a memory-mapped file and its file descriptor.
@@ -134,6 +134,10 @@ impl Source {
             Source::Memory(data) => data.as_ref().as_ref().len(),
             Source::Mapped(guard) => guard.len(),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     /// Bytes already reserved in the weighted semaphore for this source.
@@ -478,7 +482,7 @@ pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
     use std::io::Read;
 
     // PNG signature: 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
-    if data.len() < 8 || &data[0..8] != [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
+    if data.len() < 8 || data[0..8] != [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
         return None;
     }
 
@@ -589,7 +593,11 @@ fn extract_icc_from_webp_riff(data: &[u8]) -> Option<Vec<u8>> {
         }
 
         // Chunks are padded to even sizes.
-        let padded = if size % 2 == 0 { size } else { size + 1 };
+        let padded = if size.is_multiple_of(2) {
+            size
+        } else {
+            size + 1
+        };
         offset = offset.saturating_add(padded);
     }
 

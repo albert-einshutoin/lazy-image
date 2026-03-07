@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 // src/engine/memory.rs
 //
 // Container memory limit detection for smart concurrency control.
@@ -259,12 +261,12 @@ fn parse_jpeg_bpp(bytes: &[u8]) -> Option<u64> {
             continue;
         }
         // SOF0 (baseline), SOF1 (extended), SOF2 (progressive), SOF3 (lossless)
-        if matches!(marker, 0xC0 | 0xC1 | 0xC2 | 0xC3) {
+        if matches!(marker, 0xC0..=0xC3) {
             // SOF payload: length(2) + precision(1) + height(2) + width(2) + num_components(1)
             if marker_idx + 8 < bytes.len() {
                 let num_components = bytes[marker_idx + 8] as u64;
                 // JPEG components: 1=grayscale→1bpp, 3=YCbCr→3bpp (decoded to RGB), 4=CMYK→4bpp
-                return Some(num_components.max(1).min(4));
+                return Some(num_components.clamp(1, 4));
             }
             return None;
         }
@@ -287,7 +289,7 @@ fn parse_jpeg_bpp(bytes: &[u8]) -> Option<u64> {
 /// IHDR: width(4) + height(4) + bit_depth(1) + color_type(1) + ...
 fn parse_png_bpp(bytes: &[u8]) -> Option<u64> {
     // PNG signature (8 bytes) + IHDR chunk: length(4) + "IHDR"(4) + data(13+)
-    if bytes.len() < 29 || &bytes[0..8] != &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
+    if bytes.len() < 29 || bytes[0..8] != [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
         return None;
     }
     // IHDR chunk type at offset 12
@@ -391,7 +393,7 @@ fn parse_color_bpp(bytes: &[u8], format: Option<ImageFormat>) -> Option<u64> {
             // Try magic-byte detection for format-agnostic callers
             if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
                 parse_jpeg_bpp(bytes)
-            } else if bytes.len() >= 8 && &bytes[0..4] == &[0x89, 0x50, 0x4E, 0x47] {
+            } else if bytes.len() >= 8 && bytes[0..4] == [0x89, 0x50, 0x4E, 0x47] {
                 parse_png_bpp(bytes)
             } else if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
                 parse_webp_bpp(bytes)
@@ -418,8 +420,7 @@ pub fn estimate_fallback_from_file_size(file_size: u64, format: Option<ImageForm
     };
     file_size
         .saturating_mul(ratio)
-        .max(MIN_ESTIMATE_BYTES)
-        .min(MAX_FALLBACK_ESTIMATE)
+        .clamp(MIN_ESTIMATE_BYTES, MAX_FALLBACK_ESTIMATE)
 }
 
 /// Reserve memory for OS / runtime based on container/host limit
@@ -524,7 +525,7 @@ fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u3
             (dims, current_bpp.max(3), FILTER_OVERHEAD_BYTES / 2)
         }
         Operation::AutoOrient { orientation } => {
-            let rotated = matches!(orientation, 5 | 6 | 7 | 8);
+            let rotated = matches!(orientation, 5..=8);
             let next_dims = if rotated { (dims.1, dims.0) } else { dims };
             (next_dims, current_bpp, FILTER_OVERHEAD_BYTES)
         }

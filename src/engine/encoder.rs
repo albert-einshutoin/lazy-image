@@ -299,6 +299,7 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 /// Note: This function expects raw TIFF-format EXIF data (without the "Exif\0\0" header).
 /// Orientation is automatically reset to 1 if auto_orient was applied.
 /// GPS tags are stripped if strip_gps is true (default for privacy).
+#[cfg_attr(not(feature = "napi"), allow(dead_code))]
 pub fn embed_exif_jpeg(
     jpeg_data: Vec<u8>,
     exif: &[u8],
@@ -335,6 +336,7 @@ pub fn embed_exif_jpeg(
 /// - Strip GPS tags by zeroing GPS IFD pointer (if strip_gps is true)
 ///
 /// This operates directly on the TIFF structure without creating temp files.
+#[cfg_attr(not(feature = "napi"), allow(dead_code))]
 fn sanitize_exif_bytes(
     exif: &[u8],
     reset_orientation: bool,
