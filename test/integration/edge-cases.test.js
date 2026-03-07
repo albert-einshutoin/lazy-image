@@ -385,9 +385,9 @@ async function runTests() {
         }
     });
     
-    await asyncTest('processBatch rejects concurrency > 1024 (InternalBug)', async () => {
+    await asyncTest('processBatch rejects concurrency > 1024 (UserError)', async () => {
         // concurrency > MAX_CONCURRENCY (1024) must error
-        // Results in internal_panic error in src/engine/tasks.rs:688-695
+        // Results in invalid_argument / UserError
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_high_concurrency');
         let threw = false;
@@ -414,11 +414,11 @@ async function runTests() {
                 `error should mention concurrency limit: ${errorMessage}`
             );
             
-            // Category should be InternalBug (must be set)
+            // Category should be UserError (must be set)
             assert(category !== null, 'error category should be set (not null)');
             assert(
-                category === ErrorCategory.InternalBug,
-                `error category should be InternalBug, got: ${category}`
+                category === ErrorCategory.UserError,
+                `error category should be UserError, got: ${category}`
             );
         }
         

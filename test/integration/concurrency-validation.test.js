@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { TEST_DIR, resolveFixture, resolveRoot } = require('../helpers/paths');
-const { ImageEngine } = require(resolveRoot('index'));
+const { ImageEngine, ErrorCategory, getErrorCategory } = require(resolveRoot('index'));
 
 async function testConcurrencyValidation() {
     console.log('🧪 Concurrency Validation Test');
@@ -80,12 +80,24 @@ async function testConcurrencyValidation() {
         console.log(`  ❌ Should not reach here - invalid concurrency was accepted`);
     } catch (e) {
         console.log(`  ✅ Correctly rejected: ${e.message}`);
-        
-        // Verify the error message format
+
+        if (e.errorCode === 'E400') {
+            console.log('  ✅ Error code is E400 (invalid argument)');
+        } else {
+            throw new Error(`Unexpected error code: ${e.errorCode}`);
+        }
+
+        const category = getErrorCategory(e);
+        if (category === ErrorCategory.UserError) {
+            console.log('  ✅ Error category is UserError');
+        } else {
+            throw new Error(`Unexpected error category: ${category}`);
+        }
+
         if (e.message.includes('must be 0 or 1-1024')) {
             console.log('  ✅ Error message format is correct');
         } else {
-            console.log('  ⚠️  Error message format needs attention');
+            throw new Error(`Unexpected error message: ${e.message}`);
         }
     }
     
