@@ -7,7 +7,7 @@ This project now enforces consistent runtime validation at the NAPI boundary. Th
 - `crop(x, y, width, height)`: offsets must be ≥ 0; width/height must be > 0 and ≤ `MAX_DIMENSION`.
 
 ## Quality and format options
-- `quality` must be a finite integer ≥ 0. Values > 100 are clamped to 100 before encoding.
+- `quality` must be a finite integer in the range `1..=100` when provided. Out-of-range values are rejected instead of clamped.
 - `fastMode` remains a boolean; format strings are still validated against supported codecs.
 
 ## Brightness / contrast

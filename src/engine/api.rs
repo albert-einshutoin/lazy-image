@@ -15,6 +15,7 @@ use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_s
 use crate::engine::tasks::{
     BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
 };
+#[cfg(feature = "napi")]
 use crate::error::LazyImageError;
 #[cfg(feature = "napi")]
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
@@ -22,7 +23,9 @@ use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 use crate::ops::{Operation, PresetConfig};
 #[cfg(feature = "napi")]
 use image::ImageReader;
-use image::{DynamicImage, GenericImageView};
+use image::DynamicImage;
+#[cfg(feature = "napi")]
+use image::GenericImageView;
 #[cfg(feature = "napi")]
 use std::io::Cursor;
 #[cfg(feature = "napi")]
@@ -215,16 +218,15 @@ mod validation {
             None => Ok(None),
             Some(v) => {
                 let int = ensure_finite_integer("quality", v)?;
-                if int < 0 {
+                if !(1..=100).contains(&int) {
                     return Err(LazyImageError::invalid_argument(
                         "quality",
                         int.to_string(),
-                        "must be >= 0",
+                        "must be 1-100",
                     ));
                 }
-                let clamped = int.min(100);
-                let value = u8::try_from(clamped).map_err(|_| {
-                    LazyImageError::invalid_argument("quality", int.to_string(), "must be <= 255")
+                let value = u8::try_from(int).map_err(|_| {
+                    LazyImageError::invalid_argument("quality", int.to_string(), "must be 1-100")
                 })?;
                 Ok(Some(value))
             }
@@ -855,7 +857,7 @@ impl ImageEngine {
 
     /// Encode to buffer asynchronously.
     /// format: "jpeg", "jpg", "png", "webp", "avif"
-    /// quality: 1-100 (default: JPEG=85, WebP=80, AVIF=60, ignored for PNG)
+    /// quality: 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG.
     /// fastMode: If true, uses faster encoding for JPEG (2-4x faster, slightly larger files). Default: false.
     ///
     /// **Non-destructive**: This method can be called multiple times on the same engine instance.
@@ -1246,7 +1248,7 @@ impl ImageEngine {
     /// - output_dir: Directory to write processed images
     /// - options: Output settings
     ///   - format: Output format ("jpeg", "png", "webp", "avif")
-    ///   - quality: Optional quality (1-100, uses format-specific default if None)
+    ///   - quality: Optional quality (1-100, uses format-specific default if omitted; omit for PNG)
     ///   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
     ///   - concurrency: Optional number of parallel workers:
     ///     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
@@ -1377,7 +1379,7 @@ pub struct PresetBufferResult {
 pub struct BatchOptions {
     /// Output format ("jpeg", "png", "webp", "avif")
     pub format: String,
-    /// Optional quality (1-100), uses format default when omitted
+    /// Optional quality (1-100), uses format default when omitted. Omit for PNG.
     pub quality: Option<f64>,
     /// Optional fast mode flag (JPEG only, default: false)
     pub fast_mode: Option<bool>,
