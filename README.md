@@ -10,6 +10,7 @@ lazy-image reduces image file sizes by 20-30% compared to sharp, trading encodin
 - **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. Zero-copy path: `fromPath()`/`processBatch()` → `toFile()`.
 - Japanese: [README.ja.md](./README.ja.md). **mmap**: Do not modify/delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
 - Lazy contract: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) explains what is deferred vs eager.
+- Philosophy and non-goals: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md).
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![npm downloads](https://img.shields.io/npm/dm/@alberteinshutoin/lazy-image)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -51,6 +52,8 @@ console.log(`Wrote ${bytesWritten} bytes`);
 4. **AVIF excellence** — ravif encoder with quality-optimized defaults
 
 **What lazy-image does NOT compete on:** raw encoding speed (sharp/libvips is faster), feature breadth (no drawing, compositing, or GIF), API compatibility with sharp.
+
+**Project philosophy:** optimize for smaller web outputs, bounded memory, and safe defaults first. Any speed claims must be codec- and workload-specific, not a blanket "faster than sharp" promise.
 
 Benchmarks and details: [docs/PERFORMANCE.md](./docs/PERFORMANCE.md). Full compatibility matrix: [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
 

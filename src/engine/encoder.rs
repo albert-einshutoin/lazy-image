@@ -46,7 +46,19 @@ fn validate_buffer_len(
     Ok(())
 }
 
-/// Single source of truth for mapping quality (0-100) to per-format encoder knobs.
+fn validate_lossy_quality(quality: u8) -> EncoderResult<u8> {
+    if (1..=100).contains(&quality) {
+        Ok(quality)
+    } else {
+        Err(LazyImageError::invalid_argument(
+            "quality",
+            quality.to_string(),
+            "must be 1-100",
+        ))
+    }
+}
+
+/// Single source of truth for mapping quality (1-100) to per-format encoder knobs.
 /// Bands are fixed (WebP filter_strength keeps sharp-compatible 80/60 thresholds):
 /// - High (>=85): Quality first, AVIF speed 6
 /// - Balanced (70-84): Balanced, AVIF speed 7
@@ -67,9 +79,8 @@ enum QualityBand {
 
 impl QualitySettings {
     pub fn new(quality: u8) -> Self {
-        let clamped = quality.min(100);
         Self {
-            quality: clamped as f32,
+            quality: quality as f32,
         }
     }
 
@@ -156,10 +167,10 @@ pub fn encode_jpeg(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
 ///
 /// # Arguments
 /// * `img` - Image to encode
-/// * `quality` - Quality (0-100)
+/// * `quality` - Quality (1-100)
 /// * `icc` - Optional ICC profile
 /// * `fast_mode` - If true, disables expensive optimizations for faster encoding
-///                 (matches Sharp/libjpeg-turbo defaults)
+///   (matches Sharp/libjpeg-turbo defaults)
 pub fn encode_jpeg_with_settings(
     img: &DynamicImage,
     quality: u8,
@@ -168,7 +179,7 @@ pub fn encode_jpeg_with_settings(
 ) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:jpeg", || {
         use std::borrow::Cow;
-        let quality = quality.min(100);
+        let quality = validate_lossy_quality(quality)?;
 
         // Zero-copy optimization: avoid conversion if already RGB8
         let rgb: Cow<'_, image::RgbImage> = match img {
@@ -474,6 +485,7 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
 pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:webp", || {
         use std::borrow::Cow;
+        let quality = validate_lossy_quality(quality)?;
 
         let mut config = webp::WebPConfig::new()
             .map_err(|_| LazyImageError::internal_panic("failed to create WebPConfig"))?;
@@ -554,8 +566,8 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
     run_with_panic_policy("encode:avif", || {
         use std::borrow::Cow;
 
-        let clamped_quality = quality.min(100);
-        let settings = QualitySettings::new(clamped_quality);
+        let quality = validate_lossy_quality(quality)?;
+        let settings = QualitySettings::new(quality);
         let (width, height) = img.dimensions();
         validate_encode_dimensions(width, height, "avif")?;
 
@@ -624,12 +636,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         let capped = cmp::min(8, cpu_threads);
         let encoder_threads = cmp::max(2, capped) as i32;
 
-        encoder.configure(
-            clamped_quality,
-            clamped_quality,
-            settings.avif_speed(),
-            encoder_threads,
-        );
+        encoder.configure(quality, quality, settings.avif_speed(), encoder_threads);
 
         let mut output = SafeAvifRwData::new();
 
