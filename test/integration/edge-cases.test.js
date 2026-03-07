@@ -177,9 +177,18 @@ async function runTests() {
     // EDGE CASES - Quality values
     // ========================================================================
     
-    await asyncTest('handles quality 0 (minimum)', async () => {
-        const result = await ImageEngine.from(buffer).resize(100).toBuffer('jpeg', 0);
-        assert(result.length > 0, 'should produce output even with quality 0');
+    await asyncTest('rejects quality 0', async () => {
+        let threw = false;
+        try {
+            await ImageEngine.from(buffer).resize(100).toBuffer('jpeg', 0);
+        } catch (e) {
+            threw = true;
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'quality 0 should be UserError');
+            assert(e.message.includes('quality'), 'error should mention quality');
+            assert(e.message.includes('1-100'), 'error should mention 1-100');
+        }
+        assert(threw, 'quality 0 should throw');
     });
     
     await asyncTest('handles quality 100 (maximum)', async () => {
@@ -187,10 +196,18 @@ async function runTests() {
         assert(result.length > 0, 'should produce output with quality 100');
     });
     
-    await asyncTest('clamps quality > 100 to valid range', async () => {
-        // Quality should be clamped internally
-        const result = await ImageEngine.from(buffer).resize(100).toBuffer('jpeg', 150);
-        assert(result.length > 0, 'should handle quality > 100');
+    await asyncTest('rejects quality > 100', async () => {
+        let threw = false;
+        try {
+            await ImageEngine.from(buffer).resize(100).toBuffer('jpeg', 150);
+        } catch (e) {
+            threw = true;
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'quality > 100 should be UserError');
+            assert(e.message.includes('quality'), 'error should mention quality');
+            assert(e.message.includes('1-100'), 'error should mention 1-100');
+        }
+        assert(threw, 'quality > 100 should throw');
     });
     
     // ========================================================================
@@ -387,7 +404,7 @@ async function runTests() {
     
     await asyncTest('processBatch rejects concurrency > 1024 (UserError)', async () => {
         // concurrency > MAX_CONCURRENCY (1024) must error
-        // Results in internal_panic error in src/engine/tasks.rs:688-695
+        // Results in invalid_argument / UserError
         const engine = ImageEngine.from(buffer).resize(100);
         const testDir = resolveTemp('test_batch_high_concurrency');
         let threw = false;

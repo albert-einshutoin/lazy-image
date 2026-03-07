@@ -102,7 +102,7 @@ export declare class ImageEngine {
   /**
    * Encode to buffer asynchronously.
    * format: "jpeg", "jpg", "png", "webp", "avif"
-   * quality: 1-100 (default: JPEG=85, WebP=80, AVIF=60, ignored for PNG)
+   * quality: 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG.
    * fastMode: If true, uses faster encoding for JPEG (2-4x faster, slightly larger files). Default: false.
    *
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
@@ -169,7 +169,7 @@ export declare class ImageEngine {
    * - output_dir: Directory to write processed images
    * - options: Output settings
    *   - format: Output format ("jpeg", "png", "webp", "avif")
-   *   - quality: Optional quality (1-100, uses format-specific default if None)
+   *   - quality: Optional quality (1-100, uses format-specific default if omitted; omit for PNG)
    *   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
    *   - concurrency: Optional number of parallel workers:
    *     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
@@ -187,7 +187,7 @@ export declare class ImageEngine {
 export interface BatchOptions {
   /** Output format ("jpeg", "png", "webp", "avif") */
   format: string
-  /** Optional quality (1-100), uses format default when omitted */
+  /** Optional quality (1-100), uses format default when omitted. Omit for PNG. */
   quality?: number
   /** Optional fast mode flag (JPEG only, default: false) */
   fastMode?: boolean

@@ -1,6 +1,6 @@
 # Quality / Effort / Speed Mapping
 
-This document freezes how `QualitySettings` converts a quality value (0-100) into encoder parameters. The quality bands are shared across formats so the same number yields the same banded behavior.
+This document freezes how `QualitySettings` converts a quality value (1-100) into encoder parameters. The quality bands are shared across formats so the same number yields the same banded behavior.
 
 ## Shared Quality Bands
 
@@ -9,14 +9,14 @@ This document freezes how `QualitySettings` converts a quality value (0-100) int
 | High | 85-100 | Visual fidelity first | 6 | Lowest noise, best detail |
 | Balanced | 70-84 | Quality/latency balance | 7 | Default “high quality” tier |
 | Fast | 50-69 | Size/throughput oriented | 8 | Keep quality reasonable while speeding up |
-| Fastest | 0-49 | Lowest latency | 9 | Prioritize speed over fidelity |
+| Fastest | 1-49 | Lowest latency | 9 | Prioritize speed over fidelity |
 
 ## Format-specific mapping
 
 ### JPEG (mozjpeg)
 - `fast_mode: false` (default) enables aggressive quality optimizations.
 - `fast_mode: true` matches sharp/libjpeg-turbo speed profile.
-- Smoothing: 90+ → 0, 70-89 → 5, 60-69 → 10, 0-59 → 18.
+- Smoothing: 90+ → 0, 70-89 → 5, 60-69 → 10, 1-59 → 18.
 
 ### WebP
 - `method: 4`, `pass: 1`, `preprocessing: 0` are fixed (sharp-equivalent).

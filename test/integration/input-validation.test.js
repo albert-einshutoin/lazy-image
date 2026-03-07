@@ -62,6 +62,34 @@ async function asyncTest(name, fn) {
         assert(threw, 'NaN quality should throw');
     });
 
+    await asyncTest('toBuffer rejects quality 0', async () => {
+        let threw = false;
+        try {
+            await ImageEngine.from(BUFFER).resize(100).toBuffer('jpeg', 0);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.errorCode, 'E400', 'invalid_argument should map to E400');
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'category should be UserError');
+            assert(e.message.includes('1-100'), 'message should mention 1-100');
+        }
+        assert(threw, 'quality 0 should throw');
+    });
+
+    await asyncTest('toBuffer rejects quality above 100', async () => {
+        let threw = false;
+        try {
+            await ImageEngine.from(BUFFER).resize(100).toBuffer('jpeg', 101);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.errorCode, 'E400', 'invalid_argument should map to E400');
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'category should be UserError');
+            assert(e.message.includes('1-100'), 'message should mention 1-100');
+        }
+        assert(threw, 'quality above 100 should throw');
+    });
+
     await asyncTest('processBatch rejects negative concurrency', async () => {
         const tmpDir = resolveTemp('validation_negative_concurrency');
         let threw = false;
@@ -104,4 +132,3 @@ async function asyncTest(name, fn) {
         process.exit(1);
     }
 })();
-
