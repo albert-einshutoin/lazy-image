@@ -157,7 +157,7 @@ jobs:
       issues: write       # For creating issues on crash
     steps:
       - name: Download all crash artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: crash-*
           merge-multiple: true

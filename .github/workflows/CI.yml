@@ -202,7 +202,7 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.settings.artifact }}
           path: .
@@ -234,7 +234,7 @@ jobs:
         run: npm ci
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: bindings-x86_64-unknown-linux-gnu
           path: .
@@ -269,7 +269,7 @@ jobs:
         run: npm ci
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: bindings-x86_64-unknown-linux-gnu
           path: .
@@ -303,7 +303,7 @@ jobs:
         run: npm ci
 
       - name: Download all binding artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: bindings-*
           path: artifacts
@@ -436,7 +436,7 @@ jobs:
         run: npm ci
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
