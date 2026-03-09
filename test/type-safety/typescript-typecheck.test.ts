@@ -3,12 +3,14 @@
  * Verifies that type definitions work correctly.
  */
 import * as path from 'path';
-import { ImageEngine, ImageMetadata, PresetResult } from '../../index';
-
-// Local type aliases for API string literals (not exported from index.d.ts)
-type OutputFormat = 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif';
-type ResizeFit = 'inside' | 'cover' | 'fill';
-type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social';
+import {
+    ImageEngine,
+    ImageMetadata,
+    OutputFormat,
+    PresetName,
+    PresetResult,
+    ResizeFit,
+} from '../../index';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
@@ -77,17 +79,11 @@ async function testTypeSafety() {
     
     console.log(`Batch processing: ${batchResults.length} results`);
     
-    // The following should cause compile errors (commented out)
-    /*
-    // ❌ Invalid format
-    await engine.toBuffer('invalid_format', 80);
-    
-    // ❌ Invalid preset
-    const invalidPreset = engine.preset('invalid_preset');
-    
-    // ❌ Type mismatch (OutputFormat cannot be assigned to string in strict mode)
-    const wrongType: string = preset.format;
-    */
+    // @ts-expect-error invalid format must fail at compile time
+    await ImageEngine.fromPath(imagePath).toBuffer('invalid_format', 80);
+
+    // @ts-expect-error invalid preset must fail at compile time
+    ImageEngine.fromPath(imagePath).preset('invalid_preset');
     
     console.log('✅ All type safety tests passed!');
 }
@@ -100,7 +96,7 @@ function testIDECompletion() {
     engine.toBuffer('jpeg', 80); // Autocomplete: 'jpeg', 'png', 'webp', 'avif'
     engine.preset('thumbnail'); // Autocomplete: 'thumbnail', 'avatar', 'hero', 'social'
     
-    // Type inference test: preset.format inferred as OutputFormat, preset.quality as number | undefined
+    // Type inference test: preset.format inferred as canonical output format, preset.quality as number | undefined
     const preset = engine.preset('thumbnail');
 }
 

@@ -25,11 +25,12 @@
     "url": "https://github.com/albert-einshutoin/lazy-image/issues"
   },
   "scripts": {
-    "build": "napi build --platform --release",
+    "build": "napi build --platform --release && node scripts/postbuild-fixup.js",
     "test": "npm run test:js && npm run test:rust",
-    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:types",
+    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:types",
     "test:js:specs": "node test/integration/run.js",
     "test:js:type-safety": "node test/type-safety/runtime-type-safety.test.js",
+    "test:pack-contract": "node scripts/verify-pack.js",
     "test:types": "tsc --noEmit",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
     "test:bench:compare": "node test/benchmarks/sharp-comparison.bench.js",
@@ -87,8 +88,16 @@
     "index.js",
     "index.d.ts",
     "streaming/",
+    "docs/",
+    "spec/",
     "README.md",
+    "README.ja.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "FUZZING.md",
+    "SECURITY.md",
     "LICENSE"
   ],
+  "types": "index.d.ts",
   "homepage": "https://github.com/albert-einshutoin/lazy-image#readme"
 }

@@ -14,14 +14,17 @@
  */
 export declare class ImageEngine {
   /**
-   * Create engine from a buffer. Decoding is lazy.
-   * Extracts ICC profile and EXIF metadata from the source image if present.
+   * Create engine from a buffer.
+   * Full pixel decode and queued operations are deferred until output methods run.
+   * ICC profile and EXIF metadata are extracted eagerly during construction.
    */
   static from(buffer: Buffer): ImageEngine
   /**
    * Create engine from a file path.
-   * **Safe file loading**: reads small/medium files into memory to prevent SIGBUS;
-   * uses mmap with advisory locks only for very large files (>256 MB).
+   * Full pixel decode and queued operations are deferred until output methods run.
+   * Construction still performs safe file loading and eager ICC/EXIF extraction.
+   * Small/medium files are read into memory to prevent SIGBUS; very large files (>256 MB)
+   * use mmap with advisory locks.
    * This is the recommended way for server-side processing of large images.
    */
   static fromPath(path: string): ImageEngine
@@ -38,8 +41,7 @@ export declare class ImageEngine {
    * - resize({ width?, height?, fit? })
    * - resize(width?, height?, fit?)
    */
-  resize(options: ResizeOptions): ImageEngine
-  resize(width?: number | undefined | null, height?: number | undefined | null, fit?: ResizeFit | undefined | null): ImageEngine
+  resize(optionsOrWidth: ResizeOptions | number | undefined | null, height?: number | undefined | null, fit?: string | undefined | null): ImageEngine
   /** Crop a region from the image. */
   crop(x: number, y: number, width: number, height: number): ImageEngine
   /** Rotate by degrees (90, 180, 270 only) */
@@ -98,7 +100,7 @@ export declare class ImageEngine {
    *
    * Returns the preset configuration for use with toBuffer/toFile.
    */
-  preset(name: string): PresetResult
+  preset(name: PresetName): PresetResult
   /**
    * Encode to buffer asynchronously.
    * format: "jpeg", "jpg", "png", "webp", "avif"
@@ -108,19 +110,12 @@ export declare class ImageEngine {
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
    */
-  toBuffer(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>
-  /**
-   * Encode using a high-level profile.
-   * - size-first: smaller output priority
-   * - balanced: default balance
-   * - speed-first: lower latency priority
-   */
-  toBufferProfile(format: string, profile?: EncodeProfile, quality?: number | undefined | null): Promise<Buffer>
+  toBuffer(format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>
   /**
    * Convenience: encode using the last applied preset by name.
    * Equivalent to calling `preset(name)` then `toBuffer(preset.format, preset.quality)`.
    */
-  toBufferWithPreset(presetName: string): Promise<Buffer>
+  toBufferWithPreset(presetName: PresetName): Promise<Buffer>
   /**
    * Encode to buffer asynchronously with performance metrics.
    * Returns `{ data: Buffer, metrics: ProcessingMetrics }`.
@@ -128,14 +123,12 @@ export declare class ImageEngine {
    * **Non-destructive**: This method can be called multiple times on the same engine instance.
    * The source data is cloned internally, allowing multiple format outputs.
    */
-  toBufferWithMetrics(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>
-  /** Encode with metrics using a high-level profile. */
-  toBufferWithMetricsProfile(format: string, profile?: EncodeProfile, quality?: number | undefined | null): Promise<OutputWithMetrics>
+  toBufferWithMetrics(format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>
   /**
    * Convenience: encode with metrics using a preset name.
    * Equivalent to `preset(name)` then `toBufferWithMetrics(preset.format, preset.quality)`.
    */
-  toBufferWithMetricsPreset(presetName: string): Promise<OutputWithMetrics>
+  toBufferWithMetricsPreset(presetName: PresetName): Promise<OutputWithMetrics>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -146,11 +139,9 @@ export declare class ImageEngine {
    *
    * Returns the number of bytes written.
    */
-  toFile(path: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
-  /** Encode to file using a high-level profile. */
-  toFileProfile(path: string, format: string, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
+  toFile(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
   /** Convenience: encode to file using the preset's recommended format/quality. */
-  toFileWithPreset(path: string, presetName: string): Promise<number>
+  toFileWithPreset(path: string, presetName: PresetName): Promise<number>
   /**
    * Get image dimensions WITHOUT full decoding.
    * For file paths, reads only the header bytes (extremely fast).
@@ -181,12 +172,12 @@ export declare class ImageEngine {
    *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
    * is still accepted for now but will be removed in a future major release.
    */
-  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
 }
 
 export interface BatchOptions {
-  /** Output format ("jpeg", "png", "webp", "avif") */
-  format: string
+  /** Output format ("jpeg", "jpg", "png", "webp", "avif") */
+  format: OutputFormat
   /** Optional quality (1-100), uses format default when omitted. Omit for PNG. */
   quality?: number
   /** Optional fast mode flag (JPEG only, default: false) */
@@ -275,22 +266,14 @@ export interface FirewallLimitOptions {
   timeoutMs?: number
 }
 
-export type EncodeProfile = 'size-first' | 'balanced' | 'speed-first'
-
-export interface ResolvedEncodeProfile {
-  format: string
-  quality?: number
-  fastMode: boolean
-}
-
 /** Image metadata returned by inspect() */
 export interface ImageMetadata {
   /** Image width in pixels */
   width: number
   /** Image height in pixels */
   height: number
-  /** Detected format (jpeg, png, webp, gif, etc.) */
-  format?: string
+  /** Detected format (canonical lowercase: jpeg, png, webp) */
+  format?: CanonicalInputFormat
 }
 
 /**
@@ -336,7 +319,7 @@ export interface PresetBufferResult {
   /** Encoded image data */
   data: Buffer
   /** Recommended output format */
-  format: string
+  format: CanonicalOutputFormat
   /** Recommended quality (None for PNG) */
   quality?: number
   /** Target width (None if aspect ratio preserved) */
@@ -348,7 +331,7 @@ export interface PresetBufferResult {
 /** Result of applying a preset, contains recommended output settings */
 export interface PresetResult {
   /** Recommended output format */
-  format: string
+  format: CanonicalOutputFormat
   /** Recommended quality (None for PNG) */
   quality?: number
   /** Target width (None if aspect ratio preserved) */
@@ -388,10 +371,10 @@ export interface ProcessingMetrics {
   bytesOut: number
   /** Compression ratio (bytes_out / bytes_in) */
   compressionRatio: number
-  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */
-  formatIn?: string
+  /** Detected input format (canonical lowercase: jpeg, png, webp) */
+  formatIn?: CanonicalInputFormat
   /** Output format */
-  formatOut: string
+  formatOut: CanonicalOutputFormat
   /** True when ICC profile was present and preserved */
   iccPreserved: boolean
   /** True when metadata was stripped (either by default or policy) */
@@ -405,43 +388,52 @@ export interface ResizeOptions {
   width?: number
   /** Target height in pixels */
   height?: number
-  /** Resize fit mode */
+  /** Resize fit mode: inside (default), cover, fill */
   fit?: ResizeFit
 }
 
 export interface SanitizeOptions {
-  policy?: 'strict' | 'lenient'
+  policy?: FirewallPolicy
 }
 
 /** Get supported input formats */
-export declare function supportedInputFormats(): Array<string>
+export declare function supportedInputFormats(): Array<CanonicalInputFormat>
 
 /** Get supported output formats */
-export declare function supportedOutputFormats(): Array<string>
+export declare function supportedOutputFormats(): Array<CanonicalOutputFormat>
 
 /** Get library version */
 export declare function version(): string
 
-export type ResizeFit = 'inside' | 'cover' | 'fill'
 
-/**
- * Classify a lazy-image error into a high-level ErrorCategory.
- *
- * - Returns null for non-lazy-image errors (no lazy-image metadata)
- * - Prefers explicit category on the error object when available
- * - Falls back to error.code / error.errorCode when necessary
- */
+type CaseInsensitive<T extends string> = T | Uppercase<T> | Capitalize<T>
+type CanonicalInputFormat = 'jpeg' | 'png' | 'webp'
+type CanonicalOutputFormat = CanonicalInputFormat | 'jpg' | 'avif'
+type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
+
+export type InputFormat = CaseInsensitive<CanonicalInputFormat>
+export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
+export type PresetName = CaseInsensitive<CanonicalPresetName>
+export type ResizeFit = 'inside' | 'cover' | 'fill'
+export type FirewallPolicy = 'strict' | 'lenient'
+export type EncodeProfile = 'size-first' | 'balanced' | 'speed-first'
+
+export interface ResolvedEncodeProfile {
+  format: CanonicalOutputFormat
+  quality?: number
+  fastMode: boolean
+}
+
+export interface ImageEngine {
+  toBufferProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<Buffer>
+  toBufferWithMetricsProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<OutputWithMetrics>
+  toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
+}
+
 export declare function getErrorCategory(err: unknown): ErrorCategory | null
 
-/**
- * Disk-backed, bounded-memory streaming pipeline.
- *
- * This API stages input to a temporary file, runs ImageEngine.fromPath()
- * on it, and streams the encoded result from another temporary file.
- * It is NOT true chunk-by-chunk encoding, but keeps memory usage ~O(1).
- */
 export declare function createStreamingPipeline(options: {
-  format?: string
+  format?: OutputFormat
   quality?: number
   ops?: Array<{
     op: 'resize' | 'rotate' | 'flipH' | 'flipV' | 'grayscale' | 'autoOrient'
@@ -451,18 +443,10 @@ export declare function createStreamingPipeline(options: {
     degrees?: number
     enabled?: boolean
   }>
-  /**
-   * Optional ImageEngine class to use.
-   * When omitted, the default exported ImageEngine is used.
-   */
   ImageEngine?: typeof ImageEngine
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream
 }
 
-/**
- * Resolve encoder options from high-level profile.
- * Returns normalized `{ format, quality, fastMode }`.
- */
-export declare function resolveEncodeProfile(format: string, profile?: EncodeProfile, quality?: number | undefined | null): ResolvedEncodeProfile
+export declare function resolveEncodeProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): ResolvedEncodeProfile
