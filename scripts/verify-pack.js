@@ -30,7 +30,16 @@ const requiredPackFiles = [
 ];
 
 function readPackedFiles() {
-  const stdout = execFileSync('npm', ['pack', '--dry-run', '--json'], {
+  const npmExecPath = process.env.npm_execpath;
+  const command = npmExecPath
+    ? process.execPath
+    : process.platform === 'win32'
+      ? 'npm.cmd'
+      : 'npm';
+  const args = npmExecPath
+    ? [npmExecPath, 'pack', '--dry-run', '--json']
+    : ['pack', '--dry-run', '--json'];
+  const stdout = execFileSync(command, args, {
     cwd: root,
     encoding: 'utf8',
   });

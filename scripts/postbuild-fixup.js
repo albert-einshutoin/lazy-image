@@ -170,11 +170,12 @@ if (nativeBinding && nativeBinding.ImageEngine && nativeBinding.ImageEngine.prot
 const dtsExtraBlock = `
 
 type CaseInsensitive<T extends string> = T | Uppercase<T> | Capitalize<T>
-type CanonicalInputFormat = 'jpeg' | 'png' | 'webp'
+type CanonicalSupportedInputFormat = 'jpeg' | 'jpg' | 'png' | 'webp'
+type CanonicalInputFormat = CanonicalSupportedInputFormat
 type CanonicalOutputFormat = CanonicalInputFormat | 'jpg' | 'avif'
 type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
-export type InputFormat = CaseInsensitive<CanonicalInputFormat>
+export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
 export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
@@ -243,10 +244,10 @@ function patchIndexDts() {
   content = replaceIfNeeded(content, '  toFileWithPreset(path: string, presetName: string): Promise<number>', '  toFileWithPreset(path: string, presetName: PresetName): Promise<number>');
   content = replaceIfNeeded(content, '  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>', '  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>');
   content = replaceIfNeeded(content, '  /** Output format ("jpeg", "png", "webp", "avif") */\n  format: string', '  /** Output format ("jpeg", "jpg", "png", "webp", "avif") */\n  format: OutputFormat');
-  content = replaceIfNeeded(content, '  /** Detected format (jpeg, png, webp, gif, etc.) */\n  format?: string', '  /** Detected format (canonical lowercase: jpeg, png, webp) */\n  format?: CanonicalInputFormat');
+  content = replaceIfNeeded(content, '  /** Detected format (jpeg, png, webp, gif, etc.) */\n  format?: string', '  /** Detected input format from runtime inspection (for example: jpeg, jpg, png, webp, gif) */\n  format?: InputFormat');
   content = replaceIfNeeded(content, '  /** Recommended output format */\n  format: string', '  /** Recommended output format */\n  format: CanonicalOutputFormat');
   content = replaceIfNeeded(content, 'export interface PresetResult {\n  /** Recommended output format */\n  format: string', 'export interface PresetResult {\n  /** Recommended output format */\n  format: CanonicalOutputFormat');
-  content = replaceIfNeeded(content, '  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */\n  formatIn?: string', '  /** Detected input format (canonical lowercase: jpeg, png, webp) */\n  formatIn?: CanonicalInputFormat');
+  content = replaceIfNeeded(content, '  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */\n  formatIn?: string', '  /** Detected input format reported by runtime metrics */\n  formatIn?: InputFormat');
   content = replaceIfNeeded(content, '  /** Output format */\n  formatOut: string', '  /** Output format */\n  formatOut: CanonicalOutputFormat');
   content = replaceIfNeeded(content, '  fit?: string', '  fit?: ResizeFit');
   content = replaceIfNeeded(content, '  policy?: string', '  policy?: FirewallPolicy');

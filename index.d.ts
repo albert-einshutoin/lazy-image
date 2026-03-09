@@ -272,8 +272,8 @@ export interface ImageMetadata {
   width: number
   /** Image height in pixels */
   height: number
-  /** Detected format (canonical lowercase: jpeg, png, webp) */
-  format?: CanonicalInputFormat
+  /** Detected input format from runtime inspection (for example: jpeg, jpg, png, webp, gif) */
+  format?: InputFormat
 }
 
 /**
@@ -371,8 +371,8 @@ export interface ProcessingMetrics {
   bytesOut: number
   /** Compression ratio (bytes_out / bytes_in) */
   compressionRatio: number
-  /** Detected input format (canonical lowercase: jpeg, png, webp) */
-  formatIn?: CanonicalInputFormat
+  /** Detected input format reported by runtime metrics */
+  formatIn?: InputFormat
   /** Output format */
   formatOut: CanonicalOutputFormat
   /** True when ICC profile was present and preserved */
@@ -407,11 +407,12 @@ export declare function version(): string
 
 
 type CaseInsensitive<T extends string> = T | Uppercase<T> | Capitalize<T>
-type CanonicalInputFormat = 'jpeg' | 'png' | 'webp'
+type CanonicalSupportedInputFormat = 'jpeg' | 'jpg' | 'png' | 'webp'
+type CanonicalInputFormat = CanonicalSupportedInputFormat
 type CanonicalOutputFormat = CanonicalInputFormat | 'jpg' | 'avif'
 type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
-export type InputFormat = CaseInsensitive<CanonicalInputFormat>
+export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
 export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
