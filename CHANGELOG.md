@@ -20,6 +20,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.11.0] - 2026-02-16
+
+### Added
+- Optional AVIF Cargo feature (`avif`) to support lean builds and environment-specific packaging.
+- Benchmark suite expansion: AVIF comparison, memory tracking, cold-start benchmarks, and benchmark regression check tooling.
+- ROI calculator documentation and interactive HTML artifact for cost/performance estimation.
+- New fuzz targets for AVIF decode and EXIF parse paths.
+
+### Changed
+- CI baseline updates for benchmark regression workflow and dependency/tooling refresh (including `actions/setup-node@v6`).
+- Security and robustness improvements in decode/firewall path (dimension/pixel checks and EXIF limit enforcement flow).
+- Internal task pipeline refactor to remove redundant `EncodeTask` reconstruction in NAPI tasks.
+- Documentation updates across architecture, zero-copy, benchmark guidance, and compatibility notes.
+
+### Fixed
+- Preserve `io::Error` context chain and kind when cloning `LazyImageError`.
+- Prevent OOM-oriented decode paths by enforcing decode safety limits earlier.
+- Ensure stress benchmark suite behaves correctly when AVIF feature is disabled.
+
+### Removed
+- Deprecated API surface removed (including legacy aliases and deprecated `ensureRgb` path) as part of API cleanup.
+
+### Notes
+- This release includes API-affecting changes. Consumers should validate TypeScript/runtime compatibility before upgrading in production.
+
+---
+
 ## [0.10.2] - 2026-02-11
 
 ### Changed
@@ -391,6 +418,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.12.0...HEAD
 [0.12.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.2...v0.12.0
+[0.11.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.9.0...v0.10.0

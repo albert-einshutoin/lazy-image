@@ -3,6 +3,7 @@
 | Version | Features |
 |---------|----------|
 | v0.12.0 | npm package contract fixes (docs/spec included in tarball), pack verification, public TypeScript API tightening, CI permission minimization. |
+| v0.11.0 | Optional AVIF feature flag, expanded benchmark suite (AVIF/memory/cold-start + regression checks), firewall/decode hardening, error clone context fix, and API cleanup (deprecated aliases removed). |
 | v0.10.2 | Release 0.10.2 (version bump / パッケージ更新). |
 | v0.10.1 | Release 0.10.1 (version bump). |
 | v0.10.0 | EXIF metadata preservation (keepMetadata, GPS strip, Orientation reset), Fused resize+crop (zero-allocation), ProcessingMetrics legacy aliases deprecated (→ decodeMs/opsMs/peakRss/bytesIn/bytesOut in v2), Optimized codec backends (zune-png, libwebp), parking_lot memory semaphore, ColorState tracking, processBatch options object (positional deprecated), normalizePixelFormat() (ensureRgb deprecated), spec/ directory, README positioning & Performance & Trade-offs, SECURITY.md, README.ja.md |
