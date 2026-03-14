@@ -6,8 +6,7 @@ env:
   MACOSX_DEPLOYMENT_TARGET: '10.13'
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 on:
   push:
@@ -159,6 +158,24 @@ jobs:
 
       - name: Run Clippy
         run: cargo clippy --no-default-features -- -D warnings
+
+  package-contract:
+    name: Package Contract
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify npm pack contract
+        run: npm run test:pack-contract
 
   test:
     name: Test (Node ${{ matrix.node }})
@@ -407,6 +424,7 @@ jobs:
     needs:
       - build
       - rust-quality
+      - package-contract
       - test-rust
       - test
       - quality

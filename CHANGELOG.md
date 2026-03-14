@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Release preparation for v0.12.0:
+  - npm package now includes public docs/spec/security materials referenced from README.
+  - Added `npm pack` contract verification to catch missing README link targets before release.
+  - Tightened public TypeScript API literals (`OutputFormat`, `PresetName`) and updated type tests to validate exported definitions.
+  - Reduced default GitHub Actions token permissions to read-only outside the publish job.
+
 ---
 
 ## [0.10.2] - 2026-02-11

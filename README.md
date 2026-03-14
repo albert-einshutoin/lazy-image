@@ -159,7 +159,7 @@ npm install && npm run build
 npm test
 ```
 
-See [CLAUDE.md](./CLAUDE.md) for workflow, test commands, and CI. Benchmark testing: [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) Docker environment. Fuzzing: [FUZZING.md](./FUZZING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for workflow, test commands, and contribution guidelines. Benchmark testing: [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) Docker environment. Fuzzing: [FUZZING.md](./FUZZING.md).
 
 ---
 
