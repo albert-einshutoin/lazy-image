@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.12.0] - 2026-03-14
+
 ### Changed
 - Release preparation for v0.12.0:
   - npm package now includes public docs/spec/security materials referenced from README.
@@ -385,7 +389,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.2...v0.12.0
 [0.10.2]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.9.0...v0.10.0
