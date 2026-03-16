@@ -2356,9 +2356,9 @@ dependencies = [
 
 [[package]]
 name = "zune-png"
-version = "0.5.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af6dc406edc296451b9597ee98643df8606396066d8f0864682c266eda16f310"
+checksum = "5a321146329f7617ba0a5b26982cba45b7ce78163135aba78be25850aefcea80"
 dependencies = [
  "zune-core",
  "zune-inflate",
