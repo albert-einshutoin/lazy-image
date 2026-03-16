@@ -62,7 +62,7 @@ libavif-sys = { version = "0.17", default-features = false, features = ["codec-r
 
 # Debug/logging (only used when cow-debug feature is enabled)
 tracing = { version = "0.1", default-features = false, features = ["std"], optional = true }
-once_cell = { version = "1.19", optional = true }
+once_cell = { version = "1.21", optional = true }
 
 # ICC profile extraction from image containers
 img-parts = "0.4"
