@@ -39,8 +39,10 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
 | `.toBufferWithMetricsProfile(format, profile, quality?)` | Profile-based encode with metrics. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
+| `.toFileWithMetrics(path, format, quality?)` | File output with metrics. Returns `{ bytesWritten, metrics }`. |
 | `.toFileProfile(path, format, profile, quality?)` | Profile-based file encode. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |
+| `.processBatchWithMetrics(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Batch processing with per-item metrics and a summary. |
 | `.clone()` | Clone the engine for multi-output (e.g. same pipeline to JPEG + WebP + AVIF). |
 
 ## Utilities
@@ -52,7 +54,7 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.dimensions()` | Get `{ width, height }` (requires decode) |
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
 | `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
-| `createStreamingPipeline({ format, quality, ops })` | Disk-backed bounded-memory pipeline. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#streaming). |
+| `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
 
 ---
 
@@ -131,6 +133,11 @@ interface OutputWithMetrics {
   metrics: ProcessingMetrics;
 }
 
+interface FileOutputWithMetrics {
+  bytesWritten: number;
+  metrics: ProcessingMetrics;
+}
+
 interface BatchResult {
   source: string;
   success: boolean;
@@ -140,6 +147,30 @@ interface BatchResult {
   errorCategory?: ErrorCategory;
   effectiveConcurrency?: number;
   autoConcurrency?: boolean;
+}
+
+interface BatchResultWithMetrics extends BatchResult {
+  metrics?: ProcessingMetrics;
+}
+
+interface BatchMetricsSummary {
+  totalItems: number;
+  successfulItems: number;
+  failedItems: number;
+  effectiveConcurrency: number;
+  autoConcurrency: boolean;
+  totalBytesIn: number;
+  totalBytesOut: number;
+  totalDecodeMs: number;
+  totalOpsMs: number;
+  totalEncodeMs: number;
+  totalCpuTime: number;
+  totalWallMs: number;
+}
+
+interface BatchOutputWithMetrics {
+  items: BatchResultWithMetrics[];
+  summary: BatchMetricsSummary;
 }
 ```
 

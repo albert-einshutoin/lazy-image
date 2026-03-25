@@ -17,6 +17,7 @@ async function run() {
 
     await test_basic_resize();
     await test_large_file_resize();
+    await test_metrics_callback();
     await test_error_propagation();
 }
 
@@ -62,6 +63,33 @@ async function test_large_file_resize() {
     assert(meta.format === 'webp', 'format should be webp');
 
     console.log('✅ streaming large resize -> webp passed');
+}
+
+async function test_metrics_callback() {
+    let seenMetrics = null;
+    const { writable, readable } = createStreamingPipeline({
+        format: 'jpeg',
+        quality: 80,
+        ops: [{ op: 'resize', width: 320, height: null, fit: 'inside' }],
+        onMetrics(metrics) {
+            seenMetrics = metrics;
+        },
+    });
+
+    const source = fs.createReadStream(INPUT);
+    await pipeline(source, writable);
+
+    const chunks = [];
+    for await (const chunk of readable) chunks.push(chunk);
+    const output = Buffer.concat(chunks);
+    const meta = inspect(output);
+
+    assert(meta.width <= 320, 'metrics callback output width should be <= 320');
+    assert(seenMetrics, 'onMetrics should be called');
+    assert(seenMetrics.totalMs >= 0, 'onMetrics should receive totalMs');
+    assert(seenMetrics.formatOut === 'jpeg', 'onMetrics should report requested format');
+
+    console.log('✅ streaming metrics callback passed');
 }
 
 async function test_error_propagation() {

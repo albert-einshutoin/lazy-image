@@ -258,6 +258,44 @@ async function runTests() {
         fs.unlinkSync(outPath);
     });
 
+    await asyncTest('toFileWithMetrics() writes file and returns metrics', async () => {
+        const outPath = resolveTemp('test_output_metrics.jpg');
+        try {
+            const result = await ImageEngine.fromPath(TEST_IMAGE)
+                .resize(100)
+                .toFileWithMetrics(outPath, 'jpeg', 80);
+            assert(result.bytesWritten > 0, 'bytes written should be positive');
+            assert(fs.existsSync(outPath), 'file should exist');
+            assert(result.metrics.totalMs >= 0, 'metrics.totalMs should be present');
+            assert.strictEqual(result.metrics.formatOut, 'jpeg', 'formatOut should match requested output');
+        } finally {
+            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        }
+    });
+
+    await asyncTest('processBatchWithMetrics() returns item metrics and summary', async () => {
+        const outputDir = resolveTemp('batch_metrics');
+        fs.mkdirSync(outputDir, { recursive: true });
+        try {
+            const engine = ImageEngine.fromPath(TEST_IMAGE).resize(100);
+            const result = await engine.processBatchWithMetrics([TEST_IMAGE], outputDir, {
+                format: 'jpeg',
+                quality: 80,
+                concurrency: 1,
+            });
+            assert.strictEqual(result.items.length, 1, 'one item should be returned');
+            assert.strictEqual(result.summary.totalItems, 1, 'summary should include total item count');
+            assert.strictEqual(result.summary.successfulItems, 1, 'summary should count successful items');
+            assert.strictEqual(result.summary.effectiveConcurrency, 1, 'summary should expose effective concurrency');
+            assert(result.items[0].metrics, 'item metrics should be present');
+            assert(result.items[0].metrics.totalMs >= 0, 'item metrics should include totalMs');
+        } finally {
+            if (fs.existsSync(outputDir)) {
+                fs.rmSync(outputDir, { recursive: true, force: true });
+            }
+        }
+    });
+
     // Error handling tests
     await asyncTest('invalid rotation angle throws error', async () => {
         let threw = false;
