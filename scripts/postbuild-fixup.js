@@ -93,6 +93,9 @@ const DEFAULT_QUALITY_BY_FORMAT = {
   avif: 60,
 }
 
+const TARGET_BYTES_SUPPORTED_FORMATS = new Set(['jpeg', 'jpg', 'webp', 'avif'])
+const DEFAULT_TARGET_BYTES_MIN_QUALITY = 30
+
 const ENCODE_PROFILE_CONFIG = {
   'size-first': {
     jpeg: { qualityDelta: -8, fastMode: false },
@@ -118,6 +121,94 @@ function clampQuality(v) {
   const n = Number(v)
   if (!Number.isFinite(n)) return undefined
   return Math.max(0, Math.min(100, Math.round(n)))
+}
+
+function normalizeTargetBytesOptions(format, options = {}) {
+  const normalizedFormat = String(format || '').toLowerCase()
+  if (!TARGET_BYTES_SUPPORTED_FORMATS.has(normalizedFormat)) {
+    throw new Error(\`Target-bytes mode supports jpeg/webp/avif only: \${format}\`)
+  }
+
+  const rawBudget = options.targetBytes ?? options.maxBytes
+  const targetBytes = Number(rawBudget)
+  if (!Number.isFinite(targetBytes) || targetBytes <= 0) {
+    throw new Error('targetBytes must be a positive number')
+  }
+
+  const minQuality = clampQuality(options.minQuality ?? DEFAULT_TARGET_BYTES_MIN_QUALITY)
+  const maxQuality = clampQuality(options.maxQuality ?? 100)
+  if (minQuality == null || maxQuality == null || minQuality <= 0 || maxQuality <= 0) {
+    throw new Error('minQuality/maxQuality must be integers between 1 and 100')
+  }
+  if (minQuality > maxQuality) {
+    throw new Error('minQuality must be less than or equal to maxQuality')
+  }
+
+  const policy = options.qualityFloorPolicy == null ? 'best-effort' : String(options.qualityFloorPolicy)
+  if (!['best-effort', 'strict'].includes(policy)) {
+    throw new Error(\`Unsupported qualityFloorPolicy: \${options.qualityFloorPolicy}\`)
+  }
+
+  return {
+    format: normalizedFormat === 'jpg' ? 'jpeg' : normalizedFormat,
+    targetBytes: Math.round(targetBytes),
+    minQuality,
+    maxQuality,
+    fastMode: Boolean(options.fastMode),
+    qualityFloorPolicy: policy,
+  }
+}
+
+async function encodeWithinByteBudget(engine, format, options) {
+  const config = normalizeTargetBytesOptions(format, options)
+  let low = config.minQuality
+  let high = config.maxQuality
+  let bestUnder = null
+  let bestOver = null
+
+  while (low <= high) {
+    const quality = Math.floor((low + high) / 2)
+    const result = await engine.toBufferWithMetrics(config.format, quality, config.fastMode)
+    const candidate = {
+      data: result.data,
+      metrics: result.metrics,
+      quality,
+      bytesOut: result.metrics?.bytesOut ?? result.data.length,
+    }
+
+    if (candidate.bytesOut <= config.targetBytes) {
+      bestUnder = candidate
+      low = quality + 1
+    } else {
+      if (
+        !bestOver ||
+        candidate.bytesOut < bestOver.bytesOut ||
+        (candidate.bytesOut === bestOver.bytesOut && quality > bestOver.quality)
+      ) {
+        bestOver = candidate
+      }
+      high = quality - 1
+    }
+  }
+
+  const chosen = bestUnder || bestOver
+  if (!chosen) {
+    throw new Error('Failed to encode any candidate while searching for target bytes')
+  }
+
+  const budgetMet = chosen.bytesOut <= config.targetBytes
+  if (!budgetMet && config.qualityFloorPolicy === 'strict') {
+    throw new Error(\`Unable to meet targetBytes=\${config.targetBytes} within quality range \${config.minQuality}-\${config.maxQuality}\`)
+  }
+
+  return {
+    ...chosen,
+    budgetMet,
+    targetBytes: config.targetBytes,
+    format: config.format,
+    fastMode: config.fastMode,
+    qualityFloorPolicy: config.qualityFloorPolicy,
+  }
 }
 
 function resolveEncodeProfile(format, profile = 'balanced', quality) {
@@ -164,6 +255,30 @@ if (nativeBinding && nativeBinding.ImageEngine && nativeBinding.ImageEngine.prot
     const resolved = resolveEncodeProfile(format, profile, quality)
     return this.toFile(path, resolved.format, resolved.quality, resolved.fastMode)
   }
+
+  p.toBufferTargetBytes = async function toBufferTargetBytes(format, options) {
+    const result = await encodeWithinByteBudget(this, format, options)
+    return {
+      data: result.data,
+      quality: result.quality,
+      bytesOut: result.bytesOut,
+      budgetMet: result.budgetMet,
+      targetBytes: result.targetBytes,
+      metrics: result.metrics,
+    }
+  }
+
+  p.toFileTargetBytes = async function toFileTargetBytes(path, format, options) {
+    const result = await encodeWithinByteBudget(this, format, options)
+    const written = await this.toFileWithMetrics(path, result.format, result.quality, result.fastMode)
+    return {
+      bytesWritten: written.bytesWritten,
+      quality: result.quality,
+      budgetMet: written.bytesWritten <= result.targetBytes,
+      targetBytes: result.targetBytes,
+      metrics: written.metrics,
+    }
+  }
 }
 `;
 
@@ -177,6 +292,7 @@ type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
 export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
 export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
+export type TargetBytesFormat = CaseInsensitive<'jpeg' | 'jpg' | 'webp' | 'avif'>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
 export type FirewallPolicy = 'strict' | 'lenient'
@@ -192,6 +308,8 @@ export interface ImageEngine {
   toBufferProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<Buffer>
   toBufferWithMetricsProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<OutputWithMetrics>
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
+  toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
+  toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
 }
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null
@@ -208,6 +326,7 @@ export declare function createStreamingPipeline(options: {
     enabled?: boolean
   }>
   ImageEngine?: typeof ImageEngine
+  onMetrics?: (metrics: ProcessingMetrics) => void
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream

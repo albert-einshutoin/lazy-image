@@ -302,32 +302,6 @@ export interface FileOutputWithMetrics {
   metrics: ProcessingMetrics
 }
 
-export interface TargetBytesOptions {
-  targetBytes?: number
-  maxBytes?: number
-  minQuality?: number
-  maxQuality?: number
-  fastMode?: boolean
-  qualityFloorPolicy?: 'best-effort' | 'strict'
-}
-
-export interface BufferTargetBytesResult {
-  data: Buffer
-  quality: number
-  bytesOut: number
-  budgetMet: boolean
-  targetBytes: number
-  metrics: ProcessingMetrics
-}
-
-export interface FileTargetBytesResult {
-  bytesWritten: number
-  quality: number
-  budgetMet: boolean
-  targetBytes: number
-  metrics: ProcessingMetrics
-}
-
 export interface FirewallLimitOptions {
   maxPixels?: number
   maxBytes?: number
@@ -482,6 +456,7 @@ type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
 export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
 export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
+export type TargetBytesFormat = CaseInsensitive<'jpeg' | 'jpg' | 'webp' | 'avif'>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
 export type FirewallPolicy = 'strict' | 'lenient'
@@ -497,8 +472,8 @@ export interface ImageEngine {
   toBufferProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<Buffer>
   toBufferWithMetricsProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<OutputWithMetrics>
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
-  toBufferTargetBytes(format: OutputFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
-  toFileTargetBytes(path: string, format: OutputFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
+  toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
+  toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
 }
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null

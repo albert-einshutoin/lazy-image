@@ -672,6 +672,9 @@ const DEFAULT_QUALITY_BY_FORMAT = {
   avif: 60,
 }
 
+const TARGET_BYTES_SUPPORTED_FORMATS = new Set(['jpeg', 'jpg', 'webp', 'avif'])
+const DEFAULT_TARGET_BYTES_MIN_QUALITY = 30
+
 const ENCODE_PROFILE_CONFIG = {
   'size-first': {
     jpeg: { qualityDelta: -8, fastMode: false },
@@ -692,9 +695,6 @@ const ENCODE_PROFILE_CONFIG = {
     png: { qualityDelta: 0, fastMode: false },
   },
 }
-
-const TARGET_BYTES_SUPPORTED_FORMATS = new Set(['jpeg', 'jpg', 'webp', 'avif'])
-const DEFAULT_TARGET_BYTES_MIN_QUALITY = 40
 
 function clampQuality(v) {
   const n = Number(v)
@@ -759,7 +759,11 @@ async function encodeWithinByteBudget(engine, format, options) {
       bestUnder = candidate
       low = quality + 1
     } else {
-      if (!bestOver || candidate.bytesOut < bestOver.bytesOut || (candidate.bytesOut === bestOver.bytesOut && quality < bestOver.quality)) {
+      if (
+        !bestOver ||
+        candidate.bytesOut < bestOver.bytesOut ||
+        (candidate.bytesOut === bestOver.bytesOut && quality > bestOver.quality)
+      ) {
         bestOver = candidate
       }
       high = quality - 1
