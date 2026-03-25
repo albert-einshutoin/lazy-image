@@ -140,6 +140,8 @@ export declare class ImageEngine {
    * Returns the number of bytes written.
    */
   toFile(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
+  /** Encode and write directly to a file asynchronously, returning metrics. */
+  toFileWithMetrics(path: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<FileOutputWithMetrics>
   /** Convenience: encode to file using the preset's recommended format/quality. */
   toFileWithPreset(path: string, presetName: PresetName): Promise<number>
   /**
@@ -173,6 +175,22 @@ export declare class ImageEngine {
    * is still accepted for now but will be removed in a future major release.
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+  processBatchWithMetrics(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchOutputWithMetrics>
+}
+
+export interface BatchMetricsSummary {
+  totalItems: number
+  successfulItems: number
+  failedItems: number
+  effectiveConcurrency: number
+  autoConcurrency: boolean
+  totalBytesIn: number
+  totalBytesOut: number
+  totalDecodeMs: number
+  totalOpsMs: number
+  totalEncodeMs: number
+  totalCpuTime: number
+  totalWallMs: number
 }
 
 export interface BatchOptions {
@@ -189,6 +207,11 @@ export interface BatchOptions {
   concurrency?: number
 }
 
+export interface BatchOutputWithMetrics {
+  items: Array<BatchResultWithMetrics>
+  summary: BatchMetricsSummary
+}
+
 export interface BatchResult {
   source: string
   success: boolean
@@ -198,6 +221,18 @@ export interface BatchResult {
   errorCategory?: ErrorCategory
   effectiveConcurrency?: number
   autoConcurrency?: boolean
+}
+
+export interface BatchResultWithMetrics {
+  source: string
+  success: boolean
+  error?: string
+  outputPath?: string
+  errorCode?: string
+  errorCategory?: ErrorCategory
+  effectiveConcurrency?: number
+  autoConcurrency?: boolean
+  metrics?: ProcessingMetrics
 }
 
 export interface Dimensions {
@@ -260,6 +295,11 @@ export declare const enum ErrorCode {
   SourceConsumed = 900,
   InternalPanic = 901,
   Generic = 999
+}
+
+export interface FileOutputWithMetrics {
+  bytesWritten: number
+  metrics: ProcessingMetrics
 }
 
 export interface FirewallLimitOptions {
@@ -447,6 +487,7 @@ export declare function createStreamingPipeline(options: {
     enabled?: boolean
   }>
   ImageEngine?: typeof ImageEngine
+  onMetrics?: (metrics: ProcessingMetrics) => void
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream

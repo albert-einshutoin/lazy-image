@@ -15,7 +15,8 @@ use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_s
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{
-    BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
+    BatchResult, BatchTask, BatchWithMetricsTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
+    WriteFileWithMetricsTask,
 };
 #[cfg(feature = "napi")]
 use crate::error::LazyImageError;
@@ -1131,6 +1132,65 @@ impl ImageEngine {
         }))
     }
 
+    /// Encode and write directly to a file asynchronously, returning metrics.
+    #[napi(js_name = "toFileWithMetrics", ts_return_type = "Promise<FileOutputWithMetrics>")]
+    pub fn to_file_with_metrics(
+        &mut self,
+        env: Env,
+        path: String,
+        format: String,
+        quality: Option<f64>,
+        fast_mode: Option<bool>,
+    ) -> Result<AsyncTask<WriteFileWithMetricsTask>> {
+        let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
+
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
+        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
+        let icc_profile = if keep_icc {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
+        let exif_data = if keep_exif {
+            self.exif_data.clone()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(WriteFileWithMetricsTask {
+            source,
+            decoded,
+            ops,
+            format: output_format,
+            icc_profile,
+            icc_present,
+            exif_data,
+            auto_orient,
+            keep_icc,
+            keep_exif,
+            strip_gps: self.strip_gps,
+            firewall: self.firewall.clone(),
+            output_path: path,
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
+    }
+
     /// Convenience: encode to file using the preset's recommended format/quality.
     #[napi(js_name = "toFileWithPreset", ts_return_type = "Promise<number>")]
     pub fn to_file_with_preset(
@@ -1312,6 +1372,73 @@ impl ImageEngine {
         let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
         let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         Ok(AsyncTask::new(BatchTask {
+            inputs,
+            output_dir,
+            ops,
+            format: output_format,
+            concurrency,
+            keep_icc,
+            keep_exif,
+            strip_gps: self.strip_gps,
+            auto_orient: self.auto_orient,
+            firewall: self.firewall.clone(),
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
+    }
+
+    #[napi(
+        js_name = "processBatchWithMetrics",
+        ts_return_type = "Promise<BatchOutputWithMetrics>"
+    )]
+    pub fn process_batch_with_metrics(
+        &self,
+        env: Env,
+        inputs: Vec<String>,
+        output_dir: String,
+        options_or_format: Either<BatchOptions, String>,
+        quality: Option<f64>,
+        fast_mode: Option<bool>,
+        concurrency: Option<f64>,
+    ) -> Result<AsyncTask<BatchWithMetricsTask>> {
+        if output_dir.trim().is_empty() {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "outputDir",
+                    "<empty>",
+                    "output directory must not be empty",
+                ),
+            ));
+        }
+
+        let (format, quality, fast_mode, concurrency) = match options_or_format {
+            Either::A(options) => (
+                options.format,
+                options.quality,
+                options.fast_mode,
+                options.concurrency,
+            ),
+            Either::B(format) => (format, quality, fast_mode, concurrency),
+        };
+
+        let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        let concurrency =
+            validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
+
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+        let ops = self.ops.clone();
+        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
+        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+
+        Ok(AsyncTask::new(BatchWithMetricsTask {
             inputs,
             output_dir,
             ops,

@@ -1,6 +1,6 @@
 # Metrics API (v1.0.0)
 
-lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`. The payload is versioned and validated so that downstream services can ingest it safely.
+lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`, `ImageEngine.toFileWithMetrics()`, and `ImageEngine.processBatchWithMetrics()`. The single-image payload is versioned and validated so that downstream services can ingest it safely.
 
 ## Payload shape
 
@@ -48,6 +48,7 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`.
 
 - Formal JSON Schema: `docs/metrics-schema.json` (Draft 2020-12). Use this for contract tests or ingestion validation.
 - TypeScript types are emitted in `index.d.ts` under `ProcessingMetrics`.
+- Batch APIs add wrapper types (`FileOutputWithMetrics`, `BatchResultWithMetrics`, `BatchMetricsSummary`, `BatchOutputWithMetrics`) around the same `ProcessingMetrics` item payload.
 
 ## Stability policy
 

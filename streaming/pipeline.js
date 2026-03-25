@@ -18,7 +18,7 @@ const { PassThrough } = require('stream');
  * - ops: array of operations (same schema as core API)
  */
 function createStreamingPipeline(options) {
-    const { format = 'jpeg', quality, ops = [], ImageEngine } = options ?? {};
+    const { format = 'jpeg', quality, ops = [], ImageEngine, onMetrics } = options ?? {};
     const Engine = ImageEngine || require('../index').ImageEngine;
     if (!Engine) {
         throw new Error('ImageEngine must be provided to createStreamingPipeline');
@@ -58,7 +58,12 @@ function createStreamingPipeline(options) {
                         throw new Error(`Unsupported op: ${op.op}`);
                 }
             }
-            await engine.toFile(outputPath, format, quality ?? undefined);
+            if (typeof onMetrics === 'function') {
+                const result = await engine.toFileWithMetrics(outputPath, format, quality ?? undefined);
+                onMetrics(result.metrics);
+            } else {
+                await engine.toFile(outputPath, format, quality ?? undefined);
+            }
             // release reference ASAP to allow underlying mmap to close on platforms that keep file handles open
             engine = null;
 

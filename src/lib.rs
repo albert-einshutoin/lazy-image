@@ -197,6 +197,7 @@ pub const PROCESSING_METRICS_VERSION: &str = "1.0.0";
 
 /// Processing metrics for performance monitoring
 #[cfg(feature = "napi")]
+#[derive(Debug)]
 #[napi(object)]
 pub struct ProcessingMetrics {
     /// Schema version for compatibility negotiation
@@ -239,6 +240,7 @@ pub struct ProcessingMetrics {
 }
 
 #[cfg(not(feature = "napi"))]
+#[derive(Debug)]
 pub struct ProcessingMetrics {
     /// Schema version for compatibility negotiation
     pub version: String,
@@ -332,6 +334,55 @@ impl Default for ProcessingMetrics {
 pub struct OutputWithMetrics {
     pub data: napi::bindgen_prelude::Buffer,
     pub metrics: ProcessingMetrics,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct FileOutputWithMetrics {
+    pub bytes_written: u32,
+    pub metrics: ProcessingMetrics,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct BatchResultWithMetrics {
+    pub source: String,
+    pub success: bool,
+    pub error: Option<String>,
+    pub output_path: Option<String>,
+    pub error_code: Option<String>,
+    pub error_category: Option<error::ErrorCategory>,
+    pub effective_concurrency: Option<u32>,
+    pub auto_concurrency: Option<bool>,
+    pub metrics: Option<ProcessingMetrics>,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct BatchMetricsSummary {
+    pub total_items: u32,
+    pub successful_items: u32,
+    pub failed_items: u32,
+    pub effective_concurrency: u32,
+    pub auto_concurrency: bool,
+    pub total_bytes_in: f64,
+    pub total_bytes_out: f64,
+    pub total_decode_ms: f64,
+    pub total_ops_ms: f64,
+    pub total_encode_ms: f64,
+    pub total_cpu_time: f64,
+    pub total_wall_ms: f64,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct BatchOutputWithMetrics {
+    pub items: Vec<BatchResultWithMetrics>,
+    pub summary: BatchMetricsSummary,
 }
 
 #[cfg(test)]
