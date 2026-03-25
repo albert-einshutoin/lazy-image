@@ -742,22 +742,24 @@ impl Task for EncodeWithMetricsTask {
     }
 }
 
-fn write_encoded_output(output_path: &str, data: &[u8]) -> std::result::Result<u32, LazyImageError> {
+fn write_encoded_output_with_count(
+    output_path: &str,
+    data: &[u8],
+) -> std::result::Result<u32, LazyImageError> {
     use std::io::Write;
     use tempfile::NamedTempFile;
 
-    let output_dir = std::path::Path::new(output_path)
-        .parent()
-        .ok_or_else(|| {
-            LazyImageError::invalid_argument(
-                "path",
-                output_path.to_string(),
-                "output path must include a parent directory",
-            )
-        })?;
+    let output_dir = std::path::Path::new(output_path).parent().ok_or_else(|| {
+        LazyImageError::invalid_argument(
+            "path",
+            output_path.to_string(),
+            "output path must include a parent directory",
+        )
+    })?;
 
-    let mut temp_file = NamedTempFile::new_in(output_dir)
-        .map_err(|e| LazyImageError::file_write_failed(output_dir.to_string_lossy().to_string(), e))?;
+    let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
+        LazyImageError::file_write_failed(output_dir.to_string_lossy().to_string(), e)
+    })?;
 
     let temp_path = temp_file.path().to_path_buf();
     let bytes_written = data
@@ -773,14 +775,44 @@ fn write_encoded_output(output_path: &str, data: &[u8]) -> std::result::Result<u
         .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
 
     temp_file.persist(output_path).map_err(|e| {
-        let io_error = std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("failed to persist file: {}", e),
-        );
+        let io_error = std::io::Error::other(format!("failed to persist file: {}", e));
         LazyImageError::file_write_failed(output_path.to_string(), io_error)
     })?;
 
     Ok(bytes_written)
+}
+
+fn write_encoded_output(output_path: &str, data: &[u8]) -> std::result::Result<(), LazyImageError> {
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    let output_dir = std::path::Path::new(output_path).parent().ok_or_else(|| {
+        LazyImageError::invalid_argument(
+            "path",
+            output_path.to_string(),
+            "output path must include a parent directory",
+        )
+    })?;
+
+    let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
+        LazyImageError::file_write_failed(output_dir.to_string_lossy().to_string(), e)
+    })?;
+
+    let temp_path = temp_file.path().to_path_buf();
+    temp_file
+        .write_all(data)
+        .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
+    temp_file
+        .as_file_mut()
+        .sync_all()
+        .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
+
+    temp_file.persist(output_path).map_err(|e| {
+        let io_error = std::io::Error::other(format!("failed to persist file: {}", e));
+        LazyImageError::file_write_failed(output_path.to_string(), io_error)
+    })?;
+
+    Ok(())
 }
 
 pub struct WriteFileTask {
@@ -855,7 +887,7 @@ impl Task for WriteFileTask {
             }
         };
 
-        match write_encoded_output(&self.output_path, &data) {
+        match write_encoded_output_with_count(&self.output_path, &data) {
             Ok(bytes_written) => Ok(bytes_written),
             Err(lazy_err) => {
                 self.last_error = Some(lazy_err.clone());
@@ -911,7 +943,7 @@ impl Task for WriteFileWithMetricsTask {
             }
         };
 
-        match write_encoded_output(&self.output_path, &data) {
+        match write_encoded_output_with_count(&self.output_path, &data) {
             Ok(bytes_written) => Ok((bytes_written, metrics)),
             Err(lazy_err) => {
                 self.last_error = Some(lazy_err.clone());
@@ -943,6 +975,7 @@ struct BatchFileSuccess {
     metrics: Option<crate::ProcessingMetrics>,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn process_batch_file(
     input_path: &str,
     output_dir: &str,
@@ -958,10 +991,20 @@ fn process_batch_file(
     use std::path::Path;
     use std::sync::Arc;
 
+    let input_len = std::fs::metadata(input_path)
+        .map_err(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                LazyImageError::file_not_found(input_path.to_string())
+            } else {
+                LazyImageError::file_read_failed(input_path.to_string(), e)
+            }
+        })?
+        .len() as usize;
+    firewall.enforce_source_len(input_len)?;
+
     let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
     let data = source.as_bytes().expect("source always has bytes");
 
-    firewall.enforce_source_len(data.len())?;
     firewall.scan_metadata(data)?;
 
     let extracted_icc = extract_icc_profile(data)?;
@@ -1286,40 +1329,39 @@ impl Task for BatchWithMetricsTask {
             }
         };
 
-        let items: Vec<crate::BatchResultWithMetrics> = if effective_concurrency >= self.inputs.len() {
-            pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
-        } else {
-            use std::sync::atomic::{AtomicUsize, Ordering};
-            use std::sync::{Arc, Mutex};
+        let items: Vec<crate::BatchResultWithMetrics> =
+            if effective_concurrency >= self.inputs.len() {
+                pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
+            } else {
+                use std::sync::atomic::{AtomicUsize, Ordering};
+                use std::sync::{Arc, Mutex};
 
-            let inputs = Arc::new(&self.inputs);
-            let out = Arc::new(Mutex::new(Vec::with_capacity(self.inputs.len())));
-            let next = AtomicUsize::new(0);
+                let inputs = Arc::new(&self.inputs);
+                let out = Arc::new(Mutex::new(Vec::with_capacity(self.inputs.len())));
+                let next = AtomicUsize::new(0);
 
-            pool::get_pool().install(|| {
-                rayon::scope(|s| {
-                    for _ in 0..effective_concurrency {
-                        let inputs = Arc::clone(&inputs);
-                        let out = Arc::clone(&out);
-                        let next_ref = &next;
-                        s.spawn(move |_| {
-                            loop {
+                pool::get_pool().install(|| {
+                    rayon::scope(|s| {
+                        for _ in 0..effective_concurrency {
+                            let inputs = Arc::clone(&inputs);
+                            let out = Arc::clone(&out);
+                            let next_ref = &next;
+                            s.spawn(move |_| loop {
                                 let idx = next_ref.fetch_add(1, Ordering::Relaxed);
                                 if idx >= inputs.len() {
                                     break;
                                 }
                                 let item = process_one(&inputs[idx]);
                                 out.lock().unwrap().push((idx, item));
-                            }
-                        });
-                    }
+                            });
+                        }
+                    });
                 });
-            });
 
-            let mut pairs = Arc::try_unwrap(out).unwrap().into_inner().unwrap();
-            pairs.sort_by_key(|(idx, _)| *idx);
-            pairs.into_iter().map(|(_, item)| item).collect()
-        };
+                let mut pairs = Arc::try_unwrap(out).unwrap().into_inner().unwrap();
+                pairs.sort_by_key(|(idx, _)| *idx);
+                pairs.into_iter().map(|(_, item)| item).collect()
+            };
 
         let mut successful_items = 0u32;
         let mut failed_items = 0u32;
