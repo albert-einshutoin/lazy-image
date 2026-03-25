@@ -296,6 +296,40 @@ async function runTests() {
         }
     });
 
+    await asyncTest('toBufferTargetBytes() returns best effort result under target', async () => {
+        const result = await ImageEngine.fromPath(TEST_IMAGE)
+            .resize(400)
+            .toBufferTargetBytes('jpeg', {
+                targetBytes: 2000,
+                minQuality: 40,
+                maxQuality: 90,
+            });
+        assert(result.data.length > 0, 'output should have content');
+        assert(result.quality >= 40 && result.quality <= 90, 'quality should stay within requested range');
+        assert(result.targetBytes === 2000, 'targetBytes should be echoed back');
+        assert(typeof result.budgetMet === 'boolean', 'budgetMet should be boolean');
+        assert(result.bytesOut === result.data.length, 'bytesOut should match buffer length');
+    });
+
+    await asyncTest('toFileTargetBytes() writes a budgeted file result', async () => {
+        const outPath = resolveTemp('target_bytes.jpg');
+        try {
+            const result = await ImageEngine.fromPath(TEST_IMAGE)
+                .resize(400)
+                .toFileTargetBytes(outPath, 'jpeg', {
+                    targetBytes: 2000,
+                    minQuality: 40,
+                    maxQuality: 90,
+                });
+            assert(fs.existsSync(outPath), 'output file should exist');
+            assert(result.bytesWritten > 0, 'bytesWritten should be positive');
+            assert(result.quality >= 40 && result.quality <= 90, 'quality should stay within requested range');
+            assert(result.targetBytes === 2000, 'targetBytes should be echoed back');
+        } finally {
+            if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        }
+    });
+
     // Error handling tests
     await asyncTest('invalid rotation angle throws error', async () => {
         let threw = false;

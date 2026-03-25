@@ -40,6 +40,8 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.toBufferWithMetricsProfile(format, profile, quality?)` | Profile-based encode with metrics. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
 | `.toFileWithMetrics(path, format, quality?)` | File output with metrics. Returns `{ bytesWritten, metrics }`. |
+| `.toBufferTargetBytes(format, options)` | Searches quality to stay under a byte budget. Returns `{ data, quality, bytesOut, budgetMet, targetBytes, metrics }`. |
+| `.toFileTargetBytes(path, format, options)` | File variant of byte-budget encoding. Returns `{ bytesWritten, quality, budgetMet, targetBytes, metrics }`. |
 | `.toFileProfile(path, format, profile, quality?)` | Profile-based file encode. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |
 | `.processBatchWithMetrics(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Batch processing with per-item metrics and a summary. |
@@ -135,6 +137,32 @@ interface OutputWithMetrics {
 
 interface FileOutputWithMetrics {
   bytesWritten: number;
+  metrics: ProcessingMetrics;
+}
+
+interface TargetBytesOptions {
+  targetBytes?: number;
+  maxBytes?: number;
+  minQuality?: number;
+  maxQuality?: number;
+  fastMode?: boolean;
+  qualityFloorPolicy?: 'best-effort' | 'strict';
+}
+
+interface BufferTargetBytesResult {
+  data: Buffer;
+  quality: number;
+  bytesOut: number;
+  budgetMet: boolean;
+  targetBytes: number;
+  metrics: ProcessingMetrics;
+}
+
+interface FileTargetBytesResult {
+  bytesWritten: number;
+  quality: number;
+  budgetMet: boolean;
+  targetBytes: number;
   metrics: ProcessingMetrics;
 }
 
