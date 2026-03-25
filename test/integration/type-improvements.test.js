@@ -18,9 +18,9 @@ async function testTypeImprovements() {
         const metadata = inspectFile(testImagePath);
         
         console.log(`  Image metadata: ${metadata.width}x${metadata.height}`);
-        console.log(`  Format: ${metadata.format || 'null'} (type: ${typeof metadata.format})`);
-        
-        // The format should now be strictly typed as InputFormat | null
+        console.log(`  Format: ${metadata.format || 'undefined'} (type: ${typeof metadata.format})`);
+
+        // The format is now exposed as the canonical lowercase input format or undefined
         // This provides better IntelliSense and compile-time safety
         
     } catch (e) {
@@ -34,7 +34,7 @@ async function testTypeImprovements() {
     console.log('  - "Failed to create fallback thread pool with 1 threads: ..."');
     
     console.log('\n📋 Type Safety Improvements Summary:');
-    console.log('1. ✅ ImageMetadata.format: InputFormat | null (removed string fallback)');
+    console.log('1. ✅ ImageMetadata.format: canonical input format | undefined');
     console.log('2. ✅ Better IntelliSense support with strict typing');
     console.log('3. ✅ Compile-time validation prevents invalid format strings');
     console.log('4. ✅ Enhanced error messages with contextual information');

@@ -3,11 +3,13 @@
 // lazy-image: Web image optimization engine for Node.js
 //
 // Design goals:
-// - Faster than sharp
-// - Smaller output than sharp
-// - Better quality than sharp
-// - Lazy pipeline execution
+// - Smaller web outputs than sharp defaults
+// - Predictable memory usage and safer operational behavior
+// - Lazy, non-destructive pipeline execution
+// - Competitive AVIF support without optimizing for universal throughput wins
 // - Non-blocking async API
+//
+// See docs/PROJECT_PHILOSOPHY.md for the project's priorities and non-goals.
 
 #[cfg(feature = "napi")]
 #[macro_use]

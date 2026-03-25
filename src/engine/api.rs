@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 // src/engine/api.rs
 //
 // ImageEngine structure and NAPI implementation.
@@ -9,20 +11,23 @@ use super::firewall::FirewallConfig;
 #[cfg(feature = "napi")]
 use super::firewall::FirewallPolicy;
 #[allow(unused_imports)]
-use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, Source};
+use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_safe, Source};
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{
     BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
 };
+#[cfg(feature = "napi")]
 use crate::error::LazyImageError;
 #[cfg(feature = "napi")]
 use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 #[cfg(not(feature = "napi"))]
 use crate::ops::{Operation, PresetConfig};
+use image::DynamicImage;
+#[cfg(feature = "napi")]
+use image::GenericImageView;
 #[cfg(feature = "napi")]
 use image::ImageReader;
-use image::{DynamicImage, GenericImageView};
 #[cfg(feature = "napi")]
 use std::io::Cursor;
 #[cfg(feature = "napi")]
@@ -215,16 +220,15 @@ mod validation {
             None => Ok(None),
             Some(v) => {
                 let int = ensure_finite_integer("quality", v)?;
-                if int < 0 {
+                if !(1..=100).contains(&int) {
                     return Err(LazyImageError::invalid_argument(
                         "quality",
                         int.to_string(),
-                        "must be >= 0",
+                        "must be 1-100",
                     ));
                 }
-                let clamped = int.min(100);
-                let value = u8::try_from(clamped).map_err(|_| {
-                    LazyImageError::invalid_argument("quality", int.to_string(), "must be <= 255")
+                let value = u8::try_from(int).map_err(|_| {
+                    LazyImageError::invalid_argument("quality", int.to_string(), "must be 1-100")
                 })?;
                 Ok(Some(value))
             }
@@ -254,11 +258,11 @@ mod validation {
                 })?;
 
                 if value > crate::engine::MAX_CONCURRENCY as u32 {
-                    return Err(LazyImageError::internal_panic(format!(
-                        "invalid concurrency value: {} (must be 0 or 1-{})",
-                        value,
-                        crate::engine::MAX_CONCURRENCY
-                    )));
+                    return Err(LazyImageError::invalid_argument(
+                        "concurrency",
+                        value.to_string(),
+                        format!("must be 0 or 1-{}", crate::engine::MAX_CONCURRENCY),
+                    ));
                 }
 
                 Ok(value)
@@ -372,8 +376,9 @@ impl ImageEngine {
     // CONSTRUCTORS
     // =========================================================================
 
-    /// Create engine from a buffer. Decoding is lazy.
-    /// Extracts ICC profile and EXIF metadata from the source image if present.
+    /// Create engine from a buffer.
+    /// Full pixel decode and queued operations are deferred until output methods run.
+    /// ICC profile and EXIF metadata are extracted eagerly during construction.
     #[napi(factory)]
     pub fn from(buffer: Buffer) -> Self {
         let data = buffer.to_vec();
@@ -385,10 +390,8 @@ impl ImageEngine {
         // We store raw bytes to avoid serialization complexity
         let exif_data = extract_exif_raw(&data).map(Arc::new);
 
-        let data_arc = Arc::new(data);
-
         ImageEngine {
-            source: Some(Source::Memory(data_arc)),
+            source: Some(Source::from_vec(data)),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
@@ -404,14 +407,13 @@ impl ImageEngine {
     }
 
     /// Create engine from a file path.
-    /// **ZERO-COPY MEMORY MAPPING**: Uses mmap to map the file into memory.
-    /// This enables true zero-copy access - OS pages in only what's needed.
+    /// Full pixel decode and queued operations are deferred until output methods run.
+    /// Construction still performs safe file loading and eager ICC/EXIF extraction.
+    /// Small/medium files are read into memory to prevent SIGBUS; very large files (>256 MB)
+    /// use mmap with advisory locks.
     /// This is the recommended way for server-side processing of large images.
     #[napi(factory, js_name = "fromPath")]
     pub fn from_path(env: Env, path: String) -> Result<Self> {
-        use memmap2::Mmap;
-        use std::fs::File;
-
         if path.trim().is_empty() {
             return Err(napi_err(
                 &env,
@@ -421,46 +423,19 @@ impl ImageEngine {
 
         let path_buf = PathBuf::from(&path);
 
-        // Validate that the file exists (fast check, no read)
-        if !path_buf.exists() {
-            return Err(crate::error::napi_error_with_code(
-                &env,
-                LazyImageError::file_not_found(path.clone()),
-            )?);
-        }
-
-        // Open file and create memory map
-        let file = match File::open(&path_buf) {
-            Ok(file) => file,
-            Err(e) => {
-                let lazy_err = LazyImageError::file_read_failed(path.clone(), e);
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
+        let source = match load_file_safe(&path_buf) {
+            Ok(s) => s,
+            Err(e) => return Err(crate::error::napi_error_with_code(&env, e)?),
         };
 
-        // Safety: We assume the file won't be modified externally during processing.
-        // If modified, decoding may fail, produce corrupted images, or cause OS-dependent SIGBUS/SIGSEGV.
-        // For concurrent access concerns, use a copy path or file locking.
-        let mmap = unsafe {
-            match Mmap::map(&file) {
-                Ok(mmap) => mmap,
-                Err(e) => {
-                    let lazy_err = LazyImageError::mmap_failed(path.clone(), e);
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-                }
-            }
-        };
+        let data = source.as_bytes().expect("source always has bytes");
 
-        let mmap_arc = Arc::new(mmap);
-
-        // Extract ICC profile from memory-mapped data
-        let icc_profile = extract_icc_profile_lossy(mmap_arc.as_ref()).map(Arc::new);
-
-        // Extract raw EXIF data for potential preservation
-        let exif_data = extract_exif_raw(mmap_arc.as_ref()).map(Arc::new);
+        // Extract ICC profile and EXIF from loaded data
+        let icc_profile = extract_icc_profile_lossy(data).map(Arc::new);
+        let exif_data = extract_exif_raw(data).map(Arc::new);
 
         Ok(ImageEngine {
-            source: Some(Source::Mapped(mmap_arc)),
+            source: Some(source),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
@@ -887,7 +862,7 @@ impl ImageEngine {
 
     /// Encode to buffer asynchronously.
     /// format: "jpeg", "jpg", "png", "webp", "avif"
-    /// quality: 1-100 (default: JPEG=85, WebP=80, AVIF=60, ignored for PNG)
+    /// quality: 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG.
     /// fastMode: If true, uses faster encoding for JPEG (2-4x faster, slightly larger files). Default: false.
     ///
     /// **Non-destructive**: This method can be called multiple times on the same engine instance.
@@ -1278,7 +1253,7 @@ impl ImageEngine {
     /// - output_dir: Directory to write processed images
     /// - options: Output settings
     ///   - format: Output format ("jpeg", "png", "webp", "avif")
-    ///   - quality: Optional quality (1-100, uses format-specific default if None)
+    ///   - quality: Optional quality (1-100, uses format-specific default if omitted; omit for PNG)
     ///   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
     ///   - concurrency: Optional number of parallel workers:
     ///     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
@@ -1409,7 +1384,7 @@ pub struct PresetBufferResult {
 pub struct BatchOptions {
     /// Output format ("jpeg", "png", "webp", "avif")
     pub format: String,
-    /// Optional quality (1-100), uses format default when omitted
+    /// Optional quality (1-100), uses format default when omitted. Omit for PNG.
     pub quality: Option<f64>,
     /// Optional fast mode flag (JPEG only, default: false)
     pub fast_mode: Option<bool>,

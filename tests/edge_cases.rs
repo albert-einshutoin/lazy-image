@@ -264,9 +264,10 @@ mod quality_boundary_tests {
     fn test_quality_0() {
         let img = create_test_image(100, 100);
         let result = encode_jpeg(&img, 0, None);
-        assert!(result.is_ok());
-        let encoded = result.unwrap();
-        assert_eq!(&encoded[0..2], &[0xFF, 0xD8]);
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidArgument { .. })
+        ));
     }
 
     #[test]
@@ -291,18 +292,20 @@ mod quality_boundary_tests {
     fn test_quality_over_100() {
         let img = create_test_image(100, 100);
         let result = encode_jpeg(&img, 101, None);
-        assert!(result.is_ok());
-        let encoded = result.unwrap();
-        assert_eq!(&encoded[0..2], &[0xFF, 0xD8]);
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidArgument { .. })
+        ));
     }
 
     #[test]
     fn test_quality_webp_0() {
         let img = create_test_image(100, 100);
         let result = encode_webp(&img, 0, None);
-        assert!(result.is_ok());
-        let encoded = result.unwrap();
-        assert_eq!(&encoded[0..4], b"RIFF");
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidArgument { .. })
+        ));
     }
 
     #[test]
@@ -316,13 +319,11 @@ mod quality_boundary_tests {
     #[cfg(feature = "avif")]
     fn test_quality_avif_0() {
         let img = create_test_image(100, 100);
-        // AVIFはquality=0も受け入れる（rav1eの実装では品質0も有効）
-        // 品質0は最低品質（最大圧縮）を意味する
         let result = encode_avif(&img, 0, None);
-        assert!(
-            result.is_ok(),
-            "AVIF encoding with quality=0 should succeed"
-        );
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidArgument { .. })
+        ));
     }
 
     #[test]
@@ -468,13 +469,12 @@ mod decoder_error_tests {
     #[allow(unused_imports)]
     use super::*;
     use lazy_image::engine::Source;
-    use std::sync::Arc;
 
     #[test]
     fn test_source_as_bytes_memory() {
         // Memoryソースのas_bytes()は成功する（zero-copy）
         let data = vec![0xFF, 0xD8, 0x00, 0x01];
-        let memory_source = Source::Memory(Arc::new(data.clone()));
+        let memory_source = Source::from_vec(data.clone());
         let bytes = memory_source.as_bytes();
         assert!(bytes.is_some());
         assert_eq!(bytes.unwrap(), data.as_slice());
@@ -483,14 +483,14 @@ mod decoder_error_tests {
     #[test]
     fn test_source_as_bytes() {
         let data = vec![0xFF, 0xD8];
-        let memory_source = Source::Memory(Arc::new(data.clone()));
+        let memory_source = Source::from_vec(data.clone());
         assert_eq!(memory_source.as_bytes(), Some(data.as_slice()));
     }
 
     #[test]
     fn test_source_len() {
         let data = vec![0u8; 100];
-        let memory_source = Source::Memory(Arc::new(data));
+        let memory_source = Source::from_vec(data);
         assert_eq!(memory_source.len(), 100);
     }
 }
@@ -585,28 +585,32 @@ mod encoder_error_tests {
     #[test]
     fn test_encode_jpeg_invalid_quality() {
         let img = create_test_image(100, 100);
-        // quality > 100 はクランプされ、エンコードは成功する
         let result = encode_jpeg(&img, 150, None);
-        assert!(result.is_ok(), "encode_jpeg should accept quality > 100");
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidArgument { .. })
+        ));
     }
 
     #[test]
     fn test_encode_webp_invalid_quality() {
         let img = create_test_image(100, 100);
-        // quality > 100 はクランプされ、エンコードは成功する
         let result = encode_webp(&img, 150, None);
-        assert!(result.is_ok(), "encode_webp should accept quality > 100");
-        let encoded = result.unwrap();
-        assert_eq!(&encoded[0..4], b"RIFF");
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidArgument { .. })
+        ));
     }
 
     #[test]
     #[cfg(feature = "avif")]
     fn test_encode_avif_invalid_quality() {
         let img = create_test_image(100, 100);
-        // quality > 100 はクランプされ、エンコードは成功する
         let result = encode_avif(&img, 150, None);
-        assert!(result.is_ok(), "encode_avif should accept quality > 100");
+        assert!(matches!(
+            result,
+            Err(LazyImageError::InvalidArgument { .. })
+        ));
     }
 
     #[test]

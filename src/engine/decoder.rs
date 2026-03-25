@@ -238,7 +238,6 @@ const _: () = assert!(
 /// - Decode fails for any reason
 pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:png", || {
-
         // Try to read dimensions from PNG header without full decode
         if let Ok((width, height)) = read_png_dimensions(data) {
             // Global safety check (avoid decompression bombs)
@@ -306,8 +305,7 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
             }
             other => {
                 return Err(LazyImageError::decode_failed(format!(
-                    "png: unsupported colorspace {:?}, fallback to image crate",
-                    other
+                    "png: unsupported colorspace {other:?}, fallback to image crate"
                 )))
             }
         };
@@ -383,8 +381,7 @@ pub fn decode_image(bytes: &[u8]) -> DecoderResult<(DynamicImage, Option<ImageFo
                 Ok(img) => img,
                 Err(_) => {
                     // Fallback to image crate for compatibility (e.g., >16k dimensions, YCbCr)
-                    let fallback = decode_with_image_crate(bytes)?;
-                    fallback
+                    decode_with_image_crate(bytes)?
                 }
             };
             // Enforce global dimension limits even after fallback
@@ -622,11 +619,11 @@ mod tests {
             let mut d = Vec::new();
             d.extend_from_slice(&60000u32.to_be_bytes()); // width
             d.extend_from_slice(&60000u32.to_be_bytes()); // height
-            d.push(8);  // bit depth
-            d.push(2);  // color type (RGB)
-            d.push(0);  // compression
-            d.push(0);  // filter
-            d.push(0);  // interlace
+            d.push(8); // bit depth
+            d.push(2); // color type (RGB)
+            d.push(0); // compression
+            d.push(0); // filter
+            d.push(0); // interlace
             d
         };
         let ihdr_len = (ihdr_data.len() as u32).to_be_bytes();

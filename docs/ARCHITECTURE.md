@@ -12,12 +12,14 @@
 
 lazy-image uses a **Copy-on-Write (CoW)** design:
 
-1. **Lazy loading** — `fromPath()` only creates a reference; I/O happens at `toBuffer()`/`toFile()`.
+1. **Deferred pixel decode** — constructors set up the source and extract lightweight metadata, but full decode waits until `toBuffer()`/`toFile()`.
 2. **Zero-copy mmap** — `fromPath()` and `processBatch()` use memory mapping; no copy into the Node.js heap.
 3. **Zero-copy conversions** — Format conversion without resize/crop reuses the decoded buffer (no extra pixel buffer).
 4. **Clone** — `.clone()` is cheap and does not allocate until a destructive op runs.
 5. **Verification** — See [ZERO_COPY.md](./ZERO_COPY.md). Run `node --expose-gc docs/scripts/measure-zero-copy.js` to check heap/RSS.
 6. **Contract** — Do not modify or delete the source file while it is memory-mapped. On Windows, mapped files cannot be deleted until the engine is dropped.
+
+See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact boundary between eager constructor work and deferred execution.
 
 ## Color Management
 

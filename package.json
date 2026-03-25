@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "repository": {
@@ -25,11 +25,12 @@
     "url": "https://github.com/albert-einshutoin/lazy-image/issues"
   },
   "scripts": {
-    "build": "napi build --platform --release",
+    "build": "napi build --platform --release && node scripts/postbuild-fixup.js",
     "test": "npm run test:js && npm run test:rust",
-    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:types",
+    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:types",
     "test:js:specs": "node test/integration/run.js",
     "test:js:type-safety": "node test/type-safety/runtime-type-safety.test.js",
+    "test:pack-contract": "node scripts/verify-pack.js",
     "test:types": "tsc --noEmit",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
     "test:bench:compare": "node test/benchmarks/sharp-comparison.bench.js",
@@ -39,12 +40,14 @@
     "test:bench:memory": "node test/benchmarks/memory-tracking.bench.js",
     "test:bench:cold-start": "node test/benchmarks/cold-start.bench.js",
     "test:bench:extended": "npm run test:bench:avif && npm run test:bench:memory && npm run test:bench:cold-start",
+    "test:bench:perf-safety-gate": "node scripts/bench/perf-safety-gate.js --baseline .github/benchmarks/perf-safety-baseline.json --mode fail",
     "test:bench:regression-check": "node scripts/bench/check-regression.js",
     "test:clean": "rm -rf .tmp/",
     "test:rust": "cargo test --no-default-features",
     "version": "node scripts/sync-version.js",
     "prepublishOnly": "napi prepublish --skip-gh-release",
-    "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js"
+    "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js",
+    "test:bench:quality-dual-axis": "node test/benchmarks/quality-dual-axis.bench.js"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.1",
@@ -71,12 +74,12 @@
     }
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "0.11.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "0.11.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.11.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.11.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.11.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.11.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.12.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.12.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.12.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.12.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.12.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.12.0"
   },
   "engines": {
     "node": ">= 18"
@@ -85,8 +88,16 @@
     "index.js",
     "index.d.ts",
     "streaming/",
+    "docs/",
+    "spec/",
     "README.md",
+    "README.ja.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "FUZZING.md",
+    "SECURITY.md",
     "LICENSE"
   ],
+  "types": "index.d.ts",
   "homepage": "https://github.com/albert-einshutoin/lazy-image#readme"
 }

@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.11.0"
+version = "0.12.0"
 edition = "2021"
 description = "Web image optimization engine - smaller outputs than sharp, powered by Rust + mozjpeg"
 license = "MIT"
@@ -71,7 +71,7 @@ img-parts = "0.4"
 flate2 = "1.1"
 
 # Temporary file handling
-tempfile = "3.25"
+tempfile = "3.26"
 
 # Parallel processing for batch operations
 rayon = "1.8"
@@ -119,8 +119,13 @@ opt-level = 3
 [profile.release]
 lto = true
 codegen-units = 1
-opt-level = "s"
+opt-level = 3
 strip = true
+
+# WASM build profile (future use): inherit release and prioritize binary size
+[profile.release-wasm]
+inherits = "release"
+opt-level = "s"
 
 # Aggressively optimize non-codec dependencies for size in release builds.
 # These crates aren't in hot image-processing loops, so "z" is safe.

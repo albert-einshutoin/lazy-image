@@ -197,9 +197,8 @@ impl FirewallConfig {
                 let icc_len = icc.len() as u64;
                 if icc_len > limit {
                     return Err(LazyImageError::firewall_violation(format!(
-                        "Image Firewall: ICC profile ({} bytes) exceeds limit of {} bytes. \
-                         This may indicate a malformed or malicious file.",
-                        icc_len, limit
+                        "Image Firewall: ICC profile ({icc_len} bytes) exceeds limit of {limit} bytes. \
+                         This may indicate a malformed or malicious file."
                     )));
                 }
             }
@@ -210,9 +209,8 @@ impl FirewallConfig {
             if let Some(limit) = self.exif_max_bytes {
                 if exif_size > limit {
                     return Err(LazyImageError::firewall_violation(format!(
-                        "Image Firewall: EXIF metadata ({} bytes) exceeds limit of {} bytes. \
-                         This may indicate a malformed or malicious file.",
-                        exif_size, limit
+                        "Image Firewall: EXIF metadata ({exif_size} bytes) exceeds limit of {limit} bytes. \
+                         This may indicate a malformed or malicious file."
                     )));
                 }
             }

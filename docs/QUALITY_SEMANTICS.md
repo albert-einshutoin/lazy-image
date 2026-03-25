@@ -3,9 +3,9 @@
 This document clarifies what a `quality` number means for each encoder and how to pick values consistently.
 
 ## TL;DR
-- The same 0–100 number maps to shared bands (High / Balanced / Fast / Fastest) across formats (see `docs/QUALITY_EFFORT_SPEED_MAPPING.md`).
+- The same 1–100 number maps to shared bands (High / Balanced / Fast / Fastest) across formats (see `docs/QUALITY_EFFORT_SPEED_MAPPING.md`).
 - Default qualities are tuned per format: **JPEG 85**, **WebP 80**, **AVIF 60**. PNG ignores `quality`.
-- Values are clamped to 0–100. Passing `undefined` uses the format default.
+- Values must be in the range 1–100. Passing `undefined` uses the format default.
 
 ## Format Semantics
 | Format | Uses `quality`? | Encoder knobs affected | Default | Notes |
@@ -26,7 +26,7 @@ Use these ranges when you want similar subjective quality across formats:
 | Lowest latency | 50–65 | 50–65 | 35–55 | Use when speed trumps fidelity. |
 
 ## API expectations
-- `quality` range: **0–100**, clamped. Values <0 → 0, >100 → 100.
+- `quality` range: **1–100**. Values outside the range are rejected.
 - If you need deterministic size/latency, prefer sticking to the shared bands rather than arbitrary single numbers.
 - For PNG outputs, omit the quality argument to signal intent clearly (it is ignored either way).
 

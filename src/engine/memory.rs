@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "napi"), allow(dead_code))]
+
 // src/engine/memory.rs
 //
 // Container memory limit detection for smart concurrency control.
@@ -90,6 +92,10 @@ impl WeightedSemaphore {
             }),
             cvar: Condvar::new(),
         }
+    }
+
+    pub fn capacity(&self) -> u64 {
+        self.capacity
     }
 
     pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
@@ -191,6 +197,9 @@ pub struct HeaderEstimate {
     pub width: u32,
     pub height: u32,
     pub format: Option<ImageFormat>,
+    /// Precise bytes-per-pixel parsed from the image header.
+    /// `None` means the color type could not be determined; fall back to format heuristic.
+    pub decoded_bpp: Option<u64>,
 }
 
 fn bytes_for_image(width: u32, height: u32, bytes_per_pixel: u64) -> u64 {
@@ -206,6 +215,212 @@ fn default_bpp(format: Option<ImageFormat>) -> u64 {
         Some(ImageFormat::Avif) => BPP_AVIF,
         _ => BPP_UNKNOWN,
     }
+}
+
+/// Resolve the effective BPP: prefer header-parsed value, fall back to format heuristic.
+#[allow(dead_code)] // Used via tasks.rs when napi feature is enabled
+fn effective_bpp(header: &HeaderEstimate) -> u64 {
+    header
+        .decoded_bpp
+        .unwrap_or_else(|| default_bpp(header.format))
+}
+
+// ---------------------------------------------------------------------------
+// Format-specific header parsers for precise decoded BPP
+// ---------------------------------------------------------------------------
+
+/// Parse JPEG SOF marker to determine number of color components.
+/// SOF0 (0xFFC0) and SOF2 (0xFFC2) contain: precision(1) + height(2) + width(2) + num_components(1)
+fn parse_jpeg_bpp(bytes: &[u8]) -> Option<u64> {
+    if bytes.len() < 4 || bytes[0] != 0xFF || bytes[1] != 0xD8 {
+        return None;
+    }
+    let mut i = 2;
+    while i + 4 < bytes.len() {
+        if bytes[i] != 0xFF {
+            i += 1;
+            continue;
+        }
+        let mut marker_idx = i + 1;
+        while marker_idx < bytes.len() && bytes[marker_idx] == 0xFF {
+            marker_idx += 1;
+        }
+        if marker_idx >= bytes.len() {
+            break;
+        }
+        let marker = bytes[marker_idx];
+        if marker == 0x00 {
+            i = marker_idx + 1;
+            continue;
+        }
+        if marker == 0xD9 || marker == 0xDA {
+            break;
+        }
+        if marker == 0x01 || (0xD0..=0xD7).contains(&marker) {
+            i = marker_idx + 1;
+            continue;
+        }
+        // SOF0 (baseline), SOF1 (extended), SOF2 (progressive), SOF3 (lossless)
+        if matches!(marker, 0xC0..=0xC3) {
+            // SOF payload: length(2) + precision(1) + height(2) + width(2) + num_components(1)
+            if marker_idx + 8 < bytes.len() {
+                let num_components = bytes[marker_idx + 8] as u64;
+                // JPEG components: 1=grayscale→1bpp, 3=YCbCr→3bpp (decoded to RGB), 4=CMYK→4bpp
+                return Some(num_components.clamp(1, 4));
+            }
+            return None;
+        }
+        // Skip non-SOF markers
+        if marker_idx + 2 < bytes.len() {
+            let seg_len =
+                u16::from_be_bytes([bytes[marker_idx + 1], bytes[marker_idx + 2]]) as usize;
+            if seg_len < 2 {
+                return None;
+            }
+            i = marker_idx + 1 + seg_len;
+        } else {
+            break;
+        }
+    }
+    None
+}
+
+/// Parse PNG IHDR chunk for color type and bit depth.
+/// IHDR: width(4) + height(4) + bit_depth(1) + color_type(1) + ...
+fn parse_png_bpp(bytes: &[u8]) -> Option<u64> {
+    // PNG signature (8 bytes) + IHDR chunk: length(4) + "IHDR"(4) + data(13+)
+    if bytes.len() < 29 || bytes[0..8] != [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
+        return None;
+    }
+    // IHDR chunk type at offset 12
+    if &bytes[12..16] != b"IHDR" {
+        return None;
+    }
+    let bit_depth = bytes[24] as u64;
+    let color_type = bytes[25];
+    // Determine decoded BPP based on color type.
+    // The image crate expands palette to RGB and converts 16-bit to 16-bit DynamicImage variants,
+    // but lazy-image converts 16→8 internally. We model peak memory (decode buffer).
+    let bpp = match color_type {
+        0 => {
+            // Grayscale
+            if bit_depth <= 8 {
+                1
+            } else {
+                2
+            }
+        }
+        2 => {
+            // RGB
+            if bit_depth <= 8 {
+                3
+            } else {
+                6
+            }
+        }
+        3 => {
+            // Palette (indexed) → expanded to RGB/RGBA during decode depending on tRNS
+            if png_palette_has_transparency(bytes) {
+                4
+            } else {
+                3
+            }
+        }
+        4 => {
+            // Grayscale + Alpha
+            if bit_depth <= 8 {
+                2
+            } else {
+                4
+            }
+        }
+        6 => {
+            // RGBA
+            if bit_depth <= 8 {
+                4
+            } else {
+                8
+            }
+        }
+        _ => return None,
+    };
+    Some(bpp)
+}
+
+fn png_palette_has_transparency(bytes: &[u8]) -> bool {
+    let mut offset = 8;
+    while offset + 8 <= bytes.len() {
+        let chunk_len = u32::from_be_bytes([
+            bytes[offset],
+            bytes[offset + 1],
+            bytes[offset + 2],
+            bytes[offset + 3],
+        ]) as usize;
+        let chunk_type = &bytes[offset + 4..offset + 8];
+        let data_start = offset + 8;
+        let data_end = data_start.saturating_add(chunk_len);
+        let next = data_end.saturating_add(4);
+        if next > bytes.len() {
+            break;
+        }
+        if chunk_type == b"tRNS" {
+            return true;
+        }
+        if chunk_type == b"IDAT" || chunk_type == b"IEND" {
+            return false;
+        }
+        offset = next;
+    }
+    false
+}
+
+/// Parse WebP BitstreamFeatures to determine if alpha channel is present.
+fn parse_webp_bpp(bytes: &[u8]) -> Option<u64> {
+    if bytes.len() < 12 || &bytes[0..4] != b"RIFF" || &bytes[8..12] != b"WEBP" {
+        return None;
+    }
+    let features = webp::BitstreamFeatures::new(bytes)?;
+    Some(if features.has_alpha() { 4 } else { 3 })
+}
+
+/// Determine precise BPP from image header bytes.
+fn parse_color_bpp(bytes: &[u8], format: Option<ImageFormat>) -> Option<u64> {
+    match format {
+        Some(ImageFormat::Jpeg) => parse_jpeg_bpp(bytes),
+        Some(ImageFormat::Png) => parse_png_bpp(bytes),
+        Some(ImageFormat::WebP) => parse_webp_bpp(bytes),
+        _ => {
+            // Try magic-byte detection for format-agnostic callers
+            if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
+                parse_jpeg_bpp(bytes)
+            } else if bytes.len() >= 8 && bytes[0..4] == [0x89, 0x50, 0x4E, 0x47] {
+                parse_png_bpp(bytes)
+            } else if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
+                parse_webp_bpp(bytes)
+            } else {
+                None
+            }
+        }
+    }
+}
+
+/// Maximum fallback estimate to avoid absurd weights
+const MAX_FALLBACK_ESTIMATE: u64 = 512 * 1024 * 1024; // 512 MB
+
+/// Estimate memory from file size when header parsing fails.
+/// Uses format-specific compression ratio heuristics.
+#[allow(dead_code)] // Used via tasks.rs when napi feature is enabled
+pub fn estimate_fallback_from_file_size(file_size: u64, format: Option<ImageFormat>) -> u64 {
+    let ratio = match format {
+        Some(ImageFormat::Jpeg) => 10, // JPEG ~10:1 compression
+        Some(ImageFormat::Png) => 4,   // PNG ~3-5:1 compression
+        Some(ImageFormat::WebP) => 8,  // WebP ~8:1 compression
+        Some(ImageFormat::Avif) => 12, // AVIF ~12:1 compression
+        _ => 10,                       // conservative default
+    };
+    file_size
+        .saturating_mul(ratio)
+        .clamp(MIN_ESTIMATE_BYTES, MAX_FALLBACK_ESTIMATE)
 }
 
 /// Reserve memory for OS / runtime based on container/host limit
@@ -310,7 +525,7 @@ fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u3
             (dims, current_bpp.max(3), FILTER_OVERHEAD_BYTES / 2)
         }
         Operation::AutoOrient { orientation } => {
-            let rotated = matches!(orientation, 5 | 6 | 7 | 8);
+            let rotated = matches!(orientation, 5..=8);
             let next_dims = if rotated { (dims.1, dims.0) } else { dims };
             (next_dims, current_bpp, FILTER_OVERHEAD_BYTES)
         }
@@ -326,10 +541,21 @@ fn estimate_memory_from_dimensions_with_context(
     ops: &[Operation],
     output_format: Option<&OutputFormat>,
 ) -> u64 {
+    estimate_memory_from_dimensions_with_bpp(width, height, None, format, ops, output_format)
+}
+
+fn estimate_memory_from_dimensions_with_bpp(
+    width: u32,
+    height: u32,
+    decoded_bpp: Option<u64>,
+    format: Option<ImageFormat>,
+    ops: &[Operation],
+    output_format: Option<&OutputFormat>,
+) -> u64 {
     // Deterministic model: Calculate peak memory directly from input pixel count × BPP
     // and pipeline intermediate buffer count. No learning or observation-based corrections.
     let mut current_dims = (width, height);
-    let mut current_bpp = default_bpp(format);
+    let mut current_bpp = decoded_bpp.unwrap_or_else(|| default_bpp(format));
 
     let mut peak = bytes_for_image(current_dims.0, current_dims.1, current_bpp)
         .saturating_add(DECODE_OVERHEAD_BYTES);
@@ -367,9 +593,9 @@ pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
 }
 
 /// Lightweight header parse; returns None if dimensions can't be read.
-/// Cache for memory estimates keyed by (width, height, format)
+/// Cache for memory estimates keyed by (width, height, format, effective_bpp)
 /// No LRU needed - image dimensions are discrete (~20-50 common sizes)
-type EstimateCache = Mutex<HashMap<(u32, u32, Option<ImageFormat>), u64>>;
+type EstimateCache = Mutex<HashMap<(u32, u32, Option<ImageFormat>, u64), u64>>;
 static ESTIMATE_CACHE: OnceLock<EstimateCache> = OnceLock::new();
 
 fn get_estimate_cache() -> &'static EstimateCache {
@@ -386,7 +612,12 @@ pub fn estimate_memory_from_header(
     // Only cache if ops are empty (common case for simple operations)
     // Complex pipelines with operations are computed fresh
     if ops.is_empty() && output_format.is_none() {
-        let cache_key = (header.width, header.height, header.format);
+        let cache_key = (
+            header.width,
+            header.height,
+            header.format,
+            effective_bpp(&header),
+        );
 
         // Try cache first (parking_lot try_lock returns Option)
         if let Some(cache) = get_estimate_cache().try_lock() {
@@ -395,10 +626,11 @@ pub fn estimate_memory_from_header(
             }
         }
 
-        // Compute estimate
-        let estimate = estimate_memory_from_dimensions_with_context(
+        // Compute estimate with precise BPP when available
+        let estimate = estimate_memory_from_dimensions_with_bpp(
             header.width,
             header.height,
+            header.decoded_bpp,
             header.format,
             ops,
             output_format,
@@ -417,9 +649,10 @@ pub fn estimate_memory_from_header(
         Some(estimate)
     } else {
         // Don't cache complex pipelines
-        Some(estimate_memory_from_dimensions_with_context(
+        Some(estimate_memory_from_dimensions_with_bpp(
             header.width,
             header.height,
+            header.decoded_bpp,
             header.format,
             ops,
             output_format,
@@ -427,16 +660,18 @@ pub fn estimate_memory_from_header(
     }
 }
 
-/// Parse width/height/format from input bytes without full decode.
+/// Parse width/height/format and color type from input bytes without full decode.
 pub fn parse_header(bytes: &[u8]) -> Option<HeaderEstimate> {
     let cursor = Cursor::new(bytes);
     if let Ok(reader) = image::ImageReader::new(cursor).with_guessed_format() {
         let format = reader.format();
         if let Ok((w, h)) = reader.into_dimensions() {
+            let decoded_bpp = parse_color_bpp(bytes, format);
             return Some(HeaderEstimate {
                 width: w,
                 height: h,
                 format,
+                decoded_bpp,
             });
         }
     }
@@ -529,40 +764,11 @@ fn detect_cgroup_v1_memory() -> Option<u64> {
     None
 }
 
-/// Detects system memory (fallback when not in container)
+/// Detects system memory (fallback when not in container).
+/// Delegates to the centralized platform module for OS-specific detection.
 #[cfg(feature = "napi")]
 fn detect_system_memory() -> Option<u64> {
-    #[cfg(target_os = "linux")]
-    {
-        // Linux: read from /proc/meminfo
-        if let Ok(content) = fs::read_to_string("/proc/meminfo") {
-            for line in content.lines() {
-                if line.starts_with("MemTotal:") {
-                    if let Some(kb_str) = line.split_whitespace().nth(1) {
-                        if let Ok(kb) = kb_str.parse::<u64>() {
-                            return Some(kb * 1024); // Convert KB to bytes
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        // macOS: use sysctl
-        use std::process::Command;
-        if let Ok(output) = Command::new("sysctl").arg("-n").arg("hw.memsize").output() {
-            if let Ok(memory_str) = String::from_utf8(output.stdout) {
-                if let Ok(memory) = memory_str.trim().parse::<u64>() {
-                    return Some(memory);
-                }
-            }
-        }
-    }
-
-    // Windows and other platforms: not implemented yet
-    None
+    super::platform::detect_system_memory()
 }
 
 #[cfg(feature = "napi")]
@@ -895,6 +1101,37 @@ mod tests {
 
         get_estimate_cache().lock().clear();
     }
+
+    #[test]
+    fn test_estimate_cache_keeps_distinct_bpp_variants_separate() {
+        {
+            let mut cache = get_estimate_cache().lock();
+            cache.clear();
+        }
+
+        let gray: image::ImageBuffer<image::Luma<u8>, Vec<u8>> =
+            image::ImageBuffer::from_pixel(8, 8, image::Luma([128]));
+        let mut gray_bytes = Vec::new();
+        gray.write_to(&mut std::io::Cursor::new(&mut gray_bytes), ImageFormat::Png)
+            .expect("grayscale png encode should succeed");
+
+        let rgb: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+            image::ImageBuffer::from_pixel(8, 8, image::Rgb([0, 0, 0]));
+        let mut rgb_bytes = Vec::new();
+        rgb.write_to(&mut std::io::Cursor::new(&mut rgb_bytes), ImageFormat::Png)
+            .expect("rgb png encode should succeed");
+
+        assert!(estimate_memory_from_header(&gray_bytes, &[], None).is_some());
+        assert!(estimate_memory_from_header(&rgb_bytes, &[], None).is_some());
+
+        assert_eq!(
+            get_estimate_cache().lock().len(),
+            2,
+            "cache should keep separate entries for distinct decoded BPP variants"
+        );
+
+        get_estimate_cache().lock().clear();
+    }
 }
 
 // Tests that run when `napi` feature is disabled (the CI coverage path uses `--no-default-features`).
@@ -945,6 +1182,131 @@ mod non_napi_tests {
 
         let estimate = estimate_memory_from_header(&bytes, &[], Some(&OutputFormat::Png)).unwrap();
         assert!(estimate >= MIN_ESTIMATE_BYTES);
+    }
+
+    #[test]
+    fn jpeg_header_parsing_returns_rgb_bpp() {
+        // Create a minimal RGB JPEG (3 components)
+        let img: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(2, 2, image::Rgb([0, 0, 0]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Jpeg)
+            .unwrap();
+
+        let bpp = parse_jpeg_bpp(&bytes);
+        assert_eq!(bpp, Some(3), "standard RGB JPEG should report 3 BPP");
+    }
+
+    #[test]
+    fn png_header_parsing_rgba() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(2, 2, Rgba([0, 0, 0, 255]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+
+        let bpp = parse_png_bpp(&bytes);
+        assert_eq!(bpp, Some(4), "RGBA PNG should report 4 BPP");
+    }
+
+    #[test]
+    fn png_header_parsing_grayscale() {
+        let img: ImageBuffer<image::Luma<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(2, 2, image::Luma([128]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+
+        let bpp = parse_png_bpp(&bytes);
+        assert_eq!(bpp, Some(1), "grayscale PNG should report 1 BPP");
+    }
+
+    #[test]
+    fn png_header_parsing_rgb() {
+        let img: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(2, 2, image::Rgb([0, 0, 0]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+
+        let bpp = parse_png_bpp(&bytes);
+        assert_eq!(bpp, Some(3), "RGB PNG should report 3 BPP");
+    }
+
+    #[test]
+    fn webp_header_parsing_no_alpha() {
+        let img: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(10, 10, image::Rgb([0, 0, 0]));
+        let encoder = webp::Encoder::from_rgb(&img, 10, 10);
+        let config = webp::WebPConfig::new().unwrap();
+        let mem = encoder.encode_advanced(&config).unwrap();
+        let bytes = mem.to_vec();
+
+        let bpp = parse_webp_bpp(&bytes);
+        assert_eq!(bpp, Some(3), "WebP without alpha should report 3 BPP");
+    }
+
+    #[test]
+    fn header_estimate_populates_decoded_bpp() {
+        let img: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(4, 4, image::Rgb([0, 0, 0]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+
+        let header = parse_header(&bytes).unwrap();
+        assert_eq!(
+            header.decoded_bpp,
+            Some(3),
+            "RGB PNG header should have decoded_bpp=3"
+        );
+    }
+
+    #[test]
+    fn fallback_estimate_scales_with_file_size() {
+        let small = estimate_fallback_from_file_size(1_000_000, Some(ImageFormat::Jpeg)); // 1MB JPEG
+        let large = estimate_fallback_from_file_size(10_000_000, Some(ImageFormat::Jpeg)); // 10MB JPEG
+        assert!(large > small, "larger file should produce larger estimate");
+        // 1MB JPEG × 10 = 10MB, which is >= MIN_ESTIMATE_BYTES
+        assert!(small >= MIN_ESTIMATE_BYTES);
+        // 10MB JPEG × 10 = 100MB, which is < MAX_FALLBACK_ESTIMATE
+        assert!(large <= MAX_FALLBACK_ESTIMATE);
+    }
+
+    #[test]
+    fn fallback_estimate_clamped_to_max() {
+        let huge = estimate_fallback_from_file_size(1_000_000_000, Some(ImageFormat::Jpeg)); // 1GB
+        assert_eq!(
+            huge, MAX_FALLBACK_ESTIMATE,
+            "estimate should be clamped to max"
+        );
+    }
+
+    #[test]
+    fn grayscale_jpeg_gets_lower_estimate_than_rgb() {
+        // Grayscale JPEG has 1 component → 1 BPP, RGB has 3 → 3 BPP
+        // The estimate for grayscale should be lower for the same dimensions
+        let ops: Vec<Operation> = Vec::new();
+        let gray_est = estimate_memory_from_dimensions_with_bpp(
+            4000,
+            4000,
+            Some(1),
+            Some(ImageFormat::Jpeg),
+            &ops,
+            None,
+        );
+        let rgb_est = estimate_memory_from_dimensions_with_bpp(
+            4000,
+            4000,
+            Some(3),
+            Some(ImageFormat::Jpeg),
+            &ops,
+            None,
+        );
+        assert!(
+            gray_est < rgb_est,
+            "grayscale ({gray_est}) should use less memory than RGB ({rgb_est})"
+        );
     }
 
     #[test]

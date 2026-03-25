@@ -6,8 +6,7 @@ env:
   MACOSX_DEPLOYMENT_TARGET: '10.13'
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 on:
   push:
@@ -104,7 +103,7 @@ jobs:
         shell: bash
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: bindings-${{ matrix.settings.target }}
           path: "*.node"
@@ -143,6 +142,46 @@ jobs:
       # Note: NAPI tests require Node.js runtime and cannot be run with cargo test alone.
       # NAPI functionality is tested via JavaScript integration tests in the 'test' job.
       # The napi_tests.rs file exists for local development with Node.js installed.
+
+  rust-quality:
+    name: Rust Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
+          components: clippy, rustfmt
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Run Clippy
+        run: cargo clippy --no-default-features -- -D warnings
+
+  package-contract:
+    name: Package Contract
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify npm pack contract
+        run: npm run test:pack-contract
 
   test:
     name: Test (Node ${{ matrix.node }})
@@ -186,7 +225,7 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.settings.artifact }}
           path: .
@@ -218,7 +257,7 @@ jobs:
         run: npm ci
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: bindings-x86_64-unknown-linux-gnu
           path: .
@@ -231,6 +270,38 @@ jobs:
 
       - name: Run benchmark verification (size/quality guards)
         run: npm run test:bench:verify
+
+  perf-safety:
+    name: Perf Safety Gate
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: bindings-x86_64-unknown-linux-gnu
+          path: .
+
+      - name: Run perf + memory regression gate
+        run: npm run test:bench:perf-safety-gate
+
+      - name: Run edge-case safety suite (OOM/bounds)
+        run: node test/integration/edge-cases.test.js
 
   supply-chain:
     name: Supply Chain
@@ -255,7 +326,7 @@ jobs:
         run: npm ci
 
       - name: Download all binding artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: bindings-*
           path: artifacts
@@ -271,7 +342,7 @@ jobs:
           find artifacts -name "*.node" -type f -print -exec sha256sum {} \; > binding-hashes.sha256
 
       - name: Upload supply-chain reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: supply-chain-reports
           path: |
@@ -358,7 +429,15 @@ jobs:
       id-token: write  # Required for OIDC authentication
     needs:
       - build
+      - rust-quality
+      - package-contract
+      - test-rust
       - test
+      - quality
+      - perf-safety
+      - supply-chain
+      - coverage
+      - leak-detection
     # Only publish on tag releases (semantic versioning) or manual workflow dispatch
     # CI/README changes are tested by build/test jobs, but don't trigger npm publish
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
@@ -381,7 +460,7 @@ jobs:
         run: npm ci
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
