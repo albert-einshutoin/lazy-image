@@ -61,7 +61,7 @@ When `sanitize('strict')` is enabled, all metadata is stripped regardless of `ke
 | Firewall override | N/A | ✅ Supported |
 
 ## Format-Specific Notes
-- Note: In v0.9.x, EXIF embedding is implemented only for JPEG. PNG and WebP outputs currently strip EXIF; support is planned for a later release.
+- EXIF embedding is supported for JPEG, PNG, and WebP outputs. AVIF currently strips EXIF.
 
 ### JPEG
 - ICC: Embedded in APP2 segment (ICC_PROFILE)
@@ -69,11 +69,11 @@ When `sanitize('strict')` is enabled, all metadata is stripped regardless of `ke
 
 ### PNG
 - ICC: Embedded in iCCP chunk
-- EXIF: Not yet embedded; EXIF is stripped in v0.9.x
+- EXIF: Embedded in eXIf chunk
 
 ### WebP
 - ICC: Embedded in ICCP chunk
-- EXIF: Not yet embedded; EXIF is stripped in v0.9.x
+- EXIF: Embedded in EXIF chunk
 
 ### AVIF
 - ICC: Supported via libavif
