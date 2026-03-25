@@ -1133,7 +1133,10 @@ impl ImageEngine {
     }
 
     /// Encode and write directly to a file asynchronously, returning metrics.
-    #[napi(js_name = "toFileWithMetrics", ts_return_type = "Promise<FileOutputWithMetrics>")]
+    #[napi(
+        js_name = "toFileWithMetrics",
+        ts_return_type = "Promise<FileOutputWithMetrics>"
+    )]
     pub fn to_file_with_metrics(
         &mut self,
         env: Env,
