@@ -776,7 +776,7 @@ fn write_encoded_output_with_count(
         .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
 
     temp_file.persist(output_path).map_err(|e| {
-        let io_error = std::io::Error::other(format!("failed to persist file: {}", e));
+        let io_error = std::io::Error::other(format!("failed to persist file: {e}"));
         LazyImageError::file_write_failed(output_path.to_string(), io_error)
     })?;
 
@@ -809,7 +809,7 @@ fn write_encoded_output(output_path: &str, data: &[u8]) -> std::result::Result<(
         .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
 
     temp_file.persist(output_path).map_err(|e| {
-        let io_error = std::io::Error::other(format!("failed to persist file: {}", e));
+        let io_error = std::io::Error::other(format!("failed to persist file: {e}"));
         LazyImageError::file_write_failed(output_path.to_string(), io_error)
     })?;
 
