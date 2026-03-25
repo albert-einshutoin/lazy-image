@@ -331,6 +331,57 @@ pub fn embed_exif_jpeg(
     })
 }
 
+pub fn embed_exif_png(
+    png_data: Vec<u8>,
+    exif: &[u8],
+    reset_orientation: bool,
+    strip_gps: bool,
+) -> EncoderResult<Vec<u8>> {
+    run_with_panic_policy("encode:png:embed_exif", || {
+        use img_parts::Bytes;
+        use img_parts::ImageEXIF;
+
+        let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
+            LazyImageError::decode_failed(format!("failed to parse PNG for EXIF: {e}"))
+        })?;
+
+        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
+        png.set_exif(Some(Bytes::from(sanitized_exif)));
+
+        let mut output = Vec::new();
+        png.encoder().write_to(&mut output).map_err(|e| {
+            LazyImageError::encode_failed("png", format!("failed to write PNG with EXIF: {e}"))
+        })?;
+        Ok(output)
+    })
+}
+
+pub fn embed_exif_webp(
+    webp_data: Vec<u8>,
+    exif: &[u8],
+    reset_orientation: bool,
+    strip_gps: bool,
+) -> EncoderResult<Vec<u8>> {
+    run_with_panic_policy("encode:webp:embed_exif", || {
+        use img_parts::webp::WebP;
+        use img_parts::Bytes;
+        use img_parts::ImageEXIF;
+
+        let mut webp = WebP::from_bytes(Bytes::from(webp_data)).map_err(|e| {
+            LazyImageError::decode_failed(format!("failed to parse WebP for EXIF: {e}"))
+        })?;
+
+        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
+        webp.set_exif(Some(Bytes::from(sanitized_exif)));
+
+        let mut output = Vec::new();
+        webp.encoder().write_to(&mut output).map_err(|e| {
+            LazyImageError::encode_failed("webp", format!("failed to write WebP with EXIF: {e}"))
+        })?;
+        Ok(output)
+    })
+}
+
 /// Sanitize raw EXIF TIFF bytes (Zero-Copy approach):
 /// - Reset Orientation tag to 1 (if reset_orientation is true)
 /// - Strip GPS tags by zeroing GPS IFD pointer (if strip_gps is true)

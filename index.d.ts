@@ -490,7 +490,6 @@ export declare function createStreamingPipeline(options: {
     enabled?: boolean
   }>
   ImageEngine?: typeof ImageEngine
-  onMetrics?: (metrics: ProcessingMetrics) => void
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream

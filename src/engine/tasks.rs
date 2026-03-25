@@ -10,7 +10,8 @@ use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
 use crate::engine::encoder::{
-    embed_exif_jpeg, encode_avif, encode_jpeg_with_settings, encode_png, encode_webp,
+    embed_exif_jpeg, embed_exif_png, embed_exif_webp, encode_avif, encode_jpeg_with_settings,
+    encode_png, encode_webp,
 };
 #[allow(unused_imports)]
 use crate::engine::io::{extract_exif_raw, extract_icc_profile, Source};
@@ -344,21 +345,21 @@ fn process_and_encode_from_parts(
         OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
     }?;
 
-    // 5. Embed EXIF metadata if requested (JPEG only for now)
+    // 5. Embed EXIF metadata if requested.
     if keep_exif {
         if let Some(exif_data) = exif_data {
-            if let OutputFormat::Jpeg { .. } = format {
-                // Embed EXIF with sanitization:
-                // - Reset Orientation to 1 if auto_orient was applied
-                // - Strip GPS tags if strip_gps is true (default)
-                result = embed_exif_jpeg(
-                    result,
-                    exif_data.as_slice(),
-                    auto_orient, // reset orientation if auto-orient was applied
-                    strip_gps,
-                )?;
-            }
-            // TODO: PNG/WebP EXIF embedding (less common, lower priority)
+            result = match format {
+                OutputFormat::Jpeg { .. } => {
+                    embed_exif_jpeg(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::Png => {
+                    embed_exif_png(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::WebP { .. } => {
+                    embed_exif_webp(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::Avif { .. } => result,
+            };
         }
     }
     firewall.enforce_timeout(metrics_recorder.start_total, "encode")?;
@@ -775,7 +776,7 @@ fn write_encoded_output_with_count(
         .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
 
     temp_file.persist(output_path).map_err(|e| {
-        let io_error = std::io::Error::other(format!("failed to persist file: {}", e));
+        let io_error = std::io::Error::other(format!("failed to persist file: {e}"));
         LazyImageError::file_write_failed(output_path.to_string(), io_error)
     })?;
 
@@ -808,7 +809,7 @@ fn write_encoded_output(output_path: &str, data: &[u8]) -> std::result::Result<(
         .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
 
     temp_file.persist(output_path).map_err(|e| {
-        let io_error = std::io::Error::other(format!("failed to persist file: {}", e));
+        let io_error = std::io::Error::other(format!("failed to persist file: {e}"));
         LazyImageError::file_write_failed(output_path.to_string(), io_error)
     })?;
 
