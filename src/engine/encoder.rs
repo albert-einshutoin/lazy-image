@@ -341,8 +341,9 @@ pub fn embed_exif_png(
         use img_parts::Bytes;
         use img_parts::ImageEXIF;
 
-        let mut png = Png::from_bytes(Bytes::from(png_data))
-            .map_err(|e| LazyImageError::decode_failed(format!("failed to parse PNG for EXIF: {e}")))?;
+        let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
+            LazyImageError::decode_failed(format!("failed to parse PNG for EXIF: {e}"))
+        })?;
 
         let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
         png.set_exif(Some(Bytes::from(sanitized_exif)));

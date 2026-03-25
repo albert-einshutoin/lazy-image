@@ -347,24 +347,15 @@ fn process_and_encode_from_parts(
     if keep_exif {
         if let Some(exif_data) = exif_data {
             result = match format {
-                OutputFormat::Jpeg { .. } => embed_exif_jpeg(
-                    result,
-                    exif_data.as_slice(),
-                    auto_orient,
-                    strip_gps,
-                )?,
-                OutputFormat::Png => embed_exif_png(
-                    result,
-                    exif_data.as_slice(),
-                    auto_orient,
-                    strip_gps,
-                )?,
-                OutputFormat::WebP { .. } => embed_exif_webp(
-                    result,
-                    exif_data.as_slice(),
-                    auto_orient,
-                    strip_gps,
-                )?,
+                OutputFormat::Jpeg { .. } => {
+                    embed_exif_jpeg(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::Png => {
+                    embed_exif_png(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::WebP { .. } => {
+                    embed_exif_webp(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
                 OutputFormat::Avif { .. } => result,
             };
         }
