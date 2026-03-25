@@ -118,7 +118,7 @@ For mmap safety requirements and failure modes, see:
 
 ### Windows Memory Detection
 
-`detect_system_memory()` returns `None` on Windows. Batch processing falls back to CPU-only concurrency estimation, which may cause OOM with many concurrent large images. Consider setting explicit concurrency limits on Windows.
+Windows host memory detection is supported for auto concurrency. `processBatch()` results also include the effective worker count so callers can verify what auto mode selected in production.
 
 ### Serverless Cold Start
 

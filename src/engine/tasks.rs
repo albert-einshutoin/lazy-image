@@ -159,6 +159,8 @@ pub struct BatchResult {
     pub output_path: Option<String>,
     pub error_code: Option<String>,
     pub error_category: Option<ErrorCategory>,
+    pub effective_concurrency: Option<u32>,
+    pub auto_concurrency: Option<bool>,
 }
 
 pub struct EncodeTask {
@@ -906,6 +908,22 @@ impl Task for BatchTask {
             })?;
         }
 
+        // concurrency = 0 means "use default" (auto-detected via CPU and memory)
+        // concurrency = 1..MAX_CONCURRENCY means "use specified number of concurrent operations"
+        if self.concurrency > pool::MAX_CONCURRENCY as u32 {
+            let lazy_err = LazyImageError::invalid_argument(
+                "concurrency",
+                self.concurrency.to_string(),
+                format!("must be 0 or 1-{}", pool::MAX_CONCURRENCY),
+            );
+            self.last_error = Some(lazy_err.clone());
+            return Err(napi::Error::from(lazy_err));
+        }
+
+        let effective_concurrency = pool::resolve_effective_concurrency(self.concurrency);
+        let effective_concurrency_u32 = u32::try_from(effective_concurrency).ok();
+        let auto_concurrency = Some(self.concurrency == 0);
+
         // Helper closure to process a single image
         let ops = &self.ops;
         let format = &self.format;
@@ -1077,6 +1095,8 @@ impl Task for BatchTask {
                     output_path: Some(path),
                     error_code: None,
                     error_category: None,
+                    effective_concurrency: effective_concurrency_u32,
+                    auto_concurrency,
                 },
                 Err(err) => {
                     let error_code = err.code();
@@ -1089,28 +1109,11 @@ impl Task for BatchTask {
                         output_path: None,
                         error_code: Some(error_code.as_str().to_string()),
                         error_category: Some(category),
+                        effective_concurrency: effective_concurrency_u32,
+                        auto_concurrency,
                     }
                 }
             }
-        };
-
-        // Validate concurrency parameter
-        // concurrency = 0 means "use default" (auto-detected via CPU and memory)
-        // concurrency = 1..MAX_CONCURRENCY means "use specified number of concurrent operations"
-        if self.concurrency > pool::MAX_CONCURRENCY as u32 {
-            let lazy_err = LazyImageError::invalid_argument(
-                "concurrency",
-                self.concurrency.to_string(),
-                format!("must be 0 or 1-{}", pool::MAX_CONCURRENCY),
-            );
-            self.last_error = Some(lazy_err.clone());
-            return Err(napi::Error::from(lazy_err));
-        }
-
-        let effective_concurrency = if self.concurrency == 0 {
-            pool::calculate_optimal_concurrency()
-        } else {
-            self.concurrency as usize
         };
 
         // Use the shared rayon pool to avoid per-call pool construction overhead.

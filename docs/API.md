@@ -136,6 +136,10 @@ interface BatchResult {
   success: boolean;
   error?: string;
   outputPath?: string;
+  errorCode?: string;
+  errorCategory?: ErrorCategory;
+  effectiveConcurrency?: number;
+  autoConcurrency?: boolean;
 }
 ```
 

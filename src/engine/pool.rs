@@ -158,6 +158,15 @@ pub fn calculate_optimal_concurrency() -> usize {
 }
 
 #[cfg(feature = "napi")]
+pub fn resolve_effective_concurrency(requested_concurrency: u32) -> usize {
+    if requested_concurrency == 0 {
+        calculate_optimal_concurrency()
+    } else {
+        requested_concurrency as usize
+    }
+}
+
+#[cfg(feature = "napi")]
 fn reserved_libuv_threads() -> usize {
     std::env::var("UV_THREADPOOL_SIZE")
         .ok()
@@ -232,6 +241,11 @@ mod tests {
         let pool_after_reset = reinitialize_global_pool();
         let expected_default = expected_threads(DEFAULT_LIBUV_THREADPOOL_SIZE);
         assert_eq!(thread_count(&pool_after_reset), expected_default);
+    }
+
+    #[test]
+    fn resolve_effective_concurrency_prefers_manual_value() {
+        assert_eq!(resolve_effective_concurrency(7), 7);
     }
 
     #[test]

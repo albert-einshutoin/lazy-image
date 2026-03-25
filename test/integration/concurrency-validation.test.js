@@ -34,6 +34,14 @@ async function testConcurrencyValidation() {
             concurrency: 0,
         });
         console.log(`  Success: Processed ${results.length} images with default concurrency`);
+        if (results.length > 0) {
+            if (typeof results[0].effectiveConcurrency !== 'number' || results[0].effectiveConcurrency < 1) {
+                throw new Error('effectiveConcurrency should be reported for auto mode');
+            }
+            if (results[0].autoConcurrency !== true) {
+                throw new Error('autoConcurrency should be true when concurrency=0');
+            }
+        }
     } catch (e) {
         console.log(`  ❌ Unexpected error: ${e.message}`);
     }
@@ -48,6 +56,14 @@ async function testConcurrencyValidation() {
             concurrency: 1,
         });
         console.log(`  Success: Processed ${results.length} images with 1 thread`);
+        if (results.length > 0) {
+            if (results[0].effectiveConcurrency !== 1) {
+                throw new Error(`effectiveConcurrency should be 1, got ${results[0].effectiveConcurrency}`);
+            }
+            if (results[0].autoConcurrency !== false) {
+                throw new Error('autoConcurrency should be false for manual concurrency');
+            }
+        }
     } catch (e) {
         console.log(`  ❌ Unexpected error: ${e.message}`);
     }

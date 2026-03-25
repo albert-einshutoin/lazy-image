@@ -196,6 +196,8 @@ export interface BatchResult {
   outputPath?: string
   errorCode?: string
   errorCategory?: ErrorCategory
+  effectiveConcurrency?: number
+  autoConcurrency?: boolean
 }
 
 export interface Dimensions {
