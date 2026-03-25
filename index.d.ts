@@ -456,6 +456,7 @@ type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
 export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
 export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
+export type TargetBytesFormat = CaseInsensitive<'jpeg' | 'jpg' | 'webp' | 'avif'>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
 export type FirewallPolicy = 'strict' | 'lenient'
@@ -471,6 +472,8 @@ export interface ImageEngine {
   toBufferProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<Buffer>
   toBufferWithMetricsProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<OutputWithMetrics>
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
+  toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
+  toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
 }
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null
@@ -487,6 +490,7 @@ export declare function createStreamingPipeline(options: {
     enabled?: boolean
   }>
   ImageEngine?: typeof ImageEngine
+  onMetrics?: (metrics: ProcessingMetrics) => void
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream
