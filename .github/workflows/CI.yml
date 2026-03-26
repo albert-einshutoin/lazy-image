@@ -437,9 +437,18 @@ jobs:
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
           RUST_BACKTRACE: 1
         run: |
-          ASAN_RT="$(find "$(rustc +nightly --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/lib" -name 'libclang_rt.asan-x86_64*.so' | head -n 1)"
+          ASAN_RT=""
+          if command -v clang >/dev/null 2>&1; then
+            CLANG_RT_DIR="$(clang --print-runtime-dir 2>/dev/null || true)"
+            if [ -n "$CLANG_RT_DIR" ]; then
+              ASAN_RT="$(find "$CLANG_RT_DIR" -name 'libclang_rt.asan-x86_64*.so' | head -n 1)"
+            fi
+          fi
           if [ -z "$ASAN_RT" ]; then
-            echo "Failed to locate Rust ASan runtime"
+            ASAN_RT="$(find /usr/lib/llvm-* -path '*/lib/linux/libclang_rt.asan-x86_64*.so' | head -n 1)"
+          fi
+          if [ -z "$ASAN_RT" ]; then
+            echo "Failed to locate ASan runtime"
             exit 1
           fi
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
