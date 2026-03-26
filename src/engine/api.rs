@@ -1494,22 +1494,6 @@ pub struct PresetResult {
 }
 
 #[cfg(feature = "napi")]
-/// Result of applying a preset and encoding to buffer
-#[napi(object)]
-pub struct PresetBufferResult {
-    /// Encoded image data
-    pub data: Buffer,
-    /// Recommended output format
-    pub format: String,
-    /// Recommended quality (None for PNG)
-    pub quality: Option<u8>,
-    /// Target width (None if aspect ratio preserved)
-    pub width: Option<u32>,
-    /// Target height (None if aspect ratio preserved)
-    pub height: Option<u32>,
-}
-
-#[cfg(feature = "napi")]
 #[napi(object)]
 pub struct BatchOptions {
     /// Output format ("jpeg", "png", "webp", "avif")

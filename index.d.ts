@@ -356,20 +356,6 @@ export interface OutputWithMetrics {
   metrics: ProcessingMetrics
 }
 
-/** Result of applying a preset and encoding to buffer */
-export interface PresetBufferResult {
-  /** Encoded image data */
-  data: Buffer
-  /** Recommended output format */
-  format: CanonicalOutputFormat
-  /** Recommended quality (None for PNG) */
-  quality?: number
-  /** Target width (None if aspect ratio preserved) */
-  width?: number
-  /** Target height (None if aspect ratio preserved) */
-  height?: number
-}
-
 /** Result of applying a preset, contains recommended output settings */
 export interface PresetResult {
   /** Recommended output format */

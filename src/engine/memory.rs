@@ -534,6 +534,7 @@ fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u3
     }
 }
 
+#[cfg(test)]
 fn estimate_memory_from_dimensions_with_context(
     width: u32,
     height: u32,
