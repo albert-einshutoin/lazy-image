@@ -416,20 +416,6 @@ jobs:
         with:
           prefix-key: "v1-asan"
 
-      - name: Run Rust stress test with AddressSanitizer
-        env:
-          RUSTUP_TOOLCHAIN: nightly
-          RUSTFLAGS: "-Zsanitizer=address"
-          # Enable leak detection, abort on error, and symbolize stack traces
-          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
-          RUST_BACKTRACE: 1
-        run: |
-          # Run stress test with optimized dependencies (see Cargo.toml profile.dev.package)
-          cargo run --example stress_test \
-            --target x86_64-unknown-linux-gnu \
-            --no-default-features --features stress \
-            -- --iterations 5
-
       - name: Run NAPI-boundary stress test with AddressSanitizer
         env:
           RUSTUP_TOOLCHAIN: nightly

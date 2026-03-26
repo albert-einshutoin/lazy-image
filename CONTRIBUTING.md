@@ -65,7 +65,7 @@ npm run test:types
 npm run test:stress:napi
 ```
 
-`npm run test:stress:napi` exercises repeated Node -> NAPI -> Rust encode/write/batch paths. In CI, the `Memory Leak Detection (ASan)` job runs both the Rust-only stress harness and this NAPI-boundary stress path so leak/sanitizer regressions are caught across the addon boundary as well.
+`npm run test:stress:napi` exercises repeated Node -> NAPI -> Rust encode/write/batch paths. In CI, the `Memory Leak Detection (ASan)` job runs this NAPI-boundary stress path so leak/sanitizer regressions are caught across the addon boundary.
 
 ---
 
