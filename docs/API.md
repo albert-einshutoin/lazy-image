@@ -21,7 +21,7 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.flipH()` | Flip horizontally |
 | `.flipV()` | Flip vertically |
 | `.grayscale()` | Convert to grayscale |
-| `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy. See [ARCHITECTURE.md](./ARCHITECTURE.md#metadata-handling). |
+| `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy. XMP is not currently preserved. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md). |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without color space conversion. |
@@ -56,7 +56,7 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.dimensions()` | Get `{ width, height }` (requires decode) |
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
 | `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
-| `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
+| `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Not a true chunk-by-chunk transform stream. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
 
 ---
 

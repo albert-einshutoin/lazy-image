@@ -2,15 +2,21 @@
 
 lazy-image is optimized for **smaller output and memory safety** rather than raw throughput. This guide helps you choose between lazy-image and sharp and use lazy-image effectively.
 
-## Benchmark Summary (Large Image 5000×5000px)
+## Canonical Benchmark Source
 
-| Feature | Metric | lazy-image | sharp | Verdict |
-|---------|--------|------------|-------|---------|
-| **AVIF Generation** | Time | **13.3s** | 47.4s | lazy-image ~3.5× faster |
-| **JPEG Compression** | File Size | **1.1 MB** | 1.5 MB | lazy-image ~26% smaller |
-| **JPEG Encoding** | Speed | 1.2s | **0.3s** | sharp ~4× faster |
-| **Memory (format conv.)** | Peak RSS | **713 MB** | 2,416 MB | lazy-image ~70% less |
-| **WebP Resize** | Speed | 320ms | **134ms** | sharp ~2.5× faster |
+The canonical benchmark dataset for public performance claims is [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
+
+All summary claims in README and migration docs should be derived from that document's exact scenarios rather than mixing numbers from different workloads.
+
+## Benchmark Summary (Canonical Scenarios)
+
+| Scenario | Metric | lazy-image | sharp | Interpretation |
+|---------|--------|------------|-------|----------------|
+| PNG → AVIF (no resize, 5000×5000) | Encode time | **3,137ms** | 5,320ms | lazy-image is **1.70x faster** in this specific format-conversion workload |
+| PNG → AVIF (no resize, 5000×5000) | Output size | **762,711 bytes** | 1,290,501 bytes | lazy-image output is **40.9% smaller** in this workload |
+| PNG → JPEG (no resize, 5000×5000) | Output size | **1,224,894 bytes** | 1,475,223 bytes | lazy-image output is **17.0% smaller** |
+| PNG → WebP (no resize, 5000×5000) | Encode time | 6,777ms | **975ms** | sharp is much faster for this workload |
+| JPEG/WebP real-time resize workloads | Latency | varies by codec and settings | often faster | use sharp if sub-100ms latency is the main priority |
 
 Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
@@ -20,7 +26,7 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
 - **Serverless (Lambda, Cloud Run, Vercel, etc.)** — Avoid OOM and smaller cold-start footprint.
 - **Bandwidth-sensitive** — Smaller JPEG/AVIF saves CDN and transfer costs.
-- **AVIF generation** — Production-ready AVIF without timeouts on large files.
+- **AVIF generation** — Strong results in the benchmarked PNG → AVIF format-conversion workloads.
 - **Memory-constrained** — 512MB containers; zero-copy path keeps heap low.
 - **Safety-first** — Rust memory safety; built-in decompression limits and Image Firewall.
 
@@ -32,7 +38,7 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
 ## Philosophy
 
-lazy-image trades raw JPEG/WebP encoding speed for **smaller files** and **stable memory**. “Slow to encode, fast to load.”
+lazy-image trades raw JPEG/WebP encoding speed for **smaller files** and **stable memory**. Treat benchmark wins as **codec- and workload-specific**, not universal throughput claims.
 
 ---
 
