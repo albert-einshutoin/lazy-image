@@ -396,20 +396,6 @@ fn process_and_encode_from_parts(
 }
 
 impl EncodeTask {
-    /// Decode image from source bytes
-    /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
-    ///
-    /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
-    /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
-    /// when no mutation is needed (e.g., format conversion only).
-    ///
-    /// Returns LazyImageError directly (not wrapped in napi::Error) for use in process_and_encode.
-    pub(crate) fn decode_internal(
-        &self,
-    ) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
-        decode_internal_from_parts(self.source.as_ref(), self.decoded.as_ref(), &self.firewall)
-    }
-
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
     /// Returns LazyImageError directly (not wrapped in napi::Error) so that
@@ -442,7 +428,7 @@ impl EncodeTask {
 #[cfg(test)]
 impl EncodeTask {
     pub(crate) fn decode(&self) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
-        self.decode_internal()
+        decode_internal_from_parts(self.source.as_ref(), self.decoded.as_ref(), &self.firewall)
     }
 }
 
@@ -554,7 +540,7 @@ mod non_napi_tests {
             strip_gps: true,
             firewall: FirewallConfig::disabled(),
         };
-        let err = task.decode_internal().unwrap_err();
+        let err = task.decode().unwrap_err();
         assert!(matches!(err, LazyImageError::SourceConsumed));
     }
 
@@ -578,7 +564,7 @@ mod non_napi_tests {
             strip_gps: true,
             firewall,
         };
-        let err = task.decode_internal().unwrap_err();
+        let err = task.decode().unwrap_err();
         assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
     }
 
