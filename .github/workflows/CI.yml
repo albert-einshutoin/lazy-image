@@ -399,8 +399,16 @@ jobs:
       - name: Install Rust (nightly)
         uses: dtolnay/rust-toolchain@nightly
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - name: Install npm dependencies
+        run: npm ci
 
       # Cache Cargo dependencies to speed up builds
       - name: Cache Cargo dependencies
@@ -408,8 +416,9 @@ jobs:
         with:
           prefix-key: "v1-asan"
 
-      - name: Run Stress Test with AddressSanitizer
+      - name: Run Rust stress test with AddressSanitizer
         env:
+          RUSTUP_TOOLCHAIN: nightly
           RUSTFLAGS: "-Zsanitizer=address"
           # Enable leak detection, abort on error, and symbolize stack traces
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
@@ -420,6 +429,23 @@ jobs:
             --target x86_64-unknown-linux-gnu \
             --no-default-features --features stress \
             -- --iterations 5
+
+      - name: Run NAPI-boundary stress test with AddressSanitizer
+        env:
+          RUSTUP_TOOLCHAIN: nightly
+          RUSTFLAGS: "-Zsanitizer=address"
+          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
+          RUST_BACKTRACE: 1
+        run: |
+          ASAN_RT="$(find "$(rustc +nightly --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/lib" -name 'libclang_rt.asan-x86_64*.so' | head -n 1)"
+          if [ -z "$ASAN_RT" ]; then
+            echo "Failed to locate Rust ASan runtime"
+            exit 1
+          fi
+          export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
+
+          npm run build -- --target x86_64-unknown-linux-gnu
+          npm run test:stress:napi -- --iterations 10
 
   publish:
     name: Publish to npm
