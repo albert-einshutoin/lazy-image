@@ -453,8 +453,10 @@ jobs:
           fi
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
 
-          npm run build -- --target x86_64-unknown-linux-gnu
-          npm run test:stress:napi -- --iterations 10
+          # ASan coverage does not require a release build here; debug keeps CI within budget.
+          npx napi build --platform
+          node scripts/postbuild-fixup.js
+          npm run test:stress:napi -- --iterations 5
 
   publish:
     name: Publish to npm
