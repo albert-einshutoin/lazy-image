@@ -1,110 +1,61 @@
-Here is the updated `ROADMAP.md` organized by OSS standards.
-It strictly separates "Completed" from "Planned" tasks, details specific goals for upcoming versions, and is divided into English (top) and Japanese (bottom) sections.
-
----
-
 # 🗺️ lazy-image Roadmap
 
 > **Vision:** To be the most efficient, secure, and portable web image optimization engine for the cloud age.
 
-This document outlines the development status and future direction of `lazy-image`. We follow Semantic Versioning.
+This document reflects the current state of `develop` and focuses on the work that still meaningfully remains.
 
-## ✅ Completion Status Checklist
+## Current State
 
-### 🏗️ Architecture & Core (v0.8.x - Completed)
+The following foundations are already in place on `develop`:
 
-* [x] **True Lazy Loading**: Defer file I/O until necessary (`fromPath`).
-* [x] **Zero-Copy Architecture**: Prevent pixel copying during format conversion.
-* [x] **Thread Safety**: Fix libuv/rayon thread pool conflicts.
-* [x] **Structured Error Handling**: Replace string errors with typed `ErrorCode`.
-* [x] **Non-destructive API**: Implement `clone()` behavior for `toBuffer` (ADR-001).
+- **Lazy, non-destructive pipeline**: deferred decode, `clone()`, file-based happy path
+- **Zero-copy / mmap path**: `fromPath()` and batch-oriented file processing
+- **Structured errors and operational limits**: typed error taxonomy and Image Firewall
+- **Metadata-safe defaults**: strip by default, GPS strip, opt-in preservation paths
+- **Benchmark and regression tooling**: benchmark docs, regression workflow, zero-copy measurement
+- **Fuzzing in CI**: nightly and PR-targeted fuzz workflows with multiple targets
+- **Release-size tuning**: release LTO, strip, and size-oriented profile tuning
 
-### ⚡ Optimization & Efficiency (v0.8.x - Completed)
+## Current Priorities
 
-* [x] **WebP Speed Tuning**: Optimize default parameters (Method 6 → 4) to match `sharp`. ✅ **Completed in v0.8.1**
+### 1. Reliability proof for v1.x adoption
 
-### ⚡ Optimization & Efficiency (v0.9.x - In Progress)
-* [x] **Strip Metadata by Default**: Remove Exif/XMP for security and smaller file sizes. ✅ **Completed in v0.9.x** (GPS auto-strip, EXIF preservation opt-in)
-* [ ] **Binary Size Reduction**: Enable LTO and strip symbols for faster cold starts.
-* [ ] **Documentation Update**: Publish "True Benchmarks" (AVIF speed / JPEG size).
+- Strengthen long-running leak and sanitizer coverage across NAPI boundaries
+- Continue hardening decode / codec / metadata paths against malformed inputs
+- Keep benchmark regression checks and fuzz coverage aligned with new features
 
-### 🛡️ Reliability & Stability (v1.0.0 - Planned)
+### 2. Documentation and expectation management
 
-* [ ] **Fuzzing Tests**: Implement `cargo-fuzz` to prevent crashes from malformed inputs.
-* [ ] **Memory Leak Detection**: CI integration with Valgrind/Sanitizers.
-* [ ] **API Freeze**: Final review of TypeScript definitions and public Rust API.
+- Keep roadmap, migration docs, benchmark docs, and compatibility docs in sync with the actual implementation
+- Make workload-specific benchmark claims precise and reproducible
+- Clarify partial-support areas such as metadata and disk-backed streaming
+
+### 3. Product fit in real workloads
+
+- Deepen the recommended file-to-file operational path
+- Improve scenario-based adoption guidance for serverless, upload pipelines, and build-time optimization
+- Expand observability and operational ergonomics where they help production adoption most
 
 ---
 
-## 📅 Detailed Version Roadmap
+## Future Directions
 
-### v0.8.1 - "WebP Speed Optimization" (Released 2026-01-01)
+### Near-term
 
-**Focus:** WebP encoding performance parity with sharp.
+- Broader reliability validation and memory-leak detection automation
+- Clearer product docs and compatibility boundaries
+- Ongoing polish for batch, byte-budget, and observability workflows
 
-* **Performance: WebP Optimization** ✅
-* **Goal:** Eliminate the "5x slower than sharp" bottleneck. ✅ **Achieved**
-* **Task:** Change default WebP `method` from 6 to 4. ✅ **Completed**
-* **Task:** Disable heavy preprocessing by default. ✅ **Completed**
-* **Result:** ~4x speed improvement, now matches sharp's performance while maintaining quality parity.
+### Mid-term
 
-### v0.9.0 - "The Optimizer" (Next Release)
+- Better production ergonomics for constrained cloud/container environments
+- More precise telemetry hooks and operational introspection
+- Additional adoption guides and migration aids for real workloads
 
-**Focus:** Winning the benchmarks in all categories (Speed & Size).
+### Long-term
 
-
-* **Efficiency: Secure-by-Default Metadata** ✅ **Completed**
-* **Goal:** Ensure output files are smaller than `sharp`'s and privacy-safe.
-* **Task:** ~~Implement logic to strip Exif, XMP, and Comments during encoding.~~ Done
-* **Task:** ~~Add `.keepMetadata()` API for opt-in preservation.~~ Done (with GPS auto-strip)
-
-
-* **Deployment: Binary Minimization**
-* **Goal:** Reduce binary size from ~9MB to <7MB for AWS Lambda.
-* **Task:** Configure `Cargo.toml` with `lto = "fat"`, `strip = "symbols"`, `codegen-units = 1`.
-
-
-
-### v1.0.0 - "Production Ready" (Stable)
-
-**Focus:** proving reliability for enterprise adoption.
-
-* **Security: Automated Fuzzing**
-* **Goal:** Zero panic/crashes on corrupted inputs.
-* **Task:** Create fuzz targets for the decoder pipeline.
-
-
-* **Stability: Long-running Tests**
-* **Goal:** Prove memory safety across NAPI boundaries over time.
-* **Task:** Add memory leak check jobs to GitHub Actions.
-
-
-* **API: Final Freeze**
-* **Goal:** Guarantee no breaking changes for v1.x lifecycle.
-* **Task:** Audit `index.d.ts` and verify all public interfaces.
-
-
-
-### v1.x - "Serverless Native" (Future)
-
-**Focus:** Advanced cloud-native features.
-
-* **Smart Concurrency (Auto Memory Cap)**
-* **Goal:** Prevent OOM kills in constrained containers (e.g., 512MB limit).
-* **Task:** Detect container memory limits and auto-adjust thread pool size.
-
-
-* **Telemetry Hooks**
-* **Task:** Expose detailed metrics (CPU time, Peak RAM) per request.
-
-
-
-### v2.0 - "Universal Engine" (Long Term)
-
-**Focus:** Beyond Node.js.
-
-* **WebAssembly (Wasm) Support**: Support for Cloudflare Workers and Browsers.
-* **Streaming API**: Native support for Web Streams API.
+- WebAssembly / worker-oriented packaging where the architecture fits
+- Native Web Streams style APIs if and when true streaming execution becomes viable
 
 ---
 
@@ -123,97 +74,62 @@ To maintain focus and stability, the following features are explicitly **out of 
 
 > **ビジョン:** クラウド時代における、最も効率的で、安全で、ポータブルなWeb画像最適化エンジンとなること。
 
-本ドキュメントは `lazy-image` の開発状況と将来の方向性を定義します。本プロジェクトはセマンティックバージョニングに従います。
+このドキュメントは `develop` の現状を反映し、今後本当に残っている課題に絞って整理したものです。
 
-## ✅ 達成状況チェックリスト
+## 現在の状態
 
-### 🏗️ アーキテクチャとコア (v0.8.x - 完了)
+`develop` にはすでに以下の基盤があります。
 
-* [x] **真の遅延読み込み (True Lazy)**: `fromPath` によるファイルIOの遅延化。
-* [x] **ゼロコピー・アーキテクチャ**: フォーマット変換時のピクセルコピー回避。
-* [x] **スレッド安全性**: libuv/rayon スレッドプールの競合解消。
-* [x] **構造化エラーハンドリング**: 文字列エラーの撤廃と `ErrorCode` の導入。
-* [x] **非破壊API**: `toBuffer` の `clone()` 挙動の確定 (ADR-001)。
-
-### ⚡ 最適化と効率性 (v0.9.x - 進行中)
-
-* [x] **WebP 速度チューニング**: デフォルト設定を最適化し `sharp` と同等の速度へ。 ✅ **v0.8.1 で完了**
-* [x] **メタデータ削除のデフォルト化**: Exif/XMPを削除し、セキュリティとサイズを改善。 ✅ **v0.9.x で完了** (GPS自動削除、EXIF保持オプトイン)
-* [ ] **バイナリサイズ削減**: LTO有効化によるコールドスタート高速化。
-* [ ] **ドキュメント更新**: 「真実のベンチマーク」（AVIF速度/JPEGサイズ）の公開。
-
-### 🛡️ 信頼性と安定性 (v1.0.0 - 計画中)
-
-* [ ] **ファジングテスト**: 不正な入力データによるクラッシュ防止。
-* [ ] **メモリリーク検知**: Valgrind/Sanitizer によるCIテスト導入。
-* [ ] **API 凍結**: TypeScript定義とRust公開APIの最終確定。
+- **lazy / 非破壊パイプライン**: deferred decode、`clone()`、file-to-file の主導線
+- **zero-copy / mmap 経路**: `fromPath()` とバッチ処理向けファイル経路
+- **構造化エラーと制限**: typed error taxonomy と Image Firewall
+- **安全なメタデータデフォルト**: デフォルト strip、GPS strip、必要時のみ opt-in
+- **ベンチマーク運用**: benchmark docs、regression workflow、zero-copy 計測
+- **CI fuzzing**: 複数ターゲットを持つ PR / nightly fuzz workflow
+- **リリースサイズ最適化**: release LTO、strip、サイズ指向の profile tuning
 
 ---
 
-## 📅 バージョン別詳細ロードマップ
+## 現在の優先課題
 
-### v0.9.0 - "The Optimizer" (次回リリース)
+### 1. v1.x 採用に向けた信頼性の証明
 
-**目標:** ベンチマークにおける弱点（WebPの速度・ファイルサイズ）を完全に克服する。
+- NAPI 境界を含む長時間稼働・リーク検知の強化
+- 壊れた入力に対する decode / codec / metadata 経路の継続的 hardening
+- 新機能追加時も benchmark regression と fuzz coverage を維持
 
-* **Performance: WebP 最適化**
-* **ゴール:** 「sharpより5倍遅い」状態の解消。
-* **タスク:** デフォルトの `method` を 6 から 4 へ変更。
-* **タスク:** 重い前処理（preprocessing）をデフォルトで無効化。
+### 2. ドキュメントと期待値管理
 
+- roadmap / migration / benchmark / compatibility docs を実装と同期させる
+- workload ごとの benchmark claim を正確に再現可能な形で示す
+- metadata や disk-backed streaming のような partial-support 領域を明確化する
 
-* **Efficiency: セキュア・デフォルト (メタデータ削除)** ✅ **完了**
-* **ゴール:** `sharp` よりも出力ファイルを小さくし、プライバシーを保護する。
-* **タスク:** ~~エンコード時に Exif, XMP, Comments を自動削除するロジックの実装。~~ 完了
-* **タスク:** ~~`.keepMetadata()` API（オプトイン機能）の追加。~~ 完了 (GPS自動削除付き)
+### 3. 実運用でのプロダクト適合
 
+- file-to-file の主導線をさらに明確にする
+- serverless、upload pipeline、build-time optimization 向けの導入ガイドを充実させる
+- 本当に運用価値の高い observability / ergonomics に投資する
 
-* **Deployment: バイナリ最小化**
-* **ゴール:** AWS Lambda 向けにバイナリサイズを ~9MB から 7MB以下へ。
-* **タスク:** `Cargo.toml` にて `lto = "fat"`, `strip = "symbols"` 等を適用。
+---
 
+## 将来の方向性
 
+### 近い将来
 
-### v1.0.0 - "Production Ready" (安定版)
+- リーク検知や sanitizer の自動化強化
+- 互換性と期待値のドキュメント整備
+- batch、byte-budget、observability の運用磨き込み
 
-**目標:** 企業採用に耐えうる「信頼性」の証明。
+### 中期
 
-* **Security: 自動ファジング**
-* **ゴール:** 破損した画像によるパニック発生率ゼロ。
-* **タスク:** デコーダーに対する `cargo-fuzz` ターゲットの作成。
+- 制約の強いクラウド / コンテナ環境向け ergonomics の向上
+- テレメトリーと運用 introspection の拡張
+- 実務ユースケースに沿った移行ガイドの追加
 
+### 長期
 
-* **Stability: 長時間稼働テスト**
-* **ゴール:** NAPI境界におけるメモリ安全性の証明。
-* **タスク:** GitHub Actions にメモリリーク検知ジョブを追加。
-
-
-* **API: 完全凍結**
-* **ゴール:** v1.x 系における破壊的変更なしの保証。
-* **タスク:** `index.d.ts` の全監査とインターフェース確定。
-
-
-
-### v1.x - "Serverless Native" (将来)
-
-**目標:** クラウドネイティブ機能の強化。
-
-* **スマート・コンカレンシー (自動メモリ制御)**
-* **ゴール:** 低メモリコンテナ（例: 512MB）での OOM Kill 回避。
-* **タスク:** コンテナのメモリ制限を検知し、スレッドプールサイズを自動調整。
-
-
-* **テレメトリー**
-* **タスク:** リクエストごとのCPU時間やピークメモリ使用量の取得API。
-
-
-
-### v2.0 - "Universal Engine" (長期)
-
-**目標:** Node.js の枠を超える。
-
-* **WebAssembly (Wasm) 対応**: Cloudflare Workers やブラウザでの動作。
-* **ストリーミング API**: Web Streams API のネイティブサポート。
+- 適合する形での WebAssembly / worker 向け展開
+- 実行モデルが整った場合の native Web Streams 風 API
 
 ---
 

@@ -29,8 +29,8 @@ You can query at runtime with `supportedInputFormats()` and
 | Compositing / overlays | ❌ | ✅ |
 | Rich filters (blur/sharpen/tint/etc) | ❌ | ✅ |
 | Animated images (GIF/WebP) | ❌ | ✅ |
-| Streaming pipeline | ❌ | ✅ |
-| Metadata | ICC + EXIF (GPS auto-strip) | ✅ (EXIF/XMP/etc) |
+| Streaming pipeline | Disk-backed bounded-memory pipeline (`createStreamingPipeline()`), not true streaming transforms | ✅ |
+| Metadata | ICC + EXIF (GPS auto-strip, XMP unsupported) | ✅ (EXIF/XMP/etc) |
 | AVIF encoding | ✅ (focus area) | ✅ |
 
 ## Non-goals
@@ -44,3 +44,6 @@ You can query at runtime with `supportedInputFormats()` and
 - You want **smaller files** and are OK with a smaller API surface.
 - You care about **AVIF speed** and **JPEG size optimization**.
 - You want clear error taxonomy and strict limits for user uploads.
+- You are fine with a disk-backed bounded-memory pipeline instead of true chunk transform streaming.
+
+For exact metadata behavior, see [METADATA_SUPPORT.md](./METADATA_SUPPORT.md).

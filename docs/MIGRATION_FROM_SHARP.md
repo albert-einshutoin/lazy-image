@@ -8,6 +8,16 @@ This guide helps teams port common sharp workflows to **lazy-image**. The focus 
 - Formats: lazy-image inputs jpeg/png/webp; outputs jpeg/png/webp/avif. Use sharp if you need TIFF, GIF, HEIF, or multi-page inputs.
 - Streaming: lazy-image lacks sharp's true streaming transforms; `createStreamingPipeline()` stages to disk for bounded-memory processing.
 
+## Recommended Coexistence Strategy
+
+In many teams, the best migration is **not** full replacement.
+
+Recommended split:
+- Use `sharp` or another editor for compositing, overlays, filters, animation, and broad input-format support
+- Use `lazy-image` for final JPEG/WebP/AVIF optimization, metadata stripping, and lower-heap file-to-file processing
+
+This keeps existing editing workflows intact while still gaining lazy-image's web-delivery strengths.
+
 ## API Mapping
 | sharp | lazy-image | Notes |
 |-------|-----------|-------|
@@ -47,17 +57,17 @@ const output = await ImageEngine.from(input)
 ```
 
 ## Performance Comparison (when to switch)
-- AVIF: lazy-image is ~6× faster than sharp for large PNG→AVIF conversions and yields ~38% smaller AVIF files (see README benchmarks).
-- JPEG: expect 20–25% smaller files; encoding is slower because compression is prioritized over throughput.
-- WebP: similar or slightly slower throughput; use if you want the safer defaults and metadata stripping.
+- AVIF: in the canonical `PNG -> AVIF (no resize, 5000×5000)` benchmark, lazy-image is **1.70x faster** and produces **40.9% smaller** output. See [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
+- JPEG: in the canonical `PNG -> JPEG (no resize, 5000×5000)` benchmark, lazy-image produces **17.0% smaller** output. Encoding speed depends on workload and settings.
+- WebP: use if you want the safer defaults and metadata stripping, but expect sharp to remain faster in many throughput-sensitive workloads.
 - Latency-sensitive or filter-heavy workloads still favor sharp; build-time optimization and batch processing favor lazy-image.
 
 ## FAQ
 **Q. How are ICC profiles handled?**  
-lazy-image strips metadata by default for safety; call `.keepMetadata({ icc: true })` to retain profiles. AVIF ICC is preserved on v0.9.x (libavif-sys). sharp also strips metadata by default—use `.withMetadata()` to preserve ICC/EXIF during transforms.
+lazy-image strips metadata by default for safety; call `.keepMetadata({ icc: true })` to retain profiles. AVIF ICC is preserved on v0.9.x (libavif-sys). sharp also strips metadata by default—use `.withMetadata()` to preserve ICC/EXIF during transforms. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md).
 
 **Q. What about EXIF/GPS and other metadata?**  
-lazy-image removes EXIF by default and always strips GPS unless `stripGps: false` is set. sharp drops EXIF unless you opt into `.withMetadata()`; scrub GPS manually if you need parity with lazy-image defaults.
+lazy-image removes EXIF by default and always strips GPS unless `stripGps: false` is set. XMP preservation is not currently supported. sharp drops EXIF unless you opt into `.withMetadata()`; scrub GPS manually if you need parity with lazy-image defaults.
 
 **Q. Does lazy-image auto-orient like sharp?**  
 Yes. Both respect EXIF orientation and normalize the tag after rotation. lazy-image resets Orientation to 1 to avoid double-rotation in downstream viewers.

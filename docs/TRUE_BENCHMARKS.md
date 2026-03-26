@@ -1,9 +1,19 @@
-# True Benchmarks: AVIF Speed & JPEG Size Advantages
+# True Benchmarks: Canonical Benchmark Dataset
+
+This document is the **canonical benchmark source** for public performance claims in lazy-image documentation.
+
+Use this file when citing benchmark numbers in:
+
+- `README.md`
+- `docs/PERFORMANCE.md`
+- `docs/MIGRATION_FROM_SHARP.md`
+
+Do not mix numbers from different workloads without clearly labeling the scenario.
 
 This document provides comprehensive benchmark documentation showing the actual performance characteristics of lazy-image, with a focus on:
 
-- **AVIF encoding speed advantages** (lazy-image is 1.70x faster than sharp for format conversion)
-- **JPEG file size advantages** (mozjpeg optimization produces 17-20% smaller files)
+- **AVIF encoding speed advantages** in a specific PNG → AVIF format-conversion workload
+- **JPEG file size advantages** in benchmarked web-delivery scenarios
 
 ## Test Environment
 
@@ -35,7 +45,7 @@ npm run test:bench:compare
 
 ## AVIF Encoding Speed Advantages
 
-lazy-image significantly outperforms sharp in AVIF encoding speed, making it ideal for next-generation image formats.
+In the benchmarked no-resize PNG → AVIF scenario below, lazy-image outperforms sharp in AVIF encoding speed.
 
 ### Performance Results
 
@@ -206,7 +216,7 @@ WebP: 0.7% smaller files (but slower encoding)
 Memory: Zero-copy architecture for format conversions
 ```
 
-**Summary**: lazy-image excels at **AVIF generation** (both speed and file size for format conversion) and **JPEG compression efficiency** (17-20% smaller files). For WebP, lazy-image produces slightly smaller files but with slower encoding speed.
+**Summary**: lazy-image excels at **AVIF generation** in the benchmarked format-conversion workload and **JPEG compression efficiency** in the benchmarked delivery-oriented scenarios. For WebP, lazy-image produces slightly smaller files but with slower encoding speed.
 
 ---
 
