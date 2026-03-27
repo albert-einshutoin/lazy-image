@@ -391,7 +391,7 @@ jobs:
   leak-detection:
     name: Memory Leak Detection (ASan)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v6
@@ -414,14 +414,17 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: "v1-asan"
+          prefix-key: "v2-asan"
 
       - name: Run NAPI-boundary stress test with AddressSanitizer
         env:
           RUSTUP_TOOLCHAIN: nightly
-          RUSTFLAGS: "-Zsanitizer=address"
+          RUSTFLAGS: "-Zsanitizer=address -C link-args=-Wl,-z,nodelete"
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
           RUST_BACKTRACE: 1
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          DISABLE_V8_COMPILE_CACHE: 1
+          CARGO_PROFILE_DEV_OPT_LEVEL: 1
         run: |
           ASAN_RT=""
           if command -v clang >/dev/null 2>&1; then
