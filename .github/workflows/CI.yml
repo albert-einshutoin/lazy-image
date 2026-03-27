@@ -407,7 +407,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y nasm
+        run: sudo apt-get update && sudo apt-get install -y nasm lld
 
       - name: Install npm dependencies
         run: npm ci
@@ -416,13 +416,18 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: "v3-asan"
+          prefix-key: "v4-asan"
           cache-on-failure: true
 
       - name: Run NAPI-boundary stress test with AddressSanitizer
         env:
           RUSTUP_TOOLCHAIN: nightly-2026-03-25
-          RUSTFLAGS: "-Zsanitizer=address -C link-args=-Wl,-z,nodelete"
+          # --target: prevents RUSTFLAGS from being applied to build scripts
+          # and proc macros (napi-derive, cc, etc.), avoiding unnecessary
+          # ASan instrumentation on compile-time code.
+          # -Zthreads=8: enables parallel rustc front-end (~30% faster).
+          # -C link-arg=-fuse-ld=lld: faster linker than default ld.
+          RUSTFLAGS: "-Zsanitizer=address -Zthreads=8 -C link-arg=-fuse-ld=lld -C link-args=-Wl,-z,nodelete"
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
           RUST_BACKTRACE: 1
           NODE_OPTIONS: "--max-old-space-size=8192"
@@ -444,8 +449,8 @@ jobs:
           fi
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
 
-          # Build only the features exercised by this stress path to keep ASan CI tractable.
-          npx napi build --platform --profile ci-asan --no-default-features --features napi
+          # --target prevents RUSTFLAGS leaking into build scripts / proc macros.
+          npx napi build --platform --target x86_64-unknown-linux-gnu --profile ci-asan --no-default-features --features napi
           node scripts/postbuild-fixup.js
           npm run test:stress:napi -- --iterations 5
 
