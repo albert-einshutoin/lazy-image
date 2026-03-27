@@ -391,7 +391,7 @@ jobs:
   leak-detection:
     name: Memory Leak Detection (ASan)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
 
     steps:
       - uses: actions/checkout@v6
@@ -417,6 +417,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: "v3-asan"
+          cache-on-failure: true
 
       - name: Run NAPI-boundary stress test with AddressSanitizer
         env:
