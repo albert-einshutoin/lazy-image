@@ -396,8 +396,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install Rust (nightly)
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Install Rust (nightly, pinned for cache stability)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2026-03-25
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -414,17 +416,16 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: "v2-asan"
+          prefix-key: "v3-asan"
 
       - name: Run NAPI-boundary stress test with AddressSanitizer
         env:
-          RUSTUP_TOOLCHAIN: nightly
+          RUSTUP_TOOLCHAIN: nightly-2026-03-25
           RUSTFLAGS: "-Zsanitizer=address -C link-args=-Wl,-z,nodelete"
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
           RUST_BACKTRACE: 1
           NODE_OPTIONS: "--max-old-space-size=8192"
           DISABLE_V8_COMPILE_CACHE: 1
-          CARGO_PROFILE_DEV_OPT_LEVEL: 1
         run: |
           ASAN_RT=""
           if command -v clang >/dev/null 2>&1; then
@@ -443,7 +444,7 @@ jobs:
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
 
           # Build only the features exercised by this stress path to keep ASan CI tractable.
-          npx napi build --platform --no-default-features --features napi
+          npx napi build --platform --profile ci-asan --no-default-features --features napi
           node scripts/postbuild-fixup.js
           npm run test:stress:napi -- --iterations 5
 

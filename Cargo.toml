@@ -116,6 +116,15 @@ harness = false
 [profile.dev.package."*"]
 opt-level = 3
 
+# CI-only profile for AddressSanitizer builds.
+# Inherits dev but drops dependency opt-level from 3 to 1 so that
+# ASan-instrumented cold builds finish within the CI timeout budget.
+[profile.ci-asan]
+inherits = "dev"
+
+[profile.ci-asan.package."*"]
+opt-level = 1
+
 [profile.release]
 lto = true
 codegen-units = 1
