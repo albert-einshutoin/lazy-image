@@ -416,10 +416,11 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: "v4-asan"
+          prefix-key: "v5-asan"
           cache-on-failure: true
 
-      - name: Run NAPI-boundary stress test with AddressSanitizer
+      # Build with ASan instrumentation (separate step for progress visibility)
+      - name: Build with AddressSanitizer
         env:
           RUSTUP_TOOLCHAIN: nightly-2026-03-25
           # --target: prevents RUSTFLAGS from being applied to build scripts
@@ -427,7 +428,28 @@ jobs:
           # ASan instrumentation on compile-time code.
           # -Zthreads=8: enables parallel rustc front-end (~30% faster).
           # -C link-arg=-fuse-ld=lld: faster linker than default ld.
-          RUSTFLAGS: "-Zsanitizer=address -Zthreads=8 -C link-arg=-fuse-ld=lld -C link-args=-Wl,-z,nodelete"
+          # -C debuginfo=1: line-tables-only (matches profile, avoids RUSTFLAGS override)
+          RUSTFLAGS: "-Zsanitizer=address -Zthreads=8 -C link-arg=-fuse-ld=lld -C link-args=-Wl,-z,nodelete -C debuginfo=1"
+          CARGO_INCREMENTAL: "0"
+        run: |
+          echo "::group::cargo build (ASan-instrumented)"
+          cargo build --target x86_64-unknown-linux-gnu \
+            --profile ci-asan \
+            --no-default-features --features napi \
+            --timings 2>&1
+          echo "::endgroup::"
+
+      - name: Generate NAPI bindings
+        env:
+          RUSTUP_TOOLCHAIN: nightly-2026-03-25
+          RUSTFLAGS: "-Zsanitizer=address -Zthreads=8 -C link-arg=-fuse-ld=lld -C link-args=-Wl,-z,nodelete -C debuginfo=1"
+          CARGO_INCREMENTAL: "0"
+        run: |
+          npx napi build --platform --target x86_64-unknown-linux-gnu --profile ci-asan --no-default-features --features napi
+          node scripts/postbuild-fixup.js
+
+      - name: Run NAPI-boundary stress test
+        env:
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
           RUST_BACKTRACE: 1
           NODE_OPTIONS: "--max-old-space-size=8192"
@@ -448,10 +470,6 @@ jobs:
             exit 1
           fi
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
-
-          # --target prevents RUSTFLAGS leaking into build scripts / proc macros.
-          npx napi build --platform --target x86_64-unknown-linux-gnu --profile ci-asan --no-default-features --features napi
-          node scripts/postbuild-fixup.js
           npm run test:stress:napi -- --iterations 5
 
   publish:
