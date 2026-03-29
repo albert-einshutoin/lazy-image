@@ -53,10 +53,10 @@ jobs:
           - decode_avif
           - exif_parse
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@5b842231ba77f5c045dba54ac5560fed2db780e2 # nightly
         with:
           components: llvm-tools-preview
 
@@ -69,7 +69,7 @@ jobs:
           sudo apt-get install -y cmake nasm clang lld
 
       - name: Cache cargo registry
-        uses: actions/cache@v5
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: |
             ~/.cargo/registry
@@ -81,7 +81,7 @@ jobs:
 
       - name: Download corpus
         continue-on-error: true
-        uses: actions/cache@v5
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: fuzz/corpus/${{ matrix.target }}
           key: corpus-${{ matrix.target }}-${{ github.run_id }}
@@ -133,14 +133,14 @@ jobs:
 
       - name: Save corpus
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: fuzz/corpus/${{ matrix.target }}
           key: corpus-${{ matrix.target }}-${{ github.run_id }}
 
       - name: Upload crash artifacts
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: crash-${{ matrix.target }}
           path: |
@@ -157,7 +157,7 @@ jobs:
       issues: write       # For creating issues on crash
     steps:
       - name: Download all crash artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: crash-*
           merge-multiple: true
@@ -178,7 +178,7 @@ jobs:
 
       - name: Create issue on crash
         if: steps.check_crashes.outputs.has_crashes == 'true' && github.event_name != 'pull_request'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const fs = require('fs');
