@@ -44,6 +44,7 @@
     "test:bench:regression-check": "node scripts/bench/check-regression.js",
     "test:clean": "rm -rf .tmp/",
     "test:rust": "cargo test --no-default-features",
+    "test:stress:napi": "node test/stress/napi-boundary.stress.js",
     "version": "node scripts/sync-version.js",
     "prepublishOnly": "napi pre-publish --skip-optional-publish",
     "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js",

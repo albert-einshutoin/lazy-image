@@ -116,6 +116,28 @@ harness = false
 [profile.dev.package."*"]
 opt-level = 3
 
+# CI-only profile for AddressSanitizer builds.
+# Goal: finish the build within the CI timeout (75 min) even on cold caches.
+#
+# Key knobs for compile-time speed:
+#   opt-level = 0    – skip optimisation passes (biggest single win)
+#   codegen-units    – more CGUs = more parallelism in rustc
+#   debug            – line-tables-only slashes debuginfo generation & link time
+#   incremental      – off in CI for deterministic builds
+#
+# The stress test only needs to *run* the codec once per iteration, so
+# runtime perf is irrelevant—only leak detection matters.
+[profile.ci-asan]
+inherits = "dev"
+opt-level = 0
+codegen-units = 256
+debug = "line-tables-only"
+incremental = false
+
+[profile.ci-asan.package."*"]
+opt-level = 0
+codegen-units = 256
+
 [profile.release]
 lto = true
 codegen-units = 1

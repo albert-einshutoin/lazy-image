@@ -1,0 +1,18 @@
+# LSan (LeakSanitizer) suppressions for lazy-image NAPI stress tests
+#
+# V8 and Node.js intentionally retain certain heap objects (inline caches,
+# feedback vectors, descriptor arrays, etc.) for the lifetime of the
+# process rather than freeing them at exit.  These appear as "leaks" to
+# LSan but are expected behaviour, not bugs in lazy-image.
+#
+# Patterns here suppress only V8/Node.js internal allocations so that
+# genuine Rust-side leaks are still caught and reported.
+
+# --- V8 internals -----------------------------------------------------------
+leak:v8::internal::
+
+# --- V8 builtins (JIT stubs, IC handlers) -----------------------------------
+leak:Builtins_
+
+# --- Node.js runtime --------------------------------------------------------
+leak:node::
