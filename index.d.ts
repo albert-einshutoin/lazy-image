@@ -141,7 +141,7 @@ export declare class ImageEngine {
    */
   toFile(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
   /** Encode and write directly to a file asynchronously, returning metrics. */
-  toFileWithMetrics(path: string, format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<FileOutputWithMetrics>
+  toFileWithMetrics(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<FileOutputWithMetrics>
   /** Convenience: encode to file using the preset's recommended format/quality. */
   toFileWithPreset(path: string, presetName: PresetName): Promise<number>
   /**
@@ -480,6 +480,49 @@ export declare function createStreamingPipeline(options: {
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream
+}
+
+export interface TargetBytesOptions {
+  /** Target file size in bytes */
+  targetBytes: number
+  /** Alias for targetBytes */
+  maxBytes?: number
+  /** Minimum quality to try (default: 30) */
+  minQuality?: number
+  /** Maximum quality to try (default: 100) */
+  maxQuality?: number
+  /** Enable fast encoding mode */
+  fastMode?: boolean
+  /** Behaviour when budget cannot be met: 'best-effort' (default) or 'strict' */
+  qualityFloorPolicy?: 'best-effort' | 'strict'
+}
+
+export interface BufferTargetBytesResult {
+  /** Encoded image data */
+  data: Buffer
+  /** Quality level that was used */
+  quality: number
+  /** Actual output size in bytes */
+  bytesOut: number
+  /** Whether the byte budget was met */
+  budgetMet: boolean
+  /** Requested target bytes */
+  targetBytes: number
+  /** Processing metrics */
+  metrics: ProcessingMetrics
+}
+
+export interface FileTargetBytesResult {
+  /** Bytes written to disk */
+  bytesWritten: number
+  /** Quality level that was used */
+  quality: number
+  /** Whether the byte budget was met */
+  budgetMet: boolean
+  /** Requested target bytes */
+  targetBytes: number
+  /** Processing metrics */
+  metrics: ProcessingMetrics
 }
 
 export declare function resolveEncodeProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): ResolvedEncodeProfile
