@@ -446,7 +446,11 @@ jobs:
           CARGO_INCREMENTAL: "0"
         run: |
           npx napi build --platform --target x86_64-unknown-linux-gnu --profile ci-asan --no-default-features --features napi
-          node scripts/postbuild-fixup.js
+          # Restore committed index.js/index.d.ts — napi build may overwrite
+          # them with stubs when type-def generation is skipped (ci-asan profile).
+          # The stress test only needs the .node binary; postbuild-fixup patches
+          # (extra helpers, stricter types) are not required here.
+          git checkout -- index.js index.d.ts
 
       - name: Run NAPI-boundary stress test
         env:
