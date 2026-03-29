@@ -455,6 +455,7 @@ jobs:
       - name: Run NAPI-boundary stress test
         env:
           ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
+          LSAN_OPTIONS: "suppressions=lsan.suppressions"
           RUST_BACKTRACE: 1
           NODE_OPTIONS: "--max-old-space-size=8192"
           DISABLE_V8_COMPILE_CACHE: 1
