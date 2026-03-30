@@ -328,6 +328,65 @@ mod validation {
     }
 }
 
+/// Policy for which metadata to preserve in output images.
+///
+/// Centralizes the keep-ICC / keep-EXIF / strip-GPS decision so that every
+/// output path reads a single source of truth instead of resolving ad-hoc
+/// boolean combinations.
+#[derive(Clone, Debug)]
+pub struct MetadataPolicy {
+    /// Whether to preserve ICC profile in output (default: false)
+    pub icc: bool,
+    /// Whether to preserve EXIF metadata in output (default: false)
+    pub exif: bool,
+    /// Whether to keep GPS tags in EXIF (default: false — stripped for privacy)
+    pub gps: bool,
+}
+
+impl MetadataPolicy {
+    /// Default: strip all metadata for security and smaller file sizes.
+    /// GPS is stripped by default for privacy (exceeds Sharp's capabilities).
+    pub fn default_policy() -> Self {
+        Self {
+            icc: false,
+            exif: false,
+            gps: false,
+        }
+    }
+
+    /// Strip all metadata (firewall strict mode).
+    pub fn strip_all() -> Self {
+        Self {
+            icc: false,
+            exif: false,
+            gps: false,
+        }
+    }
+
+    /// Apply firewall override: if reject_metadata is true, strip everything.
+    pub fn apply_firewall(&mut self, reject_metadata: bool) {
+        if reject_metadata {
+            *self = Self::strip_all();
+        }
+    }
+
+    /// Resolve final ICC policy.
+    pub fn effective_icc(&self) -> bool {
+        self.icc
+    }
+
+    /// Resolve final EXIF policy.
+    pub fn effective_exif(&self) -> bool {
+        self.exif
+    }
+
+    /// Whether GPS tags should be stripped from EXIF.
+    /// Returns true when GPS should be stripped (i.e., gps == false).
+    pub fn strip_gps(&self) -> bool {
+        !self.gps
+    }
+}
+
 /// The main image processing engine.
 ///
 /// Usage:
@@ -357,15 +416,8 @@ pub struct ImageEngine {
     pub(crate) exif_data: OnceLock<Option<Arc<Vec<u8>>>>,
     /// Whether to auto-apply EXIF Orientation (default: true)
     pub(crate) auto_orient: bool,
-    /// Whether to preserve ICC profile in output.
-    /// Default is false (strip all) for security and smaller file sizes.
-    pub(crate) keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output.
-    /// Default is false (strip all) for security and smaller file sizes.
-    pub(crate) keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF (default: true for privacy)
-    /// This is a security-first feature that exceeds Sharp's capabilities.
-    pub(crate) strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions.
+    pub(crate) metadata_policy: MetadataPolicy,
     /// Whether we already emitted a warning about XMP being unsupported.
     pub(crate) xmp_warning_emitted: bool,
     pub(crate) firewall: FirewallConfig,
@@ -393,9 +445,7 @@ impl ImageEngine {
             icc_profile: OnceLock::new(),
             exif_data: OnceLock::new(),
             auto_orient: true,
-            keep_icc: false, // Strip metadata by default for security & smaller files
-            keep_exif: false, // Strip EXIF by default for security
-            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
+            metadata_policy: MetadataPolicy::default_policy(),
             xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         }
@@ -431,9 +481,7 @@ impl ImageEngine {
             icc_profile: OnceLock::new(),
             exif_data: OnceLock::new(),
             auto_orient: true,
-            keep_icc: false, // Strip metadata by default for security & smaller files
-            keep_exif: false, // Strip EXIF by default for security
-            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
+            metadata_policy: MetadataPolicy::default_policy(),
             xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         })
@@ -467,9 +515,7 @@ impl ImageEngine {
             icc_profile,
             exif_data,
             auto_orient: self.auto_orient,
-            keep_icc: self.keep_icc,
-            keep_exif: self.keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: self.metadata_policy.clone(),
             xmp_warning_emitted: self.xmp_warning_emitted,
             firewall: self.firewall.clone(),
         })
@@ -624,9 +670,9 @@ impl ImageEngine {
             self.xmp_warning_emitted = true;
         }
 
-        self.keep_icc = icc;
-        self.keep_exif = exif;
-        self.strip_gps = strip_gps;
+        self.metadata_policy.icc = icc;
+        self.metadata_policy.exif = exif;
+        self.metadata_policy.gps = !strip_gps; // gps=true means keep, strip_gps=true means remove
         Ok(this)
     }
 
@@ -657,10 +703,9 @@ impl ImageEngine {
 
         self.firewall = FirewallConfig::apply_policy(policy);
         if self.firewall.reject_metadata {
-            self.keep_icc = false;
-            self.keep_exif = false;
+            self.metadata_policy.apply_firewall(true);
             // No need to clear the OnceLock fields: output methods already
-            // check keep_icc/keep_exif flags and skip metadata when false.
+            // check metadata_policy and skip metadata when firewall is active.
         }
 
         if let Some(decoded) = &self.decoded {
@@ -895,17 +940,16 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
-        // Lazy: only extract metadata when the caller actually wants it preserved
         let icc_present = self.icc_profile().is_some();
-        let icc_profile = if keep_icc {
+        let icc_profile = if policy.effective_icc() {
             self.icc_profile().cloned()
         } else {
             None
         };
-        let exif_data = if keep_exif {
+        let exif_data = if policy.effective_exif() {
             self.exif_data().cloned()
         } else {
             None
@@ -920,9 +964,7 @@ impl ImageEngine {
             icc_present,
             exif_data,
             auto_orient,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -996,16 +1038,16 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
-        let icc_profile = if keep_icc {
+        let icc_profile = if policy.effective_icc() {
             self.icc_profile().cloned()
         } else {
             None
         };
-        let exif_data = if keep_exif {
+        let exif_data = if policy.effective_exif() {
             self.exif_data().cloned()
         } else {
             None
@@ -1020,9 +1062,7 @@ impl ImageEngine {
             icc_present,
             exif_data,
             auto_orient,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -1205,16 +1245,16 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
-        let icc_profile = if keep_icc {
+        let icc_profile = if policy.effective_icc() {
             self.icc_profile().cloned()
         } else {
             None
         };
-        let exif_data = if keep_exif {
+        let exif_data = if policy.effective_exif() {
             self.exif_data().cloned()
         } else {
             None
@@ -1229,9 +1269,7 @@ impl ImageEngine {
             icc_present,
             exif_data,
             auto_orient,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             firewall: self.firewall.clone(),
             output_path: path,
             #[cfg(feature = "napi")]
@@ -1267,16 +1305,16 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
-        let icc_profile = if keep_icc {
+        let icc_profile = if policy.effective_icc() {
             self.icc_profile().cloned()
         } else {
             None
         };
-        let exif_data = if keep_exif {
+        let exif_data = if policy.effective_exif() {
             self.exif_data().cloned()
         } else {
             None
@@ -1291,9 +1329,7 @@ impl ImageEngine {
             icc_present,
             exif_data,
             auto_orient,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             firewall: self.firewall.clone(),
             output_path: path,
             #[cfg(feature = "napi")]
@@ -1480,17 +1516,15 @@ impl ImageEngine {
             }
         };
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         Ok(AsyncTask::new(BatchTask {
             inputs,
             output_dir,
             ops,
             format: output_format,
             concurrency,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             auto_orient: self.auto_orient,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
@@ -1546,8 +1580,8 @@ impl ImageEngine {
             }
         };
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
 
         Ok(AsyncTask::new(BatchWithMetricsTask {
             inputs,
@@ -1555,9 +1589,7 @@ impl ImageEngine {
             ops,
             format: output_format,
             concurrency,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             auto_orient: self.auto_orient,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
