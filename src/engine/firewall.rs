@@ -6,6 +6,14 @@ use crate::engine::io::extract_icc_profile;
 use crate::error::LazyImageError;
 use std::time::Instant;
 
+// Base safety limits enforced at decode time regardless of firewall policy.
+// These match the global MAX_DIMENSION / MAX_PIXELS constants and act as an
+// always-on safety net against decompression bombs even when sanitize() is not
+// called.  Policy-specific limits (strict/lenient) are layered on top.
+const BASE_MAX_DIMENSION: u32 = crate::engine::MAX_DIMENSION; // 32_768
+const BASE_MAX_PIXELS: u64 = crate::engine::MAX_PIXELS; // 100_000_000
+const BASE_METADATA_LIMIT: u64 = 10 * 1024 * 1024; // 10 MB — reject obviously malicious ICC/EXIF even without sanitize()
+
 const STRICT_MAX_PIXELS: u64 = 40_000_000; // ~8K x 5K
 const LENIENT_MAX_PIXELS: u64 = 75_000_000; // generous but below global MAX_PIXELS
 const STRICT_MAX_BYTES: u64 = 32 * 1024 * 1024; // 32MB input cap
@@ -104,6 +112,31 @@ impl FirewallConfig {
         }
     }
 
+    /// Always-on base safety check for image dimensions.
+    /// Rejects images exceeding `BASE_MAX_DIMENSION` or `BASE_MAX_PIXELS`
+    /// **regardless** of whether the firewall is enabled.  This ensures that
+    /// `toBuffer()` / `toFile()` without `sanitize()` still reject
+    /// decompression bombs.
+    ///
+    /// When the firewall IS enabled, `enforce_pixels()` applies the stricter
+    /// policy-specific limits on top of these base limits.
+    pub fn enforce_base_limits(&self, width: u32, height: u32) -> Result<(), LazyImageError> {
+        if width > BASE_MAX_DIMENSION || height > BASE_MAX_DIMENSION {
+            return Err(LazyImageError::dimension_exceeds_limit(
+                width.max(height),
+                BASE_MAX_DIMENSION,
+            ));
+        }
+        let pixels = width as u64 * height as u64;
+        if pixels > BASE_MAX_PIXELS {
+            return Err(LazyImageError::pixel_count_exceeds_limit(
+                pixels,
+                BASE_MAX_PIXELS,
+            ));
+        }
+        Ok(())
+    }
+
     pub fn enforce_source_len(&self, len: usize) -> Result<(), LazyImageError> {
         if !self.enabled {
             return Ok(());
@@ -173,6 +206,32 @@ impl FirewallConfig {
                     "Image Firewall: processing exceeded {}ms timeout at {} stage (elapsed: {}ms). \
                      Use .limits({{ timeoutMs: {} }}) for longer operations or switch to lenient policy.",
                     limit_ms, stage, elapsed_ms, elapsed_ms + 5000
+                )));
+            }
+        }
+        Ok(())
+    }
+
+    /// Always-on base metadata size check.
+    /// Rejects ICC profiles larger than `BASE_METADATA_LIMIT` (10 MB) and EXIF
+    /// segments larger than `BASE_METADATA_LIMIT` even when the firewall is
+    /// disabled.  This catches obviously malicious payloads without requiring
+    /// the caller to opt-in via `sanitize()`.
+    pub fn scan_metadata_base(&self, data: &[u8]) -> Result<(), LazyImageError> {
+        if let Some(icc) = extract_icc_profile(data)? {
+            let icc_len = icc.len() as u64;
+            if icc_len > BASE_METADATA_LIMIT {
+                return Err(LazyImageError::firewall_violation(format!(
+                    "Image safety: ICC profile ({icc_len} bytes) exceeds base limit of {BASE_METADATA_LIMIT} bytes. \
+                     This may indicate a malformed or malicious file."
+                )));
+            }
+        }
+        if let Some(exif_size) = scan_exif_size(data) {
+            if exif_size > BASE_METADATA_LIMIT {
+                return Err(LazyImageError::firewall_violation(format!(
+                    "Image safety: EXIF metadata ({exif_size} bytes) exceeds base limit of {BASE_METADATA_LIMIT} bytes. \
+                     This may indicate a malformed or malicious file."
                 )));
             }
         }
@@ -349,6 +408,54 @@ mod tests {
         result.extend(std::iter::repeat(0xAA).take(exif_payload_size));
         result.extend_from_slice(&jpeg_data[2..]);
         result
+    }
+
+    // =========================================================================
+    // Always-on base limit tests
+    // =========================================================================
+
+    #[test]
+    fn base_limits_enforced_even_when_disabled() {
+        let cfg = FirewallConfig::disabled();
+        assert!(!cfg.enabled);
+
+        // Small image passes
+        assert!(cfg.enforce_base_limits(100, 100).is_ok());
+
+        // Dimension exceeding BASE_MAX_DIMENSION fails
+        let over = crate::engine::MAX_DIMENSION + 1;
+        let err = cfg.enforce_base_limits(over, 1).unwrap_err();
+        assert!(matches!(
+            err,
+            crate::error::LazyImageError::DimensionExceedsLimit { .. }
+        ));
+
+        // Pixel count exceeding BASE_MAX_PIXELS fails
+        // 10001 x 10001 = 100_020_001 > 100_000_000
+        let err = cfg.enforce_base_limits(10001, 10001).unwrap_err();
+        assert!(matches!(
+            err,
+            crate::error::LazyImageError::PixelCountExceedsLimit { .. }
+        ));
+    }
+
+    #[test]
+    fn base_metadata_limit_enforced_even_when_disabled() {
+        let cfg = FirewallConfig::disabled();
+        assert!(!cfg.enabled);
+
+        // Small ICC passes
+        let small_png = png_with_icc(256);
+        assert!(cfg.scan_metadata_base(&small_png).is_ok());
+
+        // Oversized ICC (> 10MB) fails
+        let oversized_png = png_with_icc((BASE_METADATA_LIMIT + 1) as usize);
+        let err = cfg.scan_metadata_base(&oversized_png).unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("ICC profile") && msg.contains("exceeds base limit"),
+            "Expected base metadata limit message, got: {msg}"
+        );
     }
 
     #[test]
