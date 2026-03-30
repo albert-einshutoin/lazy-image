@@ -1,9 +1,10 @@
 /**
  * Format conversion matrix and resize fit mode tests (#475)
  *
- * Verifies that every supported input format (WebP, PNG, JPEG) can be decoded
- * and re-encoded to every supported output format (including AVIF), and that
- * the three resize fit modes produce the expected dimensional constraints.
+ * Verifies that every supported input format (JPEG, PNG, WebP) can be decoded
+ * and re-encoded to every supported output format (JPEG, PNG, WebP, AVIF),
+ * that the three resize fit modes produce the expected dimensional constraints,
+ * and that normalizePixelFormat() works across formats.
  *
  * Note: AVIF *encoding* is supported but AVIF *decoding* (as input) is not
  * yet available in the native binding, so AVIF-as-source tests are omitted.
@@ -84,6 +85,10 @@ async function runTests() {
     // ftyp box signature rather than inspect().
 
     const matrix = [
+        ['JPEG -> JPEG',  jpegBuf,   'jpeg',  80],
+        ['JPEG -> PNG',   jpegBuf,   'png',   null],
+        ['JPEG -> WebP',  jpegBuf,   'webp',  80],
+        ['JPEG -> AVIF',  jpegBuf,   'avif',  30],
         ['WebP -> JPEG',  webpBuf,   'jpeg',  80],
         ['WebP -> PNG',   webpBuf,   'png',   null],
         ['WebP -> WebP',  webpBuf,   'webp',  80],
@@ -92,7 +97,6 @@ async function runTests() {
         ['PNG  -> PNG',   pngBuf,    'png',   null],
         ['PNG  -> WebP',  pngBuf,    'webp',  80],
         ['PNG  -> AVIF',  pngBuf,    'avif',  30],
-        ['JPEG -> AVIF',  jpegBuf,   'avif',  30],
     ];
 
     for (const [label, src, fmt, quality] of matrix) {
@@ -171,6 +175,49 @@ async function runTests() {
         const meta = inspect(result);
         assert.strictEqual(meta.width, TARGET, `width should be exactly ${TARGET}`);
         assert.strictEqual(meta.height, TARGET, `height should be exactly ${TARGET}`);
+    });
+
+    // --- normalizePixelFormat() tests ----------------------------------------
+
+    await asyncTest('normalizePixelFormat: JPEG produces valid output', async () => {
+        const result = await ImageEngine.from(jpegBuf)
+            .normalizePixelFormat()
+            .resize(100)
+            .toBuffer('jpeg', 80);
+        assert(result.length > 0, 'output buffer should be non-empty');
+        const meta = inspect(result);
+        assert(meta.width > 0, 'output width should be positive');
+    });
+
+    await asyncTest('normalizePixelFormat: PNG produces valid output', async () => {
+        const result = await ImageEngine.from(pngBuf)
+            .normalizePixelFormat()
+            .resize(100)
+            .toBuffer('png');
+        assert(result.length > 0, 'output buffer should be non-empty');
+        const meta = inspect(result);
+        assert(meta.width > 0, 'output width should be positive');
+    });
+
+    await asyncTest('normalizePixelFormat: WebP produces valid output', async () => {
+        const result = await ImageEngine.from(webpBuf)
+            .normalizePixelFormat()
+            .resize(100)
+            .toBuffer('webp', 80);
+        assert(result.length > 0, 'output buffer should be non-empty');
+        const meta = inspect(result);
+        assert(meta.width > 0, 'output width should be positive');
+    });
+
+    await asyncTest('normalizePixelFormat: chainable with other operations', async () => {
+        const result = await ImageEngine.from(jpegBuf)
+            .resize(100)
+            .normalizePixelFormat()
+            .grayscale()
+            .toBuffer('jpeg', 80);
+        assert(result.length > 0, 'output buffer should be non-empty');
+        const meta = inspect(result);
+        assert.strictEqual(meta.width, 100, 'width should be 100 after resize');
     });
 
     // --- Summary ------------------------------------------------------------
