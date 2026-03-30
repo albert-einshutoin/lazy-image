@@ -306,43 +306,43 @@ fn crop_to_dimensions(img: DynamicImage, target_w: u32, target_h: u32) -> Dynami
     img.crop_imm(crop_x, crop_y, crop_width, crop_height)
 }
 
-/// Optimize operations by combining consecutive resize/crop operations
+/// Optimize operations by combining consecutive resize/crop operations.
+///
+/// Single-pass algorithm: walks through `ops` once, merging consecutive
+/// resizes and fusing resize+crop pairs as it goes.  Each element is
+/// visited exactly once, so the cost is O(n) in the number of operations.
 pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
     if ops.len() < 2 {
         return ops.to_vec();
     }
 
-    let mut optimized = Vec::new();
+    let mut result = Vec::with_capacity(ops.len());
     let mut i = 0;
 
     while i < ops.len() {
-        let current = &ops[i];
-
-        // Try to combine consecutive resize operations
+        // 1. Merge consecutive resizes (same fit mode) into a single resize.
         if let Operation::Resize {
             width: w1,
             height: h1,
             fit,
-        } = current
+        } = &ops[i]
         {
             let mut final_width = *w1;
             let mut final_height = *h1;
             let fit_mode = fit.clone();
-            let mut j = i + 1;
 
-            // Combine all consecutive resize operations
-            while j < ops.len() {
+            // Absorb all immediately-following resizes with the same fit mode.
+            while i + 1 < ops.len() {
                 if let Operation::Resize {
                     width: w2,
                     height: h2,
                     fit: fit2,
-                } = &ops[j]
+                } = &ops[i + 1]
                 {
                     if *fit2 != fit_mode {
                         break;
                     }
-                    // If both dimensions are specified, use the last one
-                    // Otherwise, maintain aspect ratio from the first resize
+                    // Last writer wins: adopt the successor's specified dimensions.
                     if w2.is_some() && h2.is_some() {
                         final_width = *w2;
                         final_height = *h2;
@@ -353,75 +353,74 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                         final_width = None;
                         final_height = *h2;
                     }
-                    j += 1;
+                    i += 1; // consume the merged resize
                 } else {
                     break;
                 }
             }
 
-            if j > i + 1 {
-                // Combined multiple resizes into one
-                optimized.push(Operation::Resize {
-                    width: final_width,
-                    height: final_height,
-                    fit: fit_mode,
-                });
-                i = j;
-                continue;
+            // 2. Try to fuse the (possibly merged) resize with a following crop.
+            if i + 1 < ops.len() {
+                if let Operation::Crop {
+                    x,
+                    y,
+                    width: cw,
+                    height: ch,
+                } = &ops[i + 1]
+                {
+                    if fit_mode != ResizeFit::Cover {
+                        // Cover fit scales to the larger dimension, maximizing
+                        // intermediate buffers.  Fusing Cover into Extract
+                        // doesn't reduce memory peak, so we only fuse
+                        // Inside/Fill.
+                        result.push(Operation::Extract {
+                            width: final_width,
+                            height: final_height,
+                            fit: fit_mode,
+                            crop_x: *x,
+                            crop_y: *y,
+                            crop_width: *cw,
+                            crop_height: *ch,
+                        });
+                        i += 2; // consumed resize + crop
+                        continue;
+                    }
+                }
             }
+
+            result.push(Operation::Resize {
+                width: final_width,
+                height: final_height,
+                fit: fit_mode,
+            });
+            i += 1;
+            continue;
         }
 
-        // Try to optimize crop + resize or resize + crop
-        if i + 1 < ops.len() {
-            match (&ops[i], &ops[i + 1]) {
-                // Resize then crop: fuse into single Extract to avoid intermediate buffer
-                (
-                    Operation::Resize { width, height, fit },
-                    Operation::Crop {
-                        x,
-                        y,
-                        width: cw,
-                        height: ch,
-                    },
-                ) if *fit != ResizeFit::Cover => {
-                    // Cover fit scales to the larger dimension, maximizing intermediate buffers.
-                    // Fusing Cover into Extract doesn't reduce memory peak, so we only fuse
-                    // Inside/Fill to reduce peak memory and copies.
-                    optimized.push(Operation::Extract {
-                        width: *width,
-                        height: *height,
-                        fit: fit.clone(),
-                        crop_x: *x,
-                        crop_y: *y,
-                        crop_width: *cw,
-                        crop_height: *ch,
-                    });
-                    i += 2;
-                    continue;
-                }
-                // Crop then resize: optimize by calculating final dimensions
-                (
-                    Operation::Crop {
-                        x,
-                        y,
-                        width: cw,
-                        height: ch,
-                    },
-                    Operation::Resize {
-                        width: rw,
-                        height: rh,
-                        fit,
-                    },
-                ) => {
+        // 3. Crop then resize: pre-calculate final dimensions when fit=Inside.
+        if let Operation::Crop {
+            x,
+            y,
+            width: cw,
+            height: ch,
+        } = &ops[i]
+        {
+            if i + 1 < ops.len() {
+                if let Operation::Resize {
+                    width: rw,
+                    height: rh,
+                    fit,
+                } = &ops[i + 1]
+                {
                     if *fit == ResizeFit::Inside {
                         let (final_w, final_h) = calc_resize_dimensions(*cw, *ch, *rw, *rh);
-                        optimized.push(Operation::Crop {
+                        result.push(Operation::Crop {
                             x: *x,
                             y: *y,
                             width: *cw,
                             height: *ch,
                         });
-                        optimized.push(Operation::Resize {
+                        result.push(Operation::Resize {
                             width: Some(final_w),
                             height: Some(final_h),
                             fit: ResizeFit::Inside,
@@ -430,16 +429,15 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
                         continue;
                     }
                 }
-                // Resize then crop: keep both but order is already optimal
-                _ => {}
             }
         }
 
-        optimized.push(current.clone());
+        // 4. No optimization applies: pass through unchanged.
+        result.push(ops[i].clone());
         i += 1;
     }
 
-    optimized
+    result
 }
 
 /// Apply all queued operations using Copy-on-Write semantics
@@ -785,19 +783,14 @@ pub fn fast_resize(
         return Err("invalid dimensions".to_string());
     }
 
-    // Select pixel layout without forcing RGBA when not needed
-    // Use into_raw() to avoid clone() - ownership transfer instead of copying
+    // Select pixel layout without forcing RGBA when not needed.
+    // Use as_raw().to_vec() to copy only the raw pixel bytes, avoiding the
+    // overhead of cloning the entire ImageBuffer (which includes width, height,
+    // and phantom-type metadata).  For non-RGB8/RGBA8 formats we must convert
+    // to RGBA8 first, which already produces an owned buffer.
     let (pixel_type, src_pixels): (PixelType, Vec<u8>) = match img {
-        DynamicImage::ImageRgb8(rgb) => {
-            // Clone is necessary when we only have a reference
-            let rgb_image = rgb.clone();
-            (PixelType::U8x3, rgb_image.into_raw())
-        }
-        DynamicImage::ImageRgba8(rgba) => {
-            // Clone is necessary when we only have a reference
-            let rgba_image = rgba.clone();
-            (PixelType::U8x4, rgba_image.into_raw())
-        }
+        DynamicImage::ImageRgb8(rgb) => (PixelType::U8x3, rgb.as_raw().to_vec()),
+        DynamicImage::ImageRgba8(rgba) => (PixelType::U8x4, rgba.as_raw().to_vec()),
         _ => {
             let rgba = img.to_rgba8();
             (PixelType::U8x4, rgba.into_raw())
