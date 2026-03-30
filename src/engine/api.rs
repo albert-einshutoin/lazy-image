@@ -16,7 +16,8 @@ use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_s
 #[allow(unused_imports)]
 use crate::engine::tasks::{
     BatchResult, BatchTask, BatchWithMetricsTask, EncodeTargetBytesTask, EncodeTask,
-    EncodeWithMetricsTask, WriteFileTask, WriteFileWithMetricsTask,
+    EncodeWithMetricsTask, UnifiedEncodeTask, UnifiedEncodeToFileTask, WriteFileTask,
+    WriteFileWithMetricsTask,
 };
 #[cfg(feature = "napi")]
 use crate::error::LazyImageError;
@@ -1335,6 +1336,218 @@ impl ImageEngine {
             #[cfg(feature = "napi")]
             last_error: None,
         }))
+    }
+
+    // =========================================================================
+    // UNIFIED OUTPUT API — encode() and encodeToFile()
+    //
+    // These two methods consolidate all the individual output methods above
+    // into a single options-object API.  Existing methods remain for backward
+    // compatibility; new code should prefer encode() / encodeToFile().
+    // =========================================================================
+
+    /// Unified encode-to-buffer method.
+    ///
+    /// Accepts an options object with `format`, `quality`, `fastMode`, `preset`,
+    /// and `metrics` fields.  When `preset` is supplied the preset's settings
+    /// take precedence over format/quality/fastMode.
+    ///
+    /// Returns `EncodeResult { data, metrics? }`.
+    #[napi(ts_return_type = "Promise<EncodeResult>")]
+    pub fn encode(
+        &mut self,
+        env: Env,
+        options: crate::EncodeOptions,
+    ) -> Result<AsyncTask<crate::engine::tasks::UnifiedEncodeTask>> {
+        let want_metrics = options.metrics.unwrap_or(false);
+
+        // Resolve format/quality/fastMode — preset wins when supplied.
+        let (format_str, quality_f64, fast_mode) = if let Some(ref preset_name) = options.preset {
+            let preset = match PresetConfig::get(preset_name) {
+                Some(c) => c,
+                None => {
+                    let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+            // Apply the preset's resize ops.
+            self.ops.push(Operation::Resize {
+                width: preset.width,
+                height: preset.height,
+                fit: ResizeFit::Inside,
+            });
+            self.last_preset = Some(preset.clone());
+
+            let (f, q, fm) = match &preset.format {
+                OutputFormat::Jpeg { quality, fast_mode } => {
+                    ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
+                }
+                OutputFormat::Png => ("png".to_string(), None, None),
+                OutputFormat::WebP { quality } => {
+                    ("webp".to_string(), Some(*quality as f64), None)
+                }
+                OutputFormat::Avif { quality } => {
+                    ("avif".to_string(), Some(*quality as f64), None)
+                }
+            };
+            (f, q, fm.unwrap_or(false))
+        } else {
+            let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
+            (
+                fmt,
+                options.quality,
+                options.fast_mode.unwrap_or(false),
+            )
+        };
+
+        let quality =
+            validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
+        let output_format =
+            match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
+                Ok(f) => f,
+                Err(_) => {
+                    let lazy_err = LazyImageError::unsupported_format(format_str.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
+        } else {
+            None
+        };
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(
+            crate::engine::tasks::UnifiedEncodeTask {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                want_metrics,
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
+        ))
+    }
+
+    /// Unified encode-to-file method.
+    ///
+    /// Same options as `encode()`, but writes the result directly to `path`.
+    /// Returns `FileEncodeResult { bytesWritten, metrics? }`.
+    #[napi(js_name = "encodeToFile", ts_return_type = "Promise<FileEncodeResult>")]
+    pub fn encode_to_file(
+        &mut self,
+        env: Env,
+        path: String,
+        options: crate::EncodeOptions,
+    ) -> Result<AsyncTask<crate::engine::tasks::UnifiedEncodeToFileTask>> {
+        validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
+        let want_metrics = options.metrics.unwrap_or(false);
+
+        let (format_str, quality_f64, fast_mode) = if let Some(ref preset_name) = options.preset {
+            let preset = match PresetConfig::get(preset_name) {
+                Some(c) => c,
+                None => {
+                    let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+            self.ops.push(Operation::Resize {
+                width: preset.width,
+                height: preset.height,
+                fit: ResizeFit::Inside,
+            });
+            self.last_preset = Some(preset.clone());
+
+            let (f, q, fm) = match &preset.format {
+                OutputFormat::Jpeg { quality, fast_mode } => {
+                    ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
+                }
+                OutputFormat::Png => ("png".to_string(), None, None),
+                OutputFormat::WebP { quality } => {
+                    ("webp".to_string(), Some(*quality as f64), None)
+                }
+                OutputFormat::Avif { quality } => {
+                    ("avif".to_string(), Some(*quality as f64), None)
+                }
+            };
+            (f, q, fm.unwrap_or(false))
+        } else {
+            let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
+            (
+                fmt,
+                options.quality,
+                options.fast_mode.unwrap_or(false),
+            )
+        };
+
+        let quality =
+            validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
+        let output_format =
+            match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
+                Ok(f) => f,
+                Err(_) => {
+                    let lazy_err = LazyImageError::unsupported_format(format_str.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
+        } else {
+            None
+        };
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(
+            crate::engine::tasks::UnifiedEncodeToFileTask {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                want_metrics,
+                output_path: path,
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
+        ))
     }
 
     /// Convenience: encode to file using the preset's recommended format/quality.

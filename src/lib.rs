@@ -336,6 +336,45 @@ pub struct OutputWithMetrics {
     pub metrics: ProcessingMetrics,
 }
 
+/// Options object for the unified `encode()` / `encodeToFile()` methods.
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct EncodeOptions {
+    /// Output format: "jpeg", "jpg", "png", "webp", "avif"
+    pub format: Option<String>,
+    /// Quality 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG.
+    pub quality: Option<f64>,
+    /// If true, uses faster JPEG encoding (2-4x faster, slightly larger files). Default: false.
+    pub fast_mode: Option<bool>,
+    /// Preset name ("thumbnail", "avatar", "hero", "social").
+    /// When specified, format/quality/fastMode are ignored and the preset's
+    /// recommended settings are used instead.
+    pub preset: Option<String>,
+    /// If true, include ProcessingMetrics in the result. Default: false.
+    pub metrics: Option<bool>,
+}
+
+/// Result from `encode()`.
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct EncodeResult {
+    /// Encoded image data
+    pub data: napi::bindgen_prelude::Buffer,
+    /// Processing metrics (only present when `metrics: true` was requested)
+    pub metrics: Option<ProcessingMetrics>,
+}
+
+/// Result from `encodeToFile()`.
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct FileEncodeResult {
+    /// Number of bytes written to disk
+    pub bytes_written: u32,
+    /// Processing metrics (only present when `metrics: true` was requested)
+    pub metrics: Option<ProcessingMetrics>,
+}
+
 #[cfg(feature = "napi")]
 #[derive(Debug)]
 #[napi(object)]
