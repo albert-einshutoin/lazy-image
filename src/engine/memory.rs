@@ -823,12 +823,25 @@ fn parse_cgroup1_mount_point(mountinfo: &str, controller: &str) -> Option<Cgroup
 #[cfg(feature = "napi")]
 fn parse_cgroup2_relative_path(content: &str) -> Option<String> {
     // Format: 0::/docker/abcd...
+    // cgroup v2 uses hierarchy ID "0" for the unified hierarchy.
+    // Skip non-v2 lines (e.g. v1 entries with hierarchy ID > 0).
     for line in content.lines() {
         let mut parts = line.splitn(3, ':');
-        let _hier = parts.next()?;
-        let _controllers = parts.next()?;
-        let path = parts.next()?;
-        return Some(path.to_string());
+        let hier = match parts.next() {
+            Some(h) => h,
+            None => continue,
+        };
+        let _controllers = match parts.next() {
+            Some(c) => c,
+            None => continue,
+        };
+        let path = match parts.next() {
+            Some(p) => p,
+            None => continue,
+        };
+        if hier == "0" {
+            return Some(path.to_string());
+        }
     }
     None
 }
@@ -983,6 +996,34 @@ mod tests {
             parse_cgroup2_relative_path(sample),
             Some("/docker/abcd".to_string())
         );
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path_mixed_v1_v2() {
+        // cgroup v1 lines appear before the v2 unified line
+        let sample = "12:memory:/docker/abc123\n11:cpuset:/docker/abc123\n0::/kubepods/pod-xyz\n";
+        assert_eq!(
+            parse_cgroup2_relative_path(sample),
+            Some("/kubepods/pod-xyz".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path_empty() {
+        assert_eq!(parse_cgroup2_relative_path(""), None);
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path_no_v2_entry() {
+        // Only cgroup v1 lines, no hierarchy 0
+        let sample = "5:memory:/docker/abc\n3:cpuset:/docker/abc\n";
+        assert_eq!(parse_cgroup2_relative_path(sample), None);
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path_root() {
+        let sample = "0::/\n";
+        assert_eq!(parse_cgroup2_relative_path(sample), Some("/".to_string()));
     }
 
     #[test]
