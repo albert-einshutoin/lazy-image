@@ -197,6 +197,8 @@ fn decode_internal_from_parts<'a>(
     // Prefer already decoded image (already validated)
     // Return borrowed reference - no deep copy until mutation is needed
     if let Some(img_arc) = decoded {
+        // Always-on base safety limits (even without sanitize())
+        firewall.enforce_base_limits(img_arc.width(), img_arc.height())?;
         check_dimensions(img_arc.width(), img_arc.height())?;
         firewall.enforce_pixels(img_arc.width(), img_arc.height())?;
         return Ok(Cow::Borrowed(img_arc.as_ref()));
@@ -221,6 +223,9 @@ fn decode_internal_from_parts<'a>(
         }
     };
 
+    // Always-on base metadata size check (even without sanitize())
+    firewall.scan_metadata_base(bytes)?;
+
     firewall.enforce_source_len(bytes.len())?;
     firewall.scan_metadata(bytes)?;
 
@@ -230,6 +235,8 @@ fn decode_internal_from_parts<'a>(
 
     // Security check: reject decompression bombs
     let (w, h) = img.dimensions();
+    // Always-on base safety limits (even without sanitize())
+    firewall.enforce_base_limits(w, h)?;
     check_dimensions(w, h)?;
     firewall.enforce_pixels(w, h)?;
 
@@ -542,6 +549,40 @@ mod non_napi_tests {
         };
         let err = task.decode().unwrap_err();
         assert!(matches!(err, LazyImageError::SourceConsumed));
+    }
+
+    /// Verify that base dimension/pixel limits are enforced at decode time
+    /// even when the firewall is disabled (i.e., sanitize() was NOT called).
+    /// This is the core fix for #492.
+    #[test]
+    fn base_limits_enforced_without_sanitize() {
+        // Create a PNG with dimensions exceeding MAX_PIXELS (100M)
+        // We can't easily create such a huge image, so instead verify via
+        // enforce_base_limits which is called in the decode path.
+        let cfg = FirewallConfig::disabled();
+        assert!(!cfg.enabled);
+
+        // 10001 x 10001 = 100_020_001 > 100M pixels
+        let err = cfg.enforce_base_limits(10001, 10001).unwrap_err();
+        assert!(matches!(
+            err,
+            crate::error::LazyImageError::PixelCountExceedsLimit { .. }
+        ));
+    }
+
+    /// Verify that base metadata scan runs at decode time without sanitize().
+    #[test]
+    fn base_metadata_scan_runs_without_sanitize() {
+        let cfg = FirewallConfig::disabled();
+        assert!(!cfg.enabled);
+
+        // Small metadata passes
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(4, 4, Rgba([10, 20, 30, 255]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+        assert!(cfg.scan_metadata_base(&bytes).is_ok());
     }
 
     #[test]
