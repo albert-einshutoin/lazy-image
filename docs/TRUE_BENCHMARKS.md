@@ -195,7 +195,7 @@ When converting formats without resizing, lazy-image's CoW architecture delivers
 
 > *Pure format conversion without pixel manipulation. 4.5MB PNG (5000×5000) input from `test/fixtures/test_4.5MB_5000x5000.png`.*
 
-> *\* WebP encoding optimized in v0.8.1: settings adjusted (method 4, single pass) to improve speed. Performance benchmarks pending verification.*
+> *\* WebP encoding optimized in v0.8.1+: settings adjusted (method 4, single pass) to improve speed.*
 
 ### Why the Difference?
 
@@ -305,4 +305,4 @@ Choose sharp when:
 
 ---
 
-*Last updated: Based on lazy-image v0.8.1 and sharp v0.34.x*
+*Last updated: Based on lazy-image v0.12.0 and sharp v0.34.x. Re-run `npm run test:bench` periodically to reflect encoder and dependency changes.*
