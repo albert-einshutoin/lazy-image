@@ -5,27 +5,12 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const requiredPackFiles = [
   'CHANGELOG.md',
-  'CONTRIBUTING.md',
-  'FUZZING.md',
   'LICENSE',
   'README.ja.md',
   'README.md',
-  'SECURITY.md',
-  'docs/API.md',
-  'docs/ARCHITECTURE.md',
-  'docs/PERFORMANCE.md',
-  'docs/ROADMAP.md',
-  'docs/TROUBLESHOOTING.md',
-  'docs/VERSION_HISTORY.md',
   'index.d.ts',
   'index.js',
   'package.json',
-  'spec/errors.md',
-  'spec/limits.md',
-  'spec/metadata.md',
-  'spec/pipeline.md',
-  'spec/quality.md',
-  'spec/resize.md',
   'streaming/pipeline.js',
 ];
 
@@ -66,10 +51,17 @@ function main() {
     ensurePackedFile(packedFiles, relPath, 'required file');
   }
 
+  // Paths intentionally excluded from the npm package to reduce size (#495).
+  // These links point to the GitHub repo and still work for users browsing there.
+  const excludedPrefixes = ['docs/', 'spec/', 'CONTRIBUTING', 'FUZZING', 'SECURITY'];
+
   for (const readmeName of ['README.md', 'README.ja.md']) {
     const readmePath = path.join(root, readmeName);
     for (const relPath of collectRelativeMarkdownLinks(readmePath)) {
       if (relPath.endsWith('/')) {
+        continue;
+      }
+      if (excludedPrefixes.some((prefix) => relPath.startsWith(prefix))) {
         continue;
       }
       ensurePackedFile(packedFiles, relPath, `${readmeName} link target`);
