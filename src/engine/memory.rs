@@ -98,8 +98,37 @@ impl WeightedSemaphore {
         self.capacity
     }
 
+    /// Returns `true` if the last `acquire()` was clamped because the requested
+    /// weight exceeded the semaphore capacity. This is purely informational;
+    /// the permit already serializes the oversized operation by reserving full
+    /// capacity.
+    pub fn was_clamped(permit: &MemoryPermit, original_weight: u64) -> bool {
+        original_weight > permit.weight
+    }
+
     pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
-        let need = weight.min(self.capacity); // clamp absurd weights to avoid deadlock
+        if weight == 0 {
+            return MemoryPermit {
+                sem: Arc::clone(self),
+                weight: 0,
+            };
+        }
+
+        // If the request exceeds capacity, acquire FULL capacity instead.
+        // This serializes oversized operations (only one can run at a time)
+        // rather than silently under-reserving. The caller can check whether
+        // clamping occurred via `WeightedSemaphore::was_clamped()`.
+        let need = if weight > self.capacity {
+            #[cfg(debug_assertions)]
+            eprintln!(
+                "lazy-image: memory request ({} bytes) exceeds semaphore capacity ({} bytes); \
+                 acquiring full capacity to serialize this operation",
+                weight, self.capacity
+            );
+            self.capacity
+        } else {
+            weight
+        };
 
         let ready_flag = {
             let mut state = self.state.lock();
@@ -1348,6 +1377,76 @@ mod non_napi_tests {
         assert!(
             gray_est < rgb_est,
             "grayscale ({gray_est}) should use less memory than RGB ({rgb_est})"
+        );
+    }
+
+    #[test]
+    fn zero_weight_acquire_returns_immediately() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let permit = sem.acquire(0);
+        assert_eq!(permit.weight, 0);
+        // Available capacity should be unchanged
+        assert_eq!(sem.state.lock().available, 100);
+    }
+
+    #[test]
+    fn oversized_request_acquires_full_capacity() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        // Request more than capacity
+        let permit = sem.acquire(200);
+        // Should have clamped to full capacity (100), not the requested 200
+        assert_eq!(permit.weight, 100);
+        assert_eq!(sem.state.lock().available, 0);
+        // was_clamped should report true
+        assert!(WeightedSemaphore::was_clamped(&permit, 200));
+        drop(permit);
+        assert_eq!(sem.state.lock().available, 100);
+    }
+
+    #[test]
+    fn normal_request_not_clamped() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let permit = sem.acquire(60);
+        assert_eq!(permit.weight, 60);
+        assert!(!WeightedSemaphore::was_clamped(&permit, 60));
+    }
+
+    #[test]
+    fn oversized_requests_are_serialized() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let concurrent_count = Arc::new(AtomicUsize::new(0));
+        let max_concurrent = Arc::new(AtomicUsize::new(0));
+
+        let mut handles = Vec::new();
+        for _ in 0..4 {
+            let sem = Arc::clone(&sem);
+            let concurrent = Arc::clone(&concurrent_count);
+            let max_conc = Arc::clone(&max_concurrent);
+            handles.push(thread::spawn(move || {
+                // Each requests more than capacity → must serialize
+                let _permit = sem.acquire(200);
+                let prev = concurrent.fetch_add(1, Ordering::SeqCst);
+                // Update max concurrent
+                let current = prev + 1;
+                max_conc.fetch_max(current, Ordering::SeqCst);
+                // Small sleep to give other threads a chance to contend
+                thread::sleep(Duration::from_millis(10));
+                concurrent.fetch_sub(1, Ordering::SeqCst);
+            }));
+        }
+
+        for h in handles {
+            h.join().unwrap();
+        }
+
+        // At most 1 oversized request should run at a time since each
+        // acquires full capacity
+        assert_eq!(
+            max_concurrent.load(Ordering::SeqCst),
+            1,
+            "oversized requests should be serialized (max 1 concurrent)"
         );
     }
 
