@@ -1172,7 +1172,7 @@ mod tests {
 
     #[test]
     fn test_e102_mmap_failed() {
-        let io_err = std::io::Error::new(std::io::ErrorKind::Other, "mmap error");
+        let io_err = std::io::Error::other("mmap error");
         let err = LazyImageError::mmap_failed("/big/file.jpg", io_err);
         assert_error_variant(
             &err,
@@ -1372,7 +1372,7 @@ mod tests {
 
     #[test]
     fn test_e301_file_write_failed() {
-        let io_err = std::io::Error::new(std::io::ErrorKind::Other, "disk full");
+        let io_err = std::io::Error::other("disk full");
         let err = LazyImageError::file_write_failed("/out/image.webp", io_err);
         assert_error_variant(
             &err,
@@ -1596,7 +1596,7 @@ mod tests {
     #[test]
     fn test_recovery_hint_non_empty_for_all_variants() {
         // Build one instance of every LazyImageError variant and verify its hint
-        let io_err = || std::io::Error::new(std::io::ErrorKind::Other, "test");
+        let io_err = || std::io::Error::other("test");
         let all_errors: Vec<LazyImageError> = vec![
             LazyImageError::file_not_found("x"),
             LazyImageError::file_read_failed("x", io_err()),
@@ -1637,7 +1637,7 @@ mod tests {
     fn test_error_code_consistency_with_error_variant() {
         // Verify that LazyImageError.code().category() matches LazyImageError.category()
         // for every variant (ensures the two parallel match arms stay in sync).
-        let io_err = || std::io::Error::new(std::io::ErrorKind::Other, "test");
+        let io_err = || std::io::Error::other("test");
         let all_errors: Vec<LazyImageError> = vec![
             LazyImageError::file_not_found("x"),
             LazyImageError::file_read_failed("x", io_err()),

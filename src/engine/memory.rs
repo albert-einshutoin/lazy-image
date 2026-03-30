@@ -984,7 +984,7 @@ mod tests {
         );
         // 2GB -> 5% = 102.4MB -> within bounds
         let reserved = compute_reserved_memory(2 * 1024 * 1024 * 1024);
-        assert!(reserved >= 100 * 1024 * 1024 && reserved <= 110 * 1024 * 1024);
+        assert!((100 * 1024 * 1024..=110 * 1024 * 1024).contains(&reserved));
     }
 
     #[test]
@@ -1066,7 +1066,7 @@ mod tests {
     fn test_calculate_memory_based_concurrency_constrained() {
         // 512MB container: can fit ~3 operations (512MB - 128MB reserve = 384MB / 100MB = 3)
         let result = calculate_memory_based_concurrency(Some(512 * 1024 * 1024), 8);
-        assert!(result >= MIN_SAFE_CONCURRENCY && result <= 4);
+        assert!((MIN_SAFE_CONCURRENCY..=4).contains(&result));
     }
 
     #[test]
