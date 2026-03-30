@@ -8,6 +8,8 @@ The canonical benchmark dataset for public performance claims is [TRUE_BENCHMARK
 
 All summary claims in README and migration docs should be derived from that document's exact scenarios rather than mixing numbers from different workloads.
 
+For the full inventory of public claims and quoting rules, see [BENCHMARK_CLAIMS.md](./BENCHMARK_CLAIMS.md).
+
 ## Benchmark Summary (Canonical Scenarios)
 
 | Scenario | Metric | lazy-image | sharp | Interpretation |
