@@ -697,9 +697,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: false,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::strip_all(),
             firewall: FirewallConfig::disabled(),
         };
         let max_size = task_max.process_and_encode(None).unwrap().len();
@@ -717,9 +715,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: false,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::strip_all(),
             firewall: FirewallConfig::disabled(),
             target_bytes: (max_size + 10000) as u32,
             min_quality: 1,
@@ -743,9 +739,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: false,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::strip_all(),
             firewall: FirewallConfig::disabled(),
             target_bytes: 500,
             min_quality: 1,
@@ -777,9 +771,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: false,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::strip_all(),
             firewall: FirewallConfig::disabled(),
             // Impossibly small budget
             target_bytes: 1,
@@ -894,9 +886,8 @@ pub struct EncodeTargetBytesTask {
     pub icc_present: bool,
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    pub keep_icc: bool,
-    pub keep_exif: bool,
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     pub target_bytes: u32,
     pub min_quality: u8,
@@ -928,9 +919,7 @@ impl EncodeTargetBytesTask {
                 self.icc_present,
                 self.exif_data.as_ref(),
                 self.auto_orient,
-                self.keep_icc,
-                self.keep_exif,
-                self.strip_gps,
+                &self.metadata_policy,
                 &self.firewall,
                 Some(&mut metrics),
             )?;
@@ -1236,6 +1225,166 @@ impl Task for WriteFileWithMetricsTask {
     fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
         let (bytes_written, metrics) = output;
         Ok(crate::FileOutputWithMetrics {
+            bytes_written,
+            metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+// ============================================================================================
+// Unified encode tasks — power encode() and encodeToFile()
+// ============================================================================================
+
+/// Task for `encode()` — returns `EncodeResult { data, metrics? }`.
+pub struct UnifiedEncodeTask {
+    pub source: Option<Source>,
+    pub decoded: Option<Arc<DynamicImage>>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub exif_data: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
+    pub firewall: FirewallConfig,
+    pub want_metrics: bool,
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for UnifiedEncodeTask {
+    type Output = (Vec<u8>, Option<crate::ProcessingMetrics>);
+    type JsValue = crate::EncodeResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let mut metrics = if self.want_metrics {
+            Some(crate::ProcessingMetrics::default())
+        } else {
+            None
+        };
+
+        match process_and_encode_from_parts(
+            self.source.as_ref(),
+            self.decoded.as_ref(),
+            &self.ops,
+            &self.format,
+            self.icc_profile.as_ref(),
+            self.icc_present,
+            self.exif_data.as_ref(),
+            self.auto_orient,
+            &self.metadata_policy,
+            &self.firewall,
+            metrics.as_mut(),
+        ) {
+            Ok(data) => {
+                self.last_error = None;
+                Ok((data, metrics))
+            }
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                Err(napi::Error::from(lazy_err))
+            }
+        }
+    }
+
+    fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        let (data, metrics) = output;
+        let js_buffer = BufferSlice::from_data(&env, data)?.into_buffer(&env)?;
+        Ok(crate::EncodeResult {
+            data: js_buffer,
+            metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+/// Task for `encodeToFile()` — returns `FileEncodeResult { bytesWritten, metrics? }`.
+pub struct UnifiedEncodeToFileTask {
+    pub source: Option<Source>,
+    pub decoded: Option<Arc<DynamicImage>>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub exif_data: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
+    pub firewall: FirewallConfig,
+    pub want_metrics: bool,
+    pub output_path: String,
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for UnifiedEncodeToFileTask {
+    type Output = (u32, Option<crate::ProcessingMetrics>);
+    type JsValue = crate::FileEncodeResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let mut metrics = if self.want_metrics {
+            Some(crate::ProcessingMetrics::default())
+        } else {
+            None
+        };
+
+        let data = match process_and_encode_from_parts(
+            self.source.as_ref(),
+            self.decoded.as_ref(),
+            &self.ops,
+            &self.format,
+            self.icc_profile.as_ref(),
+            self.icc_present,
+            self.exif_data.as_ref(),
+            self.auto_orient,
+            &self.metadata_policy,
+            &self.firewall,
+            metrics.as_mut(),
+        ) {
+            Ok(d) => d,
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                return Err(napi::Error::from(lazy_err));
+            }
+        };
+
+        match write_encoded_output_with_count(&self.output_path, &data) {
+            Ok(bytes_written) => {
+                self.last_error = None;
+                Ok((bytes_written, metrics))
+            }
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                Err(napi::Error::from(lazy_err))
+            }
+        }
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        let (bytes_written, metrics) = output;
+        Ok(crate::FileEncodeResult {
             bytes_written,
             metrics,
         })

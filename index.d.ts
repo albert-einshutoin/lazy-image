@@ -154,6 +154,23 @@ export declare class ImageEngine {
   toFile(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
   /** Encode and write directly to a file asynchronously, returning metrics. */
   toFileWithMetrics(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<FileOutputWithMetrics>
+  /**
+   * Unified encode-to-buffer method.
+   *
+   * Accepts an options object with `format`, `quality`, `fastMode`, `preset`,
+   * and `metrics` fields.  When `preset` is supplied the preset's settings
+   * take precedence over format/quality/fastMode.
+   *
+   * Returns `EncodeResult { data, metrics? }`.
+   */
+  encode(options: EncodeOptionsInput): Promise<EncodeResult>
+  /**
+   * Unified encode-to-file method.
+   *
+   * Same options as `encode()`, but writes the result directly to `path`.
+   * Returns `FileEncodeResult { bytesWritten, metrics? }`.
+   */
+  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
   /** Convenience: encode to file using the preset's recommended format/quality. */
   toFileWithPreset(path: string, presetName: PresetName): Promise<number>
   /**
@@ -253,6 +270,32 @@ export interface Dimensions {
   height: number
 }
 
+/** Options object for the unified `encode()` / `encodeToFile()` methods. */
+export interface EncodeOptions {
+  /** Output format: "jpeg", "jpg", "png", "webp", "avif" */
+  format?: string
+  /** Quality 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG. */
+  quality?: number
+  /** If true, uses faster JPEG encoding (2-4x faster, slightly larger files). Default: false. */
+  fastMode?: boolean
+  /**
+   * Preset name ("thumbnail", "avatar", "hero", "social").
+   * When specified, format/quality/fastMode are ignored and the preset's
+   * recommended settings are used instead.
+   */
+  preset?: string
+  /** If true, include ProcessingMetrics in the result. Default: false. */
+  metrics?: boolean
+}
+
+/** Result from `encode()`. */
+export interface EncodeResult {
+  /** Encoded image data */
+  data: Buffer
+  /** Processing metrics (only present when `metrics: true` was requested) */
+  metrics?: ProcessingMetrics
+}
+
 /**
  * Error taxonomy for proper error handling in JavaScript
  *
@@ -308,6 +351,14 @@ export declare const enum ErrorCode {
   SourceConsumed = 900,
   InternalPanic = 901,
   Generic = 999
+}
+
+/** Result from `encodeToFile()`. */
+export interface FileEncodeResult {
+  /** Number of bytes written to disk */
+  bytesWritten: number
+  /** Processing metrics (only present when `metrics: true` was requested) */
+  metrics?: ProcessingMetrics
 }
 
 export interface FileOutputWithMetrics {
@@ -494,6 +545,21 @@ export interface ImageEngine {
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
   toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
+  encode(options: EncodeOptionsInput): Promise<EncodeResult>
+  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
+}
+
+export interface EncodeOptionsInput {
+  /** Output format: "jpeg", "jpg", "png", "webp", "avif" */
+  format?: OutputFormat
+  /** Quality 1-100 for lossy formats. Omit for PNG. */
+  quality?: number
+  /** If true, uses faster JPEG encoding (2-4x faster, slightly larger). Default: false. */
+  fastMode?: boolean
+  /** Preset name. When specified, format/quality/fastMode are ignored. */
+  preset?: PresetName
+  /** If true, include ProcessingMetrics in the result. Default: false. */
+  metrics?: boolean
 }
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null

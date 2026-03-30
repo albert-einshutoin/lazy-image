@@ -33,6 +33,21 @@ export interface ImageEngine {
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
   toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
+  encode(options: EncodeOptionsInput): Promise<EncodeResult>
+  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
+}
+
+export interface EncodeOptionsInput {
+  /** Output format: "jpeg", "jpg", "png", "webp", "avif" */
+  format?: OutputFormat
+  /** Quality 1-100 for lossy formats. Omit for PNG. */
+  quality?: number
+  /** If true, uses faster JPEG encoding (2-4x faster, slightly larger). Default: false. */
+  fastMode?: boolean
+  /** Preset name. When specified, format/quality/fastMode are ignored. */
+  preset?: PresetName
+  /** If true, include ProcessingMetrics in the result. Default: false. */
+  metrics?: boolean
 }
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null
@@ -153,6 +168,8 @@ function patchIndexDts() {
   content = replaceIfNeeded(content, '  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */\n  formatIn?: string', '  /** Detected input format reported by runtime metrics */\n  formatIn?: InputFormat');
   content = replaceIfNeeded(content, '  /** Output format */\n  formatOut: string', '  /** Output format */\n  formatOut: CanonicalOutputFormat');
   content = replaceIfNeeded(content, '  toFileWithMetrics(path: string, format: string,', '  toFileWithMetrics(path: string, format: OutputFormat,');
+  content = replaceIfNeeded(content, '  encode(options: EncodeOptions): Promise<EncodeResult>', '  encode(options: EncodeOptionsInput): Promise<EncodeResult>');
+  content = replaceIfNeeded(content, '  encodeToFile(path: string, options: EncodeOptions): Promise<FileEncodeResult>', '  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>');
   content = replaceIfNeeded(content, '  fit?: string', '  fit?: ResizeFit');
   content = replaceIfNeeded(content, '  policy?: string', '  policy?: FirewallPolicy');
   content = replaceIfNeeded(content, 'export declare function supportedInputFormats(): Array<string>', 'export declare function supportedInputFormats(): Array<CanonicalInputFormat>');
