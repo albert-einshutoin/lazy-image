@@ -1023,10 +1023,7 @@ mod tests {
     #[test]
     fn test_parse_cgroup2_relative_path_root() {
         let sample = "0::/\n";
-        assert_eq!(
-            parse_cgroup2_relative_path(sample),
-            Some("/".to_string())
-        );
+        assert_eq!(parse_cgroup2_relative_path(sample), Some("/".to_string()));
     }
 
     #[test]
