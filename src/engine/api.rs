@@ -1138,14 +1138,14 @@ impl ImageEngine {
         let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
         let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
+        let icc_present = self.icc_profile().is_some();
         let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+            self.icc_profile().cloned()
         } else {
             None
         };
         let exif_data = if keep_exif {
-            self.exif_data.clone()
+            self.exif_data().cloned()
         } else {
             None
         };
