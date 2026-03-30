@@ -66,7 +66,7 @@
     "@types/node": "^25.1.0",
     "sharp": "^0.34.5",
     "ssim.js": "^3.5.0",
-    "typescript": "^5.6.3"
+    "typescript": "^6.0.2"
   },
   "napi": {
     "binaryName": "lazy-image",
