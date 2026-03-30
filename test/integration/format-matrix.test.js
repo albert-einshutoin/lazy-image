@@ -187,6 +187,7 @@ async function runTests() {
         assert(result.length > 0, 'output buffer should be non-empty');
         const meta = inspect(result);
         assert(meta.width > 0, 'output width should be positive');
+        assert(meta.height > 0, 'output height should be positive');
     });
 
     await asyncTest('normalizePixelFormat: PNG produces valid output', async () => {
@@ -197,6 +198,7 @@ async function runTests() {
         assert(result.length > 0, 'output buffer should be non-empty');
         const meta = inspect(result);
         assert(meta.width > 0, 'output width should be positive');
+        assert(meta.height > 0, 'output height should be positive');
     });
 
     await asyncTest('normalizePixelFormat: WebP produces valid output', async () => {
@@ -207,6 +209,23 @@ async function runTests() {
         assert(result.length > 0, 'output buffer should be non-empty');
         const meta = inspect(result);
         assert(meta.width > 0, 'output width should be positive');
+        assert(meta.height > 0, 'output height should be positive');
+    });
+
+    await asyncTest('normalizePixelFormat: converts grayscale to RGB', async () => {
+        // Create a grayscale image by applying grayscale() first
+        const grayBuf = await ImageEngine.from(jpegBuf)
+            .resize(100)
+            .grayscale()
+            .toBuffer('png');
+        // Now normalizePixelFormat should convert the grayscale layout to RGB
+        const result = await ImageEngine.from(grayBuf)
+            .normalizePixelFormat()
+            .toBuffer('png');
+        assert(result.length > 0, 'output buffer should be non-empty');
+        const meta = inspect(result);
+        assert(meta.width > 0, 'output width should be positive');
+        assert(meta.height > 0, 'output height should be positive');
     });
 
     await asyncTest('normalizePixelFormat: chainable with other operations', async () => {
@@ -218,6 +237,7 @@ async function runTests() {
         assert(result.length > 0, 'output buffer should be non-empty');
         const meta = inspect(result);
         assert.strictEqual(meta.width, 100, 'width should be 100 after resize');
+        assert(meta.height > 0, 'output height should be positive');
     });
 
     // --- Summary ------------------------------------------------------------
