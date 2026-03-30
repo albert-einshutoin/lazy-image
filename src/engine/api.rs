@@ -36,6 +36,7 @@ use std::path::PathBuf;
 #[cfg(feature = "napi")]
 use std::str::FromStr;
 use std::sync::Arc;
+use std::sync::OnceLock;
 
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
@@ -349,11 +350,11 @@ pub struct ImageEngine {
     pub(crate) ops: Vec<Operation>,
     /// Last applied preset (used by toPresetBuffer/toPresetFile convenience APIs)
     pub(crate) last_preset: Option<PresetConfig>,
-    /// ICC color profile extracted from source image
-    pub(crate) icc_profile: Option<Arc<Vec<u8>>>,
-    /// Raw EXIF data extracted from source image (for preservation)
+    /// ICC color profile extracted from source image (lazy: extracted on first access)
+    pub(crate) icc_profile: OnceLock<Option<Arc<Vec<u8>>>>,
+    /// Raw EXIF data extracted from source image (lazy: extracted on first access)
     /// Stored as raw bytes to avoid serialization issues with little_exif::Metadata
-    pub(crate) exif_data: Option<Arc<Vec<u8>>>,
+    pub(crate) exif_data: OnceLock<Option<Arc<Vec<u8>>>>,
     /// Whether to auto-apply EXIF Orientation (default: true)
     pub(crate) auto_orient: bool,
     /// Whether to preserve ICC profile in output.
@@ -378,26 +379,19 @@ impl ImageEngine {
     // =========================================================================
 
     /// Create engine from a buffer.
-    /// Full pixel decode and queued operations are deferred until output methods run.
-    /// ICC profile and EXIF metadata are extracted eagerly during construction.
+    /// Full pixel decode, queued operations, and metadata extraction are all
+    /// deferred until output methods run (true lazy evaluation).
     #[napi(factory)]
     pub fn from(buffer: Buffer) -> Self {
         let data = buffer.to_vec();
-
-        // Extract ICC profile before any processing
-        let icc_profile = extract_icc_profile_lossy(&data).map(Arc::new);
-
-        // Extract raw EXIF data for potential preservation
-        // We store raw bytes to avoid serialization complexity
-        let exif_data = extract_exif_raw(&data).map(Arc::new);
 
         ImageEngine {
             source: Some(Source::from_vec(data)),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
-            icc_profile,
-            exif_data,
+            icc_profile: OnceLock::new(),
+            exif_data: OnceLock::new(),
             auto_orient: true,
             keep_icc: false, // Strip metadata by default for security & smaller files
             keep_exif: false, // Strip EXIF by default for security
@@ -408,8 +402,8 @@ impl ImageEngine {
     }
 
     /// Create engine from a file path.
-    /// Full pixel decode and queued operations are deferred until output methods run.
-    /// Construction still performs safe file loading and eager ICC/EXIF extraction.
+    /// Full pixel decode, queued operations, and metadata extraction are all
+    /// deferred until output methods run (true lazy evaluation).
     /// Small/medium files are read into memory to prevent SIGBUS; very large files (>256 MB)
     /// use mmap with advisory locks.
     /// This is the recommended way for server-side processing of large images.
@@ -429,19 +423,13 @@ impl ImageEngine {
             Err(e) => return Err(crate::error::napi_error_with_code(&env, e)?),
         };
 
-        let data = source.as_bytes().expect("source always has bytes");
-
-        // Extract ICC profile and EXIF from loaded data
-        let icc_profile = extract_icc_profile_lossy(data).map(Arc::new);
-        let exif_data = extract_exif_raw(data).map(Arc::new);
-
         Ok(ImageEngine {
             source: Some(source),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
-            icc_profile,
-            exif_data,
+            icc_profile: OnceLock::new(),
+            exif_data: OnceLock::new(),
             auto_orient: true,
             keep_icc: false, // Strip metadata by default for security & smaller files
             keep_exif: false, // Strip EXIF by default for security
@@ -454,13 +442,30 @@ impl ImageEngine {
     /// Create a clone of this engine (for multi-output scenarios)
     #[napi(js_name = "clone")]
     pub fn clone_engine(&self) -> Result<ImageEngine> {
+        // If OnceLock is already initialized, clone the value into a new initialized OnceLock.
+        // If not yet initialized, create a fresh uninitialized OnceLock (avoids forcing extraction).
+        let icc_profile = {
+            let lock = OnceLock::new();
+            if let Some(val) = self.icc_profile.get() {
+                let _ = lock.set(val.clone());
+            }
+            lock
+        };
+        let exif_data = {
+            let lock = OnceLock::new();
+            if let Some(val) = self.exif_data.get() {
+                let _ = lock.set(val.clone());
+            }
+            lock
+        };
+
         Ok(ImageEngine {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
             last_preset: self.last_preset.clone(),
-            icc_profile: self.icc_profile.clone(),
-            exif_data: self.exif_data.clone(),
+            icc_profile,
+            exif_data,
             auto_orient: self.auto_orient,
             keep_icc: self.keep_icc,
             keep_exif: self.keep_exif,
@@ -654,8 +659,8 @@ impl ImageEngine {
         if self.firewall.reject_metadata {
             self.keep_icc = false;
             self.keep_exif = false;
-            self.icc_profile = None;
-            self.exif_data = None;
+            // No need to clear the OnceLock fields: output methods already
+            // check keep_icc/keep_exif flags and skip metadata when false.
         }
 
         if let Some(decoded) = &self.decoded {
@@ -893,14 +898,15 @@ impl ImageEngine {
         let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
         let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
+        // Lazy: only extract metadata when the caller actually wants it preserved
+        let icc_present = self.icc_profile().is_some();
         let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+            self.icc_profile().cloned()
         } else {
             None
         };
         let exif_data = if keep_exif {
-            self.exif_data.clone()
+            self.exif_data().cloned()
         } else {
             None
         };
@@ -993,14 +999,14 @@ impl ImageEngine {
         let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
         let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
+        let icc_present = self.icc_profile().is_some();
         let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+            self.icc_profile().cloned()
         } else {
             None
         };
         let exif_data = if keep_exif {
-            self.exif_data.clone()
+            self.exif_data().cloned()
         } else {
             None
         };
@@ -1101,14 +1107,14 @@ impl ImageEngine {
         let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
         let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
+        let icc_present = self.icc_profile().is_some();
         let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+            self.icc_profile().cloned()
         } else {
             None
         };
         let exif_data = if keep_exif {
-            self.exif_data.clone()
+            self.exif_data().cloned()
         } else {
             None
         };
@@ -1163,14 +1169,14 @@ impl ImageEngine {
         let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
         let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
+        let icc_present = self.icc_profile().is_some();
         let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+            self.icc_profile().cloned()
         } else {
             None
         };
         let exif_data = if keep_exif {
-            self.exif_data.clone()
+            self.exif_data().cloned()
         } else {
             None
         };
@@ -1305,9 +1311,10 @@ impl ImageEngine {
 
     /// Check if an ICC color profile was extracted from the source image.
     /// Returns the profile size in bytes, or null if no profile exists.
+    /// This triggers lazy extraction of the ICC profile if not yet extracted.
     #[napi(js_name = "hasIccProfile")]
     pub fn has_icc_profile(&self) -> Option<u32> {
-        self.icc_profile.as_ref().map(|p| p.len() as u32)
+        self.icc_profile().map(|p| p.len() as u32)
     }
 
     /// Process multiple images in parallel with the same operations.
@@ -1511,7 +1518,33 @@ pub struct BatchOptions {
 // INTERNAL IMPLEMENTATION
 // =============================================================================
 
-impl ImageEngine {}
+impl ImageEngine {
+    /// Lazily extract and return the ICC profile from the source data.
+    /// The extraction runs at most once; subsequent calls return the cached result.
+    fn icc_profile(&self) -> Option<&Arc<Vec<u8>>> {
+        self.icc_profile
+            .get_or_init(|| {
+                self.source
+                    .as_ref()
+                    .and_then(|s| s.as_bytes())
+                    .and_then(|bytes| extract_icc_profile_lossy(bytes).map(Arc::new))
+            })
+            .as_ref()
+    }
+
+    /// Lazily extract and return the raw EXIF data from the source data.
+    /// The extraction runs at most once; subsequent calls return the cached result.
+    fn exif_data(&self) -> Option<&Arc<Vec<u8>>> {
+        self.exif_data
+            .get_or_init(|| {
+                self.source
+                    .as_ref()
+                    .and_then(|s| s.as_bytes())
+                    .and_then(|bytes| extract_exif_raw(bytes).map(Arc::new))
+            })
+            .as_ref()
+    }
+}
 
 #[cfg(test)]
 mod tests {
