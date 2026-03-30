@@ -5,6 +5,7 @@
 // Async task implementations for NAPI.
 // These tasks run in background threads and don't block Node.js main thread.
 
+use super::api::MetadataPolicy;
 use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
@@ -177,12 +178,8 @@ pub struct EncodeTask {
     /// Raw EXIF data extracted from source image (for preservation)
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output (default: false for security & smaller files)
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output (default: false for security)
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF (default: true for privacy protection)
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -253,12 +250,13 @@ fn process_and_encode_from_parts(
     icc_present: bool,
     exif_data: Option<&Arc<Vec<u8>>>,
     auto_orient: bool,
-    keep_icc: bool,
-    keep_exif: bool,
-    strip_gps: bool,
+    policy: &MetadataPolicy,
     firewall: &FirewallConfig,
     metrics: Option<&mut crate::ProcessingMetrics>,
 ) -> std::result::Result<Vec<u8>, LazyImageError> {
+    let keep_icc = policy.effective_icc();
+    let keep_exif = policy.effective_exif();
+    let strip_gps = policy.strip_gps();
     // Get input size from source
     // Use len() method which works for both Memory and Mapped sources
     let input_size = source.map(|s| s.len() as u64).unwrap_or(0);
@@ -422,9 +420,7 @@ impl EncodeTask {
             self.icc_present,
             self.exif_data.as_ref(),
             self.auto_orient,
-            self.keep_icc,
-            self.keep_exif,
-            self.strip_gps,
+            &self.metadata_policy,
             &self.firewall,
             metrics,
         )
@@ -515,9 +511,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: true,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall: FirewallConfig::disabled(),
         }
     }
@@ -542,9 +536,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: true,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall: FirewallConfig::disabled(),
         };
         let err = task.decode().unwrap_err();
@@ -600,9 +592,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: true,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall,
         };
         let err = task.decode().unwrap_err();
@@ -625,9 +615,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: false,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall: FirewallConfig::disabled(),
         };
         assert!(!task.auto_orient);
@@ -702,12 +690,8 @@ pub struct EncodeWithMetricsTask {
     /// Raw EXIF data extracted from source image (for preservation)
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -732,9 +716,7 @@ impl Task for EncodeWithMetricsTask {
             self.icc_present,
             self.exif_data.as_ref(),
             self.auto_orient,
-            self.keep_icc,
-            self.keep_exif,
-            self.strip_gps,
+            &self.metadata_policy,
             &self.firewall,
             Some(&mut metrics),
         ) {
@@ -854,12 +836,8 @@ pub struct WriteFileTask {
     /// Raw EXIF data extracted from source image (for preservation)
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     pub output_path: String,
     /// Last error that occurred during compute (for use in reject)
@@ -876,9 +854,8 @@ pub struct WriteFileWithMetricsTask {
     pub icc_present: bool,
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    pub keep_icc: bool,
-    pub keep_exif: bool,
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     pub output_path: String,
     #[cfg(feature = "napi")]
@@ -901,9 +878,7 @@ impl Task for WriteFileTask {
             self.icc_present,
             self.exif_data.as_ref(),
             self.auto_orient,
-            self.keep_icc,
-            self.keep_exif,
-            self.strip_gps,
+            &self.metadata_policy,
             &self.firewall,
             None,
         ) {
@@ -958,9 +933,7 @@ impl Task for WriteFileWithMetricsTask {
             self.icc_present,
             self.exif_data.as_ref(),
             self.auto_orient,
-            self.keep_icc,
-            self.keep_exif,
-            self.strip_gps,
+            &self.metadata_policy,
             &self.firewall,
             Some(&mut metrics),
         ) {
@@ -1010,12 +983,12 @@ fn process_batch_file(
     ops: &[Operation],
     format: &OutputFormat,
     auto_orient: bool,
-    keep_icc: bool,
-    keep_exif: bool,
-    strip_gps: bool,
+    policy: &MetadataPolicy,
     firewall: &FirewallConfig,
     collect_metrics: bool,
 ) -> std::result::Result<BatchFileSuccess, LazyImageError> {
+    let keep_icc = policy.effective_icc();
+    let keep_exif = policy.effective_exif();
     use std::path::Path;
     use std::sync::Arc;
 
@@ -1058,9 +1031,7 @@ fn process_batch_file(
         icc_present,
         exif_data.as_ref(),
         auto_orient,
-        keep_icc,
-        keep_exif,
-        strip_gps,
+        policy,
         firewall,
         metrics.as_mut(),
     )?;
@@ -1091,12 +1062,8 @@ pub struct BatchTask {
     pub format: OutputFormat,
     pub concurrency: u32,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -1110,9 +1077,8 @@ pub struct BatchWithMetricsTask {
     pub format: OutputFormat,
     pub concurrency: u32,
     pub auto_orient: bool,
-    pub keep_icc: bool,
-    pub keep_exif: bool,
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     #[cfg(feature = "napi")]
     pub(crate) last_error: Option<LazyImageError>,
@@ -1156,9 +1122,7 @@ impl Task for BatchTask {
         let ops = &self.ops;
         let format = &self.format;
         let output_dir = &self.output_dir;
-        let keep_icc = self.keep_icc;
-        let keep_exif = self.keep_exif;
-        let strip_gps = self.strip_gps;
+        let policy = &self.metadata_policy;
         let firewall = self.firewall.clone();
         let process_one = |input_path: &String| -> BatchResult {
             let result = process_batch_file(
@@ -1167,9 +1131,7 @@ impl Task for BatchTask {
                 ops,
                 format,
                 self.auto_orient,
-                keep_icc,
-                keep_exif,
-                strip_gps,
+                policy,
                 &firewall,
                 false,
             );
@@ -1309,9 +1271,7 @@ impl Task for BatchWithMetricsTask {
         let ops = &self.ops;
         let format = &self.format;
         let output_dir = &self.output_dir;
-        let keep_icc = self.keep_icc;
-        let keep_exif = self.keep_exif;
-        let strip_gps = self.strip_gps;
+        let policy = &self.metadata_policy;
         let firewall = self.firewall.clone();
 
         let process_one = |input_path: &String| -> crate::BatchResultWithMetrics {
@@ -1321,9 +1281,7 @@ impl Task for BatchWithMetricsTask {
                 ops,
                 format,
                 self.auto_orient,
-                keep_icc,
-                keep_exif,
-                strip_gps,
+                policy,
                 &firewall,
                 true,
             ) {

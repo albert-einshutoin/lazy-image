@@ -90,6 +90,7 @@ pub use stress::run_stress_iteration;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
     use crate::engine::tasks::EncodeTask;
     use crate::error::LazyImageError;
@@ -1390,9 +1391,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1416,9 +1415,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1440,9 +1437,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1471,9 +1466,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1498,9 +1491,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,
