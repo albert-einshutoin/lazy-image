@@ -181,12 +181,14 @@ async function test_avif_output() {
     for await (const chunk of readable) chunks.push(chunk);
     const output = Buffer.concat(chunks);
 
-    // AVIF validation via ISOBMFF ftyp box
+    // AVIF validation via ISOBMFF ftyp box (accept any AVIF-compatible brand)
     assert(output.length > 12, 'avif output should be non-empty');
+    const ftyp = output.toString('ascii', 4, 8);
+    assert.strictEqual(ftyp, 'ftyp', 'avif output should start with ftyp box');
+    const brand = output.toString('ascii', 8, 12);
     assert(
-        output.toString('ascii', 4, 8) === 'ftyp' &&
-        output.toString('ascii', 8, 12) === 'avif',
-        'avif output should contain ftyp/avif box',
+        ['avif', 'avis', 'mif1'].includes(brand),
+        `avif output should have AVIF-compatible brand, got: ${brand}`,
     );
 
     console.log('✅ streaming resize -> avif passed');
@@ -221,10 +223,10 @@ async function test_destroy_mid_stream() {
         readable.resume(); // drain to trigger events
     });
 
-    // Any of error/close/end is acceptable — the key is it doesn't hang
+    // The readable should propagate the error from the destroyed writable
     assert(
-        ['error', 'close', 'end'].includes(result),
-        'destroy mid-stream should terminate the readable',
+        result === 'error',
+        `destroy mid-stream should propagate error to readable, got: ${result}`,
     );
 
     console.log('✅ streaming destroy mid-stream passed');
