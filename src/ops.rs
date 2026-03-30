@@ -294,6 +294,20 @@ impl OutputFormat {
             OutputFormat::Avif { .. } => "avif",
         }
     }
+
+    /// Create a copy of this format with a different quality value.
+    /// For PNG (lossless), the format is returned unchanged.
+    pub fn with_quality(&self, quality: u8) -> Self {
+        match self {
+            OutputFormat::Jpeg { fast_mode, .. } => OutputFormat::Jpeg {
+                quality,
+                fast_mode: *fast_mode,
+            },
+            OutputFormat::Png => OutputFormat::Png,
+            OutputFormat::WebP { .. } => OutputFormat::WebP { quality },
+            OutputFormat::Avif { .. } => OutputFormat::Avif { quality },
+        }
+    }
 }
 
 // =============================================================================
@@ -602,6 +616,43 @@ mod tests {
             assert_eq!(OutputFormat::Png.as_str(), "png");
             assert_eq!(OutputFormat::WebP { quality: 80 }.as_str(), "webp");
             assert_eq!(OutputFormat::Avif { quality: 60 }.as_str(), "avif");
+        }
+
+        #[test]
+        fn test_with_quality_jpeg() {
+            let original = OutputFormat::Jpeg {
+                quality: 85,
+                fast_mode: true,
+            };
+            let changed = original.with_quality(50);
+            match changed {
+                OutputFormat::Jpeg { quality, fast_mode } => {
+                    assert_eq!(quality, 50);
+                    assert!(fast_mode, "fast_mode should be preserved");
+                }
+                _ => panic!("expected Jpeg variant"),
+            }
+        }
+
+        #[test]
+        fn test_with_quality_webp() {
+            let original = OutputFormat::WebP { quality: 80 };
+            let changed = original.with_quality(30);
+            assert!(matches!(changed, OutputFormat::WebP { quality: 30 }));
+        }
+
+        #[test]
+        fn test_with_quality_avif() {
+            let original = OutputFormat::Avif { quality: 60 };
+            let changed = original.with_quality(90);
+            assert!(matches!(changed, OutputFormat::Avif { quality: 90 }));
+        }
+
+        #[test]
+        fn test_with_quality_png_unchanged() {
+            let original = OutputFormat::Png;
+            let changed = original.with_quality(50);
+            assert!(matches!(changed, OutputFormat::Png));
         }
     }
 

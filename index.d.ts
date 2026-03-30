@@ -130,6 +130,18 @@ export declare class ImageEngine {
    */
   toBufferWithMetricsPreset(presetName: PresetName): Promise<OutputWithMetrics>
   /**
+   * Encode to buffer with a byte-budget constraint.
+   *
+   * Performs a binary search over quality (entirely in Rust) to find the
+   * highest quality that keeps the output within `target_bytes`. This
+   * eliminates ~7 JS↔NAPI round-trips per call compared to the previous
+   * JS-side implementation.
+   *
+   * Returns `TargetBytesResult` with the encoded data, chosen quality,
+   * actual size, and whether the budget was met.
+   */
+  toBufferTargetBytesNative(format: string, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null): Promise<TargetBytesResult>
+  /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
    * full file-to-file processing without touching Node.js heap.
@@ -429,6 +441,27 @@ export declare function supportedInputFormats(): Array<CanonicalInputFormat>
 
 /** Get supported output formats */
 export declare function supportedOutputFormats(): Array<CanonicalOutputFormat>
+
+/**
+ * Result of byte-budget encoding (binary search over quality).
+ *
+ * The binary search runs entirely in Rust, eliminating JS↔NAPI round-trips
+ * that the previous JS-side implementation required (~7 per call).
+ */
+export interface TargetBytesResult {
+  /** Encoded image data at the chosen quality */
+  data: Buffer
+  /** Quality level that was selected */
+  quality: number
+  /** Actual output size in bytes */
+  bytesOut: number
+  /** Whether the byte budget was met */
+  budgetMet: boolean
+  /** Requested target bytes */
+  targetBytes: number
+  /** Processing metrics from the final encode iteration */
+  metrics: ProcessingMetrics
+}
 
 /** Get library version */
 export declare function version(): string

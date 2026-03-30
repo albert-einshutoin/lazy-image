@@ -385,6 +385,27 @@ pub struct BatchOutputWithMetrics {
     pub summary: BatchMetricsSummary,
 }
 
+/// Result of byte-budget encoding (binary search over quality).
+///
+/// The binary search runs entirely in Rust, eliminating JS↔NAPI round-trips
+/// that the previous JS-side implementation required (~7 per call).
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct TargetBytesResult {
+    /// Encoded image data at the chosen quality
+    pub data: napi::bindgen_prelude::Buffer,
+    /// Quality level that was selected
+    pub quality: u32,
+    /// Actual output size in bytes
+    pub bytes_out: u32,
+    /// Whether the byte budget was met
+    pub budget_met: bool,
+    /// Requested target bytes
+    pub target_bytes: u32,
+    /// Processing metrics from the final encode iteration
+    pub metrics: ProcessingMetrics,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

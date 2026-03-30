@@ -257,6 +257,28 @@ if (nativeBinding && nativeBinding.ImageEngine && nativeBinding.ImageEngine.prot
   }
 
   p.toBufferTargetBytes = async function toBufferTargetBytes(format, options) {
+    // Use Rust-native binary search when available (eliminates ~7 JS↔NAPI round-trips)
+    if (typeof this.toBufferTargetBytesNative === 'function') {
+      const config = normalizeTargetBytesOptions(format, options)
+      const result = await this.toBufferTargetBytesNative(
+        config.format,
+        config.targetBytes,
+        config.minQuality,
+        config.maxQuality,
+        config.fastMode,
+        config.qualityFloorPolicy === 'strict',
+      )
+      return {
+        data: result.data,
+        quality: result.quality,
+        bytesOut: result.bytesOut,
+        budgetMet: result.budgetMet,
+        targetBytes: result.targetBytes,
+        metrics: result.metrics,
+      }
+    }
+
+    // Fallback: JS-side binary search (for older native bindings)
     const result = await encodeWithinByteBudget(this, format, options)
     return {
       data: result.data,
@@ -269,6 +291,28 @@ if (nativeBinding && nativeBinding.ImageEngine && nativeBinding.ImageEngine.prot
   }
 
   p.toFileTargetBytes = async function toFileTargetBytes(path, format, options) {
+    // Use Rust-native binary search when available
+    if (typeof this.toBufferTargetBytesNative === 'function') {
+      const config = normalizeTargetBytesOptions(format, options)
+      const result = await this.toBufferTargetBytesNative(
+        config.format,
+        config.targetBytes,
+        config.minQuality,
+        config.maxQuality,
+        config.fastMode,
+        config.qualityFloorPolicy === 'strict',
+      )
+      const written = await this.toFileWithMetrics(path, config.format, result.quality, config.fastMode)
+      return {
+        bytesWritten: written.bytesWritten,
+        quality: result.quality,
+        budgetMet: written.bytesWritten <= config.targetBytes,
+        targetBytes: config.targetBytes,
+        metrics: written.metrics,
+      }
+    }
+
+    // Fallback: JS-side binary search
     const result = await encodeWithinByteBudget(this, format, options)
     const written = await this.toFileWithMetrics(path, result.format, result.quality, result.fastMode)
     return {
