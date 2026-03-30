@@ -15,10 +15,10 @@ use std::{cell::Cell, thread_local};
 
 #[cfg(test)]
 thread_local! {
-    static TRACK_DROPS: Cell<bool> = Cell::new(false);
-    static LIVE_IMAGES: Cell<usize> = Cell::new(0);
-    static LIVE_ENCODERS: Cell<usize> = Cell::new(0);
-    static LIVE_RWDATA: Cell<usize> = Cell::new(0);
+    static TRACK_DROPS: Cell<bool> = const { Cell::new(false) };
+    static LIVE_IMAGES: Cell<usize> = const { Cell::new(0) };
+    static LIVE_ENCODERS: Cell<usize> = const { Cell::new(0) };
+    static LIVE_RWDATA: Cell<usize> = const { Cell::new(0) };
 }
 
 /// Safe wrapper for avifImage that manages its lifetime using RAII.

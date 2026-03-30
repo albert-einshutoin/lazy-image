@@ -797,7 +797,7 @@ impl ImageEngine {
     ) -> Result<Reference<ImageEngine>> {
         let value = validation::ensure_finite_integer("brightness", value)
             .and_then(|int| {
-                if int < -100 || int > 100 {
+                if !(-100..=100).contains(&int) {
                     Err(LazyImageError::invalid_argument(
                         "brightness",
                         int.to_string(),
@@ -823,7 +823,7 @@ impl ImageEngine {
     ) -> Result<Reference<ImageEngine>> {
         let value = validation::ensure_finite_integer("contrast", value)
             .and_then(|int| {
-                if int < -100 || int > 100 {
+                if !(-100..=100).contains(&int) {
                     Err(LazyImageError::invalid_argument(
                         "contrast",
                         int.to_string(),
