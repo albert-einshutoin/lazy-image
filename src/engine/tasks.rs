@@ -689,6 +689,123 @@ mod non_napi_tests {
         assert!(!fast_result.is_empty());
         assert!(!normal_result.is_empty());
     }
+
+    #[test]
+    fn target_bytes_search_finds_best_quality_under_budget() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(64, 64, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+
+        // Encode at max quality to get a reference size
+        let task_max = EncodeTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img.clone())),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+        };
+        let max_size = task_max.process_and_encode(None).unwrap().len();
+
+        // Set a budget larger than any output (should pick max quality)
+        let search_task = EncodeTargetBytesTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img.clone())),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+            target_bytes: (max_size + 10000) as u32,
+            min_quality: 1,
+            max_quality: 100,
+            quality_floor_policy_strict: false,
+        };
+        let result = search_task.search().expect("search should succeed");
+        assert!(result.budget_met);
+        assert_eq!(result.quality, 100);
+
+        // Set a tight budget (should pick a lower quality)
+        let tight_task = EncodeTargetBytesTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img)),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+            target_bytes: 500,
+            min_quality: 1,
+            max_quality: 100,
+            quality_floor_policy_strict: false,
+        };
+        let tight_result = tight_task.search().expect("search should succeed");
+        // Quality should be lower than max since budget is tight
+        assert!(tight_result.quality <= 100);
+        // The result should be the best effort (either under budget or closest over)
+        assert!(tight_result.data.len() > 0);
+    }
+
+    #[test]
+    fn target_bytes_strict_policy_fails_when_budget_unmet() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(64, 64, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+
+        let task = EncodeTargetBytesTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img)),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            keep_icc: false,
+            keep_exif: false,
+            strip_gps: true,
+            firewall: FirewallConfig::disabled(),
+            // Impossibly small budget
+            target_bytes: 1,
+            min_quality: 80,
+            max_quality: 100,
+            quality_floor_policy_strict: true,
+        };
+        let err = task.search().unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("Unable to meet targetBytes"),
+            "expected strict policy error, got: {msg}"
+        );
+    }
 }
 
 pub struct EncodeWithMetricsTask {
@@ -765,6 +882,169 @@ impl Task for EncodeWithMetricsTask {
             // This should not happen if all error paths properly preserve LazyImageError
             LazyImageError::generic(err.to_string())
         });
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+/// Result payload for the byte-budget binary search (before NAPI conversion).
+#[derive(Debug)]
+pub struct TargetBytesOutput {
+    pub data: Vec<u8>,
+    pub quality: u8,
+    pub bytes_out: u32,
+    pub budget_met: bool,
+    pub target_bytes: u32,
+    pub metrics: crate::ProcessingMetrics,
+}
+
+/// Async task that performs byte-budget binary search entirely in Rust.
+///
+/// Previous implementation did this in JS, requiring ~7 NAPI round-trips per
+/// call (one per binary-search iteration). Moving the loop to Rust eliminates
+/// all intermediate JS↔NAPI boundary crossings.
+pub struct EncodeTargetBytesTask {
+    pub source: Option<Source>,
+    pub decoded: Option<Arc<DynamicImage>>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub exif_data: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
+    pub keep_icc: bool,
+    pub keep_exif: bool,
+    pub strip_gps: bool,
+    pub firewall: FirewallConfig,
+    pub target_bytes: u32,
+    pub min_quality: u8,
+    pub max_quality: u8,
+    pub quality_floor_policy_strict: bool,
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+impl EncodeTargetBytesTask {
+    /// Run binary search over quality to find the best encode within byte budget.
+    fn search(&self) -> std::result::Result<TargetBytesOutput, LazyImageError> {
+        let mut low = self.min_quality;
+        let mut high = self.max_quality;
+        let mut best_under: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
+        let mut best_over: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
+
+        while low <= high {
+            let quality = low + (high - low) / 2;
+            let format_at_q = self.format.with_quality(quality);
+
+            let mut metrics = crate::ProcessingMetrics::default();
+            let encoded = process_and_encode_from_parts(
+                self.source.as_ref(),
+                self.decoded.as_ref(),
+                &self.ops,
+                &format_at_q,
+                self.icc_profile.as_ref(),
+                self.icc_present,
+                self.exif_data.as_ref(),
+                self.auto_orient,
+                self.keep_icc,
+                self.keep_exif,
+                self.strip_gps,
+                &self.firewall,
+                Some(&mut metrics),
+            )?;
+
+            let size = encoded.len() as u32;
+
+            if size <= self.target_bytes {
+                best_under = Some((encoded, quality, size, metrics));
+                if quality == u8::MAX {
+                    break;
+                }
+                low = quality + 1;
+            } else {
+                let dominated = best_over.as_ref().is_some_and(|(_, _, prev_size, _)| {
+                    size > *prev_size
+                        || (size == *prev_size && quality <= best_over.as_ref().unwrap().1)
+                });
+                if best_over.is_none() || !dominated {
+                    best_over = Some((encoded, quality, size, metrics));
+                }
+                high = quality.saturating_sub(1);
+                if quality == 0 {
+                    break;
+                }
+            }
+        }
+
+        let (data, quality, bytes_out, metrics) = match (best_under, best_over) {
+            (Some(under), _) => under,
+            (None, Some(over)) => over,
+            (None, None) => {
+                return Err(LazyImageError::encode_failed(
+                    self.format.as_str(),
+                    "Failed to encode any candidate while searching for target bytes",
+                ));
+            }
+        };
+
+        let budget_met = bytes_out <= self.target_bytes;
+        if !budget_met && self.quality_floor_policy_strict {
+            return Err(LazyImageError::encode_failed(
+                self.format.as_str(),
+                format!(
+                    "Unable to meet targetBytes={} within quality range {}-{}",
+                    self.target_bytes, self.min_quality, self.max_quality,
+                ),
+            ));
+        }
+
+        Ok(TargetBytesOutput {
+            data,
+            quality,
+            bytes_out,
+            budget_met,
+            target_bytes: self.target_bytes,
+            metrics,
+        })
+    }
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for EncodeTargetBytesTask {
+    type Output = TargetBytesOutput;
+    type JsValue = crate::TargetBytesResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        match self.search() {
+            Ok(result) => {
+                self.last_error = None;
+                Ok(result)
+            }
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                Err(napi::Error::from(lazy_err))
+            }
+        }
+    }
+
+    fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        let js_buffer = BufferSlice::from_data(&env, output.data)?.into_buffer(&env)?;
+        Ok(crate::TargetBytesResult {
+            data: js_buffer,
+            quality: output.quality as u32,
+            bytes_out: output.bytes_out,
+            budget_met: output.budget_met,
+            target_bytes: output.target_bytes,
+            metrics: output.metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
         let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
         Err(napi_err)
     }

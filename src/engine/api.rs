@@ -15,8 +15,8 @@ use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_s
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{
-    BatchResult, BatchTask, BatchWithMetricsTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
-    WriteFileWithMetricsTask,
+    BatchResult, BatchTask, BatchWithMetricsTask, EncodeTargetBytesTask, EncodeTask,
+    EncodeWithMetricsTask, WriteFileTask, WriteFileWithMetricsTask,
 };
 #[cfg(feature = "napi")]
 use crate::error::LazyImageError;
@@ -1069,6 +1069,107 @@ impl ImageEngine {
             quality.map(|q| q as f64),
             fast_mode,
         )
+    }
+
+    /// Encode to buffer with a byte-budget constraint.
+    ///
+    /// Performs a binary search over quality (entirely in Rust) to find the
+    /// highest quality that keeps the output within `target_bytes`. This
+    /// eliminates ~7 JS↔NAPI round-trips per call compared to the previous
+    /// JS-side implementation.
+    ///
+    /// Returns `TargetBytesResult` with the encoded data, chosen quality,
+    /// actual size, and whether the budget was met.
+    #[napi(
+        js_name = "toBufferTargetBytesNative",
+        ts_return_type = "Promise<TargetBytesResult>"
+    )]
+    pub fn to_buffer_target_bytes_native(
+        &mut self,
+        env: Env,
+        format: String,
+        target_bytes: u32,
+        min_quality: Option<u32>,
+        max_quality: Option<u32>,
+        fast_mode: Option<bool>,
+        strict: Option<bool>,
+    ) -> Result<AsyncTask<EncodeTargetBytesTask>> {
+        let fast_mode = fast_mode.unwrap_or(false);
+
+        // Validate and clamp quality range
+        let min_q = min_quality.unwrap_or(30).min(100) as u8;
+        let max_q = max_quality.unwrap_or(100).min(100) as u8;
+        if min_q > max_q {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "minQuality",
+                    min_q.to_string(),
+                    "must be less than or equal to maxQuality",
+                ),
+            ));
+        }
+        if min_q == 0 {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument("minQuality", "0", "must be between 1 and 100"),
+            ));
+        }
+        if target_bytes == 0 {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument("targetBytes", "0", "must be a positive number"),
+            ));
+        }
+
+        // Parse format (quality is irrelevant here, will be overridden per iteration)
+        let output_format =
+            match OutputFormat::from_str_with_options(&format, Some(max_q), fast_mode) {
+                Ok(f) => f,
+                Err(_) => {
+                    let lazy_err = LazyImageError::unsupported_format(format.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
+        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile.is_some();
+        let icc_profile = if keep_icc {
+            self.icc_profile.clone()
+        } else {
+            None
+        };
+        let exif_data = if keep_exif {
+            self.exif_data.clone()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(EncodeTargetBytesTask {
+            source,
+            decoded,
+            ops,
+            format: output_format,
+            icc_profile,
+            icc_present,
+            exif_data,
+            auto_orient,
+            keep_icc,
+            keep_exif,
+            strip_gps: self.strip_gps,
+            firewall: self.firewall.clone(),
+            target_bytes,
+            min_quality: min_q,
+            max_quality: max_q,
+            quality_floor_policy_strict: strict.unwrap_or(false),
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
     }
 
     /// Encode and write directly to a file asynchronously.
