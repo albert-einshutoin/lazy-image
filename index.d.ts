@@ -15,14 +15,14 @@
 export declare class ImageEngine {
   /**
    * Create engine from a buffer.
-   * Full pixel decode and queued operations are deferred until output methods run.
-   * ICC profile and EXIF metadata are extracted eagerly during construction.
+   * Full pixel decode, queued operations, and metadata extraction are all
+   * deferred until output methods run (true lazy evaluation).
    */
   static from(buffer: Buffer): ImageEngine
   /**
    * Create engine from a file path.
-   * Full pixel decode and queued operations are deferred until output methods run.
-   * Construction still performs safe file loading and eager ICC/EXIF extraction.
+   * Full pixel decode, queued operations, and metadata extraction are all
+   * deferred until output methods run (true lazy evaluation).
    * Small/medium files are read into memory to prevent SIGBUS; very large files (>256 MB)
    * use mmap with advisory locks.
    * This is the recommended way for server-side processing of large images.
@@ -153,6 +153,7 @@ export declare class ImageEngine {
   /**
    * Check if an ICC color profile was extracted from the source image.
    * Returns the profile size in bytes, or null if no profile exists.
+   * This triggers lazy extraction of the ICC profile if not yet extracted.
    */
   hasIccProfile(): number | null
   /**
