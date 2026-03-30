@@ -1384,25 +1384,16 @@ impl ImageEngine {
                     ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
                 }
                 OutputFormat::Png => ("png".to_string(), None, None),
-                OutputFormat::WebP { quality } => {
-                    ("webp".to_string(), Some(*quality as f64), None)
-                }
-                OutputFormat::Avif { quality } => {
-                    ("avif".to_string(), Some(*quality as f64), None)
-                }
+                OutputFormat::WebP { quality } => ("webp".to_string(), Some(*quality as f64), None),
+                OutputFormat::Avif { quality } => ("avif".to_string(), Some(*quality as f64), None),
             };
             (f, q, fm.unwrap_or(false))
         } else {
             let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
-            (
-                fmt,
-                options.quality,
-                options.fast_mode.unwrap_or(false),
-            )
+            (fmt, options.quality, options.fast_mode.unwrap_or(false))
         };
 
-        let quality =
-            validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
+        let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
         let output_format =
             match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
                 Ok(f) => f,
@@ -1430,23 +1421,21 @@ impl ImageEngine {
             None
         };
 
-        Ok(AsyncTask::new(
-            crate::engine::tasks::UnifiedEncodeTask {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
-                want_metrics,
-                #[cfg(feature = "napi")]
-                last_error: None,
-            },
-        ))
+        Ok(AsyncTask::new(crate::engine::tasks::UnifiedEncodeTask {
+            source,
+            decoded,
+            ops,
+            format: output_format,
+            icc_profile,
+            icc_present,
+            exif_data,
+            auto_orient,
+            metadata_policy: policy,
+            firewall: self.firewall.clone(),
+            want_metrics,
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
     }
 
     /// Unified encode-to-file method.
@@ -1484,25 +1473,16 @@ impl ImageEngine {
                     ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
                 }
                 OutputFormat::Png => ("png".to_string(), None, None),
-                OutputFormat::WebP { quality } => {
-                    ("webp".to_string(), Some(*quality as f64), None)
-                }
-                OutputFormat::Avif { quality } => {
-                    ("avif".to_string(), Some(*quality as f64), None)
-                }
+                OutputFormat::WebP { quality } => ("webp".to_string(), Some(*quality as f64), None),
+                OutputFormat::Avif { quality } => ("avif".to_string(), Some(*quality as f64), None),
             };
             (f, q, fm.unwrap_or(false))
         } else {
             let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
-            (
-                fmt,
-                options.quality,
-                options.fast_mode.unwrap_or(false),
-            )
+            (fmt, options.quality, options.fast_mode.unwrap_or(false))
         };
 
-        let quality =
-            validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
+        let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
         let output_format =
             match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
                 Ok(f) => f,
