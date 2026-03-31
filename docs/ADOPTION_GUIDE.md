@@ -83,7 +83,7 @@ Use another tool first when you need:
 
 | Path | Heap usage | Best for |
 |------|-----------|----------|
-| `fromPath()` -> `toFile()` | Minimal (mmap) | Production servers, large images, serverless |
+| `fromPath()` -> `toFile()` | Minimal (mmap for > 256 MB; read for smaller) | Production servers, large images, serverless |
 | `fromPath()` -> `toBuffer()` | Output buffer in V8 | When you need the buffer (e.g. HTTP response body) |
 | `from(buffer)` -> `toBuffer()` | Full input + output in V8 | Small images already in memory |
 | `from(buffer)` -> `toFile()` | Input in V8 | Writing from an in-memory source |
@@ -167,7 +167,7 @@ exports.handler = async (event) => {
   await downloadFromS3(event.bucket, event.key, inputPath);
 
   // 2. Optimize -- file-to-file keeps pixel data off V8 heap
-  const { data, metrics } = await ImageEngine.fromPath(inputPath)
+  const { bytesWritten, metrics } = await ImageEngine.fromPath(inputPath)
     .resize({ width: 1600, fit: 'inside' })
     .toFileWithMetrics(outputPath, 'webp', 80);
 
@@ -200,7 +200,7 @@ Same pattern as Lambda. Use `/tmp` for scratch files. For Cloud Run, set `--memo
 
 ### Vercel / Netlify Edge Functions
 
-These environments have strict execution time and memory limits (50 MB heap on some tiers). Use lazy-image only for small images (< 2 MP) in edge functions. For larger images, process in a background serverless function and serve from a CDN.
+These environments run in V8 isolates with strict execution time and memory limits. Use lazy-image only for small images (< 2 MP) in edge functions. For larger images, process in a background serverless function and serve from a CDN.
 
 ### Cold start optimization
 
@@ -250,7 +250,7 @@ const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 async function processUpload(inputPath, outputDir, userId) {
   const outputPath = `${outputDir}/${userId}-avatar.webp`;
 
-  const { data, metrics } = await ImageEngine.fromPath(inputPath)
+  const { bytesWritten, metrics } = await ImageEngine.fromPath(inputPath)
     .sanitize({ policy: 'strict' })           // reject oversized / malformed
     .resize({ width: 512, height: 512, fit: 'cover' })
     .keepMetadata({ icc: true, stripGps: true }) // preserve color, strip location
@@ -258,9 +258,8 @@ async function processUpload(inputPath, outputDir, userId) {
 
   return {
     path: outputPath,
-    width: metrics.widthOut,
-    height: metrics.heightOut,
     bytes: metrics.bytesOut,
+    compressionRatio: metrics.compressionRatio,
     ms: metrics.totalMs,
   };
 }
@@ -306,7 +305,7 @@ async function processUploadByTier(inputPath, outputDir, tier, fileId) {
   const resizeOpts = { width: config.maxWidth, fit: config.fit };
   if (config.maxHeight) resizeOpts.height = config.maxHeight;
 
-  const { data, metrics } = await ImageEngine.fromPath(inputPath)
+  const { bytesWritten, metrics } = await ImageEngine.fromPath(inputPath)
     .sanitize({ policy: config.policy })
     .resize(resizeOpts)
     .keepMetadata({ icc: true, stripGps: true })
@@ -369,7 +368,7 @@ async function processMultipartUpload(buffer, outputDir, userId) {
 
   // Small images: process directly from buffer
   const outputPath = `${outputDir}/${userId}-avatar.webp`;
-  const { data, metrics } = await ImageEngine.from(buffer)
+  const { bytesWritten, metrics } = await ImageEngine.from(buffer)
     .sanitize({ policy: 'strict' })
     .resize({ width: 512, height: 512, fit: 'cover' })
     .keepMetadata({ icc: true, stripGps: true })
@@ -385,11 +384,11 @@ For batch uploads, use `processBatch()`:
 
 ```javascript
 const results = await ImageEngine.processBatch(
-  files.map(f => ({ input: f.path, resize: { width: 1024, fit: 'inside' } })),
+  files.map(f => f.path),   // Array<string> of input file paths
   outputDir,
   { format: 'webp', quality: 80 },
 );
-// Each result: { success, output, error?, errorCode?, errorCategory? }
+// Each result: { success, source, outputPath?, error?, errorCode?, errorCategory? }
 ```
 
 ---
@@ -402,10 +401,11 @@ Use `toFileWithMetrics()` or `toBufferWithMetrics()` to capture per-image teleme
 
 ```javascript
 const { data, metrics } = await engine.toBufferWithMetrics('jpeg', 80);
-// metrics: { widthIn, heightIn, widthOut, heightOut,
-//            formatIn, formatOut, bytesIn, bytesOut, totalMs,
-//            decodeMs, opsMs, encodeMs, compressionRatio,
-//            iccPreserved, metadataStripped, policyViolations }
+// metrics: { version, decodeMs, opsMs, encodeMs, totalMs,
+//            peakRss, cpuTime, processingTime,
+//            bytesIn, bytesOut, compressionRatio,
+//            formatIn, formatOut, iccPreserved,
+//            metadataStripped, policyViolations }
 ```
 
 ### Structured logging pattern
@@ -413,28 +413,22 @@ const { data, metrics } = await engine.toBufferWithMetrics('jpeg', 80);
 Emit structured JSON logs that integrate with your log aggregator (Datadog, CloudWatch, Loki, etc.):
 
 ```javascript
+const { ImageEngine, getErrorCategory } = require('@alberteinshutoin/lazy-image');
+
 async function optimizeWithLogging(input, output, format, quality) {
   const start = Date.now();
   try {
-    const { data, metrics } = await ImageEngine.fromPath(input)
+    const { bytesWritten, metrics } = await ImageEngine.fromPath(input)
       .resize({ width: 1600, fit: 'inside' })
       .toFileWithMetrics(output, format, quality);
 
     console.log(JSON.stringify({
       event: 'image_optimized',
       level: 'info',
-      input: {
-        w: metrics.widthIn,
-        h: metrics.heightIn,
-        bytes: metrics.bytesIn,
-        format: metrics.formatIn,
-      },
-      output: {
-        w: metrics.widthOut,
-        h: metrics.heightOut,
-        bytes: metrics.bytesOut,
-        format: metrics.formatOut,
-      },
+      format_in: metrics.formatIn,
+      format_out: metrics.formatOut,
+      bytes_in: metrics.bytesIn,
+      bytes_out: metrics.bytesOut,
       savings_pct: ((1 - metrics.bytesOut / metrics.bytesIn) * 100).toFixed(1),
       compression_ratio: metrics.compressionRatio,
       duration_ms: metrics.totalMs,
@@ -445,7 +439,7 @@ async function optimizeWithLogging(input, output, format, quality) {
       metadata_stripped: metrics.metadataStripped,
     }));
 
-    return { data, metrics };
+    return { bytesWritten, metrics };
   } catch (err) {
     console.log(JSON.stringify({
       event: 'image_error',
