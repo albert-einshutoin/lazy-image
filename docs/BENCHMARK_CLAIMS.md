@@ -18,7 +18,7 @@ These may appear in README, marketing, and migration guides **without qualificat
 
 | Claim | Location | Source Scenario | Notes |
 |-------|----------|----------------|-------|
-| "20-30% smaller outputs than sharp" | README.md | JPEG −17%, AVIF −40.9% | Range covers measured codec results |
+| "20-30% smaller outputs than sharp" | README.md | JPEG −17%, AVIF −40.9% | Range covers no-resize codec results; does not apply to resize-heavy pipelines (e.g. AVIF resize shows +9.5%) |
 | "25% file size reduction" | ROI_CALCULATOR.md (example) | Mid-range estimate | Labeled as example, not a guarantee |
 | Binary size savings (5-9 MB vs 15-21 MB) | PERFORMANCE.md | Measured `.node` binary sizes | Platform-specific, factual |
 
@@ -31,6 +31,7 @@ These **must always include the codec, input format, and scenario** when quoted:
 | "1.70x faster AVIF encoding" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → AVIF (no resize, 5000×5000) | Must cite format + input size |
 | "40.9% smaller AVIF output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → AVIF (no resize, 5000×5000) | Must cite format + input size |
 | "17.0% smaller JPEG output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → JPEG (no resize, 5000×5000) | Must cite format + input size |
+| "0.7% smaller WebP, 7x slower encoding" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → WebP (no resize, 5000×5000) | Must cite format + input size; encoding is significantly slower |
 
 **Rule of thumb:** If removing the scenario context would mislead a reader into thinking the claim is universal, it is workload-specific.
 
@@ -49,7 +50,7 @@ These rules prevent drift between documents:
 1. **Upstream-first.** Update TRUE_BENCHMARKS.md before any downstream doc. Never update README or PERFORMANCE.md with numbers that are not yet in TRUE_BENCHMARKS.md.
 2. **README uses ranges only.** README may state "20-30% smaller" but must not cite specific percentages (e.g. "40.9%") — those belong in PERFORMANCE.md with a link to the source scenario.
 3. **Mandatory qualification.** Workload-specific claims must include format, input dimensions, and whether resize was applied. Omitting any of these is a documentation bug.
-4. **Version-bump trigger.** When lazy-image or sharp is updated to a new minor/major version, re-run `npm run test:bench:compare` and update TRUE_BENCHMARKS.md before merging the version bump.
+4. **Version-bump trigger.** When lazy-image, sharp, or any core encoder dependency (mozjpeg, ravif, libwebp) is updated, re-run `npm run test:bench:compare` and update TRUE_BENCHMARKS.md before merging.
 5. **Atomic updates.** When a benchmark number changes, update all downstream files in the same PR. Partial updates create drift windows.
 
 ## How to Detect Drift
@@ -97,7 +98,7 @@ When TRUE_BENCHMARKS.md is updated, also check:
 
 | File | What to verify |
 |------|---------------|
-| `README.md` | Summary claims (lines 7, 50) stay within measured range |
+| `README.md` | Summary claims containing "20-30% smaller" stay within measured range (grep, don't rely on line numbers) |
 | `docs/PERFORMANCE.md` | Canonical scenarios table matches TRUE_BENCHMARKS.md |
 | `docs/MIGRATION_FROM_SHARP.md` | Comparison references are current |
 | `docs/ROI_CALCULATOR.md` | Example reduction percentage is plausible |
@@ -107,6 +108,6 @@ When TRUE_BENCHMARKS.md is updated, also check:
 
 ## Version Tracking
 
-TRUE_BENCHMARKS.md line 308 records the lazy-image and sharp versions used. When either dependency updates significantly, re-run benchmarks and update all downstream claims.
+The `*Last updated:*` footer at the bottom of TRUE_BENCHMARKS.md records the lazy-image and sharp versions used. When either dependency updates significantly, re-run benchmarks and update all downstream claims.
 
 Current: lazy-image v0.12.0, sharp v0.34.x
