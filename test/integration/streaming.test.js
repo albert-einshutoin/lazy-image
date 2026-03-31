@@ -4,13 +4,31 @@
  */
 
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const assert = require('assert');
 const { pipeline } = require('stream/promises');
 const { resolveFixture, resolveRoot } = require('../helpers/paths');
-const { createStreamingPipeline, inspect } = require(resolveRoot('index'));
+const { ImageEngine, createStreamingPipeline, inspect } = require(resolveRoot('index'));
 
 const INPUT = resolveFixture('test_input.jpg');
 const LARGE_INPUT = resolveFixture('test_4.5MB_5000x5000.png');
+
+// Create a non-trivial fixture (200x100) for tests that need meaningful
+// dimension assertions.  The default test_input.jpg is 1x1.
+let RECT_INPUT;
+async function ensureRectFixture() {
+    if (RECT_INPUT) return RECT_INPUT;
+    const squareBuf = await ImageEngine.from(fs.readFileSync(INPUT))
+        .resize(200)
+        .toBuffer('jpeg', 90);
+    const rectBuf = await ImageEngine.from(squareBuf)
+        .crop(0, 0, 200, 100)
+        .toBuffer('jpeg', 90);
+    RECT_INPUT = path.join(os.tmpdir(), 'streaming-test-rect.jpg');
+    fs.writeFileSync(RECT_INPUT, rectBuf);
+    return RECT_INPUT;
+}
 
 async function run() {
     console.log('=== Streaming Transform Tests ===');
@@ -122,17 +140,22 @@ async function test_error_propagation() {
 }
 
 async function test_multiple_ops() {
+    // Use a 200x100 fixture so resize and rotate produce verifiable results.
+    const rectPath = await ensureRectFixture();
+
     const { writable, readable } = createStreamingPipeline({
         format: 'jpeg',
         quality: 80,
         ops: [
-            { op: 'resize', width: 300, height: null, fit: 'inside' },
+            { op: 'resize', width: 150, height: null, fit: 'inside' },
             { op: 'rotate', degrees: 90 },
+            // grayscale is included to exercise the code path; the JS inspect()
+            // API does not expose channel count, so it is not directly verifiable.
             { op: 'grayscale' },
         ],
     });
 
-    const source = fs.createReadStream(INPUT);
+    const source = fs.createReadStream(rectPath);
     await pipeline(source, writable);
 
     const chunks = [];
@@ -140,8 +163,11 @@ async function test_multiple_ops() {
     const output = Buffer.concat(chunks);
     const meta = inspect(output);
 
-    assert(meta.width > 0, 'multiple ops output width should be > 0');
-    assert(meta.height > 0, 'multiple ops output height should be > 0');
+    // After resize(150, inside) on 200x100: -> 150x75
+    // After rotate(90): width and height swap -> 75x150
+    assert(meta.width <= 150, `width ${meta.width} should be <= 150 after resize`);
+    assert(meta.height <= 150, `height ${meta.height} should be <= 150 after resize`);
+    assert(meta.width !== meta.height, `dimensions should differ after rotate on non-square input, got ${meta.width}x${meta.height}`);
     assert(meta.format === 'jpeg', 'format should be jpeg');
 
     console.log('✅ streaming multiple ops passed');
@@ -162,6 +188,7 @@ async function test_png_output() {
     const meta = inspect(output);
 
     assert(meta.width <= 200, 'png output width should be <= 200');
+    assert(meta.height > 0, 'png output height should be > 0');
     assert(meta.format === 'png', 'format should be png');
 
     console.log('✅ streaming resize -> png passed');
@@ -201,8 +228,8 @@ async function test_destroy_mid_stream() {
         ops: [{ op: 'resize', width: 400, height: null, fit: 'inside' }],
     });
 
-    // Destroy the writable with an error to simulate abort
-    writable.write(Buffer.alloc(64));
+    // Destroy the writable with an error to simulate client abort.
+    // No prior write() — this isolates the abort path from decode errors.
     writable.destroy(new Error('client aborted'));
 
     // The readable should receive the error
