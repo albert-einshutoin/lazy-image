@@ -125,20 +125,19 @@ async function runTests() {
     // --- Resize fit mode tests ----------------------------------------------
 
     // We need a non-square source image so the fit modes produce
-    // distinguishable results.  Generate a 200x100 rectangle from the JPEG
-    // fixture by cropping after an initial resize.
-    const rectBuf = await ImageEngine.from(jpegBuf)
+    // distinguishable results.  Generate a 200x100 rectangle by resizing to
+    // 200px wide, then cropping to force a 2:1 aspect ratio.  This works
+    // even when the test fixture is 1x1 (resize(200) -> 200x200, crop to 200x100).
+    const squareBuf = await ImageEngine.from(jpegBuf)
         .resize(200)
         .toBuffer('jpeg', 90);
-
-    // Inspect to learn the actual dimensions (the fixture may be 1x1, in which
-    // case resize(200) gives 200x200 -- still fine, but we need to know).
+    const rectBuf = await ImageEngine.from(squareBuf)
+        .crop(0, 0, 200, 100)
+        .toBuffer('jpeg', 90);
     const rectMeta = inspect(rectBuf);
 
-    // Only run fit-mode tests if the rectangle is truly non-square (requires
-    // the source image to be non-square).  If the source is square we still
-    // exercise the code paths but relax the assertions.
-    const isNonSquare = rectMeta.width !== rectMeta.height;
+    assert.strictEqual(rectMeta.width, 200, 'rect fixture width should be 200');
+    assert.strictEqual(rectMeta.height, 100, 'rect fixture height should be 100');
 
     const TARGET = 100;
 
@@ -149,14 +148,12 @@ async function runTests() {
         const meta = inspect(result);
         assert(meta.width <= TARGET, `width ${meta.width} should be <= ${TARGET}`);
         assert(meta.height <= TARGET, `height ${meta.height} should be <= ${TARGET}`);
-        if (isNonSquare) {
-            // At least one dimension should be exactly the target (or smaller
-            // if the source was already smaller).
-            assert(
-                meta.width === TARGET || meta.height === TARGET,
-                'one dimension should equal target when source is non-square',
-            );
-        }
+        // With a 2:1 source, inside should scale to fit within TARGET x TARGET,
+        // so one dimension equals target and the other is smaller.
+        assert(
+            meta.width === TARGET || meta.height === TARGET,
+            `one dimension should equal ${TARGET}, got ${meta.width}x${meta.height}`,
+        );
     });
 
     await asyncTest('resize fit: cover (both dims >= target)', async () => {
@@ -212,13 +209,17 @@ async function runTests() {
         assert(meta.height > 0, 'output height should be positive');
     });
 
-    await asyncTest('normalizePixelFormat: converts grayscale to RGB', async () => {
-        // Create a grayscale image by applying grayscale() first
+    await asyncTest('normalizePixelFormat: grayscale input produces valid output', async () => {
+        // Create a grayscale image by applying grayscale() first.
+        // The Rust pipeline converts Luma8 -> RGB8 via to_rgb8().
+        // Note: the public JS API (inspect()) does not expose channel count,
+        // so we verify that normalizePixelFormat() processes grayscale input
+        // without error and produces a re-encodable image.  The actual Luma8->RGB8
+        // conversion is covered by Rust-level tests.
         const grayBuf = await ImageEngine.from(jpegBuf)
             .resize(100)
             .grayscale()
             .toBuffer('png');
-        // Now normalizePixelFormat should convert the grayscale layout to RGB
         const result = await ImageEngine.from(grayBuf)
             .normalizePixelFormat()
             .toBuffer('png');
