@@ -75,49 +75,172 @@ Use another tool first when you need:
 - Broad input format coverage such as TIFF, HEIF, PDF, SVG, RAW
 - True chunk-by-chunk streaming transforms
 
+---
+
+## File-to-file vs Buffer Paths
+
+### Decision matrix
+
+| Path | Heap usage | Best for |
+|------|-----------|----------|
+| `fromPath()` -> `toFile()` | Minimal (mmap) | Production servers, large images, serverless |
+| `fromPath()` -> `toBuffer()` | Output buffer in V8 | When you need the buffer (e.g. HTTP response body) |
+| `from(buffer)` -> `toBuffer()` | Full input + output in V8 | Small images already in memory |
+| `from(buffer)` -> `toFile()` | Input in V8 | Writing from an in-memory source |
+
+### When to use each path
+
+**`fromPath()` -> `toFile()`** -- default choice for production workloads.
+
+Use this when the image lives on disk (or can be staged to disk from S3/GCS) and the output goes back to disk or object storage. This path keeps pixel data entirely outside the V8 heap, which is critical in serverless and memory-constrained containers.
+
+```javascript
+// CDN optimization pipeline: download -> optimize -> upload
+const tmp = '/tmp';
+await downloadFromS3(key, `${tmp}/input.jpg`);
+
+await ImageEngine.fromPath(`${tmp}/input.jpg`)
+  .resize({ width: 1600, fit: 'inside' })
+  .toFile(`${tmp}/output.webp`, 'webp', 80);
+
+await uploadToS3(`${tmp}/output.webp`, outputKey);
+```
+
+**`fromPath()` -> `toBuffer()`** -- when you need to return the image inline.
+
+Use this when the caller expects a Buffer (e.g. an HTTP response, a message queue payload, or a database BLOB). The input still avoids the heap, but the output buffer lives in V8.
+
+```javascript
+// Express handler returning optimized image
+app.get('/image/:id', async (req, res) => {
+  const buf = await ImageEngine.fromPath(localPath)
+    .resize({ width: 800, fit: 'inside' })
+    .toBuffer('webp', 80);
+  res.type('image/webp').send(buf);
+});
+```
+
+**`from(buffer)` -> `toBuffer()`** -- for small in-memory images only.
+
+Use this when the image is already a Buffer (e.g. from a multipart upload body) and is small enough that keeping both input and output in V8 heap is acceptable (rule of thumb: < 5 MB input).
+
+```javascript
+// Small avatar already in memory from multipart upload
+const optimized = await ImageEngine.from(uploadBuffer)
+  .sanitize({ policy: 'strict' })
+  .resize({ width: 200, height: 200, fit: 'cover' })
+  .toBuffer('webp', 80);
+```
+
+**`from(buffer)` -> `toFile()`** -- stage output to disk from an in-memory source.
+
+Use this when the input arrives as a Buffer but the output should go to disk (e.g. writing processed uploads to local storage or a mounted volume).
+
+```javascript
+// Write processed upload to permanent storage
+await ImageEngine.from(uploadBuffer)
+  .sanitize({ policy: 'strict' })
+  .resize({ width: 1024, fit: 'inside' })
+  .toFile('/data/uploads/processed.webp', 'webp', 80);
+```
+
+**Rule of thumb:** if the image is on disk and the output goes to disk or object storage, use `fromPath()` -> `toFile()`. If the image is larger than ~5 MB and arrives as a Buffer, write it to a temp file first and use `fromPath()`.
+
+---
+
 ## Serverless Deployment
 
 lazy-image's single static binary (no system libvips) and bounded-memory design make it well-suited for constrained environments.
 
-### AWS Lambda / Google Cloud Functions
+### AWS Lambda
 
 ```javascript
-// handler.js — Lambda-friendly: file-to-file avoids heap pressure
 const os = require('os');
 const path = require('path');
 const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 
 exports.handler = async (event) => {
-  const inputPath = '/tmp/input.jpg';   // download from S3/GCS first
-  const outputPath = '/tmp/output.webp';
+  const inputPath = path.join(os.tmpdir(), 'input.jpg');
+  const outputPath = path.join(os.tmpdir(), 'output.webp');
 
-  await ImageEngine.fromPath(inputPath)
+  // 1. Download from S3
+  await downloadFromS3(event.bucket, event.key, inputPath);
+
+  // 2. Optimize -- file-to-file keeps pixel data off V8 heap
+  const { data, metrics } = await ImageEngine.fromPath(inputPath)
     .resize({ width: 1600, fit: 'inside' })
-    .toFile(outputPath, 'webp', 80);
+    .toFileWithMetrics(outputPath, 'webp', 80);
 
-  // upload outputPath back to S3/GCS
+  // 3. Upload result
+  await uploadToS3(outputPath, event.outputKey);
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      bytes: metrics.bytesOut,
+      savings: `${((1 - metrics.bytesOut / metrics.bytesIn) * 100).toFixed(1)}%`,
+      ms: metrics.totalMs,
+    }),
+  };
 };
 ```
 
-Key points:
-- Use `fromPath` / `toFile` — avoids loading images into V8 heap
-- Lambda `/tmp` has 512 MB–10 GB of ephemeral storage; use it as scratch space
-- Binary size is ~5–9 MB per platform (vs ~15–21 MB for sharp), reducing cold starts
+Key sizing guidance:
+
+| Setting | Recommendation |
+|---------|---------------|
+| Memory | 512 MB minimum; 1024 MB for images > 5 MP |
+| Timeout | 30 s for single images; 120 s for batch |
+| Ephemeral storage | Default 512 MB is fine for single images; increase for batch |
+| Architecture | `arm64` (Graviton) recommended -- lower cost, lazy-image ships `linux-arm64-gnu` |
+
+### Google Cloud Functions / Cloud Run
+
+Same pattern as Lambda. Use `/tmp` for scratch files. For Cloud Run, set `--memory 512Mi` and `--concurrency 1` per container instance if processing large images. lazy-image's internal memory semaphore prevents concurrent operations from exceeding cgroup limits.
+
+### Vercel / Netlify Edge Functions
+
+These environments have strict execution time and memory limits (50 MB heap on some tiers). Use lazy-image only for small images (< 2 MP) in edge functions. For larger images, process in a background serverless function and serve from a CDN.
+
+### Cold start optimization
+
+- Binary size is ~5-9 MB per platform (vs ~15-21 MB for sharp), reducing cold start time
+- No native system dependencies to install -- `npm ci` is sufficient
 - Memory auto-detection reads cgroup limits so concurrency self-tunes inside containers
+- Keep `node_modules` lean: `npm ci --omit=dev` in your Docker/Lambda layer
 
 ### Docker / Kubernetes
 
 ```dockerfile
 FROM node:20-slim
 # No extra apt-get or system libraries needed
+WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY . .
+CMD ["node", "server.js"]
 ```
 
-For 512 MB containers, lazy-image's memory semaphore automatically limits concurrent operations. No tuning required.
+For memory-constrained pods (256-512 MB), lazy-image's memory semaphore automatically limits concurrent operations. No tuning required.
 
-## Upload Pipeline
+For high-throughput deployments:
+
+```yaml
+# k8s resource recommendation
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "2000m"
+```
+
+---
+
+## Upload Sanitization Pipeline
+
+### Basic upload flow
 
 Combine Image Firewall with format normalization for a complete upload sanitization flow.
 
@@ -137,11 +260,126 @@ async function processUpload(inputPath, outputDir, userId) {
     path: outputPath,
     width: metrics.widthOut,
     height: metrics.heightOut,
-    bytes: metrics.sizeOut,
+    bytes: metrics.bytesOut,
     ms: metrics.totalMs,
   };
 }
 ```
+
+### Multi-tier upload pipeline
+
+For platforms accepting different image types (avatars, cover photos, gallery uploads), define per-tier processing:
+
+```javascript
+const UPLOAD_TIERS = {
+  avatar: {
+    maxWidth: 512,
+    maxHeight: 512,
+    fit: 'cover',
+    format: 'webp',
+    quality: 80,
+    policy: 'strict',       // aggressive limits for untrusted input
+  },
+  cover: {
+    maxWidth: 1920,
+    maxHeight: 1080,
+    fit: 'inside',
+    format: 'jpeg',
+    quality: 85,
+    policy: 'strict',
+  },
+  gallery: {
+    maxWidth: 2400,
+    fit: 'inside',
+    format: 'webp',
+    quality: 80,
+    policy: 'lenient',      // more permissive for large uploads
+  },
+};
+
+async function processUploadByTier(inputPath, outputDir, tier, fileId) {
+  const config = UPLOAD_TIERS[tier];
+  if (!config) throw new Error(`Unknown upload tier: ${tier}`);
+
+  const outputPath = `${outputDir}/${fileId}.${config.format === 'jpeg' ? 'jpg' : config.format}`;
+
+  const resizeOpts = { width: config.maxWidth, fit: config.fit };
+  if (config.maxHeight) resizeOpts.height = config.maxHeight;
+
+  const { data, metrics } = await ImageEngine.fromPath(inputPath)
+    .sanitize({ policy: config.policy })
+    .resize(resizeOpts)
+    .keepMetadata({ icc: true, stripGps: true })
+    .toFileWithMetrics(outputPath, config.format, config.quality);
+
+  return { outputPath, metrics };
+}
+```
+
+### Handling upload errors
+
+Upload pipelines must distinguish user errors (bad input) from system errors:
+
+```javascript
+const { getErrorCategory, ErrorCategory } = require('@alberteinshutoin/lazy-image');
+
+async function safeProcessUpload(inputPath, outputDir, userId) {
+  try {
+    return await processUpload(inputPath, outputDir, userId);
+  } catch (err) {
+    const category = getErrorCategory(err);
+
+    if (category === ErrorCategory.UserError || category === ErrorCategory.CodecError) {
+      // Bad input -- return 400 to the client
+      return { error: 'invalid_image', message: err.message, code: err.errorCode };
+    }
+
+    if (category === ErrorCategory.ResourceLimit) {
+      // Image too large or system under pressure -- return 413 or retry later
+      return { error: 'image_too_large', hint: err.recoveryHint };
+    }
+
+    // InternalBug or unknown -- log and return 500
+    console.error('Unexpected image processing error', { code: err.errorCode, msg: err.message });
+    throw err;
+  }
+}
+```
+
+### Buffer-based uploads (Express / Fastify multipart)
+
+When the upload body is already in memory (e.g. from `multer` or `@fastify/multipart`), write to a temp file first for large images:
+
+```javascript
+const fs = require('fs/promises');
+const os = require('os');
+const path = require('path');
+
+async function processMultipartUpload(buffer, outputDir, userId) {
+  // For images > 5 MB, stage to disk to avoid V8 heap pressure
+  if (buffer.length > 5 * 1024 * 1024) {
+    const tmpPath = path.join(os.tmpdir(), `upload-${Date.now()}.tmp`);
+    try {
+      await fs.writeFile(tmpPath, buffer);
+      return await processUpload(tmpPath, outputDir, userId);
+    } finally {
+      await fs.unlink(tmpPath).catch(() => {});
+    }
+  }
+
+  // Small images: process directly from buffer
+  const outputPath = `${outputDir}/${userId}-avatar.webp`;
+  const { data, metrics } = await ImageEngine.from(buffer)
+    .sanitize({ policy: 'strict' })
+    .resize({ width: 512, height: 512, fit: 'cover' })
+    .keepMetadata({ icc: true, stripGps: true })
+    .toFileWithMetrics(outputPath, 'webp', 80);
+
+  return { path: outputPath, bytes: metrics.bytesOut, ms: metrics.totalMs };
+}
+```
+
+### Batch uploads
 
 For batch uploads, use `processBatch()`:
 
@@ -154,6 +392,8 @@ const results = await ImageEngine.processBatch(
 // Each result: { success, output, error?, errorCode?, errorCategory? }
 ```
 
+---
+
 ## Observability
 
 ### Metrics from every operation
@@ -163,26 +403,74 @@ Use `toFileWithMetrics()` or `toBufferWithMetrics()` to capture per-image teleme
 ```javascript
 const { data, metrics } = await engine.toBufferWithMetrics('jpeg', 80);
 // metrics: { widthIn, heightIn, widthOut, heightOut,
-//            formatIn, formatOut, sizeIn, sizeOut, totalMs }
+//            formatIn, formatOut, bytesIn, bytesOut, totalMs,
+//            decodeMs, opsMs, encodeMs, compressionRatio,
+//            iccPreserved, metadataStripped, policyViolations }
 ```
 
-### Production logging pattern
+### Structured logging pattern
+
+Emit structured JSON logs that integrate with your log aggregator (Datadog, CloudWatch, Loki, etc.):
 
 ```javascript
 async function optimizeWithLogging(input, output, format, quality) {
-  const { data, metrics } = await ImageEngine.fromPath(input)
-    .resize({ width: 1600, fit: 'inside' })
-    .toFileWithMetrics(output, format, quality);
+  const start = Date.now();
+  try {
+    const { data, metrics } = await ImageEngine.fromPath(input)
+      .resize({ width: 1600, fit: 'inside' })
+      .toFileWithMetrics(output, format, quality);
 
-  console.log(JSON.stringify({
-    event: 'image_optimized',
-    input: { w: metrics.widthIn, h: metrics.heightIn, bytes: metrics.sizeIn, format: metrics.formatIn },
-    output: { w: metrics.widthOut, h: metrics.heightOut, bytes: metrics.sizeOut, format: metrics.formatOut },
-    savings_pct: ((1 - metrics.sizeOut / metrics.sizeIn) * 100).toFixed(1),
-    duration_ms: metrics.totalMs,
-  }));
+    console.log(JSON.stringify({
+      event: 'image_optimized',
+      level: 'info',
+      input: {
+        w: metrics.widthIn,
+        h: metrics.heightIn,
+        bytes: metrics.bytesIn,
+        format: metrics.formatIn,
+      },
+      output: {
+        w: metrics.widthOut,
+        h: metrics.heightOut,
+        bytes: metrics.bytesOut,
+        format: metrics.formatOut,
+      },
+      savings_pct: ((1 - metrics.bytesOut / metrics.bytesIn) * 100).toFixed(1),
+      compression_ratio: metrics.compressionRatio,
+      duration_ms: metrics.totalMs,
+      decode_ms: metrics.decodeMs,
+      encode_ms: metrics.encodeMs,
+      ops_ms: metrics.opsMs,
+      icc_preserved: metrics.iccPreserved,
+      metadata_stripped: metrics.metadataStripped,
+    }));
+
+    return { data, metrics };
+  } catch (err) {
+    console.log(JSON.stringify({
+      event: 'image_error',
+      level: 'error',
+      error_code: err.errorCode,
+      error_category: getErrorCategory(err),
+      message: err.message,
+      recovery_hint: err.recoveryHint,
+      duration_ms: Date.now() - start,
+    }));
+    throw err;
+  }
 }
 ```
+
+### Key metrics to track
+
+| Metric | Source | Alert threshold |
+|--------|--------|----------------|
+| `totalMs` | `ProcessingMetrics` | P99 > 10 s |
+| `bytesOut / bytesIn` | `compressionRatio` | > 1.0 (output larger than input) |
+| Error rate by category | `getErrorCategory()` | `InternalBug` > 0 |
+| `decodeMs` | `ProcessingMetrics` | P99 > 5 s (may indicate corrupted input) |
+| `encodeMs` | `ProcessingMetrics` | P99 > 8 s (AVIF can be slow for large images) |
+| `policyViolations` | `ProcessingMetrics` | Non-empty array (firewall triggered) |
 
 ### Error categories for alerting
 
@@ -194,26 +482,50 @@ try {
 } catch (err) {
   const category = getErrorCategory(err);
   if (category === ErrorCategory.InternalBug) {
-    // Page oncall — this should not happen
+    // Page oncall -- this should not happen
     alerting.critical('lazy-image internal error', { code: err.errorCode, msg: err.message });
   } else if (category === ErrorCategory.ResourceLimit) {
-    // Log and skip — image too large or system under pressure
+    // Log and skip -- image too large or system under pressure
     alerting.warn('resource limit', { code: err.errorCode, hint: err.recoveryHint });
   }
   // UserError / CodecError: log and return 400 to caller
 }
 ```
 
-## File-to-file vs Buffer Paths
+### Batch processing metrics
 
-| Path | Heap usage | Best for |
-|------|-----------|----------|
-| `fromPath()` → `toFile()` | Minimal (mmap) | Production servers, large images, serverless |
-| `fromPath()` → `toBuffer()` | Output buffer in V8 | When you need the buffer (e.g. HTTP response) |
-| `from(buffer)` → `toBuffer()` | Full input + output in V8 | Small images already in memory |
-| `from(buffer)` → `toFile()` | Input in V8 | Writing from an in-memory source |
+`processBatchWithMetrics()` returns a summary alongside per-item metrics:
 
-**Rule of thumb:** if the image is on disk and the output goes to disk or object storage, use `fromPath()` → `toFile()`.
+```javascript
+const { items, summary } = await ImageEngine.processBatchWithMetrics(
+  inputs, outputDir, { format: 'webp', quality: 80 },
+);
+
+console.log(JSON.stringify({
+  event: 'batch_complete',
+  total: summary.totalItems,
+  success: summary.successfulItems,
+  failed: summary.failedItems,
+  concurrency: summary.effectiveConcurrency,
+  auto_concurrency: summary.autoConcurrency,
+  total_bytes_in: summary.totalBytesIn,
+  total_bytes_out: summary.totalBytesOut,
+  wall_ms: summary.totalWallMs,
+  cpu_time_s: summary.totalCpuTime,
+}));
+```
+
+### Dashboard recommendations
+
+If you use Prometheus/Grafana, Datadog, or similar:
+
+1. **Histogram**: `lazy_image_duration_ms` (labels: `format_out`, `operation`)
+2. **Counter**: `lazy_image_errors_total` (labels: `error_category`, `error_code`)
+3. **Gauge**: `lazy_image_compression_ratio` (labels: `format_out`)
+4. **Counter**: `lazy_image_bytes_saved_total` (computed: `bytesIn - bytesOut`)
+5. **Histogram**: `lazy_image_output_bytes` (labels: `format_out`)
+
+---
 
 ## Streaming Note
 
@@ -223,6 +535,8 @@ It is **not** equivalent to sharp's true streaming transforms:
 - input is staged to disk first
 - output is produced after file processing completes
 - latency includes temp-file I/O
+
+Use `createStreamingPipeline()` when integrating with stream-oriented frameworks (e.g. piping from an HTTP request to a response) but understand that it does not provide true chunked processing.
 
 ## Operational Default
 
