@@ -9,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.13.0] - 2026-04-02
+
+### Added
+- **Unified encode API**: `encode()` and `encodeToFile()` methods accepting an options object with `format`, `quality`, `fastMode`, `preset`, and `metrics` fields.
+- **Target-bytes encoding**: `toBufferTargetBytesNative()` performs binary search over quality entirely in Rust, eliminating ~7 JS↔NAPI round-trips per call.
+- **File output with metrics**: `toFileWithMetrics()` returns `{ bytesWritten, metrics }` alongside file writes.
+- **ESM support**: `index.mjs` and `package.json` exports field for native ES module consumption.
+- **EXIF preservation for PNG/WebP**: `keepMetadata({ exif: true })` now works for PNG and WebP outputs in addition to JPEG.
+- **Batch concurrency info**: `BatchResult` now exposes `effectiveConcurrency` and `autoConcurrency`.
+- **Test coverage**: format conversion matrix (JPEG/PNG/WebP → all output formats), `normalizePixelFormat()` tests, streaming API tests (multi-op, PNG/AVIF output, abort/destroy, empty input), NAPI-boundary leak stress tests, error code matrix tests.
+- **Documentation**: adoption guide for serverless/upload pipelines/observability, benchmark claims cross-reference with classification and update checklist.
+
+### Changed
+- **Lazy metadata extraction**: ICC profile and EXIF metadata extraction are now deferred until first use (true lazy evaluation), reducing construction overhead.
+- **MetadataPolicy struct**: replaced boolean metadata flags with a structured `MetadataPolicy` for clearer intent.
+- **JS helpers extraction**: postbuild-fixup helpers moved to `lib/helpers.js` for maintainability.
+- **encodeWithinByteBudget**: binary search logic moved from JS to Rust for better performance (#489).
+- npm package no longer includes `docs/` and `spec/` directories, reducing install size.
+- All GitHub Actions pinned to commit SHAs for supply chain security.
+
+### Fixed
+- cgroup v2 path parser loop correction (#476).
+- Base dimension/pixel limits now enforced at decode time, not only in `sanitize()` (#499).
+- Oversized memory request handling improved in backpressure semaphore (#497).
+- `TargetBytesOptions` and related types now properly exported (#482).
+- `toFileWithMetrics` format type corrected.
+- `prepublishOnly` script updated for current napi cli.
+
+### Performance
+- Lazy ICC/EXIF extraction reduces `from()`/`fromPath()` construction cost.
+- Eliminated unnecessary `clone()` in `fast_resize` path.
+- O(n) `optimize_ops` pass clarified and verified.
+
+---
+
 ## [0.12.0] - 2026-03-14
 
 ### Changed
@@ -416,7 +451,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.2...v0.12.0
 [0.11.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.1...v0.10.2

@@ -102,6 +102,7 @@ impl WeightedSemaphore {
     /// weight exceeded the semaphore capacity. This is purely informational;
     /// the permit already serializes the oversized operation by reserving full
     /// capacity.
+    #[allow(dead_code)] // Public API, tested, not yet called from production code paths
     pub fn was_clamped(permit: &MemoryPermit, original_weight: u64) -> bool {
         original_weight > permit.weight
     }
