@@ -15,14 +15,14 @@
 export declare class ImageEngine {
   /**
    * Create engine from a buffer.
-   * Full pixel decode and queued operations are deferred until output methods run.
-   * ICC profile and EXIF metadata are extracted eagerly during construction.
+   * Full pixel decode, queued operations, and metadata extraction are all
+   * deferred until output methods run (true lazy evaluation).
    */
   static from(buffer: Buffer): ImageEngine
   /**
    * Create engine from a file path.
-   * Full pixel decode and queued operations are deferred until output methods run.
-   * Construction still performs safe file loading and eager ICC/EXIF extraction.
+   * Full pixel decode, queued operations, and metadata extraction are all
+   * deferred until output methods run (true lazy evaluation).
    * Small/medium files are read into memory to prevent SIGBUS; very large files (>256 MB)
    * use mmap with advisory locks.
    * This is the recommended way for server-side processing of large images.
@@ -130,6 +130,18 @@ export declare class ImageEngine {
    */
   toBufferWithMetricsPreset(presetName: PresetName): Promise<OutputWithMetrics>
   /**
+   * Encode to buffer with a byte-budget constraint.
+   *
+   * Performs a binary search over quality (entirely in Rust) to find the
+   * highest quality that keeps the output within `target_bytes`. This
+   * eliminates ~7 JS↔NAPI round-trips per call compared to the previous
+   * JS-side implementation.
+   *
+   * Returns `TargetBytesResult` with the encoded data, chosen quality,
+   * actual size, and whether the budget was met.
+   */
+  toBufferTargetBytesNative(format: string, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null): Promise<TargetBytesResult>
+  /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
    * full file-to-file processing without touching Node.js heap.
@@ -140,6 +152,25 @@ export declare class ImageEngine {
    * Returns the number of bytes written.
    */
   toFile(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<number>
+  /** Encode and write directly to a file asynchronously, returning metrics. */
+  toFileWithMetrics(path: string, format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<FileOutputWithMetrics>
+  /**
+   * Unified encode-to-buffer method.
+   *
+   * Accepts an options object with `format`, `quality`, `fastMode`, `preset`,
+   * and `metrics` fields.  When `preset` is supplied the preset's settings
+   * take precedence over format/quality/fastMode.
+   *
+   * Returns `EncodeResult { data, metrics? }`.
+   */
+  encode(options: EncodeOptionsInput): Promise<EncodeResult>
+  /**
+   * Unified encode-to-file method.
+   *
+   * Same options as `encode()`, but writes the result directly to `path`.
+   * Returns `FileEncodeResult { bytesWritten, metrics? }`.
+   */
+  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
   /** Convenience: encode to file using the preset's recommended format/quality. */
   toFileWithPreset(path: string, presetName: PresetName): Promise<number>
   /**
@@ -151,6 +182,7 @@ export declare class ImageEngine {
   /**
    * Check if an ICC color profile was extracted from the source image.
    * Returns the profile size in bytes, or null if no profile exists.
+   * This triggers lazy extraction of the ICC profile if not yet extracted.
    */
   hasIccProfile(): number | null
   /**
@@ -173,6 +205,22 @@ export declare class ImageEngine {
    * is still accepted for now but will be removed in a future major release.
    */
   processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+  processBatchWithMetrics(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchOutputWithMetrics>
+}
+
+export interface BatchMetricsSummary {
+  totalItems: number
+  successfulItems: number
+  failedItems: number
+  effectiveConcurrency: number
+  autoConcurrency: boolean
+  totalBytesIn: number
+  totalBytesOut: number
+  totalDecodeMs: number
+  totalOpsMs: number
+  totalEncodeMs: number
+  totalCpuTime: number
+  totalWallMs: number
 }
 
 export interface BatchOptions {
@@ -189,6 +237,11 @@ export interface BatchOptions {
   concurrency?: number
 }
 
+export interface BatchOutputWithMetrics {
+  items: Array<BatchResultWithMetrics>
+  summary: BatchMetricsSummary
+}
+
 export interface BatchResult {
   source: string
   success: boolean
@@ -196,11 +249,51 @@ export interface BatchResult {
   outputPath?: string
   errorCode?: string
   errorCategory?: ErrorCategory
+  effectiveConcurrency?: number
+  autoConcurrency?: boolean
+}
+
+export interface BatchResultWithMetrics {
+  source: string
+  success: boolean
+  error?: string
+  outputPath?: string
+  errorCode?: string
+  errorCategory?: ErrorCategory
+  effectiveConcurrency?: number
+  autoConcurrency?: boolean
+  metrics?: ProcessingMetrics
 }
 
 export interface Dimensions {
   width: number
   height: number
+}
+
+/** Options object for the unified `encode()` / `encodeToFile()` methods. */
+export interface EncodeOptions {
+  /** Output format: "jpeg", "jpg", "png", "webp", "avif" */
+  format?: string
+  /** Quality 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG. */
+  quality?: number
+  /** If true, uses faster JPEG encoding (2-4x faster, slightly larger files). Default: false. */
+  fastMode?: boolean
+  /**
+   * Preset name ("thumbnail", "avatar", "hero", "social").
+   * When specified, format/quality/fastMode are ignored and the preset's
+   * recommended settings are used instead.
+   */
+  preset?: string
+  /** If true, include ProcessingMetrics in the result. Default: false. */
+  metrics?: boolean
+}
+
+/** Result from `encode()`. */
+export interface EncodeResult {
+  /** Encoded image data */
+  data: Buffer
+  /** Processing metrics (only present when `metrics: true` was requested) */
+  metrics?: ProcessingMetrics
 }
 
 /**
@@ -260,6 +353,19 @@ export declare const enum ErrorCode {
   Generic = 999
 }
 
+/** Result from `encodeToFile()`. */
+export interface FileEncodeResult {
+  /** Number of bytes written to disk */
+  bytesWritten: number
+  /** Processing metrics (only present when `metrics: true` was requested) */
+  metrics?: ProcessingMetrics
+}
+
+export interface FileOutputWithMetrics {
+  bytesWritten: number
+  metrics: ProcessingMetrics
+}
+
 export interface FirewallLimitOptions {
   maxPixels?: number
   maxBytes?: number
@@ -312,20 +418,6 @@ export interface KeepMetadataOptions {
 export interface OutputWithMetrics {
   data: Buffer
   metrics: ProcessingMetrics
-}
-
-/** Result of applying a preset and encoding to buffer */
-export interface PresetBufferResult {
-  /** Encoded image data */
-  data: Buffer
-  /** Recommended output format */
-  format: CanonicalOutputFormat
-  /** Recommended quality (None for PNG) */
-  quality?: number
-  /** Target width (None if aspect ratio preserved) */
-  width?: number
-  /** Target height (None if aspect ratio preserved) */
-  height?: number
 }
 
 /** Result of applying a preset, contains recommended output settings */
@@ -402,6 +494,27 @@ export declare function supportedInputFormats(): Array<CanonicalInputFormat>
 /** Get supported output formats */
 export declare function supportedOutputFormats(): Array<CanonicalOutputFormat>
 
+/**
+ * Result of byte-budget encoding (binary search over quality).
+ *
+ * The binary search runs entirely in Rust, eliminating JS↔NAPI round-trips
+ * that the previous JS-side implementation required (~7 per call).
+ */
+export interface TargetBytesResult {
+  /** Encoded image data at the chosen quality */
+  data: Buffer
+  /** Quality level that was selected */
+  quality: number
+  /** Actual output size in bytes */
+  bytesOut: number
+  /** Whether the byte budget was met */
+  budgetMet: boolean
+  /** Requested target bytes */
+  targetBytes: number
+  /** Processing metrics from the final encode iteration */
+  metrics: ProcessingMetrics
+}
+
 /** Get library version */
 export declare function version(): string
 
@@ -414,6 +527,7 @@ type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
 export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
 export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
+export type TargetBytesFormat = CaseInsensitive<'jpeg' | 'jpg' | 'webp' | 'avif'>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
 export type FirewallPolicy = 'strict' | 'lenient'
@@ -429,6 +543,23 @@ export interface ImageEngine {
   toBufferProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<Buffer>
   toBufferWithMetricsProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<OutputWithMetrics>
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
+  toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
+  toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
+  encode(options: EncodeOptionsInput): Promise<EncodeResult>
+  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
+}
+
+export interface EncodeOptionsInput {
+  /** Output format: "jpeg", "jpg", "png", "webp", "avif" */
+  format?: OutputFormat
+  /** Quality 1-100 for lossy formats. Omit for PNG. */
+  quality?: number
+  /** If true, uses faster JPEG encoding (2-4x faster, slightly larger). Default: false. */
+  fastMode?: boolean
+  /** Preset name. When specified, format/quality/fastMode are ignored. */
+  preset?: PresetName
+  /** If true, include ProcessingMetrics in the result. Default: false. */
+  metrics?: boolean
 }
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null
@@ -445,9 +576,53 @@ export declare function createStreamingPipeline(options: {
     enabled?: boolean
   }>
   ImageEngine?: typeof ImageEngine
+  onMetrics?: (metrics: ProcessingMetrics) => void
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream
+}
+
+export interface TargetBytesOptions {
+  /** Target file size in bytes */
+  targetBytes: number
+  /** Alias for targetBytes */
+  maxBytes?: number
+  /** Minimum quality to try (default: 30) */
+  minQuality?: number
+  /** Maximum quality to try (default: 100) */
+  maxQuality?: number
+  /** Enable fast encoding mode */
+  fastMode?: boolean
+  /** Behaviour when budget cannot be met: 'best-effort' (default) or 'strict' */
+  qualityFloorPolicy?: 'best-effort' | 'strict'
+}
+
+export interface BufferTargetBytesResult {
+  /** Encoded image data */
+  data: Buffer
+  /** Quality level that was used */
+  quality: number
+  /** Actual output size in bytes */
+  bytesOut: number
+  /** Whether the byte budget was met */
+  budgetMet: boolean
+  /** Requested target bytes */
+  targetBytes: number
+  /** Processing metrics */
+  metrics: ProcessingMetrics
+}
+
+export interface FileTargetBytesResult {
+  /** Bytes written to disk */
+  bytesWritten: number
+  /** Quality level that was used */
+  quality: number
+  /** Whether the byte budget was met */
+  budgetMet: boolean
+  /** Requested target bytes */
+  targetBytes: number
+  /** Processing metrics */
+  metrics: ProcessingMetrics
 }
 
 export declare function resolveEncodeProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): ResolvedEncodeProfile

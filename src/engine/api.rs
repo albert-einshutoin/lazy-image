@@ -15,7 +15,9 @@ use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_s
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 use crate::engine::tasks::{
-    BatchResult, BatchTask, EncodeTask, EncodeWithMetricsTask, WriteFileTask,
+    BatchResult, BatchTask, BatchWithMetricsTask, EncodeTargetBytesTask, EncodeTask,
+    EncodeWithMetricsTask, UnifiedEncodeTask, UnifiedEncodeToFileTask, WriteFileTask,
+    WriteFileWithMetricsTask,
 };
 #[cfg(feature = "napi")]
 use crate::error::LazyImageError;
@@ -35,6 +37,7 @@ use std::path::PathBuf;
 #[cfg(feature = "napi")]
 use std::str::FromStr;
 use std::sync::Arc;
+use std::sync::OnceLock;
 
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
@@ -326,6 +329,65 @@ mod validation {
     }
 }
 
+/// Policy for which metadata to preserve in output images.
+///
+/// Centralizes the keep-ICC / keep-EXIF / strip-GPS decision so that every
+/// output path reads a single source of truth instead of resolving ad-hoc
+/// boolean combinations.
+#[derive(Clone, Debug)]
+pub struct MetadataPolicy {
+    /// Whether to preserve ICC profile in output (default: false)
+    pub icc: bool,
+    /// Whether to preserve EXIF metadata in output (default: false)
+    pub exif: bool,
+    /// Whether to keep GPS tags in EXIF (default: false — stripped for privacy)
+    pub gps: bool,
+}
+
+impl MetadataPolicy {
+    /// Default: strip all metadata for security and smaller file sizes.
+    /// GPS is stripped by default for privacy (exceeds Sharp's capabilities).
+    pub fn default_policy() -> Self {
+        Self {
+            icc: false,
+            exif: false,
+            gps: false,
+        }
+    }
+
+    /// Strip all metadata (firewall strict mode).
+    pub fn strip_all() -> Self {
+        Self {
+            icc: false,
+            exif: false,
+            gps: false,
+        }
+    }
+
+    /// Apply firewall override: if reject_metadata is true, strip everything.
+    pub fn apply_firewall(&mut self, reject_metadata: bool) {
+        if reject_metadata {
+            *self = Self::strip_all();
+        }
+    }
+
+    /// Resolve final ICC policy.
+    pub fn effective_icc(&self) -> bool {
+        self.icc
+    }
+
+    /// Resolve final EXIF policy.
+    pub fn effective_exif(&self) -> bool {
+        self.exif
+    }
+
+    /// Whether GPS tags should be stripped from EXIF.
+    /// Returns true when GPS should be stripped (i.e., gps == false).
+    pub fn strip_gps(&self) -> bool {
+        !self.gps
+    }
+}
+
 /// The main image processing engine.
 ///
 /// Usage:
@@ -348,22 +410,15 @@ pub struct ImageEngine {
     pub(crate) ops: Vec<Operation>,
     /// Last applied preset (used by toPresetBuffer/toPresetFile convenience APIs)
     pub(crate) last_preset: Option<PresetConfig>,
-    /// ICC color profile extracted from source image
-    pub(crate) icc_profile: Option<Arc<Vec<u8>>>,
-    /// Raw EXIF data extracted from source image (for preservation)
+    /// ICC color profile extracted from source image (lazy: extracted on first access)
+    pub(crate) icc_profile: OnceLock<Option<Arc<Vec<u8>>>>,
+    /// Raw EXIF data extracted from source image (lazy: extracted on first access)
     /// Stored as raw bytes to avoid serialization issues with little_exif::Metadata
-    pub(crate) exif_data: Option<Arc<Vec<u8>>>,
+    pub(crate) exif_data: OnceLock<Option<Arc<Vec<u8>>>>,
     /// Whether to auto-apply EXIF Orientation (default: true)
     pub(crate) auto_orient: bool,
-    /// Whether to preserve ICC profile in output.
-    /// Default is false (strip all) for security and smaller file sizes.
-    pub(crate) keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output.
-    /// Default is false (strip all) for security and smaller file sizes.
-    pub(crate) keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF (default: true for privacy)
-    /// This is a security-first feature that exceeds Sharp's capabilities.
-    pub(crate) strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions.
+    pub(crate) metadata_policy: MetadataPolicy,
     /// Whether we already emitted a warning about XMP being unsupported.
     pub(crate) xmp_warning_emitted: bool,
     pub(crate) firewall: FirewallConfig,
@@ -377,38 +432,29 @@ impl ImageEngine {
     // =========================================================================
 
     /// Create engine from a buffer.
-    /// Full pixel decode and queued operations are deferred until output methods run.
-    /// ICC profile and EXIF metadata are extracted eagerly during construction.
+    /// Full pixel decode, queued operations, and metadata extraction are all
+    /// deferred until output methods run (true lazy evaluation).
     #[napi(factory)]
     pub fn from(buffer: Buffer) -> Self {
         let data = buffer.to_vec();
-
-        // Extract ICC profile before any processing
-        let icc_profile = extract_icc_profile_lossy(&data).map(Arc::new);
-
-        // Extract raw EXIF data for potential preservation
-        // We store raw bytes to avoid serialization complexity
-        let exif_data = extract_exif_raw(&data).map(Arc::new);
 
         ImageEngine {
             source: Some(Source::from_vec(data)),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
-            icc_profile,
-            exif_data,
+            icc_profile: OnceLock::new(),
+            exif_data: OnceLock::new(),
             auto_orient: true,
-            keep_icc: false, // Strip metadata by default for security & smaller files
-            keep_exif: false, // Strip EXIF by default for security
-            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
+            metadata_policy: MetadataPolicy::default_policy(),
             xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         }
     }
 
     /// Create engine from a file path.
-    /// Full pixel decode and queued operations are deferred until output methods run.
-    /// Construction still performs safe file loading and eager ICC/EXIF extraction.
+    /// Full pixel decode, queued operations, and metadata extraction are all
+    /// deferred until output methods run (true lazy evaluation).
     /// Small/medium files are read into memory to prevent SIGBUS; very large files (>256 MB)
     /// use mmap with advisory locks.
     /// This is the recommended way for server-side processing of large images.
@@ -428,23 +474,15 @@ impl ImageEngine {
             Err(e) => return Err(crate::error::napi_error_with_code(&env, e)?),
         };
 
-        let data = source.as_bytes().expect("source always has bytes");
-
-        // Extract ICC profile and EXIF from loaded data
-        let icc_profile = extract_icc_profile_lossy(data).map(Arc::new);
-        let exif_data = extract_exif_raw(data).map(Arc::new);
-
         Ok(ImageEngine {
             source: Some(source),
             decoded: None,
             ops: Vec::new(),
             last_preset: None,
-            icc_profile,
-            exif_data,
+            icc_profile: OnceLock::new(),
+            exif_data: OnceLock::new(),
             auto_orient: true,
-            keep_icc: false, // Strip metadata by default for security & smaller files
-            keep_exif: false, // Strip EXIF by default for security
-            strip_gps: true, // Strip GPS by default for privacy (exceeds Sharp)
+            metadata_policy: MetadataPolicy::default_policy(),
             xmp_warning_emitted: false,
             firewall: FirewallConfig::disabled(),
         })
@@ -453,17 +491,32 @@ impl ImageEngine {
     /// Create a clone of this engine (for multi-output scenarios)
     #[napi(js_name = "clone")]
     pub fn clone_engine(&self) -> Result<ImageEngine> {
+        // If OnceLock is already initialized, clone the value into a new initialized OnceLock.
+        // If not yet initialized, create a fresh uninitialized OnceLock (avoids forcing extraction).
+        let icc_profile = {
+            let lock = OnceLock::new();
+            if let Some(val) = self.icc_profile.get() {
+                let _ = lock.set(val.clone());
+            }
+            lock
+        };
+        let exif_data = {
+            let lock = OnceLock::new();
+            if let Some(val) = self.exif_data.get() {
+                let _ = lock.set(val.clone());
+            }
+            lock
+        };
+
         Ok(ImageEngine {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
             last_preset: self.last_preset.clone(),
-            icc_profile: self.icc_profile.clone(),
-            exif_data: self.exif_data.clone(),
+            icc_profile,
+            exif_data,
             auto_orient: self.auto_orient,
-            keep_icc: self.keep_icc,
-            keep_exif: self.keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: self.metadata_policy.clone(),
             xmp_warning_emitted: self.xmp_warning_emitted,
             firewall: self.firewall.clone(),
         })
@@ -618,9 +671,9 @@ impl ImageEngine {
             self.xmp_warning_emitted = true;
         }
 
-        self.keep_icc = icc;
-        self.keep_exif = exif;
-        self.strip_gps = strip_gps;
+        self.metadata_policy.icc = icc;
+        self.metadata_policy.exif = exif;
+        self.metadata_policy.gps = !strip_gps; // gps=true means keep, strip_gps=true means remove
         Ok(this)
     }
 
@@ -651,10 +704,9 @@ impl ImageEngine {
 
         self.firewall = FirewallConfig::apply_policy(policy);
         if self.firewall.reject_metadata {
-            self.keep_icc = false;
-            self.keep_exif = false;
-            self.icc_profile = None;
-            self.exif_data = None;
+            self.metadata_policy.apply_firewall(true);
+            // No need to clear the OnceLock fields: output methods already
+            // check metadata_policy and skip metadata when firewall is active.
         }
 
         if let Some(decoded) = &self.decoded {
@@ -745,7 +797,7 @@ impl ImageEngine {
     ) -> Result<Reference<ImageEngine>> {
         let value = validation::ensure_finite_integer("brightness", value)
             .and_then(|int| {
-                if int < -100 || int > 100 {
+                if !(-100..=100).contains(&int) {
                     Err(LazyImageError::invalid_argument(
                         "brightness",
                         int.to_string(),
@@ -771,7 +823,7 @@ impl ImageEngine {
     ) -> Result<Reference<ImageEngine>> {
         let value = validation::ensure_finite_integer("contrast", value)
             .and_then(|int| {
-                if int < -100 || int > 100 {
+                if !(-100..=100).contains(&int) {
                     Err(LazyImageError::invalid_argument(
                         "contrast",
                         int.to_string(),
@@ -889,17 +941,17 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
-        let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
         } else {
             None
         };
-        let exif_data = if keep_exif {
-            self.exif_data.clone()
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
         } else {
             None
         };
@@ -913,9 +965,7 @@ impl ImageEngine {
             icc_present,
             exif_data,
             auto_orient,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -989,17 +1039,17 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
-        let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
         } else {
             None
         };
-        let exif_data = if keep_exif {
-            self.exif_data.clone()
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
         } else {
             None
         };
@@ -1013,9 +1063,7 @@ impl ImageEngine {
             icc_present,
             exif_data,
             auto_orient,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
             last_error: None,
@@ -1064,6 +1112,105 @@ impl ImageEngine {
         )
     }
 
+    /// Encode to buffer with a byte-budget constraint.
+    ///
+    /// Performs a binary search over quality (entirely in Rust) to find the
+    /// highest quality that keeps the output within `target_bytes`. This
+    /// eliminates ~7 JS↔NAPI round-trips per call compared to the previous
+    /// JS-side implementation.
+    ///
+    /// Returns `TargetBytesResult` with the encoded data, chosen quality,
+    /// actual size, and whether the budget was met.
+    #[napi(
+        js_name = "toBufferTargetBytesNative",
+        ts_return_type = "Promise<TargetBytesResult>"
+    )]
+    pub fn to_buffer_target_bytes_native(
+        &mut self,
+        env: Env,
+        format: String,
+        target_bytes: u32,
+        min_quality: Option<u32>,
+        max_quality: Option<u32>,
+        fast_mode: Option<bool>,
+        strict: Option<bool>,
+    ) -> Result<AsyncTask<EncodeTargetBytesTask>> {
+        let fast_mode = fast_mode.unwrap_or(false);
+
+        // Validate and clamp quality range
+        let min_q = min_quality.unwrap_or(30).min(100) as u8;
+        let max_q = max_quality.unwrap_or(100).min(100) as u8;
+        if min_q > max_q {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "minQuality",
+                    min_q.to_string(),
+                    "must be less than or equal to maxQuality",
+                ),
+            ));
+        }
+        if min_q == 0 {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument("minQuality", "0", "must be between 1 and 100"),
+            ));
+        }
+        if target_bytes == 0 {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument("targetBytes", "0", "must be a positive number"),
+            ));
+        }
+
+        // Parse format (quality is irrelevant here, will be overridden per iteration)
+        let output_format =
+            match OutputFormat::from_str_with_options(&format, Some(max_q), fast_mode) {
+                Ok(f) => f,
+                Err(_) => {
+                    let lazy_err = LazyImageError::unsupported_format(format.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
+        } else {
+            None
+        };
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(EncodeTargetBytesTask {
+            source,
+            decoded,
+            ops,
+            format: output_format,
+            icc_profile,
+            icc_present,
+            exif_data,
+            auto_orient,
+            metadata_policy: policy,
+            firewall: self.firewall.clone(),
+            target_bytes,
+            min_quality: min_q,
+            max_quality: max_q,
+            quality_floor_policy_strict: strict.unwrap_or(false),
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
+    }
+
     /// Encode and write directly to a file asynchronously.
     /// **Memory-efficient**: Combined with fromPath(), this enables
     /// full file-to-file processing without touching Node.js heap.
@@ -1097,17 +1244,17 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile.is_some();
-        let icc_profile = if keep_icc {
-            self.icc_profile.clone()
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
         } else {
             None
         };
-        let exif_data = if keep_exif {
-            self.exif_data.clone()
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
         } else {
             None
         };
@@ -1121,14 +1268,264 @@ impl ImageEngine {
             icc_present,
             exif_data,
             auto_orient,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
             firewall: self.firewall.clone(),
             output_path: path,
             #[cfg(feature = "napi")]
             last_error: None,
         }))
+    }
+
+    /// Encode and write directly to a file asynchronously, returning metrics.
+    #[napi(
+        js_name = "toFileWithMetrics",
+        ts_return_type = "Promise<FileOutputWithMetrics>"
+    )]
+    pub fn to_file_with_metrics(
+        &mut self,
+        env: Env,
+        path: String,
+        format: String,
+        quality: Option<f64>,
+        fast_mode: Option<bool>,
+    ) -> Result<AsyncTask<WriteFileWithMetricsTask>> {
+        let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
+
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
+        } else {
+            None
+        };
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(WriteFileWithMetricsTask {
+            source,
+            decoded,
+            ops,
+            format: output_format,
+            icc_profile,
+            icc_present,
+            exif_data,
+            auto_orient,
+            metadata_policy: policy,
+            firewall: self.firewall.clone(),
+            output_path: path,
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
+    }
+
+    // =========================================================================
+    // UNIFIED OUTPUT API — encode() and encodeToFile()
+    //
+    // These two methods consolidate all the individual output methods above
+    // into a single options-object API.  Existing methods remain for backward
+    // compatibility; new code should prefer encode() / encodeToFile().
+    // =========================================================================
+
+    /// Unified encode-to-buffer method.
+    ///
+    /// Accepts an options object with `format`, `quality`, `fastMode`, `preset`,
+    /// and `metrics` fields.  When `preset` is supplied the preset's settings
+    /// take precedence over format/quality/fastMode.
+    ///
+    /// Returns `EncodeResult { data, metrics? }`.
+    #[napi(ts_return_type = "Promise<EncodeResult>")]
+    pub fn encode(
+        &mut self,
+        env: Env,
+        options: crate::EncodeOptions,
+    ) -> Result<AsyncTask<crate::engine::tasks::UnifiedEncodeTask>> {
+        let want_metrics = options.metrics.unwrap_or(false);
+
+        // Resolve format/quality/fastMode — preset wins when supplied.
+        let (format_str, quality_f64, fast_mode) = if let Some(ref preset_name) = options.preset {
+            let preset = match PresetConfig::get(preset_name) {
+                Some(c) => c,
+                None => {
+                    let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+            // Apply the preset's resize ops.
+            self.ops.push(Operation::Resize {
+                width: preset.width,
+                height: preset.height,
+                fit: ResizeFit::Inside,
+            });
+            self.last_preset = Some(preset.clone());
+
+            let (f, q, fm) = match &preset.format {
+                OutputFormat::Jpeg { quality, fast_mode } => {
+                    ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
+                }
+                OutputFormat::Png => ("png".to_string(), None, None),
+                OutputFormat::WebP { quality } => ("webp".to_string(), Some(*quality as f64), None),
+                OutputFormat::Avif { quality } => ("avif".to_string(), Some(*quality as f64), None),
+            };
+            (f, q, fm.unwrap_or(false))
+        } else {
+            let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
+            (fmt, options.quality, options.fast_mode.unwrap_or(false))
+        };
+
+        let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
+        let output_format =
+            match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
+                Ok(f) => f,
+                Err(_) => {
+                    let lazy_err = LazyImageError::unsupported_format(format_str.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
+        } else {
+            None
+        };
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(crate::engine::tasks::UnifiedEncodeTask {
+            source,
+            decoded,
+            ops,
+            format: output_format,
+            icc_profile,
+            icc_present,
+            exif_data,
+            auto_orient,
+            metadata_policy: policy,
+            firewall: self.firewall.clone(),
+            want_metrics,
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
+    }
+
+    /// Unified encode-to-file method.
+    ///
+    /// Same options as `encode()`, but writes the result directly to `path`.
+    /// Returns `FileEncodeResult { bytesWritten, metrics? }`.
+    #[napi(js_name = "encodeToFile", ts_return_type = "Promise<FileEncodeResult>")]
+    pub fn encode_to_file(
+        &mut self,
+        env: Env,
+        path: String,
+        options: crate::EncodeOptions,
+    ) -> Result<AsyncTask<crate::engine::tasks::UnifiedEncodeToFileTask>> {
+        validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
+        let want_metrics = options.metrics.unwrap_or(false);
+
+        let (format_str, quality_f64, fast_mode) = if let Some(ref preset_name) = options.preset {
+            let preset = match PresetConfig::get(preset_name) {
+                Some(c) => c,
+                None => {
+                    let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+            self.ops.push(Operation::Resize {
+                width: preset.width,
+                height: preset.height,
+                fit: ResizeFit::Inside,
+            });
+            self.last_preset = Some(preset.clone());
+
+            let (f, q, fm) = match &preset.format {
+                OutputFormat::Jpeg { quality, fast_mode } => {
+                    ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
+                }
+                OutputFormat::Png => ("png".to_string(), None, None),
+                OutputFormat::WebP { quality } => ("webp".to_string(), Some(*quality as f64), None),
+                OutputFormat::Avif { quality } => ("avif".to_string(), Some(*quality as f64), None),
+            };
+            (f, q, fm.unwrap_or(false))
+        } else {
+            let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
+            (fmt, options.quality, options.fast_mode.unwrap_or(false))
+        };
+
+        let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
+        let output_format =
+            match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
+                Ok(f) => f,
+                Err(_) => {
+                    let lazy_err = LazyImageError::unsupported_format(format_str.clone());
+                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+                }
+            };
+
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
+        } else {
+            None
+        };
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
+        } else {
+            None
+        };
+
+        Ok(AsyncTask::new(
+            crate::engine::tasks::UnifiedEncodeToFileTask {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                want_metrics,
+                output_path: path,
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
+        ))
     }
 
     /// Convenience: encode to file using the preset's recommended format/quality.
@@ -1242,9 +1639,10 @@ impl ImageEngine {
 
     /// Check if an ICC color profile was extracted from the source image.
     /// Returns the profile size in bytes, or null if no profile exists.
+    /// This triggers lazy extraction of the ICC profile if not yet extracted.
     #[napi(js_name = "hasIccProfile")]
     pub fn has_icc_profile(&self) -> Option<u32> {
-        self.icc_profile.as_ref().map(|p| p.len() as u32)
+        self.icc_profile().map(|p| p.len() as u32)
     }
 
     /// Process multiple images in parallel with the same operations.
@@ -1309,17 +1707,80 @@ impl ImageEngine {
             }
         };
         let ops = self.ops.clone();
-        let keep_icc = self.keep_icc && !self.firewall.reject_metadata;
-        let keep_exif = self.keep_exif && !self.firewall.reject_metadata;
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
         Ok(AsyncTask::new(BatchTask {
             inputs,
             output_dir,
             ops,
             format: output_format,
             concurrency,
-            keep_icc,
-            keep_exif,
-            strip_gps: self.strip_gps,
+            metadata_policy: policy,
+            auto_orient: self.auto_orient,
+            firewall: self.firewall.clone(),
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }))
+    }
+
+    #[napi(
+        js_name = "processBatchWithMetrics",
+        ts_return_type = "Promise<BatchOutputWithMetrics>"
+    )]
+    pub fn process_batch_with_metrics(
+        &self,
+        env: Env,
+        inputs: Vec<String>,
+        output_dir: String,
+        options_or_format: Either<BatchOptions, String>,
+        quality: Option<f64>,
+        fast_mode: Option<bool>,
+        concurrency: Option<f64>,
+    ) -> Result<AsyncTask<BatchWithMetricsTask>> {
+        if output_dir.trim().is_empty() {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "outputDir",
+                    "<empty>",
+                    "output directory must not be empty",
+                ),
+            ));
+        }
+
+        let (format, quality, fast_mode, concurrency) = match options_or_format {
+            Either::A(options) => (
+                options.format,
+                options.quality,
+                options.fast_mode,
+                options.concurrency,
+            ),
+            Either::B(format) => (format, quality, fast_mode, concurrency),
+        };
+
+        let fast_mode = fast_mode.unwrap_or(false);
+        let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
+        let concurrency =
+            validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
+
+        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
+            Ok(format) => format,
+            Err(_e) => {
+                let lazy_err = LazyImageError::unsupported_format(format.clone());
+                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
+            }
+        };
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy.clone();
+        policy.apply_firewall(self.firewall.reject_metadata);
+
+        Ok(AsyncTask::new(BatchWithMetricsTask {
+            inputs,
+            output_dir,
+            ops,
+            format: output_format,
+            concurrency,
+            metadata_policy: policy,
             auto_orient: self.auto_orient,
             firewall: self.firewall.clone(),
             #[cfg(feature = "napi")]
@@ -1364,22 +1825,6 @@ pub struct PresetResult {
 }
 
 #[cfg(feature = "napi")]
-/// Result of applying a preset and encoding to buffer
-#[napi(object)]
-pub struct PresetBufferResult {
-    /// Encoded image data
-    pub data: Buffer,
-    /// Recommended output format
-    pub format: String,
-    /// Recommended quality (None for PNG)
-    pub quality: Option<u8>,
-    /// Target width (None if aspect ratio preserved)
-    pub width: Option<u32>,
-    /// Target height (None if aspect ratio preserved)
-    pub height: Option<u32>,
-}
-
-#[cfg(feature = "napi")]
 #[napi(object)]
 pub struct BatchOptions {
     /// Output format ("jpeg", "png", "webp", "avif")
@@ -1397,7 +1842,33 @@ pub struct BatchOptions {
 // INTERNAL IMPLEMENTATION
 // =============================================================================
 
-impl ImageEngine {}
+impl ImageEngine {
+    /// Lazily extract and return the ICC profile from the source data.
+    /// The extraction runs at most once; subsequent calls return the cached result.
+    fn icc_profile(&self) -> Option<&Arc<Vec<u8>>> {
+        self.icc_profile
+            .get_or_init(|| {
+                self.source
+                    .as_ref()
+                    .and_then(|s| s.as_bytes())
+                    .and_then(|bytes| extract_icc_profile_lossy(bytes).map(Arc::new))
+            })
+            .as_ref()
+    }
+
+    /// Lazily extract and return the raw EXIF data from the source data.
+    /// The extraction runs at most once; subsequent calls return the cached result.
+    fn exif_data(&self) -> Option<&Arc<Vec<u8>>> {
+        self.exif_data
+            .get_or_init(|| {
+                self.source
+                    .as_ref()
+                    .and_then(|s| s.as_bytes())
+                    .and_then(|bytes| extract_exif_raw(bytes).map(Arc::new))
+            })
+            .as_ref()
+    }
+}
 
 #[cfg(test)]
 mod tests {

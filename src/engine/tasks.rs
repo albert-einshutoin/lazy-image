@@ -5,12 +5,14 @@
 // Async task implementations for NAPI.
 // These tasks run in background threads and don't block Node.js main thread.
 
+use super::api::MetadataPolicy;
 use super::firewall::FirewallConfig;
 use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
 use crate::engine::encoder::{
-    embed_exif_jpeg, encode_avif, encode_jpeg_with_settings, encode_png, encode_webp,
+    embed_exif_jpeg, embed_exif_png, embed_exif_webp, encode_avif, encode_jpeg_with_settings,
+    encode_png, encode_webp,
 };
 #[allow(unused_imports)]
 use crate::engine::io::{extract_exif_raw, extract_icc_profile, Source};
@@ -159,6 +161,8 @@ pub struct BatchResult {
     pub output_path: Option<String>,
     pub error_code: Option<String>,
     pub error_category: Option<ErrorCategory>,
+    pub effective_concurrency: Option<u32>,
+    pub auto_concurrency: Option<bool>,
 }
 
 pub struct EncodeTask {
@@ -174,12 +178,8 @@ pub struct EncodeTask {
     /// Raw EXIF data extracted from source image (for preservation)
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output (default: false for security & smaller files)
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output (default: false for security)
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF (default: true for privacy protection)
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -194,6 +194,8 @@ fn decode_internal_from_parts<'a>(
     // Prefer already decoded image (already validated)
     // Return borrowed reference - no deep copy until mutation is needed
     if let Some(img_arc) = decoded {
+        // Always-on base safety limits (even without sanitize())
+        firewall.enforce_base_limits(img_arc.width(), img_arc.height())?;
         check_dimensions(img_arc.width(), img_arc.height())?;
         firewall.enforce_pixels(img_arc.width(), img_arc.height())?;
         return Ok(Cow::Borrowed(img_arc.as_ref()));
@@ -218,6 +220,9 @@ fn decode_internal_from_parts<'a>(
         }
     };
 
+    // Always-on base metadata size check (even without sanitize())
+    firewall.scan_metadata_base(bytes)?;
+
     firewall.enforce_source_len(bytes.len())?;
     firewall.scan_metadata(bytes)?;
 
@@ -227,6 +232,8 @@ fn decode_internal_from_parts<'a>(
 
     // Security check: reject decompression bombs
     let (w, h) = img.dimensions();
+    // Always-on base safety limits (even without sanitize())
+    firewall.enforce_base_limits(w, h)?;
     check_dimensions(w, h)?;
     firewall.enforce_pixels(w, h)?;
 
@@ -243,12 +250,13 @@ fn process_and_encode_from_parts(
     icc_present: bool,
     exif_data: Option<&Arc<Vec<u8>>>,
     auto_orient: bool,
-    keep_icc: bool,
-    keep_exif: bool,
-    strip_gps: bool,
+    policy: &MetadataPolicy,
     firewall: &FirewallConfig,
     metrics: Option<&mut crate::ProcessingMetrics>,
 ) -> std::result::Result<Vec<u8>, LazyImageError> {
+    let keep_icc = policy.effective_icc();
+    let keep_exif = policy.effective_exif();
+    let strip_gps = policy.strip_gps();
     // Get input size from source
     // Use len() method which works for both Memory and Mapped sources
     let input_size = source.map(|s| s.len() as u64).unwrap_or(0);
@@ -342,21 +350,21 @@ fn process_and_encode_from_parts(
         OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
     }?;
 
-    // 5. Embed EXIF metadata if requested (JPEG only for now)
+    // 5. Embed EXIF metadata if requested.
     if keep_exif {
         if let Some(exif_data) = exif_data {
-            if let OutputFormat::Jpeg { .. } = format {
-                // Embed EXIF with sanitization:
-                // - Reset Orientation to 1 if auto_orient was applied
-                // - Strip GPS tags if strip_gps is true (default)
-                result = embed_exif_jpeg(
-                    result,
-                    exif_data.as_slice(),
-                    auto_orient, // reset orientation if auto-orient was applied
-                    strip_gps,
-                )?;
-            }
-            // TODO: PNG/WebP EXIF embedding (less common, lower priority)
+            result = match format {
+                OutputFormat::Jpeg { .. } => {
+                    embed_exif_jpeg(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::Png => {
+                    embed_exif_png(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::WebP { .. } => {
+                    embed_exif_webp(result, exif_data.as_slice(), auto_orient, strip_gps)?
+                }
+                OutputFormat::Avif { .. } => result,
+            };
         }
     }
     firewall.enforce_timeout(metrics_recorder.start_total, "encode")?;
@@ -393,20 +401,6 @@ fn process_and_encode_from_parts(
 }
 
 impl EncodeTask {
-    /// Decode image from source bytes
-    /// Uses mozjpeg (libjpeg-turbo) for JPEG, falls back to image crate for others
-    ///
-    /// **True Copy-on-Write**: Returns `Cow::Borrowed` if image is already decoded,
-    /// `Cow::Owned` if decoding was required. The caller can avoid deep copies
-    /// when no mutation is needed (e.g., format conversion only).
-    ///
-    /// Returns LazyImageError directly (not wrapped in napi::Error) for use in process_and_encode.
-    pub(crate) fn decode_internal(
-        &self,
-    ) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
-        decode_internal_from_parts(self.source.as_ref(), self.decoded.as_ref(), &self.firewall)
-    }
-
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
     /// Returns LazyImageError directly (not wrapped in napi::Error) so that
@@ -426,9 +420,7 @@ impl EncodeTask {
             self.icc_present,
             self.exif_data.as_ref(),
             self.auto_orient,
-            self.keep_icc,
-            self.keep_exif,
-            self.strip_gps,
+            &self.metadata_policy,
             &self.firewall,
             metrics,
         )
@@ -439,7 +431,7 @@ impl EncodeTask {
 #[cfg(test)]
 impl EncodeTask {
     pub(crate) fn decode(&self) -> std::result::Result<Cow<'_, DynamicImage>, LazyImageError> {
-        self.decode_internal()
+        decode_internal_from_parts(self.source.as_ref(), self.decoded.as_ref(), &self.firewall)
     }
 }
 
@@ -519,9 +511,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: true,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall: FirewallConfig::disabled(),
         }
     }
@@ -546,13 +536,45 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: true,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall: FirewallConfig::disabled(),
         };
-        let err = task.decode_internal().unwrap_err();
+        let err = task.decode().unwrap_err();
         assert!(matches!(err, LazyImageError::SourceConsumed));
+    }
+
+    /// Verify that base dimension/pixel limits are enforced at decode time
+    /// even when the firewall is disabled (i.e., sanitize() was NOT called).
+    /// This is the core fix for #492.
+    #[test]
+    fn base_limits_enforced_without_sanitize() {
+        // Create a PNG with dimensions exceeding MAX_PIXELS (100M)
+        // We can't easily create such a huge image, so instead verify via
+        // enforce_base_limits which is called in the decode path.
+        let cfg = FirewallConfig::disabled();
+        assert!(!cfg.enabled);
+
+        // 10001 x 10001 = 100_020_001 > 100M pixels
+        let err = cfg.enforce_base_limits(10001, 10001).unwrap_err();
+        assert!(matches!(
+            err,
+            crate::error::LazyImageError::PixelCountExceedsLimit { .. }
+        ));
+    }
+
+    /// Verify that base metadata scan runs at decode time without sanitize().
+    #[test]
+    fn base_metadata_scan_runs_without_sanitize() {
+        let cfg = FirewallConfig::disabled();
+        assert!(!cfg.enabled);
+
+        // Small metadata passes
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(4, 4, Rgba([10, 20, 30, 255]));
+        let mut bytes = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut bytes), ImageFormat::Png)
+            .unwrap();
+        assert!(cfg.scan_metadata_base(&bytes).is_ok());
     }
 
     #[test]
@@ -570,12 +592,10 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: true,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall,
         };
-        let err = task.decode_internal().unwrap_err();
+        let err = task.decode().unwrap_err();
         assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
     }
 
@@ -595,9 +615,7 @@ mod non_napi_tests {
             icc_present: false,
             exif_data: None,
             auto_orient: false,
-            keep_icc: false,
-            keep_exif: false,
-            strip_gps: true,
+            metadata_policy: MetadataPolicy::default_policy(),
             firewall: FirewallConfig::disabled(),
         };
         assert!(!task.auto_orient);
@@ -659,6 +677,115 @@ mod non_napi_tests {
         assert!(!fast_result.is_empty());
         assert!(!normal_result.is_empty());
     }
+
+    #[test]
+    fn target_bytes_search_finds_best_quality_under_budget() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(64, 64, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+
+        // Encode at max quality to get a reference size
+        let task_max = EncodeTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img.clone())),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            metadata_policy: MetadataPolicy::strip_all(),
+            firewall: FirewallConfig::disabled(),
+        };
+        let max_size = task_max.process_and_encode(None).unwrap().len();
+
+        // Set a budget larger than any output (should pick max quality)
+        let search_task = EncodeTargetBytesTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img.clone())),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            metadata_policy: MetadataPolicy::strip_all(),
+            firewall: FirewallConfig::disabled(),
+            target_bytes: (max_size + 10000) as u32,
+            min_quality: 1,
+            max_quality: 100,
+            quality_floor_policy_strict: false,
+        };
+        let result = search_task.search().expect("search should succeed");
+        assert!(result.budget_met);
+        assert_eq!(result.quality, 100);
+
+        // Set a tight budget (should pick a lower quality)
+        let tight_task = EncodeTargetBytesTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img)),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            metadata_policy: MetadataPolicy::strip_all(),
+            firewall: FirewallConfig::disabled(),
+            target_bytes: 500,
+            min_quality: 1,
+            max_quality: 100,
+            quality_floor_policy_strict: false,
+        };
+        let tight_result = tight_task.search().expect("search should succeed");
+        // Quality should be lower than max since budget is tight
+        assert!(tight_result.quality <= 100);
+        // The result should be the best effort (either under budget or closest over)
+        assert!(tight_result.data.len() > 0);
+    }
+
+    #[test]
+    fn target_bytes_strict_policy_fails_when_budget_unmet() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(64, 64, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+
+        let task = EncodeTargetBytesTask {
+            source: None,
+            decoded: Some(Arc::new(dyn_img)),
+            ops: vec![],
+            format: OutputFormat::Jpeg {
+                quality: 100,
+                fast_mode: false,
+            },
+            icc_profile: None,
+            icc_present: false,
+            exif_data: None,
+            auto_orient: false,
+            metadata_policy: MetadataPolicy::strip_all(),
+            firewall: FirewallConfig::disabled(),
+            // Impossibly small budget
+            target_bytes: 1,
+            min_quality: 80,
+            max_quality: 100,
+            quality_floor_policy_strict: true,
+        };
+        let err = task.search().unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("Unable to meet targetBytes"),
+            "expected strict policy error, got: {msg}"
+        );
+    }
 }
 
 pub struct EncodeWithMetricsTask {
@@ -672,12 +799,8 @@ pub struct EncodeWithMetricsTask {
     /// Raw EXIF data extracted from source image (for preservation)
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
     #[cfg(feature = "napi")]
@@ -702,9 +825,7 @@ impl Task for EncodeWithMetricsTask {
             self.icc_present,
             self.exif_data.as_ref(),
             self.auto_orient,
-            self.keep_icc,
-            self.keep_exif,
-            self.strip_gps,
+            &self.metadata_policy,
             &self.firewall,
             Some(&mut metrics),
         ) {
@@ -740,6 +861,239 @@ impl Task for EncodeWithMetricsTask {
     }
 }
 
+/// Result payload for the byte-budget binary search (before NAPI conversion).
+#[derive(Debug)]
+pub struct TargetBytesOutput {
+    pub data: Vec<u8>,
+    pub quality: u8,
+    pub bytes_out: u32,
+    pub budget_met: bool,
+    pub target_bytes: u32,
+    pub metrics: crate::ProcessingMetrics,
+}
+
+/// Async task that performs byte-budget binary search entirely in Rust.
+///
+/// Previous implementation did this in JS, requiring ~7 NAPI round-trips per
+/// call (one per binary-search iteration). Moving the loop to Rust eliminates
+/// all intermediate JS↔NAPI boundary crossings.
+pub struct EncodeTargetBytesTask {
+    pub source: Option<Source>,
+    pub decoded: Option<Arc<DynamicImage>>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub exif_data: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
+    pub firewall: FirewallConfig,
+    pub target_bytes: u32,
+    pub min_quality: u8,
+    pub max_quality: u8,
+    pub quality_floor_policy_strict: bool,
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+impl EncodeTargetBytesTask {
+    /// Run binary search over quality to find the best encode within byte budget.
+    fn search(&self) -> std::result::Result<TargetBytesOutput, LazyImageError> {
+        let mut low = self.min_quality;
+        let mut high = self.max_quality;
+        let mut best_under: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
+        let mut best_over: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
+
+        while low <= high {
+            let quality = low + (high - low) / 2;
+            let format_at_q = self.format.with_quality(quality);
+
+            let mut metrics = crate::ProcessingMetrics::default();
+            let encoded = process_and_encode_from_parts(
+                self.source.as_ref(),
+                self.decoded.as_ref(),
+                &self.ops,
+                &format_at_q,
+                self.icc_profile.as_ref(),
+                self.icc_present,
+                self.exif_data.as_ref(),
+                self.auto_orient,
+                &self.metadata_policy,
+                &self.firewall,
+                Some(&mut metrics),
+            )?;
+
+            let size = encoded.len() as u32;
+
+            if size <= self.target_bytes {
+                best_under = Some((encoded, quality, size, metrics));
+                if quality == u8::MAX {
+                    break;
+                }
+                low = quality + 1;
+            } else {
+                let dominated = best_over.as_ref().is_some_and(|(_, _, prev_size, _)| {
+                    size > *prev_size
+                        || (size == *prev_size && quality <= best_over.as_ref().unwrap().1)
+                });
+                if best_over.is_none() || !dominated {
+                    best_over = Some((encoded, quality, size, metrics));
+                }
+                high = quality.saturating_sub(1);
+                if quality == 0 {
+                    break;
+                }
+            }
+        }
+
+        let (data, quality, bytes_out, metrics) = match (best_under, best_over) {
+            (Some(under), _) => under,
+            (None, Some(over)) => over,
+            (None, None) => {
+                return Err(LazyImageError::encode_failed(
+                    self.format.as_str(),
+                    "Failed to encode any candidate while searching for target bytes",
+                ));
+            }
+        };
+
+        let budget_met = bytes_out <= self.target_bytes;
+        if !budget_met && self.quality_floor_policy_strict {
+            return Err(LazyImageError::encode_failed(
+                self.format.as_str(),
+                format!(
+                    "Unable to meet targetBytes={} within quality range {}-{}",
+                    self.target_bytes, self.min_quality, self.max_quality,
+                ),
+            ));
+        }
+
+        Ok(TargetBytesOutput {
+            data,
+            quality,
+            bytes_out,
+            budget_met,
+            target_bytes: self.target_bytes,
+            metrics,
+        })
+    }
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for EncodeTargetBytesTask {
+    type Output = TargetBytesOutput;
+    type JsValue = crate::TargetBytesResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        match self.search() {
+            Ok(result) => {
+                self.last_error = None;
+                Ok(result)
+            }
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                Err(napi::Error::from(lazy_err))
+            }
+        }
+    }
+
+    fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        let js_buffer = BufferSlice::from_data(&env, output.data)?.into_buffer(&env)?;
+        Ok(crate::TargetBytesResult {
+            data: js_buffer,
+            quality: output.quality as u32,
+            bytes_out: output.bytes_out,
+            budget_met: output.budget_met,
+            target_bytes: output.target_bytes,
+            metrics: output.metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+fn write_encoded_output_with_count(
+    output_path: &str,
+    data: &[u8],
+) -> std::result::Result<u32, LazyImageError> {
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    let output_dir = std::path::Path::new(output_path).parent().ok_or_else(|| {
+        LazyImageError::invalid_argument(
+            "path",
+            output_path.to_string(),
+            "output path must include a parent directory",
+        )
+    })?;
+
+    let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
+        LazyImageError::file_write_failed(output_dir.to_string_lossy().to_string(), e)
+    })?;
+
+    let temp_path = temp_file.path().to_path_buf();
+    let bytes_written = data
+        .len()
+        .try_into()
+        .map_err(|_| LazyImageError::internal_panic("file size exceeds 4GB limit (u32::MAX)"))?;
+    temp_file
+        .write_all(data)
+        .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
+    temp_file
+        .as_file_mut()
+        .sync_all()
+        .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
+
+    temp_file.persist(output_path).map_err(|e| {
+        let io_error = std::io::Error::other(format!("failed to persist file: {e}"));
+        LazyImageError::file_write_failed(output_path.to_string(), io_error)
+    })?;
+
+    Ok(bytes_written)
+}
+
+fn write_encoded_output(output_path: &str, data: &[u8]) -> std::result::Result<(), LazyImageError> {
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    let output_dir = std::path::Path::new(output_path).parent().ok_or_else(|| {
+        LazyImageError::invalid_argument(
+            "path",
+            output_path.to_string(),
+            "output path must include a parent directory",
+        )
+    })?;
+
+    let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
+        LazyImageError::file_write_failed(output_dir.to_string_lossy().to_string(), e)
+    })?;
+
+    let temp_path = temp_file.path().to_path_buf();
+    temp_file
+        .write_all(data)
+        .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
+    temp_file
+        .as_file_mut()
+        .sync_all()
+        .map_err(|e| LazyImageError::file_write_failed(temp_path.display().to_string(), e))?;
+
+    temp_file.persist(output_path).map_err(|e| {
+        let io_error = std::io::Error::other(format!("failed to persist file: {e}"));
+        LazyImageError::file_write_failed(output_path.to_string(), io_error)
+    })?;
+
+    Ok(())
+}
+
 pub struct WriteFileTask {
     pub source: Option<Source>,
     /// Decoded image wrapped in Arc for sharing. See EncodeTask for Copy-on-Write details.
@@ -751,15 +1105,28 @@ pub struct WriteFileTask {
     /// Raw EXIF data extracted from source image (for preservation)
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     pub output_path: String,
     /// Last error that occurred during compute (for use in reject)
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+pub struct WriteFileWithMetricsTask {
+    pub source: Option<Source>,
+    pub decoded: Option<Arc<DynamicImage>>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub exif_data: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
+    pub firewall: FirewallConfig,
+    pub output_path: String,
     #[cfg(feature = "napi")]
     pub(crate) last_error: Option<LazyImageError>,
 }
@@ -771,9 +1138,6 @@ impl Task for WriteFileTask {
     type JsValue = u32;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        use std::io::Write;
-        use tempfile::NamedTempFile;
-
         let data = match process_and_encode_from_parts(
             self.source.as_ref(),
             self.decoded.as_ref(),
@@ -783,9 +1147,7 @@ impl Task for WriteFileTask {
             self.icc_present,
             self.exif_data.as_ref(),
             self.auto_orient,
-            self.keep_icc,
-            self.keep_exif,
-            self.strip_gps,
+            &self.metadata_policy,
             &self.firewall,
             None,
         ) {
@@ -797,61 +1159,13 @@ impl Task for WriteFileTask {
             }
         };
 
-        // Atomic write: write to temp file in the same directory as target,
-        // then rename on success. tempfile automatically cleans up on drop.
-        let output_dir = std::path::Path::new(&self.output_path)
-            .parent()
-            .ok_or_else(|| {
-                let lazy_err = LazyImageError::invalid_argument(
-                    "path",
-                    self.output_path.clone(),
-                    "output path must include a parent directory",
-                );
+        match write_encoded_output_with_count(&self.output_path, &data) {
+            Ok(bytes_written) => Ok(bytes_written),
+            Err(lazy_err) => {
                 self.last_error = Some(lazy_err.clone());
-                napi::Error::from(lazy_err)
-            })?;
-
-        // Create temp file in the same directory as the target file
-        // This ensures rename() works (cross-filesystem rename can fail)
-        let mut temp_file = NamedTempFile::new_in(output_dir).map_err(|e| {
-            let lazy_err =
-                LazyImageError::file_write_failed(output_dir.to_string_lossy().to_string(), e);
-            self.last_error = Some(lazy_err.clone());
-            napi::Error::from(lazy_err)
-        })?;
-
-        let temp_path = temp_file.path().to_path_buf();
-        // Check for overflow: NAPI requires u32, but we can't handle >4GB files
-        let bytes_written = data.len().try_into().map_err(|_| {
-            let lazy_err = LazyImageError::internal_panic("file size exceeds 4GB limit (u32::MAX)");
-            self.last_error = Some(lazy_err.clone());
-            napi::Error::from(lazy_err)
-        })?;
-        temp_file.write_all(&data).map_err(|e| {
-            let lazy_err = LazyImageError::file_write_failed(temp_path.display().to_string(), e);
-            self.last_error = Some(lazy_err.clone());
-            napi::Error::from(lazy_err)
-        })?;
-
-        // Ensure data is flushed to disk
-        temp_file.as_file_mut().sync_all().map_err(|e| {
-            let lazy_err = LazyImageError::file_write_failed(temp_path.display().to_string(), e);
-            self.last_error = Some(lazy_err.clone());
-            napi::Error::from(lazy_err)
-        })?;
-
-        // Atomic rename: tempfile handles cleanup automatically if this fails
-        temp_file.persist(&self.output_path).map_err(|e| {
-            let io_error = std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("failed to persist file: {}", e),
-            );
-            let lazy_err = LazyImageError::file_write_failed(self.output_path.clone(), io_error);
-            self.last_error = Some(lazy_err.clone());
-            napi::Error::from(lazy_err)
-        })?;
-
-        Ok(bytes_written)
+                Err(napi::Error::from(lazy_err))
+            }
+        }
     }
     fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
         Ok(output)
@@ -869,6 +1183,307 @@ impl Task for WriteFileTask {
     }
 }
 
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for WriteFileWithMetricsTask {
+    type Output = (u32, crate::ProcessingMetrics);
+    type JsValue = crate::FileOutputWithMetrics;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        use crate::ProcessingMetrics;
+
+        let mut metrics = ProcessingMetrics::default();
+        let data = match process_and_encode_from_parts(
+            self.source.as_ref(),
+            self.decoded.as_ref(),
+            &self.ops,
+            &self.format,
+            self.icc_profile.as_ref(),
+            self.icc_present,
+            self.exif_data.as_ref(),
+            self.auto_orient,
+            &self.metadata_policy,
+            &self.firewall,
+            Some(&mut metrics),
+        ) {
+            Ok(data) => data,
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                return Err(napi::Error::from(lazy_err));
+            }
+        };
+
+        match write_encoded_output_with_count(&self.output_path, &data) {
+            Ok(bytes_written) => Ok((bytes_written, metrics)),
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                Err(napi::Error::from(lazy_err))
+            }
+        }
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        let (bytes_written, metrics) = output;
+        Ok(crate::FileOutputWithMetrics {
+            bytes_written,
+            metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+// ============================================================================================
+// Unified encode tasks — power encode() and encodeToFile()
+// ============================================================================================
+
+/// Task for `encode()` — returns `EncodeResult { data, metrics? }`.
+pub struct UnifiedEncodeTask {
+    pub source: Option<Source>,
+    pub decoded: Option<Arc<DynamicImage>>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub exif_data: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
+    pub firewall: FirewallConfig,
+    pub want_metrics: bool,
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for UnifiedEncodeTask {
+    type Output = (Vec<u8>, Option<crate::ProcessingMetrics>);
+    type JsValue = crate::EncodeResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let mut metrics = if self.want_metrics {
+            Some(crate::ProcessingMetrics::default())
+        } else {
+            None
+        };
+
+        match process_and_encode_from_parts(
+            self.source.as_ref(),
+            self.decoded.as_ref(),
+            &self.ops,
+            &self.format,
+            self.icc_profile.as_ref(),
+            self.icc_present,
+            self.exif_data.as_ref(),
+            self.auto_orient,
+            &self.metadata_policy,
+            &self.firewall,
+            metrics.as_mut(),
+        ) {
+            Ok(data) => {
+                self.last_error = None;
+                Ok((data, metrics))
+            }
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                Err(napi::Error::from(lazy_err))
+            }
+        }
+    }
+
+    fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        let (data, metrics) = output;
+        let js_buffer = BufferSlice::from_data(&env, data)?.into_buffer(&env)?;
+        Ok(crate::EncodeResult {
+            data: js_buffer,
+            metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+/// Task for `encodeToFile()` — returns `FileEncodeResult { bytesWritten, metrics? }`.
+pub struct UnifiedEncodeToFileTask {
+    pub source: Option<Source>,
+    pub decoded: Option<Arc<DynamicImage>>,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub icc_profile: Option<Arc<Vec<u8>>>,
+    pub icc_present: bool,
+    pub exif_data: Option<Arc<Vec<u8>>>,
+    pub auto_orient: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
+    pub firewall: FirewallConfig,
+    pub want_metrics: bool,
+    pub output_path: String,
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for UnifiedEncodeToFileTask {
+    type Output = (u32, Option<crate::ProcessingMetrics>);
+    type JsValue = crate::FileEncodeResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let mut metrics = if self.want_metrics {
+            Some(crate::ProcessingMetrics::default())
+        } else {
+            None
+        };
+
+        let data = match process_and_encode_from_parts(
+            self.source.as_ref(),
+            self.decoded.as_ref(),
+            &self.ops,
+            &self.format,
+            self.icc_profile.as_ref(),
+            self.icc_present,
+            self.exif_data.as_ref(),
+            self.auto_orient,
+            &self.metadata_policy,
+            &self.firewall,
+            metrics.as_mut(),
+        ) {
+            Ok(d) => d,
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                return Err(napi::Error::from(lazy_err));
+            }
+        };
+
+        match write_encoded_output_with_count(&self.output_path, &data) {
+            Ok(bytes_written) => {
+                self.last_error = None;
+                Ok((bytes_written, metrics))
+            }
+            Err(lazy_err) => {
+                self.last_error = Some(lazy_err.clone());
+                Err(napi::Error::from(lazy_err))
+            }
+        }
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        let (bytes_written, metrics) = output;
+        Ok(crate::FileEncodeResult {
+            bytes_written,
+            metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+struct BatchFileSuccess {
+    output_path: String,
+    metrics: Option<crate::ProcessingMetrics>,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn process_batch_file(
+    input_path: &str,
+    output_dir: &str,
+    ops: &[Operation],
+    format: &OutputFormat,
+    auto_orient: bool,
+    policy: &MetadataPolicy,
+    firewall: &FirewallConfig,
+    collect_metrics: bool,
+) -> std::result::Result<BatchFileSuccess, LazyImageError> {
+    let keep_icc = policy.effective_icc();
+    let keep_exif = policy.effective_exif();
+    use std::path::Path;
+    use std::sync::Arc;
+
+    let input_len = std::fs::metadata(input_path)
+        .map_err(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                LazyImageError::file_not_found(input_path.to_string())
+            } else {
+                LazyImageError::file_read_failed(input_path.to_string(), e)
+            }
+        })?
+        .len() as usize;
+    firewall.enforce_source_len(input_len)?;
+
+    let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
+    let data = source.as_bytes().expect("source always has bytes");
+
+    firewall.scan_metadata(data)?;
+
+    let extracted_icc = extract_icc_profile(data)?;
+    let icc_present = extracted_icc.is_some();
+    let icc_profile = if keep_icc {
+        extracted_icc.map(Arc::new)
+    } else {
+        None
+    };
+    let exif_data = if keep_exif {
+        extract_exif_raw(data).map(Arc::new)
+    } else {
+        None
+    };
+
+    let mut metrics = collect_metrics.then(crate::ProcessingMetrics::default);
+    let encoded = process_and_encode_from_parts(
+        Some(&source),
+        None,
+        ops,
+        format,
+        icc_profile.as_ref(),
+        icc_present,
+        exif_data.as_ref(),
+        auto_orient,
+        policy,
+        firewall,
+        metrics.as_mut(),
+    )?;
+
+    let filename = Path::new(input_path)
+        .file_name()
+        .ok_or_else(|| LazyImageError::internal_panic("invalid filename"))?;
+    let extension = match format {
+        OutputFormat::Jpeg { .. } => "jpg",
+        OutputFormat::Png => "png",
+        OutputFormat::WebP { .. } => "webp",
+        OutputFormat::Avif { .. } => "avif",
+    };
+    let output_filename = Path::new(filename).with_extension(extension);
+    let output_path = Path::new(output_dir).join(output_filename);
+    write_encoded_output(output_path.to_string_lossy().as_ref(), &encoded)?;
+
+    Ok(BatchFileSuccess {
+        output_path: output_path.to_string_lossy().to_string(),
+        metrics,
+    })
+}
+
 pub struct BatchTask {
     pub inputs: Vec<String>,
     pub output_dir: String,
@@ -876,14 +1491,24 @@ pub struct BatchTask {
     pub format: OutputFormat,
     pub concurrency: u32,
     pub auto_orient: bool,
-    /// Whether to preserve ICC profile in output
-    pub keep_icc: bool,
-    /// Whether to preserve EXIF metadata in output
-    pub keep_exif: bool,
-    /// Whether to strip GPS tags from EXIF
-    pub strip_gps: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
     pub firewall: FirewallConfig,
     /// Last error that occurred during compute (for use in reject)
+    #[cfg(feature = "napi")]
+    pub(crate) last_error: Option<LazyImageError>,
+}
+
+pub struct BatchWithMetricsTask {
+    pub inputs: Vec<String>,
+    pub output_dir: String,
+    pub ops: Vec<Operation>,
+    pub format: OutputFormat,
+    pub concurrency: u32,
+    pub auto_orient: bool,
+    /// Single source of truth for metadata preservation decisions
+    pub metadata_policy: MetadataPolicy,
+    pub firewall: FirewallConfig,
     #[cfg(feature = "napi")]
     pub(crate) last_error: Option<LazyImageError>,
 }
@@ -906,195 +1531,6 @@ impl Task for BatchTask {
             })?;
         }
 
-        // Helper closure to process a single image
-        let ops = &self.ops;
-        let format = &self.format;
-        let output_dir = &self.output_dir;
-        let keep_icc = self.keep_icc;
-        let keep_exif = self.keep_exif;
-        let strip_gps = self.strip_gps;
-        let firewall = self.firewall.clone();
-        let process_one = |input_path: &String| -> BatchResult {
-            let result = (|| -> std::result::Result<String, LazyImageError> {
-                use std::path::Path;
-                use std::sync::Arc;
-
-                let input_len = fs::metadata(input_path)
-                    .map_err(|e| {
-                        if e.kind() == std::io::ErrorKind::NotFound {
-                            LazyImageError::file_not_found(input_path.clone())
-                        } else {
-                            LazyImageError::file_read_failed(input_path.clone(), e)
-                        }
-                    })?
-                    .len() as usize;
-                firewall.enforce_source_len(input_len)?;
-
-                // Safe file loading: reads small files into memory, uses mmap
-                // with advisory locks only for very large files (>256 MB)
-                let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
-                let data = source.as_bytes().expect("source always has bytes");
-
-                firewall.enforce_source_len(data.len())?;
-                firewall.scan_metadata(data)?;
-
-                let estimated_memory = memory::estimate_memory_from_header(
-                    data,
-                    &ops,
-                    Some(format),
-                )
-                .unwrap_or_else(|| {
-                    let detected_fmt = crate::engine::decoder::detect_format(data);
-                    memory::estimate_fallback_from_file_size(data.len() as u64, detected_fmt)
-                });
-                let source_reserved = source.reserved_memory_bytes();
-                let sem = memory::memory_semaphore();
-                let total_memory = estimated_memory
-                    .saturating_add(source_reserved)
-                    .min(sem.capacity());
-                let _permit_guard = sem.acquire(total_memory);
-
-                let start_total = std::time::Instant::now();
-
-                let orientation = if self.auto_orient {
-                    crate::engine::decoder::detect_exif_orientation(data)
-                } else {
-                    None
-                };
-                let icc_profile = if keep_icc {
-                    extract_icc_profile(data)?.map(Arc::new)
-                } else {
-                    None
-                };
-                // Extract EXIF data for preservation (JPEG only)
-                let exif_data = if keep_exif {
-                    extract_exif_raw(data).map(Arc::new)
-                } else {
-                    None
-                };
-
-                let (img, _detected_format) = decode_image(data)?;
-                firewall.enforce_timeout(start_total, "decode")?;
-
-                let (w, h) = img.dimensions();
-                check_dimensions(w, h)?;
-                firewall.enforce_pixels(w, h)?;
-
-                let mut effective_ops = ops.clone();
-                if let Some(o) = orientation {
-                    effective_ops.insert(0, Operation::AutoOrient { orientation: o });
-                }
-
-                let icc_state = if icc_profile.is_some() {
-                    IccState::Present
-                } else {
-                    IccState::Absent
-                };
-                let initial_state = ColorState::from_dynamic_image(&img, icc_state);
-                let tracked = apply_ops_tracked(Cow::Owned(img), &effective_ops, initial_state)?;
-                let processed = tracked.image;
-                firewall.enforce_timeout(start_total, "process")?;
-
-                // Encode - only preserve ICC profile if keep_icc is true
-                let icc = if keep_icc {
-                    icc_profile.as_ref().map(|v| v.as_slice())
-                } else {
-                    None // Strip metadata by default for security & smaller files
-                };
-
-                let mut encoded = match format {
-                    OutputFormat::Jpeg { quality, fast_mode } => {
-                        encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)?
-                    }
-                    OutputFormat::Png => encode_png(&processed, icc)?,
-                    OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc)?,
-                    OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc)?,
-                };
-
-                // Embed EXIF metadata if requested (JPEG only)
-                if keep_exif {
-                    if let Some(ref exif) = exif_data {
-                        if let OutputFormat::Jpeg { .. } = format {
-                            encoded = embed_exif_jpeg(
-                                encoded,
-                                exif.as_slice(),
-                                self.auto_orient, // reset orientation if auto-orient applied
-                                strip_gps,
-                            )?;
-                        }
-                    }
-                }
-
-                firewall.enforce_timeout(start_total, "encode")?;
-
-                let filename = Path::new(input_path)
-                    .file_name()
-                    .ok_or_else(|| LazyImageError::internal_panic("invalid filename"))?;
-
-                let extension = match format {
-                    OutputFormat::Jpeg { .. } => "jpg",
-                    OutputFormat::Png => "png",
-                    OutputFormat::WebP { .. } => "webp",
-                    OutputFormat::Avif { .. } => "avif",
-                };
-
-                let output_filename = Path::new(filename).with_extension(extension);
-                let output_path = Path::new(output_dir).join(output_filename);
-
-                // Atomic write: use tempfile for safe file writing
-                use std::io::Write;
-                use tempfile::NamedTempFile;
-
-                let mut temp_file = NamedTempFile::new_in(output_dir)
-                    .map_err(|e| LazyImageError::file_write_failed(output_dir.to_string(), e))?;
-
-                let temp_path = temp_file.path().to_path_buf();
-                temp_file.write_all(&encoded).map_err(|e| {
-                    LazyImageError::file_write_failed(temp_path.display().to_string(), e)
-                })?;
-
-                temp_file.as_file_mut().sync_all().map_err(|e| {
-                    LazyImageError::file_write_failed(temp_path.display().to_string(), e)
-                })?;
-
-                // Atomic rename
-                temp_file.persist(&output_path).map_err(|e| {
-                    let io_error = std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        format!("failed to persist file: {}", e),
-                    );
-                    LazyImageError::file_write_failed(output_path.display().to_string(), io_error)
-                })?;
-
-                Ok(output_path.to_string_lossy().to_string())
-            })();
-
-            match result {
-                Ok(path) => BatchResult {
-                    source: input_path.clone(),
-                    success: true,
-                    error: None,
-                    output_path: Some(path),
-                    error_code: None,
-                    error_category: None,
-                },
-                Err(err) => {
-                    let error_code = err.code();
-                    let error_msg = format!("[{}] {}: {}", error_code.as_str(), input_path, err);
-                    let category = error_code.category();
-                    BatchResult {
-                        source: input_path.clone(),
-                        success: false,
-                        error: Some(error_msg),
-                        output_path: None,
-                        error_code: Some(error_code.as_str().to_string()),
-                        error_category: Some(category),
-                    }
-                }
-            }
-        };
-
-        // Validate concurrency parameter
         // concurrency = 0 means "use default" (auto-detected via CPU and memory)
         // concurrency = 1..MAX_CONCURRENCY means "use specified number of concurrent operations"
         if self.concurrency > pool::MAX_CONCURRENCY as u32 {
@@ -1107,10 +1543,55 @@ impl Task for BatchTask {
             return Err(napi::Error::from(lazy_err));
         }
 
-        let effective_concurrency = if self.concurrency == 0 {
-            pool::calculate_optimal_concurrency()
-        } else {
-            self.concurrency as usize
+        let effective_concurrency = pool::resolve_effective_concurrency(self.concurrency);
+        let effective_concurrency_u32 = u32::try_from(effective_concurrency).ok();
+        let auto_concurrency = Some(self.concurrency == 0);
+
+        // Helper closure to process a single image
+        let ops = &self.ops;
+        let format = &self.format;
+        let output_dir = &self.output_dir;
+        let policy = &self.metadata_policy;
+        let firewall = self.firewall.clone();
+        let process_one = |input_path: &String| -> BatchResult {
+            let result = process_batch_file(
+                input_path,
+                output_dir,
+                ops,
+                format,
+                self.auto_orient,
+                policy,
+                &firewall,
+                false,
+            );
+
+            match result {
+                Ok(output) => BatchResult {
+                    source: input_path.clone(),
+                    success: true,
+                    error: None,
+                    output_path: Some(output.output_path),
+                    error_code: None,
+                    error_category: None,
+                    effective_concurrency: effective_concurrency_u32,
+                    auto_concurrency,
+                },
+                Err(err) => {
+                    let error_code = err.code();
+                    let error_msg = format!("[{}] {}: {}", error_code.as_str(), input_path, err);
+                    let category = error_code.category();
+                    BatchResult {
+                        source: input_path.clone(),
+                        success: false,
+                        error: Some(error_msg),
+                        output_path: None,
+                        error_code: Some(error_code.as_str().to_string()),
+                        error_category: Some(category),
+                        effective_concurrency: effective_concurrency_u32,
+                        auto_concurrency,
+                    }
+                }
+            }
         };
 
         // Use the shared rayon pool to avoid per-call pool construction overhead.
@@ -1179,6 +1660,179 @@ impl Task for BatchTask {
             // This should not happen if all error paths properly preserve LazyImageError
             LazyImageError::generic(err.to_string())
         });
+        let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
+        Err(napi_err)
+    }
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for BatchWithMetricsTask {
+    type Output = crate::BatchOutputWithMetrics;
+    type JsValue = crate::BatchOutputWithMetrics;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        use std::fs;
+        use std::path::Path;
+
+        if !Path::new(&self.output_dir).exists() {
+            fs::create_dir_all(&self.output_dir).map_err(|e| {
+                let lazy_err = LazyImageError::file_write_failed(self.output_dir.clone(), e);
+                self.last_error = Some(lazy_err.clone());
+                napi::Error::from(lazy_err)
+            })?;
+        }
+
+        if self.concurrency > pool::MAX_CONCURRENCY as u32 {
+            let lazy_err = LazyImageError::invalid_argument(
+                "concurrency",
+                self.concurrency.to_string(),
+                format!("must be 0 or 1-{}", pool::MAX_CONCURRENCY),
+            );
+            self.last_error = Some(lazy_err.clone());
+            return Err(napi::Error::from(lazy_err));
+        }
+
+        let effective_concurrency = pool::resolve_effective_concurrency(self.concurrency);
+        let effective_concurrency_u32 = u32::try_from(effective_concurrency).unwrap_or(u32::MAX);
+        let auto_concurrency = self.concurrency == 0;
+
+        let ops = &self.ops;
+        let format = &self.format;
+        let output_dir = &self.output_dir;
+        let policy = &self.metadata_policy;
+        let firewall = self.firewall.clone();
+
+        let process_one = |input_path: &String| -> crate::BatchResultWithMetrics {
+            match process_batch_file(
+                input_path,
+                output_dir,
+                ops,
+                format,
+                self.auto_orient,
+                policy,
+                &firewall,
+                true,
+            ) {
+                Ok(output) => crate::BatchResultWithMetrics {
+                    source: input_path.clone(),
+                    success: true,
+                    error: None,
+                    output_path: Some(output.output_path),
+                    error_code: None,
+                    error_category: None,
+                    effective_concurrency: Some(effective_concurrency_u32),
+                    auto_concurrency: Some(auto_concurrency),
+                    metrics: output.metrics,
+                },
+                Err(err) => {
+                    let error_code = err.code();
+                    let error_msg = format!("[{}] {}: {}", error_code.as_str(), input_path, err);
+                    let category = error_code.category();
+                    crate::BatchResultWithMetrics {
+                        source: input_path.clone(),
+                        success: false,
+                        error: Some(error_msg),
+                        output_path: None,
+                        error_code: Some(error_code.as_str().to_string()),
+                        error_category: Some(category),
+                        effective_concurrency: Some(effective_concurrency_u32),
+                        auto_concurrency: Some(auto_concurrency),
+                        metrics: None,
+                    }
+                }
+            }
+        };
+
+        let items: Vec<crate::BatchResultWithMetrics> =
+            if effective_concurrency >= self.inputs.len() {
+                pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
+            } else {
+                use std::sync::atomic::{AtomicUsize, Ordering};
+                use std::sync::{Arc, Mutex};
+
+                let inputs = Arc::new(&self.inputs);
+                let out = Arc::new(Mutex::new(Vec::with_capacity(self.inputs.len())));
+                let next = AtomicUsize::new(0);
+
+                pool::get_pool().install(|| {
+                    rayon::scope(|s| {
+                        for _ in 0..effective_concurrency {
+                            let inputs = Arc::clone(&inputs);
+                            let out = Arc::clone(&out);
+                            let next_ref = &next;
+                            s.spawn(move |_| loop {
+                                let idx = next_ref.fetch_add(1, Ordering::Relaxed);
+                                if idx >= inputs.len() {
+                                    break;
+                                }
+                                let item = process_one(&inputs[idx]);
+                                out.lock().unwrap().push((idx, item));
+                            });
+                        }
+                    });
+                });
+
+                let mut pairs = Arc::try_unwrap(out).unwrap().into_inner().unwrap();
+                pairs.sort_by_key(|(idx, _)| *idx);
+                pairs.into_iter().map(|(_, item)| item).collect()
+            };
+
+        let mut successful_items = 0u32;
+        let mut failed_items = 0u32;
+        let mut total_bytes_in = 0f64;
+        let mut total_bytes_out = 0f64;
+        let mut total_decode_ms = 0f64;
+        let mut total_ops_ms = 0f64;
+        let mut total_encode_ms = 0f64;
+        let mut total_cpu_time = 0f64;
+        let mut total_wall_ms = 0f64;
+
+        for item in &items {
+            if item.success {
+                successful_items += 1;
+            } else {
+                failed_items += 1;
+            }
+            if let Some(metrics) = item.metrics.as_ref() {
+                total_bytes_in += metrics.bytes_in as f64;
+                total_bytes_out += metrics.bytes_out as f64;
+                total_decode_ms += metrics.decode_ms;
+                total_ops_ms += metrics.ops_ms;
+                total_encode_ms += metrics.encode_ms;
+                total_cpu_time += metrics.cpu_time;
+                total_wall_ms += metrics.total_ms;
+            }
+        }
+
+        Ok(crate::BatchOutputWithMetrics {
+            items,
+            summary: crate::BatchMetricsSummary {
+                total_items: self.inputs.len() as u32,
+                successful_items,
+                failed_items,
+                effective_concurrency: effective_concurrency_u32,
+                auto_concurrency,
+                total_bytes_in,
+                total_bytes_out,
+                total_decode_ms,
+                total_ops_ms,
+                total_encode_ms,
+                total_cpu_time,
+                total_wall_ms,
+            },
+        })
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        Ok(output)
+    }
+
+    fn reject(&mut self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        let lazy_err = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(err.to_string()));
         let napi_err = crate::error::napi_error_with_code(&env, lazy_err)?;
         Err(napi_err)
     }

@@ -21,7 +21,7 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.flipH()` | Flip horizontally |
 | `.flipV()` | Flip vertically |
 | `.grayscale()` | Convert to grayscale |
-| `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy. See [ARCHITECTURE.md](./ARCHITECTURE.md#metadata-handling). |
+| `.keepMetadata(options?)` | Preserve ICC and EXIF metadata. GPS stripped by default for privacy. XMP is not currently preserved. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md). |
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without color space conversion. |
@@ -39,8 +39,12 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
 | `.toBufferWithMetricsProfile(format, profile, quality?)` | Profile-based encode with metrics. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
+| `.toFileWithMetrics(path, format, quality?)` | File output with metrics. Returns `{ bytesWritten, metrics }`. |
+| `.toBufferTargetBytes(format, options)` | Searches quality to stay under a byte budget. Returns `{ data, quality, bytesOut, budgetMet, targetBytes, metrics }`. |
+| `.toFileTargetBytes(path, format, options)` | File variant of byte-budget encoding. Returns `{ bytesWritten, quality, budgetMet, targetBytes, metrics }`. |
 | `.toFileProfile(path, format, profile, quality?)` | Profile-based file encode. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |
+| `.processBatchWithMetrics(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Batch processing with per-item metrics and a summary. |
 | `.clone()` | Clone the engine for multi-output (e.g. same pipeline to JPEG + WebP + AVIF). |
 
 ## Utilities
@@ -52,7 +56,7 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.dimensions()` | Get `{ width, height }` (requires decode) |
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
 | `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
-| `createStreamingPipeline({ format, quality, ops })` | Disk-backed bounded-memory pipeline. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#streaming). |
+| `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Not a true chunk-by-chunk transform stream. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
 
 ---
 
@@ -131,11 +135,70 @@ interface OutputWithMetrics {
   metrics: ProcessingMetrics;
 }
 
+interface FileOutputWithMetrics {
+  bytesWritten: number;
+  metrics: ProcessingMetrics;
+}
+
+interface TargetBytesOptions {
+  targetBytes?: number;
+  maxBytes?: number;
+  minQuality?: number;
+  maxQuality?: number;
+  fastMode?: boolean;
+  qualityFloorPolicy?: 'best-effort' | 'strict';
+}
+
+interface BufferTargetBytesResult {
+  data: Buffer;
+  quality: number;
+  bytesOut: number;
+  budgetMet: boolean;
+  targetBytes: number;
+  metrics: ProcessingMetrics;
+}
+
+interface FileTargetBytesResult {
+  bytesWritten: number;
+  quality: number;
+  budgetMet: boolean;
+  targetBytes: number;
+  metrics: ProcessingMetrics;
+}
+
 interface BatchResult {
   source: string;
   success: boolean;
   error?: string;
   outputPath?: string;
+  errorCode?: string;
+  errorCategory?: ErrorCategory;
+  effectiveConcurrency?: number;
+  autoConcurrency?: boolean;
+}
+
+interface BatchResultWithMetrics extends BatchResult {
+  metrics?: ProcessingMetrics;
+}
+
+interface BatchMetricsSummary {
+  totalItems: number;
+  successfulItems: number;
+  failedItems: number;
+  effectiveConcurrency: number;
+  autoConcurrency: boolean;
+  totalBytesIn: number;
+  totalBytesOut: number;
+  totalDecodeMs: number;
+  totalOpsMs: number;
+  totalEncodeMs: number;
+  totalCpuTime: number;
+  totalWallMs: number;
+}
+
+interface BatchOutputWithMetrics {
+  items: BatchResultWithMetrics[];
+  summary: BatchMetricsSummary;
 }
 ```
 

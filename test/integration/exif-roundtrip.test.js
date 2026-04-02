@@ -63,6 +63,67 @@ function parseExifFromJpeg(buffer) {
   return result;
 }
 
+function parseExifFromPng(buffer) {
+  const result = { hasExif: false, orientation: null, hasGps: false };
+  const signature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+  if (buffer.length < 8 || !buffer.subarray(0, 8).equals(signature)) {
+    return result;
+  }
+
+  let offset = 8;
+  while (offset + 8 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.subarray(offset + 4, offset + 8).toString('ascii');
+    const dataStart = offset + 8;
+    const dataEnd = dataStart + length;
+    if (dataEnd + 4 > buffer.length) break;
+
+    if (type === 'eXIf') {
+      result.hasExif = true;
+      const parsed = parseTiff(buffer.subarray(dataStart, dataEnd));
+      result.orientation = parsed.orientation;
+      result.hasGps = parsed.hasGps;
+      break;
+    }
+
+    offset = dataEnd + 4;
+  }
+
+  return result;
+}
+
+function parseExifFromWebP(buffer) {
+  const result = { hasExif: false, orientation: null, hasGps: false };
+  if (buffer.length < 16 || buffer.subarray(0, 4).toString('ascii') !== 'RIFF' || buffer.subarray(8, 12).toString('ascii') !== 'WEBP') {
+    return result;
+  }
+
+  let offset = 12;
+  while (offset + 8 <= buffer.length) {
+    const chunkId = buffer.subarray(offset, offset + 4).toString('ascii');
+    const chunkSize = buffer.readUInt32LE(offset + 4);
+    const dataStart = offset + 8;
+    const dataEnd = dataStart + chunkSize;
+    if (dataEnd > buffer.length) break;
+
+    if (chunkId === 'EXIF') {
+      let exif = buffer.subarray(dataStart, dataEnd);
+      if (exif.subarray(0, 6).toString() === 'Exif\0\0') {
+        exif = exif.subarray(6);
+      }
+      result.hasExif = true;
+      const parsed = parseTiff(exif);
+      result.orientation = parsed.orientation;
+      result.hasGps = parsed.hasGps;
+      break;
+    }
+
+    offset = dataEnd + (chunkSize % 2);
+  }
+
+  return result;
+}
+
 function parseTiff(tiff) {
   const result = { orientation: null, hasGps: false };
   
@@ -177,6 +238,28 @@ async function main() {
     .toBuffer('jpeg', 80);
   assert(bothPreserved.length > 0, 'Should produce output with both ICC and EXIF');
   console.log('  ✅ Successfully processed with ICC + EXIF');
+
+  // Test 6: PNG output preserves EXIF when requested
+  console.log('\nTest 6: PNG output preserves EXIF');
+  const pngOutput = await ImageEngine.fromPath(input)
+    .keepMetadata({ exif: true })
+    .toBuffer('png');
+  const pngExif = parseExifFromPng(pngOutput);
+  assert.strictEqual(pngExif.hasExif, true, 'PNG output should contain EXIF');
+  assert.strictEqual(pngExif.orientation, 1, 'PNG EXIF orientation should be reset to 1');
+  assert.strictEqual(pngExif.hasGps, false, 'PNG EXIF should strip GPS by default');
+  console.log('  ✅ PNG EXIF preserved with sanitized metadata');
+
+  // Test 7: WebP output preserves EXIF when requested
+  console.log('\nTest 7: WebP output preserves EXIF');
+  const webpOutput = await ImageEngine.fromPath(input)
+    .keepMetadata({ exif: true })
+    .toBuffer('webp', 80);
+  const webpExif = parseExifFromWebP(webpOutput);
+  assert.strictEqual(webpExif.hasExif, true, 'WebP output should contain EXIF');
+  assert.strictEqual(webpExif.orientation, 1, 'WebP EXIF orientation should be reset to 1');
+  assert.strictEqual(webpExif.hasGps, false, 'WebP EXIF should strip GPS by default');
+  console.log('  ✅ WebP EXIF preserved with sanitized metadata');
   
   console.log('\n' + '='.repeat(50));
   console.log('✅ All EXIF roundtrip tests passed!');

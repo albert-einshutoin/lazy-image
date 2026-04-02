@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.12.0"
+version = "0.13.0"
 edition = "2021"
 description = "Web image optimization engine - smaller outputs than sharp, powered by Rust + mozjpeg"
 license = "MIT"
@@ -62,7 +62,7 @@ libavif-sys = { version = "0.17", default-features = false, features = ["codec-r
 
 # Debug/logging (only used when cow-debug feature is enabled)
 tracing = { version = "0.1", default-features = false, features = ["std"], optional = true }
-once_cell = { version = "1.19", optional = true }
+once_cell = { version = "1.21", optional = true }
 
 # ICC profile extraction from image containers
 img-parts = "0.4"
@@ -71,7 +71,7 @@ img-parts = "0.4"
 flate2 = "1.1"
 
 # Temporary file handling
-tempfile = "3.26"
+tempfile = "3.27"
 
 # Parallel processing for batch operations
 rayon = "1.8"
@@ -115,6 +115,28 @@ harness = false
 # これがないと、ASanテスト中の画像処理が激重でタイムアウトする
 [profile.dev.package."*"]
 opt-level = 3
+
+# CI-only profile for AddressSanitizer builds.
+# Goal: finish the build within the CI timeout (75 min) even on cold caches.
+#
+# Key knobs for compile-time speed:
+#   opt-level = 0    – skip optimisation passes (biggest single win)
+#   codegen-units    – more CGUs = more parallelism in rustc
+#   debug            – line-tables-only slashes debuginfo generation & link time
+#   incremental      – off in CI for deterministic builds
+#
+# The stress test only needs to *run* the codec once per iteration, so
+# runtime perf is irrelevant—only leak detection matters.
+[profile.ci-asan]
+inherits = "dev"
+opt-level = 0
+codegen-units = 256
+debug = "line-tables-only"
+incremental = false
+
+[profile.ci-asan.package."*"]
+opt-level = 0
+codegen-units = 256
 
 [profile.release]
 lto = true

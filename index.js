@@ -77,8 +77,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-android-arm64')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-android-arm64/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -93,8 +93,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-android-arm-eabi')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-android-arm-eabi/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -114,8 +114,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-win32-x64-gnu')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-win32-x64-gnu/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -130,8 +130,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-win32-x64-msvc')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-win32-x64-msvc/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -147,8 +147,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-win32-ia32-msvc')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-win32-ia32-msvc/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -163,8 +163,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-win32-arm64-msvc')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-win32-arm64-msvc/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -182,8 +182,8 @@ function requireNative() {
     try {
       const binding = require('@alberteinshutoin/lazy-image-darwin-universal')
       const bindingPackageVersion = require('@alberteinshutoin/lazy-image-darwin-universal/package.json').version
-      if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-        throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+      if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+        throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
       }
       return binding
     } catch (e) {
@@ -198,8 +198,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-darwin-x64')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-darwin-x64/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -214,8 +214,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-darwin-arm64')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-darwin-arm64/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -234,8 +234,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-freebsd-x64')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-freebsd-x64/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -250,8 +250,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-freebsd-arm64')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-freebsd-arm64/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -271,8 +271,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-x64-musl')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-x64-musl/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -287,8 +287,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-x64-gnu')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-x64-gnu/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -305,8 +305,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-arm64-musl')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-arm64-musl/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -321,8 +321,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-arm64-gnu')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-arm64-gnu/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -339,8 +339,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-arm-musleabihf')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-arm-musleabihf/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -355,8 +355,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-arm-gnueabihf')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-arm-gnueabihf/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -373,8 +373,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-loong64-musl')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-loong64-musl/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -389,8 +389,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-loong64-gnu')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-loong64-gnu/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -407,8 +407,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-riscv64-musl')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-riscv64-musl/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -423,8 +423,8 @@ function requireNative() {
         try {
           const binding = require('@alberteinshutoin/lazy-image-linux-riscv64-gnu')
           const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-riscv64-gnu/package.json').version
-          if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -440,8 +440,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-linux-ppc64-gnu')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-ppc64-gnu/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -456,8 +456,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-linux-s390x-gnu')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-linux-s390x-gnu/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -476,8 +476,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-openharmony-arm64')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-openharmony-arm64/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -492,8 +492,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-openharmony-x64')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-openharmony-x64/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -508,8 +508,8 @@ function requireNative() {
       try {
         const binding = require('@alberteinshutoin/lazy-image-openharmony-arm')
         const bindingPackageVersion = require('@alberteinshutoin/lazy-image-openharmony-arm/package.json').version
-        if (bindingPackageVersion !== '0.12.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 0.12.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '0.13.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 0.13.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -586,161 +586,13 @@ module.exports.supportedOutputFormats = nativeBinding.supportedOutputFormats
 module.exports.version = nativeBinding.version
 
 
-// High-level helpers and streaming API
+// High-level helpers and streaming API (extracted to lib/helpers.js)
 const { createStreamingPipeline } = require('./streaming/pipeline')
-
-function getErrorCategory(err) {
-  if (!err) return null
-
-  const { ErrorCategory, ErrorCode } = nativeBinding
-
-  if (typeof err.errorCategory === 'number') return err.errorCategory
-  if (typeof err.category === 'number') return err.category
-
-  if (typeof err.code === 'string') {
-    switch (err.code) {
-      case 'LAZY_IMAGE_USER_ERROR':
-        return ErrorCategory.UserError
-      case 'LAZY_IMAGE_CODEC_ERROR':
-        return ErrorCategory.CodecError
-      case 'LAZY_IMAGE_RESOURCE_LIMIT':
-        return ErrorCategory.ResourceLimit
-      case 'LAZY_IMAGE_INTERNAL_BUG':
-        return ErrorCategory.InternalBug
-      default:
-        break
-    }
-  }
-
-  let numericCode = null
-  if (typeof err.errorCode === 'string' && /^E[0-9]{3}$/.test(err.errorCode)) {
-    numericCode = parseInt(err.errorCode.slice(1), 10)
-  } else if (typeof err.errorCode === 'number') {
-    numericCode = err.errorCode
-  }
-
-  if (numericCode != null && Number.isFinite(numericCode)) {
-    switch (numericCode) {
-      case ErrorCode.FileNotFound:
-      case ErrorCode.InvalidCropBounds:
-      case ErrorCode.InvalidCropDimensions:
-      case ErrorCode.InvalidRotationAngle:
-      case ErrorCode.InvalidResizeDimensions:
-      case ErrorCode.InvalidResizeFit:
-      case ErrorCode.InvalidArgument:
-      case ErrorCode.InvalidPreset:
-      case ErrorCode.InvalidFirewallPolicy:
-      case ErrorCode.SourceConsumed:
-        return ErrorCategory.UserError
-      case ErrorCode.UnsupportedFormat:
-      case ErrorCode.DecodeFailed:
-      case ErrorCode.CorruptedImage:
-      case ErrorCode.EncodeFailed:
-      case ErrorCode.UnsupportedColorSpace:
-      case ErrorCode.ResizeFailed:
-        return ErrorCategory.CodecError
-      case ErrorCode.DimensionExceedsLimit:
-      case ErrorCode.PixelCountExceedsLimit:
-      case ErrorCode.FileReadFailed:
-      case ErrorCode.MmapFailed:
-      case ErrorCode.FileWriteFailed:
-      case ErrorCode.FirewallViolation:
-        return ErrorCategory.ResourceLimit
-      case ErrorCode.InternalPanic:
-      case ErrorCode.Generic:
-        return ErrorCategory.InternalBug
-      default:
-        break
-    }
-
-    const bucket = Math.floor(numericCode / 100)
-    if (bucket === 1 || bucket === 2 || bucket === 4) return ErrorCategory.UserError
-    if (bucket === 3) return ErrorCategory.ResourceLimit
-    if (bucket === 9) return ErrorCategory.InternalBug
-  }
-
-  return null
-}
-
-module.exports.getErrorCategory = getErrorCategory
+const helpers = require('./lib/helpers')
+const _getErrorCategory = helpers.createGetErrorCategory(nativeBinding.ErrorCategory, nativeBinding.ErrorCode)
+module.exports.getErrorCategory = _getErrorCategory
 module.exports.createStreamingPipeline = createStreamingPipeline
-
-const DEFAULT_QUALITY_BY_FORMAT = {
-  jpeg: 85,
-  jpg: 85,
-  webp: 80,
-  avif: 60,
-}
-
-const ENCODE_PROFILE_CONFIG = {
-  'size-first': {
-    jpeg: { qualityDelta: -8, fastMode: false },
-    webp: { qualityDelta: -8, fastMode: false },
-    avif: { qualityDelta: -6, fastMode: false },
-    png: { qualityDelta: 0, fastMode: false },
-  },
-  balanced: {
-    jpeg: { qualityDelta: 0, fastMode: false },
-    webp: { qualityDelta: 0, fastMode: false },
-    avif: { qualityDelta: 0, fastMode: false },
-    png: { qualityDelta: 0, fastMode: false },
-  },
-  'speed-first': {
-    jpeg: { qualityDelta: -10, fastMode: true },
-    webp: { qualityDelta: -10, fastMode: false },
-    avif: { qualityDelta: -10, fastMode: false },
-    png: { qualityDelta: 0, fastMode: false },
-  },
-}
-
-function clampQuality(v) {
-  const n = Number(v)
-  if (!Number.isFinite(n)) return undefined
-  return Math.max(0, Math.min(100, Math.round(n)))
-}
-
-function resolveEncodeProfile(format, profile = 'balanced', quality) {
-  const normalizedFormat = String(format || '').toLowerCase()
-  if (!['jpeg', 'jpg', 'png', 'webp', 'avif'].includes(normalizedFormat)) {
-    throw new Error(`Unsupported format for profile: ${format}`)
-  }
-
-  const normalizedProfile = String(profile || 'balanced').toLowerCase()
-  if (!Object.prototype.hasOwnProperty.call(ENCODE_PROFILE_CONFIG, normalizedProfile)) {
-    throw new Error(`Unsupported encode profile: ${profile}`)
-  }
-
-  const profileConfig = ENCODE_PROFILE_CONFIG[normalizedProfile]
-  const formatKey = normalizedFormat === 'jpg' ? 'jpeg' : normalizedFormat
-  const baseQuality = clampQuality(quality) ?? DEFAULT_QUALITY_BY_FORMAT[formatKey]
-  const delta = (profileConfig[formatKey] || profileConfig.png).qualityDelta
-  const resolvedQuality = baseQuality == null ? undefined : clampQuality(baseQuality + delta)
-  const fastMode = Boolean((profileConfig[formatKey] || profileConfig.png).fastMode)
-
-  return {
-    format: normalizedFormat,
-    quality: resolvedQuality,
-    fastMode,
-  }
-}
-
-module.exports.resolveEncodeProfile = resolveEncodeProfile
-
-if (nativeBinding && nativeBinding.ImageEngine && nativeBinding.ImageEngine.prototype) {
-  const p = nativeBinding.ImageEngine.prototype
-
-  p.toBufferProfile = function toBufferProfile(format, profile = 'balanced', quality) {
-    const resolved = resolveEncodeProfile(format, profile, quality)
-    return this.toBuffer(resolved.format, resolved.quality, resolved.fastMode)
-  }
-
-  p.toBufferWithMetricsProfile = function toBufferWithMetricsProfile(format, profile = 'balanced', quality) {
-    const resolved = resolveEncodeProfile(format, profile, quality)
-    return this.toBufferWithMetrics(resolved.format, resolved.quality, resolved.fastMode)
-  }
-
-  p.toFileProfile = function toFileProfile(path, format, profile = 'balanced', quality) {
-    const resolved = resolveEncodeProfile(format, profile, quality)
-    return this.toFile(path, resolved.format, resolved.quality, resolved.fastMode)
-  }
+module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
+if (nativeBinding && nativeBinding.ImageEngine) {
+  helpers.attachPrototypeMethods(nativeBinding.ImageEngine)
 }

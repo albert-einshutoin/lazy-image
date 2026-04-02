@@ -98,8 +98,38 @@ impl WeightedSemaphore {
         self.capacity
     }
 
+    /// Returns `true` if the last `acquire()` was clamped because the requested
+    /// weight exceeded the semaphore capacity. This is purely informational;
+    /// the permit already serializes the oversized operation by reserving full
+    /// capacity.
+    #[allow(dead_code)] // Public API, tested, not yet called from production code paths
+    pub fn was_clamped(permit: &MemoryPermit, original_weight: u64) -> bool {
+        original_weight > permit.weight
+    }
+
     pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
-        let need = weight.min(self.capacity); // clamp absurd weights to avoid deadlock
+        if weight == 0 {
+            return MemoryPermit {
+                sem: Arc::clone(self),
+                weight: 0,
+            };
+        }
+
+        // If the request exceeds capacity, acquire FULL capacity instead.
+        // This serializes oversized operations (only one can run at a time)
+        // rather than silently under-reserving. The caller can check whether
+        // clamping occurred via `WeightedSemaphore::was_clamped()`.
+        let need = if weight > self.capacity {
+            #[cfg(debug_assertions)]
+            eprintln!(
+                "lazy-image: memory request ({} bytes) exceeds semaphore capacity ({} bytes); \
+                 acquiring full capacity to serialize this operation",
+                weight, self.capacity
+            );
+            self.capacity
+        } else {
+            weight
+        };
 
         let ready_flag = {
             let mut state = self.state.lock();
@@ -534,6 +564,7 @@ fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u3
     }
 }
 
+#[cfg(test)]
 fn estimate_memory_from_dimensions_with_context(
     width: u32,
     height: u32,
@@ -822,12 +853,25 @@ fn parse_cgroup1_mount_point(mountinfo: &str, controller: &str) -> Option<Cgroup
 #[cfg(feature = "napi")]
 fn parse_cgroup2_relative_path(content: &str) -> Option<String> {
     // Format: 0::/docker/abcd...
+    // cgroup v2 uses hierarchy ID "0" for the unified hierarchy.
+    // Skip non-v2 lines (e.g. v1 entries with hierarchy ID > 0).
     for line in content.lines() {
         let mut parts = line.splitn(3, ':');
-        let _hier = parts.next()?;
-        let _controllers = parts.next()?;
-        let path = parts.next()?;
-        return Some(path.to_string());
+        let hier = match parts.next() {
+            Some(h) => h,
+            None => continue,
+        };
+        let _controllers = match parts.next() {
+            Some(c) => c,
+            None => continue,
+        };
+        let path = match parts.next() {
+            Some(p) => p,
+            None => continue,
+        };
+        if hier == "0" {
+            return Some(path.to_string());
+        }
     }
     None
 }
@@ -941,7 +985,7 @@ mod tests {
         );
         // 2GB -> 5% = 102.4MB -> within bounds
         let reserved = compute_reserved_memory(2 * 1024 * 1024 * 1024);
-        assert!(reserved >= 100 * 1024 * 1024 && reserved <= 110 * 1024 * 1024);
+        assert!((100 * 1024 * 1024..=110 * 1024 * 1024).contains(&reserved));
     }
 
     #[test]
@@ -985,6 +1029,34 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_cgroup2_relative_path_mixed_v1_v2() {
+        // cgroup v1 lines appear before the v2 unified line
+        let sample = "12:memory:/docker/abc123\n11:cpuset:/docker/abc123\n0::/kubepods/pod-xyz\n";
+        assert_eq!(
+            parse_cgroup2_relative_path(sample),
+            Some("/kubepods/pod-xyz".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path_empty() {
+        assert_eq!(parse_cgroup2_relative_path(""), None);
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path_no_v2_entry() {
+        // Only cgroup v1 lines, no hierarchy 0
+        let sample = "5:memory:/docker/abc\n3:cpuset:/docker/abc\n";
+        assert_eq!(parse_cgroup2_relative_path(sample), None);
+    }
+
+    #[test]
+    fn test_parse_cgroup2_relative_path_root() {
+        let sample = "0::/\n";
+        assert_eq!(parse_cgroup2_relative_path(sample), Some("/".to_string()));
+    }
+
+    #[test]
     fn test_calculate_memory_based_concurrency_very_constrained() {
         // 256MB container: very constrained
         let result = calculate_memory_based_concurrency(Some(256 * 1024 * 1024), 8);
@@ -995,7 +1067,7 @@ mod tests {
     fn test_calculate_memory_based_concurrency_constrained() {
         // 512MB container: can fit ~3 operations (512MB - 128MB reserve = 384MB / 100MB = 3)
         let result = calculate_memory_based_concurrency(Some(512 * 1024 * 1024), 8);
-        assert!(result >= MIN_SAFE_CONCURRENCY && result <= 4);
+        assert!((MIN_SAFE_CONCURRENCY..=4).contains(&result));
     }
 
     #[test]
@@ -1306,6 +1378,76 @@ mod non_napi_tests {
         assert!(
             gray_est < rgb_est,
             "grayscale ({gray_est}) should use less memory than RGB ({rgb_est})"
+        );
+    }
+
+    #[test]
+    fn zero_weight_acquire_returns_immediately() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let permit = sem.acquire(0);
+        assert_eq!(permit.weight, 0);
+        // Available capacity should be unchanged
+        assert_eq!(sem.state.lock().available, 100);
+    }
+
+    #[test]
+    fn oversized_request_acquires_full_capacity() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        // Request more than capacity
+        let permit = sem.acquire(200);
+        // Should have clamped to full capacity (100), not the requested 200
+        assert_eq!(permit.weight, 100);
+        assert_eq!(sem.state.lock().available, 0);
+        // was_clamped should report true
+        assert!(WeightedSemaphore::was_clamped(&permit, 200));
+        drop(permit);
+        assert_eq!(sem.state.lock().available, 100);
+    }
+
+    #[test]
+    fn normal_request_not_clamped() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let permit = sem.acquire(60);
+        assert_eq!(permit.weight, 60);
+        assert!(!WeightedSemaphore::was_clamped(&permit, 60));
+    }
+
+    #[test]
+    fn oversized_requests_are_serialized() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let concurrent_count = Arc::new(AtomicUsize::new(0));
+        let max_concurrent = Arc::new(AtomicUsize::new(0));
+
+        let mut handles = Vec::new();
+        for _ in 0..4 {
+            let sem = Arc::clone(&sem);
+            let concurrent = Arc::clone(&concurrent_count);
+            let max_conc = Arc::clone(&max_concurrent);
+            handles.push(thread::spawn(move || {
+                // Each requests more than capacity → must serialize
+                let _permit = sem.acquire(200);
+                let prev = concurrent.fetch_add(1, Ordering::SeqCst);
+                // Update max concurrent
+                let current = prev + 1;
+                max_conc.fetch_max(current, Ordering::SeqCst);
+                // Small sleep to give other threads a chance to contend
+                thread::sleep(Duration::from_millis(10));
+                concurrent.fetch_sub(1, Ordering::SeqCst);
+            }));
+        }
+
+        for h in handles {
+            h.join().unwrap();
+        }
+
+        // At most 1 oversized request should run at a time since each
+        // acquires full capacity
+        assert_eq!(
+            max_concurrent.load(Ordering::SeqCst),
+            1,
+            "oversized requests should be serialized (max 1 concurrent)"
         );
     }
 

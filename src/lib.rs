@@ -197,6 +197,7 @@ pub const PROCESSING_METRICS_VERSION: &str = "1.0.0";
 
 /// Processing metrics for performance monitoring
 #[cfg(feature = "napi")]
+#[derive(Debug)]
 #[napi(object)]
 pub struct ProcessingMetrics {
     /// Schema version for compatibility negotiation
@@ -239,6 +240,7 @@ pub struct ProcessingMetrics {
 }
 
 #[cfg(not(feature = "napi"))]
+#[derive(Debug)]
 pub struct ProcessingMetrics {
     /// Schema version for compatibility negotiation
     pub version: String,
@@ -331,6 +333,115 @@ impl Default for ProcessingMetrics {
 #[napi(object)]
 pub struct OutputWithMetrics {
     pub data: napi::bindgen_prelude::Buffer,
+    pub metrics: ProcessingMetrics,
+}
+
+/// Options object for the unified `encode()` / `encodeToFile()` methods.
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct EncodeOptions {
+    /// Output format: "jpeg", "jpg", "png", "webp", "avif"
+    pub format: Option<String>,
+    /// Quality 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG.
+    pub quality: Option<f64>,
+    /// If true, uses faster JPEG encoding (2-4x faster, slightly larger files). Default: false.
+    pub fast_mode: Option<bool>,
+    /// Preset name ("thumbnail", "avatar", "hero", "social").
+    /// When specified, format/quality/fastMode are ignored and the preset's
+    /// recommended settings are used instead.
+    pub preset: Option<String>,
+    /// If true, include ProcessingMetrics in the result. Default: false.
+    pub metrics: Option<bool>,
+}
+
+/// Result from `encode()`.
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct EncodeResult {
+    /// Encoded image data
+    pub data: napi::bindgen_prelude::Buffer,
+    /// Processing metrics (only present when `metrics: true` was requested)
+    pub metrics: Option<ProcessingMetrics>,
+}
+
+/// Result from `encodeToFile()`.
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct FileEncodeResult {
+    /// Number of bytes written to disk
+    pub bytes_written: u32,
+    /// Processing metrics (only present when `metrics: true` was requested)
+    pub metrics: Option<ProcessingMetrics>,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct FileOutputWithMetrics {
+    pub bytes_written: u32,
+    pub metrics: ProcessingMetrics,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct BatchResultWithMetrics {
+    pub source: String,
+    pub success: bool,
+    pub error: Option<String>,
+    pub output_path: Option<String>,
+    pub error_code: Option<String>,
+    pub error_category: Option<error::ErrorCategory>,
+    pub effective_concurrency: Option<u32>,
+    pub auto_concurrency: Option<bool>,
+    pub metrics: Option<ProcessingMetrics>,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct BatchMetricsSummary {
+    pub total_items: u32,
+    pub successful_items: u32,
+    pub failed_items: u32,
+    pub effective_concurrency: u32,
+    pub auto_concurrency: bool,
+    pub total_bytes_in: f64,
+    pub total_bytes_out: f64,
+    pub total_decode_ms: f64,
+    pub total_ops_ms: f64,
+    pub total_encode_ms: f64,
+    pub total_cpu_time: f64,
+    pub total_wall_ms: f64,
+}
+
+#[cfg(feature = "napi")]
+#[derive(Debug)]
+#[napi(object)]
+pub struct BatchOutputWithMetrics {
+    pub items: Vec<BatchResultWithMetrics>,
+    pub summary: BatchMetricsSummary,
+}
+
+/// Result of byte-budget encoding (binary search over quality).
+///
+/// The binary search runs entirely in Rust, eliminating JS↔NAPI round-trips
+/// that the previous JS-side implementation required (~7 per call).
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct TargetBytesResult {
+    /// Encoded image data at the chosen quality
+    pub data: napi::bindgen_prelude::Buffer,
+    /// Quality level that was selected
+    pub quality: u32,
+    /// Actual output size in bytes
+    pub bytes_out: u32,
+    /// Whether the byte budget was met
+    pub budget_met: bool,
+    /// Requested target bytes
+    pub target_bytes: u32,
+    /// Processing metrics from the final encode iteration
     pub metrics: ProcessingMetrics,
 }
 

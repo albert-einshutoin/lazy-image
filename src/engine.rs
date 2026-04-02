@@ -90,6 +90,7 @@ pub use stress::run_stress_iteration;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
     use crate::engine::tasks::EncodeTask;
     use crate::error::LazyImageError;
@@ -1190,8 +1191,8 @@ mod tests {
             let low_quality = encode_jpeg(&img, 50, None).unwrap();
             // Higher quality is usually larger (though content may reverse this)
             // At least verify both are valid JPEGs
-            assert!(high_quality.len() > 0);
-            assert!(low_quality.len() > 0);
+            assert!(!high_quality.is_empty());
+            assert!(!low_quality.is_empty());
             assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
             assert_eq!(&low_quality[0..2], &[0xFF, 0xD8]);
         }
@@ -1330,8 +1331,8 @@ mod tests {
             let high_quality = encode_avif(&img, 80, None).unwrap();
             let low_quality = encode_avif(&img, 40, None).unwrap();
             // Verify both are valid AVIF
-            assert!(high_quality.len() > 0);
-            assert!(low_quality.len() > 0);
+            assert!(!high_quality.is_empty());
+            assert!(!low_quality.is_empty());
         }
 
         #[test]
@@ -1390,9 +1391,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1416,9 +1415,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1440,9 +1437,7 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall: FirewallConfig::disabled(),
                 #[cfg(feature = "napi")]
                 last_error: None,
@@ -1471,14 +1466,12 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,
             };
-            let err = task.decode_internal().unwrap_err();
+            let err = task.decode().unwrap_err();
             assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
         }
 
@@ -1498,14 +1491,12 @@ mod tests {
                 icc_present: false,
                 exif_data: None,
                 auto_orient: true,
-                keep_icc: false,
-                keep_exif: false,
-                strip_gps: true,
+                metadata_policy: MetadataPolicy::default_policy(),
                 firewall,
                 #[cfg(feature = "napi")]
                 last_error: None,
             };
-            let err = task.decode_internal().unwrap_err();
+            let err = task.decode().unwrap_err();
             assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
         }
     }

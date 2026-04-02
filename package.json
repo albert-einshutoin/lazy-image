@@ -1,8 +1,19 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    },
+    "./streaming": {
+      "import": "./streaming/pipeline.mjs",
+      "require": "./streaming/pipeline.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/albert-einshutoin/lazy-image"
@@ -44,8 +55,9 @@
     "test:bench:regression-check": "node scripts/bench/check-regression.js",
     "test:clean": "rm -rf .tmp/",
     "test:rust": "cargo test --no-default-features",
+    "test:stress:napi": "node test/stress/napi-boundary.stress.js",
     "version": "node scripts/sync-version.js",
-    "prepublishOnly": "napi prepublish --skip-gh-release",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish",
     "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js",
     "test:bench:quality-dual-axis": "node test/benchmarks/quality-dual-axis.bench.js"
   },
@@ -57,45 +69,37 @@
     "typescript": "^5.6.3"
   },
   "napi": {
-    "name": "lazy-image",
-    "triples": {
-      "defaults": false,
-      "additional": [
-        "x86_64-apple-darwin",
-        "aarch64-apple-darwin",
-        "x86_64-pc-windows-msvc",
-        "x86_64-unknown-linux-gnu",
-        "aarch64-unknown-linux-gnu",
-        "x86_64-unknown-linux-musl"
-      ]
-    },
-    "package": {
-      "name": "@alberteinshutoin/lazy-image"
-    }
+    "binaryName": "lazy-image",
+    "packageName": "@alberteinshutoin/lazy-image",
+    "targets": [
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc",
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl"
+    ]
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "0.12.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "0.12.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.12.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.12.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.12.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.12.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.13.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.13.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.13.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.13.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.13.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.13.0"
   },
   "engines": {
     "node": ">= 18"
   },
   "files": [
     "index.js",
+    "index.mjs",
     "index.d.ts",
+    "lib/",
     "streaming/",
-    "docs/",
-    "spec/",
     "README.md",
     "README.ja.md",
     "CHANGELOG.md",
-    "CONTRIBUTING.md",
-    "FUZZING.md",
-    "SECURITY.md",
     "LICENSE"
   ],
   "types": "index.d.ts",

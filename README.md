@@ -4,12 +4,13 @@
 
 > **Web image optimization engine for Node.js.** Rust core, smaller outputs than sharp.
 
-lazy-image reduces image file sizes by 20-30% compared to sharp, trading encoding speed for smaller outputs. Ideal for CDN-heavy workloads where bandwidth costs matter more than CPU costs.
+lazy-image reduces image file sizes by 20-30% compared to sharp in its target web-delivery scenarios, trading encoding speed for smaller outputs. Ideal for CDN-heavy workloads where bandwidth costs matter more than CPU costs.
 
 - **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
 - **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. Zero-copy path: `fromPath()`/`processBatch()` → `toFile()`.
 - Japanese: [README.ja.md](./README.ja.md). **mmap**: Do not modify/delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
 - Lazy contract: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) explains what is deferred vs eager.
+- Metadata matrix: [docs/METADATA_SUPPORT.md](./docs/METADATA_SUPPORT.md).
 - Philosophy and non-goals: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md).
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
@@ -56,6 +57,19 @@ console.log(`Wrote ${bytesWritten} bytes`);
 **Project philosophy:** optimize for smaller web outputs, bounded memory, and safe defaults first. Any speed claims must be codec- and workload-specific, not a blanket "faster than sharp" promise.
 
 Benchmarks and details: [docs/PERFORMANCE.md](./docs/PERFORMANCE.md). Full compatibility matrix: [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md).
+
+---
+
+## Recommended Paths
+
+Start with one of these workflows:
+
+- **Web delivery optimization**: `fromPath() -> resize()/crop() -> toFile()` for the lowest heap usage and the clearest operational path
+- **Upload sanitization**: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()` for untrusted user uploads
+- **Build-time / batch generation**: `processBatch()` or `clone()` for static sites, media pipelines, and multi-output generation
+- **Final optimization after editing**: use sharp/ImageMagick for compositing, filters, or animation, then pass the result through lazy-image for final JPEG/WebP/AVIF optimization
+
+Scenario guide: [docs/ADOPTION_GUIDE.md](./docs/ADOPTION_GUIDE.md).
 
 ---
 
@@ -135,6 +149,8 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 | **Troubleshooting** | [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) |
 | **Security policy & reporting** | [SECURITY.md](./SECURITY.md) |
 | **Roadmap & scope** | [docs/ROADMAP.md](./docs/ROADMAP.md) |
+| **Adoption guide / recommended workflows** | [docs/ADOPTION_GUIDE.md](./docs/ADOPTION_GUIDE.md) |
+| **Metadata support matrix** | [docs/METADATA_SUPPORT.md](./docs/METADATA_SUPPORT.md) |
 | **ROI calculator methodology** | [docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md) |
 | **Version history** | [docs/VERSION_HISTORY.md](./docs/VERSION_HISTORY.md) |
 | **Specification (spec/)** | [spec/pipeline.md](./spec/pipeline.md), [spec/resize.md](./spec/resize.md), [spec/errors.md](./spec/errors.md), [spec/limits.md](./spec/limits.md), [spec/quality.md](./spec/quality.md), [spec/metadata.md](./spec/metadata.md) |
@@ -148,7 +164,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 
 ## Features (summary)
 
-Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles (AVIF in v0.9.x) · EXIF auto-orient · Zero-copy file I/O · Bounded-memory streaming · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles (AVIF in v0.9.x) · EXIF auto-orient · Zero-copy file I/O · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ---
 

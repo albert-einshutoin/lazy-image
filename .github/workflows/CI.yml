@@ -74,15 +74,15 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.88.0
           targets: ${{ matrix.settings.target }}
@@ -93,7 +93,7 @@ jobs:
 
       - name: Install NASM (Windows)
         if: matrix.settings.host == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b # v1
 
       - name: Install dependencies
         run: npm ci
@@ -103,7 +103,7 @@ jobs:
         shell: bash
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: bindings-${{ matrix.settings.target }}
           path: "*.node"
@@ -118,10 +118,10 @@ jobs:
         host: [ubuntu-latest, macos-14]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.88.0
 
@@ -148,10 +148,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.88.0
           components: clippy, rustfmt
@@ -170,10 +170,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
 
@@ -202,10 +202,10 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ matrix.node }}
 
@@ -222,10 +222,10 @@ jobs:
 
       - name: Install NASM (Windows)
         if: matrix.settings.host == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b # v1
 
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ${{ matrix.settings.artifact }}
           path: .
@@ -243,10 +243,10 @@ jobs:
     timeout-minutes: 25
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
 
@@ -257,7 +257,7 @@ jobs:
         run: npm ci
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: bindings-x86_64-unknown-linux-gnu
           path: .
@@ -278,10 +278,10 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
 
@@ -292,7 +292,7 @@ jobs:
         run: npm ci
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: bindings-x86_64-unknown-linux-gnu
           path: .
@@ -310,15 +310,15 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.88.0
 
@@ -326,7 +326,7 @@ jobs:
         run: npm ci
 
       - name: Download all binding artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: bindings-*
           path: artifacts
@@ -342,7 +342,7 @@ jobs:
           find artifacts -name "*.node" -type f -print -exec sha256sum {} \; > binding-hashes.sha256
 
       - name: Upload supply-chain reports
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: supply-chain-reports
           path: |
@@ -355,22 +355,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.88.0
           components: llvm-tools-preview
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+        uses: taiki-e/install-action@617b2c1f0f6355a96a120720d1c14499d0e12814 # cargo-llvm-cov
 
       - name: Install NASM
         run: sudo apt-get update && sudo apt-get install -y nasm
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
 
@@ -381,7 +381,7 @@ jobs:
         run: cargo llvm-cov --no-default-features --lcov --output-path lcov.info
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
         with:
           files: lcov.info
           fail_ci_if_error: true
@@ -391,35 +391,91 @@ jobs:
   leak-detection:
     name: Memory Leak Detection (ASan)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 75
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Install Rust (nightly)
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Install Rust (nightly, pinned for cache stability)
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: nightly-2026-03-25
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 20
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y nasm
+        run: sudo apt-get update && sudo apt-get install -y nasm lld
+
+      - name: Install npm dependencies
+        run: npm ci
 
       # Cache Cargo dependencies to speed up builds
       - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
-          prefix-key: "v1-asan"
+          prefix-key: "v5-asan"
+          cache-on-failure: true
 
-      - name: Run Stress Test with AddressSanitizer
+      # Build with ASan instrumentation (separate step for progress visibility)
+      - name: Build with AddressSanitizer
         env:
-          RUSTFLAGS: "-Zsanitizer=address"
-          # Enable leak detection, abort on error, and symbolize stack traces
-          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
-          RUST_BACKTRACE: 1
+          RUSTUP_TOOLCHAIN: nightly-2026-03-25
+          # --target: prevents RUSTFLAGS from being applied to build scripts
+          # and proc macros (napi-derive, cc, etc.), avoiding unnecessary
+          # ASan instrumentation on compile-time code.
+          # -Zthreads=8: enables parallel rustc front-end (~30% faster).
+          # -C link-arg=-fuse-ld=lld: faster linker than default ld.
+          # -C debuginfo=1: line-tables-only (matches profile, avoids RUSTFLAGS override)
+          RUSTFLAGS: "-Zsanitizer=address -Zthreads=8 -C link-arg=-fuse-ld=lld -C link-args=-Wl,-z,nodelete -C debuginfo=1"
+          CARGO_INCREMENTAL: "0"
         run: |
-          # Run stress test with optimized dependencies (see Cargo.toml profile.dev.package)
-          cargo run --example stress_test \
-            --target x86_64-unknown-linux-gnu \
-            --no-default-features --features stress \
-            -- --iterations 5
+          echo "::group::cargo build (ASan-instrumented)"
+          cargo build --target x86_64-unknown-linux-gnu \
+            --profile ci-asan \
+            --no-default-features --features napi \
+            --timings 2>&1
+          echo "::endgroup::"
+
+      - name: Generate NAPI bindings
+        env:
+          RUSTUP_TOOLCHAIN: nightly-2026-03-25
+          RUSTFLAGS: "-Zsanitizer=address -Zthreads=8 -C link-arg=-fuse-ld=lld -C link-args=-Wl,-z,nodelete -C debuginfo=1"
+          CARGO_INCREMENTAL: "0"
+        run: |
+          npx napi build --platform --target x86_64-unknown-linux-gnu --profile ci-asan --no-default-features --features napi
+          # Restore committed index.js/index.d.ts — napi build may overwrite
+          # them with stubs when type-def generation is skipped (ci-asan profile).
+          # The stress test only needs the .node binary; postbuild-fixup patches
+          # (extra helpers, stricter types) are not required here.
+          git checkout -- index.js index.d.ts
+
+      - name: Run NAPI-boundary stress test
+        env:
+          ASAN_OPTIONS: "detect_leaks=1:abort_on_error=1:symbolize=1"
+          LSAN_OPTIONS: "suppressions=lsan.suppressions"
+          RUST_BACKTRACE: 1
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          DISABLE_V8_COMPILE_CACHE: 1
+        run: |
+          ASAN_RT=""
+          if command -v clang >/dev/null 2>&1; then
+            CLANG_RT_DIR="$(clang --print-runtime-dir 2>/dev/null || true)"
+            if [ -n "$CLANG_RT_DIR" ]; then
+              ASAN_RT="$(find "$CLANG_RT_DIR" -name 'libclang_rt.asan-x86_64*.so' | head -n 1)"
+            fi
+          fi
+          if [ -z "$ASAN_RT" ]; then
+            ASAN_RT="$(find /usr/lib/llvm-* -path '*/lib/linux/libclang_rt.asan-x86_64*.so' | head -n 1)"
+          fi
+          if [ -z "$ASAN_RT" ]; then
+            echo "Failed to locate ASan runtime"
+            exit 1
+          fi
+          export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
+          npm run test:stress:napi -- --iterations 5
 
   publish:
     name: Publish to npm
@@ -443,10 +499,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org
@@ -460,7 +516,7 @@ jobs:
         run: npm ci
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: artifacts
 
