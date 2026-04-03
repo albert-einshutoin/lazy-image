@@ -364,8 +364,8 @@ mod tests {
     mod icc_tests {
         use super::*;
         use crate::engine::io::{
-            extract_icc_from_jpeg, extract_icc_from_png, extract_icc_from_png_direct,
-            extract_icc_from_webp, validate_icc_profile,
+            extract_icc_from_png_direct, validate_icc_profile, IccExtractor, JpegIccExtractor,
+            PngIccExtractor, WebpIccExtractor,
         };
 
         #[test]
@@ -442,7 +442,7 @@ mod tests {
         fn test_extract_icc_from_jpeg_no_profile() {
             // JPEG without ICC profile
             let jpeg_data = create_minimal_jpeg();
-            let result = extract_icc_from_jpeg(&jpeg_data);
+            let result = JpegIccExtractor.extract_icc(&jpeg_data);
             assert!(result.is_none());
         }
 
@@ -450,7 +450,7 @@ mod tests {
         fn test_extract_icc_from_png_no_profile() {
             // PNG without ICC profile
             let png_data = create_png(2, 2);
-            let result = extract_icc_from_png(&png_data);
+            let result = PngIccExtractor.extract_icc(&png_data);
             assert!(result.is_none());
         }
 
@@ -458,7 +458,7 @@ mod tests {
         fn test_extract_icc_from_webp_no_profile() {
             // WebP without ICC profile
             let webp_data = create_minimal_webp();
-            let result = extract_icc_from_webp(&webp_data);
+            let result = WebpIccExtractor.extract_icc(&webp_data);
             assert!(result.is_none());
         }
 
