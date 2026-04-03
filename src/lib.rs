@@ -196,9 +196,8 @@ pub fn supported_output_formats() -> Vec<String> {
 pub const PROCESSING_METRICS_VERSION: &str = "1.0.0";
 
 /// Processing metrics for performance monitoring
-#[cfg(feature = "napi")]
 #[derive(Debug)]
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct ProcessingMetrics {
     /// Schema version for compatibility negotiation
     pub version: String,
@@ -239,73 +238,6 @@ pub struct ProcessingMetrics {
     pub policy_violations: Vec<String>,
 }
 
-#[cfg(not(feature = "napi"))]
-#[derive(Debug)]
-pub struct ProcessingMetrics {
-    /// Schema version for compatibility negotiation
-    pub version: String,
-    /// Decode stage duration in milliseconds
-    pub decode_ms: f64,
-    /// Ops (transform) stage duration in milliseconds
-    pub ops_ms: f64,
-    /// Encode stage duration in milliseconds
-    pub encode_ms: f64,
-    /// Total wall-clock duration in milliseconds
-    pub total_ms: f64,
-    /// Peak memory usage during processing (RSS, bytes, as u32 for NAPI compatibility)
-    ///
-    /// **Note**: On Linux/macOS, this uses `ru_maxrss` from `getrusage()`, which represents
-    /// the cumulative maximum RSS of the entire process, not just this operation.
-    /// This is a limitation of the `getrusage()` API. For accurate per-operation memory tracking,
-    /// consider using process-specific memory profiling tools.
-    pub peak_rss: u32,
-    /// Total CPU time (user + system) in seconds
-    pub cpu_time: f64,
-    /// Total processing time (wall clock) in seconds (legacy seconds field)
-    pub processing_time: f64,
-    /// Input file size in bytes (as u32 for NAPI compatibility, max 4GB)
-    pub bytes_in: u32,
-    /// Output file size in bytes (as u32 for NAPI compatibility, max 4GB)
-    pub bytes_out: u32,
-    /// Compression ratio (bytes_out / bytes_in)
-    pub compression_ratio: f64,
-    /// Detected input format (lowercase: jpeg, png, webp, avif, etc.)
-    pub format_in: Option<String>,
-    /// Output format
-    pub format_out: String,
-    /// True when ICC profile was present and preserved
-    pub icc_preserved: bool,
-    /// True when metadata was stripped (either by default or policy)
-    pub metadata_stripped: bool,
-    /// Non-fatal policy rejections (e.g., strict policy forcing metadata strip)
-    pub policy_violations: Vec<String>,
-}
-
-#[cfg(feature = "napi")]
-impl Default for ProcessingMetrics {
-    fn default() -> Self {
-        Self {
-            version: PROCESSING_METRICS_VERSION.to_string(),
-            decode_ms: 0.0,
-            ops_ms: 0.0,
-            encode_ms: 0.0,
-            total_ms: 0.0,
-            peak_rss: 0,
-            cpu_time: 0.0,
-            processing_time: 0.0,
-            bytes_in: 0,
-            bytes_out: 0,
-            compression_ratio: 0.0,
-            format_in: None,
-            format_out: String::new(),
-            icc_preserved: false,
-            metadata_stripped: true,
-            policy_violations: Vec::new(),
-        }
-    }
-}
-
-#[cfg(not(feature = "napi"))]
 impl Default for ProcessingMetrics {
     fn default() -> Self {
         Self {
