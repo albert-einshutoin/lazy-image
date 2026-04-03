@@ -40,11 +40,13 @@ mod encoder;
 mod firewall;
 mod io;
 mod memory;
+pub(crate) mod metadata;
 mod pipeline;
 mod platform;
 mod pool;
 mod stress;
 mod tasks;
+pub(crate) mod validation;
 
 // Re-export commonly used types and functions
 pub use api::ImageEngine;
