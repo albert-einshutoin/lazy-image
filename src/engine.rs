@@ -44,6 +44,7 @@ pub(crate) mod metadata;
 mod pipeline;
 mod platform;
 mod pool;
+pub(crate) mod resize;
 mod stress;
 mod tasks;
 pub(crate) mod validation;
@@ -60,9 +61,9 @@ pub use encoder::{
 };
 pub use firewall::FirewallConfig;
 pub use io::{extract_exif_raw, extract_icc_profile, extract_icc_profile_lossy, Source};
-pub use pipeline::{
-    apply_ops, calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned,
-    optimize_ops, ResizeError,
+pub use pipeline::{apply_ops, optimize_ops};
+pub use resize::{
+    calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned, ResizeError,
 };
 
 // Re-export pool constants for tasks.rs
