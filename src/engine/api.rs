@@ -1872,7 +1872,7 @@ impl ImageEngine {
 
 #[cfg(test)]
 mod tests {
-    use crate::engine::pipeline::fast_resize_owned;
+    use crate::engine::resize::fast_resize_owned;
     #[allow(unused_imports)]
     use image::GenericImageView;
     use image::{DynamicImage, RgbImage};
