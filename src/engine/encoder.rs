@@ -8,7 +8,7 @@ use crate::engine::check_dimensions;
 use crate::engine::common::run_with_panic_policy;
 use crate::error::LazyImageError;
 use image::{DynamicImage, GenericImageView, ImageFormat};
-use img_parts::{jpeg::Jpeg, png::Png, ImageICC};
+use img_parts::{jpeg::Jpeg, png::Png, ImageEXIF, ImageICC};
 #[cfg(feature = "avif")]
 use libavif_sys::*;
 use mozjpeg::{ColorSpace, Compress, ScanMode};
@@ -294,6 +294,98 @@ pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
     })
 }
 
+/// Trait for image container types that support EXIF embedding.
+///
+/// Abstracts over `img_parts::jpeg::Jpeg`, `img_parts::png::Png`, and
+/// `img_parts::webp::WebP` so that EXIF embed logic can be written once
+/// in `embed_exif_generic`.
+trait ExifEmbeddable: Sized + ImageEXIF {
+    /// Format label used for panic-policy tracing and error messages (e.g. "jpeg").
+    const FORMAT: &'static str;
+
+    /// Label for `run_with_panic_policy` (must be `&'static str`).
+    const PANIC_LABEL: &'static str;
+
+    /// Parse raw image bytes into the container type.
+    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error>;
+
+    /// Serialize the (possibly modified) container back to bytes.
+    fn write_out(self) -> EncoderResult<Vec<u8>>;
+}
+
+impl ExifEmbeddable for Jpeg {
+    const FORMAT: &'static str = "jpeg";
+    const PANIC_LABEL: &'static str = "encode:jpeg:embed_exif";
+
+    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error> {
+        Jpeg::from_bytes(data)
+    }
+
+    fn write_out(self) -> EncoderResult<Vec<u8>> {
+        let mut output = Vec::new();
+        self.encoder().write_to(&mut output).map_err(|e| {
+            LazyImageError::encode_failed("jpeg", format!("failed to write jpeg with EXIF: {e}"))
+        })?;
+        Ok(output)
+    }
+}
+
+impl ExifEmbeddable for Png {
+    const FORMAT: &'static str = "png";
+    const PANIC_LABEL: &'static str = "encode:png:embed_exif";
+
+    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error> {
+        Png::from_bytes(data)
+    }
+
+    fn write_out(self) -> EncoderResult<Vec<u8>> {
+        let mut output = Vec::new();
+        self.encoder().write_to(&mut output).map_err(|e| {
+            LazyImageError::encode_failed("png", format!("failed to write png with EXIF: {e}"))
+        })?;
+        Ok(output)
+    }
+}
+
+impl ExifEmbeddable for img_parts::webp::WebP {
+    const FORMAT: &'static str = "webp";
+    const PANIC_LABEL: &'static str = "encode:webp:embed_exif";
+
+    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error> {
+        img_parts::webp::WebP::from_bytes(data)
+    }
+
+    fn write_out(self) -> EncoderResult<Vec<u8>> {
+        let mut output = Vec::new();
+        self.encoder().write_to(&mut output).map_err(|e| {
+            LazyImageError::encode_failed("webp", format!("failed to write webp with EXIF: {e}"))
+        })?;
+        Ok(output)
+    }
+}
+
+/// Generic EXIF embed: parse → sanitize → set_exif → write.
+///
+/// Wrapped by the format-specific public functions below so callers
+/// never need to name the trait directly.
+fn embed_exif_generic<T: ExifEmbeddable>(
+    image_data: Vec<u8>,
+    exif: &[u8],
+    reset_orientation: bool,
+    strip_gps: bool,
+) -> EncoderResult<Vec<u8>> {
+    run_with_panic_policy(T::PANIC_LABEL, || {
+        let mut img = T::parse(img_parts::Bytes::from(image_data)).map_err(|e| {
+            LazyImageError::decode_failed(format!("failed to parse {} for EXIF: {e}", T::FORMAT))
+        })?;
+
+        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
+        img.set_exif(Some(img_parts::Bytes::from(sanitized_exif)));
+
+        img.write_out()
+    })
+}
+
 /// Embed EXIF metadata into JPEG using img-parts
 ///
 /// Note: This function expects raw TIFF-format EXIF data (without the "Exif\0\0" header).
@@ -306,29 +398,7 @@ pub fn embed_exif_jpeg(
     reset_orientation: bool,
     strip_gps: bool,
 ) -> EncoderResult<Vec<u8>> {
-    run_with_panic_policy("encode:jpeg:embed_exif", || {
-        use img_parts::Bytes;
-        use img_parts::ImageEXIF;
-
-        // Parse JPEG
-        let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
-            LazyImageError::decode_failed(format!("failed to parse JPEG for EXIF: {e}"))
-        })?;
-
-        // Sanitize EXIF data if needed
-        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
-
-        // Set EXIF data (img-parts adds the "Exif\0\0" header automatically for APP1)
-        jpeg.set_exif(Some(Bytes::from(sanitized_exif)));
-
-        // Write output
-        let mut output = Vec::new();
-        jpeg.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("jpeg", format!("failed to write JPEG with EXIF: {e}"))
-        })?;
-
-        Ok(output)
-    })
+    embed_exif_generic::<Jpeg>(jpeg_data, exif, reset_orientation, strip_gps)
 }
 
 pub fn embed_exif_png(
@@ -337,23 +407,7 @@ pub fn embed_exif_png(
     reset_orientation: bool,
     strip_gps: bool,
 ) -> EncoderResult<Vec<u8>> {
-    run_with_panic_policy("encode:png:embed_exif", || {
-        use img_parts::Bytes;
-        use img_parts::ImageEXIF;
-
-        let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
-            LazyImageError::decode_failed(format!("failed to parse PNG for EXIF: {e}"))
-        })?;
-
-        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
-        png.set_exif(Some(Bytes::from(sanitized_exif)));
-
-        let mut output = Vec::new();
-        png.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("png", format!("failed to write PNG with EXIF: {e}"))
-        })?;
-        Ok(output)
-    })
+    embed_exif_generic::<Png>(png_data, exif, reset_orientation, strip_gps)
 }
 
 pub fn embed_exif_webp(
@@ -362,24 +416,7 @@ pub fn embed_exif_webp(
     reset_orientation: bool,
     strip_gps: bool,
 ) -> EncoderResult<Vec<u8>> {
-    run_with_panic_policy("encode:webp:embed_exif", || {
-        use img_parts::webp::WebP;
-        use img_parts::Bytes;
-        use img_parts::ImageEXIF;
-
-        let mut webp = WebP::from_bytes(Bytes::from(webp_data)).map_err(|e| {
-            LazyImageError::decode_failed(format!("failed to parse WebP for EXIF: {e}"))
-        })?;
-
-        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
-        webp.set_exif(Some(Bytes::from(sanitized_exif)));
-
-        let mut output = Vec::new();
-        webp.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("webp", format!("failed to write WebP with EXIF: {e}"))
-        })?;
-        Ok(output)
-    })
+    embed_exif_generic::<img_parts::webp::WebP>(webp_data, exif, reset_orientation, strip_gps)
 }
 
 /// Sanitize raw EXIF TIFF bytes (Zero-Copy approach):
