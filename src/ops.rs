@@ -314,6 +314,70 @@ impl OutputFormat {
 // PRESETS - Common configurations for web image optimization
 // =============================================================================
 
+/// Internal definition for a single preset entry in the static table.
+/// Uses primitive types so the table can be a `const` array.
+struct PresetEntry {
+    name: &'static str,
+    width: Option<u32>,
+    height: Option<u32>,
+    format_tag: &'static str, // "webp" or "jpeg"
+    quality: u8,
+}
+
+/// Static table of all built-in presets.
+/// Add new presets here — `PresetConfig::get()` and convenience methods
+/// are derived from this single source of truth.
+const PRESET_TABLE: &[PresetEntry] = &[
+    PresetEntry {
+        name: "thumbnail",
+        width: Some(150),
+        height: Some(150),
+        format_tag: "webp",
+        quality: 75,
+    },
+    PresetEntry {
+        name: "avatar",
+        width: Some(200),
+        height: Some(200),
+        format_tag: "webp",
+        quality: 80,
+    },
+    PresetEntry {
+        name: "hero",
+        width: Some(1920),
+        height: None,
+        format_tag: "jpeg",
+        quality: 85,
+    },
+    PresetEntry {
+        name: "social",
+        width: Some(1200),
+        height: Some(630),
+        format_tag: "jpeg",
+        quality: 80,
+    },
+];
+
+/// Convert a `PresetEntry` to a `PresetConfig`.
+fn preset_entry_to_config(entry: &PresetEntry) -> PresetConfig {
+    let format = match entry.format_tag {
+        "jpeg" => OutputFormat::Jpeg {
+            quality: entry.quality,
+            fast_mode: false,
+        },
+        "webp" => OutputFormat::WebP {
+            quality: entry.quality,
+        },
+        // Safety: only used with known tags from the const table above.
+        _ => unreachable!("unknown format_tag in PRESET_TABLE"),
+    };
+    PresetConfig {
+        width: entry.width,
+        height: entry.height,
+        format,
+    }
+}
+
 /// Preset configuration for common use cases.
 /// Each preset defines optimal settings for a specific purpose.
 #[derive(Clone, Debug)]
@@ -336,53 +400,40 @@ impl PresetConfig {
         }
     }
 
-    /// Get the built-in preset by name
+    /// Get the built-in preset by name (case-insensitive).
+    ///
+    /// Looks up the name in `PRESET_TABLE` — the single source of truth for
+    /// all built-in presets.
     pub fn get(name: &str) -> Option<Self> {
-        match name.to_lowercase().as_str() {
-            "thumbnail" => Some(Self::thumbnail()),
-            "avatar" => Some(Self::avatar()),
-            "hero" => Some(Self::hero()),
-            "social" => Some(Self::social()),
-            _ => None,
-        }
+        let lower = name.to_lowercase();
+        PRESET_TABLE
+            .iter()
+            .find(|e| e.name == lower)
+            .map(preset_entry_to_config)
     }
 
     /// Thumbnail preset: 150x150, WebP quality 75
     /// Use case: Gallery thumbnails, preview images
     pub fn thumbnail() -> Self {
-        Self::new(Some(150), Some(150), OutputFormat::WebP { quality: 75 })
+        Self::get("thumbnail").expect("built-in preset 'thumbnail' must exist")
     }
 
     /// Avatar preset: 200x200, WebP quality 80
     /// Use case: User profile pictures
     pub fn avatar() -> Self {
-        Self::new(Some(200), Some(200), OutputFormat::WebP { quality: 80 })
+        Self::get("avatar").expect("built-in preset 'avatar' must exist")
     }
 
     /// Hero preset: 1920 width, JPEG quality 85
     /// Use case: Hero images, banners
     pub fn hero() -> Self {
-        Self::new(
-            Some(1920),
-            None,
-            OutputFormat::Jpeg {
-                quality: 85,
-                fast_mode: false,
-            },
-        )
+        Self::get("hero").expect("built-in preset 'hero' must exist")
     }
 
     /// Social preset: 1200x630, JPEG quality 80
     /// Use case: OGP/Twitter Card images
     pub fn social() -> Self {
-        Self::new(
-            Some(1200),
-            Some(630),
-            OutputFormat::Jpeg {
-                quality: 80,
-                fast_mode: false,
-            },
-        )
+        Self::get("social").expect("built-in preset 'social' must exist")
     }
 }
 
