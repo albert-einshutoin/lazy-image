@@ -36,6 +36,32 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 ---
 
+## Architecture Overview
+
+```
+src/                        # Rust core
+├── engine/
+│   ├── api.rs              # ImageEngine public API + NAPI bindings
+│   ├── pipeline.rs         # Operation queue, validation, optimization
+│   ├── resize.rs           # Dimension calc, fast_image_resize dispatch
+│   ├── tasks.rs            # NAPI async tasks (encode, batch, target-bytes)
+│   ├── encoder.rs          # JPEG/PNG/WebP/AVIF encoding + ICC/EXIF embedding
+│   ├── decoder.rs          # Format detection + decoding
+│   ├── firewall.rs         # Input sanitization policies
+│   ├── memory.rs           # Cgroup detection, concurrency estimation
+│   └── io.rs               # File I/O, mmap, ICC/EXIF extraction
+├── ops.rs                  # Operation enum, presets, output formats
+├── error.rs                # 4-tier error taxonomy (E1xx–E9xx)
+└── codecs/avif_safe.rs     # Safe libavif FFI wrappers
+
+lib/helpers.js              # Encoding profiles, target-bytes binary search
+streaming/pipeline.js       # Disk-backed bounded-memory streaming
+```
+
+**Key design decisions:** lazy execution (ops queue until output), zero-copy file I/O via mmap, memory-bounded concurrency via weighted semaphore, panic guards on all codec entry points. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details.
+
+---
+
 ## Choose lazy-image if / Choose sharp if
 
 | **Choose lazy-image if** | **Choose sharp if** |
