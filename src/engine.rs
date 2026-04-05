@@ -99,7 +99,7 @@ mod tests {
     use super::*;
     use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
-    use crate::engine::tasks::EncodeTask;
+    use crate::engine::tasks::{EncodeTask, TaskContext};
     use crate::error::LazyImageError;
     use crate::ops::OutputFormat;
     use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
@@ -569,18 +569,20 @@ mod tests {
             let png_data = create_minimal_png();
             use crate::engine::io::Source;
             let task = EncodeTask {
-                source: Some(Source::from_vec(png_data)),
-                decoded: None,
-                ops: vec![],
-                format: OutputFormat::Png,
-                icc_profile: None,
-                icc_present: false,
-                exif_data: None,
-                auto_orient: true,
-                metadata_policy: MetadataPolicy::default_policy(),
-                firewall: FirewallConfig::disabled(),
-                #[cfg(feature = "napi")]
-                last_error: None,
+                ctx: TaskContext {
+                    source: Some(Source::from_vec(png_data)),
+                    decoded: None,
+                    ops: vec![],
+                    format: OutputFormat::Png,
+                    icc_profile: None,
+                    icc_present: false,
+                    exif_data: None,
+                    auto_orient: true,
+                    metadata_policy: MetadataPolicy::default_policy(),
+                    firewall: FirewallConfig::disabled(),
+                    #[cfg(feature = "napi")]
+                    last_error: None,
+                },
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -593,18 +595,20 @@ mod tests {
         fn test_decode_already_decoded() {
             let img = create_test_image(100, 100);
             let task = EncodeTask {
-                source: None,
-                decoded: Some(Arc::new(img.clone())),
-                ops: vec![],
-                format: OutputFormat::Png,
-                icc_profile: None,
-                icc_present: false,
-                exif_data: None,
-                auto_orient: true,
-                metadata_policy: MetadataPolicy::default_policy(),
-                firewall: FirewallConfig::disabled(),
-                #[cfg(feature = "napi")]
-                last_error: None,
+                ctx: TaskContext {
+                    source: None,
+                    decoded: Some(Arc::new(img.clone())),
+                    ops: vec![],
+                    format: OutputFormat::Png,
+                    icc_profile: None,
+                    icc_present: false,
+                    exif_data: None,
+                    auto_orient: true,
+                    metadata_policy: MetadataPolicy::default_policy(),
+                    firewall: FirewallConfig::disabled(),
+                    #[cfg(feature = "napi")]
+                    last_error: None,
+                },
             };
             let result = task.decode();
             assert!(result.is_ok());
@@ -615,18 +619,20 @@ mod tests {
         #[test]
         fn test_decode_no_source() {
             let task = EncodeTask {
-                source: None,
-                decoded: None,
-                ops: vec![],
-                format: OutputFormat::Png,
-                icc_profile: None,
-                icc_present: false,
-                exif_data: None,
-                auto_orient: true,
-                metadata_policy: MetadataPolicy::default_policy(),
-                firewall: FirewallConfig::disabled(),
-                #[cfg(feature = "napi")]
-                last_error: None,
+                ctx: TaskContext {
+                    source: None,
+                    decoded: None,
+                    ops: vec![],
+                    format: OutputFormat::Png,
+                    icc_profile: None,
+                    icc_present: false,
+                    exif_data: None,
+                    auto_orient: true,
+                    metadata_policy: MetadataPolicy::default_policy(),
+                    firewall: FirewallConfig::disabled(),
+                    #[cfg(feature = "napi")]
+                    last_error: None,
+                },
             };
             let result = task.decode();
             assert!(result.is_err());
@@ -644,18 +650,20 @@ mod tests {
             firewall.max_bytes = Some(1);
 
             let task = EncodeTask {
-                source: Some(Source::from_vec(png_data)),
-                decoded: None,
-                ops: vec![],
-                format: OutputFormat::Png,
-                icc_profile: None,
-                icc_present: false,
-                exif_data: None,
-                auto_orient: true,
-                metadata_policy: MetadataPolicy::default_policy(),
-                firewall,
-                #[cfg(feature = "napi")]
-                last_error: None,
+                ctx: TaskContext {
+                    source: Some(Source::from_vec(png_data)),
+                    decoded: None,
+                    ops: vec![],
+                    format: OutputFormat::Png,
+                    icc_profile: None,
+                    icc_present: false,
+                    exif_data: None,
+                    auto_orient: true,
+                    metadata_policy: MetadataPolicy::default_policy(),
+                    firewall,
+                    #[cfg(feature = "napi")]
+                    last_error: None,
+                },
             };
             let err = task.decode().unwrap_err();
             assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
@@ -669,18 +677,20 @@ mod tests {
             firewall.max_pixels = Some(1);
 
             let task = EncodeTask {
-                source: Some(Source::from_vec(png_data)),
-                decoded: None,
-                ops: vec![],
-                format: OutputFormat::Png,
-                icc_profile: None,
-                icc_present: false,
-                exif_data: None,
-                auto_orient: true,
-                metadata_policy: MetadataPolicy::default_policy(),
-                firewall,
-                #[cfg(feature = "napi")]
-                last_error: None,
+                ctx: TaskContext {
+                    source: Some(Source::from_vec(png_data)),
+                    decoded: None,
+                    ops: vec![],
+                    format: OutputFormat::Png,
+                    icc_profile: None,
+                    icc_present: false,
+                    exif_data: None,
+                    auto_orient: true,
+                    metadata_policy: MetadataPolicy::default_policy(),
+                    firewall,
+                    #[cfg(feature = "napi")]
+                    last_error: None,
+                },
             };
             let err = task.decode().unwrap_err();
             assert!(matches!(err, LazyImageError::FirewallViolation { .. }));
