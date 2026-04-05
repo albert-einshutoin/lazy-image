@@ -7,6 +7,7 @@ license = "MIT"
 repository = "https://github.com/albert-einshutoin/lazy-image"
 keywords = ["image", "resize", "jpeg", "webp", "optimization"]
 categories = ["multimedia::images", "compression"]
+rust-version = "1.75"
 exclude = [".github", "test", "docs", "fuzz", "npm"]
 
 [lib]
