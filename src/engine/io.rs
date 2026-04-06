@@ -29,6 +29,115 @@ fn icc_internal_panic(format: &str, reason: &str) -> LazyImageError {
     LazyImageError::internal_panic(format!("{format} ICC extraction panic: {reason}"))
 }
 
+// =============================================================================
+// ICC EXTRACTOR TRAIT
+// =============================================================================
+
+/// Trait for format-specific ICC profile extraction.
+///
+/// Each image format stores ICC profiles differently (JPEG APP2 segments,
+/// PNG iCCP chunks, WebP ICCP RIFF chunks, AVIF colr boxes). Implementors
+/// parse their format's container to locate and return raw ICC profile bytes.
+///
+/// Validation of the extracted ICC data is handled centrally by
+/// `extract_and_validate_icc()`, so implementors only need to handle
+/// format-specific container parsing.
+pub(crate) trait IccExtractor: std::panic::RefUnwindSafe {
+    /// Human-readable format name for error messages (e.g. "jpeg", "png").
+    fn format_name(&self) -> &'static str;
+
+    /// Extract raw ICC profile bytes from format-specific container.
+    /// Returns `None` when no ICC profile is present.
+    fn extract_icc(&self, data: &[u8]) -> Option<Vec<u8>>;
+}
+
+/// Extract ICC profile using a format-specific extractor, with panic guard
+/// and ICC header validation.
+///
+/// This is the single entry point that unifies the extraction + validation
+/// flow across all formats. Format dispatch happens via the `IccExtractor`
+/// trait, while this function owns the cross-cutting concerns:
+/// 1. Panic guard (catch_unwind)
+/// 2. ICC header validation (size, signature, version)
+fn extract_and_validate_icc(extractor: &dyn IccExtractor, data: &[u8]) -> IccExtractionResult {
+    let format = extractor.format_name();
+
+    let icc_data = guard_icc_extraction(format, || Ok(extractor.extract_icc(data)))?;
+
+    let Some(icc_data) = icc_data else {
+        return Ok(None);
+    };
+
+    if !validate_icc_profile(&icc_data) {
+        return Err(icc_decode_error(
+            "icc",
+            "invalid ICC header (size or signature mismatch)",
+        ));
+    }
+
+    Ok(Some(icc_data))
+}
+
+pub(crate) struct JpegIccExtractor;
+pub(crate) struct PngIccExtractor;
+pub(crate) struct WebpIccExtractor;
+pub(crate) struct AvifIccExtractor;
+
+impl IccExtractor for JpegIccExtractor {
+    fn format_name(&self) -> &'static str {
+        "jpeg"
+    }
+
+    fn extract_icc(&self, data: &[u8]) -> Option<Vec<u8>> {
+        extract_icc_from_jpeg(data)
+    }
+}
+
+impl IccExtractor for PngIccExtractor {
+    fn format_name(&self) -> &'static str {
+        "png"
+    }
+
+    fn extract_icc(&self, data: &[u8]) -> Option<Vec<u8>> {
+        extract_icc_from_png_direct(data)
+    }
+}
+
+impl IccExtractor for WebpIccExtractor {
+    fn format_name(&self) -> &'static str {
+        "webp"
+    }
+
+    fn extract_icc(&self, data: &[u8]) -> Option<Vec<u8>> {
+        extract_icc_from_webp_riff(data)
+    }
+}
+
+impl IccExtractor for AvifIccExtractor {
+    fn format_name(&self) -> &'static str {
+        "avif"
+    }
+
+    fn extract_icc(&self, data: &[u8]) -> Option<Vec<u8>> {
+        extract_icc_from_avif_safe(data)
+    }
+}
+
+/// Select the appropriate ICC extractor based on image magic bytes.
+fn select_icc_extractor(data: &[u8]) -> Option<&'static dyn IccExtractor> {
+    if data.starts_with(&[0xFF, 0xD8]) {
+        Some(&JpegIccExtractor)
+    } else if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        Some(&PngIccExtractor)
+    } else if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
+        Some(&WebpIccExtractor)
+    } else if is_avif_data(data) {
+        Some(&AvifIccExtractor)
+    } else {
+        None
+    }
+}
+
 /// Guard that holds a memory-mapped file and its file descriptor.
 /// Keeping the fd open retains advisory locks (flock) on Unix systems,
 /// preventing cooperative writers from modifying the file while it's mapped.
@@ -228,30 +337,11 @@ pub fn extract_icc_profile(data: &[u8]) -> IccExtractionResult {
         return Ok(None);
     }
 
-    let icc_data = if data.starts_with(&[0xFF, 0xD8]) {
-        guard_icc_extraction("jpeg", || Ok(extract_icc_from_jpeg(data)))?
-    } else if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
-        guard_icc_extraction("png", || Ok(extract_icc_from_png(data)))?
-    } else if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
-        guard_icc_extraction("webp", || Ok(extract_icc_from_webp(data)))?
-    } else if is_avif_data(data) {
-        guard_icc_extraction("avif", || Ok(extract_icc_from_avif_safe(data)))?
-    } else {
+    let Some(extractor) = select_icc_extractor(data) else {
         return Ok(None);
     };
 
-    let Some(icc_data) = icc_data else {
-        return Ok(None);
-    };
-
-    if !validate_icc_profile(&icc_data) {
-        return Err(icc_decode_error(
-            "icc",
-            "invalid ICC header (size or signature mismatch)",
-        ));
-    }
-
-    Ok(Some(icc_data))
+    extract_and_validate_icc(extractor, data)
 }
 
 /// Lossy helper for callers that cannot propagate errors (legacy NAPI constructor).
@@ -369,6 +459,9 @@ pub(crate) fn is_avif_data(data: &[u8]) -> bool {
 }
 
 /// Extract ICC profile from JPEG data using a guarded APP2 parser.
+///
+/// Validates JPEG structure first, then parses APP2 segments following
+/// the ICC.1 multi-segment spec.
 pub(crate) fn extract_icc_from_jpeg(data: &[u8]) -> Option<Vec<u8>> {
     // Reuse the canonical JPEG structure validator from the decoder module.
     // If the structure is invalid, skip ICC extraction entirely.
@@ -470,13 +563,10 @@ fn extract_icc_from_jpeg_app2(data: &[u8]) -> Option<Vec<u8>> {
     Some(combined)
 }
 
-/// Extract ICC profile from PNG data using a deterministic parser (iCCP chunk).
-pub(crate) fn extract_icc_from_png(data: &[u8]) -> Option<Vec<u8>> {
-    extract_icc_from_png_direct(data)
-}
-
-/// Extract ICC profile from PNG iCCP chunk by directly parsing PNG structure
-/// This provides a deterministic fallback when img-parts cannot extract the profile.
+/// Extract ICC profile from PNG iCCP chunk by directly parsing PNG structure.
+///
+/// Parses the PNG chunk stream to find iCCP, then zlib-decompresses
+/// the embedded ICC profile data.
 pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
     use flate2::read::ZlibDecoder;
     use std::io::Read;
@@ -558,12 +648,8 @@ pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
     None
 }
 
-/// Extract ICC profile from WebP data by walking RIFF chunks and reading ICCP.
-pub(crate) fn extract_icc_from_webp(data: &[u8]) -> Option<Vec<u8>> {
-    extract_icc_from_webp_riff(data)
-}
-
-/// Extract ICC profile from WebP RIFF container without invoking img-parts.
+/// Extract ICC profile from WebP RIFF container by walking RIFF chunks
+/// and reading the ICCP chunk payload.
 fn extract_icc_from_webp_riff(data: &[u8]) -> Option<Vec<u8>> {
     if data.len() < 12 || !data.starts_with(b"RIFF") || &data[8..12] != b"WEBP" {
         return None;
@@ -969,7 +1055,7 @@ mod tests {
         fn test_extract_icc_from_jpeg_no_profile() {
             // JPEG without ICC profile
             let jpeg_data = create_minimal_jpeg();
-            let result = extract_icc_from_jpeg(&jpeg_data);
+            let result = JpegIccExtractor.extract_icc(&jpeg_data);
             assert!(result.is_none());
         }
 
@@ -977,7 +1063,7 @@ mod tests {
         fn test_extract_icc_from_png_no_profile() {
             // PNG without ICC profile
             let png_data = create_minimal_png();
-            let result = extract_icc_from_png(&png_data);
+            let result = PngIccExtractor.extract_icc(&png_data);
             assert!(result.is_none());
         }
 
@@ -985,7 +1071,7 @@ mod tests {
         fn test_extract_icc_from_webp_no_profile() {
             // WebP without ICC profile
             let webp_data = create_minimal_webp();
-            let result = extract_icc_from_webp(&webp_data);
+            let result = WebpIccExtractor.extract_icc(&webp_data);
             assert!(result.is_none());
         }
 

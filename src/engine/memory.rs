@@ -7,7 +7,7 @@
 // This module detects container memory limits from cgroup v1/v2 to automatically
 // adjust thread pool size and prevent OOM kills in constrained environments.
 
-use crate::engine::pipeline::calc_resize_dimensions;
+use crate::engine::resize::calc_resize_dimensions;
 use crate::ops::{Operation, OutputFormat, ResizeFit};
 use image::ImageFormat;
 use parking_lot::{Condvar, Mutex};

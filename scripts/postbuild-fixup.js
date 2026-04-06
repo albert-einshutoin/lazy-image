@@ -119,10 +119,11 @@ export declare function resolveEncodeProfile(format: OutputFormat, profile?: Enc
 function replaceIfNeeded(content, searchValue, replaceValue) {
   if (content.includes(replaceValue)) return content;
   if (!content.includes(searchValue)) {
-    // Type defs may be absent when napi build skips generation (e.g. cached
-    // ASan builds). Warn instead of crashing so the build can continue.
-    console.warn(`Warning: expected snippet not found in index.d.ts (skipped): ${searchValue.slice(0, 60)}…`);
-    return content;
+    throw new Error(
+      `postbuild-fixup: replacement target not found in index.d.ts — the NAPI-generated ` +
+      `type definitions may have changed. Search string (first 80 chars): ` +
+      `${JSON.stringify(searchValue.slice(0, 80))}`
+    );
   }
   return content.replace(searchValue, replaceValue);
 }

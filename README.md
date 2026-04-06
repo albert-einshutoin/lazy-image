@@ -18,7 +18,7 @@ lazy-image reduces image file sizes by 20-30% compared to sharp in its target we
 [![Node.js CI](https://github.com/albert-einshutoin/lazy-image/actions/workflows/CI.yml/badge.svg)](https://github.com/albert-einshutoin/lazy-image/actions/workflows/CI.yml)
 [![codecov](https://codecov.io/gh/albert-einshutoin/lazy-image/branch/main/graph/badge.svg)](https://codecov.io/gh/albert-einshutoin/lazy-image)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.88+-orange.svg)](https://www.rust-lang.org/)
 
 ---
 
@@ -33,6 +33,32 @@ const bytesWritten = await ImageEngine.fromPath('input.png')
 
 console.log(`Wrote ${bytesWritten} bytes`);
 ```
+
+---
+
+## Architecture Overview
+
+```
+src/                        # Rust core
+├── engine/
+│   ├── api.rs              # ImageEngine public API + NAPI bindings
+│   ├── pipeline.rs         # Operation queue, validation, optimization
+│   ├── resize.rs           # Dimension calc, fast_image_resize dispatch
+│   ├── tasks.rs            # NAPI async tasks (encode, batch, target-bytes)
+│   ├── encoder.rs          # JPEG/PNG/WebP/AVIF encoding + ICC/EXIF embedding
+│   ├── decoder.rs          # Format detection + decoding
+│   ├── firewall.rs         # Input sanitization policies
+│   ├── memory.rs           # Cgroup detection, concurrency estimation
+│   └── io.rs               # File I/O, mmap, ICC/EXIF extraction
+├── ops.rs                  # Operation enum, presets, output formats
+├── error.rs                # 4-tier error taxonomy (E1xx–E9xx)
+└── codecs/avif_safe.rs     # Safe libavif FFI wrappers
+
+lib/helpers.js              # Encoding profiles, target-bytes binary search
+streaming/pipeline.js       # Disk-backed bounded-memory streaming
+```
+
+**Key design decisions:** lazy execution (ops queue until output), zero-copy file I/O via mmap, memory-bounded concurrency via weighted semaphore, panic guards on all codec entry points. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details.
 
 ---
 
@@ -142,6 +168,8 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 
 | Topic | Link |
 |-------|------|
+| **Examples** | [examples/](./examples/) |
+| **TypeScript guide** | [docs/TYPESCRIPT.md](./docs/TYPESCRIPT.md) |
 | **Full API reference** | [docs/API.md](./docs/API.md) |
 | **Migration from sharp** | [docs/MIGRATION_FROM_SHARP.md](./docs/MIGRATION_FROM_SHARP.md) |
 | **Performance & when to use** | [docs/PERFORMANCE.md](./docs/PERFORMANCE.md) |
@@ -164,7 +192,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 
 ## Features (summary)
 
-Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles (AVIF in v0.9.x) · EXIF auto-orient · Zero-copy file I/O · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles · EXIF auto-orient · Zero-copy file I/O · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ---
 
