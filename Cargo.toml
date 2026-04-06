@@ -4,6 +4,7 @@ version = "0.13.0"
 edition = "2021"
 description = "Web image optimization engine - smaller outputs than sharp, powered by Rust + mozjpeg"
 license = "MIT"
+rust-version = "1.88"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
