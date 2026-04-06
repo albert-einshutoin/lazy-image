@@ -142,6 +142,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 
 | Topic | Link |
 |-------|------|
+| **TypeScript guide** | [docs/TYPESCRIPT.md](./docs/TYPESCRIPT.md) |
 | **Full API reference** | [docs/API.md](./docs/API.md) |
 | **Migration from sharp** | [docs/MIGRATION_FROM_SHARP.md](./docs/MIGRATION_FROM_SHARP.md) |
 | **Performance & when to use** | [docs/PERFORMANCE.md](./docs/PERFORMANCE.md) |
