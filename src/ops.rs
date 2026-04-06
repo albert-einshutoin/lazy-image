@@ -179,7 +179,7 @@ pub enum ColorSpace {
     Srgb,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ResizeFit {
     /// Maintain aspect ratio while fitting inside the bounding box (default)
     #[default]
@@ -405,10 +405,9 @@ impl PresetConfig {
     /// Looks up the name in `PRESET_TABLE` — the single source of truth for
     /// all built-in presets.
     pub fn get(name: &str) -> Option<Self> {
-        let lower = name.to_lowercase();
         PRESET_TABLE
             .iter()
-            .find(|e| e.name == lower)
+            .find(|e| e.name.eq_ignore_ascii_case(name))
             .map(preset_entry_to_config)
     }
 
