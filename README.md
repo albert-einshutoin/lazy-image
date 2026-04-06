@@ -192,7 +192,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 
 ## Features (summary)
 
-Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles (AVIF in v0.9.x) · EXIF auto-orient · Zero-copy file I/O · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles · EXIF auto-orient · Zero-copy file I/O · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ---
 
