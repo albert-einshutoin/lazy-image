@@ -10,7 +10,7 @@
 /// Centralizes the keep-ICC / keep-EXIF / strip-GPS decision so that every
 /// output path reads a single source of truth instead of resolving ad-hoc
 /// boolean combinations.
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct MetadataPolicy {
     /// Whether to preserve ICC profile in output (default: false)
     pub icc: bool,
