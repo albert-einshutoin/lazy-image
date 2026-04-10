@@ -11,6 +11,7 @@ import {
     PresetResult,
     ResizeFit,
 } from '../../index';
+import { createStreamingPipeline } from '../../streaming/pipeline';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
@@ -78,6 +79,12 @@ async function testTypeSafety() {
     );
     
     console.log(`Batch processing: ${batchResults.length} results`);
+
+    const streamingPipeline = createStreamingPipeline({
+        format: 'webp',
+        ops: [{ op: 'resize', width: 128, fit: 'inside' }],
+    });
+    streamingPipeline.readable.resume();
     
     // @ts-expect-error invalid format must fail at compile time
     await ImageEngine.fromPath(imagePath).toBuffer('invalid_format', 80);

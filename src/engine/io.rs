@@ -699,6 +699,13 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
     }
 
     std::panic::catch_unwind(|| unsafe {
+        // SAFETY:
+        // - `decoder` is created by `avifDecoderCreate` and released by `AvifDecoderGuard`.
+        // - `avifDecoderSetIOMemory` borrows `data` for the duration of this call only, and
+        //   `data` lives for the entire function.
+        // - After `avifDecoderParse` returns `AVIF_RESULT_OK`, libavif guarantees that
+        //   `decoder.image` and its ICC fields point to initialized memory owned by the decoder
+        //   until the decoder is destroyed.
         // Create decoder
         let decoder = avifDecoderCreate();
         if decoder.is_null() {

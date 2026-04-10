@@ -37,6 +37,7 @@ async function run() {
     await test_large_file_resize();
     await test_metrics_callback();
     await test_error_propagation();
+    await test_async_process_error_propagation();
     await test_multiple_ops();
     await test_png_output();
     await test_avif_output();
@@ -172,6 +173,39 @@ async function test_multiple_ops() {
     assert(meta.format === 'jpeg', 'format should be jpeg');
 
     console.log('✅ streaming multiple ops passed');
+}
+
+async function test_async_process_error_propagation() {
+    class FailingEngine {
+        static fromPath() {
+            return new FailingEngine();
+        }
+
+        async toFile() {
+            throw new Error('encode exploded after finish');
+        }
+    }
+
+    const { writable, readable } = createStreamingPipeline({
+        format: 'jpeg',
+        ImageEngine: FailingEngine,
+    });
+
+    writable.end(Buffer.from('not-an-image-but-engine-is-mocked'));
+
+    let capturedError = null;
+    try {
+        for await (const _chunk of readable) {
+            // should not reach
+        }
+    } catch (error) {
+        capturedError = error;
+    }
+
+    assert(capturedError, 'async process failure should reach readable');
+    assert.match(capturedError.message, /encode exploded after finish/);
+
+    console.log('✅ streaming async process error propagation passed');
 }
 
 async function test_png_output() {

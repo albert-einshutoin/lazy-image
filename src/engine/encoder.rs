@@ -703,14 +703,26 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
                 .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
 
             unsafe {
+                // SAFETY:
+                // - `allocate_planes(AVIF_PLANES_A)` succeeded immediately above, so libavif has
+                //   allocated an alpha plane for the image.
+                // - `alpha_plane_mut()` yields exclusive access to that plane for the lifetime of
+                //   this block.
+                // - We only write indices within `[0, alpha_row_bytes * height)`, and each source
+                //   index is within the validated RGBA input buffer.
                 let alpha_plane = avif_image.alpha_plane_mut().map_err(|e| {
-                    LazyImageError::encode_failed("avif".to_string(), e.to_string())
+                    LazyImageError::encode_failed("avif", e.to_string())
                 })?;
                 let alpha_row_bytes = avif_image.alpha_row_bytes();
+                let alpha_plane_len = alpha_row_bytes
+                    .checked_mul(height as usize)
+                    .ok_or_else(|| LazyImageError::encode_failed("avif", "Alpha plane size overflow"))?;
+                debug_assert!(alpha_row_bytes >= width as usize);
                 for y in 0..height as usize {
                     for x in 0..width as usize {
                         let src_idx = (y * width as usize + x) * 4 + 3;
                         let dst_idx = y * alpha_row_bytes + x;
+                        debug_assert!(dst_idx < alpha_plane_len);
                         *alpha_plane.as_ptr().add(dst_idx) = pixels[src_idx];
                     }
                 }
