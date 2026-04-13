@@ -103,7 +103,7 @@ jobs:
         shell: bash
 
       - name: Upload artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: bindings-${{ matrix.settings.target }}
           path: "*.node"
@@ -352,7 +352,7 @@ jobs:
           find artifacts -name "*.node" -type f -print -exec sha256sum {} \; > binding-hashes.sha256
 
       - name: Upload supply-chain reports
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: supply-chain-reports
           path: |
