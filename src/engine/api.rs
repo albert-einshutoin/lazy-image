@@ -16,7 +16,7 @@ use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_s
 #[allow(unused_imports)]
 use crate::engine::tasks::{
     BatchResult, BatchTask, BatchWithMetricsTask, EncodeTargetBytesTask, EncodeTask,
-    EncodeWithMetricsTask, UnifiedEncodeTask, UnifiedEncodeToFileTask, WriteFileTask,
+    EncodeWithMetricsTask, TaskContext, UnifiedEncodeTask, UnifiedEncodeToFileTask, WriteFileTask,
     WriteFileWithMetricsTask,
 };
 #[cfg(feature = "napi")]
@@ -655,18 +655,20 @@ impl ImageEngine {
         };
 
         Ok(AsyncTask::new(EncodeTask {
-            source,
-            decoded,
-            ops,
-            format: output_format,
-            icc_profile,
-            icc_present,
-            exif_data,
-            auto_orient,
-            metadata_policy: policy,
-            firewall: self.firewall.clone(),
-            #[cfg(feature = "napi")]
-            last_error: None,
+            ctx: TaskContext {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
         }))
     }
 
@@ -753,18 +755,20 @@ impl ImageEngine {
         };
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
-            source,
-            decoded,
-            ops,
-            format: output_format,
-            icc_profile,
-            icc_present,
-            exif_data,
-            auto_orient,
-            metadata_policy: policy,
-            firewall: self.firewall.clone(),
-            #[cfg(feature = "napi")]
-            last_error: None,
+            ctx: TaskContext {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
         }))
     }
 
@@ -890,22 +894,24 @@ impl ImageEngine {
         };
 
         Ok(AsyncTask::new(EncodeTargetBytesTask {
-            source,
-            decoded,
-            ops,
-            format: output_format,
-            icc_profile,
-            icc_present,
-            exif_data,
-            auto_orient,
-            metadata_policy: policy,
-            firewall: self.firewall.clone(),
+            ctx: TaskContext {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
             target_bytes,
             min_quality: min_q,
             max_quality: max_q,
             quality_floor_policy_strict: strict.unwrap_or(false),
-            #[cfg(feature = "napi")]
-            last_error: None,
         }))
     }
 
@@ -958,19 +964,21 @@ impl ImageEngine {
         };
 
         Ok(AsyncTask::new(WriteFileTask {
-            source,
-            decoded,
-            ops,
-            format: output_format,
-            icc_profile,
-            icc_present,
-            exif_data,
-            auto_orient,
-            metadata_policy: policy,
-            firewall: self.firewall.clone(),
+            ctx: TaskContext {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
             output_path: path,
-            #[cfg(feature = "napi")]
-            last_error: None,
         }))
     }
 
@@ -1018,19 +1026,21 @@ impl ImageEngine {
         };
 
         Ok(AsyncTask::new(WriteFileWithMetricsTask {
-            source,
-            decoded,
-            ops,
-            format: output_format,
-            icc_profile,
-            icc_present,
-            exif_data,
-            auto_orient,
-            metadata_policy: policy,
-            firewall: self.firewall.clone(),
+            ctx: TaskContext {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
             output_path: path,
-            #[cfg(feature = "napi")]
-            last_error: None,
         }))
     }
 
@@ -1118,19 +1128,21 @@ impl ImageEngine {
         };
 
         Ok(AsyncTask::new(crate::engine::tasks::UnifiedEncodeTask {
-            source,
-            decoded,
-            ops,
-            format: output_format,
-            icc_profile,
-            icc_present,
-            exif_data,
-            auto_orient,
-            metadata_policy: policy,
-            firewall: self.firewall.clone(),
+            ctx: TaskContext {
+                source,
+                decoded,
+                ops,
+                format: output_format,
+                icc_profile,
+                icc_present,
+                exif_data,
+                auto_orient,
+                metadata_policy: policy,
+                firewall: self.firewall.clone(),
+                #[cfg(feature = "napi")]
+                last_error: None,
+            },
             want_metrics,
-            #[cfg(feature = "napi")]
-            last_error: None,
         }))
     }
 
@@ -1208,20 +1220,22 @@ impl ImageEngine {
 
         Ok(AsyncTask::new(
             crate::engine::tasks::UnifiedEncodeToFileTask {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
+                ctx: TaskContext {
+                    source,
+                    decoded,
+                    ops,
+                    format: output_format,
+                    icc_profile,
+                    icc_present,
+                    exif_data,
+                    auto_orient,
+                    metadata_policy: policy,
+                    firewall: self.firewall.clone(),
+                    #[cfg(feature = "napi")]
+                    last_error: None,
+                },
                 want_metrics,
                 output_path: path,
-                #[cfg(feature = "napi")]
-                last_error: None,
             },
         ))
     }
