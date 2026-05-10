@@ -227,7 +227,7 @@ pub fn optimize_ops(ops: &[Operation]) -> Vec<Operation> {
         {
             let mut final_width = *w1;
             let mut final_height = *h1;
-            let fit_mode = fit.clone();
+            let fit_mode = *fit;
 
             // Absorb all immediately-following resizes with the same fit mode.
             while i + 1 < ops.len() {
