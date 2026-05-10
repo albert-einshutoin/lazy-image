@@ -179,7 +179,7 @@ pub enum ColorSpace {
     Srgb,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ResizeFit {
     /// Maintain aspect ratio while fitting inside the bounding box (default)
     #[default]
@@ -314,13 +314,21 @@ impl OutputFormat {
 // PRESETS - Common configurations for web image optimization
 // =============================================================================
 
+/// Format tag for preset table entries.
+/// Using an enum eliminates the `unreachable!()` branch in `preset_entry_to_config`.
+#[derive(Clone, Copy, Debug)]
+enum PresetFormat {
+    Jpeg,
+    WebP,
+}
+
 /// Internal definition for a single preset entry in the static table.
 /// Uses primitive types so the table can be a `const` array.
 struct PresetEntry {
     name: &'static str,
     width: Option<u32>,
     height: Option<u32>,
-    format_tag: &'static str, // "webp" or "jpeg"
+    format: PresetFormat,
     quality: u8,
 }
 
@@ -332,44 +340,42 @@ const PRESET_TABLE: &[PresetEntry] = &[
         name: "thumbnail",
         width: Some(150),
         height: Some(150),
-        format_tag: "webp",
+        format: PresetFormat::WebP,
         quality: 75,
     },
     PresetEntry {
         name: "avatar",
         width: Some(200),
         height: Some(200),
-        format_tag: "webp",
+        format: PresetFormat::WebP,
         quality: 80,
     },
     PresetEntry {
         name: "hero",
         width: Some(1920),
         height: None,
-        format_tag: "jpeg",
+        format: PresetFormat::Jpeg,
         quality: 85,
     },
     PresetEntry {
         name: "social",
         width: Some(1200),
         height: Some(630),
-        format_tag: "jpeg",
+        format: PresetFormat::Jpeg,
         quality: 80,
     },
 ];
 
 /// Convert a `PresetEntry` to a `PresetConfig`.
 fn preset_entry_to_config(entry: &PresetEntry) -> PresetConfig {
-    let format = match entry.format_tag {
-        "jpeg" => OutputFormat::Jpeg {
+    let format = match entry.format {
+        PresetFormat::Jpeg => OutputFormat::Jpeg {
             quality: entry.quality,
             fast_mode: false,
         },
-        "webp" => OutputFormat::WebP {
+        PresetFormat::WebP => OutputFormat::WebP {
             quality: entry.quality,
         },
-        // Safety: only used with known tags from the const table above.
-        _ => unreachable!("unknown format_tag in PRESET_TABLE"),
     };
     PresetConfig {
         width: entry.width,
@@ -405,10 +411,9 @@ impl PresetConfig {
     /// Looks up the name in `PRESET_TABLE` — the single source of truth for
     /// all built-in presets.
     pub fn get(name: &str) -> Option<Self> {
-        let lower = name.to_lowercase();
         PRESET_TABLE
             .iter()
-            .find(|e| e.name == lower)
+            .find(|e| e.name.eq_ignore_ascii_case(name))
             .map(preset_entry_to_config)
     }
 
