@@ -4,9 +4,9 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 0.14.x  | :white_check_mark: |
 | 0.13.x  | :white_check_mark: |
-| 0.12.x  | :white_check_mark: |
-| < 0.12  | :x:                |
+| < 0.13  | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -60,7 +60,7 @@ lazy-image implements several security measures to protect against common vulner
   - Critical/High: security patch release within 14 days of confirmation.
   - Medium: patch in the next scheduled minor/patch release (target ≤ 30 days).
   - Low: fixed opportunistically in a regular release.
-- **Backports**: Security fixes are backported to all supported lines (0.13.x and 0.12.x). Unsupported versions (<0.12) are not patched; users must upgrade.
+- **Backports**: Security fixes are backported to all supported lines (0.14.x and 0.13.x). Unsupported versions (<0.13) are not patched; users must upgrade.
 - **Disclosure**: Public disclosure occurs after a fix is released and packages are available. If coordinated disclosure is requested, we honor reasonable embargoes up to 90 days.
 - **Credit**: We credit reporters in the advisory unless anonymity is requested.
 
