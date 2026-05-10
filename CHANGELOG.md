@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.14.0] - 2026-05-10
+
+### Added
+- **TypeScript guide**: added `docs/TYPESCRIPT.md` with CommonJS, ESM, and type-safety usage patterns.
+- **Runnable JavaScript examples**: added example scripts and an examples README for common lazy-image workflows.
+- **Project governance metadata**: added CODEOWNERS, funding metadata, editor configuration, Cargo package metadata, and a Contributor Covenant code of conduct.
+
+### Changed
+- **Engine internals**: split validation, metadata, resize, and task logic into smaller modules while preserving the public API.
+- **Preset model**: replaced preset format strings with a typed `PresetFormat` enum and a data-driven preset table.
+- **Metadata helpers**: deduplicated ICC and EXIF extraction/embedding paths behind shared traits.
+- **Test organization**: moved large error and PNG helper coverage into focused test modules/utilities.
+- **Documentation**: refreshed README architecture/MSRV details and removed stale ICC version wording.
+- **CI**: added Rust dependency caching and pinned the fuzzing nightly toolchain.
+
+### Fixed
+- Removed a stale test import introduced during branch synchronization.
+- Documented the current cargo audit exceptions so unresolved upstream advisories are explicit instead of hidden.
+
+---
+
 ## [0.13.0] - 2026-04-02
 
 ### Added
@@ -451,7 +472,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.10.2...v0.11.0
