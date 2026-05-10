@@ -102,7 +102,7 @@ mod tests {
     use crate::engine::tasks::{EncodeTask, TaskContext};
     use crate::error::LazyImageError;
     use crate::ops::OutputFormat;
-    use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
+    use image::{DynamicImage, GenericImageView, RgbImage};
     use std::sync::Arc;
 
     fn create_test_image(width: u32, height: u32) -> DynamicImage {
