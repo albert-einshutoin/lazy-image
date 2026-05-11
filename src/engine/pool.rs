@@ -25,6 +25,8 @@
 
 #[cfg(feature = "napi")]
 use crate::engine::memory;
+#[cfg(feature = "napi")]
+use crate::error::LazyImageError;
 #[cfg(all(test, feature = "napi"))]
 use parking_lot::RwLock;
 #[cfg(feature = "napi")]
@@ -47,18 +49,21 @@ const MIN_RAYON_THREADS: usize = 1;
 // Production: Use OnceLock directly for lock-free access after initialization
 // Test: Keep RwLock variant for shutdown_global_pool() functionality
 #[cfg(all(not(test), feature = "napi"))]
-pub(crate) static GLOBAL_THREAD_POOL: OnceLock<Arc<ThreadPool>> = OnceLock::new();
+pub(crate) static GLOBAL_THREAD_POOL: OnceLock<std::result::Result<Arc<ThreadPool>, String>> =
+    OnceLock::new();
 
 #[cfg(all(test, feature = "napi"))]
-pub(crate) static GLOBAL_THREAD_POOL: OnceLock<RwLock<Option<Arc<ThreadPool>>>> = OnceLock::new();
+pub(crate) static GLOBAL_THREAD_POOL: OnceLock<
+    RwLock<Option<std::result::Result<Arc<ThreadPool>, String>>>,
+> = OnceLock::new();
 
 #[cfg(all(test, feature = "napi"))]
-fn pool_cell() -> &'static RwLock<Option<Arc<ThreadPool>>> {
+fn pool_cell() -> &'static RwLock<Option<std::result::Result<Arc<ThreadPool>, String>>> {
     GLOBAL_THREAD_POOL.get_or_init(|| RwLock::new(None))
 }
 
 #[cfg(feature = "napi")]
-fn build_pool() -> Arc<ThreadPool> {
+fn build_pool() -> std::result::Result<Arc<ThreadPool>, String> {
     let detected_parallelism = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(MIN_RAYON_THREADS);
@@ -68,47 +73,67 @@ fn build_pool() -> Arc<ThreadPool> {
         .saturating_sub(uv_reserve)
         .max(MIN_RAYON_THREADS);
 
-    Arc::new(
-        rayon::ThreadPoolBuilder::new()
-            .num_threads(num_threads)
+    match rayon::ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build()
+    {
+        Ok(pool) => Ok(Arc::new(pool)),
+        Err(primary_err) => rayon::ThreadPoolBuilder::new()
+            .num_threads(MIN_RAYON_THREADS)
             .build()
-            .unwrap_or_else(|e| {
-                // Fallback: create a minimal thread pool if the preferred configuration fails
-                rayon::ThreadPoolBuilder::new()
-                    .num_threads(MIN_RAYON_THREADS)
-                    .build()
-                    .expect(&format!(
-                        "Failed to create fallback thread pool with {} threads: {}",
-                        MIN_RAYON_THREADS, e
-                    ))
+            .map(Arc::new)
+            .map_err(|fallback_err| {
+                format!(
+                    "preferred pool ({num_threads} threads) failed: {primary_err}; \
+                     fallback pool ({MIN_RAYON_THREADS} thread) failed: {fallback_err}"
+                )
             }),
-    )
+    }
+}
+
+#[cfg(feature = "napi")]
+fn pool_init_error(message: &str) -> LazyImageError {
+    LazyImageError::internal_panic(format!("failed to initialize rayon thread pool: {message}"))
 }
 
 // Production: Lock-free access via OnceLock::get_or_init()
 #[cfg(all(not(test), feature = "napi"))]
-pub fn get_pool() -> Arc<ThreadPool> {
-    Arc::clone(GLOBAL_THREAD_POOL.get_or_init(build_pool))
+pub fn get_pool() -> std::result::Result<Arc<ThreadPool>, LazyImageError> {
+    match GLOBAL_THREAD_POOL.get_or_init(build_pool) {
+        Ok(pool) => Ok(Arc::clone(pool)),
+        Err(message) => Err(pool_init_error(message)),
+    }
 }
 
 // Test: Keep double-check locking for shutdown_global_pool() compatibility
 #[cfg(all(test, feature = "napi"))]
-pub fn get_pool() -> Arc<ThreadPool> {
+pub fn get_pool() -> std::result::Result<Arc<ThreadPool>, LazyImageError> {
     {
         let guard = pool_cell().read();
         if let Some(pool) = guard.as_ref() {
-            return Arc::clone(pool);
+            return pool
+                .as_ref()
+                .map(Arc::clone)
+                .map_err(|message| pool_init_error(message));
         }
     }
 
     let mut guard = pool_cell().write();
     if let Some(pool) = guard.as_ref() {
-        return Arc::clone(pool);
+        return pool
+            .as_ref()
+            .map(Arc::clone)
+            .map_err(|message| pool_init_error(message));
     }
 
     let pool = build_pool();
-    *guard = Some(Arc::clone(&pool));
-    pool
+    *guard = Some(pool);
+    guard
+        .as_ref()
+        .expect("pool cell was initialized")
+        .as_ref()
+        .map(Arc::clone)
+        .map_err(|message| pool_init_error(message))
 }
 
 /// Explicitly drop the global thread pool so it can be re-created.
@@ -124,7 +149,7 @@ pub(crate) fn shutdown_global_pool() {
 /// Useful for scenarios where environment variables (like UV_THREADPOOL_SIZE)
 /// change at runtime and need to be respected by a fresh pool instance.
 #[cfg(all(test, feature = "napi"))]
-pub(crate) fn reinitialize_global_pool() -> Arc<ThreadPool> {
+pub(crate) fn reinitialize_global_pool() -> std::result::Result<Arc<ThreadPool>, LazyImageError> {
     shutdown_global_pool();
     get_pool()
 }
@@ -233,12 +258,12 @@ mod tests {
     fn pool_reinitializes_with_new_uv_reservation() {
         let guard = EnvGuard::set("UV_THREADPOOL_SIZE", "8");
 
-        let pool = reinitialize_global_pool();
+        let pool = reinitialize_global_pool().expect("pool should initialize");
         let expected = expected_threads(8);
         assert_eq!(thread_count(&pool), expected);
 
         drop(guard);
-        let pool_after_reset = reinitialize_global_pool();
+        let pool_after_reset = reinitialize_global_pool().expect("pool should reinitialize");
         let expected_default = expected_threads(DEFAULT_LIBUV_THREADPOOL_SIZE);
         assert_eq!(thread_count(&pool_after_reset), expected_default);
     }
@@ -251,7 +276,7 @@ mod tests {
     #[test]
     fn pool_handles_real_workloads_and_stays_usable() {
         shutdown_global_pool();
-        let pool = get_pool();
+        let pool = get_pool().expect("pool should initialize");
         let images = make_workload();
 
         let resized: Vec<Vec<u8>> = pool.install(|| {

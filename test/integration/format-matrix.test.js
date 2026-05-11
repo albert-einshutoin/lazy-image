@@ -76,6 +76,7 @@ async function runTests() {
     console.log('=== Format Conversion Matrix Tests ===\n');
 
     const { jpegBuf, pngBuf, webpBuf } = await generateFixtures();
+    const avifPath = resolveFixture('test_92kb_input.avif');
 
     // --- Format conversion matrix -------------------------------------------
     // Each entry: [label, sourceBuf, targetFormat, quality]
@@ -121,6 +122,19 @@ async function runTests() {
             }
         });
     }
+
+    await asyncTest('format: AVIF input fails with a decode error until AVIF decode is supported', async () => {
+        await assert.rejects(
+            ImageEngine.fromPath(avifPath).resize(100).toBuffer('jpeg', 80),
+            (err) => {
+                assert(
+                    err.message.includes('[E131]') || err.message.includes('Failed to decode image'),
+                    `unexpected error for unsupported AVIF input: ${err.message}`,
+                );
+                return true;
+            },
+        );
+    });
 
     // --- Resize fit mode tests ----------------------------------------------
 

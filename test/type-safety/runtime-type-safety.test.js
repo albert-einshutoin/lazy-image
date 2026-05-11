@@ -6,6 +6,10 @@ const { resolveFixture, resolveRoot } = require('../helpers/paths');
 const { ImageEngine } = require(resolveRoot('index'));
 
 async function testTypeSafetyInPractice() {
+    if (process.env.LAZY_IMAGE_FORCE_RUNTIME_TYPE_SAFETY_FAILURE === '1') {
+        throw new Error('forced runtime type-safety failure');
+    }
+
     console.log('🔒 Type Safety Verification Test');
     console.log('=================================\n');
     
@@ -83,5 +87,10 @@ async function testTypeSafetyInPractice() {
 }
 
 if (require.main === module) {
-    testTypeSafetyInPractice().catch(console.error);
+    testTypeSafetyInPractice().catch((err) => {
+        console.error(err);
+        process.exit(1);
+    });
 }
+
+module.exports = { testTypeSafetyInPractice };
