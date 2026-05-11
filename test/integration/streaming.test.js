@@ -42,6 +42,7 @@ async function run() {
     await test_avif_output();
     await test_destroy_mid_stream();
     await test_empty_input();
+    await test_cleanup_error_reporting();
 }
 
 async function test_basic_resize() {
@@ -293,6 +294,41 @@ async function test_empty_input() {
     );
 
     console.log('✅ streaming empty input error passed');
+}
+
+async function test_cleanup_error_reporting() {
+    const originalRm = fs.rm;
+    const cleanupErrors = [];
+    fs.rm = function patchedRm(target, options, callback) {
+        const cb = typeof options === 'function' ? options : callback;
+        process.nextTick(() => cb(new Error(`forced cleanup failure: ${target}`)));
+    };
+
+    try {
+        const { writable, readable } = createStreamingPipeline({
+            format: 'jpeg',
+            quality: 80,
+            onCleanupError(err) {
+                cleanupErrors.push(err);
+            },
+        });
+
+        writable.end(Buffer.from([0, 1, 2, 3]));
+
+        await new Promise((resolve) => {
+            readable.on('error', resolve);
+            readable.resume();
+        });
+    } finally {
+        fs.rm = originalRm;
+    }
+
+    assert(
+        cleanupErrors.length > 0,
+        'cleanup failures should be reported instead of silently swallowed',
+    );
+
+    console.log('✅ streaming cleanup error reporting passed');
 }
 
 run().catch((err) => {

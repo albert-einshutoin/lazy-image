@@ -1166,8 +1166,16 @@ impl Task for BatchTask {
         // When effective_concurrency < inputs.len(), run exactly that many worker
         // tasks on the global pool and pull work dynamically via an atomic index.
         // This preserves the concurrency cap while avoiding chunk-induced tail latency.
+        let pool = match pool::get_pool() {
+            Ok(pool) => pool,
+            Err(err) => {
+                self.last_error = Some(err.clone());
+                return Err(napi::Error::from(err));
+            }
+        };
+
         let results: Vec<BatchResult> = if effective_concurrency >= self.inputs.len() {
-            pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
+            pool.install(|| self.inputs.par_iter().map(process_one).collect())
         } else {
             use std::sync::atomic::{AtomicUsize, Ordering};
             use std::sync::{Arc, Mutex};
@@ -1177,7 +1185,7 @@ impl Task for BatchTask {
                 self.inputs.len(),
             )));
 
-            pool::get_pool().install(|| {
+            pool.install(|| {
                 rayon::scope(|scope| {
                     for _ in 0..effective_concurrency {
                         let next_index = Arc::clone(&next_index);
@@ -1310,9 +1318,17 @@ impl Task for BatchWithMetricsTask {
             }
         };
 
+        let pool = match pool::get_pool() {
+            Ok(pool) => pool,
+            Err(err) => {
+                self.last_error = Some(err.clone());
+                return Err(napi::Error::from(err));
+            }
+        };
+
         let items: Vec<crate::BatchResultWithMetrics> =
             if effective_concurrency >= self.inputs.len() {
-                pool::get_pool().install(|| self.inputs.par_iter().map(process_one).collect())
+                pool.install(|| self.inputs.par_iter().map(process_one).collect())
             } else {
                 use std::sync::atomic::{AtomicUsize, Ordering};
                 use std::sync::{Arc, Mutex};
@@ -1321,7 +1337,7 @@ impl Task for BatchWithMetricsTask {
                 let out = Arc::new(Mutex::new(Vec::with_capacity(self.inputs.len())));
                 let next = AtomicUsize::new(0);
 
-                pool::get_pool().install(|| {
+                pool.install(|| {
                     rayon::scope(|s| {
                         for _ in 0..effective_concurrency {
                             let inputs = Arc::clone(&inputs);

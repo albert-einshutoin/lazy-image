@@ -65,6 +65,7 @@ export declare function createStreamingPipeline(options: {
   }>
   ImageEngine?: typeof ImageEngine
   onMetrics?: (metrics: ProcessingMetrics) => void
+  onCleanupError?: (err: Error, target: string) => void
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream

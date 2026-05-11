@@ -18,7 +18,14 @@ const { PassThrough } = require('stream');
  * - ops: array of operations (same schema as core API)
  */
 function createStreamingPipeline(options) {
-    const { format = 'jpeg', quality, ops = [], ImageEngine, onMetrics } = options ?? {};
+    const {
+        format = 'jpeg',
+        quality,
+        ops = [],
+        ImageEngine,
+        onMetrics,
+        onCleanupError,
+    } = options ?? {};
     const Engine = ImageEngine || require('../index').ImageEngine;
     if (!Engine) {
         throw new Error('ImageEngine must be provided to createStreamingPipeline');
@@ -31,7 +38,7 @@ function createStreamingPipeline(options) {
     const writable = fs.createWriteStream(inputPath);
     const readable = new PassThrough();
 
-    async function process() {
+    async function processImage() {
         try {
             let engine = Engine.fromPath(inputPath);
             for (const op of ops) {
@@ -85,13 +92,29 @@ function createStreamingPipeline(options) {
     function cleanup() {
         if (cleaned) return;
         cleaned = true;
-        fs.rm(inputPath, { force: true }, () => {});
-        fs.rm(outputPath, { force: true }, () => {});
-        fs.rm(tempBase, { force: true, recursive: true }, () => {});
+        const reportCleanupError = (target) => (err) => {
+            if (!err) return;
+            if (typeof onCleanupError === 'function') {
+                onCleanupError(err, target);
+                return;
+            }
+            // Cleanup failures should not mask the image processing result, but
+            // they should be visible during operation and tests.
+            process.emitWarning(err, {
+                code: 'LAZY_IMAGE_STREAM_CLEANUP_FAILED',
+            });
+        };
+
+        fs.rm(inputPath, { force: true }, reportCleanupError(inputPath));
+        fs.rm(outputPath, { force: true }, reportCleanupError(outputPath));
+        fs.rm(tempBase, { force: true, recursive: true }, reportCleanupError(tempBase));
     }
 
     writable.on('finish', () => {
-        process();
+        processImage().catch((err) => {
+            readable.destroy(err);
+            cleanup();
+        });
     });
     writable.on('error', (err) => {
         readable.destroy(err);
