@@ -387,10 +387,14 @@ fn process_and_encode_from_parts(
     // Use tracked color state to reason about ICC preservation.
     let icc_present = matches!(final_color_state.icc, IccState::Present);
     let icc_preserved = keep_icc && icc_present;
-    // metadata_stripped: true when source had ICC but we did not preserve it
-    let metadata_stripped = icc_present && !icc_preserved;
+    let exif_present = exif_data.is_some() || input_bytes.and_then(extract_exif_raw).is_some();
+    let exif_preserved = keep_exif && exif_present && !matches!(format, OutputFormat::Avif { .. });
+    let gps_stripped_from_exif = exif_preserved && strip_gps;
+    let metadata_stripped = (icc_present && !icc_preserved)
+        || (exif_present && !exif_preserved)
+        || gps_stripped_from_exif;
     let metadata_blocked_by_policy =
-        (keep_icc || keep_exif) && firewall.reject_metadata && icc_present;
+        (keep_icc || keep_exif) && firewall.reject_metadata && (icc_present || exif_present);
     let mut policy_violations = Vec::new();
     if metadata_blocked_by_policy {
         policy_violations.push("firewall_rejected_metadata".to_string());
