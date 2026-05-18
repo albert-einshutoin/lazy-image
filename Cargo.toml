@@ -28,7 +28,7 @@ required-features = ["stress"]
 
 [dependencies]
 # NAPI binding (optional - only needed for Node.js bindings)
-napi = { version = "3.8", features = ["async"], optional = true }
+napi = { version = "3.9", features = ["async"], optional = true }
 napi-derive = { version = "3.5.2", optional = true }
 
 # Image decoding/encoding
