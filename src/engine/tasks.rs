@@ -19,7 +19,7 @@ use crate::engine::encoder::{
     encode_png, encode_webp,
 };
 #[allow(unused_imports)]
-use crate::engine::io::{extract_exif_raw, extract_icc_profile, Source};
+use crate::engine::io::{exif_has_gps, extract_exif_raw, extract_icc_profile, has_exif, Source};
 use crate::engine::memory;
 use crate::engine::pipeline::{apply_ops_tracked, ColorState, IccState};
 #[cfg(feature = "napi")]
@@ -387,9 +387,21 @@ fn process_and_encode_from_parts(
     // Use tracked color state to reason about ICC preservation.
     let icc_present = matches!(final_color_state.icc, IccState::Present);
     let icc_preserved = keep_icc && icc_present;
-    let exif_present = exif_data.is_some() || input_bytes.and_then(extract_exif_raw).is_some();
+    // EXIF presence detection: prefer the in-memory copy that the API layer may
+    // have already extracted, otherwise fall back to a lightweight presence scan
+    // of the input buffer. `has_exif` (unlike `extract_exif_raw`) is not gated by
+    // `MAX_EXIF_SOURCE_BYTES`, so JPEGs larger than 8 MiB are still detected.
+    let exif_present = exif_data.is_some() || input_bytes.map(has_exif).unwrap_or(false);
     let exif_preserved = keep_exif && exif_present && !matches!(format, OutputFormat::Avif { .. });
-    let gps_stripped_from_exif = exif_preserved && strip_gps;
+    // GPS is only "stripped" if it was actually present in the source. When
+    // `keep_exif` is true, the API layer extracted EXIF eagerly, so we can
+    // parse it directly. When EXIF is being dropped by default policy,
+    // `exif_preserved` is false and `gps_stripped_from_exif` does not affect
+    // the final flag.
+    let gps_present_in_exif = exif_data
+        .map(|exif| exif_has_gps(exif.as_slice()))
+        .unwrap_or(false);
+    let gps_stripped_from_exif = exif_preserved && strip_gps && gps_present_in_exif;
     let metadata_stripped = (icc_present && !icc_preserved)
         || (exif_present && !exif_preserved)
         || gps_stripped_from_exif;
