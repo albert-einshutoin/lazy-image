@@ -188,6 +188,14 @@ async function main() {
   const defaultExif = parseExifFromJpeg(defaultOutput);
   console.log(`  hasExif: ${defaultExif.hasExif}`);
   // Note: Some minimal EXIF may be present from encoder, but GPS should be absent
+
+  const defaultMetrics = await ImageEngine.fromPath(input)
+    .toBufferWithMetrics('jpeg', 80);
+  assert.strictEqual(
+    defaultMetrics.metrics.metadataStripped,
+    true,
+    'metadataStripped should be true when EXIF-only input metadata is stripped by default',
+  );
   
   // Test 2: keepMetadata({ exif: true }) - EXIF preserved, GPS stripped
   console.log('\nTest 2: keepMetadata({ exif: true }) - EXIF preserved, GPS stripped');
@@ -209,6 +217,14 @@ async function main() {
   // GPS should be stripped by default
   assert.strictEqual(preservedExif.hasGps, false, 
     'GPS should be stripped by default');
+  const exifPreservedMetrics = await ImageEngine.fromPath(input)
+    .keepMetadata({ exif: true })
+    .toBufferWithMetrics('jpeg', 80);
+  assert.strictEqual(
+    exifPreservedMetrics.metrics.metadataStripped,
+    true,
+    'metadataStripped should be true when EXIF is preserved but GPS is stripped',
+  );
   console.log('  ✅ GPS correctly stripped (privacy protection)');
   
   // Test 3: keepMetadata({ exif: true, stripGps: false }) - GPS preserved
@@ -219,6 +235,14 @@ async function main() {
   const gpsExif = parseExifFromJpeg(gpsPreserved);
   console.log(`  hasExif: ${gpsExif.hasExif}`);
   console.log(`  hasGps: ${gpsExif.hasGps}`);
+  const gpsPreservedMetrics = await ImageEngine.fromPath(input)
+    .keepMetadata({ exif: true, stripGps: false })
+    .toBufferWithMetrics('jpeg', 80);
+  assert.strictEqual(
+    gpsPreservedMetrics.metrics.metadataStripped,
+    false,
+    'metadataStripped should be false when EXIF and GPS preservation are explicitly requested',
+  );
   // Note: If input has no GPS, this will still be false - that's expected
   
   // Test 4: Firewall strict mode overrides keepMetadata
