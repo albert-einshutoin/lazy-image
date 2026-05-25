@@ -270,7 +270,14 @@ export interface Dimensions {
   height: number
 }
 
-/** Options object for the unified `encode()` / `encodeToFile()` methods. */
+/**
+ * Options object for the unified `encode()` / `encodeToFile()` methods.
+ *
+ * @deprecated Use `EncodeOptionsInput` instead — this interface uses `format?: string`,
+ * whereas `EncodeOptionsInput` is strongly typed (`format?: OutputFormat`). The class
+ * methods on `ImageEngine` accept `EncodeOptionsInput`; this type is retained only for
+ * the NAPI ABI signature.
+ */
 export interface EncodeOptions {
   /** Output format: "jpeg", "jpg", "png", "webp", "avif" */
   format?: string
@@ -522,7 +529,8 @@ export declare function version(): string
 type CaseInsensitive<T extends string> = T | Uppercase<T> | Capitalize<T>
 type CanonicalSupportedInputFormat = 'jpeg' | 'jpg' | 'png' | 'webp'
 type CanonicalInputFormat = CanonicalSupportedInputFormat
-type CanonicalOutputFormat = CanonicalInputFormat | 'jpg' | 'avif'
+// CanonicalInputFormat already contains 'jpg'; only 'avif' is output-exclusive.
+type CanonicalOutputFormat = CanonicalInputFormat | 'avif'
 type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
 export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
@@ -545,8 +553,9 @@ export interface ImageEngine {
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
   toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
-  encode(options: EncodeOptionsInput): Promise<EncodeResult>
-  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
+  // Note: encode() / encodeToFile() are declared on the ImageEngine class
+  // (see patchIndexDts patches that retype them to EncodeOptionsInput) and
+  // are deliberately NOT re-declared here to avoid duplicate signatures.
 }
 
 export interface EncodeOptionsInput {
