@@ -438,29 +438,56 @@ async function test_memory_pressure_concurrent_streams() {
  * baseline ~30 MB and rayon thread allocations should keep RSS growth under
  * ~250 MB even with a 96 MB decoded image. A higher number means the
  * streaming layer is double-buffering input bytes in V8 — a regression.
+ *
+ * Sampling: a periodic interval samples RSS *across the entire pipeline
+ * lifecycle* — input staging, decode+encode (which finishes inside
+ * processImage() before the first chunk arrives on the readable), and
+ * readback. Sampling only during chunk consumption would miss the heavy
+ * transformation peak entirely.
  */
 async function test_memory_pressure_rss_bound() {
     if (global.gc) global.gc();
     const rssStart = process.memoryUsage().rss;
-
-    const { writable, readable } = createStreamingPipeline({
-        format: 'jpeg',
-        quality: 80,
-        ops: [{ op: 'resize', width: 1200, height: null, fit: 'inside' }],
-    });
-
-    const source = fs.createReadStream(LARGE_INPUT);
-    await pipeline(source, writable);
-
-    const chunks = [];
     let peakRss = rssStart;
-    for await (const chunk of readable) {
-        chunks.push(chunk);
+
+    // Sample at 5 ms — small enough to catch the short decode+encode burst
+    // (typically tens of ms on a 5000×5000 PNG → JPEG resize), large enough
+    // to keep sampling overhead negligible relative to the work it observes.
+    const SAMPLE_INTERVAL_MS = 5;
+    const sampler = setInterval(() => {
         const current = process.memoryUsage().rss;
         if (current > peakRss) peakRss = current;
+    }, SAMPLE_INTERVAL_MS);
+    // Don't keep the event loop alive solely for the sampler.
+    if (typeof sampler.unref === 'function') sampler.unref();
+
+    try {
+        const { writable, readable } = createStreamingPipeline({
+            format: 'jpeg',
+            quality: 80,
+            ops: [{ op: 'resize', width: 1200, height: null, fit: 'inside' }],
+        });
+
+        const source = fs.createReadStream(LARGE_INPUT);
+        await pipeline(source, writable);
+
+        const chunks = [];
+        for await (const chunk of readable) {
+            chunks.push(chunk);
+            // Also sample inline — chunk-driven sampling is cheap and
+            // gives us extra resolution during readback.
+            const current = process.memoryUsage().rss;
+            if (current > peakRss) peakRss = current;
+        }
+        const output = Buffer.concat(chunks);
+        assert(output.length > 0, 'rss-bound pipeline produced empty output');
+    } finally {
+        clearInterval(sampler);
     }
-    const output = Buffer.concat(chunks);
-    assert(output.length > 0, 'rss-bound pipeline produced empty output');
+
+    // Final snapshot in case the last sample landed just before the peak.
+    const finalRss = process.memoryUsage().rss;
+    if (finalRss > peakRss) peakRss = finalRss;
 
     const rssDeltaMb = (peakRss - rssStart) / (1024 * 1024);
     // Generous ceiling — we mainly want to catch a regression where the entire
