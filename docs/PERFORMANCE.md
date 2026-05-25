@@ -26,10 +26,10 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
 ## When to Use lazy-image
 
-- **Serverless (Lambda, Cloud Run, Vercel, etc.)** — Avoid OOM and smaller cold-start footprint.
+- **Node-runtime serverless (AWS Lambda, Google Cloud Run, Vercel Node Functions, Google Cloud Functions)** — Avoid OOM and smaller cold-start footprint. V8-isolate runtimes such as Cloudflare Workers and Vercel Edge are **not supported** by the native NAPI build (tracked under [#87](https://github.com/albert-einshutoin/lazy-image/issues/87) for future Wasm support).
 - **Bandwidth-sensitive** — Smaller JPEG/AVIF saves CDN and transfer costs.
 - **AVIF generation** — Strong results in the benchmarked PNG → AVIF format-conversion workloads.
-- **Memory-constrained** — 512MB containers; zero-copy path keeps heap low.
+- **Memory-constrained** — 512MB containers; `fromPath()` bypasses the V8 heap (read-into-memory ≤ 256 MB, mmap with advisory locks > 256 MB).
 - **Safety-first** — Rust memory safety; built-in decompression limits and Image Firewall.
 
 ## When to Use sharp
@@ -88,6 +88,8 @@ await ImageEngine.from(buf).resize(800).toBuffer('jpeg', 80);
 
 - No `LD_LIBRARY_PATH` or system libvips.
 - Single static binary (mozjpeg, libwebp; AVIF via `avif` feature).
-- Main npm package ~15 KB + one platform binary.
+- Main npm package ~29 KB tarball / ~107 KB unpacked + one platform binary (run `npm pack --dry-run --json` for the current numbers).
 
-**Ideal for**: AWS Lambda, Vercel Edge, Cloudflare Workers, Google Cloud Functions.
+**Ideal for Node-runtime serverless**: AWS Lambda, Google Cloud Functions, Google Cloud Run, Vercel Node Functions.
+
+**Not supported**: V8-isolate runtimes such as Cloudflare Workers and Vercel Edge. The published native NAPI module requires a Node.js runtime; Wasm support is tracked under [#87](https://github.com/albert-einshutoin/lazy-image/issues/87).

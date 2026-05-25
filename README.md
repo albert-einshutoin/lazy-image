@@ -7,8 +7,8 @@
 lazy-image reduces image file sizes by 20-30% compared to sharp in its target web-delivery scenarios, trading encoding speed for smaller outputs. Ideal for CDN-heavy workloads where bandwidth costs matter more than CPU costs.
 
 - **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
-- **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. Zero-copy path: `fromPath()`/`processBatch()` → `toFile()`.
-- Japanese: [README.ja.md](./README.ja.md). **mmap**: Do not modify/delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
+- **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. File-path inputs (`fromPath()`/`processBatch()` → `toFile()`) bypass the V8 heap — small/medium files (≤ 256 MB) are read into Rust-owned memory for SIGBUS safety; only files larger than 256 MB use mmap with advisory locks. See [docs/ZERO_COPY.md](./docs/ZERO_COPY.md).
+- Japanese: [README.ja.md](./README.ja.md). **mmap (files > 256 MB)**: do not modify or delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
 - Lazy contract: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) explains what is deferred vs eager.
 - Metadata matrix: [docs/METADATA_SUPPORT.md](./docs/METADATA_SUPPORT.md).
 - Philosophy and non-goals: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md).
@@ -58,7 +58,7 @@ lib/helpers.js              # Encoding profiles, target-bytes binary search
 streaming/pipeline.js       # Disk-backed bounded-memory streaming
 ```
 
-**Key design decisions:** lazy execution (ops queue until output), zero-copy file I/O via mmap, memory-bounded concurrency via weighted semaphore, panic guards on all codec entry points. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details.
+**Key design decisions:** lazy execution (ops queue until output), file-path inputs bypass the V8 heap (read-into-memory for ≤ 256 MB, mmap with advisory locks for > 256 MB), memory-bounded concurrency via weighted semaphore, panic guards on all codec entry points. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details.
 
 ---
 
@@ -74,7 +74,7 @@ streaming/pipeline.js       # Disk-backed bounded-memory streaming
 **Key differentiators:**
 
 1. **File size optimization** — mozjpeg + libwebp + ravif produce 20-30% smaller outputs than sharp's defaults
-2. **Memory efficiency** — zero-copy mmap architecture; no pixel data copied to the JS heap
+2. **Memory efficiency** — file-path inputs are not copied into the V8 heap; decoded pixels stay in Rust memory
 3. **Security-first** — GPS auto-strip, Image Firewall, Rust memory safety
 4. **AVIF excellence** — ravif encoder with quality-optimized defaults
 
@@ -192,7 +192,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 
 ## Features (summary)
 
-Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles · EXIF auto-orient · Zero-copy file I/O · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles · EXIF auto-orient · Bypass-V8-heap file I/O (read-into-memory ≤ 256 MB, mmap > 256 MB) · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ---
 

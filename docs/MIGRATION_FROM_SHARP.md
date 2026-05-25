@@ -22,7 +22,7 @@ This keeps existing editing workflows intact while still gaining lazy-image's we
 | sharp | lazy-image | Notes |
 |-------|-----------|-------|
 | `sharp(inputBuffer)` | `ImageEngine.from(buffer)` | Loads from a JS buffer (copies into V8 heap). |
-| `sharp('input.jpg')` | `ImageEngine.fromPath('input.jpg')` | Zero-copy path; recommended for servers. |
+| `sharp('input.jpg')` | `ImageEngine.fromPath('input.jpg')` | Bypasses the V8 heap (≤ 256 MB read into a Rust-owned buffer; > 256 MB mmap with advisory lock). Recommended for servers. |
 | `.resize(800).jpeg({ quality: 80 }).toBuffer()` | `.resize(800).toBuffer('jpeg', 80)` | Default fit is `inside` in both. |
 | `.resize(800, 600, { fit: 'cover' })` | `.resize(800, 600, 'cover').toBuffer('jpeg')` | `cover` crops to fill. |
 | `.extract({ left: 10, top: 20, width: 300, height: 200 })` | `.crop(10, 20, 300, 200)` | Same origin (top-left). |
