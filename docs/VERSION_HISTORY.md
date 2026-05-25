@@ -11,8 +11,8 @@
 | v0.8.7 | Telemetry metrics, Smart concurrency with auto memory cap detection, Performance optimizations |
 | v0.8.6 | Version bump to 0.8.6 |
 | v0.8.5 | Fixed CI compilation errors and improved --no-default-features build support |
-| v0.8.4 | Zero-copy memory mapping implementation: fromPath() and processBatch() use mmap for zero-copy file access |
-| v0.8.3 | Documentation: Updated README.md to document zero-copy memory mapping for processBatch() |
+| v0.8.4 | Zero-copy memory mapping implementation: fromPath() and processBatch() use mmap for zero-copy file access. (Later refined to a size-tiered model — see `docs/ZERO_COPY.md` for current behavior: ≤ 256 MB read into a Rust-owned buffer, > 256 MB mmap with advisory lock.) |
+| v0.8.3 | Documentation: Updated README.md to document zero-copy memory mapping for processBatch(). (See v0.8.4 note above for the current size-tiered implementation.) |
 | v0.8.1 | WebP encoding optimization: ~4x speed improvement (method 4, single pass) to match sharp performance |
 | v0.8.0 | Updated benchmark results, improved test suite |
 | v0.7.7 | CI/CD improvements: skip napi prepublish auto-publish, use manual package generation |

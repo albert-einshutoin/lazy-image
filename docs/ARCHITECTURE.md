@@ -8,16 +8,19 @@
 4. **Chroma subsampling** (4:2:0) for web-optimal output
 5. **Adaptive preprocessing** — JPEG: compression optimization; WebP (v0.8.1+): speed optimization
 
-## Memory Management (Zero-Copy Architecture)
+## Memory Management (V8-heap bypass + Copy-on-Write)
 
-lazy-image uses a **Copy-on-Write (CoW)** design:
+lazy-image uses a **Copy-on-Write (CoW)** design and avoids the V8 (JS) heap on the input path:
 
 1. **Deferred pixel decode** — constructors set up the source and extract lightweight metadata, but full decode waits until `toBuffer()`/`toFile()`.
-2. **Zero-copy mmap** — `fromPath()` and `processBatch()` use memory mapping; no copy into the Node.js heap.
+2. **V8-heap bypass for file inputs** — `fromPath()` and `processBatch()` never copy the source file into the Node.js heap. Implementation is size-tiered to eliminate SIGBUS/SIGSEGV risk:
+   - **Files ≤ 256 MB**: read once into a Rust-owned buffer (no mmap).
+   - **Files > 256 MB**: opened via `mmap` with an advisory lock + fd retained for the engine lifetime.
+   The size threshold (`MMAP_SIZE_THRESHOLD`) lives in [`src/engine/io.rs`](../src/engine/io.rs).
 3. **Zero-copy conversions** — Format conversion without resize/crop reuses the decoded buffer (no extra pixel buffer).
 4. **Clone** — `.clone()` is cheap and does not allocate until a destructive op runs.
 5. **Verification** — See [ZERO_COPY.md](./ZERO_COPY.md). Run `node --expose-gc docs/scripts/measure-zero-copy.js` to check heap/RSS.
-6. **Contract** — Do not modify or delete the source file while it is memory-mapped. On Windows, mapped files cannot be deleted until the engine is dropped.
+6. **mmap contract** — For the > 256 MB tier, do not modify or delete the source file while the engine is alive. On Windows, mapped files cannot be deleted until the engine is dropped. Files in the ≤ 256 MB tier are read once and the disk handle is closed, so concurrent mutation does not affect them.
 
 See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact boundary between eager constructor work and deferred execution.
 
