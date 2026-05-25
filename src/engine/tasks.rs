@@ -47,15 +47,6 @@ fn get_resource_usage() -> Option<ResourceUsage> {
     platform::get_resource_usage()
 }
 
-#[derive(Default)]
-struct MetricsContext {
-    input_format: Option<String>,
-    output_format: String,
-    icc_preserved: bool,
-    metadata_stripped: bool,
-    policy_violations: Vec<String>,
-}
-
 fn detect_input_format(bytes: &[u8]) -> Option<String> {
     detect_format(bytes).map(format_to_string)
 }
@@ -73,86 +64,6 @@ fn format_to_string(fmt: ImageFormat) -> String {
         other => other.to_mime_type(),
     }
     .to_string()
-}
-
-/// Helper for unified metrics collection.
-/// Measures decode -> process -> encode in milliseconds and sets CPU/memory and I/O sizes in one place.
-struct MetricsRecorder<'m> {
-    metrics: Option<&'m mut crate::ProcessingMetrics>,
-    start_total: Instant,
-    stage_start: Instant,
-    usage_start: Option<ResourceUsage>,
-    input_size: u64,
-}
-
-impl<'m> MetricsRecorder<'m> {
-    fn new(metrics: Option<&'m mut crate::ProcessingMetrics>, input_size: u64) -> Self {
-        let now = Instant::now();
-        Self {
-            metrics,
-            start_total: now,
-            stage_start: now,
-            usage_start: get_resource_usage(),
-            input_size,
-        }
-    }
-
-    fn mark_decode_done(&mut self) {
-        if let Some(m) = self.metrics.as_deref_mut() {
-            m.decode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
-            self.stage_start = Instant::now();
-        }
-    }
-
-    fn mark_process_done(&mut self) {
-        if let Some(m) = self.metrics.as_deref_mut() {
-            m.ops_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
-            self.stage_start = Instant::now();
-        }
-    }
-
-    fn finalize(
-        &mut self,
-        processed_dims: (u32, u32),
-        output_len: usize,
-        usage_end: &Option<ResourceUsage>,
-        context: MetricsContext,
-    ) {
-        if let Some(m) = self.metrics.as_deref_mut() {
-            // Encode stage
-            m.encode_ms = self.stage_start.elapsed().as_secs_f64() * 1000.0;
-            // Whole pipeline
-            m.total_ms = self.start_total.elapsed().as_secs_f64() * 1000.0;
-            m.processing_time = m.total_ms / 1000.0;
-            m.version = PROCESSING_METRICS_VERSION.to_string();
-
-            // CPU / memory
-            if let (Some(start), Some(end)) = (self.usage_start.as_ref(), usage_end.as_ref()) {
-                m.cpu_time = (end.cpu_time - start.cpu_time).max(0.0);
-                m.peak_rss = end.memory_rss.min(u32::MAX as u64) as u32;
-            } else {
-                let (w, h) = processed_dims;
-                m.peak_rss =
-                    ((w as u64 * h as u64 * 4) + output_len as u64).min(u32::MAX as u64) as u32;
-            }
-
-            // Input/output sizes and compression ratio
-            m.bytes_in = self.input_size.min(u32::MAX as u64) as u32;
-            m.bytes_out = (output_len as u64).min(u32::MAX as u64) as u32;
-            m.compression_ratio = if m.bytes_in > 0 {
-                m.bytes_out as f64 / m.bytes_in as f64
-            } else {
-                0.0
-            };
-
-            // Formats & metadata
-            m.format_in = context.input_format;
-            m.format_out = context.output_format;
-            m.icc_preserved = context.icc_preserved;
-            m.metadata_stripped = context.metadata_stripped;
-            m.policy_violations = context.policy_violations;
-        }
-    }
 }
 
 // Re-export BatchResult for api.rs
@@ -253,25 +164,44 @@ fn decode_internal_from_parts<'a>(
     Ok(Cow::Owned(img))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn process_and_encode_from_parts(
+/// Cached state from decode + ops, reusable across multiple encode passes.
+///
+/// Used by [`EncodeTargetBytesTask`] to avoid re-decoding and re-applying ops
+/// for every quality candidate in the binary search. The memory permit is held
+/// across all encode iterations so we do not repeatedly acquire/release.
+struct PreparedEncode {
+    /// Image after decode + ops applied. Stored as `Arc` so the cheap path
+    /// (no ops, pre-decoded input) avoids a deep image clone.
+    processed: Arc<DynamicImage>,
+    final_color_state: ColorState,
+    input_format: Option<String>,
+    /// Whether the source originally had an EXIF segment. Detected once via
+    /// `has_exif` on the input bytes (not gated by `MAX_EXIF_SOURCE_BYTES`).
+    exif_present_in_source: bool,
+    decode_ms: f64,
+    ops_ms: f64,
+    usage_start: Option<ResourceUsage>,
+    input_size: u64,
+    start_total: Instant,
+    /// Hold the memory permit until the prepared image is dropped so the
+    /// reservation stays valid across multiple `encode_prepared` calls.
+    _permit_guard: memory::MemoryPermit,
+}
+
+/// Phase 1 of the pipeline: decode the input and apply all ops once.
+///
+/// Returns a [`PreparedEncode`] that can be fed to [`encode_prepared`] one or
+/// more times — useful for the byte-budget binary search where only the encode
+/// quality varies between iterations.
+fn prepare_for_encode(
     source: Option<&Source>,
     decoded: Option<&Arc<DynamicImage>>,
     ops: &[Operation],
-    format: &OutputFormat,
-    icc_profile: Option<&Arc<Vec<u8>>>,
     icc_present: bool,
-    exif_data: Option<&Arc<Vec<u8>>>,
     auto_orient: bool,
-    policy: &MetadataPolicy,
     firewall: &FirewallConfig,
-    metrics: Option<&mut crate::ProcessingMetrics>,
-) -> std::result::Result<Vec<u8>, LazyImageError> {
-    let keep_icc = policy.effective_icc();
-    let keep_exif = policy.effective_exif();
-    let strip_gps = policy.strip_gps();
-    // Get input size from source
-    // Use len() method which works for both Memory and Mapped sources
+    format_for_memory_estimate: &OutputFormat,
+) -> std::result::Result<PreparedEncode, LazyImageError> {
     let input_size = source.map(|s| s.len() as u64).unwrap_or(0);
     let input_bytes = source.and_then(|s| s.as_bytes());
     let input_format = input_bytes.and_then(detect_input_format);
@@ -280,7 +210,9 @@ fn process_and_encode_from_parts(
     // Use file-size-based fallback instead of hard-coded 100MB when header parsing fails.
     let estimated_memory = source
         .and_then(|s| s.as_bytes())
-        .and_then(|bytes| memory::estimate_memory_from_header(bytes, ops, Some(format)))
+        .and_then(|bytes| {
+            memory::estimate_memory_from_header(bytes, ops, Some(format_for_memory_estimate))
+        })
         .unwrap_or_else(|| {
             if source.is_none() {
                 return memory::ESTIMATED_MEMORY_PER_OPERATION;
@@ -296,11 +228,10 @@ fn process_and_encode_from_parts(
         .saturating_add(source_reserved)
         .min(sem.capacity());
     let permit = sem.acquire(total_memory);
-    // keep guard alive for entire processing scope
-    let _permit_guard = permit;
 
-    // Centralize metrics recording
-    let mut metrics_recorder = MetricsRecorder::new(metrics, input_size);
+    let start_total = Instant::now();
+    let usage_start = get_resource_usage();
+    let mut stage_start = start_total;
 
     // Pre-read orientation from EXIF header (before full decode)
     let orientation = if auto_orient {
@@ -316,10 +247,16 @@ fn process_and_encode_from_parts(
         None
     };
 
+    // EXIF presence detection: `has_exif` is not gated by `MAX_EXIF_SOURCE_BYTES`,
+    // so JPEGs larger than 8 MiB are still detected. Done here so the encode
+    // phase does not need to re-scan input bytes on every iteration.
+    let exif_present_in_source = input_bytes.map(has_exif).unwrap_or(false);
+
     // 1. Decode
     let img = decode_internal_from_parts(source, decoded, firewall)?;
-    firewall.enforce_timeout(metrics_recorder.start_total, "decode")?;
-    metrics_recorder.mark_decode_done();
+    firewall.enforce_timeout(start_total, "decode")?;
+    let decode_ms = stage_start.elapsed().as_secs_f64() * 1000.0;
+    stage_start = Instant::now();
 
     // 2. Apply operations
     let with_auto_orient;
@@ -342,9 +279,57 @@ fn process_and_encode_from_parts(
     let initial_state = ColorState::from_dynamic_image(&img, icc_state);
     let tracked = apply_ops_tracked(img, effective_ops, initial_state)?;
     let final_color_state = tracked.state;
-    let processed = tracked.image;
-    firewall.enforce_timeout(metrics_recorder.start_total, "process")?;
-    metrics_recorder.mark_process_done();
+
+    // Materialize the processed image into an Arc:
+    // - Cow::Owned (ops applied OR decoded fresh from bytes) → wrap newly allocated buffer.
+    // - Cow::Borrowed (only possible when `decoded.is_some()` AND ops is effectively empty)
+    //   → clone the original Arc cheaply (atomic increment, no pixel copy).
+    let processed: Arc<DynamicImage> = match tracked.image {
+        Cow::Owned(img) => Arc::new(img),
+        Cow::Borrowed(_) => Arc::clone(
+            decoded
+                .expect("Cow::Borrowed implies decoded.is_some(); see decode_internal_from_parts"),
+        ),
+    };
+    firewall.enforce_timeout(start_total, "process")?;
+    let ops_ms = stage_start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(PreparedEncode {
+        processed,
+        final_color_state,
+        input_format,
+        exif_present_in_source,
+        decode_ms,
+        ops_ms,
+        usage_start,
+        input_size,
+        start_total,
+        _permit_guard: permit,
+    })
+}
+
+/// Phase 2 of the pipeline: encode the prepared image to the given format.
+///
+/// May be called multiple times against the same [`PreparedEncode`] — the
+/// byte-budget binary search uses this to vary only quality. Per-call timing
+/// (encode_ms, total_ms) is recorded into `metrics` if provided; decode_ms /
+/// ops_ms come from the cached prepare phase.
+#[allow(clippy::too_many_arguments)]
+fn encode_prepared(
+    prepared: &PreparedEncode,
+    format: &OutputFormat,
+    icc_profile: Option<&Arc<Vec<u8>>>,
+    exif_data: Option<&Arc<Vec<u8>>>,
+    auto_orient: bool,
+    policy: &MetadataPolicy,
+    firewall: &FirewallConfig,
+    metrics: Option<&mut crate::ProcessingMetrics>,
+) -> std::result::Result<Vec<u8>, LazyImageError> {
+    let keep_icc = policy.effective_icc();
+    let keep_exif = policy.effective_exif();
+    let strip_gps = policy.strip_gps();
+
+    let encode_start = Instant::now();
 
     // 3. Encode - only preserve ICC profile if keep_icc is true
     let icc = if keep_icc {
@@ -353,14 +338,16 @@ fn process_and_encode_from_parts(
         None // Strip metadata by default for security & smaller files
     };
 
+    let processed: &DynamicImage = prepared.processed.as_ref();
+
     // 4. Encode image to target format
     let mut result = match format {
         OutputFormat::Jpeg { quality, fast_mode } => {
-            encode_jpeg_with_settings(&processed, *quality, icc, *fast_mode)
+            encode_jpeg_with_settings(processed, *quality, icc, *fast_mode)
         }
-        OutputFormat::Png => encode_png(&processed, icc),
-        OutputFormat::WebP { quality } => encode_webp(&processed, *quality, icc),
-        OutputFormat::Avif { quality } => encode_avif(&processed, *quality, icc),
+        OutputFormat::Png => encode_png(processed, icc),
+        OutputFormat::WebP { quality } => encode_webp(processed, *quality, icc),
+        OutputFormat::Avif { quality } => encode_avif(processed, *quality, icc),
     }?;
 
     // 5. Embed EXIF metadata if requested.
@@ -380,53 +367,108 @@ fn process_and_encode_from_parts(
             };
         }
     }
-    firewall.enforce_timeout(metrics_recorder.start_total, "encode")?;
+    firewall.enforce_timeout(prepared.start_total, "encode")?;
 
-    // Get final resource usage & finalize metrics
-    let final_usage = get_resource_usage();
-    // Use tracked color state to reason about ICC preservation.
-    let icc_present = matches!(final_color_state.icc, IccState::Present);
-    let icc_preserved = keep_icc && icc_present;
-    // EXIF presence detection: prefer the in-memory copy that the API layer may
-    // have already extracted, otherwise fall back to a lightweight presence scan
-    // of the input buffer. `has_exif` (unlike `extract_exif_raw`) is not gated by
-    // `MAX_EXIF_SOURCE_BYTES`, so JPEGs larger than 8 MiB are still detected.
-    let exif_present = exif_data.is_some() || input_bytes.map(has_exif).unwrap_or(false);
-    let exif_preserved = keep_exif && exif_present && !matches!(format, OutputFormat::Avif { .. });
-    // GPS is only "stripped" if it was actually present in the source. When
-    // `keep_exif` is true, the API layer extracted EXIF eagerly, so we can
-    // parse it directly. When EXIF is being dropped by default policy,
-    // `exif_preserved` is false and `gps_stripped_from_exif` does not affect
-    // the final flag.
-    let gps_present_in_exif = exif_data
-        .map(|exif| exif_has_gps(exif.as_slice()))
-        .unwrap_or(false);
-    let gps_stripped_from_exif = exif_preserved && strip_gps && gps_present_in_exif;
-    let metadata_stripped = (icc_present && !icc_preserved)
-        || (exif_present && !exif_preserved)
-        || gps_stripped_from_exif;
-    let metadata_blocked_by_policy =
-        (keep_icc || keep_exif) && firewall.reject_metadata && (icc_present || exif_present);
-    let mut policy_violations = Vec::new();
-    if metadata_blocked_by_policy {
-        policy_violations.push("firewall_rejected_metadata".to_string());
+    let encode_ms = encode_start.elapsed().as_secs_f64() * 1000.0;
+
+    if let Some(m) = metrics {
+        // Get final resource usage & finalize metrics
+        let final_usage = get_resource_usage();
+        // Use tracked color state to reason about ICC preservation.
+        let icc_present = matches!(prepared.final_color_state.icc, IccState::Present);
+        let icc_preserved = keep_icc && icc_present;
+        // EXIF presence detection: prefer the in-memory copy that the API layer may
+        // have already extracted, otherwise fall back to a lightweight presence scan
+        // recorded during the prepare phase.
+        let exif_present = exif_data.is_some() || prepared.exif_present_in_source;
+        let exif_preserved =
+            keep_exif && exif_present && !matches!(format, OutputFormat::Avif { .. });
+        // GPS is only "stripped" if it was actually present in the source. When
+        // `keep_exif` is true, the API layer extracted EXIF eagerly, so we can
+        // parse it directly. When EXIF is being dropped by default policy,
+        // `exif_preserved` is false and `gps_stripped_from_exif` does not affect
+        // the final flag.
+        let gps_present_in_exif = exif_data
+            .map(|exif| exif_has_gps(exif.as_slice()))
+            .unwrap_or(false);
+        let gps_stripped_from_exif = exif_preserved && strip_gps && gps_present_in_exif;
+        let metadata_stripped = (icc_present && !icc_preserved)
+            || (exif_present && !exif_preserved)
+            || gps_stripped_from_exif;
+        let metadata_blocked_by_policy =
+            (keep_icc || keep_exif) && firewall.reject_metadata && (icc_present || exif_present);
+        let mut policy_violations = Vec::new();
+        if metadata_blocked_by_policy {
+            policy_violations.push("firewall_rejected_metadata".to_string());
+        }
+
+        m.decode_ms = prepared.decode_ms;
+        m.ops_ms = prepared.ops_ms;
+        m.encode_ms = encode_ms;
+        m.total_ms = prepared.start_total.elapsed().as_secs_f64() * 1000.0;
+        m.processing_time = m.total_ms / 1000.0;
+        m.version = PROCESSING_METRICS_VERSION.to_string();
+
+        if let (Some(start), Some(end)) = (prepared.usage_start.as_ref(), final_usage.as_ref()) {
+            m.cpu_time = (end.cpu_time - start.cpu_time).max(0.0);
+            m.peak_rss = end.memory_rss.min(u32::MAX as u64) as u32;
+        } else {
+            let (w, h) = processed.dimensions();
+            m.peak_rss =
+                ((w as u64 * h as u64 * 4) + result.len() as u64).min(u32::MAX as u64) as u32;
+        }
+
+        m.bytes_in = prepared.input_size.min(u32::MAX as u64) as u32;
+        m.bytes_out = (result.len() as u64).min(u32::MAX as u64) as u32;
+        m.compression_ratio = if m.bytes_in > 0 {
+            m.bytes_out as f64 / m.bytes_in as f64
+        } else {
+            0.0
+        };
+
+        m.format_in = prepared.input_format.clone();
+        m.format_out = format.as_str().to_string();
+        m.icc_preserved = icc_preserved;
+        m.metadata_stripped = metadata_stripped;
+        m.policy_violations = policy_violations;
     }
 
-    let metrics_context = MetricsContext {
-        input_format,
-        output_format: format.as_str().to_string(),
-        icc_preserved,
-        metadata_stripped,
-        policy_violations,
-    };
-    metrics_recorder.finalize(
-        processed.dimensions(),
-        result.len(),
-        &final_usage,
-        metrics_context,
-    );
-
     Ok(result)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn process_and_encode_from_parts(
+    source: Option<&Source>,
+    decoded: Option<&Arc<DynamicImage>>,
+    ops: &[Operation],
+    format: &OutputFormat,
+    icc_profile: Option<&Arc<Vec<u8>>>,
+    icc_present: bool,
+    exif_data: Option<&Arc<Vec<u8>>>,
+    auto_orient: bool,
+    policy: &MetadataPolicy,
+    firewall: &FirewallConfig,
+    metrics: Option<&mut crate::ProcessingMetrics>,
+) -> std::result::Result<Vec<u8>, LazyImageError> {
+    let prepared = prepare_for_encode(
+        source,
+        decoded,
+        ops,
+        icc_present,
+        auto_orient,
+        firewall,
+        format,
+    )?;
+    encode_prepared(
+        &prepared,
+        format,
+        icc_profile,
+        exif_data,
+        auto_orient,
+        policy,
+        firewall,
+        metrics,
+    )
 }
 
 impl TaskContext {
@@ -443,27 +485,6 @@ impl TaskContext {
             self.decoded.as_ref(),
             &self.ops,
             &self.format,
-            self.icc_profile.as_ref(),
-            self.icc_present,
-            self.exif_data.as_ref(),
-            self.auto_orient,
-            &self.metadata_policy,
-            &self.firewall,
-            metrics,
-        )
-    }
-
-    /// Process and encode with a specific format override (used by target-bytes search).
-    pub(crate) fn process_and_encode_with_format(
-        &self,
-        format: &OutputFormat,
-        metrics: Option<&mut crate::ProcessingMetrics>,
-    ) -> std::result::Result<Vec<u8>, LazyImageError> {
-        process_and_encode_from_parts(
-            self.source.as_ref(),
-            self.decoded.as_ref(),
-            &self.ops,
-            format,
             self.icc_profile.as_ref(),
             self.icc_present,
             self.exif_data.as_ref(),
@@ -688,7 +709,23 @@ define_encode_task! {
 
 impl EncodeTargetBytesTask {
     /// Run binary search over quality to find the best encode within byte budget.
+    ///
+    /// Decode + ops are performed **once** via [`prepare_for_encode`]; only the
+    /// encode step (and EXIF embed) re-runs per iteration. For a 4000x3000 JPEG
+    /// with a resize op this eliminates a 5-7x re-decode penalty (issue #558).
     fn search(&self) -> std::result::Result<TargetBytesOutput, LazyImageError> {
+        // Decode + apply ops once. Memory permit is held by `prepared` so the
+        // semaphore reservation stays valid across every encode iteration below.
+        let prepared = prepare_for_encode(
+            self.ctx.source.as_ref(),
+            self.ctx.decoded.as_ref(),
+            &self.ctx.ops,
+            self.ctx.icc_present,
+            self.ctx.auto_orient,
+            &self.ctx.firewall,
+            &self.ctx.format,
+        )?;
+
         let mut low = self.min_quality;
         let mut high = self.max_quality;
         let mut best_under: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
@@ -699,9 +736,16 @@ impl EncodeTargetBytesTask {
             let format_at_q = self.ctx.format.with_quality(quality);
 
             let mut metrics = crate::ProcessingMetrics::default();
-            let encoded = self
-                .ctx
-                .process_and_encode_with_format(&format_at_q, Some(&mut metrics))?;
+            let encoded = encode_prepared(
+                &prepared,
+                &format_at_q,
+                self.ctx.icc_profile.as_ref(),
+                self.ctx.exif_data.as_ref(),
+                self.ctx.auto_orient,
+                &self.ctx.metadata_policy,
+                &self.ctx.firewall,
+                Some(&mut metrics),
+            )?;
 
             let size = encoded.len() as u32;
 
@@ -1768,5 +1812,180 @@ mod non_napi_tests {
             msg.contains("Unable to meet targetBytes"),
             "expected strict policy error, got: {msg}"
         );
+    }
+
+    /// Regression test for issue #558: the binary search must decode + apply
+    /// ops once, not per quality iteration. We assert it indirectly by giving
+    /// the prepare phase a pre-decoded Arc and checking that `prepare_for_encode`
+    /// reuses the Arc by reference (no pixel clone) when ops is empty.
+    #[test]
+    fn prepare_for_encode_reuses_decoded_arc_when_ops_empty() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(32, 32, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+        let original = Arc::new(dyn_img);
+
+        let prepared = prepare_for_encode(
+            None,
+            Some(&original),
+            &[],
+            false,
+            false,
+            &FirewallConfig::disabled(),
+            &OutputFormat::Jpeg {
+                quality: 80,
+                fast_mode: false,
+            },
+        )
+        .expect("prepare should succeed");
+
+        // Cheap path: Arc clone, not a deep image clone.
+        assert!(
+            Arc::ptr_eq(&original, &prepared.processed),
+            "prepare_for_encode must reuse the decoded Arc when no ops are applied"
+        );
+    }
+
+    /// Regression test for issue #558: ops *are* applied during prepare, and
+    /// the resulting Arc points to a freshly-allocated transformed image
+    /// (not the original input).
+    #[test]
+    fn prepare_for_encode_applies_ops_once_when_ops_nonempty() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(64, 64, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+        let original = Arc::new(dyn_img);
+
+        let prepared = prepare_for_encode(
+            None,
+            Some(&original),
+            &[Operation::Resize {
+                width: Some(16),
+                height: Some(16),
+                fit: crate::ops::ResizeFit::Inside,
+            }],
+            false,
+            false,
+            &FirewallConfig::disabled(),
+            &OutputFormat::Jpeg {
+                quality: 80,
+                fast_mode: false,
+            },
+        )
+        .expect("prepare should succeed");
+
+        assert!(
+            !Arc::ptr_eq(&original, &prepared.processed),
+            "prepare_for_encode must produce a new image when ops transform pixels"
+        );
+        assert_eq!(prepared.processed.width(), 16);
+        assert_eq!(prepared.processed.height(), 16);
+    }
+
+    /// Regression test for issue #558: re-running encode_prepared multiple
+    /// times against the same PreparedEncode must produce consistent results,
+    /// proving the cached image is reused safely.
+    #[test]
+    fn encode_prepared_can_run_multiple_times_against_same_cache() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(64, 64, Rgba([200, 100, 50, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+
+        let prepared = prepare_for_encode(
+            None,
+            Some(&Arc::new(dyn_img)),
+            &[],
+            false,
+            false,
+            &FirewallConfig::disabled(),
+            &OutputFormat::Jpeg {
+                quality: 80,
+                fast_mode: false,
+            },
+        )
+        .expect("prepare should succeed");
+
+        // Encode at three different qualities — like the binary search would.
+        let mut last_size: Option<usize> = None;
+        for quality in [50u8, 80, 100] {
+            let format = OutputFormat::Jpeg {
+                quality,
+                fast_mode: false,
+            };
+            let bytes = encode_prepared(
+                &prepared,
+                &format,
+                None,
+                None,
+                false,
+                &MetadataPolicy::strip_all(),
+                &FirewallConfig::disabled(),
+                None,
+            )
+            .expect("encode should succeed");
+            assert_eq!(
+                &bytes[0..2],
+                &[0xFF, 0xD8],
+                "encode_prepared must produce valid JPEG at quality {quality}"
+            );
+            // Higher quality should generally yield larger files.
+            if let Some(prev) = last_size {
+                assert!(
+                    bytes.len() >= prev,
+                    "higher quality should not produce smaller output: prev={prev}, current={}",
+                    bytes.len()
+                );
+            }
+            last_size = Some(bytes.len());
+        }
+    }
+
+    /// Regression test for issue #558: the metrics returned by the byte-budget
+    /// search must include sensible decode_ms / ops_ms / encode_ms fields
+    /// (the prepare phase populates the first two; encode populates the third).
+    #[test]
+    fn target_bytes_search_metrics_include_decode_ops_and_encode_timings() {
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+            ImageBuffer::from_pixel(64, 64, Rgba([10, 20, 30, 255]));
+        let dyn_img = DynamicImage::ImageRgba8(img);
+
+        let task = EncodeTargetBytesTask {
+            ctx: TaskContext {
+                source: None,
+                decoded: Some(Arc::new(dyn_img)),
+                ops: vec![Operation::Resize {
+                    width: Some(32),
+                    height: Some(32),
+                    fit: crate::ops::ResizeFit::Inside,
+                }],
+                format: OutputFormat::Jpeg {
+                    quality: 100,
+                    fast_mode: false,
+                },
+                icc_profile: None,
+                icc_present: false,
+                exif_data: None,
+                auto_orient: false,
+                metadata_policy: MetadataPolicy::strip_all(),
+                firewall: FirewallConfig::disabled(),
+            },
+            target_bytes: 10_000_000,
+            min_quality: 1,
+            max_quality: 100,
+            quality_floor_policy_strict: false,
+        };
+
+        let result = task.search().expect("search should succeed");
+        let metrics = result.metrics;
+
+        // All stage timings must be non-negative (Instant::elapsed cannot be negative
+        // but the f64 cast can technically produce 0.0; assert >=).
+        assert!(metrics.decode_ms >= 0.0);
+        assert!(metrics.ops_ms >= 0.0);
+        assert!(metrics.encode_ms >= 0.0);
+        assert!(metrics.total_ms >= metrics.encode_ms);
+        // bytes_in/out should reflect the actual output (no input bytes available).
+        assert_eq!(metrics.bytes_in, 0);
+        assert_eq!(metrics.bytes_out as usize, result.data.len());
     }
 }
