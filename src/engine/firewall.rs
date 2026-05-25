@@ -405,7 +405,7 @@ mod tests {
         result.push(0xE1);
         result.extend_from_slice(&seg_len.to_be_bytes());
         result.extend_from_slice(exif_header);
-        result.extend(std::iter::repeat(0xAA).take(exif_payload_size));
+        result.extend(std::iter::repeat_n(0xAA, exif_payload_size));
         result.extend_from_slice(&jpeg_data[2..]);
         result
     }

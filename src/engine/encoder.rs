@@ -805,8 +805,8 @@ mod tests {
             let high_quality = encode_jpeg(&img, 95, None).unwrap();
             let low_quality = encode_jpeg(&img, 50, None).unwrap();
             // High quality is usually larger (content can flip this); both should be valid JPEGs
-            assert!(high_quality.len() > 0);
-            assert!(low_quality.len() > 0);
+            assert!(!high_quality.is_empty());
+            assert!(!low_quality.is_empty());
             assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
             assert_eq!(&low_quality[0..2], &[0xFF, 0xD8]);
         }
@@ -864,8 +864,8 @@ mod tests {
 
             // Fast mode typically produces slightly larger files (5-10% increase)
             // but should still be reasonable
-            assert!(fast_result.len() > 0);
-            assert!(default_result.len() > 0);
+            assert!(!fast_result.is_empty());
+            assert!(!default_result.is_empty());
             // Fast mode file size should be within reasonable range (not 10x larger)
             assert!(fast_result.len() < default_result.len() * 2);
         }
@@ -907,7 +907,7 @@ mod tests {
             for quality in [50, 75, 90] {
                 let result = encode_jpeg_with_settings(&img, quality, None, true).unwrap();
                 assert_eq!(&result[0..2], &[0xFF, 0xD8]);
-                assert!(result.len() > 0);
+                assert!(!result.is_empty());
             }
         }
 

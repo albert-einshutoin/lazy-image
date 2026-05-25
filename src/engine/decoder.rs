@@ -475,8 +475,7 @@ mod tests {
     use image::{ImageFormat, Rgb, RgbImage};
 
     fn encode_webp(width: u32, height: u32) -> Vec<u8> {
-        let rgb: Vec<u8> = std::iter::repeat([10u8, 20u8, 30u8])
-            .take((width * height) as usize)
+        let rgb: Vec<u8> = std::iter::repeat_n([10u8, 20u8, 30u8], (width * height) as usize)
             .flatten()
             .collect();
         let encoder = webp::Encoder::from_rgb(&rgb, width, height);
@@ -600,8 +599,10 @@ mod tests {
 
     #[test]
     fn test_zune_png_limit_lte_max_dimension() {
-        // Runtime sanity check matching the compile-time assertion
-        assert!(super::ZUNE_PNG_MAX_DIM <= crate::engine::MAX_DIMENSION);
+        // Compile-time check that ZUNE_PNG_MAX_DIM never exceeds MAX_DIMENSION.
+        // A const assertion is preferred over `assert!` here because both operands
+        // are constants and clippy would flag the runtime form.
+        const _: () = assert!(super::ZUNE_PNG_MAX_DIM <= crate::engine::MAX_DIMENSION);
     }
 
     /// Crafted PNG with huge declared dimensions in the IHDR header but minimal pixel data.

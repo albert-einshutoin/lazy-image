@@ -1775,7 +1775,7 @@ mod non_napi_tests {
         // Quality should be lower than max since budget is tight
         assert!(tight_result.quality <= 100);
         // The result should be the best effort (either under budget or closest over)
-        assert!(tight_result.data.len() > 0);
+        assert!(!tight_result.data.is_empty());
     }
 
     #[test]
