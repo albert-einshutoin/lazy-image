@@ -126,7 +126,7 @@ function replaceIfNeeded(content, searchValue, replaceValue) {
       `${JSON.stringify(searchValue.slice(0, 80))}`
     );
   }
-  return content.replace(searchValue, replaceValue);
+  return content.replaceAll(searchValue, replaceValue);
 }
 
 function patchIndexJs() {

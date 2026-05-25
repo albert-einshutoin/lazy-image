@@ -10,6 +10,7 @@
       "require": "./index.js"
     },
     "./streaming": {
+      "types": "./streaming/pipeline.d.ts",
       "import": "./streaming/pipeline.mjs",
       "require": "./streaming/pipeline.js"
     }
