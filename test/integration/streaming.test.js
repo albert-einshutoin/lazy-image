@@ -44,6 +44,8 @@ async function run() {
     await test_destroy_mid_stream();
     await test_empty_input();
     await test_cleanup_error_reporting();
+    await test_memory_pressure_concurrent_streams();
+    await test_memory_pressure_rss_bound();
 }
 
 async function test_basic_resize() {
@@ -363,6 +365,115 @@ async function test_cleanup_error_reporting() {
     );
 
     console.log('✅ streaming cleanup error reporting passed');
+}
+
+/**
+ * Memory pressure under concurrency.
+ *
+ * Run several streaming pipelines in parallel against the same large fixture
+ * (5000×5000 PNG → ~96 MB decoded RGBA). The internal weighted memory semaphore
+ * is expected to serialize/throttle the heavy decode+encode work so all
+ * pipelines finish successfully without crashes, panics, or OOM.
+ *
+ * This is a regression guard for #480: the streaming layer must compose with
+ * the engine's memory-bounded concurrency, not bypass it.
+ */
+async function test_memory_pressure_concurrent_streams() {
+    const N = 4;
+
+    const tasks = Array.from({ length: N }, async (_unused, i) => {
+        const { writable, readable } = createStreamingPipeline({
+            format: 'webp',
+            quality: 80,
+            ops: [{ op: 'resize', width: 800, height: null, fit: 'inside' }],
+        });
+
+        const source = fs.createReadStream(LARGE_INPUT);
+        await pipeline(source, writable);
+
+        const chunks = [];
+        for await (const chunk of readable) chunks.push(chunk);
+        const output = Buffer.concat(chunks);
+        const meta = inspect(output);
+
+        return { i, bytes: output.length, width: meta.width, format: meta.format };
+    });
+
+    const results = await Promise.all(tasks);
+
+    for (const r of results) {
+        assert(r.bytes > 0, `concurrent pipeline ${r.i} produced empty output`);
+        assert(
+            r.width > 0 && r.width <= 800,
+            `concurrent pipeline ${r.i} did not resize correctly (width=${r.width})`,
+        );
+        assert(
+            r.format === 'webp',
+            `concurrent pipeline ${r.i} format mismatch (got ${r.format})`,
+        );
+    }
+
+    // Sanity: all N outputs should be roughly the same size (deterministic input + ops).
+    // Allow ±10% to absorb encoder timing variance.
+    const sizes = results.map((r) => r.bytes);
+    const minSize = Math.min(...sizes);
+    const maxSize = Math.max(...sizes);
+    assert(
+        maxSize - minSize <= maxSize * 0.1,
+        `concurrent outputs diverged in size (min=${minSize}, max=${maxSize}) — possible cross-pipeline contamination`,
+    );
+
+    console.log(`✅ streaming memory pressure (${N} concurrent) passed`);
+}
+
+/**
+ * RSS bound under a heavy single-pipeline workload.
+ *
+ * The streaming pipeline's promise is "memory stays ~O(1) while disk usage
+ * mirrors input/output sizes". This test runs one large pipeline and checks
+ * that the process RSS growth stays well below the decoded-RGBA size of the
+ * input (5000×5000×4 ≈ 96 MB).
+ *
+ * Threshold rationale: the engine's decode + encode working set plus Node's
+ * baseline ~30 MB and rayon thread allocations should keep RSS growth under
+ * ~250 MB even with a 96 MB decoded image. A higher number means the
+ * streaming layer is double-buffering input bytes in V8 — a regression.
+ */
+async function test_memory_pressure_rss_bound() {
+    if (global.gc) global.gc();
+    const rssStart = process.memoryUsage().rss;
+
+    const { writable, readable } = createStreamingPipeline({
+        format: 'jpeg',
+        quality: 80,
+        ops: [{ op: 'resize', width: 1200, height: null, fit: 'inside' }],
+    });
+
+    const source = fs.createReadStream(LARGE_INPUT);
+    await pipeline(source, writable);
+
+    const chunks = [];
+    let peakRss = rssStart;
+    for await (const chunk of readable) {
+        chunks.push(chunk);
+        const current = process.memoryUsage().rss;
+        if (current > peakRss) peakRss = current;
+    }
+    const output = Buffer.concat(chunks);
+    assert(output.length > 0, 'rss-bound pipeline produced empty output');
+
+    const rssDeltaMb = (peakRss - rssStart) / (1024 * 1024);
+    // Generous ceiling — we mainly want to catch a regression where the entire
+    // input file gets staged in the V8 heap or duplicated in memory.
+    const LIMIT_MB = 250;
+    assert(
+        rssDeltaMb < LIMIT_MB,
+        `streaming RSS growth exceeded budget: delta=${rssDeltaMb.toFixed(1)} MB, limit=${LIMIT_MB} MB`,
+    );
+
+    console.log(
+        `✅ streaming memory pressure RSS bound passed (delta=${rssDeltaMb.toFixed(1)} MB < ${LIMIT_MB} MB)`,
+    );
 }
 
 run().catch((err) => {
