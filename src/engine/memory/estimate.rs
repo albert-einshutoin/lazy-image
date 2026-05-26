@@ -1,226 +1,37 @@
-#![cfg_attr(not(feature = "napi"), allow(dead_code))]
-
-// src/engine/memory.rs
+// src/engine/memory/estimate.rs
 //
-// Container memory limit detection for smart concurrency control.
+// Memory footprint estimation for the image pipeline.
 //
-// This module detects container memory limits from cgroup v1/v2 to automatically
-// adjust thread pool size and prevent OOM kills in constrained environments.
+// Combines lightweight header parsing (to recover decoded BPP without a full
+// decode) with operation-aware projection to compute a peak memory estimate
+// per job. Used to weight `WeightedSemaphore` acquisitions.
 
 use crate::engine::resize::{calc_cover_resize_dimensions, calc_resize_dimensions};
 use crate::ops::{Operation, OutputFormat, ResizeFit};
 use image::ImageFormat;
-use parking_lot::{Condvar, Mutex};
-#[cfg(feature = "napi")]
-use std::fs;
+use parking_lot::Mutex;
+use std::collections::HashMap;
 use std::io::Cursor;
-use std::sync::{Arc, OnceLock};
+use std::sync::OnceLock;
 
-/// Estimated memory per image operation (in bytes)
-/// 100MB keeps backwards compatibility for fallback paths; dynamic estimates are preferred.
-pub const ESTIMATED_MEMORY_PER_OPERATION: u64 = 100 * 1024 * 1024; // 100MB per operation (conservative)
+/// Lower bound for any estimate to avoid zero-ish weights.
+pub(super) const MIN_ESTIMATE_BYTES: u64 = 24 * 1024 * 1024; // 24MB
 
-/// Minimum memory to reserve for system and other processes (in bytes)
-const MIN_RESERVED_MEMORY: u64 = 64 * 1024 * 1024; // 64MB for tiny containers
-const MAX_RESERVED_MEMORY: u64 = 512 * 1024 * 1024; // cap for large hosts
-
-/// Lower bound for any estimate to avoid zero-ish weights
-const MIN_ESTIMATE_BYTES: u64 = 24 * 1024 * 1024; // 24MB
-
-/// Overhead for decode/temporary buffers (heuristic)
+/// Overhead for decode/temporary buffers (heuristic).
 const DECODE_OVERHEAD_BYTES: u64 = 8 * 1024 * 1024;
 const FILTER_OVERHEAD_BYTES: u64 = 4 * 1024 * 1024;
 
-/// Default bytes-per-pixel assumptions per format (decoded)
+/// Default bytes-per-pixel assumptions per format (decoded).
 const BPP_JPEG: u64 = 3; // YCbCr → RGB
 const BPP_PNG: u64 = 4; // favor safety (alpha)
 const BPP_WEBP: u64 = 4;
 const BPP_AVIF: u64 = 4;
 const BPP_UNKNOWN: u64 = 4;
 
-/// Minimum safe concurrency when memory is very constrained
-const MIN_SAFE_CONCURRENCY: usize = 1;
+/// Maximum fallback estimate to avoid absurd weights.
+const MAX_FALLBACK_ESTIMATE: u64 = 512 * 1024 * 1024; // 512 MB
 
-/// Maximum safe concurrency based on memory (even if CPU allows more)
-const MAX_MEMORY_BASED_CONCURRENCY: usize = 16;
-
-/// Fallback memory capacity when detection fails (aligned with previous conservative limit)
-const FALLBACK_SEMAPHORE_CAPACITY: u64 =
-    ESTIMATED_MEMORY_PER_OPERATION * MAX_MEMORY_BASED_CONCURRENCY as u64;
 const ESTIMATE_CACHE_MAX_ENTRIES: usize = 256;
-
-use std::collections::{HashMap, VecDeque};
-use std::sync::atomic::{AtomicBool, Ordering};
-
-/// Waiter entry in the fair queue
-/// Stores the required weight and a flag to signal readiness
-#[derive(Debug)]
-struct Waiter {
-    weight: u64,
-    ready: Arc<AtomicBool>,
-}
-
-/// State protected by mutex
-#[derive(Debug)]
-struct SemaphoreState {
-    available: u64,
-    waiters: VecDeque<Waiter>,
-}
-
-/// In-memory weighted semaphore for byte-based backpressure.
-/// Uses a fair FIFO queue and wake-all handoff for correctness.
-#[derive(Debug)]
-pub struct WeightedSemaphore {
-    capacity: u64,
-    state: Mutex<SemaphoreState>,
-    cvar: Condvar,
-}
-
-#[derive(Debug)]
-pub struct MemoryPermit {
-    sem: Arc<WeightedSemaphore>,
-    weight: u64,
-}
-
-impl WeightedSemaphore {
-    pub fn new(capacity: u64) -> Self {
-        Self {
-            capacity,
-            state: Mutex::new(SemaphoreState {
-                available: capacity,
-                waiters: VecDeque::new(),
-            }),
-            cvar: Condvar::new(),
-        }
-    }
-
-    pub fn capacity(&self) -> u64 {
-        self.capacity
-    }
-
-    /// Returns `true` if the last `acquire()` was clamped because the requested
-    /// weight exceeded the semaphore capacity. This is purely informational;
-    /// the permit already serializes the oversized operation by reserving full
-    /// capacity.
-    #[allow(dead_code)] // Public API, tested, not yet called from production code paths
-    pub fn was_clamped(permit: &MemoryPermit, original_weight: u64) -> bool {
-        original_weight > permit.weight
-    }
-
-    pub fn acquire(self: &Arc<Self>, weight: u64) -> MemoryPermit {
-        if weight == 0 {
-            return MemoryPermit {
-                sem: Arc::clone(self),
-                weight: 0,
-            };
-        }
-
-        // If the request exceeds capacity, acquire FULL capacity instead.
-        // This serializes oversized operations (only one can run at a time)
-        // rather than silently under-reserving. The caller can check whether
-        // clamping occurred via `WeightedSemaphore::was_clamped()`.
-        let need = if weight > self.capacity {
-            #[cfg(debug_assertions)]
-            eprintln!(
-                "lazy-image: memory request ({} bytes) exceeds semaphore capacity ({} bytes); \
-                 acquiring full capacity to serialize this operation",
-                weight, self.capacity
-            );
-            self.capacity
-        } else {
-            weight
-        };
-
-        let ready_flag = {
-            let mut state = self.state.lock();
-
-            // Fast path: if capacity available, acquire immediately
-            if state.available >= need {
-                state.available -= need;
-                return MemoryPermit {
-                    sem: Arc::clone(self),
-                    weight: need,
-                };
-            }
-
-            // Slow path: enqueue and wait
-            let ready = Arc::new(AtomicBool::new(false));
-            state.waiters.push_back(Waiter {
-                weight: need,
-                ready: Arc::clone(&ready),
-            });
-            ready
-        };
-
-        // Wait for our turn (FIFO fairness)
-        loop {
-            if ready_flag.load(Ordering::Acquire) {
-                return MemoryPermit {
-                    sem: Arc::clone(self),
-                    weight: need,
-                };
-            }
-
-            // Sleep briefly before checking again
-            let mut guard = self.state.lock();
-            if !ready_flag.load(Ordering::Acquire) {
-                self.cvar.wait(&mut guard);
-            }
-        }
-    }
-
-    fn release(&self, weight: u64) {
-        let mut state = self.state.lock();
-
-        // Return capacity
-        state.available = state.available.saturating_add(weight).min(self.capacity);
-
-        let mut woke_any = false;
-        // Fair wake: satisfy waiters in FIFO order.
-        while let Some(waiter) = state.waiters.front() {
-            if state.available >= waiter.weight {
-                let waiter = state.waiters.pop_front().unwrap();
-                state.available -= waiter.weight;
-                woke_any = true;
-                waiter.ready.store(true, Ordering::Release);
-            } else {
-                break; // Can't satisfy next waiter, stop
-            }
-        }
-
-        if woke_any || (!state.waiters.is_empty() && state.available > 0) {
-            self.cvar.notify_all();
-        }
-    }
-}
-
-impl Drop for MemoryPermit {
-    fn drop(&mut self) {
-        self.sem.release(self.weight);
-    }
-}
-
-fn compute_semaphore_capacity() -> u64 {
-    // Try to honor detected memory; if no detection, use fallback
-    let available = detect_available_memory();
-    match available {
-        Some(mem) => {
-            let reserved = compute_reserved_memory(mem);
-            let usable = mem.saturating_sub(reserved);
-            usable.max(MIN_ESTIMATE_BYTES)
-        }
-        None => FALLBACK_SEMAPHORE_CAPACITY,
-    }
-}
-
-static GLOBAL_MEMORY_SEMAPHORE: OnceLock<Arc<WeightedSemaphore>> = OnceLock::new();
-
-/// Get global weighted semaphore for memory backpressure
-pub fn memory_semaphore() -> Arc<WeightedSemaphore> {
-    GLOBAL_MEMORY_SEMAPHORE
-        .get_or_init(|| Arc::new(WeightedSemaphore::new(compute_semaphore_capacity())))
-        .clone()
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct HeaderEstimate {
@@ -434,9 +245,6 @@ fn parse_color_bpp(bytes: &[u8], format: Option<ImageFormat>) -> Option<u64> {
     }
 }
 
-/// Maximum fallback estimate to avoid absurd weights
-const MAX_FALLBACK_ESTIMATE: u64 = 512 * 1024 * 1024; // 512 MB
-
 /// Estimate memory from file size when header parsing fails.
 /// Uses format-specific compression ratio heuristics.
 #[allow(dead_code)] // Used via tasks.rs when napi feature is enabled
@@ -451,23 +259,6 @@ pub fn estimate_fallback_from_file_size(file_size: u64, format: Option<ImageForm
     file_size
         .saturating_mul(ratio)
         .clamp(MIN_ESTIMATE_BYTES, MAX_FALLBACK_ESTIMATE)
-}
-
-/// Reserve memory for OS / runtime based on container/host limit
-#[cfg(feature = "napi")]
-fn compute_reserved_memory(total_bytes: u64) -> u64 {
-    // reserve 5% of total, clamped to [64MB, 512MB]
-    let five_percent = total_bytes / 20;
-    five_percent
-        .max(MIN_RESERVED_MEMORY)
-        .min(MAX_RESERVED_MEMORY)
-}
-
-#[cfg(not(feature = "napi"))]
-fn compute_reserved_memory(total_bytes: u64) -> u64 {
-    let _ = total_bytes;
-    let _ = MAX_RESERVED_MEMORY; // keep constant used in non-NAPI builds
-    MIN_RESERVED_MEMORY
 }
 
 fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u32, u32), u64, u64) {
@@ -692,409 +483,24 @@ pub fn parse_header(bytes: &[u8]) -> Option<HeaderEstimate> {
     None
 }
 
-/// Detects available memory from container limits or system memory
-///
-/// Returns available memory in bytes, or None if detection fails.
-/// Falls back to system memory if not in a container.
-#[cfg(feature = "napi")]
-pub fn detect_available_memory() -> Option<u64> {
-    // Try cgroup v2 first (newer systems)
-    if let Some(memory) = detect_cgroup_v2_memory() {
-        return Some(memory);
-    }
-
-    // Try cgroup v1 (older systems)
-    if let Some(memory) = detect_cgroup_v1_memory() {
-        return Some(memory);
-    }
-
-    // Fallback to system memory (not in container)
-    detect_system_memory()
-}
-
-/// Detects memory limit from cgroup v2
-#[cfg(feature = "napi")]
-fn detect_cgroup_v2_memory() -> Option<u64> {
-    let mountinfo = fs::read_to_string("/proc/self/mountinfo").ok();
-    let mount = mountinfo
-        .as_deref()
-        .and_then(parse_cgroup2_mount_point)
-        .unwrap_or_else(|| CgroupMount {
-            mount_point: "/sys/fs/cgroup".to_string(),
-            root: "/".to_string(),
-        });
-
-    let rel_path = fs::read_to_string("/proc/self/cgroup")
-        .ok()
-        .and_then(|c| parse_cgroup2_relative_path(&c))
-        .unwrap_or_default();
-
-    let rel = strip_mount_root(&mount.root, &rel_path);
-    let path = join_mount_rel_file(&mount.mount_point, &rel, "memory.max");
-    if let Ok(content) = fs::read_to_string(&path) {
-        let trimmed = content.trim();
-        if trimmed == "max" {
-            return None;
-        }
-        if let Ok(memory) = trimmed.parse::<u64>() {
-            return Some(memory);
-        }
-    }
-    None
-}
-
-/// Detects memory limit from cgroup v1
-#[cfg(feature = "napi")]
-fn detect_cgroup_v1_memory() -> Option<u64> {
-    let mountinfo = fs::read_to_string("/proc/self/mountinfo").ok();
-    let mount = mountinfo
-        .as_deref()
-        .and_then(|m| parse_cgroup1_mount_point(m, "memory"))
-        .unwrap_or_else(|| CgroupMount {
-            mount_point: "/sys/fs/cgroup/memory".to_string(),
-            root: "/".to_string(),
-        });
-
-    let rel_path = fs::read_to_string("/proc/self/cgroup")
-        .ok()
-        .as_deref()
-        .and_then(parse_cgroup1_memory_relative_path)
-        .unwrap_or_default();
-
-    let rel = strip_mount_root(&mount.root, &rel_path);
-    let path = join_mount_rel_file(&mount.mount_point, &rel, "memory.limit_in_bytes");
-
-    if let Ok(content) = fs::read_to_string(&path) {
-        let trimmed = content.trim();
-        if let Ok(memory) = trimmed.parse::<u64>() {
-            // Very large values (like 2^63-1) usually mean "no limit"
-            if memory > 1_000_000_000_000_000 {
-                return None; // No limit, fall back to system memory
-            }
-            return Some(memory);
-        }
-    }
-
-    None
-}
-
-/// Detects system memory (fallback when not in container).
-/// Delegates to the centralized platform module for OS-specific detection.
-#[cfg(feature = "napi")]
-fn detect_system_memory() -> Option<u64> {
-    super::platform::detect_system_memory()
-}
-
-#[cfg(feature = "napi")]
-struct CgroupMount {
-    mount_point: String,
-    root: String,
-}
-
-#[cfg(feature = "napi")]
-fn parse_cgroup2_mount_point(mountinfo: &str) -> Option<CgroupMount> {
-    for line in mountinfo.lines() {
-        // fields: id parent major:minor root mountpoint opts ... - fstype ...
-        // Example: 36 27 0:31 / /sys/fs/cgroup rw,relatime - cgroup2 cgroup2 rw
-        let mut parts = line.split(" - ");
-        let pre = parts.next()?;
-        let post = parts.next()?;
-        if !post.contains("cgroup2") {
-            continue;
-        }
-        let pre_fields: Vec<&str> = pre.split_whitespace().collect();
-        if pre_fields.len() >= 5 {
-            return Some(CgroupMount {
-                root: pre_fields[3].to_string(),
-                mount_point: pre_fields[4].to_string(),
-            });
-        }
-    }
-    None
-}
-
-#[cfg(feature = "napi")]
-fn parse_cgroup1_mount_point(mountinfo: &str, controller: &str) -> Option<CgroupMount> {
-    for line in mountinfo.lines() {
-        let mut parts = line.split(" - ");
-        let pre = parts.next()?;
-        let post = parts.next()?;
-        if !(post.contains("cgroup") && post.contains(controller)) {
-            continue;
-        }
-        let pre_fields: Vec<&str> = pre.split_whitespace().collect();
-        if pre_fields.len() >= 5 {
-            return Some(CgroupMount {
-                root: pre_fields[3].to_string(),
-                mount_point: pre_fields[4].to_string(),
-            });
-        }
-    }
-    None
-}
-
-#[cfg(feature = "napi")]
-fn parse_cgroup2_relative_path(content: &str) -> Option<String> {
-    // Format: 0::/docker/abcd...
-    // cgroup v2 uses hierarchy ID "0" for the unified hierarchy.
-    // Skip non-v2 lines (e.g. v1 entries with hierarchy ID > 0).
-    for line in content.lines() {
-        let mut parts = line.splitn(3, ':');
-        let hier = match parts.next() {
-            Some(h) => h,
-            None => continue,
-        };
-        let _controllers = match parts.next() {
-            Some(c) => c,
-            None => continue,
-        };
-        let path = match parts.next() {
-            Some(p) => p,
-            None => continue,
-        };
-        if hier == "0" {
-            return Some(path.to_string());
-        }
-    }
-    None
-}
-
-#[cfg(feature = "napi")]
-fn parse_cgroup1_memory_relative_path(content: &str) -> Option<String> {
-    // Lines like: 5:memory:/kubepods.slice/... or 5:memory:/
-    for line in content.lines() {
-        let mut parts = line.splitn(3, ':');
-        let _id = parts.next()?;
-        let controllers = parts.next()?;
-        if controllers.split(',').any(|c| c == "memory") {
-            let path = parts.next().unwrap_or("");
-            return Some(path.to_string());
-        }
-    }
-    None
-}
-
-#[cfg(feature = "napi")]
-fn strip_mount_root(root: &str, rel: &str) -> String {
-    if root == "/" {
-        return rel.to_string();
-    }
-    let trimmed_root = root.trim_end_matches('/');
-    let rel_no_leading = rel.trim_start_matches('/');
-    let prefix = trimmed_root.trim_start_matches('/');
-    if rel_no_leading.starts_with(prefix) {
-        let stripped = rel_no_leading
-            .trim_start_matches(prefix)
-            .trim_start_matches('/');
-        stripped.to_string()
-    } else {
-        rel.to_string()
-    }
-}
-
-#[cfg(feature = "napi")]
-fn join_mount_rel_file(mount_point: &str, rel: &str, file: &str) -> String {
-    let base = mount_point.trim_end_matches('/');
-    if rel.is_empty() {
-        return format!("{}/{}", base, file);
-    }
-    format!("{}/{}/{}", base, rel.trim_start_matches('/'), file)
-}
-
-/// Non-NAPI builds: skip detection and return None (use fallback)
-#[cfg(not(feature = "napi"))]
-pub fn detect_available_memory() -> Option<u64> {
-    None
-}
-
-/// Calculates safe concurrency based on available memory
-///
-/// This function estimates how many concurrent image operations can safely
-/// run without causing OOM kills.
-///
-/// # Arguments
-/// * `available_memory` - Available memory in bytes (from detect_available_memory)
-/// * `cpu_based_concurrency` - Concurrency based on CPU cores (from available_parallelism)
-///
-/// # Returns
-/// Safe concurrency value (number of concurrent operations)
-#[cfg(feature = "napi")]
-pub fn calculate_memory_based_concurrency(
-    available_memory: Option<u64>,
-    cpu_based_concurrency: usize,
-) -> usize {
-    let memory_limit = match available_memory {
-        Some(mem) => {
-            let reserved = compute_reserved_memory(mem);
-            let usable = mem.saturating_sub(reserved);
-            if usable < MIN_ESTIMATE_BYTES {
-                // Very constrained: use minimum
-                return MIN_SAFE_CONCURRENCY;
-            }
-            // Calculate how many operations can fit
-            let max_ops = usable / ESTIMATED_MEMORY_PER_OPERATION;
-            max_ops.max(1).min(MAX_MEMORY_BASED_CONCURRENCY as u64) as usize
-        }
-        None => {
-            // No memory limit detected: use CPU-based concurrency
-            return cpu_based_concurrency;
-        }
-    };
-
-    // Take the minimum of CPU-based and memory-based concurrency
-    // This ensures we don't exceed either CPU or memory limits
-    memory_limit
-        .min(cpu_based_concurrency)
-        .max(MIN_SAFE_CONCURRENCY)
-}
-
-#[cfg(all(test, feature = "napi"))]
+#[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ops::{Operation, OutputFormat, ResizeFit};
-    use std::sync::Arc;
+    use image::{ImageBuffer, ImageFormat, Rgba};
+
+    /// Serializes tests that exercise the shared global `ESTIMATE_CACHE`.
+    /// Without this, `cargo test`'s parallel scheduler races the cache state
+    /// across `estimate_cache_*` cases and produces flaky failures.
+    static CACHE_TEST_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
-    fn test_reserved_memory_bounds_and_percent() {
-        // tiny container: min 64MB
-        assert_eq!(
-            compute_reserved_memory(128 * 1024 * 1024),
-            MIN_RESERVED_MEMORY
-        );
-        // huge host: capped at 512MB
-        assert_eq!(
-            compute_reserved_memory(64 * 1024 * 1024 * 1024),
-            MAX_RESERVED_MEMORY
-        );
-        // 2GB -> 5% = 102.4MB -> within bounds
-        let reserved = compute_reserved_memory(2 * 1024 * 1024 * 1024);
-        assert!((100 * 1024 * 1024..=110 * 1024 * 1024).contains(&reserved));
-    }
-
-    #[test]
-    fn test_parse_cgroup2_mount_point() {
-        let sample = "36 27 0:31 / /sys/fs/cgroup rw,relatime - cgroup2 cgroup2 rw\n";
-        let mount = parse_cgroup2_mount_point(sample).unwrap();
-        assert_eq!(mount.mount_point, "/sys/fs/cgroup");
-        assert_eq!(mount.root, "/");
-    }
-
-    #[test]
-    fn test_parse_cgroup1_memory_relative_path() {
-        let sample =
-            "5:memory:/kubepods.slice/kubepods-besteffort.slice\n9:cpu,cpuacct:/kubepods.slice\n";
-        assert_eq!(
-            parse_cgroup1_memory_relative_path(sample),
-            Some("/kubepods.slice/kubepods-besteffort.slice".to_string())
-        );
-    }
-
-    #[test]
-    fn test_strip_mount_root_removes_duplicate() {
-        let root = "/docker/12345";
-        let rel = "/docker/12345/foo/bar";
-        assert_eq!(strip_mount_root(root, rel), "foo/bar");
-    }
-
-    #[test]
-    fn test_join_mount_rel_file_handles_empty_rel() {
-        let path = join_mount_rel_file("/sys/fs/cgroup", "", "memory.max");
-        assert_eq!(path, "/sys/fs/cgroup/memory.max");
-    }
-
-    #[test]
-    fn test_parse_cgroup2_relative_path() {
-        let sample = "0::/docker/abcd\n";
-        assert_eq!(
-            parse_cgroup2_relative_path(sample),
-            Some("/docker/abcd".to_string())
-        );
-    }
-
-    #[test]
-    fn test_parse_cgroup2_relative_path_mixed_v1_v2() {
-        // cgroup v1 lines appear before the v2 unified line
-        let sample = "12:memory:/docker/abc123\n11:cpuset:/docker/abc123\n0::/kubepods/pod-xyz\n";
-        assert_eq!(
-            parse_cgroup2_relative_path(sample),
-            Some("/kubepods/pod-xyz".to_string())
-        );
-    }
-
-    #[test]
-    fn test_parse_cgroup2_relative_path_empty() {
-        assert_eq!(parse_cgroup2_relative_path(""), None);
-    }
-
-    #[test]
-    fn test_parse_cgroup2_relative_path_no_v2_entry() {
-        // Only cgroup v1 lines, no hierarchy 0
-        let sample = "5:memory:/docker/abc\n3:cpuset:/docker/abc\n";
-        assert_eq!(parse_cgroup2_relative_path(sample), None);
-    }
-
-    #[test]
-    fn test_parse_cgroup2_relative_path_root() {
-        let sample = "0::/\n";
-        assert_eq!(parse_cgroup2_relative_path(sample), Some("/".to_string()));
-    }
-
-    #[test]
-    fn test_calculate_memory_based_concurrency_very_constrained() {
-        // 256MB container: very constrained
-        let result = calculate_memory_based_concurrency(Some(256 * 1024 * 1024), 8);
-        assert_eq!(result, MIN_SAFE_CONCURRENCY);
-    }
-
-    #[test]
-    fn test_calculate_memory_based_concurrency_constrained() {
-        // 512MB container: can fit ~3 operations (512MB - 128MB reserve = 384MB / 100MB = 3)
-        let result = calculate_memory_based_concurrency(Some(512 * 1024 * 1024), 8);
-        assert!((MIN_SAFE_CONCURRENCY..=4).contains(&result));
-    }
-
-    #[test]
-    fn test_calculate_memory_based_concurrency_abundant() {
-        // 4GB container: memory allows many operations, but CPU limits to 4
-        let result = calculate_memory_based_concurrency(Some(4 * 1024 * 1024 * 1024), 4);
-        assert_eq!(result, 4); // Limited by CPU
-    }
-
-    #[test]
-    fn test_calculate_memory_based_concurrency_no_limit() {
-        // No memory limit: use CPU-based concurrency
-        let result = calculate_memory_based_concurrency(None, 8);
-        assert_eq!(result, 8);
-    }
-
-    #[test]
-    fn test_calculate_memory_based_concurrency_memory_limits_cpu() {
-        // 1GB container with 8 CPUs: memory limits to ~8 operations, but we cap at 16
-        let result = calculate_memory_based_concurrency(Some(1024 * 1024 * 1024), 8);
-        assert!(result <= 8); // Limited by memory (1GB - 128MB = 896MB / 100MB = 8)
-    }
-
-    #[test]
-    fn test_weighted_semaphore_acquire_release() {
-        let sem = Arc::new(WeightedSemaphore::new(100));
-        let permit = sem.acquire(60);
-        {
-            let remaining = sem.state.lock().available;
-            assert_eq!(remaining, 40);
-        }
-        drop(permit);
-        let remaining = sem.state.lock().available;
-        assert_eq!(remaining, 100);
-    }
-
-    #[test]
-    fn test_estimate_memory_from_dimensions_non_zero() {
+    fn estimate_memory_from_dimensions_non_zero() {
         let est = estimate_memory_from_dimensions(10, 10);
         assert!(est >= MIN_ESTIMATE_BYTES);
     }
 
     #[test]
-    fn test_format_specific_estimate_differs() {
+    fn format_specific_estimate_differs() {
         let ops: Vec<Operation> = Vec::new();
         let jpeg_est = estimate_memory_from_dimensions_with_context(
             4000,
@@ -1117,7 +523,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cover_resize_accounts_intermediate() {
+    fn cover_resize_accounts_intermediate() {
         let ops = vec![Operation::Resize {
             width: Some(1000),
             height: Some(1000),
@@ -1129,7 +535,8 @@ mod tests {
     }
 
     #[test]
-    fn test_estimate_cache_has_bounded_size() {
+    fn estimate_cache_has_bounded_size() {
+        let _guard = CACHE_TEST_LOCK.lock();
         {
             let mut cache = get_estimate_cache().lock();
             cache.clear();
@@ -1158,7 +565,8 @@ mod tests {
     }
 
     #[test]
-    fn test_estimate_cache_keeps_distinct_bpp_variants_separate() {
+    fn estimate_cache_keeps_distinct_bpp_variants_separate() {
+        let _guard = CACHE_TEST_LOCK.lock();
         {
             let mut cache = get_estimate_cache().lock();
             cache.clear();
@@ -1186,45 +594,6 @@ mod tests {
         );
 
         get_estimate_cache().lock().clear();
-    }
-}
-
-// Tests that run when `napi` feature is disabled (the CI coverage path uses `--no-default-features`).
-#[cfg(all(test, not(feature = "napi")))]
-mod non_napi_tests {
-    use super::*;
-    use crate::ops::{Operation, OutputFormat, ResizeFit};
-    use image::{ImageBuffer, ImageFormat, Rgba};
-    use std::sync::Arc;
-    use std::thread;
-    use std::time::Duration;
-
-    #[test]
-    fn weighted_semaphore_wakes_waiter_after_drop() {
-        let sem = Arc::new(WeightedSemaphore::new(100));
-        let (tx_started, rx_started) = std::sync::mpsc::channel();
-        let (tx_done, rx_done) = std::sync::mpsc::channel();
-
-        // Hold full capacity so the spawned thread must block.
-        let permit = sem.acquire(100);
-
-        let sem_wait = Arc::clone(&sem);
-        let handle = thread::spawn(move || {
-            tx_started.send(()).unwrap();
-            let _permit = sem_wait.acquire(10); // will block until capacity is released
-            tx_done.send(()).unwrap();
-        });
-
-        // Wait until the waiter has started and is blocked inside acquire.
-        rx_started
-            .recv_timeout(Duration::from_secs(1))
-            .expect("waiter should signal start");
-        drop(permit); // release full capacity
-
-        rx_done
-            .recv_timeout(Duration::from_secs(1))
-            .expect("waiter should acquire after release");
-        handle.join().unwrap();
     }
 
     #[test]
@@ -1361,76 +730,6 @@ mod non_napi_tests {
         assert!(
             gray_est < rgb_est,
             "grayscale ({gray_est}) should use less memory than RGB ({rgb_est})"
-        );
-    }
-
-    #[test]
-    fn zero_weight_acquire_returns_immediately() {
-        let sem = Arc::new(WeightedSemaphore::new(100));
-        let permit = sem.acquire(0);
-        assert_eq!(permit.weight, 0);
-        // Available capacity should be unchanged
-        assert_eq!(sem.state.lock().available, 100);
-    }
-
-    #[test]
-    fn oversized_request_acquires_full_capacity() {
-        let sem = Arc::new(WeightedSemaphore::new(100));
-        // Request more than capacity
-        let permit = sem.acquire(200);
-        // Should have clamped to full capacity (100), not the requested 200
-        assert_eq!(permit.weight, 100);
-        assert_eq!(sem.state.lock().available, 0);
-        // was_clamped should report true
-        assert!(WeightedSemaphore::was_clamped(&permit, 200));
-        drop(permit);
-        assert_eq!(sem.state.lock().available, 100);
-    }
-
-    #[test]
-    fn normal_request_not_clamped() {
-        let sem = Arc::new(WeightedSemaphore::new(100));
-        let permit = sem.acquire(60);
-        assert_eq!(permit.weight, 60);
-        assert!(!WeightedSemaphore::was_clamped(&permit, 60));
-    }
-
-    #[test]
-    fn oversized_requests_are_serialized() {
-        use std::sync::atomic::{AtomicUsize, Ordering};
-
-        let sem = Arc::new(WeightedSemaphore::new(100));
-        let concurrent_count = Arc::new(AtomicUsize::new(0));
-        let max_concurrent = Arc::new(AtomicUsize::new(0));
-
-        let mut handles = Vec::new();
-        for _ in 0..4 {
-            let sem = Arc::clone(&sem);
-            let concurrent = Arc::clone(&concurrent_count);
-            let max_conc = Arc::clone(&max_concurrent);
-            handles.push(thread::spawn(move || {
-                // Each requests more than capacity → must serialize
-                let _permit = sem.acquire(200);
-                let prev = concurrent.fetch_add(1, Ordering::SeqCst);
-                // Update max concurrent
-                let current = prev + 1;
-                max_conc.fetch_max(current, Ordering::SeqCst);
-                // Small sleep to give other threads a chance to contend
-                thread::sleep(Duration::from_millis(10));
-                concurrent.fetch_sub(1, Ordering::SeqCst);
-            }));
-        }
-
-        for h in handles {
-            h.join().unwrap();
-        }
-
-        // At most 1 oversized request should run at a time since each
-        // acquires full capacity
-        assert_eq!(
-            max_concurrent.load(Ordering::SeqCst),
-            1,
-            "oversized requests should be serialized (max 1 concurrent)"
         );
     }
 
