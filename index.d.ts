@@ -14,6 +14,39 @@
  */
 export declare class ImageEngine {
   /**
+   * Get image dimensions WITHOUT full decoding.
+   * For file paths, reads only the header bytes (extremely fast).
+   * For in-memory buffers, uses header-only parsing.
+   */
+  dimensions(): Dimensions
+  /**
+   * Check if an ICC color profile was extracted from the source image.
+   * Returns the profile size in bytes, or null if no profile exists.
+   * This triggers lazy extraction of the ICC profile if not yet extracted.
+   */
+  hasIccProfile(): number | null
+  /**
+   * Process multiple images in parallel with the same operations.
+   *
+   * - inputs: Array of input file paths
+   * - output_dir: Directory to write processed images
+   * - options: Output settings
+   *   - format: Output format ("jpeg", "png", "webp", "avif")
+   *   - quality: Optional quality (1-100, uses format-specific default if omitted; omit for PNG)
+   *   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
+   *   - concurrency: Optional number of parallel workers:
+   *     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
+   *       Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
+   *       Ideal for serverless/containerized environments with memory constraints.
+   *     - 1-1024: Manual override - use specified number of concurrent operations
+   *
+   * Backward compatibility: the legacy positional signature
+   *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
+   * is still accepted for now but will be removed in a future major release.
+   */
+  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
+  processBatchWithMetrics(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchOutputWithMetrics>
+  /**
    * Create engine from a buffer.
    * Full pixel decode, queued operations, and metadata extraction are all
    * deferred until output methods run (true lazy evaluation).
@@ -30,77 +63,6 @@ export declare class ImageEngine {
   static fromPath(path: string): ImageEngine
   /** Create a clone of this engine (for multi-output scenarios) */
   clone(): ImageEngine
-  /**
-   * Resize image. Width or height can be null to maintain aspect ratio.
-   * When both width and height are provided, `fit` controls behavior:
-   * - "inside" (default): maintain aspect ratio and fit within the box
-   * - "cover": maintain aspect ratio and crop to fill the box
-   * - "fill": ignore aspect ratio and force exact dimensions
-   *
-   * Supports both signatures:
-   * - resize({ width?, height?, fit? })
-   * - resize(width?, height?, fit?)
-   */
-  resize(optionsOrWidth: ResizeOptions | number | undefined | null, height?: number | undefined | null, fit?: string | undefined | null): ImageEngine
-  /** Crop a region from the image. */
-  crop(x: number, y: number, width: number, height: number): ImageEngine
-  /** Rotate by degrees (90, 180, 270 only) */
-  rotate(degrees: number): ImageEngine
-  /** Flip horizontally */
-  flipH(): ImageEngine
-  /** Flip vertically */
-  flipV(): ImageEngine
-  /** Convert to grayscale */
-  grayscale(): ImageEngine
-  /**
-   * Enable or disable EXIF auto-orientation (default: enabled).
-   * `true` = apply EXIF Orientation automatically (sharp-compatible)
-   * `false` = ignore EXIF Orientation
-   */
-  autoOrient(enabled: boolean): ImageEngine
-  /**
-   * Preserve metadata in output.
-   * - ICC profile: Preserved when `icc: true` (default when options provided)
-   * - EXIF: Preserved when `exif: true`. Orientation is auto-reset to 1 after auto-orient.
-   * - GPS: Stripped by default when `stripGps: true` (privacy-first, exceeds Sharp)
-   * - XMP: Not yet supported (emits warning)
-   *
-   * By default, all metadata is stripped for security and smaller file sizes.
-   */
-  keepMetadata(options?: KeepMetadataOptions | undefined | null): ImageEngine
-  /**
-   * Enable Image Firewall mode with built-in policies (strict or lenient).
-   * Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).
-   * Lenient mode keeps generous limits but still guards against decompression bombs.
-   */
-  sanitize(options?: SanitizeOptions | undefined | null): ImageEngine
-  /**
-   * Override Image Firewall limits (maxPixels, maxBytes, timeoutMs).
-   * Any field set to 0 disables that particular limit.
-   */
-  limits(options: FirewallLimitOptions): ImageEngine
-  /** Adjust brightness (-100 to 100) */
-  brightness(value: number): ImageEngine
-  /** Adjust contrast (-100 to 100) */
-  contrast(value: number): ImageEngine
-  /**
-   * Normalize pixel format to RGB/RGBA without performing any color space transformation.
-   * This does not apply ICC profile conversion; it only guarantees the pixel layout is RGB/RGBA.
-   * Use a dedicated color management library for true color space conversions.
-   */
-  normalizePixelFormat(): ImageEngine
-  /**
-   * Apply a built-in preset for common use cases.
-   *
-   * Available presets:
-   * - "thumbnail": 150x150, WebP quality 75 (gallery thumbnails)
-   * - "avatar": 200x200, WebP quality 80 (profile pictures)
-   * - "hero": 1920 width, JPEG quality 85 (hero images, banners)
-   * - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
-   *
-   * Returns the preset configuration for use with toBuffer/toFile.
-   */
-  preset(name: PresetName): PresetResult
   /**
    * Encode to buffer asynchronously.
    * format: "jpeg", "jpg", "png", "webp", "avif"
@@ -174,38 +136,76 @@ export declare class ImageEngine {
   /** Convenience: encode to file using the preset's recommended format/quality. */
   toFileWithPreset(path: string, presetName: PresetName): Promise<number>
   /**
-   * Get image dimensions WITHOUT full decoding.
-   * For file paths, reads only the header bytes (extremely fast).
-   * For in-memory buffers, uses header-only parsing.
-   */
-  dimensions(): Dimensions
-  /**
-   * Check if an ICC color profile was extracted from the source image.
-   * Returns the profile size in bytes, or null if no profile exists.
-   * This triggers lazy extraction of the ICC profile if not yet extracted.
-   */
-  hasIccProfile(): number | null
-  /**
-   * Process multiple images in parallel with the same operations.
+   * Resize image. Width or height can be null to maintain aspect ratio.
+   * When both width and height are provided, `fit` controls behavior:
+   * - "inside" (default): maintain aspect ratio and fit within the box
+   * - "cover": maintain aspect ratio and crop to fill the box
+   * - "fill": ignore aspect ratio and force exact dimensions
    *
-   * - inputs: Array of input file paths
-   * - output_dir: Directory to write processed images
-   * - options: Output settings
-   *   - format: Output format ("jpeg", "png", "webp", "avif")
-   *   - quality: Optional quality (1-100, uses format-specific default if omitted; omit for PNG)
-   *   - fastMode: Optional fast mode flag (only applies to JPEG, default: false)
-   *   - concurrency: Optional number of parallel workers:
-   *     - 0 or undefined: Auto-detect based on CPU cores and memory limits (smart concurrency)
-   *       Detects container memory limits (cgroup v1/v2) and adjusts to prevent OOM kills.
-   *       Ideal for serverless/containerized environments with memory constraints.
-   *     - 1-1024: Manual override - use specified number of concurrent operations
-   *
-   * Backward compatibility: the legacy positional signature
-   *   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
-   * is still accepted for now but will be removed in a future major release.
+   * Supports both signatures:
+   * - resize({ width?, height?, fit? })
+   * - resize(width?, height?, fit?)
    */
-  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>
-  processBatchWithMetrics(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchOutputWithMetrics>
+  resize(optionsOrWidth: ResizeOptions | number | undefined | null, height?: number | undefined | null, fit?: string | undefined | null): ImageEngine
+  /** Crop a region from the image. */
+  crop(x: number, y: number, width: number, height: number): ImageEngine
+  /** Rotate by degrees (90, 180, 270 only) */
+  rotate(degrees: number): ImageEngine
+  /** Flip horizontally */
+  flipH(): ImageEngine
+  /** Flip vertically */
+  flipV(): ImageEngine
+  /** Convert to grayscale */
+  grayscale(): ImageEngine
+  /**
+   * Enable or disable EXIF auto-orientation (default: enabled).
+   * `true` = apply EXIF Orientation automatically (sharp-compatible)
+   * `false` = ignore EXIF Orientation
+   */
+  autoOrient(enabled: boolean): ImageEngine
+  /**
+   * Preserve metadata in output.
+   * - ICC profile: Preserved when `icc: true` (default when options provided)
+   * - EXIF: Preserved when `exif: true`. Orientation is auto-reset to 1 after auto-orient.
+   * - GPS: Stripped by default when `stripGps: true` (privacy-first, exceeds Sharp)
+   * - XMP: Not yet supported (emits warning)
+   *
+   * By default, all metadata is stripped for security and smaller file sizes.
+   */
+  keepMetadata(options?: KeepMetadataOptions | undefined | null): ImageEngine
+  /**
+   * Enable Image Firewall mode with built-in policies (strict or lenient).
+   * Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).
+   * Lenient mode keeps generous limits but still guards against decompression bombs.
+   */
+  sanitize(options?: SanitizeOptions | undefined | null): ImageEngine
+  /**
+   * Override Image Firewall limits (maxPixels, maxBytes, timeoutMs).
+   * Any field set to 0 disables that particular limit.
+   */
+  limits(options: FirewallLimitOptions): ImageEngine
+  /** Adjust brightness (-100 to 100) */
+  brightness(value: number): ImageEngine
+  /** Adjust contrast (-100 to 100) */
+  contrast(value: number): ImageEngine
+  /**
+   * Normalize pixel format to RGB/RGBA without performing any color space transformation.
+   * This does not apply ICC profile conversion; it only guarantees the pixel layout is RGB/RGBA.
+   * Use a dedicated color management library for true color space conversions.
+   */
+  normalizePixelFormat(): ImageEngine
+  /**
+   * Apply a built-in preset for common use cases.
+   *
+   * Available presets:
+   * - "thumbnail": 150x150, WebP quality 75 (gallery thumbnails)
+   * - "avatar": 200x200, WebP quality 80 (profile pictures)
+   * - "hero": 1920 width, JPEG quality 85 (hero images, banners)
+   * - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
+   *
+   * Returns the preset configuration for use with toBuffer/toFile.
+   */
+  preset(name: PresetName): PresetResult
 }
 
 export interface BatchMetricsSummary {
