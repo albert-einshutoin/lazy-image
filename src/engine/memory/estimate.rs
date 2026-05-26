@@ -34,13 +34,13 @@ const MAX_FALLBACK_ESTIMATE: u64 = 512 * 1024 * 1024; // 512 MB
 const ESTIMATE_CACHE_MAX_ENTRIES: usize = 256;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct HeaderEstimate {
-    pub width: u32,
-    pub height: u32,
-    pub format: Option<ImageFormat>,
+pub(super) struct HeaderEstimate {
+    pub(super) width: u32,
+    pub(super) height: u32,
+    pub(super) format: Option<ImageFormat>,
     /// Precise bytes-per-pixel parsed from the image header.
     /// `None` means the color type could not be determined; fall back to format heuristic.
-    pub decoded_bpp: Option<u64>,
+    pub(super) decoded_bpp: Option<u64>,
 }
 
 fn bytes_for_image(width: u32, height: u32, bytes_per_pixel: u64) -> u64 {
@@ -393,7 +393,7 @@ fn estimate_memory_from_dimensions_with_bpp(
 
 /// Simple wrapper for callers without format/ops context (kept for compatibility in tests)
 #[cfg(test)]
-pub fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
+fn estimate_memory_from_dimensions(width: u32, height: u32) -> u64 {
     estimate_memory_from_dimensions_with_context(width, height, None, &[], None)
 }
 
@@ -466,7 +466,7 @@ pub fn estimate_memory_from_header(
 }
 
 /// Parse width/height/format and color type from input bytes without full decode.
-pub fn parse_header(bytes: &[u8]) -> Option<HeaderEstimate> {
+pub(super) fn parse_header(bytes: &[u8]) -> Option<HeaderEstimate> {
     let cursor = Cursor::new(bytes);
     if let Ok(reader) = image::ImageReader::new(cursor).with_guessed_format() {
         let format = reader.format();

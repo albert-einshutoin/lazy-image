@@ -60,8 +60,7 @@ pub(super) fn detect_cgroup_v1_memory() -> Option<u64> {
 
     let rel_path = fs::read_to_string("/proc/self/cgroup")
         .ok()
-        .as_deref()
-        .and_then(parse_cgroup1_memory_relative_path)
+        .and_then(|c| parse_cgroup1_memory_relative_path(&c))
         .unwrap_or_default();
 
     let rel = strip_mount_root(&mount.root, &rel_path);
