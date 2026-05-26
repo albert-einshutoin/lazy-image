@@ -119,7 +119,6 @@ pub use stress::run_stress_iteration;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
     use crate::engine::tasks::{EncodeTask, TaskContext};

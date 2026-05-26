@@ -39,6 +39,3 @@ pub use source::{MemoryGuard, MmapGuard};
 // helpers (`IccExtractor`, `JpegIccExtractor`, etc.) stay inside `icc` and are
 // reachable via `crate::engine::io::icc::*` when needed.
 // -----------------------------------------------------------------------------
-
-#[cfg(test)]
-pub(crate) use exif::find_exif_segment_jpeg_for_tests;
