@@ -782,60 +782,8 @@ fn extract_icc_from_avif_safe(_data: &[u8]) -> Option<Vec<u8>> {
 // - Orientation tag reset after auto-orient (prevents double-rotation bugs)
 // - GPS tag stripping by default (privacy-first, exceeds Sharp's capabilities)
 
-#[allow(unused_imports)]
-use little_exif::filetype::FileExtension;
-
 /// Maximum EXIF data size to process (prevent DoS from malicious inputs)
 const MAX_EXIF_SOURCE_BYTES: usize = 8 * 1024 * 1024;
-
-/// Detect file extension for little_exif from image data magic bytes.
-/// Note: Reserved for future PNG/WebP/AVIF EXIF support.
-#[allow(dead_code)]
-fn detect_file_extension(data: &[u8]) -> Option<FileExtension> {
-    if data.len() < 12 {
-        return None;
-    }
-
-    // JPEG: starts with FF D8
-    if data.starts_with(&[0xFF, 0xD8]) {
-        return Some(FileExtension::JPEG);
-    }
-
-    // PNG: starts with 89 50 4E 47
-    // as_zTXt_chunk: true means EXIF is stored in zTXt chunk (standard for PNG)
-    if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
-        return Some(FileExtension::PNG {
-            as_zTXt_chunk: true,
-        });
-    }
-
-    // WebP: RIFF....WEBP
-    if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
-        return Some(FileExtension::WEBP);
-    }
-
-    // AVIF/HEIF: ISOBMFF with ftyp box - little_exif uses HEIF for both
-    if &data[4..8] == b"ftyp" {
-        let brand = &data[8..12];
-        if brand == b"avif"
-            || brand == b"avis"
-            || brand == b"heic"
-            || brand == b"heix"
-            || brand == b"mif1"
-        {
-            return Some(FileExtension::HEIF);
-        }
-    }
-
-    // TIFF: II (little-endian) or MM (big-endian)
-    if (data.starts_with(b"II") && data[2] == 0x2A && data[3] == 0x00)
-        || (data.starts_with(b"MM") && data[2] == 0x00 && data[3] == 0x2A)
-    {
-        return Some(FileExtension::TIFF);
-    }
-
-    None
-}
 
 /// Extract raw EXIF bytes from image data.
 /// This is used to store EXIF for later embedding without needing to re-parse.

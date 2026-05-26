@@ -65,8 +65,9 @@ pub fn decode_jpeg_mozjpeg(data: &[u8]) -> DecoderResult<DynamicImage> {
             LazyImageError::decode_failed(format!("mozjpeg: failed to read scanlines: {e:?}"))
         })?;
 
-        // Safe conversion from Vec<[u8; 3]> to Vec<u8>
-        let flat_pixels: Vec<u8> = pixels.into_iter().flatten().collect();
+        // Zero-copy reinterpretation of Vec<[u8; 3]> as Vec<u8> — avoids the
+        // intermediate iterator + reallocation that `flatten().collect()` performs.
+        let flat_pixels: Vec<u8> = pixels.into_flattened();
 
         // Create DynamicImage from raw RGB data
         let rgb_image =
