@@ -49,26 +49,44 @@ mod stress;
 mod tasks;
 pub(crate) mod validation;
 
-// Re-export commonly used types and functions
+// -----------------------------------------------------------------------------
+// Public API surface
+// -----------------------------------------------------------------------------
+// These items form the intentional public API of lazy-image as an `rlib`.
+// External consumers may rely on these — they are subject to semver.
 pub use api::ImageEngine;
-pub use decoder::{
-    check_dimensions, decode_image, decode_jpeg_mozjpeg, decode_with_image_crate,
-    detect_exif_orientation, detect_format, ensure_dimensions_safe,
-};
-pub use encoder::{
-    embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
-    encode_webp, QualitySettings,
-};
+pub use encoder::QualitySettings;
 pub use firewall::FirewallConfig;
-pub use io::{extract_exif_raw, extract_icc_profile, extract_icc_profile_lossy, Source};
-pub use pipeline::{apply_ops, optimize_ops};
-pub use resize::{
-    calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned, ResizeError,
-};
+pub use io::Source;
 
-// Re-export pool constants for tasks.rs
-#[cfg(feature = "napi")]
-pub use pool::{get_pool, MAX_CONCURRENCY};
+// -----------------------------------------------------------------------------
+// Internal items exposed to integration tests
+// -----------------------------------------------------------------------------
+// Integration tests in `tests/` compile as a separate crate and therefore can
+// only see `pub` items. The codec/pipeline helpers below are NOT part of the
+// supported public API — they are exposed to enable test coverage of internal
+// behavior, and may change at any time without a semver bump.
+//
+// `#[doc(hidden)]` keeps them out of rustdoc and signals to downstream users
+// that depending on them is unsupported.
+#[doc(hidden)]
+pub use decoder::{check_dimensions, decode_jpeg_mozjpeg, decode_with_image_crate};
+#[doc(hidden)]
+pub use encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
+#[doc(hidden)]
+pub use pipeline::{apply_ops, optimize_ops};
+#[doc(hidden)]
+pub use resize::{calc_resize_dimensions, fast_resize, fast_resize_owned};
+
+// Note: the remaining decoder/encoder/io/resize helpers used elsewhere inside
+// the crate (decode_image, detect_format, embed_icc_*, extract_icc_profile,
+// etc.) intentionally have no re-export here. They are reached via their
+// module-relative paths (`decoder::decode_image`, `super::io::...`) from
+// sibling modules within `engine`, and the surrounding `mod` declarations are
+// private so the items cannot leak through the rlib's public API.
+//
+// `pool::get_pool` and `pool::MAX_CONCURRENCY` are likewise consumed only via
+// module-relative paths from `tasks.rs`, `validation.rs`, and `pool::*` tests.
 
 // Re-export types from api.rs and tasks.rs
 #[cfg(feature = "napi")]
@@ -99,6 +117,10 @@ mod tests {
     use super::*;
     use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
+    // `extract_icc_profile` was previously reached via a now-removed `pub use`
+    // in this module. Import it directly from `io` to keep inline tests building
+    // without re-introducing a crate-public re-export.
+    use crate::engine::io::extract_icc_profile;
     use crate::engine::tasks::{EncodeTask, TaskContext};
     use crate::error::LazyImageError;
     use crate::ops::OutputFormat;
