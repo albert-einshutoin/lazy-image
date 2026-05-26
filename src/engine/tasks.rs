@@ -565,6 +565,16 @@ macro_rules! define_encode_task {
             $( $( #[$fmeta] )* pub $field : $fty, )*
         }
 
+        // Compile-time `Send` guarantee. NAPI's `AsyncTask` moves task structs
+        // onto a worker thread for `compute()`, so any non-Send field would
+        // surface as a runtime error rather than at build time. This assertion
+        // catches it during compilation, before the napi attribute even
+        // expands.
+        const _: fn() = || {
+            fn assert_send<T: Send>() {}
+            assert_send::<$name>();
+        };
+
         #[cfg(feature = "napi")]
         #[napi]
         impl Task for $name {
@@ -1138,6 +1148,15 @@ pub struct BatchWithMetricsTask {
     #[cfg(feature = "napi")]
     pub(crate) last_error: Option<LazyImageError>,
 }
+
+// Compile-time `Send` assertions for the manually-implemented batch tasks.
+// Matches the assertion the `define_encode_task!` macro emits for the other
+// task types — see the comment near the macro definition.
+const _: fn() = || {
+    fn assert_send<T: Send>() {}
+    assert_send::<BatchTask>();
+    assert_send::<BatchWithMetricsTask>();
+};
 
 #[cfg(feature = "napi")]
 #[napi]

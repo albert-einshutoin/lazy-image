@@ -671,7 +671,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         validate_buffer_len(width, height, 4, pixels.len(), "avif")?;
 
         let mut avif_image = SafeAvifImage::new(width, height, 8, AVIF_PIXEL_FORMAT_YUV420)
-            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         avif_image.set_color_properties(
             AVIF_COLOR_PRIMARIES_BT709 as u16,
@@ -683,24 +683,24 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         if let Some(icc_data) = icc {
             avif_image
                 .set_icc_profile(icc_data)
-                .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+                .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
         }
 
         let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height)
-            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         avif_image
             .allocate_planes(AVIF_PLANES_YUV)
-            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         avif_image
             .rgb_to_yuv(&rgb)
-            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         if has_alpha {
             avif_image
                 .allocate_planes(AVIF_PLANES_A)
-                .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+                .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
             unsafe {
                 // SAFETY:
@@ -733,7 +733,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         }
 
         let mut encoder = SafeAvifEncoder::new()
-            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         let cpu_threads = std::thread::available_parallelism()
             .map(|n| n.get())
@@ -747,11 +747,11 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
 
         encoder
             .add_image(&mut avif_image, 1, AVIF_ADD_IMAGE_FLAG_SINGLE)
-            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         encoder
             .finish(&mut output)
-            .map_err(|e| LazyImageError::encode_failed("avif".to_string(), e.to_string()))?;
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         Ok(output.to_vec())
     })
