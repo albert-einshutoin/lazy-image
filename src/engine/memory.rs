@@ -7,7 +7,7 @@
 // This module detects container memory limits from cgroup v1/v2 to automatically
 // adjust thread pool size and prevent OOM kills in constrained environments.
 
-use crate::engine::resize::calc_resize_dimensions;
+use crate::engine::resize::{calc_cover_resize_dimensions, calc_resize_dimensions};
 use crate::ops::{Operation, OutputFormat, ResizeFit};
 use image::ImageFormat;
 use parking_lot::{Condvar, Mutex};
@@ -468,23 +468,6 @@ fn compute_reserved_memory(total_bytes: u64) -> u64 {
     let _ = total_bytes;
     let _ = MAX_RESERVED_MEMORY; // keep constant used in non-NAPI builds
     MIN_RESERVED_MEMORY
-}
-
-fn calc_cover_resize_dimensions(
-    orig_w: u32,
-    orig_h: u32,
-    target_w: u32,
-    target_h: u32,
-) -> (u32, u32) {
-    if orig_w == 0 || orig_h == 0 {
-        return (target_w.max(1), target_h.max(1));
-    }
-    let scale_w = target_w as f64 / orig_w as f64;
-    let scale_h = target_h as f64 / orig_h as f64;
-    let scale = scale_w.max(scale_h);
-    let resize_w = ((orig_w as f64 * scale).ceil() as u32).max(1);
-    let resize_h = ((orig_h as f64 * scale).ceil() as u32).max(1);
-    (resize_w, resize_h)
 }
 
 fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u32, u32), u64, u64) {
