@@ -177,26 +177,6 @@ pub fn fast_resize_internal_with_options(
     )
 }
 
-/// Backward-compatible helper preserving the legacy signature without options.
-pub fn fast_resize_internal(
-    src_width: u32,
-    src_height: u32,
-    src_pixels: Vec<u8>,
-    pixel_type: PixelType,
-    dst_width: u32,
-    dst_height: u32,
-) -> std::result::Result<DynamicImage, String> {
-    fast_resize_internal_with_options(
-        src_width,
-        src_height,
-        src_pixels,
-        pixel_type,
-        dst_width,
-        dst_height,
-        default_resize_options(),
-    )
-}
-
 pub(crate) fn fast_resize_owned_impl(
     img: DynamicImage,
     dst_width: u32,

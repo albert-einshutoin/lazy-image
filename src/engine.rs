@@ -49,26 +49,47 @@ mod stress;
 mod tasks;
 pub(crate) mod validation;
 
-// Re-export commonly used types and functions
+// -----------------------------------------------------------------------------
+// Public API surface
+// -----------------------------------------------------------------------------
+// These items form the intentional public API of lazy-image as an `rlib`.
+// External consumers may rely on these — they are subject to semver.
 pub use api::ImageEngine;
+pub use encoder::QualitySettings;
+pub use firewall::FirewallConfig;
+pub use io::Source;
+
+// -----------------------------------------------------------------------------
+// Internal items exposed to integration tests and fuzz targets
+// -----------------------------------------------------------------------------
+// Integration tests in `tests/` and fuzz targets in `fuzz/` compile as
+// separate crates and can only see `pub` items. The codec/pipeline helpers
+// below are NOT part of the supported public API — they are exposed to enable
+// coverage of internal behavior, and may change at any time without a semver
+// bump.
+//
+// `#[doc(hidden)]` keeps them out of rustdoc and signals to downstream users
+// that depending on them is unsupported.
+#[doc(hidden)]
 pub use decoder::{
     check_dimensions, decode_image, decode_jpeg_mozjpeg, decode_with_image_crate,
     detect_exif_orientation, detect_format, ensure_dimensions_safe,
 };
-pub use encoder::{
-    embed_icc_jpeg, embed_icc_png, embed_icc_webp, encode_avif, encode_jpeg, encode_png,
-    encode_webp, QualitySettings,
-};
-pub use firewall::FirewallConfig;
-pub use io::{extract_exif_raw, extract_icc_profile, extract_icc_profile_lossy, Source};
+#[doc(hidden)]
+pub use encoder::{encode_avif, encode_jpeg, encode_png, encode_webp};
+#[doc(hidden)]
+pub use io::{extract_exif_raw, extract_icc_profile};
+#[doc(hidden)]
 pub use pipeline::{apply_ops, optimize_ops};
-pub use resize::{
-    calc_resize_dimensions, fast_resize, fast_resize_internal, fast_resize_owned, ResizeError,
-};
+#[doc(hidden)]
+pub use resize::{calc_resize_dimensions, fast_resize, fast_resize_owned};
 
-// Re-export pool constants for tasks.rs
-#[cfg(feature = "napi")]
-pub use pool::{get_pool, MAX_CONCURRENCY};
+// Note: the remaining helpers used elsewhere inside the crate (e.g.
+// `embed_icc_*`, `extract_icc_profile_lossy`, `ResizeError`, pool helpers)
+// intentionally have no re-export here. They are reached via module-relative
+// paths from sibling modules within `engine`, and the surrounding `mod`
+// declarations are private so the items cannot leak through the rlib's
+// public API.
 
 // Re-export types from api.rs and tasks.rs
 #[cfg(feature = "napi")]
