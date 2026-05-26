@@ -164,6 +164,32 @@ fn decode_internal_from_parts<'a>(
     Ok(Cow::Owned(img))
 }
 
+/// Borrowed parameter bundle for the process + encode pipeline.
+///
+/// Replaces a 10-argument signature on `process_and_encode_from_parts` and an
+/// 8-argument signature on `encode_prepared` with a single struct. Every field
+/// is `Copy`, so the struct itself is `Copy` — that lets callers reuse a base
+/// context and vary only one field with struct-update syntax (used by the
+/// byte-budget binary search, which keeps every field constant except the
+/// per-iteration `OutputFormat`).
+///
+/// `encode_prepared` ignores the prepare-only fields (`source`, `decoded`,
+/// `ops`, `icc_present`); they live here rather than in a separate struct so
+/// every callsite builds exactly one context object.
+#[derive(Clone, Copy)]
+struct EncodeContext<'a> {
+    source: Option<&'a Source>,
+    decoded: Option<&'a Arc<DynamicImage>>,
+    ops: &'a [Operation],
+    format: &'a OutputFormat,
+    icc_profile: Option<&'a Arc<Vec<u8>>>,
+    icc_present: bool,
+    exif_data: Option<&'a Arc<Vec<u8>>>,
+    auto_orient: bool,
+    policy: &'a MetadataPolicy,
+    firewall: &'a FirewallConfig,
+}
+
 /// Cached state from decode + ops, reusable across multiple encode passes.
 ///
 /// Used by [`EncodeTargetBytesTask`] to avoid re-decoding and re-applying ops
@@ -314,17 +340,20 @@ fn prepare_for_encode(
 /// byte-budget binary search uses this to vary only quality. Per-call timing
 /// (encode_ms, total_ms) is recorded into `metrics` if provided; decode_ms /
 /// ops_ms come from the cached prepare phase.
-#[allow(clippy::too_many_arguments)]
 fn encode_prepared(
     prepared: &PreparedEncode,
-    format: &OutputFormat,
-    icc_profile: Option<&Arc<Vec<u8>>>,
-    exif_data: Option<&Arc<Vec<u8>>>,
-    auto_orient: bool,
-    policy: &MetadataPolicy,
-    firewall: &FirewallConfig,
+    ctx: &EncodeContext<'_>,
     metrics: Option<&mut crate::ProcessingMetrics>,
 ) -> std::result::Result<Vec<u8>, LazyImageError> {
+    let EncodeContext {
+        format,
+        icc_profile,
+        exif_data,
+        auto_orient,
+        policy,
+        firewall,
+        ..
+    } = *ctx;
     let keep_icc = policy.effective_icc();
     let keep_exif = policy.effective_exif();
     let strip_gps = policy.strip_gps();
@@ -436,42 +465,43 @@ fn encode_prepared(
     Ok(result)
 }
 
-#[allow(clippy::too_many_arguments)]
 fn process_and_encode_from_parts(
-    source: Option<&Source>,
-    decoded: Option<&Arc<DynamicImage>>,
-    ops: &[Operation],
-    format: &OutputFormat,
-    icc_profile: Option<&Arc<Vec<u8>>>,
-    icc_present: bool,
-    exif_data: Option<&Arc<Vec<u8>>>,
-    auto_orient: bool,
-    policy: &MetadataPolicy,
-    firewall: &FirewallConfig,
+    ctx: &EncodeContext<'_>,
     metrics: Option<&mut crate::ProcessingMetrics>,
 ) -> std::result::Result<Vec<u8>, LazyImageError> {
     let prepared = prepare_for_encode(
-        source,
-        decoded,
-        ops,
-        icc_present,
-        auto_orient,
-        firewall,
-        format,
+        ctx.source,
+        ctx.decoded,
+        ctx.ops,
+        ctx.icc_present,
+        ctx.auto_orient,
+        ctx.firewall,
+        ctx.format,
     )?;
-    encode_prepared(
-        &prepared,
-        format,
-        icc_profile,
-        exif_data,
-        auto_orient,
-        policy,
-        firewall,
-        metrics,
-    )
+    encode_prepared(&prepared, ctx, metrics)
 }
 
 impl TaskContext {
+    /// Build a borrowed [`EncodeContext`] view over this task's fields.
+    ///
+    /// Every per-task field (source, ops, format, ICC/EXIF, policy, firewall)
+    /// is exposed as a borrow; the resulting context can be passed by reference
+    /// to [`process_and_encode_from_parts`] and [`encode_prepared`].
+    fn encode_context(&self) -> EncodeContext<'_> {
+        EncodeContext {
+            source: self.source.as_ref(),
+            decoded: self.decoded.as_ref(),
+            ops: &self.ops,
+            format: &self.format,
+            icc_profile: self.icc_profile.as_ref(),
+            icc_present: self.icc_present,
+            exif_data: self.exif_data.as_ref(),
+            auto_orient: self.auto_orient,
+            policy: &self.metadata_policy,
+            firewall: &self.firewall,
+        }
+    }
+
     /// Process image: decode → apply ops → encode
     /// This is the core processing pipeline shared by toBuffer and toFile.
     /// Returns LazyImageError directly (not wrapped in napi::Error) so that
@@ -480,19 +510,7 @@ impl TaskContext {
         &self,
         metrics: Option<&mut crate::ProcessingMetrics>,
     ) -> std::result::Result<Vec<u8>, LazyImageError> {
-        process_and_encode_from_parts(
-            self.source.as_ref(),
-            self.decoded.as_ref(),
-            &self.ops,
-            &self.format,
-            self.icc_profile.as_ref(),
-            self.icc_present,
-            self.exif_data.as_ref(),
-            self.auto_orient,
-            &self.metadata_policy,
-            &self.firewall,
-            metrics,
-        )
+        process_and_encode_from_parts(&self.encode_context(), metrics)
     }
 
     /// Store an error for later use in reject(), returning a napi::Error for compute().
@@ -726,14 +744,15 @@ impl EncodeTargetBytesTask {
     fn search(&self) -> std::result::Result<TargetBytesOutput, LazyImageError> {
         // Decode + apply ops once. Memory permit is held by `prepared` so the
         // semaphore reservation stays valid across every encode iteration below.
+        let base_ctx = self.ctx.encode_context();
         let prepared = prepare_for_encode(
-            self.ctx.source.as_ref(),
-            self.ctx.decoded.as_ref(),
-            &self.ctx.ops,
-            self.ctx.icc_present,
-            self.ctx.auto_orient,
-            &self.ctx.firewall,
-            &self.ctx.format,
+            base_ctx.source,
+            base_ctx.decoded,
+            base_ctx.ops,
+            base_ctx.icc_present,
+            base_ctx.auto_orient,
+            base_ctx.firewall,
+            base_ctx.format,
         )?;
 
         let mut low = self.min_quality;
@@ -744,18 +763,14 @@ impl EncodeTargetBytesTask {
         while low <= high {
             let quality = low + (high - low) / 2;
             let format_at_q = self.ctx.format.with_quality(quality);
+            // Reuse the base context, overriding only the per-iteration format.
+            let iter_ctx = EncodeContext {
+                format: &format_at_q,
+                ..base_ctx
+            };
 
             let mut metrics = crate::ProcessingMetrics::default();
-            let encoded = encode_prepared(
-                &prepared,
-                &format_at_q,
-                self.ctx.icc_profile.as_ref(),
-                self.ctx.exif_data.as_ref(),
-                self.ctx.auto_orient,
-                &self.ctx.metadata_policy,
-                &self.ctx.firewall,
-                Some(&mut metrics),
-            )?;
+            let encoded = encode_prepared(&prepared, &iter_ctx, Some(&mut metrics))?;
 
             let size = encoded.len() as u32;
 
@@ -1019,19 +1034,28 @@ struct BatchFileSuccess {
     metrics: Option<crate::ProcessingMetrics>,
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Borrowed parameter bundle for [`process_batch_file`].
+///
+/// Holds the per-batch configuration (output directory, ops, format, policy,
+/// firewall, etc.) that is identical for every file in a batch. Built once
+/// outside the rayon loop and shared (by `Copy`) across every worker closure.
+#[derive(Clone, Copy)]
+struct BatchFileContext<'a> {
+    output_dir: &'a str,
+    ops: &'a [Operation],
+    format: &'a OutputFormat,
+    auto_orient: bool,
+    policy: &'a MetadataPolicy,
+    firewall: &'a FirewallConfig,
+    collect_metrics: bool,
+}
+
 fn process_batch_file(
     input_path: &str,
-    output_dir: &str,
-    ops: &[Operation],
-    format: &OutputFormat,
-    auto_orient: bool,
-    policy: &MetadataPolicy,
-    firewall: &FirewallConfig,
-    collect_metrics: bool,
+    ctx: &BatchFileContext<'_>,
 ) -> std::result::Result<BatchFileSuccess, LazyImageError> {
-    let keep_icc = policy.effective_icc();
-    let keep_exif = policy.effective_exif();
+    let keep_icc = ctx.policy.effective_icc();
+    let keep_exif = ctx.policy.effective_exif();
     use std::path::Path;
     use std::sync::Arc;
 
@@ -1044,12 +1068,12 @@ fn process_batch_file(
             }
         })?
         .len() as usize;
-    firewall.enforce_source_len(input_len)?;
+    ctx.firewall.enforce_source_len(input_len)?;
 
     let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
     let data = source.as_bytes().expect("source always has bytes");
 
-    firewall.scan_metadata(data)?;
+    ctx.firewall.scan_metadata(data)?;
 
     let extracted_icc = extract_icc_profile(data)?;
     let icc_present = extracted_icc.is_some();
@@ -1064,32 +1088,32 @@ fn process_batch_file(
         None
     };
 
-    let mut metrics = collect_metrics.then(crate::ProcessingMetrics::default);
-    let encoded = process_and_encode_from_parts(
-        Some(&source),
-        None,
-        ops,
-        format,
-        icc_profile.as_ref(),
+    let mut metrics = ctx.collect_metrics.then(crate::ProcessingMetrics::default);
+    let encode_ctx = EncodeContext {
+        source: Some(&source),
+        decoded: None,
+        ops: ctx.ops,
+        format: ctx.format,
+        icc_profile: icc_profile.as_ref(),
         icc_present,
-        exif_data.as_ref(),
-        auto_orient,
-        policy,
-        firewall,
-        metrics.as_mut(),
-    )?;
+        exif_data: exif_data.as_ref(),
+        auto_orient: ctx.auto_orient,
+        policy: ctx.policy,
+        firewall: ctx.firewall,
+    };
+    let encoded = process_and_encode_from_parts(&encode_ctx, metrics.as_mut())?;
 
     let filename = Path::new(input_path)
         .file_name()
         .ok_or_else(|| LazyImageError::internal_panic("invalid filename"))?;
-    let extension = match format {
+    let extension = match ctx.format {
         OutputFormat::Jpeg { .. } => "jpg",
         OutputFormat::Png => "png",
         OutputFormat::WebP { .. } => "webp",
         OutputFormat::Avif { .. } => "avif",
     };
     let output_filename = Path::new(filename).with_extension(extension);
-    let output_path = Path::new(output_dir).join(output_filename);
+    let output_path = Path::new(ctx.output_dir).join(output_filename);
     write_encoded_output(output_path.to_string_lossy().as_ref(), &encoded)?;
 
     Ok(BatchFileSuccess {
@@ -1171,22 +1195,18 @@ impl Task for BatchTask {
         let auto_concurrency = Some(self.concurrency == 0);
 
         // Helper closure to process a single image
-        let ops = &self.ops;
-        let format = &self.format;
-        let output_dir = &self.output_dir;
-        let policy = &self.metadata_policy;
         let firewall = self.firewall.clone();
+        let batch_ctx = BatchFileContext {
+            output_dir: &self.output_dir,
+            ops: &self.ops,
+            format: &self.format,
+            auto_orient: self.auto_orient,
+            policy: &self.metadata_policy,
+            firewall: &firewall,
+            collect_metrics: false,
+        };
         let process_one = |input_path: &String| -> BatchResult {
-            let result = process_batch_file(
-                input_path,
-                output_dir,
-                ops,
-                format,
-                self.auto_orient,
-                policy,
-                &firewall,
-                false,
-            );
+            let result = process_batch_file(input_path, &batch_ctx);
 
             match result {
                 Ok(output) => BatchResult {
@@ -1328,23 +1348,19 @@ impl Task for BatchWithMetricsTask {
         let effective_concurrency_u32 = u32::try_from(effective_concurrency).unwrap_or(u32::MAX);
         let auto_concurrency = self.concurrency == 0;
 
-        let ops = &self.ops;
-        let format = &self.format;
-        let output_dir = &self.output_dir;
-        let policy = &self.metadata_policy;
         let firewall = self.firewall.clone();
+        let batch_ctx = BatchFileContext {
+            output_dir: &self.output_dir,
+            ops: &self.ops,
+            format: &self.format,
+            auto_orient: self.auto_orient,
+            policy: &self.metadata_policy,
+            firewall: &firewall,
+            collect_metrics: true,
+        };
 
         let process_one = |input_path: &String| -> crate::BatchResultWithMetrics {
-            match process_batch_file(
-                input_path,
-                output_dir,
-                ops,
-                format,
-                self.auto_orient,
-                policy,
-                &firewall,
-                true,
-            ) {
+            match process_batch_file(input_path, &batch_ctx) {
                 Ok(output) => crate::BatchResultWithMetrics {
                     source: input_path.clone(),
                     success: true,
@@ -1904,22 +1920,26 @@ mod non_napi_tests {
 
         // Encode at three different qualities — like the binary search would.
         let mut last_size: Option<usize> = None;
+        let policy = MetadataPolicy::strip_all();
+        let firewall = FirewallConfig::disabled();
         for quality in [50u8, 80, 100] {
             let format = OutputFormat::Jpeg {
                 quality,
                 fast_mode: false,
             };
-            let bytes = encode_prepared(
-                &prepared,
-                &format,
-                None,
-                None,
-                false,
-                &MetadataPolicy::strip_all(),
-                &FirewallConfig::disabled(),
-                None,
-            )
-            .expect("encode should succeed");
+            let ctx = EncodeContext {
+                source: None,
+                decoded: None,
+                ops: &[],
+                format: &format,
+                icc_profile: None,
+                icc_present: false,
+                exif_data: None,
+                auto_orient: false,
+                policy: &policy,
+                firewall: &firewall,
+            };
+            let bytes = encode_prepared(&prepared, &ctx, None).expect("encode should succeed");
             assert_eq!(
                 &bytes[0..2],
                 &[0xFF, 0xD8],
