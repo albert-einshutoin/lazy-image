@@ -174,7 +174,7 @@ pub fn load_file_safe(path: &Path) -> Result<Source, LazyImageError> {
         return load_open_file_into_memory(&mut file, file_size, path_str.as_ref());
     }
 
-    // Safety: We hold an advisory shared lock on the file descriptor.
+    // SAFETY: We hold an advisory shared lock on the file descriptor.
     // Cooperative writers that respect flock will not modify the file.
     // The fd is retained in MmapGuard so the lock persists until Source is dropped.
     let mmap = unsafe {

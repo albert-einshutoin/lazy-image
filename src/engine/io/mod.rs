@@ -34,16 +34,11 @@ pub use source::{load_file_safe, Source};
 pub use source::{MemoryGuard, MmapGuard};
 
 // -----------------------------------------------------------------------------
-// Crate-internal re-exports — used by `engine.rs` unit tests (`icc_tests`) and
-// by other engine submodules that bypass the public surface.
+// Crate-internal re-exports — narrow surface for items that other engine
+// submodules reach by the historical `crate::engine::io::*` path. ICC-specific
+// helpers (`IccExtractor`, `JpegIccExtractor`, etc.) stay inside `icc` and are
+// reachable via `crate::engine::io::icc::*` when needed.
 // -----------------------------------------------------------------------------
-
-#[allow(unused_imports)]
-// `AvifIccExtractor` is consumed only inside `icc`; the re-export keeps the historical API surface stable.
-pub(crate) use icc::{
-    extract_icc_from_jpeg, extract_icc_from_png_direct, is_avif_data, validate_icc_profile,
-    AvifIccExtractor, IccExtractor, JpegIccExtractor, PngIccExtractor, WebpIccExtractor,
-};
 
 #[cfg(test)]
 pub(crate) use exif::find_exif_segment_jpeg_for_tests;

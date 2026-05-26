@@ -526,6 +526,10 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
         struct AvifDecoderGuard(*mut avifDecoder);
         impl Drop for AvifDecoderGuard {
             fn drop(&mut self) {
+                // SAFETY: `self.0` was created by `avifDecoderCreate` on the path that
+                // constructed this guard, so `avifDecoderDestroy` is the matching destructor
+                // and is safe to call after the null check below. The pointer is uniquely
+                // owned by the guard, so there is no aliasing concern.
                 unsafe {
                     if !self.0.is_null() {
                         avifDecoderDestroy(self.0);
