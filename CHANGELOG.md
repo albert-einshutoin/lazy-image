@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.0] - 2026-05-28
+
+### Added
+- **Memory-pressure streaming tests**: Added comprehensive tests for streaming API under memory constraints (#480).
+
+### Changed
+- **Engine module refactoring**: Refactored `engine.rs` and `io.rs` into focused submodules for improved maintainability:
+  - Modularized I/O layer: split `io.rs` into `source/`, `icc/`, and `exif/` submodules (#609)
+  - Modularized API: split `engine/api.rs` into focused submodules (#610)
+  - Modularized pipeline: split `engine/pipeline.rs` into focused submodules (#611)
+  - Modularized memory: split `memory.rs` into submodules (#608)
+  - Modularized tasks: split `tasks.rs` into submodules (#607)
+- **Encode context**: Bundled encode parameters into `EncodeContext` and `BatchFileContext` for cleaner internal APIs (#606).
+- **File I/O helpers**: Unified atomic file-write helpers for code deduplication (#605).
+- **Public API visibility**: Restricted pub re-exports in `engine.rs` to public API surface only (#557).
+- **Code optimization**: Added Send assertions, dropped dead code, and trimmed AVIF allocations (#564).
+- **Resize calculations**: Deduplicated `calc_cover_resize_dimensions` logic (#559).
+- **TypeScript types**: Cleaned up exported TypeScript types for clarity (#563).
+
+### Fixed
+- **Test re-exports**: Include fuzz-target helpers in test-only re-exports (#557).
+
+---
+
 ## [0.14.0] - 2026-05-10
 
 ### Added
