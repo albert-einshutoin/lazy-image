@@ -164,7 +164,7 @@ impl ImageEngine {
             icc_profile,
             exif_data,
             auto_orient: self.auto_orient,
-            metadata_policy: self.metadata_policy.clone(),
+            metadata_policy: self.metadata_policy,
             xmp_warning_emitted: self.xmp_warning_emitted,
             firewall: self.firewall.clone(),
         })

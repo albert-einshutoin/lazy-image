@@ -174,12 +174,9 @@ pub fn calculate_optimal_concurrency() -> usize {
 
     // 2. Detect memory limits and calculate memory-based concurrency
     let available_memory = memory::detect_available_memory();
-    let memory_based =
-        memory::calculate_memory_based_concurrency(available_memory, cpu_concurrency);
-
     // 3. Use the minimum of CPU and memory constraints
     // This ensures we don't exceed either CPU or memory limits
-    memory_based
+    memory::calculate_memory_based_concurrency(available_memory, cpu_concurrency)
 }
 
 #[cfg(feature = "napi")]

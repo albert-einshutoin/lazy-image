@@ -5,8 +5,6 @@
 // All functions in this module are NAPI-only because the only consumer
 // (`detect_available_memory` in the parent module) is itself NAPI-gated.
 
-#![cfg(feature = "napi")]
-
 use std::fs;
 
 /// Parsed cgroup mount entry: the on-disk mount point and the relative root
