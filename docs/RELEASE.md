@@ -68,11 +68,14 @@ All four files below need to move from the current version to the new one. Skipp
 |------|--------------|-----|
 | `package.json` | `version` field | Manual edit |
 | `package.json` | All entries under `optionalDependencies` (6 platform packages) | Manual edit |
+| `package-lock.json` | Root `version`, root `packages[""]` block, and the six `@alberteinshutoin/lazy-image-*` entries (version + resolved + integrity) | `npm install --package-lock-only --ignore-scripts` |
 | `Cargo.toml` | `[package].version` | Manual edit |
 | `Cargo.lock` | `lazy-image` entry | `cargo update -p lazy-image` |
 | `CHANGELOG.md` | Add new `[X.Y.Z]` section under `[Unreleased]` | Manual edit |
 
 > ⚠️ **`Cargo.lock` is required.** The Supply Chain CI job runs `cargo metadata --locked` and will fail if `Cargo.lock` does not match `Cargo.toml`. This is the most common release-time failure.
+>
+> ⚠️ **`package-lock.json` is required, even though it may pass CI on the release PR itself.** The release PR can pass `npm ci` even with an out-of-sync lock file because the new 0.15.0 platform packages don't exist on npm yet — npm silently skips the optional-deps check. Once the publish job runs on the `vX.Y.Z` tag, every subsequent PR's `npm ci` will fail with `Invalid: lock file's @alberteinshutoin/lazy-image-*@<prev> does not satisfy @alberteinshutoin/lazy-image-*@<new>`. See [Pitfall 6](#6-package-lockjson-not-bumped--every-post-release-pr-breaks) below.
 
 Optional helper:
 ```bash
@@ -89,7 +92,7 @@ Use `git log <prev-tag>..HEAD --oneline` to enumerate merged PRs.
 #### Commit and push
 
 ```bash
-git add package.json Cargo.toml Cargo.lock CHANGELOG.md
+git add package.json package-lock.json Cargo.toml Cargo.lock CHANGELOG.md
 git commit -m "chore(release): prepare X.Y.Z"
 git push -u origin release/X.Y.Z
 ```
@@ -274,6 +277,33 @@ grep -n "0\.X\.Y" package.json
 
 **Prevention:** Treat the release as incomplete until Phase 4 cleanup has run.
 
+### 6. `package-lock.json` not bumped → every post-release PR breaks
+
+**Symptom:** The release PR and sync-back PR both pass CI, but every PR opened after the publish job runs starts failing in the Build / Test / Coverage / Package Contract / ASan jobs with:
+
+```
+npm error code EUSAGE
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync.
+npm error Invalid: lock file's @alberteinshutoin/lazy-image-darwin-arm64@<old> does not satisfy @alberteinshutoin/lazy-image-darwin-arm64@<new>
+```
+
+**Why the release PR doesn't catch it:** at the time the release PR runs, `@alberteinshutoin/lazy-image-*@<new>` does not exist on npm yet. npm treats the missing optional dependency as "skip silently" instead of "lock file out of sync", so `npm ci` succeeds. After the `vX.Y.Z` tag triggers the publish job, npm can see the new platform packages exist — and every subsequent `npm ci` enforces the lock file strictly.
+
+**Fix:** Open a follow-up `chore: sync package-lock.json to X.Y.Z` PR with:
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b chore/sync-package-lock-X.Y.Z
+npm install --package-lock-only --ignore-scripts
+git add package-lock.json
+git commit -m "chore: sync package-lock.json to X.Y.Z"
+git push -u origin chore/sync-package-lock-X.Y.Z
+gh pr create --base develop --title "chore: sync package-lock.json to X.Y.Z"
+```
+
+**Prevention:** Update `package-lock.json` in Phase 1, alongside `package.json` / `Cargo.toml` / `Cargo.lock` / `CHANGELOG.md`. Run `npm install --package-lock-only --ignore-scripts` after bumping `package.json`'s `optionalDependencies`.
+
 ---
 
 ## Hotfix Procedure
@@ -302,6 +332,7 @@ For quick reference, the canonical set of files updated for a routine version bu
 
 ```
 package.json        # version + optionalDependencies (×6)
+package-lock.json   # root version + 6 lazy-image-* entries (via `npm install --package-lock-only --ignore-scripts`)
 Cargo.toml          # [package].version
 Cargo.lock          # lazy-image entry (via `cargo update -p lazy-image`)
 CHANGELOG.md        # new [X.Y.Z] section
