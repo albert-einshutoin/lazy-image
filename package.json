@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "exports": {
@@ -10,6 +10,7 @@
       "require": "./index.js"
     },
     "./streaming": {
+      "types": "./streaming/pipeline.d.ts",
       "import": "./streaming/pipeline.mjs",
       "require": "./streaming/pipeline.js"
     }
@@ -40,7 +41,7 @@
     "test": "npm run test:js && npm run test:rust",
     "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:types",
     "test:js:specs": "node test/integration/run.js",
-    "test:js:type-safety": "node test/type-safety/runtime-type-safety.test.js",
+    "test:js:type-safety": "node test/type-safety/runtime-type-safety-exit.test.js && node test/type-safety/runtime-type-safety.test.js",
     "test:pack-contract": "node scripts/verify-pack.js",
     "test:types": "tsc --noEmit",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
@@ -81,12 +82,12 @@
     ]
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "0.14.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "0.14.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.14.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.14.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.14.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.14.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.15.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.15.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.15.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.15.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.15.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.15.0"
   },
   "engines": {
     "node": ">= 18"

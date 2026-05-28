@@ -7,7 +7,7 @@ Full API reference for lazy-image. For a quick start, see [README.md](../README.
 | Method | Description |
 |--------|-------------|
 | `ImageEngine.from(buffer)` | Create engine from a Buffer (loads into V8 heap). Full pixel decode is deferred, but constructor-time metadata extraction still runs. |
-| `ImageEngine.fromPath(path)` | **Recommended**: Create engine from file path (bypasses V8 heap). Full pixel decode is deferred, but constructor-time file setup and metadata extraction still run. Uses memory mapping for zero-copy access on large files. **Note**: On Windows, memory-mapped files cannot be deleted while mapped. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#windows-file-locking). |
+| `ImageEngine.fromPath(path)` | **Recommended**: Create engine from file path (bypasses V8 heap). Full pixel decode is deferred, but constructor-time file setup and metadata extraction still run. Size-tiered: files ≤ 256 MB are read once into a Rust-owned buffer; files > 256 MB are accessed via `mmap` with an advisory lock and a retained fd. **Note**: On Windows, memory-mapped files (the > 256 MB tier) cannot be deleted while mapped. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#windows-file-locking) and [ZERO_COPY.md](./ZERO_COPY.md). |
 
 See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager contract.
 

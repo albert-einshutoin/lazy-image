@@ -7,7 +7,12 @@ const cargoPath = path.join(root, "Cargo.toml");
 const lockPath = path.join(root, "package-lock.json");
 
 function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to parse JSON file ${filePath}: ${message}`);
+  }
 }
 
 function writeJson(filePath, data) {
@@ -73,10 +78,11 @@ function syncPackageLock(pkg) {
           ? key.slice("node_modules/".length)
           : key;
       if (pkg.optionalDependencies[entryName] && entry.version !== pkg.version) {
+        const previousVersion = entry.version;
         entry.version = pkg.version;
         if (entry.resolved) {
           entry.resolved = entry.resolved.replace(
-            /-[0-9]+\.[0-9]+\.[0-9]+\.tgz$/,
+            new RegExp(`-${escapeRegExp(previousVersion)}\\.tgz$`),
             `-${pkg.version}.tgz`
           );
           // Clear integrity so next `npm install` regenerates it for the new tarball.
@@ -94,6 +100,10 @@ function syncPackageLock(pkg) {
     writeJson(lockPath, lock);
   }
   return changed;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function main() {
@@ -121,4 +131,3 @@ function main() {
 }
 
 main();
-

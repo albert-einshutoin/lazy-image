@@ -9,7 +9,7 @@ This document reflects the current state of `develop` and focuses on the work th
 The following foundations are already in place on `develop`:
 
 - **Lazy, non-destructive pipeline**: deferred decode, `clone()`, file-based happy path
-- **Zero-copy / mmap path**: `fromPath()` and batch-oriented file processing
+- **V8-heap bypass for file inputs**: `fromPath()` and `processBatch()` keep source bytes out of the Node.js heap (read-into-memory ≤ 256 MB, mmap with advisory locks > 256 MB)
 - **Structured errors and operational limits**: typed error taxonomy and Image Firewall
 - **Metadata-safe defaults**: strip by default, GPS strip, opt-in preservation paths
 - **Benchmark and regression tooling**: benchmark docs, regression workflow, zero-copy measurement
@@ -81,7 +81,7 @@ To maintain focus and stability, the following features are explicitly **out of 
 `develop` にはすでに以下の基盤があります。
 
 - **lazy / 非破壊パイプライン**: deferred decode、`clone()`、file-to-file の主導線
-- **zero-copy / mmap 経路**: `fromPath()` とバッチ処理向けファイル経路
+- **V8 ヒープを経由しないファイル入力**: `fromPath()` と `processBatch()` は入力バイトを Node.js ヒープに載せない（256 MB 以下は Rust 所有バッファに読み込み、256 MB 超は advisory lock 付き mmap）
 - **構造化エラーと制限**: typed error taxonomy と Image Firewall
 - **安全なメタデータデフォルト**: デフォルト strip、GPS strip、必要時のみ opt-in
 - **ベンチマーク運用**: benchmark docs、regression workflow、zero-copy 計測

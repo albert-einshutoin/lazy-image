@@ -31,7 +31,7 @@ async function testTypeImprovements() {
     console.log('  The zero-copy conversion now provides contextual error messages:');
     console.log('  - "pixel count overflow: X * 3 (image too large for zero-copy conversion)"');
     console.log('  - "capacity overflow: X * 3 (memory allocation too large for zero-copy conversion)"');
-    console.log('  - "Failed to create fallback thread pool with 1 threads: ..."');
+    console.log('  - "failed to initialize rayon thread pool: preferred pool (...) failed: ..."');
     
     console.log('\n📋 Type Safety Improvements Summary:');
     console.log('1. ✅ ImageMetadata.format: canonical input format | undefined');

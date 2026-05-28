@@ -1,17 +1,22 @@
 # Zero-Copy definition and validation
 
-This document clarifies the **meaning, scope, and measurement** of lazy-image's zero-copy claims.
+This document clarifies the **meaning, scope, and measurement** of lazy-image's "zero-copy" claims.
+
+> "Zero-copy" in lazy-image refers to the **JS-heap boundary**, not the OS page cache. The source file is never staged through V8 heap memory. Whether the file is then accessed via a Rust-owned in-memory buffer or via `mmap` depends on its size — see "Implementation" below.
 
 ## Meaning
 
-- **Zero-copy**: when using `fromPath()` or `processBatch()` to `toFile()/toBuffer()`, the source file is **not copied into the Node.js heap**.
-- Implementation: input files are accessed via **mmap**, read directly by Rust; JS never holds the raw file bytes.
+- **Zero-copy (JS-heap sense)**: when using `fromPath()` or `processBatch()` to `toFile()/toBuffer()`, the source file is **not copied into the Node.js (V8) heap**. JS never holds the raw file bytes.
+- **Implementation** (size-tiered to eliminate SIGBUS/SIGSEGV risk for typical images):
+  - **Files ≤ 256 MB**: read in full into a Rust-owned buffer. No mmap. No V8 heap copy. (`MMAP_SIZE_THRESHOLD` in [`src/engine/io.rs`](../src/engine/io.rs).)
+  - **Files > 256 MB**: opened via `mmap` with an advisory lock and an fd retained for the engine lifetime. Page-cache backed; still no V8 heap copy.
+- In both tiers, decoded pixel buffers live in Rust memory.
 
 ## Scope (where it applies)
 
 Applies:
-- `ImageEngine.fromPath(...)` → any processing → `toFile()/toBuffer()/toBufferWithMetrics()`
-- `processBatch()` (each input handled via mmap)
+- `ImageEngine.fromPath(...)` → any processing → `toFile()/toBuffer()/toBufferWithMetrics()` (no V8-heap copy of the source bytes)
+- `processBatch()` (per-input, same size-tiered model)
 - Rust-side decode/encode (pixel buffers live in Rust memory)
 
 Not applicable / exceptions:
@@ -51,21 +56,25 @@ These numbers are reproducible via the measurement script; open an issue/PR if y
 ## FAQ
 
 - **なぜ JS ヒープを指標にするのか?**  
-  ゼロコピーの主張は「入力を JS ヒープに載せない」ことにあるため、ヒープ増加が事実上の証拠となる。
+  「ゼロコピー」の主張は「入力を V8 (JS) ヒープに載せない」ことを指すため、ヒープ増加が事実上の証拠となる。
 - **出力バッファはコピーになるのでは?**  
   はい。エンコード結果は必ず `Buffer` として生成されるため、出力サイズ分のメモリは必要。ゼロコピーの対象は「入力経路」である。
+- **mmap は常に使われるのか?**  
+  いいえ。SIGBUS/SIGSEGV を避けるため、256 MB 以下のファイルは Rust 側で全読み込みする。256 MB を超えるファイルだけが advisory lock 付きの mmap を使う。`MMAP_SIZE_THRESHOLD` を参照。
 - **ストリーミング API は?**  
   デフォルトはディスクバッファを使うが、入力ストリームを JS で保持する場合はゼロコピーの対象外。ただし内部処理は同じメモリモデルを使う。
 
 ## まとめ
 
-- **ゼロコピー = 入力ファイルを JS ヒープへコピーしない**（mmap で Rust から直接読む）
+- **ゼロコピー = 入力ファイルを V8 ヒープへコピーしない**（256 MB 以下は Rust 所有メモリ、256 MB 超は mmap）
 - **測定式**で上限を示し、`docs/scripts/measure-zero-copy.js` でいつでも再検証できる
 - 適用範囲と例外を明示し、期待値と境界をドキュメント化
 
 ## Behavior when files are modified or deleted during mmap
 
-- **Contract**: Source files must not be modified or deleted while processing is in progress.
+> This section applies only to the > 256 MB mmap tier. Files ≤ 256 MB are read into a Rust-owned buffer up front and are no longer touched on disk after that read completes, so concurrent mutation does not affect them.
+
+- **Contract**: Source files larger than 256 MB must not be modified or deleted while processing is in progress.
 - **Possible outcomes on Linux/macOS**: decode failure, corrupted images, or a fatal `SIGBUS`/`SIGSEGV` if mapped pages become invalid (for example due to truncation).
 - **Possible outcomes on Windows**: deletion typically fails while the mapping is active; concurrent modification can still cause decode failure or corrupted output.
 - **Recommendations**:
@@ -73,7 +82,7 @@ These numbers are reproducible via the measurement script; open an issue/PR if y
   - To prevent concurrent writes on shared storage, use file locking (for example, `flock`-equivalent OS locks).
   - On Windows, keep source files until processing completes, or switch to `from(Buffer)` when immediate deletion is required.
 
-## Additional mmap safety assumptions (fromPath/processBatch)
+## Additional mmap safety assumptions (fromPath/processBatch, > 256 MB tier)
 
 - Files must stay readable for the engine lifetime; permission changes or truncation after mmap are undefined behavior.
 - File size is assumed stable: truncation/extension after mmap may SIGBUS or corrupt output.

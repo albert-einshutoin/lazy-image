@@ -10,7 +10,8 @@ const dtsExtraBlock = `
 type CaseInsensitive<T extends string> = T | Uppercase<T> | Capitalize<T>
 type CanonicalSupportedInputFormat = 'jpeg' | 'jpg' | 'png' | 'webp'
 type CanonicalInputFormat = CanonicalSupportedInputFormat
-type CanonicalOutputFormat = CanonicalInputFormat | 'jpg' | 'avif'
+// CanonicalInputFormat already contains 'jpg'; only 'avif' is output-exclusive.
+type CanonicalOutputFormat = CanonicalInputFormat | 'avif'
 type CanonicalPresetName = 'thumbnail' | 'avatar' | 'hero' | 'social'
 
 export type InputFormat = CaseInsensitive<CanonicalSupportedInputFormat> | (string & {})
@@ -33,8 +34,9 @@ export interface ImageEngine {
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
   toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
-  encode(options: EncodeOptionsInput): Promise<EncodeResult>
-  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
+  // Note: encode() / encodeToFile() are declared on the ImageEngine class
+  // (see patchIndexDts patches that retype them to EncodeOptionsInput) and
+  // are deliberately NOT re-declared here to avoid duplicate signatures.
 }
 
 export interface EncodeOptionsInput {
@@ -65,6 +67,7 @@ export declare function createStreamingPipeline(options: {
   }>
   ImageEngine?: typeof ImageEngine
   onMetrics?: (metrics: ProcessingMetrics) => void
+  onCleanupError?: (err: Error, target: string) => void
 }): {
   writable: NodeJS.WritableStream
   readable: NodeJS.ReadableStream
@@ -125,7 +128,7 @@ function replaceIfNeeded(content, searchValue, replaceValue) {
       `${JSON.stringify(searchValue.slice(0, 80))}`
     );
   }
-  return content.replace(searchValue, replaceValue);
+  return content.replaceAll(searchValue, replaceValue);
 }
 
 function patchIndexJs() {
@@ -171,6 +174,16 @@ function patchIndexDts() {
   content = replaceIfNeeded(content, '  toFileWithMetrics(path: string, format: string,', '  toFileWithMetrics(path: string, format: OutputFormat,');
   content = replaceIfNeeded(content, '  encode(options: EncodeOptions): Promise<EncodeResult>', '  encode(options: EncodeOptionsInput): Promise<EncodeResult>');
   content = replaceIfNeeded(content, '  encodeToFile(path: string, options: EncodeOptions): Promise<FileEncodeResult>', '  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>');
+  // Mark the NAPI-generated `EncodeOptions` interface as deprecated.
+  // The exported type uses `format?: string` (weak typing); consumers should
+  // import `EncodeOptionsInput` instead, which uses `format?: OutputFormat`.
+  // We patch the JSDoc rather than removing the export because the interface
+  // is still the NAPI ABI type for `encode()` / `encodeToFile()` at runtime.
+  content = replaceIfNeeded(
+    content,
+    '/** Options object for the unified `encode()` / `encodeToFile()` methods. */\nexport interface EncodeOptions {',
+    '/**\n * Options object for the unified `encode()` / `encodeToFile()` methods.\n *\n * @deprecated Use `EncodeOptionsInput` instead — this interface uses `format?: string`,\n * whereas `EncodeOptionsInput` is strongly typed (`format?: OutputFormat`). The class\n * methods on `ImageEngine` accept `EncodeOptionsInput`; this type is retained only for\n * the NAPI ABI signature.\n */\nexport interface EncodeOptions {',
+  );
   content = replaceIfNeeded(content, '  fit?: string', '  fit?: ResizeFit');
   content = replaceIfNeeded(content, '  policy?: string', '  policy?: FirewallPolicy');
   content = replaceIfNeeded(content, 'export declare function supportedInputFormats(): Array<string>', 'export declare function supportedInputFormats(): Array<CanonicalInputFormat>');

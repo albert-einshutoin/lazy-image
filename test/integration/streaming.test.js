@@ -37,11 +37,15 @@ async function run() {
     await test_large_file_resize();
     await test_metrics_callback();
     await test_error_propagation();
+    await test_async_process_error_propagation();
     await test_multiple_ops();
     await test_png_output();
     await test_avif_output();
     await test_destroy_mid_stream();
     await test_empty_input();
+    await test_cleanup_error_reporting();
+    await test_memory_pressure_concurrent_streams();
+    await test_memory_pressure_rss_bound();
 }
 
 async function test_basic_resize() {
@@ -173,6 +177,39 @@ async function test_multiple_ops() {
     console.log('✅ streaming multiple ops passed');
 }
 
+async function test_async_process_error_propagation() {
+    class FailingEngine {
+        static fromPath() {
+            return new FailingEngine();
+        }
+
+        async toFile() {
+            throw new Error('encode exploded after finish');
+        }
+    }
+
+    const { writable, readable } = createStreamingPipeline({
+        format: 'jpeg',
+        ImageEngine: FailingEngine,
+    });
+
+    writable.end(Buffer.from('not-an-image-but-engine-is-mocked'));
+
+    let capturedError = null;
+    try {
+        for await (const _chunk of readable) {
+            // should not reach
+        }
+    } catch (error) {
+        capturedError = error;
+    }
+
+    assert(capturedError, 'async process failure should reach readable');
+    assert.match(capturedError.message, /encode exploded after finish/);
+
+    console.log('✅ streaming async process error propagation passed');
+}
+
 async function test_png_output() {
     const { writable, readable } = createStreamingPipeline({
         format: 'png',
@@ -293,6 +330,177 @@ async function test_empty_input() {
     );
 
     console.log('✅ streaming empty input error passed');
+}
+
+async function test_cleanup_error_reporting() {
+    const originalRm = fs.rm;
+    const cleanupErrors = [];
+    fs.rm = function patchedRm(target, options, callback) {
+        const cb = typeof options === 'function' ? options : callback;
+        process.nextTick(() => cb(new Error(`forced cleanup failure: ${target}`)));
+    };
+
+    try {
+        const { writable, readable } = createStreamingPipeline({
+            format: 'jpeg',
+            quality: 80,
+            onCleanupError(err) {
+                cleanupErrors.push(err);
+            },
+        });
+
+        writable.end(Buffer.from([0, 1, 2, 3]));
+
+        await new Promise((resolve) => {
+            readable.on('error', resolve);
+            readable.resume();
+        });
+    } finally {
+        fs.rm = originalRm;
+    }
+
+    assert(
+        cleanupErrors.length > 0,
+        'cleanup failures should be reported instead of silently swallowed',
+    );
+
+    console.log('✅ streaming cleanup error reporting passed');
+}
+
+/**
+ * Memory pressure under concurrency.
+ *
+ * Run several streaming pipelines in parallel against the same large fixture
+ * (5000×5000 PNG → ~96 MB decoded RGBA). The internal weighted memory semaphore
+ * is expected to serialize/throttle the heavy decode+encode work so all
+ * pipelines finish successfully without crashes, panics, or OOM.
+ *
+ * This is a regression guard for #480: the streaming layer must compose with
+ * the engine's memory-bounded concurrency, not bypass it.
+ */
+async function test_memory_pressure_concurrent_streams() {
+    const N = 4;
+
+    const tasks = Array.from({ length: N }, async (_unused, i) => {
+        const { writable, readable } = createStreamingPipeline({
+            format: 'webp',
+            quality: 80,
+            ops: [{ op: 'resize', width: 800, height: null, fit: 'inside' }],
+        });
+
+        const source = fs.createReadStream(LARGE_INPUT);
+        await pipeline(source, writable);
+
+        const chunks = [];
+        for await (const chunk of readable) chunks.push(chunk);
+        const output = Buffer.concat(chunks);
+        const meta = inspect(output);
+
+        return { i, bytes: output.length, width: meta.width, format: meta.format };
+    });
+
+    const results = await Promise.all(tasks);
+
+    for (const r of results) {
+        assert(r.bytes > 0, `concurrent pipeline ${r.i} produced empty output`);
+        assert(
+            r.width > 0 && r.width <= 800,
+            `concurrent pipeline ${r.i} did not resize correctly (width=${r.width})`,
+        );
+        assert(
+            r.format === 'webp',
+            `concurrent pipeline ${r.i} format mismatch (got ${r.format})`,
+        );
+    }
+
+    // Sanity: all N outputs should be roughly the same size (deterministic input + ops).
+    // Allow ±10% to absorb encoder timing variance.
+    const sizes = results.map((r) => r.bytes);
+    const minSize = Math.min(...sizes);
+    const maxSize = Math.max(...sizes);
+    assert(
+        maxSize - minSize <= maxSize * 0.1,
+        `concurrent outputs diverged in size (min=${minSize}, max=${maxSize}) — possible cross-pipeline contamination`,
+    );
+
+    console.log(`✅ streaming memory pressure (${N} concurrent) passed`);
+}
+
+/**
+ * RSS bound under a heavy single-pipeline workload.
+ *
+ * The streaming pipeline's promise is "memory stays ~O(1) while disk usage
+ * mirrors input/output sizes". This test runs one large pipeline and checks
+ * that the process RSS growth stays well below the decoded-RGBA size of the
+ * input (5000×5000×4 ≈ 96 MB).
+ *
+ * Threshold rationale: the engine's decode + encode working set plus Node's
+ * baseline ~30 MB and rayon thread allocations should keep RSS growth under
+ * ~250 MB even with a 96 MB decoded image. A higher number means the
+ * streaming layer is double-buffering input bytes in V8 — a regression.
+ *
+ * Sampling: a periodic interval samples RSS *across the entire pipeline
+ * lifecycle* — input staging, decode+encode (which finishes inside
+ * processImage() before the first chunk arrives on the readable), and
+ * readback. Sampling only during chunk consumption would miss the heavy
+ * transformation peak entirely.
+ */
+async function test_memory_pressure_rss_bound() {
+    if (global.gc) global.gc();
+    const rssStart = process.memoryUsage().rss;
+    let peakRss = rssStart;
+
+    // Sample at 5 ms — small enough to catch the short decode+encode burst
+    // (typically tens of ms on a 5000×5000 PNG → JPEG resize), large enough
+    // to keep sampling overhead negligible relative to the work it observes.
+    const SAMPLE_INTERVAL_MS = 5;
+    const sampler = setInterval(() => {
+        const current = process.memoryUsage().rss;
+        if (current > peakRss) peakRss = current;
+    }, SAMPLE_INTERVAL_MS);
+    // Don't keep the event loop alive solely for the sampler.
+    if (typeof sampler.unref === 'function') sampler.unref();
+
+    try {
+        const { writable, readable } = createStreamingPipeline({
+            format: 'jpeg',
+            quality: 80,
+            ops: [{ op: 'resize', width: 1200, height: null, fit: 'inside' }],
+        });
+
+        const source = fs.createReadStream(LARGE_INPUT);
+        await pipeline(source, writable);
+
+        const chunks = [];
+        for await (const chunk of readable) {
+            chunks.push(chunk);
+            // Also sample inline — chunk-driven sampling is cheap and
+            // gives us extra resolution during readback.
+            const current = process.memoryUsage().rss;
+            if (current > peakRss) peakRss = current;
+        }
+        const output = Buffer.concat(chunks);
+        assert(output.length > 0, 'rss-bound pipeline produced empty output');
+    } finally {
+        clearInterval(sampler);
+    }
+
+    // Final snapshot in case the last sample landed just before the peak.
+    const finalRss = process.memoryUsage().rss;
+    if (finalRss > peakRss) peakRss = finalRss;
+
+    const rssDeltaMb = (peakRss - rssStart) / (1024 * 1024);
+    // Generous ceiling — we mainly want to catch a regression where the entire
+    // input file gets staged in the V8 heap or duplicated in memory.
+    const LIMIT_MB = 250;
+    assert(
+        rssDeltaMb < LIMIT_MB,
+        `streaming RSS growth exceeded budget: delta=${rssDeltaMb.toFixed(1)} MB, limit=${LIMIT_MB} MB`,
+    );
+
+    console.log(
+        `✅ streaming memory pressure RSS bound passed (delta=${rssDeltaMb.toFixed(1)} MB < ${LIMIT_MB} MB)`,
+    );
 }
 
 run().catch((err) => {

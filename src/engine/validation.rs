@@ -191,11 +191,11 @@ pub fn sanitize_concurrency(concurrency: Option<f64>) -> std::result::Result<u32
                 )
             })?;
 
-            if value > crate::engine::MAX_CONCURRENCY as u32 {
+            if value > crate::engine::pool::MAX_CONCURRENCY as u32 {
                 return Err(LazyImageError::invalid_argument(
                     "concurrency",
                     value.to_string(),
-                    format!("must be 0 or 1-{}", crate::engine::MAX_CONCURRENCY),
+                    format!("must be 0 or 1-{}", crate::engine::pool::MAX_CONCURRENCY),
                 ));
             }
 

@@ -198,9 +198,11 @@ Key sizing guidance:
 
 Same pattern as Lambda. Use `/tmp` for scratch files. For Cloud Run, set `--memory 512Mi` and `--concurrency 1` per container instance if processing large images. lazy-image's internal memory semaphore prevents concurrent operations from exceeding cgroup limits.
 
-### Vercel / Netlify Edge Functions
+### Vercel / Netlify Edge Functions and Cloudflare Workers
 
-These environments run in V8 isolates with strict execution time and memory limits. Use lazy-image only for small images (< 2 MP) in edge functions. For larger images, process in a background serverless function and serve from a CDN.
+These environments run in V8 isolates and **do not support the native NAPI binary** that lazy-image ships. The published `@alberteinshutoin/lazy-image` package requires a Node.js runtime (Vercel Node Functions, Netlify Node Functions, AWS Lambda, Cloud Run, etc.).
+
+For Edge / Workers, process images in a background Node-runtime function and serve the results from a CDN. Wasm support for V8-isolate runtimes is tracked under [#87](https://github.com/albert-einshutoin/lazy-image/issues/87).
 
 ### Cold start optimization
 
