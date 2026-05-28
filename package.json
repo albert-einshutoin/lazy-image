@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg",
   "main": "index.js",
   "exports": {
@@ -82,12 +82,12 @@
     ]
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "0.14.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "0.14.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.14.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.14.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.14.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.14.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "0.15.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "0.15.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "0.15.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "0.15.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "0.15.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.15.0"
   },
   "engines": {
     "node": ">= 18"
