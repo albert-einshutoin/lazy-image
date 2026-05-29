@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+> **Release policy:** This section currently contains a breaking behavior change.
+> Per `docs/SEMVER_POLICY.md`, the next release that includes it must use a
+> major boundary (currently `1.0.0`) unless maintainers explicitly reclassify
+> the entry as a bug-fix clarification before cutting the release.
+
 ### Changed (BREAKING)
 - **PNG + quality is now rejected instead of silently ignored.** Passing a `quality`
   to a PNG output (e.g. `toBuffer('png', 50)`, `toFile`, `processBatch`, or the
@@ -18,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   skip quality for PNG, so no change is needed there.)
 
 ### Internal
+- Release policy guard: `npm run release:check` now rejects non-major releases
+  that contain `BREAKING` or `Removed` changelog entries.
 - Rust engineering hardening: `Quality` newtype (1..=100 enforced at construction),
   `RotationAngle` enum, `MetadataPolicy` sum type (makes "keep GPS without EXIF"
   unrepresentable), `OutputFormat` parsing now returns the typed `LazyImageError`
@@ -515,7 +522,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.11.0...v0.12.0
