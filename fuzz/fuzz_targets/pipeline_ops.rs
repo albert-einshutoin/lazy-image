@@ -6,7 +6,7 @@
 use arbitrary::{Arbitrary, Unstructured};
 use image::{DynamicImage, RgbaImage};
 use lazy_image::engine::apply_ops;
-use lazy_image::ops::{ColorSpace, Operation, ResizeFit};
+use lazy_image::ops::{ColorSpace, Operation, ResizeFit, RotationAngle};
 use libfuzzer_sys::fuzz_target;
 use std::borrow::Cow;
 
@@ -56,7 +56,14 @@ fn seeds_to_ops(seeds: Vec<OperationSeed>) -> Vec<Operation> {
                 width: seed.c.max(1) as u32,
                 height: seed.d.max(1) as u32,
             },
-            2 => Operation::Rotate { degrees: seed.a },
+            // `RotationAngle` only models real quarter turns, so derive one from
+            // the fuzz seed (identity is the absence of a Rotate op, so it's
+            // excluded here — the rotate apply path is still exercised).
+            2 => Operation::Rotate(match seed.a.rem_euclid(3) {
+                0 => RotationAngle::Cw90,
+                1 => RotationAngle::Cw180,
+                _ => RotationAngle::Cw270,
+            }),
             3 => Operation::FlipH,
             4 => Operation::FlipV,
             5 => Operation::Brightness {
