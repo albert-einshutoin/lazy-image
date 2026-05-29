@@ -542,14 +542,14 @@ impl Default for SafeAvifRwData {
 /// caller must guarantee that:
 /// - `pixels` points to at least `width * 4 * height` initialized bytes laid
 ///   out as tightly-packed RGBA8 rows, and
-/// - that buffer remains valid and is **not** mutated for as long as the
+/// - that buffer remains valid and is not accessed from Rust for as long as the
 ///   returned `avifRGBImage` is used (e.g. passed to `rgb_to_yuv`).
 ///
 /// The function itself only reads through the pointer indirectly via libavif;
 /// it never writes through it.
 pub unsafe fn create_rgb_image(
     image: &mut SafeAvifImage,
-    pixels: *const u8,
+    pixels: *mut u8,
     width: u32,
     height: u32,
 ) -> Result<avifRGBImage, LazyImageError> {
@@ -587,15 +587,12 @@ pub unsafe fn create_rgb_image(
     let mut rgb: avifRGBImage = unsafe { std::mem::zeroed() };
     // SAFETY: see this function's `# Safety` contract. `pixels` is non-null
     // (checked above) and points to `row_bytes_u32 * height` valid RGBA8 bytes
-    // owned by the caller for the lifetime of `rgb`. We store it as `*mut u8`
-    // only because the C field is typed that way; libavif's RGB→YUV conversion
-    // treats this buffer as read-only and never writes through it, so deriving a
-    // `*mut` from the caller's (possibly shared) buffer is never used to mutate.
+    // owned by the caller for the lifetime of `rgb`.
     unsafe {
         avifRGBImageSetDefaults(&mut rgb, image.as_mut_ptr());
         rgb.format = AVIF_RGB_FORMAT_RGBA;
         rgb.depth = 8;
-        rgb.pixels = pixels as *mut u8;
+        rgb.pixels = pixels;
         rgb.rowBytes = row_bytes_u32;
     }
     Ok(rgb)
@@ -665,19 +662,20 @@ mod tests {
         let mut img = SafeAvifImage::new(1, 1, 8, AVIF_PIXEL_FORMAT_YUV420).unwrap();
         // SAFETY: validation rejects the oversized dimensions before the null
         // pointer is ever dereferenced, so no invalid memory is accessed.
-        let err =
-            unsafe { create_rgb_image(&mut img, std::ptr::null(), MAX_DIMENSION, MAX_DIMENSION) }
-                .unwrap_err();
+        let err = unsafe {
+            create_rgb_image(&mut img, std::ptr::null_mut(), MAX_DIMENSION, MAX_DIMENSION)
+        }
+        .unwrap_err();
         assert!(err.to_string().contains("Pixel count"));
     }
 
     #[test]
     fn create_rgb_image_sets_row_bytes() {
         let mut img = SafeAvifImage::new(4, 2, 8, AVIF_PIXEL_FORMAT_YUV420).unwrap();
-        let pixels: [u8; 32] = [0; 32];
+        let mut pixels: [u8; 32] = [0; 32];
         // SAFETY: `pixels` holds exactly 4 * 2 * 4 = 32 RGBA8 bytes and outlives
         // `rgb`, satisfying `create_rgb_image`'s contract.
-        let rgb = unsafe { create_rgb_image(&mut img, pixels.as_ptr(), 4, 2) }.unwrap();
+        let rgb = unsafe { create_rgb_image(&mut img, pixels.as_mut_ptr(), 4, 2) }.unwrap();
         assert_eq!(rgb.rowBytes, 16);
         assert_eq!(rgb.format, AVIF_RGB_FORMAT_RGBA);
     }

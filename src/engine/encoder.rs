@@ -372,8 +372,6 @@ fn avif_encoder_threads() -> i32 {
 #[cfg(feature = "avif")]
 pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:avif", || {
-        use std::borrow::Cow;
-
         let quality = validate_lossy_quality(quality)?;
         let settings = QualitySettings::new(quality);
         let (width, height) = img.dimensions();
@@ -381,12 +379,9 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
 
         let has_alpha = img.color().has_alpha();
 
-        let rgba: Cow<'_, image::RgbaImage> = match img {
-            DynamicImage::ImageRgba8(rgba_img) => Cow::Borrowed(rgba_img),
-            _ => Cow::Owned(img.to_rgba8()),
-        };
-        let pixels = rgba.as_raw();
-        validate_buffer_len(width, height, 4, pixels.len(), "avif")?;
+        let mut rgba = img.to_rgba8();
+        validate_buffer_len(width, height, 4, rgba.as_raw().len(), "avif")?;
+        let pixels = rgba.as_mut_ptr();
 
         let mut avif_image = SafeAvifImage::new(width, height, 8, AVIF_PIXEL_FORMAT_YUV420)
             .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
@@ -406,11 +401,11 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
                 .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
         }
 
-        // SAFETY: `pixels` is `rgba.as_raw()`, validated above to hold exactly
+        // SAFETY: `pixels` is `rgba.as_mut_ptr()`, validated above to hold exactly
         // `width * height * 4` RGBA8 bytes via `validate_buffer_len`. `rgba`
-        // (the owning `Cow<RgbaImage>`) outlives `rgb` and is not mutated while
-        // `rgb` is in use, satisfying `create_rgb_image`'s safety contract.
-        let rgb = unsafe { create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height) }
+        // owns the buffer, outlives `rgb`, and is not accessed while libavif
+        // reads from the pointer.
+        let rgb = unsafe { create_rgb_image(&mut avif_image, pixels, width, height) }
             .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         avif_image
@@ -460,7 +455,7 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
                         let src_idx = (y * width as usize + x) * 4 + 3;
                         let dst_idx = y * alpha_row_bytes + x;
                         debug_assert!(dst_idx < alpha_plane_len);
-                        *alpha_plane.as_ptr().add(dst_idx) = pixels[src_idx];
+                        *alpha_plane.as_ptr().add(dst_idx) = *pixels.add(src_idx);
                     }
                 }
             }

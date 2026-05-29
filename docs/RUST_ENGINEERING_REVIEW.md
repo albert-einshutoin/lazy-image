@@ -1,11 +1,12 @@
-# Rust Engineering Review — lazy-image
+# Rust Engineering Review and PR #617 Status — lazy-image
 
-> Branch: `feature/rust-idiom-hardening` | Date: 2026-05-29 | Rust 1.88.0 | Edition 2021
+> Branch: `feature/rust-engineering-hardening` | Date: 2026-05-29 | Rust 1.88.0 | Edition 2021
 
 ---
 
 ## Table of Contents
 
+0. [PR #617 Implementation Status](#0-pr-617-implementation-status)
 1. [Architectural Review](#1-architectural-review)
 2. [Design Summary](#2-design-summary)
 3. [Performance Analysis](#3-performance-analysis)
@@ -13,6 +14,34 @@
 5. [Audit Report](#5-audit-report)
 6. [Quality Validation](#6-quality-validation)
 7. [Prioritized Refactor Roadmap](#7-prioritized-refactor-roadmap)
+
+---
+
+## 0. PR #617 Implementation Status
+
+This document started as the adversarial Rust engineering audit for the
+hardening branch. PR #617 implements most of the safety, error, type-system,
+and concurrency items below, but not every roadmap item is part of this PR.
+The sections below therefore mix two kinds of information:
+
+- **Implemented in PR #617**: items whose success criteria are satisfied by
+  the branch.
+- **Deferred**: items intentionally left for follow-up work and retained here
+  as roadmap context.
+
+Notable deferred items in this PR:
+
+| Roadmap item | Status |
+|--------------|--------|
+| `#[napi(string_enum)]` for `SanitizePolicy` and `ResizeFitMode` | Deferred; runtime string parsing remains for compatibility. |
+| `sanitize_exif_bytes -> Cow<'_, [u8]>` | Deferred; the function still returns `Vec<u8>`. |
+| Rename `OutputFormat::from_str` inherent method | Deferred. |
+| XMP warning via `env.emit_warning()` instead of `eprintln!` | Deferred. |
+| Restore file-level `#![cfg(feature = "napi")]` in `cgroup.rs` | Deferred. |
+
+The AVIF RGB buffer provenance item is implemented in this branch by creating
+an owned RGBA buffer and passing its mutable pointer to libavif; no
+`const -> mut` cast remains in `create_rgb_image`.
 
 ---
 
@@ -34,11 +63,11 @@ The codebase is well-structured for a compression-first image engine with NAPI b
 
 ### 1.2 Design Weaknesses
 
-**Unsafe discipline gap.** `avif_safe.rs` (30 unsafe occurrences) has zero `// SAFETY:` comments despite the file-level `deny(unsafe_op_in_unsafe_fn)` posture. The alpha-plane write loop at `encoder.rs:723–728` relies on `debug_assert!` bounds checks that are elided in release builds. A `const`-to-`mut` pointer cast at `avif_safe.rs:478` is formally a provenance violation under Stacked Borrows when the source image is `Cow::Borrowed`.
+**Unsafe discipline gap.** The original audit found missing `// SAFETY:` comments in `avif_safe.rs`, release-only alpha-plane bounds risk, and a `const`-to-`mut` pointer cast in the AVIF RGB path. PR #617 addresses these by documenting unsafe blocks, adding a hard alpha-row bounds check, and using an owned mutable RGBA buffer for libavif RGB input.
 
 **Duplicate error classification.** `ErrorCode::category()` and `LazyImageError::category()` are two independent 23–24-arm match tables that must be kept in sync manually (`src/error.rs:120–155` and `681–724`). Divergence silently misclassifies errors.
 
-**Incoherent metadata state.** `MetadataPolicy { icc: bool, exif: bool, gps: bool }` allows `gps: true` with `exif: false`, producing silent wrong output (GPS stripped because EXIF is not embedded). The batch path at `tasks/batch.rs:53–54` never reads `strip_gps()` at all — GPS is always stripped in batch mode regardless of policy.
+**Incoherent metadata state.** The original `MetadataPolicy { icc: bool, exif: bool, gps: bool }` allowed `gps: true` with `exif: false`, producing silent wrong output. PR #617 replaces this with a sum type and passes the full metadata policy through batch encoding.
 
 **Panic exposure at the NAPI boundary.** `napi_err()` at `engine.rs:36` calls `.expect()` on a fallible NAPI allocation, which can abort the Node.js process under heap pressure. This helper is used at ~30 call sites.
 
@@ -70,13 +99,13 @@ The codebase is well-structured for a compression-first image engine with NAPI b
 | NAPI binary, not a Rust library | Rust API surface is pub(crate) | Low coupling to downstream |
 | Panic guard for all codec entry points | `run_with_panic_policy` | `napi_err` `.expect()` bypasses this |
 | Per-file rayon dispatch | Good throughput | Batch duplication adds maintenance risk |
-| MetadataPolicy as three booleans | Simple NAPI mapping | Active bug: batch GPS always stripped |
+| MetadataPolicy as three booleans | Replaced by sum type in PR #617 | Low residual risk; raw EXIF GPS sub-IFD bytes are not separately zero-filled after pointer removal |
 
 ---
 
 ## 2. Design Summary
 
-Each entry below describes a confirmed change, why it matters, and its expected benefit. Items are grouped by the module they primarily affect.
+Each entry below records the design recommendation, why it matters, and the current PR #617 status. Items are grouped by the module they primarily affect.
 
 ### 2.1 Error Architecture
 
@@ -100,13 +129,13 @@ Replace `Operation::Rotate { degrees: i32 }` with `Operation::Rotate(RotationAng
 **Model `MetadataPolicy` as a sum type** (`src/engine/metadata.rs:14–21`).
 `pub enum MetadataPolicy { StripAll, KeepIcc, KeepExif { strip_gps: bool }, KeepAll { strip_gps: bool } }`. Simultaneously fixes the silent wrong-output bug (GPS-keep-without-EXIF is unrepresentable) and the batch GPS omission (`tasks/batch.rs:53–54`).
 
-**Add `#[napi(string_enum)]` for `SanitizePolicy` and `ResizeFitMode`** (`src/engine/api/types.rs`).
-Eliminates `_ =>` fallback arms in `pipeline_ops.rs:209–213` and `64–66`. Consistent with the existing `FirewallPolicy` enum treatment.
+**Deferred: add `#[napi(string_enum)]` for `SanitizePolicy` and `ResizeFitMode`** (`src/engine/api/types.rs`).
+This would eliminate `_ =>` fallback arms in `pipeline_ops.rs:209–213` and `64–66`, but PR #617 keeps the existing runtime string parsing surface for compatibility.
 
 ### 2.3 Ownership / Allocations
 
-**`sanitize_exif_bytes` → return `Cow<'_, [u8]>`** (`src/engine/encoder.rs:432–524`).
-Return `Cow::Borrowed(exif)` on the no-op paths (lines 436, 443, and when neither flag fires). The unconditional `exif.to_vec()` at line 474 moves inside the mutation branches. Eliminates a full EXIF buffer copy (up to 512 KB) on every encode call that preserves EXIF metadata.
+**Deferred: `sanitize_exif_bytes` → return `Cow<'_, [u8]>`** (`src/engine/io/exif_embed.rs`).
+The ownership optimization remains a follow-up item. PR #617 moves EXIF embedding into `io/exif_embed.rs` and adds GPS/orientation tests, but the function still returns `Vec<u8>`.
 
 **ICC embed: `Bytes::copy_from_slice(icc)` instead of `Bytes::from(icc.to_vec())`** (`src/engine/encoder.rs:562, 634`).
 Drops one intermediate `Vec` allocation per PNG/WebP encode that embeds an ICC profile.
@@ -125,8 +154,8 @@ Documentation-only; no behavior change. Required for audit traceability and cons
 **Elevate `create_rgb_image` to `pub unsafe fn`** (`src/codecs/avif_safe.rs:439`).
 The function stores a raw pointer for FFI use; marking it `unsafe` propagates the invariant contract to callers. Update the single call site in `encoder.rs:705` (already inside an `unsafe` block).
 
-**Fix const-to-mut pointer cast provenance violation** (`src/codecs/avif_safe.rs:478`).
-Call `rgba.into_owned()` before extracting the pointer in the `Cow::Borrowed` arm so the raw pointer always has mutable provenance. Eliminates formally UB code on the hot AVIF encode path.
+**Fix const-to-mut pointer cast provenance violation** (`src/codecs/avif_safe.rs`, `src/engine/encoder.rs`).
+The AVIF encoder now materializes an owned `RgbaImage`, validates its backing buffer, and passes `as_mut_ptr()` into `create_rgb_image`. `create_rgb_image` accepts a `*mut u8` directly, so the wrapper no longer derives a mutable C pointer from a shared Rust pointer.
 
 **Harden alpha-plane write bounds from `debug_assert!` to a hard check** (`src/engine/encoder.rs:723, 728`).
 Replace `debug_assert!` with an explicit `if alpha_row_bytes < width as usize { return Err(...) }` before the loop. Converts a potential silent OOB write in release builds into a recoverable error.
@@ -257,7 +286,7 @@ fn bench_webp_encode(c: &mut Criterion)     { /* encode_webp on decoded 4000×30
 
 | Finding | File:Line | Change |
 |---------|-----------|--------|
-| `sanitize_exif_bytes` allocates unconditionally | `encoder.rs:474` | Return `Cow<'_, [u8]>`; `Cow::Borrowed` on no-op paths |
+| `sanitize_exif_bytes` allocates unconditionally | `io/exif_embed.rs` | Deferred: return `Cow<'_, [u8]>`; `Cow::Borrowed` on no-op paths |
 | ICC embed intermediate `Vec` | `encoder.rs:562, 634` | `Bytes::copy_from_slice(icc)` |
 | `FirewallConfig` cloned 9× but is `Copy`-eligible | `firewall.rs:35–45` | Add `#[derive(Copy)]` |
 | `format_to_string` → `String` from `&'static str` | `context.rs:26–39` | Return `&'static str`; convert to `String` only at metrics population |
@@ -307,8 +336,8 @@ fn bench_webp_encode(c: &mut Criterion)     { /* encode_webp on decoded 4000×30
 | Pattern | Locations (representative) | Count | Verdict |
 |---------|---------------------------|-------|---------|
 | `Arc::clone` / `source.clone()` on `Arc`-backed types | `engine.rs:70–90`, `batch.rs:69` | ~15 | **Keep** — cheap refcount increment; correct design |
-| `Cow::Borrowed` clones that upgrade to `Owned` via `into_owned()` | `encoder.rs:576, 636` | ~6 | **Keep** — correct lazy ownership |
-| `.clone()` on `MetadataPolicy` (recently fixed) | eliminated in b89550f | 0 | **Eliminated** — correct in current branch |
+| `Cow::Borrowed` clones that upgrade to `Owned` via `into_owned()` | representative encode/embed paths | ~6 | **Keep** — correct lazy ownership |
+| `.clone()` on `MetadataPolicy` (fixed in PR #617) | eliminated | 0 | **Eliminated** — correct in current branch |
 | `PreparedEncode.input_format.clone()` (`Option<String>`) | `processing.rs:329` | 1 | **Remove** — change to `&'static str` as recommended |
 | EXIF `exif.to_vec()` as unconditional clone | `encoder.rs:474` | 1 | **Remove** — Cow refactor |
 | ICC `icc.to_vec()` before `Bytes::from` | `encoder.rs:562, 634` | 2 | **Remove** — `Bytes::copy_from_slice` |
@@ -354,7 +383,7 @@ None found in production code. `Rc` is not used anywhere in `src/`.
 | EXIF embed `Vec::new()` | `encoder.rs:325, 342, 359` | **Add capacity hint**: `image_data.len() + exif.len() + 256` |
 | ICC embed `Vec::new()` | `encoder.rs:288, 564, 636` | **Fix**: `Bytes::copy_from_slice` eliminates intermediate `Vec` |
 | `fir::Resizer::new()` per resize | `resize.rs:385` | **Hoist to thread-local** |
-| `sanitize_exif_bytes` `exif.to_vec()` | `encoder.rs:474` | **Remove** via `Cow` refactor |
+| `sanitize_exif_bytes` `exif.to_vec()` | `io/exif_embed.rs` | **Deferred** via future `Cow` refactor |
 
 ### 5.7 `unsafe`
 
@@ -366,7 +395,7 @@ None found in production code. `Rc` is not used anywhere in `src/`.
 | `engine/io/source.rs` | ~3 | mmap | **Keep** — correct with flock |
 | `engine/platform.rs` | 3 | syscalls (Windows/Unix) | **Keep** — add missing SAFETY comments |
 
-Provenance violation at `avif_safe.rs:478` (const→mut cast from shared borrow): **Fix** by calling `into_owned()` in the `Cow::Borrowed` arm.
+Original provenance violation at `avif_safe.rs` (const→mut cast from a shared borrow): **Fixed in PR #617** by materializing an owned RGBA buffer in `encode_avif`, passing `as_mut_ptr()` to `create_rgb_image`, and storing that mutable pointer directly in the libavif RGB image wrapper.
 
 ### 5.8 `unwrap` / `expect` / `panic`
 
@@ -385,68 +414,24 @@ Provenance violation at `avif_safe.rs:478` (const→mut cast from shared borrow)
 
 ## 6. Quality Validation
 
-All four quality gates pass on `feature/rust-idiom-hardening`.
-
-### 6.1 Formatting
-
-```
-Command:  cargo fmt --check
-Result:   PASS
-Output:   Exit code 0, no diff output
-```
-
-Every source file matches rustfmt canonical style.
-
-### 6.2 Clippy
+PR #617 validation is tracked by GitHub CI and by fresh local runs, not by a
+static historical snapshot in this document. For this branch, use the project
+gate from `AGENTS.md` plus the Rust hardening gates:
 
 ```
-Command:  cargo clippy --no-default-features -- -D warnings
-Result:   PASS
-Output:   Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.86s
-Warnings: 0
-Errors:   0
+cargo fmt --check
+cargo clippy -- -D warnings
+cargo clippy --no-default-features --tests -- -D warnings
+cargo clippy --features stress -- -D warnings
+cargo check --manifest-path fuzz/Cargo.toml --locked
+cargo test --no-default-features
+npm run build
+npm test
 ```
 
-### 6.3 Tests
-
-```
-Command:  cargo test --no-default-features
-Result:   PASS
-
-Binary                Test count  Result
-─────────────────────────────────────────
-unit (src/lib.rs)     258         ok
-edge_cases            46          ok
-engine_tests          64          ok
-error_tests           43          ok
-property_based        8           ok
-─────────────────────────────────────────
-Total                 419         0 failed
-
-Doc-tests:  0 passed, 0 failed, 1 ignored
-  (ignored: define_encode_task macro example requires NAPI context)
-```
-
-Three integration binaries (`fuzz_regression`, `integration_tests`, `napi_tests`) compile and run 0 tests under `--no-default-features` — expected (require native `.node` artifact or Node runtime).
-
-### 6.4 Benchmark Compilation
-
-```
-Command:  cargo bench --no-run --no-default-features
-Result:   PASS (with non-fatal deprecation warnings)
-
-Executables produced:
-  target/release/deps/benchmark-2a8fe7ee9387921c
-  target/release/deps/memory_semaphore-7f24ba857869e8b2
-
-Warnings: 9 occurrences of:
-  criterion::black_box is deprecated; use std::hint::black_box() instead
-  Locations: benches/benchmark.rs:6,33,54,80,81,93,94,126,180
-
-Duration: ~92s on Apple Silicon (optimized profile, cold Cargo cache)
-```
-
-The warnings are non-blocking but should be resolved: replace `criterion::black_box` with `std::hint::black_box` at the 9 affected call sites.
+If this document is updated after code changes, paste the fresh command output
+or CI run link in the PR discussion rather than preserving old branch-specific
+counts here.
 
 ---
 
@@ -465,7 +450,7 @@ Items within each phase are ordered by impact/risk ratio.
 | 1 | Fix MetadataPolicy batch GPS omission (GPS always stripped in batch regardless of policy) | `tasks/batch.rs:53–54`, `metadata.rs:14–21` | Critical | Batch respects `strip_gps: false`; integration test passes |
 | 2 | Replace `napi_err().expect()` with safe fallback | `engine.rs:36` | High | No `expect` call on NAPI Result; process cannot abort from this path |
 | 3 | Harden alpha-plane write loop bounds for release builds | `encoder.rs:723, 728` | High | `debug_assert!` replaced by `if ... { return Err(...) }` before the loop |
-| 4 | Fix const-to-mut provenance violation in `create_rgb_image` | `avif_safe.rs:478` | High | `Cow::Borrowed` arm calls `into_owned()`; Miri or cargo-careful reports no issue |
+| 4 | Fix const-to-mut provenance violation in `create_rgb_image` | `avif_safe.rs`, `encoder.rs` | High | Owned RGBA buffer passed via `as_mut_ptr()`; no const-to-mut cast in the wrapper |
 | 5 | Make PNG quality rejection explicit | `ops.rs:261–265` | High | Passing quality to PNG returns `Err`; existing `test_png_ignores_quality` updated |
 | 6 | Replace `expect("source always has bytes")` in batch worker | `batch.rs:70` | Medium | `.ok_or_else(...)` propagates through batch error collection |
 | 7 | Fix Mutex bare `.unwrap()` in `BatchWithMetricsTask` | `batch.rs:421, 427` | Medium | Matches `BatchTask` poison-recovery pattern |
@@ -486,14 +471,14 @@ Items within each phase are ordered by impact/risk ratio.
 | 12 | `Quality` newtype | `ops.rs:300–310` | Medium | `OutputFormat` variants store `Quality`; `with_quality` constructs `Quality::unchecked` |
 | 13 | `RotationAngle` enum | `ops.rs:94` | Medium | `_ => Err(...)` fallback in `apply.rs:291` removed; compiler covers all arms |
 | 14 | `MetadataPolicy` as sum type | `metadata.rs:14–21` | Medium | Incoherent `gps=true, exif=false` state unrepresentable |
-| 15 | `#[napi(string_enum)]` for `SanitizePolicy` and `ResizeFitMode` | `api/types.rs` | Medium | `_ =>` fallback arms in `pipeline_ops.rs:209, 64` removed |
+| 15 | `#[napi(string_enum)]` for `SanitizePolicy` and `ResizeFitMode` | `api/types.rs` | Medium | Deferred in PR #617; runtime parsing remains for compatibility |
 | 16 | Rename `OutputFormat::from_str` inherent method | `ops.rs:235–237` | Low | `parse::<OutputFormat>()` no longer silently fails; naming consistent with `ResizeFit` |
 
 ### Phase 4 — Ownership & Allocation Wins
 
 | Priority | Finding | File:Line | Severity | Success Criteria |
 |----------|---------|-----------|----------|-----------------|
-| 17 | `sanitize_exif_bytes` → `Cow<'_, [u8]>` | `encoder.rs:432–524` | Medium | No `Vec` allocation on no-op EXIF paths; criterion JPEG roundtrip benchmark validates |
+| 17 | `sanitize_exif_bytes` → `Cow<'_, [u8]>` | `io/exif_embed.rs` | Medium | Deferred in PR #617; current function still returns `Vec<u8>` |
 | 18 | `Bytes::copy_from_slice(icc)` in PNG/WebP embed | `encoder.rs:562, 634` | Medium | Intermediate `Vec` eliminated; consistent with JPEG embed path |
 | 19 | `FirewallConfig: Copy` | `firewall.rs:35–45` | Low | 9 `.clone()` calls become implicit copies; clippy passes |
 | 20 | `format_to_string` → `&'static str` | `context.rs:26–39` | Low | `PreparedEncode::input_format: Option<&'static str>`; String allocated only at metrics population |
@@ -535,4 +520,4 @@ Items within each phase are ordered by impact/risk ratio.
 
 ---
 
-*Review generated from adversarially-verified findings on branch `feature/rust-idiom-hardening` (HEAD: b89550f). All quality gates passed at review time.*
+*Review updated for PR #617 on branch `feature/rust-engineering-hardening`. See CI and fresh local command output for the current validation state.*
