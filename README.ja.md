@@ -5,7 +5,7 @@
 ## 位置付け
 - Web 向け画像最適化に特化した意図的なエンジン
 - まだ sharp のドロップイン代替ではありません（互換 API が必要なら sharp を使用）
-- 現行の正本ベンチマークでは、PNG → JPEG の測定シナリオで sharp より **17-20% 小さい JPEG** を生成。AVIF/WebP の速度・サイズはワークロード依存で、現行測定では sharp が有利なケースがあります
+- 現行の正本ベンチマークでは、PNG → JPEG の単純な 2 シナリオ（no-resize 変換 / 800px resize）で sharp より **17-20% 小さい JPEG** を生成。AVIF/WebP と複合操作 JPEG pipeline の速度・サイズはワークロード依存で、現行測定では sharp が有利なケースがあります
 - セキュリティ優先: 全メタデータ（EXIF/XMP/ICC）をデフォルトで削除。`keepMetadata()` で保持可能
 - V8 ヒープを経由しない入力パス: `fromPath()/processBatch()` → `toFile()` で入力ファイルを JS ヒープへコピーしない（256 MB 以下は Rust 所有バッファに読み込み、256 MB 超は advisory lock 付き mmap）
 - AVIF の ICC は v0.9.x（libavif-sys）で保持。古い/別構成の AVIF backend では破棄される場合があります

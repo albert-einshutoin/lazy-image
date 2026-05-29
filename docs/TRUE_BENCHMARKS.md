@@ -159,7 +159,7 @@ lazy-image uses **mozjpeg** (Mozilla's JPEG encoder) with aggressive web optimiz
 
 ### Trade-offs
 
-**File Size vs Speed**: lazy-image prioritizes compression ratio (smaller file sizes) over raw encoding speed for JPEG. This results in:
+**File Size vs Speed**: lazy-image prioritizes compression ratio (smaller file sizes) over raw encoding speed for JPEG. In the two simple PNG -> JPEG cases this results in:
 - **Smaller files** (17-20% reduction) to save bandwidth costs
 - **Comparable or slightly longer processing times** compared to sharp (depending on scenario)
 - **Intentional trade-off**: Bandwidth savings often outweigh processing time in web applications
@@ -181,7 +181,7 @@ const jpegBuffer = await ImageEngine.fromPath('test/fixtures/test_4.5MB_5000x500
   .resize(800, null)
   .toBuffer('jpeg', 80); // Quality 80, mozjpeg optimization
 
-// Result in canonical benchmarks: 17-20% smaller than sharp at the same quality setting
+// Result in simple canonical JPEG benchmarks: 17-20% smaller than sharp at the same quality setting
 ```
 
 ---
@@ -229,7 +229,7 @@ See [ZERO_COPY.md](./ZERO_COPY.md) for the precise scope and validation method.
 ## Key Advantages Summary
 
 ```
-JPEG: 17-20% smaller files in benchmarked PNG -> JPEG scenarios
+JPEG: 17-20% smaller files in simple PNG -> JPEG no-resize and resize-800px scenarios
 AVIF: current PNG -> AVIF benchmarks are slower and larger than sharp
 WebP: current PNG -> WebP benchmarks are slower and similar/larger than sharp
 Memory: fromPath avoids V8-heap input copies; codec working buffers still exist
@@ -286,7 +286,7 @@ For ongoing CI/threshold operation rules, see [docs/BENCHMARK_OPERATIONS.md](./B
 
 ### Performance Trade-offs
 
-- **JPEG encoding speed**: lazy-image prioritizes compression ratio and produced 17-20% smaller JPEG outputs in the current benchmarked PNG -> JPEG scenarios. Speed was comparable in these runs and should be remeasured on target hardware.
+- **JPEG encoding speed**: lazy-image prioritizes compression ratio and produced 17-20% smaller JPEG outputs in the two simple current benchmarked PNG -> JPEG scenarios. Speed was comparable in these runs and should be remeasured on target hardware.
 - **AVIF/WebP encoding speed and size**: current PNG -> AVIF and PNG -> WebP benchmarks favor sharp for speed, and often for output size.
 - **Real-time processing**: For strict latency requirements (<100ms), benchmark the target codec and image mix before choosing lazy-image.
 
@@ -307,7 +307,7 @@ These benchmarks are for reference only and should be validated in your specific
 
 lazy-image provides significant advantages in:
 
-1. **JPEG file size**: 17-20% smaller files through mozjpeg optimization in the canonical PNG -> JPEG scenarios
+1. **JPEG file size**: 17-20% smaller files through mozjpeg optimization in the two simple canonical PNG -> JPEG scenarios
 2. **Memory efficiency**: `fromPath()` avoids V8-heap input copies and keeps decoded pixels in Rust memory
 3. **Operational safety**: metadata stripping, Image Firewall, structured errors, and panic guards
 4. **Build-time optimization**: Ideal for static site generation and CI/CD pipelines

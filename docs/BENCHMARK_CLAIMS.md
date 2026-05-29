@@ -18,7 +18,7 @@ These may appear in README, marketing, and migration guides **without qualificat
 
 | Claim | Location | Source Scenario | Notes |
 |-------|----------|----------------|-------|
-| "17-20% smaller JPEG outputs than sharp" | README.md, PERFORMANCE.md | PNG -> JPEG no-resize -17.0%; PNG -> JPEG resize 800px -20.0% | JPEG-specific; do not generalize to AVIF/WebP |
+| "17-20% smaller JPEG outputs than sharp" | README.md, PERFORMANCE.md | PNG -> JPEG no-resize -17.0%; PNG -> JPEG resize 800px -20.0% | JPEG-specific and limited to the two simple measured cases; do not generalize to AVIF/WebP or multi-operation JPEG pipelines |
 | "18% file size reduction" | ROI_CALCULATOR.md (example) | JPEG-oriented worked example | Labeled as example, not a guarantee |
 | Binary size savings (5-9 MB vs 15-21 MB) | PERFORMANCE.md | Measured `.node` binary sizes | Platform-specific, factual |
 
@@ -38,7 +38,7 @@ These **must always include the codec, input format, and scenario** when quoted:
 ## Quoting Rules
 
 1. **Always qualify codec and workload.** Never say "lazy-image is faster than sharp" without specifying the format and scenario.
-2. **"17-20% smaller JPEG" is the safe summary claim.** It applies only to the canonical PNG -> JPEG scenarios currently measured.
+2. **"17-20% smaller JPEG" is the safe summary claim.** It applies only to the two simple canonical PNG -> JPEG scenarios currently measured: no-resize conversion and resize-to-800px.
 3. **Speed claims are workload-specific.** Current JPEG resize was faster, JPEG no-resize was slightly slower, and AVIF/WebP favored sharp in the measured scenarios. Always cite the specific scenario.
 4. **Do not mix resize and no-resize numbers.** Results differ significantly when resize is involved.
 5. **Cite the test environment.** TRUE_BENCHMARKS.md specifies the machine, Node version, and library versions used.
@@ -48,7 +48,7 @@ These **must always include the codec, input format, and scenario** when quoted:
 These rules prevent drift between documents:
 
 1. **Upstream-first.** Update TRUE_BENCHMARKS.md before any downstream doc. Never update README or PERFORMANCE.md with numbers that are not yet in TRUE_BENCHMARKS.md.
-2. **README uses qualified ranges only.** README may state "17-20% smaller JPEG" but must not imply all codecs are smaller or faster.
+2. **README uses qualified ranges only.** README may state "17-20% smaller JPEG" only when scoped to the two simple canonical cases; it must not imply all codecs, all JPEG pipelines, or all operation chains are smaller or faster.
 3. **Mandatory qualification.** Workload-specific claims must include format, input dimensions, and whether resize was applied. Omitting any of these is a documentation bug.
 4. **Version-bump trigger.** When lazy-image, sharp, or any core encoder dependency (mozjpeg, libavif, libwebp) is updated, re-run `npm run test:bench`, `node --expose-gc test/benchmarks/convert-only.bench.js`, and `npm run test:bench:extended` before updating TRUE_BENCHMARKS.md.
 5. **Atomic updates.** When a benchmark number changes, update all downstream files in the same PR. Partial updates create drift windows.
@@ -104,7 +104,7 @@ When TRUE_BENCHMARKS.md is updated, also check:
 
 | File | What to verify |
 |------|---------------|
-| `README.md` | Summary claims containing "17-20% smaller JPEG" stay within measured range (grep, don't rely on line numbers) |
+| `README.md` | Summary claims containing "17-20% smaller JPEG" stay scoped to the two simple canonical cases (grep, don't rely on line numbers) |
 | `docs/PERFORMANCE.md` | Canonical scenarios table matches TRUE_BENCHMARKS.md |
 | `docs/MIGRATION_FROM_SHARP.md` | Comparison references are current |
 | `docs/ROI_CALCULATOR.md` | Example reduction percentage is plausible |

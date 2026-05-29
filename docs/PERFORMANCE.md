@@ -29,7 +29,7 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 ## When to Use lazy-image
 
 - **Node-runtime serverless (AWS Lambda, Google Cloud Run, Vercel Node Functions, Google Cloud Functions)** — Avoid OOM and smaller cold-start footprint. V8-isolate runtimes such as Cloudflare Workers and Vercel Edge are **not supported** by the native NAPI build (tracked under [#87](https://github.com/albert-einshutoin/lazy-image/issues/87) for future Wasm support).
-- **Bandwidth-sensitive JPEG delivery** — Smaller JPEG saves CDN and transfer costs in the canonical PNG → JPEG benchmarks.
+- **Bandwidth-sensitive JPEG delivery** — Smaller JPEG saves CDN and transfer costs in the two simple canonical PNG → JPEG benchmarks; multi-operation pipelines need their own measurement.
 - **AVIF output support** — Use when you need lazy-image's AVIF output path, ICC handling, and safety defaults; benchmark target AVIF workloads before assuming size or speed wins.
 - **Memory-constrained** — 512MB containers; `fromPath()` bypasses the V8 heap (read-into-memory ≤ 256 MB, mmap with advisory locks > 256 MB).
 - **Safety-first** — Rust memory safety; built-in decompression limits and Image Firewall.

@@ -4,7 +4,7 @@
 
 > **Web image optimization engine for Node.js.** Rust core, smaller JPEG outputs, bounded memory.
 
-In current canonical benchmarks, lazy-image produces **17-20% smaller JPEG outputs** than sharp for tested PNG → JPEG workloads. AVIF/WebP size and speed are workload-specific; benchmark your target image mix before assuming a win.
+In current canonical benchmarks, lazy-image produces **17-20% smaller JPEG outputs** than sharp for the two simple PNG → JPEG cases: no-resize conversion and resize-to-800px. AVIF/WebP size and speed, and multi-operation JPEG pipelines, are workload-specific; benchmark your target image mix before assuming a win.
 
 - **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
 - **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. File-path inputs (`fromPath()`/`processBatch()` → `toFile()`) bypass the V8 heap — small/medium files (≤ 256 MB) are read into Rust-owned memory for SIGBUS safety; only files larger than 256 MB use mmap with advisory locks. See [docs/ZERO_COPY.md](./docs/ZERO_COPY.md).
@@ -73,7 +73,7 @@ streaming/pipeline.js       # Disk-backed bounded-memory streaming
 
 **Key differentiators:**
 
-1. **JPEG file size optimization** — mozjpeg produces 17-20% smaller JPEG outputs in the canonical PNG → JPEG benchmarks
+1. **JPEG file size optimization** — mozjpeg produces 17-20% smaller JPEG outputs in the canonical simple PNG → JPEG no-resize and resize benchmarks
 2. **Memory efficiency** — file-path inputs are not copied into the V8 heap; decoded pixels stay in Rust memory
 3. **Security-first** — GPS auto-strip, Image Firewall, Rust memory safety
 4. **AVIF output support** — libavif encoder with quality-tuned defaults and ICC support; benchmark AVIF workloads for size/speed
