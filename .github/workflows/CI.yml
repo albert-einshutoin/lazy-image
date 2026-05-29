@@ -175,6 +175,11 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --no-default-features -- -D warnings
 
+      # The `stress` feature (example: stress_test) is not built by the default
+      # clippy/test jobs, so type changes can break it invisibly. Gate it here.
+      - name: Check stress feature compiles
+        run: cargo clippy --no-default-features --features stress -- -D warnings
+
   package-contract:
     name: Package Contract
     runs-on: ubuntu-latest

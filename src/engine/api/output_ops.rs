@@ -103,13 +103,11 @@ impl ImageEngine {
     ) -> Result<AsyncTask<EncodeTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
+        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // everything to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
 
         Ok(AsyncTask::new(EncodeTask {
             // Use source directly - zero-copy for Memory and Mapped sources
@@ -174,13 +172,11 @@ impl ImageEngine {
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
+        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // everything to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
 
         Ok(AsyncTask::new(EncodeWithMetricsTask {
             // Use source directly - zero-copy for Memory and Mapped sources
@@ -307,15 +303,10 @@ impl ImageEngine {
             ));
         }
 
-        // Parse format (quality is irrelevant here, will be overridden per iteration)
-        let output_format =
-            match OutputFormat::from_str_with_options(&format, Some(max_q), fast_mode) {
-                Ok(f) => f,
-                Err(_) => {
-                    let lazy_err = LazyImageError::unsupported_format(format.clone());
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-                }
-            };
+        // Parse format (the per-iteration quality is overridden by the byte-budget
+        // search; propagate the real parse error rather than flattening it).
+        let output_format = OutputFormat::from_str_with_options(&format, Some(max_q), fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
 
         Ok(AsyncTask::new(EncodeTargetBytesTask {
             ctx: self.build_task_context(output_format),
@@ -347,13 +338,11 @@ impl ImageEngine {
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
 
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
+        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // everything to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
 
         Ok(AsyncTask::new(WriteFileTask {
             // Use source directly - zero-copy for Memory and Mapped sources
@@ -379,13 +368,11 @@ impl ImageEngine {
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
 
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
+        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // everything to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
 
         Ok(AsyncTask::new(WriteFileWithMetricsTask {
             ctx: self.build_task_context(output_format),
@@ -455,14 +442,8 @@ impl ImageEngine {
         };
 
         let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
-        let output_format =
-            match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
-                Ok(f) => f,
-                Err(_) => {
-                    let lazy_err = LazyImageError::unsupported_format(format_str.clone());
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-                }
-            };
+        let output_format = OutputFormat::from_str_with_options(&format_str, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
 
         Ok(AsyncTask::new(crate::engine::tasks::UnifiedEncodeTask {
             ctx: self.build_task_context(output_format),
@@ -521,14 +502,8 @@ impl ImageEngine {
         };
 
         let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
-        let output_format =
-            match OutputFormat::from_str_with_options(&format_str, quality, fast_mode) {
-                Ok(f) => f,
-                Err(_) => {
-                    let lazy_err = LazyImageError::unsupported_format(format_str.clone());
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-                }
-            };
+        let output_format = OutputFormat::from_str_with_options(&format_str, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
 
         Ok(AsyncTask::new(
             crate::engine::tasks::UnifiedEncodeToFileTask {

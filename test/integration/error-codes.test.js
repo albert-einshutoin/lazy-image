@@ -63,6 +63,31 @@ async function asyncTest(name, fn) {
     });
 
     // ---------------------------------------------------------------
+    // E400 InvalidArgument — PNG is lossless and rejects an explicit quality.
+    // Behavioral change: previously the quality was silently ignored; it now
+    // returns a recoverable UserError so the footgun is visible. Must NOT be
+    // E111 (UnsupportedFormat / CodecError) — PNG itself is supported.
+    // ---------------------------------------------------------------
+    await asyncTest('E400: InvalidArgument when a quality is passed to PNG', async () => {
+        let threw = false;
+        try {
+            await ImageEngine.from(BUFFER).toBuffer('png', 50);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.errorCode, 'E400', `expected E400, got ${e.errorCode}`);
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'PNG+quality should be a UserError');
+            assert(/png/i.test(e.message), 'message should mention PNG');
+            assert(typeof e.recoveryHint === 'string' && e.recoveryHint.length > 0, 'recoveryHint should be present');
+        }
+        assert(threw, 'passing a quality to PNG should throw');
+
+        // And PNG without a quality must still succeed.
+        const ok = await ImageEngine.from(BUFFER).toBuffer('png');
+        assert(ok.length > 0, 'PNG without quality should encode');
+    });
+
+    // ---------------------------------------------------------------
     // E121 DimensionExceedsLimit — resize to > MAX_DIMENSION (32768)
     // ---------------------------------------------------------------
     await asyncTest('E121: DimensionExceedsLimit from oversized resize', async () => {

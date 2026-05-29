@@ -14,7 +14,7 @@ use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png,
 #[cfg(feature = "stress")]
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "stress")]
-use crate::ops::{Operation, OutputFormat, Quality, ResizeFit};
+use crate::ops::{Operation, OutputFormat, Quality, ResizeFit, RotationAngle};
 #[cfg(feature = "stress")]
 use std::borrow::Cow;
 
@@ -37,7 +37,7 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
             height: Some(800),
             fit: ResizeFit::Inside,
         },
-        Operation::Rotate { degrees: 90 },
+        Operation::Rotate(RotationAngle::Cw90),
         Operation::Brightness { value: 12 },
         Operation::Contrast { value: -6 },
         Operation::Grayscale,

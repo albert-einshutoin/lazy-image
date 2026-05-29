@@ -353,3 +353,93 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
         Ok(output)
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Build a minimal little-endian TIFF/EXIF payload with two IFD0 entries:
+    /// Orientation (0x0112, SHORT) = `orientation`, and the GPS IFD pointer
+    /// (0x8825, LONG) = `gps_offset`. Layout (byte offsets):
+    ///   0  "II"              byte order
+    ///   2  0x002A            magic
+    ///   4  IFD0 offset = 8
+    ///   8  entry count = 2
+    ///   10 entry0: Orientation  (value field at offset 18)
+    ///   22 entry1: GPS pointer   (value field at offset 30)
+    ///   34 next-IFD offset = 0
+    fn make_tiff(orientation: u16, gps_offset: u32) -> Vec<u8> {
+        let mut b = Vec::new();
+        b.extend_from_slice(b"II"); // little-endian
+        b.extend_from_slice(&0x002Au16.to_le_bytes());
+        b.extend_from_slice(&8u32.to_le_bytes()); // IFD0 offset
+        b.extend_from_slice(&2u16.to_le_bytes()); // entry count
+                                                  // entry0: Orientation, type 3 (SHORT), count 1
+        b.extend_from_slice(&0x0112u16.to_le_bytes());
+        b.extend_from_slice(&3u16.to_le_bytes());
+        b.extend_from_slice(&1u32.to_le_bytes());
+        b.extend_from_slice(&(orientation as u32).to_le_bytes());
+        // entry1: GPS IFD pointer, type 4 (LONG), count 1
+        b.extend_from_slice(&0x8825u16.to_le_bytes());
+        b.extend_from_slice(&4u16.to_le_bytes());
+        b.extend_from_slice(&1u32.to_le_bytes());
+        b.extend_from_slice(&gps_offset.to_le_bytes());
+        b.extend_from_slice(&0u32.to_le_bytes()); // next IFD
+        b
+    }
+
+    const ORIENTATION_VALUE_OFFSET: usize = 18;
+    const GPS_VALUE_OFFSET: usize = 30;
+
+    #[test]
+    fn strip_gps_zeroes_the_gps_ifd_pointer() {
+        let exif = make_tiff(6, 0x0000_0064);
+        let out = sanitize_exif_bytes(&exif, false, true).unwrap();
+        assert_eq!(
+            &out[GPS_VALUE_OFFSET..GPS_VALUE_OFFSET + 4],
+            &[0, 0, 0, 0],
+            "GPS IFD pointer must be zeroed when strip_gps is true"
+        );
+    }
+
+    #[test]
+    fn keep_gps_leaves_the_pointer_intact() {
+        let exif = make_tiff(6, 0x0000_0064);
+        let out = sanitize_exif_bytes(&exif, false, false).unwrap();
+        assert_eq!(
+            &out[GPS_VALUE_OFFSET..GPS_VALUE_OFFSET + 4],
+            &0x0000_0064u32.to_le_bytes(),
+            "GPS IFD pointer must be preserved when strip_gps is false"
+        );
+    }
+
+    #[test]
+    fn reset_orientation_rewrites_tag_to_one() {
+        let exif = make_tiff(6, 0x0000_0064);
+        let out = sanitize_exif_bytes(&exif, true, false).unwrap();
+        assert_eq!(out[ORIENTATION_VALUE_OFFSET], 1);
+        assert_eq!(out[ORIENTATION_VALUE_OFFSET + 1], 0);
+    }
+
+    #[test]
+    fn no_flags_returns_payload_unchanged() {
+        let exif = make_tiff(6, 0x0000_0064);
+        let out = sanitize_exif_bytes(&exif, false, false).unwrap();
+        assert_eq!(out, exif);
+    }
+
+    #[test]
+    fn strip_and_reset_together() {
+        let exif = make_tiff(8, 0x0000_00AB);
+        let out = sanitize_exif_bytes(&exif, true, true).unwrap();
+        assert_eq!(out[ORIENTATION_VALUE_OFFSET], 1);
+        assert_eq!(&out[GPS_VALUE_OFFSET..GPS_VALUE_OFFSET + 4], &[0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn too_short_payload_is_returned_unchanged() {
+        let exif = vec![0x49, 0x49, 0x2A];
+        let out = sanitize_exif_bytes(&exif, true, true).unwrap();
+        assert_eq!(out, exif);
+    }
+}

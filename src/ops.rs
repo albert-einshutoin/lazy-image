@@ -299,8 +299,8 @@ pub enum OutputFormat {
 }
 
 impl OutputFormat {
-    fn validate_quality(quality: u8) -> Result<Quality, String> {
-        Quality::new(quality).map_err(|_| format!("invalid quality: {quality}. must be 1-100"))
+    fn validate_quality(quality: u8) -> Result<Quality, LazyImageError> {
+        Quality::new(quality)
     }
 
     /// Create OutputFormat from string with format-specific default quality.
@@ -311,7 +311,7 @@ impl OutputFormat {
     /// - AVIF: 60 (AVIF's high compression efficiency means lower quality still looks great)
     ///
     /// These defaults are chosen based on each format's characteristics and real-world usage.
-    pub fn from_str(format: &str, quality: Option<u8>) -> Result<Self, String> {
+    pub fn from_str(format: &str, quality: Option<u8>) -> Result<Self, LazyImageError> {
         Self::from_str_with_options(format, quality, false)
     }
 
@@ -325,7 +325,7 @@ impl OutputFormat {
         format: &str,
         quality: Option<u8>,
         fast_mode: bool,
-    ) -> Result<Self, String> {
+    ) -> Result<Self, LazyImageError> {
         match format.to_lowercase().as_str() {
             "jpeg" | "jpg" => {
                 let q = quality
@@ -340,12 +340,14 @@ impl OutputFormat {
             "png" => {
                 // PNG is lossless and has no quality knob. Reject an explicit
                 // quality instead of silently discarding it — a discarded value
-                // is a footgun (the caller believes it took effect).
-                if quality.is_some() {
-                    return Err(
-                        "PNG is lossless and does not accept a quality value; omit quality for PNG"
-                            .to_string(),
-                    );
+                // is a footgun (the caller believes it took effect). This is a
+                // recoverable UserError (E400), not an unsupported-format error.
+                if let Some(q) = quality {
+                    return Err(LazyImageError::invalid_argument(
+                        "quality",
+                        q.to_string(),
+                        "PNG is lossless and does not accept a quality value; omit quality for PNG",
+                    ));
                 }
                 Ok(Self::Png)
             }
@@ -365,8 +367,10 @@ impl OutputFormat {
                 Ok(Self::Avif { quality: q })
             }
             #[cfg(not(feature = "avif"))]
-            "avif" => Err("unsupported format: avif (built without avif feature)".to_string()),
-            other => Err(format!("unsupported format: {other}")),
+            "avif" => Err(LazyImageError::unsupported_format(
+                "avif (built without avif feature)",
+            )),
+            _ => Err(LazyImageError::unsupported_format(format.to_string())),
         }
     }
 
@@ -601,7 +605,10 @@ mod tests {
         #[test]
         fn test_png_rejects_quality() {
             let err = OutputFormat::from_str("png", Some(50)).unwrap_err();
-            assert!(err.contains("does not accept"));
+            assert!(err.to_string().contains("does not accept"));
+            // Must be a recoverable UserError (E400 InvalidArgument), not an
+            // unsupported-format CodecError (E111).
+            assert_eq!(err.code().as_str(), "E400");
         }
 
         #[test]
@@ -635,8 +642,8 @@ mod tests {
         #[cfg(not(feature = "avif"))]
         fn test_avif_is_unsupported_without_feature() {
             let err = OutputFormat::from_str("avif", Some(60)).unwrap_err();
-            assert!(err.contains("unsupported format"));
-            assert!(err.contains("without avif feature"));
+            assert!(err.to_string().to_lowercase().contains("unsupported"));
+            assert!(err.to_string().contains("without avif feature"));
         }
 
         #[test]
@@ -649,21 +656,33 @@ mod tests {
         fn test_unsupported_format() {
             let result = OutputFormat::from_str("gif", None);
             assert!(result.is_err());
-            assert!(result.unwrap_err().contains("unsupported format"));
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .to_lowercase()
+                .contains("unsupported"));
         }
 
         #[test]
         fn test_unsupported_format_bmp() {
             let result = OutputFormat::from_str("bmp", None);
             assert!(result.is_err());
-            assert!(result.unwrap_err().contains("unsupported format"));
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .to_lowercase()
+                .contains("unsupported"));
         }
 
         #[test]
         fn test_empty_format() {
             let result = OutputFormat::from_str("", None);
             assert!(result.is_err());
-            assert!(result.unwrap_err().contains("unsupported format"));
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .to_lowercase()
+                .contains("unsupported"));
         }
 
         #[test]
@@ -679,13 +698,13 @@ mod tests {
         #[test]
         fn test_quality_below_range_is_rejected() {
             let err = OutputFormat::from_str("jpeg", Some(0)).unwrap_err();
-            assert!(err.contains("must be 1-100"));
+            assert!(err.to_string().contains("must be 1-100"));
         }
 
         #[test]
         fn test_quality_above_range_is_rejected() {
             let err = OutputFormat::from_str("jpeg", Some(101)).unwrap_err();
-            assert!(err.contains("must be 1-100"));
+            assert!(err.to_string().contains("must be 1-100"));
         }
 
         #[test]
