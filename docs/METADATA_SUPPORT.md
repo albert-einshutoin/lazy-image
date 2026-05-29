@@ -35,7 +35,7 @@ await ImageEngine.fromPath('input.jpg')
 | JPEG | supported | supported | stripped by default, opt-in preserve | not supported | Orientation is normalized after auto-orient |
 | PNG | ICC supported | not currently documented as preserved | n/a | not supported | PNG metadata support is narrower than JPEG |
 | WebP | ICC supported | not currently documented as preserved | n/a | not supported | Favor explicit testing before relying on non-ICC metadata |
-| AVIF | ICC supported on v0.9.x+ with `libavif-sys` | not currently documented as preserved | n/a | not supported | On older/ravif-only builds ICC may be dropped |
+| AVIF | ICC supported on v0.9.x+ with `libavif-sys` | not currently documented as preserved | n/a | not supported | On older/alternate backend builds ICC may be dropped |
 
 ## Important Caveats
 

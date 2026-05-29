@@ -4,7 +4,7 @@
 
 1. **mozjpeg** — Progressive mode, optimized Huffman tables, scan optimization, trellis quantization
 2. **libwebp** — Method 4 (balanced), single-pass encoding (v0.8.1+ optimized for speed)
-3. **ravif** — Pure Rust AVIF encoder, AV1-based compression
+3. **libavif** — AVIF encoder backend with safe Rust FFI wrappers
 4. **Chroma subsampling** (4:2:0) for web-optimal output
 5. **Adaptive preprocessing** — JPEG: compression optimization; WebP (v0.8.1+): speed optimization
 
@@ -26,14 +26,14 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact boundary between eage
 
 ## Color Management
 
-**AVIF**: ICC preserved in v0.9.0+ (libavif-sys). On &lt;0.9.0 or ravif-only builds, ICC is dropped — convert to sRGB before encoding if needed.
+**AVIF**: ICC preserved in v0.9.0+ (libavif-sys). On older or alternate AVIF backend builds, ICC may be dropped — convert to sRGB before encoding if needed.
 
 | Format | ICC |
 |--------|-----|
 | JPEG   | ✅ Extracted and embedded |
 | PNG    | ✅ iCCP chunk |
 | WebP   | ✅ ICCP chunk |
-| AVIF   | ✅ v0.9.0+ libavif-sys; dropped on ravif-only |
+| AVIF   | ✅ v0.9.0+ libavif-sys; may be dropped on older/alternate backend builds |
 
 ## Platform Notes
 
@@ -59,7 +59,7 @@ On Windows, memory-mapped files **cannot be deleted** while mapped. Keep the `Im
 ├─────────────────────────────────────────────────────────────┤
 │                         Rust Core                           │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────┐  │
-│  │ mozjpeg  │  │ libwebp  │  │  ravif   │  │ fast_image  │  │
+│  │ mozjpeg  │  │ libwebp  │  │ libavif  │  │ fast_image  │  │
 │  │ (JPEG)   │  │ (WebP)   │  │ (AVIF)   │  │ _resize     │  │
 │  └──────────┘  └──────────┘  └──────────┘  └─────────────┘  │
 │  ┌──────────┐  ┌──────────┐                                 │

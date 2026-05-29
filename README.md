@@ -2,9 +2,9 @@
 
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/239496c7-ad7f-4649-b130-8ed0a65481f7" />
 
-> **Web image optimization engine for Node.js.** Rust core, smaller outputs than sharp.
+> **Web image optimization engine for Node.js.** Rust core, smaller JPEG outputs, bounded memory.
 
-lazy-image reduces image file sizes by 20-30% compared to sharp in its target web-delivery scenarios, trading encoding speed for smaller outputs. Ideal for CDN-heavy workloads where bandwidth costs matter more than CPU costs.
+In current canonical benchmarks, lazy-image produces **17-20% smaller JPEG outputs** than sharp for tested PNG → JPEG workloads. AVIF/WebP size and speed are workload-specific; benchmark your target image mix before assuming a win.
 
 - **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
 - **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. File-path inputs (`fromPath()`/`processBatch()` → `toFile()`) bypass the V8 heap — small/medium files (≤ 256 MB) are read into Rust-owned memory for SIGBUS safety; only files larger than 256 MB use mmap with advisory locks. See [docs/ZERO_COPY.md](./docs/ZERO_COPY.md).
@@ -68,15 +68,15 @@ streaming/pipeline.js       # Disk-backed bounded-memory streaming
 |---|---|
 | You pay for bandwidth (CDN, S3, CloudFront) | You need maximum encoding throughput |
 | You run in serverless / memory-constrained envs | You need a broad image editing API |
-| You want AVIF with good defaults | You need drop-in API compatibility |
-| You want smaller outputs over faster encodes | You need GIF, SVG, or TIFF support |
+| You want AVIF with safe defaults | You need drop-in API compatibility |
+| You want smaller JPEG outputs over broader codec throughput | You need GIF, SVG, or TIFF support |
 
 **Key differentiators:**
 
-1. **File size optimization** — mozjpeg + libwebp + ravif produce 20-30% smaller outputs than sharp's defaults
+1. **JPEG file size optimization** — mozjpeg produces 17-20% smaller JPEG outputs in the canonical PNG → JPEG benchmarks
 2. **Memory efficiency** — file-path inputs are not copied into the V8 heap; decoded pixels stay in Rust memory
 3. **Security-first** — GPS auto-strip, Image Firewall, Rust memory safety
-4. **AVIF excellence** — ravif encoder with quality-optimized defaults
+4. **AVIF output support** — libavif encoder with quality-tuned defaults and ICC support; benchmark AVIF workloads for size/speed
 
 **What lazy-image does NOT compete on:** raw encoding speed (sharp/libvips is faster), feature breadth (no drawing, compositing, or GIF), API compatibility with sharp.
 
@@ -103,14 +103,14 @@ Scenario guide: [docs/ADOPTION_GUIDE.md](./docs/ADOPTION_GUIDE.md).
 
 Assume:
 - average image size before optimization: **1.0 MB**
-- average reduction with lazy-image: **25%**
+- average JPEG-oriented reduction with lazy-image: **18%** (example only; not universal across all codecs)
 - CDN transfer rate: **$0.085/GB** (example: CloudFront pay-as-you-go, US/EU next 9TB tier)
 
 | Scenario | Transfer with sharp | Transfer with lazy-image | Monthly savings |
 |---|---:|---:|---:|
-| 1M image deliveries / month | 976.6 GB | 732.4 GB | **$20.75** |
-| 10M image deliveries / month | 9.54 TB | 7.15 TB | **$207.52** |
-| 100M image deliveries / month | 95.37 TB | 71.53 TB | **$2,075.20** |
+| 1M image deliveries / month | 976.6 GB | 800.8 GB | **$14.94** |
+| 10M image deliveries / month | 9.54 TB | 7.82 TB | **$149.41** |
+| 100M image deliveries / month | 95.37 TB | 78.20 TB | **$1,494.14** |
 
 Break-even intuition:
 - Encoding overhead is paid **once per generated image**
@@ -192,7 +192,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 
 ## Features (summary)
 
-Smaller JPEG (mozjpeg) · Smaller WebP (libwebp) · AVIF (ravif) · ICC profiles · EXIF auto-orient · Bypass-V8-heap file I/O (read-into-memory ≤ 256 MB, mmap > 256 MB) · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+Smaller JPEG (mozjpeg) · WebP (libwebp) · AVIF (libavif) · ICC profiles · EXIF auto-orient · Bypass-V8-heap file I/O (read-into-memory ≤ 256 MB, mmap > 256 MB) · Disk-backed bounded-memory pipeline (`createStreamingPipeline()`, not true chunked transform streaming) · Image Firewall · GPS auto-strip · Fluent API · Rust core (NAPI-RS) · Cross-platform (macOS, Windows, Linux). Design choices and limits: [docs/ROADMAP.md](./docs/ROADMAP.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ---
 
@@ -215,7 +215,7 @@ MIT
 
 ## Credits
 
-[mozjpeg](https://github.com/mozilla/mozjpeg) · [libwebp](https://chromium.googlesource.com/webm/libwebp) · [ravif](https://github.com/kornelski/ravif) · [fast_image_resize](https://github.com/Cykooz/fast_image_resize) · [img-parts](https://github.com/paolobarbolini/img-parts) · [napi-rs](https://napi.rs/)
+[mozjpeg](https://github.com/mozilla/mozjpeg) · [libwebp](https://chromium.googlesource.com/webm/libwebp) · [libavif](https://github.com/AOMediaCodec/libavif) · [fast_image_resize](https://github.com/Cykooz/fast_image_resize) · [img-parts](https://github.com/paolobarbolini/img-parts) · [napi-rs](https://napi.rs/)
 
 ---
 

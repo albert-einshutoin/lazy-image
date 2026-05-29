@@ -1,7 +1,7 @@
 {
   "name": "@alberteinshutoin/lazy-image",
   "version": "0.15.0",
-  "description": "Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg",
+  "description": "Web image optimization engine for Node.js - smaller JPEG files than sharp in canonical benchmarks, powered by Rust + mozjpeg",
   "main": "index.js",
   "exports": {
     ".": {

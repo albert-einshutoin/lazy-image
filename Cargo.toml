@@ -2,7 +2,7 @@
 name = "lazy-image"
 version = "0.15.0"
 edition = "2021"
-description = "Web image optimization engine - smaller outputs than sharp, powered by Rust + mozjpeg"
+description = "Web image optimization engine - smaller JPEG outputs than sharp in canonical benchmarks, powered by Rust + mozjpeg"
 license = "MIT"
 repository = "https://github.com/albert-einshutoin/lazy-image"
 keywords = ["image", "resize", "jpeg", "webp", "optimization"]
@@ -116,7 +116,7 @@ harness = false
 name = "memory_semaphore"
 harness = false
 
-# 【重要】依存関係（mozjpeg, ravif等）はデバッグビルド時も最適化する
+# 【重要】依存関係（mozjpeg, libavif等）はデバッグビルド時も最適化する
 # これがないと、ASanテスト中の画像処理が激重でタイムアウトする
 [profile.dev.package."*"]
 opt-level = 3
