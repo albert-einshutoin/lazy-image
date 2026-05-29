@@ -11,10 +11,8 @@ use super::super::api::MetadataPolicy;
 use super::super::firewall::FirewallConfig;
 use super::super::platform;
 use super::context::{decode_internal_from_parts, detect_input_format};
-use crate::engine::encoder::{
-    embed_exif_jpeg, embed_exif_png, embed_exif_webp, encode_avif, encode_jpeg_with_settings,
-    encode_png, encode_webp,
-};
+use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
+use crate::engine::io::exif_embed::{embed_exif_jpeg, embed_exif_png, embed_exif_webp};
 #[allow(unused_imports)]
 use crate::engine::io::{exif_has_gps, has_exif, Source};
 use crate::engine::memory;
@@ -70,7 +68,7 @@ pub(super) struct PreparedEncode {
     /// (no ops, pre-decoded input) avoids a deep image clone.
     pub(super) processed: Arc<DynamicImage>,
     pub(super) final_color_state: ColorState,
-    pub(super) input_format: Option<String>,
+    pub(super) input_format: Option<&'static str>,
     /// Whether the source originally had an EXIF segment. Detected once via
     /// `has_exif` on the input bytes (not gated by `MAX_EXIF_SOURCE_BYTES`).
     pub(super) exif_present_in_source: bool,
@@ -243,11 +241,11 @@ pub(super) fn encode_prepared(
     // 4. Encode image to target format
     let mut result = match format {
         OutputFormat::Jpeg { quality, fast_mode } => {
-            encode_jpeg_with_settings(processed, *quality, icc, *fast_mode)
+            encode_jpeg_with_settings(processed, quality.get(), icc, *fast_mode)
         }
         OutputFormat::Png => encode_png(processed, icc),
-        OutputFormat::WebP { quality } => encode_webp(processed, *quality, icc),
-        OutputFormat::Avif { quality } => encode_avif(processed, *quality, icc),
+        OutputFormat::WebP { quality } => encode_webp(processed, quality.get(), icc),
+        OutputFormat::Avif { quality } => encode_avif(processed, quality.get(), icc),
     }?;
 
     // 5. Embed EXIF metadata if requested.
@@ -326,7 +324,8 @@ pub(super) fn encode_prepared(
             0.0
         };
 
-        m.format_in = prepared.input_format.clone();
+        // Allocate the owned `String` only here, where the metrics struct needs it.
+        m.format_in = prepared.input_format.map(|s| s.to_string());
         m.format_out = format.as_str().to_string();
         m.icc_preserved = icc_preserved;
         m.metadata_stripped = metadata_stripped;

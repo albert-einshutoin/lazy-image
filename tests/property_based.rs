@@ -1,6 +1,6 @@
 use image::{DynamicImage, GenericImageView, RgbImage};
 use lazy_image::engine::{apply_ops, calc_resize_dimensions};
-use lazy_image::ops::{Operation, ResizeFit};
+use lazy_image::ops::{Operation, ResizeFit, RotationAngle};
 use proptest::prelude::*;
 use std::borrow::Cow;
 
@@ -62,15 +62,13 @@ fn invalid_crop_strategy() -> impl Strategy<Value = (u32, u32, u32, u32, u32, u3
         })
 }
 
-fn rotate_angle_strategy() -> impl Strategy<Value = i32> {
+fn rotate_angle_strategy() -> impl Strategy<Value = RotationAngle> {
+    // Only the three representable canonical angles; 0 and identity are not
+    // a RotationAngle value and are therefore omitted from the strategy.
     prop_oneof![
-        Just(0),
-        Just(90),
-        Just(180),
-        Just(270),
-        Just(-90),
-        Just(-180),
-        Just(-270),
+        Just(RotationAngle::Cw90),
+        Just(RotationAngle::Cw180),
+        Just(RotationAngle::Cw270),
     ]
 }
 
@@ -190,13 +188,14 @@ proptest! {
     fn prop_rotate_valid_angles_preserve_dimensions(
         orig_w in 1u32..=64,
         orig_h in 1u32..=64,
-        degrees in rotate_angle_strategy(),
+        angle in rotate_angle_strategy(),
     ) {
         let img = create_test_image(orig_w, orig_h);
-        let ops = vec![Operation::Rotate { degrees }];
+        let ops = vec![Operation::Rotate(angle)];
         let result = apply_ops(Cow::Owned(img), &ops).unwrap();
 
-        let swaps = matches!(degrees, 90 | -90 | 270 | -270);
+        // Cw90 and Cw270 transpose the axes; Cw180 preserves them.
+        let swaps = matches!(angle, RotationAngle::Cw90 | RotationAngle::Cw270);
         let expected = if swaps {
             (orig_h, orig_w)
         } else {
@@ -207,16 +206,16 @@ proptest! {
 
     #[test]
     fn prop_rotate_invalid_angles_error(
-        orig_w in 1u32..=64,
-        orig_h in 1u32..=64,
+        // Property: invalid degree values (not 0/±90/±180/±270) cannot be
+        // converted to a RotationAngle — the type system now makes them
+        // unrepresentable as Operation::Rotate values, so we verify
+        // RotationAngle::from_degrees returns Err for these inputs.
         degrees in (-360i32..=360).prop_filter("invalid rotation", |d| {
             !matches!(*d, 0 | 90 | 180 | 270 | -90 | -180 | -270)
         }),
     ) {
-        let img = create_test_image(orig_w, orig_h);
-        let ops = vec![Operation::Rotate { degrees }];
-        let result = apply_ops(Cow::Owned(img), &ops);
-        prop_assert!(result.is_err());
+        let result = RotationAngle::from_degrees(degrees);
+        prop_assert!(result.is_err(), "expected Err for invalid degree {degrees}");
     }
 
     #[test]
@@ -227,7 +226,7 @@ proptest! {
         target_h in 1u32..=32,
     ) {
         let ops_a = vec![
-            Operation::Rotate { degrees: 180 },
+            Operation::Rotate(RotationAngle::Cw180),
             Operation::Resize {
                 width: Some(target_w),
                 height: Some(target_h),
@@ -240,7 +239,7 @@ proptest! {
                 height: Some(target_h),
                 fit: ResizeFit::Fill,
             },
-            Operation::Rotate { degrees: 180 },
+            Operation::Rotate(RotationAngle::Cw180),
         ];
 
         let out_a = apply_ops(Cow::Owned(create_test_image(orig_w, orig_h)), &ops_a).unwrap().into_owned();

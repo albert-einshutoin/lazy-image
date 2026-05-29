@@ -10,7 +10,7 @@ use lazy_image::engine::{
     apply_ops, calc_resize_dimensions, check_dimensions, decode_jpeg_mozjpeg, encode_jpeg,
     encode_png, encode_webp, fast_resize, fast_resize_owned,
 };
-use lazy_image::ops::{ColorSpace, Operation, ResizeFit};
+use lazy_image::ops::{ColorSpace, Operation, ResizeFit, RotationAngle};
 use std::borrow::Cow;
 
 // =========================================================================
@@ -334,7 +334,7 @@ mod apply_ops_tests {
     #[test]
     fn test_rotate_90() {
         let img = create_test_image(100, 50);
-        let ops = vec![Operation::Rotate { degrees: 90 }];
+        let ops = vec![Operation::Rotate(RotationAngle::Cw90)];
         let result = apply_ops(Cow::Owned(img), &ops).unwrap();
         assert_eq!(result.dimensions(), (50, 100));
     }
@@ -342,7 +342,7 @@ mod apply_ops_tests {
     #[test]
     fn test_rotate_180() {
         let img = create_test_image(100, 50);
-        let ops = vec![Operation::Rotate { degrees: 180 }];
+        let ops = vec![Operation::Rotate(RotationAngle::Cw180)];
         let result = apply_ops(Cow::Owned(img), &ops).unwrap();
         assert_eq!(result.dimensions(), (100, 50));
     }
@@ -350,37 +350,33 @@ mod apply_ops_tests {
     #[test]
     fn test_rotate_270() {
         let img = create_test_image(100, 50);
-        let ops = vec![Operation::Rotate { degrees: 270 }];
+        let ops = vec![Operation::Rotate(RotationAngle::Cw270)];
         let result = apply_ops(Cow::Owned(img), &ops).unwrap();
         assert_eq!(result.dimensions(), (50, 100));
     }
 
     #[test]
     fn test_rotate_neg90() {
+        // -90° is equivalent to Cw270
         let img = create_test_image(100, 50);
-        let ops = vec![Operation::Rotate { degrees: -90 }];
+        let ops = vec![Operation::Rotate(RotationAngle::Cw270)];
         let result = apply_ops(Cow::Owned(img), &ops).unwrap();
         assert_eq!(result.dimensions(), (50, 100));
     }
 
     #[test]
     fn test_rotate_0() {
+        // 0° is a no-op; empty ops list produces original dimensions
         let img = create_test_image(100, 50);
-        let ops = vec![Operation::Rotate { degrees: 0 }];
+        let ops = vec![];
         let result = apply_ops(Cow::Owned(img), &ops).unwrap();
         assert_eq!(result.dimensions(), (100, 50));
     }
 
     #[test]
     fn test_rotate_invalid_angle() {
-        let img = create_test_image(100, 100);
-        let ops = vec![Operation::Rotate { degrees: 45 }];
-        let result = apply_ops(Cow::Owned(img), &ops);
-        assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("Unsupported rotation angle"));
+        // 45° is not representable as RotationAngle; from_degrees must return Err
+        assert!(RotationAngle::from_degrees(45).is_err());
     }
 
     #[test]
@@ -442,7 +438,7 @@ mod apply_ops_tests {
                 height: None,
                 fit: ResizeFit::Inside,
             },
-            Operation::Rotate { degrees: 90 },
+            Operation::Rotate(RotationAngle::Cw90),
             Operation::Grayscale,
         ];
         let result = apply_ops(Cow::Owned(img), &ops).unwrap();

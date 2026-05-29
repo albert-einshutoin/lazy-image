@@ -20,7 +20,7 @@ use crate::engine::resize::{
     default_resize_options, fast_resize_owned, fast_resize_owned_impl, validate_resize_dimensions,
 };
 use crate::error::LazyImageError;
-use crate::ops::{Operation, ResizeFit};
+use crate::ops::{Operation, ResizeFit, RotationAngle};
 use image::DynamicImage;
 use std::borrow::Cow;
 
@@ -279,20 +279,13 @@ pub fn apply_ops_tracked<'a>(
                 img.crop_imm(*x, *y, *width, *height)
             }
 
-            Operation::Rotate { degrees } => {
-                match degrees {
-                    90 => img.rotate90(),
-                    180 => img.rotate180(),
-                    270 => img.rotate270(),
-                    -90 => img.rotate270(),
-                    -180 => img.rotate180(),
-                    -270 => img.rotate90(),
-                    0 => img, // No-op for 0 degrees
-                    _ => {
-                        return Err(LazyImageError::invalid_rotation_angle(*degrees));
-                    }
-                }
-            }
+            // Only real quarter turns are queued (the identity is never pushed),
+            // so the match over `RotationAngle` is exhaustive with no fallback arm.
+            Operation::Rotate(angle) => match angle {
+                RotationAngle::Cw90 => img.rotate90(),
+                RotationAngle::Cw180 => img.rotate180(),
+                RotationAngle::Cw270 => img.rotate270(),
+            },
 
             Operation::FlipH => img.fliph(),
             Operation::FlipV => img.flipv(),

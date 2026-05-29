@@ -186,7 +186,7 @@ impl ImageEngine {
             concurrency,
             metadata_policy: policy,
             auto_orient: self.auto_orient,
-            firewall: self.firewall.clone(),
+            firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,
         }))
@@ -254,7 +254,7 @@ impl ImageEngine {
             concurrency,
             metadata_policy: policy,
             auto_orient: self.auto_orient,
-            firewall: self.firewall.clone(),
+            firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,
         }))

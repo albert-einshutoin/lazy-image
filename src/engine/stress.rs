@@ -14,7 +14,7 @@ use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png,
 #[cfg(feature = "stress")]
 use crate::engine::pipeline::apply_ops;
 #[cfg(feature = "stress")]
-use crate::ops::{Operation, OutputFormat, ResizeFit};
+use crate::ops::{Operation, OutputFormat, Quality, ResizeFit};
 #[cfg(feature = "stress")]
 use std::borrow::Cow;
 
@@ -46,21 +46,27 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
     #[cfg(feature = "avif")]
     let formats = vec![
         OutputFormat::Jpeg {
-            quality: 82,
+            quality: Quality::unchecked(82),
             fast_mode: false,
         },
         OutputFormat::Png,
-        OutputFormat::WebP { quality: 74 },
-        OutputFormat::Avif { quality: 60 },
+        OutputFormat::WebP {
+            quality: Quality::unchecked(74),
+        },
+        OutputFormat::Avif {
+            quality: Quality::unchecked(60),
+        },
     ];
     #[cfg(not(feature = "avif"))]
     let formats = vec![
         OutputFormat::Jpeg {
-            quality: 82,
+            quality: Quality::unchecked(82),
             fast_mode: false,
         },
         OutputFormat::Png,
-        OutputFormat::WebP { quality: 74 },
+        OutputFormat::WebP {
+            quality: Quality::unchecked(74),
+        },
     ];
 
     // Decode the image once
@@ -75,17 +81,20 @@ pub fn run_stress_iteration(data: &[u8]) -> EngineResult<()> {
         let _encoded = match format {
             OutputFormat::Jpeg { quality, fast_mode } => {
                 convert_result!(encode_jpeg_with_settings(
-                    &processed, quality, None, fast_mode
+                    &processed,
+                    quality.get(),
+                    None,
+                    fast_mode
                 ))
             }
             OutputFormat::Png => {
                 convert_result!(encode_png(&processed, None))
             }
             OutputFormat::WebP { quality } => {
-                convert_result!(encode_webp(&processed, quality, None))
+                convert_result!(encode_webp(&processed, quality.get(), None))
             }
             OutputFormat::Avif { quality } => {
-                convert_result!(encode_avif(&processed, quality, None))
+                convert_result!(encode_avif(&processed, quality.get(), None))
             }
         };
 

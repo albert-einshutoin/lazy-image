@@ -8,6 +8,7 @@ use super::*;
 use crate::engine::resize::{
     calc_cover_resize_dimensions, calc_resize_dimensions, crop_to_dimensions, fast_resize_owned,
 };
+use crate::ops::RotationAngle;
 
 #[test]
 fn test_resize_operation() {
@@ -289,7 +290,7 @@ fn test_extract_extreme_aspect_ratio() {
 #[test]
 fn test_rotate_90() {
     let img = create_test_image(100, 50);
-    let ops = vec![Operation::Rotate { degrees: 90 }];
+    let ops = vec![Operation::Rotate(RotationAngle::Cw90)];
     let result = apply_ops(Cow::Owned(img), &ops).unwrap();
     assert_eq!(result.dimensions(), (50, 100));
 }
@@ -297,7 +298,7 @@ fn test_rotate_90() {
 #[test]
 fn test_rotate_180() {
     let img = create_test_image(100, 50);
-    let ops = vec![Operation::Rotate { degrees: 180 }];
+    let ops = vec![Operation::Rotate(RotationAngle::Cw180)];
     let result = apply_ops(Cow::Owned(img), &ops).unwrap();
     assert_eq!(result.dimensions(), (100, 50));
 }
@@ -305,7 +306,7 @@ fn test_rotate_180() {
 #[test]
 fn test_rotate_270() {
     let img = create_test_image(100, 50);
-    let ops = vec![Operation::Rotate { degrees: 270 }];
+    let ops = vec![Operation::Rotate(RotationAngle::Cw270)];
     let result = apply_ops(Cow::Owned(img), &ops).unwrap();
     assert_eq!(result.dimensions(), (50, 100));
 }
@@ -313,29 +314,32 @@ fn test_rotate_270() {
 #[test]
 fn test_rotate_neg90() {
     let img = create_test_image(100, 50);
-    let ops = vec![Operation::Rotate { degrees: -90 }];
+    // -90 degrees maps to Cw270 (same rotation, opposite sign convention)
+    let ops = vec![Operation::Rotate(RotationAngle::Cw270)];
     let result = apply_ops(Cow::Owned(img), &ops).unwrap();
     assert_eq!(result.dimensions(), (50, 100));
 }
 
 #[test]
 fn test_rotate_0() {
+    // 0 degrees is now an identity — the engine no longer queues a Rotate op for it.
+    // RotationAngle::from_degrees(0) returns Ok(None), so we verify via an empty op list.
     let img = create_test_image(100, 50);
-    let ops = vec![Operation::Rotate { degrees: 0 }];
+    let ops: Vec<Operation> = vec![];
     let result = apply_ops(Cow::Owned(img), &ops).unwrap();
     assert_eq!(result.dimensions(), (100, 50));
 }
 
 #[test]
 fn test_rotate_invalid_angle() {
-    let img = create_test_image(100, 100);
-    let ops = vec![Operation::Rotate { degrees: 45 }];
-    let result = apply_ops(Cow::Owned(img), &ops);
-    assert!(result.is_err());
-    assert!(result
-        .unwrap_err()
-        .to_string()
-        .contains("Unsupported rotation angle"));
+    // Invalid angles (e.g. 45°) are now rejected at construction time — they are
+    // unrepresentable as RotationAngle, so the error moves from apply_ops to the
+    // boundary where the caller attempts to build the operation.
+    assert!(RotationAngle::from_degrees(45).is_err());
+    // Additional invalid angles to cover the full boundary:
+    assert!(RotationAngle::from_degrees(91).is_err());
+    assert!(RotationAngle::from_degrees(360).is_err());
+    assert!(RotationAngle::from_degrees(-45).is_err());
 }
 
 #[test]
@@ -489,7 +493,7 @@ fn test_chained_operations() {
             height: None,
             fit: ResizeFit::Inside,
         },
-        Operation::Rotate { degrees: 90 },
+        Operation::Rotate(RotationAngle::Cw90),
         Operation::Grayscale,
     ];
     let result = apply_ops(Cow::Owned(img), &ops).unwrap();
@@ -512,7 +516,7 @@ fn test_extract_fusion_preserves_following_operations() {
             width: 12,
             height: 10,
         },
-        Operation::Rotate { degrees: 90 },
+        Operation::Rotate(RotationAngle::Cw90),
     ];
 
     let optimized = optimize_ops(&ops);

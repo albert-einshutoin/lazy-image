@@ -27,6 +27,58 @@ use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 
+// =============================================================================
+// INTERNAL HELPER
+// =============================================================================
+
+#[cfg(feature = "napi")]
+impl ImageEngine {
+    /// Build a [`TaskContext`] from the engine's current state for the given
+    /// output format.
+    ///
+    /// All fields that are derived from `self` (source, decoded image, ops,
+    /// metadata policy, ICC/EXIF data, firewall, auto-orient) are assembled
+    /// here once. The only varying input across output methods is the resolved
+    /// `OutputFormat`, which is passed as a parameter.
+    ///
+    /// `last_error` is always initialised to `None`; task implementations set
+    /// it in their `compute` / `reject` path.
+    fn build_task_context(&mut self, format: OutputFormat) -> TaskContext {
+        let source = self.source.clone();
+        let decoded = self.decoded.clone();
+        let ops = self.ops.clone();
+        let mut policy = self.metadata_policy;
+        policy.apply_firewall(self.firewall.reject_metadata);
+        let auto_orient = self.auto_orient;
+        let icc_present = self.icc_profile().is_some();
+        let icc_profile = if policy.effective_icc() {
+            self.icc_profile().cloned()
+        } else {
+            None
+        };
+        let exif_data = if policy.effective_exif() {
+            self.exif_data().cloned()
+        } else {
+            None
+        };
+
+        TaskContext {
+            source,
+            decoded,
+            ops,
+            format,
+            icc_profile,
+            icc_present,
+            exif_data,
+            auto_orient,
+            metadata_policy: policy,
+            firewall: self.firewall,
+            #[cfg(feature = "napi")]
+            last_error: None,
+        }
+    }
+}
+
 #[cfg(feature = "napi")]
 #[napi]
 impl ImageEngine {
@@ -59,40 +111,9 @@ impl ImageEngine {
             }
         };
 
-        // Use source directly - zero-copy for Memory and Mapped sources
-        let source = self.source.clone();
-        let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
-        let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
-        let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
-        } else {
-            None
-        };
-        let exif_data = if policy.effective_exif() {
-            self.exif_data().cloned()
-        } else {
-            None
-        };
-
         Ok(AsyncTask::new(EncodeTask {
-            ctx: TaskContext {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
-                #[cfg(feature = "napi")]
-                last_error: None,
-            },
+            // Use source directly - zero-copy for Memory and Mapped sources
+            ctx: self.build_task_context(output_format),
         }))
     }
 
@@ -122,10 +143,12 @@ impl ImageEngine {
         self.last_preset = Some(preset.clone());
 
         let (format_str, quality, fast_mode) = match &preset.format {
-            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Jpeg { quality, fast_mode } => {
+                ("jpeg", Some(quality.get()), Some(*fast_mode))
+            }
             OutputFormat::Png => ("png", None, None),
-            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
-            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+            OutputFormat::WebP { quality } => ("webp", Some(quality.get()), None),
+            OutputFormat::Avif { quality } => ("avif", Some(quality.get()), None),
         };
 
         self.to_buffer(
@@ -159,40 +182,9 @@ impl ImageEngine {
             }
         };
 
-        // Use source directly - zero-copy for Memory and Mapped sources
-        let source = self.source.clone();
-        let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
-        let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
-        let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
-        } else {
-            None
-        };
-        let exif_data = if policy.effective_exif() {
-            self.exif_data().cloned()
-        } else {
-            None
-        };
-
         Ok(AsyncTask::new(EncodeWithMetricsTask {
-            ctx: TaskContext {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
-                #[cfg(feature = "napi")]
-                last_error: None,
-            },
+            // Use source directly - zero-copy for Memory and Mapped sources
+            ctx: self.build_task_context(output_format),
         }))
     }
 
@@ -224,10 +216,12 @@ impl ImageEngine {
         self.last_preset = Some(preset.clone());
 
         let (format_str, quality, fast_mode) = match &preset.format {
-            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Jpeg { quality, fast_mode } => {
+                ("jpeg", Some(quality.get()), Some(*fast_mode))
+            }
             OutputFormat::Png => ("png", None, None),
-            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
-            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+            OutputFormat::WebP { quality } => ("webp", Some(quality.get()), None),
+            OutputFormat::Avif { quality } => ("avif", Some(quality.get()), None),
         };
 
         self.to_buffer_with_metrics(
@@ -247,8 +241,12 @@ impl ImageEngine {
     ///
     /// Returns `TargetBytesResult` with the encoded data, chosen quality,
     /// actual size, and whether the budget was met.
+    ///
+    /// @internal This is the low-level N-API bridge used by the JS `encode(...)`
+    /// helper; prefer the public structured-options API. Not covered by semver.
     #[napi(
         js_name = "toBufferTargetBytesNative",
+        ts_args_type = "format: OutputFormat, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null",
         ts_return_type = "Promise<TargetBytesResult>"
     )]
     // This is an internal N-API compatibility bridge used by the JS helper;
@@ -319,39 +317,8 @@ impl ImageEngine {
                 }
             };
 
-        let source = self.source.clone();
-        let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
-        let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
-        let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
-        } else {
-            None
-        };
-        let exif_data = if policy.effective_exif() {
-            self.exif_data().cloned()
-        } else {
-            None
-        };
-
         Ok(AsyncTask::new(EncodeTargetBytesTask {
-            ctx: TaskContext {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
-                #[cfg(feature = "napi")]
-                last_error: None,
-            },
+            ctx: self.build_task_context(output_format),
             target_bytes,
             min_quality: min_q,
             max_quality: max_q,
@@ -388,40 +355,9 @@ impl ImageEngine {
             }
         };
 
-        // Use source directly - zero-copy for Memory and Mapped sources
-        let source = self.source.clone();
-        let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
-        let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
-        let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
-        } else {
-            None
-        };
-        let exif_data = if policy.effective_exif() {
-            self.exif_data().cloned()
-        } else {
-            None
-        };
-
         Ok(AsyncTask::new(WriteFileTask {
-            ctx: TaskContext {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
-                #[cfg(feature = "napi")]
-                last_error: None,
-            },
+            // Use source directly - zero-copy for Memory and Mapped sources
+            ctx: self.build_task_context(output_format),
             output_path: path,
         }))
     }
@@ -451,39 +387,8 @@ impl ImageEngine {
             }
         };
 
-        let source = self.source.clone();
-        let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
-        let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
-        let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
-        } else {
-            None
-        };
-        let exif_data = if policy.effective_exif() {
-            self.exif_data().cloned()
-        } else {
-            None
-        };
-
         Ok(AsyncTask::new(WriteFileWithMetricsTask {
-            ctx: TaskContext {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
-                #[cfg(feature = "napi")]
-                last_error: None,
-            },
+            ctx: self.build_task_context(output_format),
             output_path: path,
         }))
     }
@@ -530,12 +435,18 @@ impl ImageEngine {
             self.last_preset = Some(preset.clone());
 
             let (f, q, fm) = match &preset.format {
-                OutputFormat::Jpeg { quality, fast_mode } => {
-                    ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
-                }
+                OutputFormat::Jpeg { quality, fast_mode } => (
+                    "jpeg".to_string(),
+                    Some(quality.get() as f64),
+                    Some(*fast_mode),
+                ),
                 OutputFormat::Png => ("png".to_string(), None, None),
-                OutputFormat::WebP { quality } => ("webp".to_string(), Some(*quality as f64), None),
-                OutputFormat::Avif { quality } => ("avif".to_string(), Some(*quality as f64), None),
+                OutputFormat::WebP { quality } => {
+                    ("webp".to_string(), Some(quality.get() as f64), None)
+                }
+                OutputFormat::Avif { quality } => {
+                    ("avif".to_string(), Some(quality.get() as f64), None)
+                }
             };
             (f, q, fm.unwrap_or(false))
         } else {
@@ -553,39 +464,8 @@ impl ImageEngine {
                 }
             };
 
-        let source = self.source.clone();
-        let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
-        let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
-        let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
-        } else {
-            None
-        };
-        let exif_data = if policy.effective_exif() {
-            self.exif_data().cloned()
-        } else {
-            None
-        };
-
         Ok(AsyncTask::new(crate::engine::tasks::UnifiedEncodeTask {
-            ctx: TaskContext {
-                source,
-                decoded,
-                ops,
-                format: output_format,
-                icc_profile,
-                icc_present,
-                exif_data,
-                auto_orient,
-                metadata_policy: policy,
-                firewall: self.firewall.clone(),
-                #[cfg(feature = "napi")]
-                last_error: None,
-            },
+            ctx: self.build_task_context(output_format),
             want_metrics,
         }))
     }
@@ -621,12 +501,18 @@ impl ImageEngine {
             self.last_preset = Some(preset.clone());
 
             let (f, q, fm) = match &preset.format {
-                OutputFormat::Jpeg { quality, fast_mode } => {
-                    ("jpeg".to_string(), Some(*quality as f64), Some(*fast_mode))
-                }
+                OutputFormat::Jpeg { quality, fast_mode } => (
+                    "jpeg".to_string(),
+                    Some(quality.get() as f64),
+                    Some(*fast_mode),
+                ),
                 OutputFormat::Png => ("png".to_string(), None, None),
-                OutputFormat::WebP { quality } => ("webp".to_string(), Some(*quality as f64), None),
-                OutputFormat::Avif { quality } => ("avif".to_string(), Some(*quality as f64), None),
+                OutputFormat::WebP { quality } => {
+                    ("webp".to_string(), Some(quality.get() as f64), None)
+                }
+                OutputFormat::Avif { quality } => {
+                    ("avif".to_string(), Some(quality.get() as f64), None)
+                }
             };
             (f, q, fm.unwrap_or(false))
         } else {
@@ -644,40 +530,9 @@ impl ImageEngine {
                 }
             };
 
-        let source = self.source.clone();
-        let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
-        let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
-        let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
-        } else {
-            None
-        };
-        let exif_data = if policy.effective_exif() {
-            self.exif_data().cloned()
-        } else {
-            None
-        };
-
         Ok(AsyncTask::new(
             crate::engine::tasks::UnifiedEncodeToFileTask {
-                ctx: TaskContext {
-                    source,
-                    decoded,
-                    ops,
-                    format: output_format,
-                    icc_profile,
-                    icc_present,
-                    exif_data,
-                    auto_orient,
-                    metadata_policy: policy,
-                    firewall: self.firewall.clone(),
-                    #[cfg(feature = "napi")]
-                    last_error: None,
-                },
+                ctx: self.build_task_context(output_format),
                 want_metrics,
                 output_path: path,
             },
@@ -709,10 +564,12 @@ impl ImageEngine {
         self.last_preset = Some(preset.clone());
 
         let (format_str, quality, fast_mode) = match &preset.format {
-            OutputFormat::Jpeg { quality, fast_mode } => ("jpeg", Some(*quality), Some(*fast_mode)),
+            OutputFormat::Jpeg { quality, fast_mode } => {
+                ("jpeg", Some(quality.get()), Some(*fast_mode))
+            }
             OutputFormat::Png => ("png", None, None),
-            OutputFormat::WebP { quality } => ("webp", Some(*quality), None),
-            OutputFormat::Avif { quality } => ("avif", Some(*quality), None),
+            OutputFormat::WebP { quality } => ("webp", Some(quality.get()), None),
+            OutputFormat::Avif { quality } => ("avif", Some(quality.get()), None),
         };
 
         self.to_file(

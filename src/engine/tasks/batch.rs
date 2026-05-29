@@ -67,7 +67,9 @@ fn process_batch_file(
     ctx.firewall.enforce_source_len(input_len)?;
 
     let source = crate::engine::io::load_file_safe(Path::new(input_path))?;
-    let data = source.as_bytes().expect("source always has bytes");
+    let data = source.as_bytes().ok_or_else(|| {
+        LazyImageError::internal_panic("loaded batch source unexpectedly had no readable bytes")
+    })?;
 
     ctx.firewall.scan_metadata(data)?;
 
@@ -110,12 +112,57 @@ fn process_batch_file(
     };
     let output_filename = Path::new(filename).with_extension(extension);
     let output_path = Path::new(ctx.output_dir).join(output_filename);
-    write_encoded_output(output_path.to_string_lossy().as_ref(), &encoded)?;
+    // Convert the path to a string once and reuse it for both the write and the
+    // returned success record (avoids a second `to_string_lossy` scan per file).
+    let output_path_str = output_path.to_string_lossy().into_owned();
+    write_encoded_output(&output_path_str, &encoded)?;
 
     Ok(BatchFileSuccess {
-        output_path: output_path.to_string_lossy().to_string(),
+        output_path: output_path_str,
         metrics,
     })
+}
+
+/// Run `process` over `0..total` using exactly `workers` rayon tasks that pull
+/// indices from a shared atomic counter, returning the results in input order.
+///
+/// This is the bounded-concurrency path shared by [`BatchTask`] and
+/// [`BatchWithMetricsTask`]: it caps the number of concurrently-running encodes
+/// at `workers` (rather than chunking, which causes tail latency) while keeping
+/// per-file ordering. Uses `parking_lot::Mutex` (no poisoning) for the result
+/// collector. Call inside `pool.install(..)` so the rayon scope runs on the
+/// shared global pool.
+#[cfg(feature = "napi")]
+fn work_steal_collect<T, F>(workers: usize, total: usize, process: F) -> Vec<T>
+where
+    T: Send,
+    F: Fn(usize) -> T + Sync,
+{
+    use parking_lot::Mutex;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    let next_index = AtomicUsize::new(0);
+    let collected: Mutex<Vec<(usize, T)>> = Mutex::new(Vec::with_capacity(total));
+
+    rayon::scope(|scope| {
+        for _ in 0..workers {
+            let next_index = &next_index;
+            let collected = &collected;
+            let process = &process;
+            scope.spawn(move |_| loop {
+                let idx = next_index.fetch_add(1, Ordering::Relaxed);
+                if idx >= total {
+                    break;
+                }
+                let item = process(idx);
+                collected.lock().push((idx, item));
+            });
+        }
+    });
+
+    let mut indexed = collected.into_inner();
+    indexed.sort_unstable_by_key(|(idx, _)| *idx);
+    indexed.into_iter().map(|(_, item)| item).collect()
 }
 
 pub struct BatchTask {
@@ -191,7 +238,7 @@ impl Task for BatchTask {
         let auto_concurrency = Some(self.concurrency == 0);
 
         // Helper closure to process a single image
-        let firewall = self.firewall.clone();
+        let firewall = self.firewall;
         let batch_ctx = BatchFileContext {
             output_dir: &self.output_dir,
             ops: &self.ops,
@@ -250,47 +297,11 @@ impl Task for BatchTask {
         let results: Vec<BatchResult> = if effective_concurrency >= self.inputs.len() {
             pool.install(|| self.inputs.par_iter().map(process_one).collect())
         } else {
-            use std::sync::atomic::{AtomicUsize, Ordering};
-            use std::sync::{Arc, Mutex};
-
-            let next_index = Arc::new(AtomicUsize::new(0));
-            let indexed_results = Arc::new(Mutex::new(Vec::<(usize, BatchResult)>::with_capacity(
-                self.inputs.len(),
-            )));
-
             pool.install(|| {
-                rayon::scope(|scope| {
-                    for _ in 0..effective_concurrency {
-                        let next_index = Arc::clone(&next_index);
-                        let indexed_results = Arc::clone(&indexed_results);
-                        let inputs = &self.inputs;
-                        scope.spawn(move |_| loop {
-                            let idx = next_index.fetch_add(1, Ordering::Relaxed);
-                            if idx >= inputs.len() {
-                                break;
-                            }
-
-                            let result = process_one(&inputs[idx]);
-                            let mut guard = indexed_results
-                                .lock()
-                                .unwrap_or_else(|poisoned| poisoned.into_inner());
-                            guard.push((idx, result));
-                        });
-                    }
-                });
-            });
-
-            let mut indexed_results = {
-                let mut guard = indexed_results
-                    .lock()
-                    .unwrap_or_else(|poisoned| poisoned.into_inner());
-                std::mem::take(&mut *guard)
-            };
-            indexed_results.sort_unstable_by_key(|(idx, _)| *idx);
-            indexed_results
-                .into_iter()
-                .map(|(_, result)| result)
-                .collect()
+                work_steal_collect(effective_concurrency, self.inputs.len(), |idx| {
+                    process_one(&self.inputs[idx])
+                })
+            })
         };
 
         Ok(results)
@@ -344,7 +355,7 @@ impl Task for BatchWithMetricsTask {
         let effective_concurrency_u32 = u32::try_from(effective_concurrency).unwrap_or(u32::MAX);
         let auto_concurrency = self.concurrency == 0;
 
-        let firewall = self.firewall.clone();
+        let firewall = self.firewall;
         let batch_ctx = BatchFileContext {
             output_dir: &self.output_dir,
             ops: &self.ops,
@@ -399,34 +410,11 @@ impl Task for BatchWithMetricsTask {
             if effective_concurrency >= self.inputs.len() {
                 pool.install(|| self.inputs.par_iter().map(process_one).collect())
             } else {
-                use std::sync::atomic::{AtomicUsize, Ordering};
-                use std::sync::{Arc, Mutex};
-
-                let inputs = Arc::new(&self.inputs);
-                let out = Arc::new(Mutex::new(Vec::with_capacity(self.inputs.len())));
-                let next = AtomicUsize::new(0);
-
                 pool.install(|| {
-                    rayon::scope(|s| {
-                        for _ in 0..effective_concurrency {
-                            let inputs = Arc::clone(&inputs);
-                            let out = Arc::clone(&out);
-                            let next_ref = &next;
-                            s.spawn(move |_| loop {
-                                let idx = next_ref.fetch_add(1, Ordering::Relaxed);
-                                if idx >= inputs.len() {
-                                    break;
-                                }
-                                let item = process_one(&inputs[idx]);
-                                out.lock().unwrap().push((idx, item));
-                            });
-                        }
-                    });
-                });
-
-                let mut pairs = Arc::try_unwrap(out).unwrap().into_inner().unwrap();
-                pairs.sort_by_key(|(idx, _)| *idx);
-                pairs.into_iter().map(|(_, item)| item).collect()
+                    work_steal_collect(effective_concurrency, self.inputs.len(), |idx| {
+                        process_one(&self.inputs[idx])
+                    })
+                })
             };
 
         let mut successful_items = 0u32;

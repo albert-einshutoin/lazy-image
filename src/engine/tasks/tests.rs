@@ -11,7 +11,7 @@ use super::encode::{EncodeTargetBytesTask, EncodeTask};
 use super::processing::{encode_prepared, prepare_for_encode, EncodeContext};
 use crate::engine::io::Source;
 use crate::error::LazyImageError;
-use crate::ops::{Operation, OutputFormat, ResizeFit};
+use crate::ops::{Operation, OutputFormat, Quality, ResizeFit};
 use image::{DynamicImage, GenericImageView, ImageBuffer, ImageFormat, Rgba};
 use std::sync::Arc;
 
@@ -178,7 +178,7 @@ fn auto_orient_flag_default_is_true() {
 fn fast_mode_propagates_to_jpeg_encode() {
     // Verify that OutputFormat::Jpeg with fast_mode=true produces valid JPEG
     let task = make_task_with_decoded(OutputFormat::Jpeg {
-        quality: 80,
+        quality: Quality::unchecked(80),
         fast_mode: true,
     });
     let result = task
@@ -192,7 +192,7 @@ fn fast_mode_propagates_to_jpeg_encode() {
 #[test]
 fn fast_mode_false_produces_valid_jpeg() {
     let task = make_task_with_decoded(OutputFormat::Jpeg {
-        quality: 80,
+        quality: Quality::unchecked(80),
         fast_mode: false,
     });
     let result = task
@@ -204,11 +204,11 @@ fn fast_mode_false_produces_valid_jpeg() {
 #[test]
 fn fast_mode_true_vs_false_both_valid() {
     let fast_task = make_task_with_decoded(OutputFormat::Jpeg {
-        quality: 80,
+        quality: Quality::unchecked(80),
         fast_mode: true,
     });
     let normal_task = make_task_with_decoded(OutputFormat::Jpeg {
-        quality: 80,
+        quality: Quality::unchecked(80),
         fast_mode: false,
     });
     let fast_result = fast_task.process_and_encode(None).unwrap();
@@ -234,7 +234,7 @@ fn target_bytes_search_finds_best_quality_under_budget() {
             decoded: Some(Arc::new(dyn_img.clone())),
             ops: vec![],
             format: OutputFormat::Jpeg {
-                quality: 100,
+                quality: Quality::unchecked(100),
                 fast_mode: false,
             },
             icc_profile: None,
@@ -254,7 +254,7 @@ fn target_bytes_search_finds_best_quality_under_budget() {
             decoded: Some(Arc::new(dyn_img.clone())),
             ops: vec![],
             format: OutputFormat::Jpeg {
-                quality: 100,
+                quality: Quality::unchecked(100),
                 fast_mode: false,
             },
             icc_profile: None,
@@ -280,7 +280,7 @@ fn target_bytes_search_finds_best_quality_under_budget() {
             decoded: Some(Arc::new(dyn_img)),
             ops: vec![],
             format: OutputFormat::Jpeg {
-                quality: 100,
+                quality: Quality::unchecked(100),
                 fast_mode: false,
             },
             icc_profile: None,
@@ -314,7 +314,7 @@ fn target_bytes_strict_policy_fails_when_budget_unmet() {
             decoded: Some(Arc::new(dyn_img)),
             ops: vec![],
             format: OutputFormat::Jpeg {
-                quality: 100,
+                quality: Quality::unchecked(100),
                 fast_mode: false,
             },
             icc_profile: None,
@@ -357,7 +357,7 @@ fn prepare_for_encode_reuses_decoded_arc_when_ops_empty() {
         false,
         &FirewallConfig::disabled(),
         &OutputFormat::Jpeg {
-            quality: 80,
+            quality: Quality::unchecked(80),
             fast_mode: false,
         },
     )
@@ -392,7 +392,7 @@ fn prepare_for_encode_applies_ops_once_when_ops_nonempty() {
         false,
         &FirewallConfig::disabled(),
         &OutputFormat::Jpeg {
-            quality: 80,
+            quality: Quality::unchecked(80),
             fast_mode: false,
         },
     )
@@ -423,7 +423,7 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
         false,
         &FirewallConfig::disabled(),
         &OutputFormat::Jpeg {
-            quality: 80,
+            quality: Quality::unchecked(80),
             fast_mode: false,
         },
     )
@@ -433,9 +433,9 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
     let mut last_size: Option<usize> = None;
     let policy = MetadataPolicy::strip_all();
     let firewall = FirewallConfig::disabled();
-    for quality in [50u8, 80, 100] {
+    for q in [50u8, 80, 100] {
         let format = OutputFormat::Jpeg {
-            quality,
+            quality: Quality::unchecked(q),
             fast_mode: false,
         };
         let ctx = EncodeContext {
@@ -454,7 +454,7 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
         assert_eq!(
             &bytes[0..2],
             &[0xFF, 0xD8],
-            "encode_prepared must produce valid JPEG at quality {quality}"
+            "encode_prepared must produce valid JPEG at quality {q}"
         );
         // Higher quality should generally yield larger files.
         if let Some(prev) = last_size {
@@ -487,7 +487,7 @@ fn target_bytes_search_metrics_include_decode_ops_and_encode_timings() {
                 fit: crate::ops::ResizeFit::Inside,
             }],
             format: OutputFormat::Jpeg {
-                quality: 100,
+                quality: Quality::unchecked(100),
                 fast_mode: false,
             },
             icc_profile: None,
