@@ -128,6 +128,9 @@ impl ImageEngine {
     /// Backward compatibility: the legacy positional signature
     ///   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
     /// is still accepted for now but will be removed in a future major release.
+    // The exported N-API signature intentionally keeps legacy positional
+    // arguments alongside the options object for JS compatibility.
+    #[allow(clippy::too_many_arguments)]
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
@@ -173,7 +176,7 @@ impl ImageEngine {
             }
         };
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         Ok(AsyncTask::new(BatchTask {
             inputs,
@@ -189,6 +192,9 @@ impl ImageEngine {
         }))
     }
 
+    // The exported N-API signature intentionally keeps legacy positional
+    // arguments alongside the options object for JS compatibility.
+    #[allow(clippy::too_many_arguments)]
     #[napi(
         js_name = "processBatchWithMetrics",
         ts_return_type = "Promise<BatchOutputWithMetrics>"
@@ -237,7 +243,7 @@ impl ImageEngine {
             }
         };
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
 
         Ok(AsyncTask::new(BatchWithMetricsTask {

@@ -63,7 +63,7 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
@@ -163,7 +163,7 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
@@ -251,6 +251,9 @@ impl ImageEngine {
         js_name = "toBufferTargetBytesNative",
         ts_return_type = "Promise<TargetBytesResult>"
     )]
+    // This is an internal N-API compatibility bridge used by the JS helper;
+    // the public JS API accepts a structured options object.
+    #[allow(clippy::too_many_arguments)]
     pub fn to_buffer_target_bytes_native(
         &mut self,
         env: Env,
@@ -263,9 +266,32 @@ impl ImageEngine {
     ) -> Result<AsyncTask<EncodeTargetBytesTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
 
-        // Validate and clamp quality range
-        let min_q = min_quality.unwrap_or(30).min(100) as u8;
-        let max_q = max_quality.unwrap_or(100).min(100) as u8;
+        // Validate quality range without silently clamping so direct native
+        // callers get the same 1-100 contract as the rest of the API.
+        let min_q_raw = min_quality.unwrap_or(30);
+        let max_q_raw = max_quality.unwrap_or(100);
+        if !(1..=100).contains(&min_q_raw) {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "minQuality",
+                    min_q_raw.to_string(),
+                    "must be between 1 and 100",
+                ),
+            ));
+        }
+        if !(1..=100).contains(&max_q_raw) {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument(
+                    "maxQuality",
+                    max_q_raw.to_string(),
+                    "must be between 1 and 100",
+                ),
+            ));
+        }
+        let min_q = min_q_raw as u8;
+        let max_q = max_q_raw as u8;
         if min_q > max_q {
             return Err(napi_err(
                 &env,
@@ -274,12 +300,6 @@ impl ImageEngine {
                     min_q.to_string(),
                     "must be less than or equal to maxQuality",
                 ),
-            ));
-        }
-        if min_q == 0 {
-            return Err(napi_err(
-                &env,
-                LazyImageError::invalid_argument("minQuality", "0", "must be between 1 and 100"),
             ));
         }
         if target_bytes == 0 {
@@ -302,7 +322,7 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
@@ -372,7 +392,7 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
@@ -434,7 +454,7 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
@@ -536,7 +556,7 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
@@ -627,7 +647,7 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
         let icc_present = self.icc_profile().is_some();
