@@ -44,6 +44,9 @@ Before starting a release:
    - MAJOR (`x.0.0`): breaking changes
    - MINOR (`0.x.0`): backward-compatible additions
    - PATCH (`0.0.x`): bug fixes only
+6. **Check breaking-change markers**: if the target changelog section contains
+   `BREAKING` or `Removed`, the release version must be a major boundary
+   (`x.0.0`). For current 0.x development, that means `1.0.0`.
 
 ---
 
@@ -80,6 +83,7 @@ All four files below need to move from the current version to the new one. Skipp
 Optional helper:
 ```bash
 npm run version   # verifies package.json ↔ Cargo.toml are in sync (does NOT bump)
+npm run release:check   # rejects non-major releases that contain BREAKING/Removed entries
 ```
 
 #### CHANGELOG entry
@@ -88,6 +92,16 @@ Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Section order:
 `### Added` → `### Changed` → `### Deprecated` → `### Removed` → `### Fixed` → `### Security`
 
 Use `git log <prev-tag>..HEAD --oneline` to enumerate merged PRs.
+
+If a release section contains `### Changed (BREAKING)`, `BREAKING` bullets, or
+`### Removed`, run `npm run release:check` before committing the release branch.
+The command uses the version in `package.json` by default; it also accepts an
+explicit version for planning checks, for example:
+
+```bash
+node scripts/check-release-policy.js 1.0.0
+node scripts/check-release-policy.js 0.16.0  # expected to fail if breaking entries remain
+```
 
 #### Commit and push
 
