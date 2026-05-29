@@ -11,6 +11,11 @@
 //
 // See docs/PROJECT_PHILOSOPHY.md for the project's priorities and non-goals.
 
+// Require every unsafe operation inside an `unsafe fn` to sit in an explicit
+// `unsafe {}` block (so each one carries its own `// SAFETY:` justification),
+// crate-wide rather than only in `codecs::avif_safe`.
+#![deny(unsafe_op_in_unsafe_fn)]
+
 #[cfg(feature = "napi")]
 #[macro_use]
 extern crate napi_derive;

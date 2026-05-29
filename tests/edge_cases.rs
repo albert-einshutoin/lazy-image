@@ -48,7 +48,7 @@ fn create_valid_jpeg(width: u32, height: u32) -> Vec<u8> {
 
 mod minimal_image_tests {
     use super::*;
-    use lazy_image::ops::{Operation, ResizeFit};
+    use lazy_image::ops::{Operation, ResizeFit, RotationAngle};
 
     #[test]
     fn test_1x1_resize() {
@@ -67,7 +67,7 @@ mod minimal_image_tests {
     #[test]
     fn test_1x1_rotate() {
         let img = create_test_image(1, 1);
-        let ops = vec![Operation::Rotate { degrees: 90 }];
+        let ops = vec![Operation::Rotate(RotationAngle::Cw90)];
         let result = apply_ops(Cow::Owned(img), &ops);
         assert!(result.is_ok());
         // 1x1の回転はサイズが変わらない
@@ -498,7 +498,7 @@ mod decoder_error_tests {
 mod pipeline_error_tests {
     use super::*;
     use lazy_image::engine::fast_resize_owned;
-    use lazy_image::ops::Operation;
+    use lazy_image::ops::{Operation, RotationAngle};
 
     #[test]
     fn test_fast_resize_owned_invalid_dimensions() {
@@ -545,37 +545,43 @@ mod pipeline_error_tests {
 
     #[test]
     fn test_invalid_rotation_angle() {
-        let img = create_test_image(100, 100);
-        let ops = vec![Operation::Rotate { degrees: 45 }]; // 45度は無効
-        let result = apply_ops(Cow::Owned(img), &ops);
-        assert!(result.is_err());
-        let err = result.unwrap_err();
+        // 45° is not a valid rotation angle; RotationAngle::from_degrees must reject it.
+        // Invalid angles are now unrepresentable as Operation::Rotate variants.
         assert!(
-            err.to_string().contains("rotation") || err.to_string().contains("angle"),
-            "Error should mention rotation or angle"
+            RotationAngle::from_degrees(45).is_err(),
+            "45° should be rejected by RotationAngle::from_degrees"
         );
     }
 
     #[test]
     fn test_negative_rotation_angles() {
         let img = create_test_image(100, 100);
-        // -90, -180, -270は有効
-        let ops1 = vec![Operation::Rotate { degrees: -90 }];
+        // -90 ≡ Cw270, -180 ≡ Cw180, -270 ≡ Cw90 — all valid
+        let ops1 = vec![Operation::Rotate(RotationAngle::Cw270)];
         assert!(apply_ops(Cow::Owned(img.clone()), &ops1).is_ok());
 
-        let ops2 = vec![Operation::Rotate { degrees: -180 }];
+        let ops2 = vec![Operation::Rotate(RotationAngle::Cw180)];
         assert!(apply_ops(Cow::Owned(img.clone()), &ops2).is_ok());
 
-        let ops3 = vec![Operation::Rotate { degrees: -270 }];
+        let ops3 = vec![Operation::Rotate(RotationAngle::Cw90)];
         assert!(apply_ops(Cow::Owned(img), &ops3).is_ok());
     }
 
     #[test]
     fn test_rotation_0_degrees() {
         let img = create_test_image(100, 100);
-        let ops = vec![Operation::Rotate { degrees: 0 }];
+        // 0° is a no-op: RotationAngle::from_degrees(0) returns Ok(None), so no
+        // Operation::Rotate is constructed. Verify that an empty op list is valid
+        // and that from_degrees(0) itself signals identity.
+        let angle_result = RotationAngle::from_degrees(0);
+        assert!(angle_result.is_ok(), "0° should be accepted");
+        assert!(
+            angle_result.unwrap().is_none(),
+            "0° should map to None (identity)"
+        );
+        let ops: Vec<Operation> = vec![];
         let result = apply_ops(Cow::Owned(img), &ops);
-        assert!(result.is_ok()); // 0度は有効（no-op）
+        assert!(result.is_ok()); // no-op pipeline succeeds
     }
 }
 

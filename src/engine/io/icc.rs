@@ -511,11 +511,25 @@ fn extract_icc_from_avif_safe(data: &[u8]) -> Option<Vec<u8>> {
     std::panic::catch_unwind(|| unsafe {
         // SAFETY:
         // - `decoder` is created by `avifDecoderCreate` and released by `AvifDecoderGuard`.
+        //   The returned pointer is either null (handled immediately) or uniquely owned by
+        //   this block; no other code aliases it until `AvifDecoderGuard::drop` runs.
         // - `avifDecoderSetIOMemory` borrows `data` for the duration of this call only, and
-        //   `data` lives for the entire function.
+        //   `data` lives for the entire function, so the slice pointer and length passed to
+        //   libavif remain valid throughout all subsequent libavif calls in this block.
+        // - The field write `(*decoder).maxThreads = 1` (line 543) is safe because `decoder`
+        //   is a non-null, uniquely-owned live `avifDecoder` allocated by libavif on the
+        //   preceding line, and `maxThreads` is a plain integer field with no aliasing
+        //   or validity constraint beyond being written before `avifDecoderParse` is called.
         // - After `avifDecoderParse` returns `AVIF_RESULT_OK`, libavif guarantees that
-        //   `decoder.image` and its ICC fields point to initialized memory owned by the decoder
-        //   until the decoder is destroyed.
+        //   `decoder.image` points to an initialized, libavif-owned `avifImage` and that
+        //   `image.icc.data` (if non-null) and `image.icc.size` describe a contiguous,
+        //   initialized buffer of exactly `icc.size` bytes owned by the decoder allocation.
+        // - `std::slice::from_raw_parts(icc_ptr, icc_size)` is valid because: `icc_ptr` is
+        //   checked non-null immediately before the call; `icc_size` was checked against
+        //   `MAX_ICC_SOURCE_BYTES` so it is bounded; both pointer and length come from the
+        //   libavif-populated `image.icc` struct whose invariants are guaranteed by the
+        //   successful `avifDecoderParse` call above; and the resulting slice is immediately
+        //   copied via `.to_vec()`, so it does not outlive the decoder or `data`.
         // Create decoder
         let decoder = avifDecoderCreate();
         if decoder.is_null() {

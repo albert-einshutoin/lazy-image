@@ -33,7 +33,12 @@ pub use super::super::metadata::MetadataPolicy;
 /// using the historical `napi_err(&env, err)` call site.
 #[cfg(feature = "napi")]
 pub(super) fn napi_err(env: &Env, err: LazyImageError) -> napi::Error {
-    crate::error::napi_error_with_code(env, err).expect("failed to create napi error")
+    // `napi_error_with_code` only fails if NAPI itself cannot allocate the JS
+    // error object (heap pressure). Falling back to a status-only error keeps
+    // the rejection on the Promise path instead of `.expect()` aborting the
+    // entire Node.js process.
+    crate::error::napi_error_with_code(env, err)
+        .unwrap_or_else(|_| napi::Error::from_status(napi::Status::GenericFailure))
 }
 
 /// The main image processing engine.
@@ -144,14 +149,16 @@ impl ImageEngine {
         let icc_profile = {
             let lock = OnceLock::new();
             if let Some(val) = self.icc_profile.get() {
-                let _ = lock.set(val.clone());
+                lock.set(val.clone())
+                    .expect("freshly-created OnceLock must accept its first set");
             }
             lock
         };
         let exif_data = {
             let lock = OnceLock::new();
             if let Some(val) = self.exif_data.get() {
-                let _ = lock.set(val.clone());
+                lock.set(val.clone())
+                    .expect("freshly-created OnceLock must accept its first set");
             }
             lock
         };
@@ -166,7 +173,7 @@ impl ImageEngine {
             auto_orient: self.auto_orient,
             metadata_policy: self.metadata_policy,
             xmp_warning_emitted: self.xmp_warning_emitted,
-            firewall: self.firewall.clone(),
+            firewall: self.firewall,
         })
     }
 }

@@ -32,7 +32,10 @@ pub enum FirewallPolicy {
     Custom,
 }
 
-#[derive(Clone, Debug)]
+// `Copy` is derived: every field is `Copy` (bools, `FirewallPolicy`, `Option<u64>`),
+// so the config crosses into tasks and rayon workers as a cheap bitwise copy
+// instead of an explicit `.clone()` at each call site.
+#[derive(Clone, Copy, Debug)]
 pub struct FirewallConfig {
     pub enabled: bool,
     pub policy: FirewallPolicy,

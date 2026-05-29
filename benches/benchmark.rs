@@ -3,9 +3,11 @@
 // Performance benchmarks for lazy-image
 // Run with: cargo bench
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use fast_image_resize::{self as fir, PixelType, ResizeOptions};
 use rayon::prelude::*;
+// `criterion::black_box` is deprecated; use the standard-library hint instead.
+use std::hint::black_box;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 // =============================================================================
@@ -213,6 +215,74 @@ fn make_u8x4_image(width: u32, height: u32) -> fir::images::Image<'static> {
 }
 
 // =============================================================================
+// REAL ENCODE PIPELINE BENCHMARKS
+// =============================================================================
+//
+// These exercise the actual codec hot paths (mozjpeg / libwebp) on a decoded
+// image, so allocation/throughput regressions in the encoder show up here —
+// unlike the synthetic fibonacci/atomic groups above. The source image is
+// generated in-memory (no fixture file dependency); `Throughput::Bytes` reports
+// per-megapixel throughput.
+
+/// Build a synthetic RGB `DynamicImage` of the given size for encode benchmarks.
+fn make_dynamic_rgb(width: u32, height: u32) -> image::DynamicImage {
+    use image::{ImageBuffer, Rgb};
+    let buf = ImageBuffer::<Rgb<u8>, Vec<u8>>::from_fn(width, height, |x, y| {
+        // Smooth gradients compress realistically (not all-zero, not noise).
+        Rgb([(x % 256) as u8, (y % 256) as u8, ((x + y) % 256) as u8])
+    });
+    image::DynamicImage::ImageRgb8(buf)
+}
+
+fn bench_encode_pipeline(c: &mut Criterion) {
+    use criterion::Throughput;
+
+    // Mid-size image keeps the suite fast while staying representative.
+    let (w, h) = (1280, 960);
+    let img = make_dynamic_rgb(w, h);
+
+    let mut group = c.benchmark_group("encode_pipeline");
+    group.throughput(Throughput::Bytes((w * h * 3) as u64));
+    group.sample_size(20);
+
+    group.bench_function("jpeg_q80", |b| {
+        b.iter(|| lazy_image::engine::encode_jpeg(black_box(&img), 80, None).unwrap())
+    });
+
+    group.bench_function("webp_q80", |b| {
+        b.iter(|| lazy_image::engine::encode_webp(black_box(&img), 80, None).unwrap())
+    });
+
+    group.bench_function("png", |b| {
+        b.iter(|| lazy_image::engine::encode_png(black_box(&img), None).unwrap())
+    });
+
+    group.finish();
+}
+
+/// Resize the real `fast_image_resize` path across a representative downscale.
+fn bench_resize_pipeline(c: &mut Criterion) {
+    use criterion::Throughput;
+
+    let src = make_u8x4_image(4000, 3000);
+    let options =
+        ResizeOptions::new().resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3));
+
+    let mut group = c.benchmark_group("resize_pipeline");
+    group.throughput(Throughput::Elements((4000 * 3000) as u64));
+    group.sample_size(20);
+    group.bench_function("lanczos3_4000x3000_to_800x600", |b| {
+        b.iter(|| {
+            let mut dst = fir::images::Image::new(800, 600, PixelType::U8x4);
+            let mut resizer = fir::Resizer::new();
+            resizer.resize(black_box(&src), &mut dst, &options).unwrap();
+            black_box(dst)
+        })
+    });
+    group.finish();
+}
+
+// =============================================================================
 // BENCHMARK GROUPS
 // =============================================================================
 
@@ -222,6 +292,8 @@ criterion_group!(
     bench_parallel_vs_sequential,
     bench_concurrency_levels,
     bench_fir_lanczos_parallel,
+    bench_encode_pipeline,
+    bench_resize_pipeline,
 );
 
 criterion_main!(benches);

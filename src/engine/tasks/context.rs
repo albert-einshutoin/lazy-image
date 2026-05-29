@@ -21,9 +21,13 @@ use image::{DynamicImage, GenericImageView, ImageFormat};
 use std::borrow::Cow;
 use std::sync::Arc;
 
-/// Convert an `ImageFormat` to the lowercase string used by metrics and
+/// Convert an `ImageFormat` to the lowercase label used by metrics and
 /// downstream APIs.
-pub(super) fn format_to_string(fmt: ImageFormat) -> String {
+///
+/// Returns a `&'static str` (every arm, including `to_mime_type`, is static),
+/// so the `String` allocation is deferred to the single point that actually
+/// needs an owned value (metrics population).
+pub(super) fn format_to_string(fmt: ImageFormat) -> &'static str {
     match fmt {
         ImageFormat::Jpeg => "jpeg",
         ImageFormat::Png => "png",
@@ -35,12 +39,11 @@ pub(super) fn format_to_string(fmt: ImageFormat) -> String {
         ImageFormat::Tiff => "tiff",
         other => other.to_mime_type(),
     }
-    .to_string()
 }
 
-/// Detect the input format from a byte slice, returning the lowercase string
+/// Detect the input format from a byte slice, returning the lowercase label
 /// used by metrics (e.g. "jpeg", "png").
-pub(super) fn detect_input_format(bytes: &[u8]) -> Option<String> {
+pub(super) fn detect_input_format(bytes: &[u8]) -> Option<&'static str> {
     detect_format(bytes).map(format_to_string)
 }
 

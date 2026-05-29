@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (BREAKING)
+- **PNG + quality is now rejected instead of silently ignored.** Passing a `quality`
+  to a PNG output (e.g. `toBuffer('png', 50)`, `toFile`, `processBatch`, or the
+  `encode({ format: 'png', quality })` options object) now throws a recoverable
+  `UserError` with code **`E400`** (`InvalidArgument`) and an actionable message,
+  rather than discarding the value. PNG is lossless and has no quality knob; the
+  previous silent-ignore behavior masked the caller's mistake. **Migration:** omit
+  `quality` for PNG. (Encode profiles via `toBufferProfile`/`encode` automatically
+  skip quality for PNG, so no change is needed there.)
+
+### Internal
+- Rust engineering hardening: `Quality` newtype (1..=100 enforced at construction),
+  `RotationAngle` enum, `MetadataPolicy` sum type (makes "keep GPS without EXIF"
+  unrepresentable), `OutputFormat` parsing now returns the typed `LazyImageError`
+  (correct error codes at the NAPI boundary), crate-wide
+  `#![deny(unsafe_op_in_unsafe_fn)]` with documented SAFETY contracts, a shared
+  work-steal batch helper, and assorted allocation/concurrency cleanups. No public
+  API change beyond the PNG behavior above.
+
 ---
 
 ## [0.15.0] - 2026-05-28

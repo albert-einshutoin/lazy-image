@@ -118,20 +118,24 @@ impl WeightedSemaphore {
             ready
         };
 
-        // Wait for our turn (FIFO fairness)
-        loop {
-            if ready_flag.load(Ordering::Acquire) {
-                return MemoryPermit {
-                    sem: Arc::clone(self),
-                    weight: need,
-                };
-            }
-
-            // Sleep briefly before checking again
+        // Wait for our turn (FIFO fairness).
+        //
+        // Fast pre-check avoids taking the lock when the flag is already set.
+        if !ready_flag.load(Ordering::Acquire) {
             let mut guard = self.state.lock();
-            if !ready_flag.load(Ordering::Acquire) {
-                self.cvar.wait(&mut guard);
-            }
+            // `wait_while` re-evaluates the predicate before sleeping and on every
+            // (possibly spurious) wakeup, returning only once our flag is set. A
+            // broadcast `notify_all` thus wakes every waiter, but the ones whose
+            // flag is still clear go straight back to sleep instead of each
+            // spinning through a redundant lock/recheck/unlock cycle as the old
+            // hand-rolled loop did.
+            self.cvar
+                .wait_while(&mut guard, |_| !ready_flag.load(Ordering::Acquire));
+        }
+
+        MemoryPermit {
+            sem: Arc::clone(self),
+            weight: need,
         }
     }
 

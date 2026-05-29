@@ -79,6 +79,11 @@ impl SafeAvifImage {
         pixel_format: avifPixelFormat,
     ) -> Result<Self, LazyImageError> {
         let (_w, _h) = Self::validate_dimensions(width, height)?;
+        // SAFETY: `avifImageCreate` accepts any non-zero width, height, depth, and
+        // pixel-format values — all validated above. It returns either a
+        // heap-allocated `avifImage` or NULL; we check for NULL via `NonNull::new`
+        // immediately after, and the resulting pointer is uniquely owned by the
+        // returned `SafeAvifImage` which frees it in `Drop`.
         let ptr = unsafe { avifImageCreate(width, height, depth, pixel_format) };
         let ptr = NonNull::new(ptr)
             .ok_or_else(|| LazyImageError::encode_failed("avif", "Failed to create AVIF image"))?;
@@ -92,16 +97,23 @@ impl SafeAvifImage {
     }
 
     /// Set color properties for the image.
+    ///
+    /// Returns an error if the image pointer was already released, matching the
+    /// fallible contract of the peer methods (`set_icc_profile`,
+    /// `allocate_planes`) instead of panicking via `expect`.
     pub fn set_color_properties(
         &mut self,
         primaries: u16,
         transfer: u16,
         matrix: u16,
         yuv_range: avifRange,
-    ) {
-        let image = self
-            .ptr
-            .expect("SafeAvifImage pointer was released before configuration");
+    ) -> Result<(), LazyImageError> {
+        let image = self.ptr.ok_or_else(|| {
+            LazyImageError::encode_failed("avif", "AVIF image pointer was released")
+        })?;
+        // SAFETY: `image` is a non-null, libavif-owned `avifImage` that this
+        // `SafeAvifImage` exclusively owns (`&mut self`), so writing its color
+        // metadata fields is sound and free of aliasing.
         unsafe {
             let raw = image.as_ptr();
             (*raw).colorPrimaries = primaries;
@@ -109,6 +121,7 @@ impl SafeAvifImage {
             (*raw).matrixCoefficients = matrix;
             (*raw).yuvRange = yuv_range;
         }
+        Ok(())
     }
 
     /// Set ICC profile for the image.
@@ -122,6 +135,10 @@ impl SafeAvifImage {
         let image = self.ptr.ok_or_else(|| {
             LazyImageError::encode_failed("avif", "AVIF image pointer was released")
         })?;
+        // SAFETY: `image` is a non-null, libavif-owned `avifImage` uniquely owned by
+        // this `SafeAvifImage` (`&mut self`). `icc.as_ptr()` and `icc.len()` describe
+        // a valid, initialized byte slice that outlives this call; libavif copies the
+        // data internally, so no aliasing or lifetime issue arises.
         let result = unsafe { avifImageSetProfileICC(image.as_ptr(), icc.as_ptr(), icc.len()) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
@@ -143,6 +160,10 @@ impl SafeAvifImage {
         let image = self.ptr.ok_or_else(|| {
             LazyImageError::encode_failed("avif", "AVIF image pointer was released")
         })?;
+        // SAFETY: `image` is a non-null, libavif-owned `avifImage` uniquely owned by
+        // this `SafeAvifImage` (`&mut self`). `planes` is a plain integer flag; the
+        // function only writes into libavif-managed heap memory it already owns,
+        // so this call is free of aliasing or dangling-pointer hazards.
         let result = unsafe { avifImageAllocatePlanes(image.as_ptr(), planes) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
@@ -164,6 +185,12 @@ impl SafeAvifImage {
         let image = self.ptr.ok_or_else(|| {
             LazyImageError::encode_failed("avif", "AVIF image pointer was released")
         })?;
+        // SAFETY: `image` is a non-null, libavif-owned `avifImage` uniquely owned by
+        // this `SafeAvifImage` (`&mut self`). `rgb` is a pointer to a fully initialised
+        // `avifRGBImage` created via `create_rgb_image`, whose pixel buffer remains
+        // valid for the duration of this call per that function's documented contract.
+        // libavif reads through `rgb` and writes into the YUV planes it already owns,
+        // so no aliasing or use-after-free can occur.
         let result = unsafe { avifImageRGBToYUV(image.as_ptr(), rgb) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
@@ -183,6 +210,10 @@ impl SafeAvifImage {
         let image = self.ptr.ok_or_else(|| {
             LazyImageError::encode_failed("avif", "AVIF image pointer was released")
         })?;
+        // SAFETY: `image` is a non-null, libavif-owned `avifImage` uniquely owned by
+        // this `SafeAvifImage` (`&mut self`). Dereferencing the pointer to read the
+        // `alphaPlane` field is sound because the object is fully initialised by
+        // libavif and `&mut self` ensures exclusive access.
         let plane_ptr = unsafe { (*image.as_ptr()).alphaPlane };
         NonNull::new(plane_ptr)
             .ok_or_else(|| LazyImageError::encode_failed("avif", "Alpha plane is not allocated"))
@@ -193,6 +224,10 @@ impl SafeAvifImage {
         let image = self
             .ptr
             .expect("SafeAvifImage pointer was released before querying alpha rows");
+        // SAFETY: `image` is a non-null, libavif-owned `avifImage` uniquely owned by
+        // this `SafeAvifImage`. `&self` ensures no concurrent mutation exists.
+        // Dereferencing to read the plain `alphaRowBytes` field of a fully
+        // initialised struct is sound.
         unsafe { (*image.as_ptr()).alphaRowBytes as usize }
     }
 
@@ -203,6 +238,10 @@ impl SafeAvifImage {
     /// The caller must ensure that the pointer is not used after the
     /// SafeAvifImage is dropped, and that it is not used concurrently.
     pub unsafe fn as_ptr(&self) -> *const avifImage {
+        // SAFETY: The caller guarantees (per the `# Safety` doc) that the returned
+        // pointer is not used after this `SafeAvifImage` is dropped and that no
+        // concurrent mutable access exists. `self.ptr` is `Some` as long as this
+        // wrapper is live; `expect` enforces this invariant at runtime.
         self.ptr
             .as_ref()
             .expect("SafeAvifImage pointer was released before FFI use")
@@ -216,6 +255,11 @@ impl SafeAvifImage {
     /// The caller must ensure that the pointer is not used after the
     /// SafeAvifImage is dropped, and that it is not used concurrently.
     pub unsafe fn as_mut_ptr(&mut self) -> *mut avifImage {
+        // SAFETY: The caller guarantees (per the `# Safety` doc) that the returned
+        // pointer is not used after this `SafeAvifImage` is dropped and that no
+        // concurrent access exists. `&mut self` ensures exclusive access at the Rust
+        // level. `self.ptr` is `Some` as long as this wrapper is live; `expect`
+        // enforces this invariant at runtime.
         self.ptr
             .as_mut()
             .expect("SafeAvifImage pointer was released before FFI use")
@@ -231,6 +275,10 @@ impl SafeAvifImage {
 impl Drop for SafeAvifImage {
     fn drop(&mut self) {
         if let Some(ptr) = self.ptr.take() {
+            // SAFETY: `ptr` is non-null (it came from `NonNull`) and is the unique
+            // owner of the `avifImage` allocation created by libavif. `self.ptr.take()`
+            // sets the field to `None`, guaranteeing this destructor path runs at most
+            // once, so `avifImageDestroy` is called exactly once with no double-free.
             unsafe { avifImageDestroy(ptr.as_ptr()) };
         }
         #[cfg(test)]
@@ -253,6 +301,10 @@ impl SafeAvifEncoder {
     /// # Returns
     /// Returns `Ok(SafeAvifEncoder)` on success, or an error if encoder creation fails.
     pub fn new() -> Result<Self, LazyImageError> {
+        // SAFETY: `avifEncoderCreate` takes no arguments and returns either a
+        // heap-allocated `avifEncoder` or NULL; we check for NULL via `NonNull::new`
+        // immediately after. The resulting pointer is uniquely owned by the returned
+        // `SafeAvifEncoder` which frees it in `Drop` via `avifEncoderDestroy`.
         let ptr = unsafe { avifEncoderCreate() };
         let ptr = NonNull::new(ptr).ok_or_else(|| {
             LazyImageError::encode_failed("avif", "Failed to create AVIF encoder")
@@ -273,10 +325,19 @@ impl SafeAvifEncoder {
     /// * `quality_alpha` - Alpha quality value (1-100)
     /// * `speed` - Encoding speed (0-10, where 0 is slowest/best)
     /// * `max_threads` - Maximum number of threads to use
-    pub fn configure(&mut self, quality: u8, quality_alpha: u8, speed: i32, max_threads: i32) {
+    pub fn configure(
+        &mut self,
+        quality: u8,
+        quality_alpha: u8,
+        speed: i32,
+        max_threads: i32,
+    ) -> Result<(), LazyImageError> {
         let encoder = self
             .ptr
-            .expect("SafeAvifEncoder pointer was released before configuration");
+            .ok_or_else(|| LazyImageError::encode_failed("avif", "AVIF encoder was released"))?;
+        // SAFETY: `encoder` is a non-null, libavif-owned `avifEncoder` uniquely
+        // owned by this `SafeAvifEncoder` (`&mut self`); writing its plain
+        // configuration fields is sound with no aliasing.
         unsafe {
             let raw = encoder.as_ptr();
             (*raw).quality = quality as i32;
@@ -284,6 +345,7 @@ impl SafeAvifEncoder {
             (*raw).speed = speed;
             (*raw).maxThreads = max_threads;
         }
+        Ok(())
     }
 
     /// Add an image to the encoder.
@@ -304,6 +366,11 @@ impl SafeAvifEncoder {
         let encoder = self
             .ptr
             .ok_or_else(|| LazyImageError::encode_failed("avif", "AVIF encoder was released"))?;
+        // SAFETY: `encoder` is a non-null, libavif-owned `avifEncoder` uniquely
+        // owned by this `SafeAvifEncoder` (`&mut self`). `image.as_mut_ptr()` yields
+        // the non-null, live `avifImage` pointer uniquely borrowed through `&mut
+        // SafeAvifImage`; no other reference to it exists during this call. `duration`
+        // and `add_image_flags` are plain integers passed by value.
         let result = unsafe {
             avifEncoderAddImage(
                 encoder.as_ptr(),
@@ -332,6 +399,12 @@ impl SafeAvifEncoder {
         let encoder = self
             .ptr
             .ok_or_else(|| LazyImageError::encode_failed("avif", "AVIF encoder was released"))?;
+        // SAFETY: `encoder` is a non-null, libavif-owned `avifEncoder` uniquely owned
+        // by this `SafeAvifEncoder` (`&mut self`). `output.as_mut_ptr()` returns a
+        // valid pointer to the `avifRWData` embedded in `SafeAvifRwData`, uniquely
+        // borrowed through `&mut SafeAvifRwData`; libavif writes the encoded bytes
+        // into that buffer and takes ownership of the allocation it creates there,
+        // which `Drop for SafeAvifRwData` will free via `avifRWDataFree`.
         let result = unsafe { avifEncoderFinish(encoder.as_ptr(), output.as_mut_ptr()) };
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
@@ -351,6 +424,11 @@ impl SafeAvifEncoder {
 impl Drop for SafeAvifEncoder {
     fn drop(&mut self) {
         if let Some(ptr) = self.ptr.take() {
+            // SAFETY: `ptr` is non-null (it came from `NonNull`) and is the unique
+            // owner of the `avifEncoder` allocation created by libavif.
+            // `self.ptr.take()` sets the field to `None`, guaranteeing this destructor
+            // path runs at most once, so `avifEncoderDestroy` is called exactly once
+            // with no double-free.
             unsafe { avifEncoderDestroy(ptr.as_ptr()) };
         }
         #[cfg(test)]
@@ -377,6 +455,10 @@ impl SafeAvifRwData {
             }
         });
         Self {
+            // SAFETY: `avifRWData` is a plain C struct (a data pointer and a size)
+            // with no invariants beyond those maintained by libavif itself. An
+            // all-zero bit pattern is the correct empty / NULL state recognized by
+            // libavif's `avifRWDataFree` and `avifEncoderFinish`.
             data: unsafe { std::mem::zeroed() },
         }
     }
@@ -386,6 +468,11 @@ impl SafeAvifRwData {
     /// # Returns
     /// Returns a byte slice containing the encoded AVIF data.
     pub fn as_slice(&self) -> &[u8] {
+        // SAFETY: When `self.data.data` is non-null and `self.data.size > 0`, the
+        // pointer was written by libavif (`avifEncoderFinish`) and refers to a
+        // contiguous, initialized byte array of exactly `self.data.size` bytes.
+        // `&self` ensures no concurrent mutation exists. The returned slice borrows
+        // from `self`, so it cannot outlive the `SafeAvifRwData` that owns the buffer.
         unsafe {
             if self.data.data.is_null() || self.data.size == 0 {
                 &[]
@@ -410,12 +497,24 @@ impl SafeAvifRwData {
     /// The caller must ensure that the pointer is not used after the
     /// SafeAvifRwData is dropped.
     pub unsafe fn as_mut_ptr(&mut self) -> *mut avifRWData {
+        // SAFETY: The caller guarantees (per the `# Safety` doc) that the returned
+        // pointer is not used after this `SafeAvifRwData` is dropped. `&mut self`
+        // provides exclusive access to `self.data`, so the returned raw pointer is
+        // not aliased by any other live reference for the duration of the caller's
+        // use. `self.data` is a stack-embedded struct, so the pointer is always valid
+        // and properly aligned.
         &mut self.data
     }
 }
 
 impl Drop for SafeAvifRwData {
     fn drop(&mut self) {
+        // SAFETY: `self.data` is either zero-initialised (empty) or was populated by
+        // libavif via `avifEncoderFinish`. `avifRWDataFree` correctly handles the
+        // zero/null case as a no-op. `Drop` runs at most once (Rust guarantees
+        // single-drop semantics), so the buffer is freed exactly once with no
+        // double-free. `&mut self.data` is exclusively borrowed here; no other
+        // reference to it exists.
         unsafe {
             avifRWDataFree(&mut self.data);
         }
@@ -436,9 +535,21 @@ impl Default for SafeAvifRwData {
 
 /// Helper function to create and configure an avifRGBImage structure.
 /// This encapsulates the unsafe operations needed to set up RGB image data.
-pub fn create_rgb_image(
+///
+/// # Safety
+///
+/// The returned [`avifRGBImage`] borrows `pixels` as its backing store; the
+/// caller must guarantee that:
+/// - `pixels` points to at least `width * 4 * height` initialized bytes laid
+///   out as tightly-packed RGBA8 rows, and
+/// - that buffer remains valid and is not accessed from Rust for as long as the
+///   returned `avifRGBImage` is used (e.g. passed to `rgb_to_yuv`).
+///
+/// The function itself only reads through the pointer indirectly via libavif;
+/// it never writes through it.
+pub unsafe fn create_rgb_image(
     image: &mut SafeAvifImage,
-    pixels: *const u8,
+    pixels: *mut u8,
     width: u32,
     height: u32,
 ) -> Result<avifRGBImage, LazyImageError> {
@@ -470,12 +581,18 @@ pub fn create_rgb_image(
         ));
     }
 
+    // SAFETY: `avifRGBImage` is a plain C struct that is valid when
+    // zero-initialized; `avifRGBImageSetDefaults` then fills it from the owned
+    // `image`. `image.as_mut_ptr()` is a live, non-null libavif image.
     let mut rgb: avifRGBImage = unsafe { std::mem::zeroed() };
+    // SAFETY: see this function's `# Safety` contract. `pixels` is non-null
+    // (checked above) and points to `row_bytes_u32 * height` valid RGBA8 bytes
+    // owned by the caller for the lifetime of `rgb`.
     unsafe {
         avifRGBImageSetDefaults(&mut rgb, image.as_mut_ptr());
         rgb.format = AVIF_RGB_FORMAT_RGBA;
         rgb.depth = 8;
-        rgb.pixels = pixels as *mut u8;
+        rgb.pixels = pixels;
         rgb.rowBytes = row_bytes_u32;
     }
     Ok(rgb)
@@ -543,16 +660,22 @@ mod tests {
     fn create_rgb_image_rejects_pixel_overflow() {
         // MAX_DIMENSION^2 exceeds MAX_PIXELS, should fail validation.
         let mut img = SafeAvifImage::new(1, 1, 8, AVIF_PIXEL_FORMAT_YUV420).unwrap();
-        let err =
-            create_rgb_image(&mut img, std::ptr::null(), MAX_DIMENSION, MAX_DIMENSION).unwrap_err();
+        // SAFETY: validation rejects the oversized dimensions before the null
+        // pointer is ever dereferenced, so no invalid memory is accessed.
+        let err = unsafe {
+            create_rgb_image(&mut img, std::ptr::null_mut(), MAX_DIMENSION, MAX_DIMENSION)
+        }
+        .unwrap_err();
         assert!(err.to_string().contains("Pixel count"));
     }
 
     #[test]
     fn create_rgb_image_sets_row_bytes() {
         let mut img = SafeAvifImage::new(4, 2, 8, AVIF_PIXEL_FORMAT_YUV420).unwrap();
-        let pixels: [u8; 32] = [0; 32];
-        let rgb = create_rgb_image(&mut img, pixels.as_ptr(), 4, 2).unwrap();
+        let mut pixels: [u8; 32] = [0; 32];
+        // SAFETY: `pixels` holds exactly 4 * 2 * 4 = 32 RGBA8 bytes and outlives
+        // `rgb`, satisfying `create_rgb_image`'s contract.
+        let rgb = unsafe { create_rgb_image(&mut img, pixels.as_mut_ptr(), 4, 2) }.unwrap();
         assert_eq!(rgb.rowBytes, 16);
         assert_eq!(rgb.format, AVIF_RGB_FORMAT_RGBA);
     }
@@ -578,6 +701,10 @@ mod tests {
         let mut img =
             ManuallyDrop::new(SafeAvifImage::new(2, 2, 8, AVIF_PIXEL_FORMAT_YUV444).unwrap());
         assert_eq!(live_images(), 1);
+        // SAFETY: `img` was just created above and has not been moved or dropped.
+        // `ManuallyDrop::take` moves the inner value out of the `ManuallyDrop`
+        // wrapper; after this call `img` must not be used again. We immediately
+        // `drop(taken)` to run the `SafeAvifImage` destructor exactly once.
         let taken = unsafe { ManuallyDrop::take(&mut img) };
         drop(taken);
         assert_eq!(
@@ -635,6 +762,10 @@ mod tests {
 
         // Simulate an external FFI consumer that takes ownership and frees the image.
         let raw = img.take_raw_for_test();
+        // SAFETY: `raw` is the non-null `avifImage` pointer that was just extracted
+        // from `img` via `take_raw_for_test`, which sets `img.ptr` to `None`. We are
+        // the sole owner of this pointer at this point; calling `avifImageDestroy`
+        // exactly once here frees it without double-free when `img` is dropped below.
         unsafe {
             avifImageDestroy(raw);
         }
@@ -652,6 +783,10 @@ mod tests {
         assert_eq!(live_encoders(), 1);
 
         let raw = enc.take_raw_for_test();
+        // SAFETY: `raw` is the non-null `avifEncoder` pointer that was just extracted
+        // from `enc` via `take_raw_for_test`, which sets `enc.ptr` to `None`. We are
+        // the sole owner of this pointer at this point; calling `avifEncoderDestroy`
+        // exactly once here frees it without double-free when `enc` is dropped below.
         unsafe {
             avifEncoderDestroy(raw);
         }
@@ -668,6 +803,12 @@ mod tests {
         assert_eq!(live_rwdata(), 1);
 
         // Allocate a real buffer via libavif to mirror production ownership.
+        // SAFETY: `data.as_mut_ptr()` returns a valid, exclusively-borrowed pointer to
+        // the `avifRWData` embedded in `data`. `avifRWDataRealloc` allocates an 8-byte
+        // buffer managed by libavif. We then immediately call `avifRWDataFree` on that
+        // same pointer while it is still the sole owner, freeing the buffer once. After
+        // this block we zero the fields so the `Drop` impl's call to `avifRWDataFree`
+        // is a safe no-op on a null pointer.
         unsafe {
             let raw = data.as_mut_ptr();
             assert_eq!(avifRWDataRealloc(raw, 8), AVIF_RESULT_OK);

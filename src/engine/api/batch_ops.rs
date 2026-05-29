@@ -168,13 +168,10 @@ impl ImageEngine {
         let concurrency =
             validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
 
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error (E400 for PNG+quality, E111 for an
+        // unknown format) rather than flattening to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
         let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
@@ -186,7 +183,7 @@ impl ImageEngine {
             concurrency,
             metadata_policy: policy,
             auto_orient: self.auto_orient,
-            firewall: self.firewall.clone(),
+            firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,
         }))
@@ -235,13 +232,10 @@ impl ImageEngine {
         let concurrency =
             validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
 
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error (E400 for PNG+quality, E111 for an
+        // unknown format) rather than flattening to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
         let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
@@ -254,7 +248,7 @@ impl ImageEngine {
             concurrency,
             metadata_policy: policy,
             auto_orient: self.auto_orient,
-            firewall: self.firewall.clone(),
+            firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,
         }))
