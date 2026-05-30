@@ -105,10 +105,12 @@ interface ResizeOptions {
   fit?: 'inside' | 'cover' | 'fill';
 }
 
-type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social';
+type CaseInsensitive<T extends string> = T | Uppercase<T> | Capitalize<T>;
+type OutputFormat = CaseInsensitive<'jpeg' | 'jpg' | 'png' | 'webp' | 'avif'>;
+type PresetName = CaseInsensitive<'thumbnail' | 'avatar' | 'hero' | 'social'>;
 
-interface EncodeOptions {
-  format?: 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif';
+interface EncodeOptionsInput {
+  format?: OutputFormat;
   quality?: number;
   fastMode?: boolean;
   preset?: PresetName;
