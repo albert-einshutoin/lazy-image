@@ -26,19 +26,32 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager con
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without color space conversion. |
 | `.toColorspace(space)` | ⚠️ **DEPRECATED** - Use `.normalizePixelFormat()` instead. |
-| `.preset(name)` | Apply preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) |
+| `.preset(name)` | ⚠️ **DEPRECATED** - Applies a preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) by mutating the pipeline and returning a separate `PresetResult`. Prefer `encode({ preset: name })`, `.toBufferWithPreset(name)`, or `.toFileWithPreset(path, name)` for self-contained preset output. |
 | `.sanitize({ policy?, ... })` | Image Firewall: apply strict/lenient limits. See [ARCHITECTURE.md](./ARCHITECTURE.md#image-firewall-mode-strict--lenient). |
 | `.limits({ maxPixels?, maxBytes?, timeoutMs? })` | Override firewall limits. |
+
+For preset-based output, prefer the self-contained APIs above the deprecated `.preset(name)` command/query mix:
+
+```javascript
+const { data } = await ImageEngine.fromPath('photo.jpg').encode({ preset: 'thumbnail' });
+const buffer = await ImageEngine.fromPath('photo.jpg').toBufferWithPreset('thumbnail');
+const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.webp', 'thumbnail');
+```
 
 ## Output
 
 | Method | Description |
 |--------|-------------|
+| `.encode({ format?, quality?, fastMode?, preset?, metrics? })` | Unified encode-to-buffer API. Use `preset` for self-contained preset output; when `preset` is set it takes precedence over `format`, `quality`, and `fastMode`. Returns `{ data, metrics? }`. |
+| `.encodeToFile(path, { format?, quality?, fastMode?, preset?, metrics? })` | Unified encode-to-file API. Same options as `.encode()`, returning `{ bytesWritten, metrics? }`. |
 | `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` (AVIF requires build feature `avif`). Default quality: JPEG=85, WebP=80, AVIF=60. |
+| `.toBufferWithPreset(name)` | Self-contained preset buffer output. Prefer this over deprecated `.preset(name)` when writing a preset result to a Buffer. |
 | `.toBufferProfile(format, profile, quality?)` | Encode using high-level profile: `'size-first'`, `'balanced'`, `'speed-first'`. |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
+| `.toBufferWithMetricsPreset(name)` | Self-contained preset buffer output with metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
 | `.toBufferWithMetricsProfile(format, profile, quality?)` | Profile-based encode with metrics. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
+| `.toFileWithPreset(path, name)` | Self-contained preset file output. Prefer this over deprecated `.preset(name)` when writing a preset result to a file. |
 | `.toFileWithMetrics(path, format, quality?)` | File output with metrics. Returns `{ bytesWritten, metrics }`. |
 | `.toBufferTargetBytes(format, options)` | Searches quality to stay under a byte budget. Returns `{ data, quality, bytesOut, budgetMet, targetBytes, metrics }`. |
 | `.toFileTargetBytes(path, format, options)` | File variant of byte-budget encoding. Returns `{ bytesWritten, quality, budgetMet, targetBytes, metrics }`. |
@@ -90,6 +103,26 @@ interface ResizeOptions {
   width?: number;
   height?: number;
   fit?: 'inside' | 'cover' | 'fill';
+}
+
+type PresetName = 'thumbnail' | 'avatar' | 'hero' | 'social';
+
+interface EncodeOptions {
+  format?: 'jpeg' | 'jpg' | 'png' | 'webp' | 'avif';
+  quality?: number;
+  fastMode?: boolean;
+  preset?: PresetName;
+  metrics?: boolean;
+}
+
+interface EncodeResult {
+  data: Buffer;
+  metrics?: ProcessingMetrics;
+}
+
+interface FileEncodeResult {
+  bytesWritten: number;
+  metrics?: ProcessingMetrics;
 }
 
 interface PresetResult {
