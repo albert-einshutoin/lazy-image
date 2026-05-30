@@ -41,10 +41,7 @@ impl SafeAvifImage {
         if width > MAX_DIMENSION || height > MAX_DIMENSION {
             return Err(LazyImageError::encode_failed(
                 "avif",
-                format!(
-                    "Dimensions exceed MAX_DIMENSION {} ({}x{})",
-                    MAX_DIMENSION, width, height
-                ),
+                format!("Dimensions exceed MAX_DIMENSION {MAX_DIMENSION} ({width}x{height})"),
             ));
         }
 
@@ -55,7 +52,7 @@ impl SafeAvifImage {
         if pixels > MAX_PIXELS {
             return Err(LazyImageError::encode_failed(
                 "avif",
-                format!("Pixel count {} exceeds MAX_PIXELS {}", pixels, MAX_PIXELS),
+                format!("Pixel count {pixels} exceeds MAX_PIXELS {MAX_PIXELS}"),
             ));
         }
 
@@ -143,7 +140,7 @@ impl SafeAvifImage {
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
-                format!("Failed to set ICC profile: {:?}", result),
+                format!("Failed to set ICC profile: {result:?}"),
             ));
         }
         Ok(())
@@ -168,7 +165,7 @@ impl SafeAvifImage {
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
-                format!("Failed to allocate planes: {:?}", result),
+                format!("Failed to allocate planes: {result:?}"),
             ));
         }
         Ok(())
@@ -195,7 +192,7 @@ impl SafeAvifImage {
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
-                format!("Failed to convert RGB to YUV: {:?}", result),
+                format!("Failed to convert RGB to YUV: {result:?}"),
             ));
         }
         Ok(())
@@ -382,7 +379,7 @@ impl SafeAvifEncoder {
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
-                format!("Failed to add image to encoder: {:?}", result),
+                format!("Failed to add image to encoder: {result:?}"),
             ));
         }
         Ok(())
@@ -409,7 +406,7 @@ impl SafeAvifEncoder {
         if result != AVIF_RESULT_OK {
             return Err(LazyImageError::encode_failed(
                 "avif",
-                format!("Failed to finish encoding: {:?}", result),
+                format!("Failed to finish encoding: {result:?}"),
             ));
         }
         Ok(())

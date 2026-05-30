@@ -177,7 +177,7 @@ fn strip_mount_root(root: &str, rel: &str) -> String {
 fn join_mount_rel_file(mount_point: &str, rel: &str, file: &str) -> String {
     let base = mount_point.trim_end_matches('/');
     if rel.is_empty() {
-        return format!("{}/{}", base, file);
+        return format!("{base}/{file}");
     }
     format!("{}/{}/{}", base, rel.trim_start_matches('/'), file)
 }

@@ -61,7 +61,7 @@ fn read_inspect_metadata<R: BufRead + Seek>(
         .with_guessed_format()
         .map_err(|e| LazyImageError::decode_failed(format!("failed to read image header: {e}")))?;
 
-    let format = reader.format().map(|f| format!("{:?}", f).to_lowercase());
+    let format = reader.format().map(|f| format!("{f:?}").to_lowercase());
     let (width, height) = reader
         .into_dimensions()
         .map_err(|e| LazyImageError::decode_failed(format!("failed to read dimensions: {e}")))?;
