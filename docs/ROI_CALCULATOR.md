@@ -63,13 +63,13 @@ The README example uses `$0.085/GB` as a practical reference point, not a univer
 
 Assumptions:
 - `avg_size_mb_before = 1.0`
-- `reduction_percent = 25`
+- `reduction_percent = 18` (JPEG-oriented example, not a universal cross-codec reduction)
 - `cdn_cost_per_gb = 0.085`
 
 For `10,000,000` monthly deliveries:
 - `transfer_before_gb = 9,765.63 GB`
-- `saved_gb = 2,441.41 GB`
-- `monthly_bandwidth_savings_usd = 207.52`
+- `saved_gb = 1,757.81 GB`
+- `monthly_bandwidth_savings_usd = 149.41`
 
 ## Caveats
 

@@ -18,8 +18,8 @@ These may appear in README, marketing, and migration guides **without qualificat
 
 | Claim | Location | Source Scenario | Notes |
 |-------|----------|----------------|-------|
-| "20-30% smaller outputs than sharp" | README.md | JPEG −17%, AVIF −40.9% | Range covers no-resize codec results; does not apply to resize-heavy pipelines (e.g. AVIF resize shows +9.5%) |
-| "25% file size reduction" | ROI_CALCULATOR.md (example) | Mid-range estimate | Labeled as example, not a guarantee |
+| "17-20% smaller JPEG outputs than sharp" | README.md, PERFORMANCE.md | PNG -> JPEG no-resize -17.0%; PNG -> JPEG resize 800px -20.0% | JPEG-specific and limited to the two simple measured cases; do not generalize to AVIF/WebP or multi-operation JPEG pipelines |
+| "18% file size reduction" | ROI_CALCULATOR.md (example) | JPEG-oriented worked example | Labeled as example, not a guarantee |
 | Binary size savings (5-9 MB vs 15-21 MB) | PERFORMANCE.md | Measured `.node` binary sizes | Platform-specific, factual |
 
 ### Workload-specific claims
@@ -28,18 +28,18 @@ These **must always include the codec, input format, and scenario** when quoted:
 
 | Claim | Location | Source Scenario | Required qualification |
 |-------|----------|----------------|----------------------|
-| "1.70x faster AVIF encoding" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → AVIF (no resize, 5000×5000) | Must cite format + input size |
-| "40.9% smaller AVIF output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → AVIF (no resize, 5000×5000) | Must cite format + input size |
-| "17.0% smaller JPEG output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → JPEG (no resize, 5000×5000) | Must cite format + input size |
-| "0.7% smaller WebP, 7x slower encoding" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG → WebP (no resize, 5000×5000) | Must cite format + input size; encoding is significantly slower |
+| "17.0% smaller JPEG output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> JPEG (no resize, 5000×5000) | Must cite format + input size |
+| "20.0% smaller JPEG output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> JPEG (resize 800px, 5000×5000 input) | Must cite format + resize context |
+| "AVIF is slower and larger in current canonical PNG -> AVIF benchmarks" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> AVIF no-resize and resize 800px | Must cite exact scenario; do not turn into a universal AVIF claim |
+| "WebP is slower and similar/larger in current canonical PNG -> WebP benchmarks" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> WebP no-resize and resize 800px | Must cite exact scenario; do not turn into a universal WebP claim |
 
 **Rule of thumb:** If removing the scenario context would mislead a reader into thinking the claim is universal, it is workload-specific.
 
 ## Quoting Rules
 
 1. **Always qualify codec and workload.** Never say "lazy-image is faster than sharp" without specifying the format and scenario.
-2. **"20-30% smaller" is the safe summary claim.** It spans JPEG (−17%) through AVIF (−41%) and is appropriate for README-level messaging.
-3. **Speed claims are workload-specific.** AVIF encoding is faster; WebP encoding is slower. Always cite the specific scenario.
+2. **"17-20% smaller JPEG" is the safe summary claim.** It applies only to the two simple canonical PNG -> JPEG scenarios currently measured: no-resize conversion and resize-to-800px.
+3. **Speed claims are workload-specific.** Current JPEG resize was faster, JPEG no-resize was slightly slower, and AVIF/WebP favored sharp in the measured scenarios. Always cite the specific scenario.
 4. **Do not mix resize and no-resize numbers.** Results differ significantly when resize is involved.
 5. **Cite the test environment.** TRUE_BENCHMARKS.md specifies the machine, Node version, and library versions used.
 
@@ -48,22 +48,28 @@ These **must always include the codec, input format, and scenario** when quoted:
 These rules prevent drift between documents:
 
 1. **Upstream-first.** Update TRUE_BENCHMARKS.md before any downstream doc. Never update README or PERFORMANCE.md with numbers that are not yet in TRUE_BENCHMARKS.md.
-2. **README uses ranges only.** README may state "20-30% smaller" but must not cite specific percentages (e.g. "40.9%") — those belong in PERFORMANCE.md with a link to the source scenario.
+2. **README uses qualified ranges only.** README may state "17-20% smaller JPEG" only when scoped to the two simple canonical cases; it must not imply all codecs, all JPEG pipelines, or all operation chains are smaller or faster.
 3. **Mandatory qualification.** Workload-specific claims must include format, input dimensions, and whether resize was applied. Omitting any of these is a documentation bug.
-4. **Version-bump trigger.** When lazy-image, sharp, or any core encoder dependency (mozjpeg, ravif, libwebp) is updated, re-run `npm run test:bench:compare` and update TRUE_BENCHMARKS.md before merging.
+4. **Version-bump trigger.** When lazy-image, sharp, or any core encoder dependency (mozjpeg, libavif, libwebp) is updated, re-run `npm run test:bench`, `node --expose-gc test/benchmarks/convert-only.bench.js`, and `npm run test:bench:extended` before updating TRUE_BENCHMARKS.md.
 5. **Atomic updates.** When a benchmark number changes, update all downstream files in the same PR. Partial updates create drift windows.
 
 ## How to Detect Drift
 
 ### Automated (CI)
 
-The benchmark regression workflow (`.github/workflows/CI.yml` quality job + `npm run test:bench:verify`) compares actual encoding output against baseline values. If file sizes drift beyond 5% or speed beyond 15%, CI reports it.
+`npm run test:bench:verify` and benchmark smoke checks ensure the benchmark scripts still execute. Numeric public-claim drift is currently governed by this document and manual upstream-first updates; broader baseline automation is tracked separately.
 
 ### Local Verification
 
 ```bash
 # Run the full benchmark comparison
 npm run test:bench:compare
+
+# Run no-resize conversion numbers cited in TRUE_BENCHMARKS.md
+node --expose-gc test/benchmarks/convert-only.bench.js
+
+# Run extended AVIF/WebP/JPEG, memory, and cold-start snapshots
+npm run test:bench:extended
 
 # Verify README claims match actual results
 npm run test:bench:verify
@@ -77,7 +83,7 @@ npm run test:bench:smoke
 Use this checklist when updating any performance claim:
 
 **Before updating:**
-- [ ] Run `npm run test:bench:compare` locally and record current numbers
+- [ ] Run `npm run test:bench`, `node --expose-gc test/benchmarks/convert-only.bench.js`, and `npm run test:bench:extended` locally and record current numbers
 - [ ] Verify the specific scenario exists in TRUE_BENCHMARKS.md
 - [ ] Cross-check the claim against the inventory tables above
 
@@ -88,8 +94,8 @@ Use this checklist when updating any performance claim:
 - [ ] Ensure workload-specific claims include format, input size, and resize context
 
 **After updating:**
-- [ ] Run `npm run test:bench:verify` to confirm README/doc claims are consistent
-- [ ] Verify CI passes the quality regression job
+- [ ] Run `npm run test:bench:verify` to confirm benchmark verification still executes
+- [ ] Verify CI passes the benchmark and test jobs
 - [ ] Update the version tracking section below if library versions changed
 
 ### Files to Check
@@ -98,16 +104,16 @@ When TRUE_BENCHMARKS.md is updated, also check:
 
 | File | What to verify |
 |------|---------------|
-| `README.md` | Summary claims containing "20-30% smaller" stay within measured range (grep, don't rely on line numbers) |
+| `README.md` | Summary claims containing "17-20% smaller JPEG" stay scoped to the two simple canonical cases (grep, don't rely on line numbers) |
 | `docs/PERFORMANCE.md` | Canonical scenarios table matches TRUE_BENCHMARKS.md |
 | `docs/MIGRATION_FROM_SHARP.md` | Comparison references are current |
 | `docs/ROI_CALCULATOR.md` | Example reduction percentage is plausible |
 | `docs/BENCHMARK_RESULTS.md` | Historical snapshots are not confused with current numbers |
 | `docs/BENCHMARK_OPERATIONS.md` | Operation-level benchmarks are consistent |
-| `test/benchmarks/readme-verification.bench.js` | Expected values match TRUE_BENCHMARKS.md |
+| `test/benchmarks/readme-verification.bench.js` | Script still executes and any reintroduced expected values match TRUE_BENCHMARKS.md |
 
 ## Version Tracking
 
 The `*Last updated:*` footer at the bottom of TRUE_BENCHMARKS.md records the lazy-image and sharp versions used. When either dependency updates significantly, re-run benchmarks and update all downstream claims.
 
-Current: lazy-image v0.12.0, sharp v0.34.x
+Current: lazy-image v0.15.0, Node.js v24.2.0, sharp v0.34.5 (benchmarked 2026-05-29)

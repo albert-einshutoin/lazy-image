@@ -1,6 +1,6 @@
 # Performance & When to Use
 
-lazy-image is optimized for **smaller output and memory safety** rather than raw throughput. This guide helps you choose between lazy-image and sharp and use lazy-image effectively.
+lazy-image is optimized for **JPEG output size and memory safety** rather than raw throughput. This guide helps you choose between lazy-image and sharp and use lazy-image effectively.
 
 ## Canonical Benchmark Source
 
@@ -14,10 +14,12 @@ For the full inventory of public claims and quoting rules, see [BENCHMARK_CLAIMS
 
 | Scenario | Metric | lazy-image | sharp | Interpretation |
 |---------|--------|------------|-------|----------------|
-| PNG → AVIF (no resize, 5000×5000) | Encode time | **3,137ms** | 5,320ms | lazy-image is **1.70x faster** in this specific format-conversion workload |
-| PNG → AVIF (no resize, 5000×5000) | Output size | **762,711 bytes** | 1,290,501 bytes | lazy-image output is **40.9% smaller** in this workload |
 | PNG → JPEG (no resize, 5000×5000) | Output size | **1,224,894 bytes** | 1,475,223 bytes | lazy-image output is **17.0% smaller** |
-| PNG → WebP (no resize, 5000×5000) | Encode time | 6,777ms | **975ms** | sharp is much faster for this workload |
+| PNG → JPEG (resize 800px, 5000×5000 input) | Output size | **31,518 bytes** | 39,416 bytes | lazy-image output is **20.0% smaller** |
+| PNG → JPEG (resize 800px, 5000×5000 input) | Encode time | **70ms** | 79ms | lazy-image was **1.13x faster** in this run |
+| PNG → AVIF (no resize, 5000×5000) | Encode time | 12,668ms | **4,729ms** | sharp is faster for this workload |
+| PNG → AVIF (no resize, 5000×5000) | Output size | 1,718,430 bytes | **1,290,501 bytes** | sharp output is smaller for this workload |
+| PNG → WebP (no resize, 5000×5000) | Encode time | 4,323ms | **909ms** | sharp is much faster for this workload |
 | JPEG/WebP real-time resize workloads | Latency | varies by codec and settings | often faster | use sharp if sub-100ms latency is the main priority |
 
 Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
@@ -27,8 +29,8 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 ## When to Use lazy-image
 
 - **Node-runtime serverless (AWS Lambda, Google Cloud Run, Vercel Node Functions, Google Cloud Functions)** — Avoid OOM and smaller cold-start footprint. V8-isolate runtimes such as Cloudflare Workers and Vercel Edge are **not supported** by the native NAPI build (tracked under [#87](https://github.com/albert-einshutoin/lazy-image/issues/87) for future Wasm support).
-- **Bandwidth-sensitive** — Smaller JPEG/AVIF saves CDN and transfer costs.
-- **AVIF generation** — Strong results in the benchmarked PNG → AVIF format-conversion workloads.
+- **Bandwidth-sensitive JPEG delivery** — Smaller JPEG saves CDN and transfer costs in the two simple canonical PNG → JPEG benchmarks; multi-operation pipelines need their own measurement.
+- **AVIF output support** — Use when you need lazy-image's AVIF output path, ICC handling, and safety defaults; benchmark target AVIF workloads before assuming size or speed wins.
 - **Memory-constrained** — 512MB containers; `fromPath()` bypasses the V8 heap (read-into-memory ≤ 256 MB, mmap with advisory locks > 256 MB).
 - **Safety-first** — Rust memory safety; built-in decompression limits and Image Firewall.
 
@@ -36,11 +38,11 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
 - **Heavy persistent servers** — Plenty of RAM and CPU.
 - **Throughput-critical** — Thousands of JPEG/WebP resizes per second.
-- **No AVIF** — Legacy formats only and maximum resize speed.
+- **AVIF/WebP speed or size is decisive** — Current canonical AVIF/WebP benchmarks favor sharp for speed, and often for output size.
 
 ## Philosophy
 
-lazy-image trades raw JPEG/WebP encoding speed for **smaller files** and **stable memory**. Treat benchmark wins as **codec- and workload-specific**, not universal throughput claims.
+lazy-image trades raw throughput for **JPEG compression efficiency**, **stable memory**, and **safe defaults**. Treat benchmark wins as **codec- and workload-specific**, not universal throughput claims.
 
 ---
 
@@ -65,7 +67,7 @@ await ImageEngine.from(buf).resize(800).toBuffer('jpeg', 80);
 - Build-time optimization (SSG, CI/CD)
 - Batch thumbnails / media pipelines
 - CDN / mobile backends
-- AVIF and WebP encoding (v0.8.1+ WebP tuned for speed)
+- AVIF and WebP encoding when feature support and safety defaults matter; benchmark when speed/size is critical
 - Color-accurate workflows (ICC preservation)
 
 ### When sharp may be better

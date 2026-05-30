@@ -210,7 +210,7 @@ Metrics payloads are versioned. See [metrics-api.md](./metrics-api.md) and [metr
 
 ## Quality Metrics (SSIM/PSNR)
 
-lazy-image enforces quality parity with sharp in CI: SSIM ≥ 0.995, PSNR ≥ 40 dB. These are used in benchmarks only; no public API for them yet.
+Benchmark helpers can report SSIM/PSNR against sharp outputs for local comparison. These metrics are benchmark-only helpers; there is no public API for them yet, and public performance claims should cite the scenario-specific data in [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
 ---
 

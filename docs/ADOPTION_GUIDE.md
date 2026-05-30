@@ -542,4 +542,4 @@ If you are unsure where to start, use:
 ImageEngine.fromPath(input).resize(...).toFile(output, format, quality)
 ```
 
-That path best matches the library's design goals: smaller outputs, bounded memory, and predictable server behavior.
+That path best matches the library's design goals: smaller JPEG outputs in simple canonical benchmarks, bounded memory, and predictable server behavior.
