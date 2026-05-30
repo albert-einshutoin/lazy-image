@@ -254,7 +254,7 @@ jobs:
         run: node test/helpers/create-test-image.js
 
       - name: Test
-        run: npm test
+        run: npm run test:js
 
   quality:
     name: Quality Regression
