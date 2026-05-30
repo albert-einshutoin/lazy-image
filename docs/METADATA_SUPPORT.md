@@ -24,7 +24,7 @@ await ImageEngine.fromPath('input.jpg')
 | Metadata type | Default | Opt-in API | Current status |
 |---|---|---|---|
 | ICC | stripped | `keepMetadata({ icc: true })` | supported |
-| EXIF | stripped | `keepMetadata({ exif: true })` | supported |
+| EXIF | stripped | `keepMetadata({ exif: true })` | supported for extractable JPEG EXIF |
 | GPS | stripped | `keepMetadata({ exif: true, stripGps: false })` | supported, privacy-first default is strip |
 | XMP | stripped | `keepMetadata({ xmp: true })` | not supported, emits runtime warning |
 
@@ -40,7 +40,8 @@ await ImageEngine.fromPath('input.jpg')
 ## Important Caveats
 
 - `xmp: true` currently does **not** preserve XMP. It only emits a warning and continues processing.
-- JPEG, PNG, and WebP EXIF preservation is a documented support guarantee when `keepMetadata({ exif: true })` is set and the input contains EXIF. lazy-image writes sanitized EXIF into JPEG APP1, PNG `eXIf`, and WebP `EXIF` containers.
+- JPEG, PNG, and WebP EXIF preservation is a documented support guarantee when `keepMetadata({ exif: true })` is set and the input is a JPEG with extractable EXIF. EXIF extraction is capped at 8 MiB of source data to avoid copying unbounded metadata from oversized inputs.
+- lazy-image writes sanitized EXIF into JPEG APP1, PNG `eXIf`, and WebP `EXIF` containers.
 - EXIF Orientation is reset to `1` after auto-orient for JPEG, PNG, and WebP outputs to avoid downstream double rotation.
 - GPS data inside EXIF is stripped by default for JPEG, PNG, and WebP outputs. Use `keepMetadata({ exif: true, stripGps: false })` only when location metadata must be retained.
 - `sanitize({ policy: 'strict' })` can override metadata preservation and strip metadata for safety.
