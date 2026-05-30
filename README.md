@@ -39,17 +39,19 @@ console.log(`Wrote ${bytesWritten} bytes`);
 ## Architecture Overview
 
 ```
-src/                        # Rust core
+src/                        # selected high-level Rust core modules
 ├── engine/
-│   ├── api.rs              # ImageEngine public API + NAPI bindings
-│   ├── pipeline.rs         # Operation queue, validation, optimization
+│   ├── api/                # ImageEngine public API + NAPI-facing operations
+│   ├── pipeline/           # Operation application, color state, capabilities, optimization
+│   ├── tasks/              # NAPI async task contexts and encode/batch/write execution
+│   ├── memory/             # Cgroup detection, memory estimates, weighted semaphore
+│   ├── io/                 # File sources, mmap, ICC/EXIF extraction and embedding
 │   ├── resize.rs           # Dimension calc, fast_image_resize dispatch
-│   ├── tasks.rs            # NAPI async tasks (encode, batch, target-bytes)
 │   ├── encoder.rs          # JPEG/PNG/WebP/AVIF encoding + ICC/EXIF embedding
 │   ├── decoder.rs          # Format detection + decoding
 │   ├── firewall.rs         # Input sanitization policies
-│   ├── memory.rs           # Cgroup detection, concurrency estimation
-│   └── io.rs               # File I/O, mmap, ICC/EXIF extraction
+│   ├── metadata.rs         # Metadata policy and preservation state
+│   └── validation.rs       # Input, operation, and output validation helpers
 ├── ops.rs                  # Operation enum, presets, output formats
 ├── error.rs                # 4-tier error taxonomy (E1xx–E9xx)
 └── codecs/avif_safe.rs     # Safe libavif FFI wrappers
