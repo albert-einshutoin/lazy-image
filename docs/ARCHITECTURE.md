@@ -16,7 +16,7 @@ lazy-image uses a **Copy-on-Write (CoW)** design and avoids the V8 (JS) heap on 
 2. **V8-heap bypass for file inputs** — `fromPath()` and `processBatch()` never copy the source file into the Node.js heap. Implementation is size-tiered to eliminate SIGBUS/SIGSEGV risk:
    - **Files ≤ 256 MB**: read once into a Rust-owned buffer (no mmap).
    - **Files > 256 MB**: opened via `mmap` with an advisory lock + fd retained for the engine lifetime.
-   The size threshold (`MMAP_SIZE_THRESHOLD`) lives in [`src/engine/io.rs`](../src/engine/io.rs).
+   The size threshold (`MMAP_SIZE_THRESHOLD`) lives in [`src/engine/io/mod.rs`](../src/engine/io/mod.rs).
 3. **Zero-copy conversions** — Format conversion without resize/crop reuses the decoded buffer (no extra pixel buffer).
 4. **Clone** — `.clone()` is cheap and does not allocate until a destructive op runs.
 5. **Verification** — See [ZERO_COPY.md](./ZERO_COPY.md). Run `node --expose-gc docs/scripts/measure-zero-copy.js` to check heap/RSS.
