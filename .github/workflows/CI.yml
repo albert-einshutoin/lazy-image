@@ -172,11 +172,16 @@ jobs:
       - name: Check formatting
         run: cargo fmt --check
 
-      - name: Run Clippy
+      # Default features are the shipping Rust surface: NAPI bindings, jemalloc
+      # where supported, and AVIF support. Gate it separately from lean builds.
+      - name: Run Clippy (default features)
+        run: cargo clippy -- -D warnings
+
+      - name: Run Clippy (without default features)
         run: cargo clippy --no-default-features -- -D warnings
 
       # The `stress` feature (example: stress_test) is not built by the default
-      # clippy/test jobs, so type changes can break it invisibly. Gate it here.
+      # or no-default clippy/test jobs, so type changes can break it invisibly.
       - name: Check stress feature compiles
         run: cargo clippy --no-default-features --features stress -- -D warnings
 
