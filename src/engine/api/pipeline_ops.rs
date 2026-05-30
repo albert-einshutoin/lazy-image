@@ -177,7 +177,7 @@ impl ImageEngine {
         if xmp && !self.xmp_warning_emitted {
             let warning =
                 "keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.";
-            eprintln!("{}", warning);
+            eprintln!("{warning}");
             self.xmp_warning_emitted = true;
         }
 
