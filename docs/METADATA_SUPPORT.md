@@ -33,14 +33,16 @@ await ImageEngine.fromPath('input.jpg')
 | Output format | ICC | EXIF | GPS | XMP | Notes |
 |---|---|---|---|---|---|
 | JPEG | supported | supported | stripped by default, opt-in preserve | not supported | Orientation is normalized after auto-orient |
-| PNG | ICC supported | not currently documented as preserved | n/a | not supported | PNG metadata support is narrower than JPEG |
-| WebP | ICC supported | not currently documented as preserved | n/a | not supported | Favor explicit testing before relying on non-ICC metadata |
-| AVIF | ICC supported on v0.9.x+ with `libavif-sys` | not currently documented as preserved | n/a | not supported | On older/alternate backend builds ICC may be dropped |
+| PNG | supported | supported via `eXIf` chunk | stripped by default when EXIF is preserved | not supported | Orientation is normalized after auto-orient |
+| WebP | supported | supported via `EXIF` chunk | stripped by default when EXIF is preserved | not supported | Orientation is normalized after auto-orient |
+| AVIF | supported on v0.9.x+ with `libavif-sys` | not supported | n/a | not supported | On older/alternate backend builds ICC may be dropped |
 
 ## Important Caveats
 
 - `xmp: true` currently does **not** preserve XMP. It only emits a warning and continues processing.
-- EXIF Orientation is reset to `1` after auto-orient to avoid downstream double rotation.
+- JPEG, PNG, and WebP EXIF preservation is a documented support guarantee when `keepMetadata({ exif: true })` is set and the input contains EXIF. lazy-image writes sanitized EXIF into JPEG APP1, PNG `eXIf`, and WebP `EXIF` containers.
+- EXIF Orientation is reset to `1` after auto-orient for JPEG, PNG, and WebP outputs to avoid downstream double rotation.
+- GPS data inside EXIF is stripped by default for JPEG, PNG, and WebP outputs. Use `keepMetadata({ exif: true, stripGps: false })` only when location metadata must be retained.
 - `sanitize({ policy: 'strict' })` can override metadata preservation and strip metadata for safety.
 - For workflows that depend on exact metadata retention, validate behavior in integration tests against your target output format.
 
@@ -49,7 +51,7 @@ await ImageEngine.fromPath('input.jpg')
 - Web delivery: keep the default strip behavior unless ICC/EXIF is genuinely required
 - Photography / color-sensitive workflows: opt into ICC explicitly
 - Privacy-sensitive uploads: keep GPS stripping enabled
-- Metadata-critical pipelines: prefer JPEG if you need the clearest documented EXIF path today
+- Metadata-critical pipelines: JPEG, PNG, and WebP have documented EXIF preservation paths; prefer JPEG if downstream tools do not read PNG `eXIf` or WebP `EXIF` chunks reliably
 
 ## References
 
