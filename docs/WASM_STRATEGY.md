@@ -62,7 +62,7 @@ cost, cold-start behavior, output bytes, and user-upload ergonomics.
 Wasm work should not ship based on Node-local encode time alone. Before public
 performance claims, collect benchmark artifacts for:
 
-- bundle size and gzip transfer size
+- browser bundle size and gzip transfer size from a bundled runtime artifact
 - instantiate time
 - first encode latency
 - total encode time

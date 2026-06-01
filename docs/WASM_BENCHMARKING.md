@@ -31,7 +31,8 @@ The first harness covers representative upload-preflight scenarios:
 
 The report schema includes:
 
-- package bundle size and gzip size when a local package is available
+- browser bundle size and gzip transfer size when a real browser bundle artifact is available
+- npm package-directory size and gzip size as a local diagnostic for installed optional baselines
 - instantiate or module-load time
 - first encode latency
 - encode time and total wall time
@@ -57,19 +58,21 @@ strategy:
 If those optional packages are not installed, the row is reported as
 `unavailable` with the missing package names. If a package is installed but no
 runtime adapter exists yet, the row is reported as `not-run` and can still
-contribute bundle-size data.
+contribute package-directory size diagnostics.
 
 Do not publish performance comparisons against unavailable or `not-run` rows.
 Those rows are evidence of benchmark coverage, not evidence of runtime wins.
+Do not use package-directory gzip size as browser bundle evidence; browser
+bundle claims require a bundled entrypoint and `browserBundleGzipBytes`.
 
 ## Public-Safe Claims
 
 Safe public claims:
 
 - "lazy-image is evaluating a browser/Edge upload-preflight Wasm track."
-- "The Wasm benchmark harness measures bundle size, load latency, first encode
-  latency, byte-budget hit rate, quality, metadata behavior, and memory where
-  available."
+- "The Wasm benchmark harness records browser bundle size when a runtime adapter
+  provides it, plus load latency, first encode latency, byte-budget hit rate,
+  quality, metadata behavior, and memory where available."
 - "The native package remains the recommended production path for Node.js,
   serverless Node functions, and batch pipelines."
 
@@ -77,7 +80,7 @@ Workload-specific claims that require fresh benchmark artifacts:
 
 - smaller output than a browser compressor
 - faster first encode than a Wasm codec package
-- smaller gzip bundle than another browser package
+- smaller gzip browser bundle than another browser package
 - better byte-budget hit rate than a competitor
 - acceptable Edge-isolate cold-start behavior
 
