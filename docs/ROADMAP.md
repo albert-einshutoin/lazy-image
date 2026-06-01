@@ -34,6 +34,7 @@ The following foundations are already in place on `develop`:
 
 - Deepen the recommended file-to-file operational path
 - Improve scenario-based adoption guidance for serverless, upload pipelines, and build-time optimization
+- Validate the Wasm upload-preflight path with browser/Edge benchmarks before making public runtime claims
 - Expand observability and operational ergonomics where they help production adoption most
 
 ---
@@ -55,6 +56,7 @@ The following foundations are already in place on `develop`:
 ### Long-term
 
 - WebAssembly / worker-oriented packaging where the architecture fits
+- Browser upload-preflight package with byte-budget search, metadata stripping, and Web Worker guidance if the benchmark evidence supports it
 - Native Web Streams style APIs if and when true streaming execution becomes viable
 
 ---
@@ -108,6 +110,7 @@ To maintain focus and stability, the following features are explicitly **out of 
 
 - file-to-file の主導線をさらに明確にする
 - serverless、upload pipeline、build-time optimization 向けの導入ガイドを充実させる
+- browser / Edge 向けの Wasm upload-preflight は、公開 claim の前に専用 benchmark で検証する
 - 本当に運用価値の高い observability / ergonomics に投資する
 
 ---
@@ -129,6 +132,7 @@ To maintain focus and stability, the following features are explicitly **out of 
 ### 長期
 
 - 適合する形での WebAssembly / worker 向け展開
+- benchmark evidence が揃った場合の byte-budget search / metadata strip / Web Worker guidance 付き browser upload-preflight package
 - 実行モデルが整った場合の native Web Streams 風 API
 
 ---

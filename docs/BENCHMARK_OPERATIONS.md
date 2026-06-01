@@ -11,6 +11,8 @@ This document defines how benchmark regression monitoring is operated.
 - Main execution command set:
   - `npm run test:bench:compare`
   - `npm run test:bench:extended`
+- Wasm upload-preflight evidence command:
+  - `npm run test:bench:wasm`
 
 ## Baseline Source
 
@@ -19,6 +21,9 @@ This document defines how benchmark regression monitoring is operated.
 - Result summary outputs:
   - `artifacts/benchmark/regression-summary.md`
   - `artifacts/benchmark/regression-summary.json`
+- Wasm upload report outputs:
+  - `artifacts/benchmark/wasm-upload-summary.md`
+  - `artifacts/benchmark/wasm-upload-summary.json`
 
 The baseline file is the single source of truth for threshold comparison.
 
@@ -47,3 +52,4 @@ Regression means "current metric value is higher than baseline by more than thre
 
 - Benchmark jobs are intentionally separated from required CI gates to avoid noisy PR failures.
 - Run manually before releases or after significant image pipeline/perf changes.
+- Run the Wasm upload benchmark before making browser/Edge upload-preflight claims. See [WASM_BENCHMARKING.md](./WASM_BENCHMARKING.md).

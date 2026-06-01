@@ -11,6 +11,8 @@
 - AVIF の ICC は v0.9.x（libavif-sys）で保持。古い/別構成の AVIF backend では破棄される場合があります
 - `lazy` の意味: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) を参照（constructor は無作業ではない）
 - 思想と非目標: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md)
+- Wasm / browser / Edge 方針: [docs/WASM_STRATEGY.md](./docs/WASM_STRATEGY.md)
+- Wasm upload benchmark 方針: [docs/WASM_BENCHMARKING.md](./docs/WASM_BENCHMARKING.md)
 
 ## 計測可能な指標
 - JS ヒープ増加: `fromPath → toBufferWithMetrics` で **2MB 以下**（`node --expose-gc docs/scripts/measure-zero-copy.js` で検証）

@@ -203,6 +203,7 @@ Same pattern as Lambda. Use `/tmp` for scratch files. For Cloud Run, set `--memo
 These environments run in V8 isolates and **do not support the native NAPI binary** that lazy-image ships. The published `@alberteinshutoin/lazy-image` package requires a Node.js runtime (Vercel Node Functions, Netlify Node Functions, AWS Lambda, Cloud Run, etc.).
 
 For Edge / Workers, process images in a background Node-runtime function and serve the results from a CDN. Wasm support for V8-isolate runtimes is tracked under [#87](https://github.com/albert-einshutoin/lazy-image/issues/87).
+The current product direction is documented in [WASM_STRATEGY.md](./WASM_STRATEGY.md), with benchmark expectations in [WASM_BENCHMARKING.md](./WASM_BENCHMARKING.md).
 
 ### Cold start optimization
 
