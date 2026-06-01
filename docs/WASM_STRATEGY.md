@@ -19,6 +19,9 @@ The best first Wasm product slice is browser upload preflight:
 This competes with browser-image-compression, Compressor.js, jSquash, and
 Squoosh-style packages more directly than it competes with sharp.
 
+The package and policy contract is defined in
+[WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
+
 ## Where Native Remains The Right Answer
 
 Use the native Node package for:

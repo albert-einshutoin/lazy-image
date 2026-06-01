@@ -181,6 +181,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 | **Roadmap & scope** | [docs/ROADMAP.md](./docs/ROADMAP.md) |
 | **Adoption guide / recommended workflows** | [docs/ADOPTION_GUIDE.md](./docs/ADOPTION_GUIDE.md) |
 | **Wasm / browser / Edge strategy** | [docs/WASM_STRATEGY.md](./docs/WASM_STRATEGY.md) |
+| **Wasm package and policy API** | [docs/WASM_PACKAGE_API.md](./docs/WASM_PACKAGE_API.md) |
 | **Wasm upload benchmark guidance** | [docs/WASM_BENCHMARKING.md](./docs/WASM_BENCHMARKING.md) |
 | **Metadata support matrix** | [docs/METADATA_SUPPORT.md](./docs/METADATA_SUPPORT.md) |
 | **ROI calculator methodology** | [docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md) |

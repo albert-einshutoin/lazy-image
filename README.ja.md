@@ -12,6 +12,7 @@
 - `lazy` の意味: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) を参照（constructor は無作業ではない）
 - 思想と非目標: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md)
 - Wasm / browser / Edge 方針: [docs/WASM_STRATEGY.md](./docs/WASM_STRATEGY.md)
+- Wasm package / policy API 方針: [docs/WASM_PACKAGE_API.md](./docs/WASM_PACKAGE_API.md)
 - Wasm upload benchmark 方針: [docs/WASM_BENCHMARKING.md](./docs/WASM_BENCHMARKING.md)
 
 ## 計測可能な指標

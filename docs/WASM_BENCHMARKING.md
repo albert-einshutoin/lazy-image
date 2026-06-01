@@ -3,6 +3,8 @@
 This document defines how to evaluate the browser/Edge upload-preflight track.
 It complements the native sharp comparison benchmarks; it does not replace
 `TRUE_BENCHMARKS.md` as the source for public native performance claims.
+The planned package and policy API is defined in
+[WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
 
 ## Commands
 
