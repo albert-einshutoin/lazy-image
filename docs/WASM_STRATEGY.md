@@ -22,6 +22,11 @@ Squoosh-style packages more directly than it competes with sharp.
 The package and policy contract is defined in
 [WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
 
+The first repository implementation is `packages/lazy-image-wasm`. It uses
+jSquash Wasm codecs as a browser/V8 codec adapter while lazy-image owns the
+high-level upload policy, target-byte search, metrics vocabulary, and error
+taxonomy.
+
 ## Where Native Remains The Right Answer
 
 Use the native Node package for:

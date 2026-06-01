@@ -1,9 +1,10 @@
 # Wasm Package And Policy API
 
-This document defines the intended package shape and shared policy contract for
-the future Wasm/browser/Edge track. It is a design contract, not a published
-package announcement. The native Node package remains the production package
-until a Wasm package is implemented and benchmarked.
+This document defines the package shape and shared policy contract for the
+Wasm/browser/Edge track. The initial package lives under
+`packages/lazy-image-wasm`; it is not yet a public npm release. The native Node
+package remains the production package until the Wasm package is benchmarked in
+real browser and Edge runtimes.
 
 ## Package Shape
 
@@ -48,6 +49,11 @@ const optimizer = await createUploadOptimizer({
 The package may use `WebAssembly.instantiateStreaming()` when available, but it
 must provide a fallback for runtimes that return the wrong MIME type for Wasm
 assets.
+
+The first implementation uses jSquash Wasm codecs as the low-level browser/V8
+codec layer and keeps lazy-image's differentiation in policy normalization,
+byte-budget search, metrics, and structured errors. A future Rust-owned codec
+core can replace that adapter without changing the public policy shape.
 
 ## Public API
 
@@ -124,6 +130,12 @@ Default policy:
 - `stripMetadata`: `true`
 - `qualityFloorPolicy`: `best-effort`
 - `profile`: `upload-safe`
+
+`fit: "inside"` preserves aspect ratio within the provided max dimensions.
+`fit: "cover"` crops and resizes to exact `maxWidth` and `maxHeight`.
+`fit: "fill"` stretches to the provided dimensions. `limits.timeoutMs` is a
+best-effort, inter-stage checkpoint across input, decode, resize, and encode;
+it does not preempt a codec while that codec is already running.
 
 The Wasm policy names should map to the native package's safety and byte-budget
 vocabulary, but the Wasm API should not expose native-only file or thread
@@ -228,6 +240,7 @@ concurrency.
 In scope:
 
 - JPEG and WebP output
+- JPEG, PNG, and WebP input
 - resize to max width and/or max height
 - metadata stripping by default
 - best-effort target-byte search

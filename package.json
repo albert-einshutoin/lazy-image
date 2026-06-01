@@ -36,9 +36,12 @@
   "bugs": {
     "url": "https://github.com/albert-einshutoin/lazy-image/issues"
   },
+  "workspaces": [
+    "packages/lazy-image-wasm"
+  ],
   "scripts": {
     "build": "napi build --platform --release && node scripts/postbuild-fixup.js",
-    "test": "npm run test:js && npm run test:rust",
+    "test": "npm run test:js && npm run test:rust && npm run test:wasm:package",
     "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:release-policy && npm run test:types",
     "test:js:specs": "node test/integration/run.js",
     "test:js:type-safety": "node test/type-safety/runtime-type-safety-exit.test.js && node test/type-safety/runtime-type-safety.test.js",
@@ -54,6 +57,7 @@
     "test:bench:cold-start": "node test/benchmarks/cold-start.bench.js",
     "test:bench:extended": "npm run test:bench:avif && npm run test:bench:memory && npm run test:bench:cold-start",
     "test:bench:wasm": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime all",
+    "test:wasm:package": "npm --workspace @alberteinshutoin/lazy-image-wasm test",
     "bench:wasm:browser": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser",
     "bench:wasm:edge": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge",
     "bench:wasm:report": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime all",
