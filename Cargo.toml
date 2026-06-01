@@ -101,7 +101,7 @@ parking_lot = "0.12"
 # disable_initial_exec_tls feature is required for Node.js native module compatibility
 # (prevents "cannot allocate memory in static TLS block" error)
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
-tikv-jemallocator = { version = "0.6", optional = true, features = ["disable_initial_exec_tls"] }
+tikv-jemallocator = { version = "0.7", optional = true, features = ["disable_initial_exec_tls"] }
 
 [dev-dependencies]
 criterion = "0.8"
