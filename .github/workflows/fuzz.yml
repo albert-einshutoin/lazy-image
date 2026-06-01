@@ -65,10 +65,13 @@ jobs:
       - name: Install cargo-fuzz
         run: cargo +${FUZZ_TOOLCHAIN} install cargo-fuzz --locked
 
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake nasm clang lld
+          sudo apt-get install -y cmake clang lld
 
       - name: Cache cargo registry
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
