@@ -2,6 +2,10 @@
 
 Full API reference for lazy-image. For a quick start, see [README.md](../README.md#-basic-usage).
 
+This page documents the native Node.js package. The planned browser/Edge Wasm
+API is intentionally narrower and is documented separately in
+[WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
+
 ## Constructors
 
 | Method | Description |
