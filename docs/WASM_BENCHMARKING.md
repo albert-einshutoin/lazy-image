@@ -5,6 +5,9 @@ It complements the native sharp comparison benchmarks; it does not replace
 `TRUE_BENCHMARKS.md` as the source for public native performance claims.
 The planned package and policy API is defined in
 [WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
+The initial implementation package lives in `packages/lazy-image-wasm`; this
+benchmark remains the comparison artifact generator rather than a replacement
+for browser-runner validation.
 
 ## Commands
 
