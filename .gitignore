@@ -24,12 +24,14 @@ Thumbs.db
 .idea/
 .vscode/
 .cursor/
+.claude/
 *.swp
 *.swo
 
 # Build artifacts
 npm/
 artifacts/
+/rust_out
 
 # Coverage reports (generated files)
 coverage/
@@ -50,5 +52,6 @@ BENCHMARK_COMPARISON_RESULTS.md
 BENCHMARK_REPORT.md
 BENCHMARK_VERIFICATION_REPORT.md
 CLAUDE.md
+AGENTS.md
 RELEASE_READINESS.md
 SHARP_COMPARISON.md
