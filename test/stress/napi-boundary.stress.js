@@ -1,10 +1,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 const { ImageEngine } = require('../../index.js');
-const { resolveFixture, resolveTemp } = require('../helpers/paths');
+const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 
 const INPUT_JPEG = resolveFixture('test_input.jpg');
 const INPUT_PNG = resolveFixture('test_input.png');
+const FUZZ_SEED_SCRIPT = resolveRoot('scripts/fuzz/write-seed-corpus.mjs');
 
 function parsePositiveInt(value, optionName) {
   const parsed = Number.parseInt(value || '', 10);
@@ -65,7 +67,7 @@ function parseOptions() {
   return options;
 }
 
-function buildMalformedInputs() {
+function buildInlineMalformedInputs() {
   const jpeg = fs.readFileSync(INPUT_JPEG);
   return [
     { name: 'empty', data: Buffer.alloc(0) },
@@ -84,6 +86,58 @@ function buildMalformedInputs() {
         0x00, 0x00, 0x00, 0x00,
       ]),
     },
+  ];
+}
+
+function collectGeneratedFuzzSeeds(corpusRoot) {
+  const result = spawnSync(process.execPath, [
+    FUZZ_SEED_SCRIPT,
+    '--corpus-root',
+    corpusRoot,
+  ], {
+    cwd: resolveRoot(),
+    encoding: 'utf8',
+  });
+
+  if (result.status !== 0) {
+    throw new Error(
+      `failed to generate malformed fuzz seed corpus: ${result.stderr || result.stdout}`,
+    );
+  }
+
+  const inputs = [];
+  for (const target of fs.readdirSync(corpusRoot).sort()) {
+    const targetDir = path.join(corpusRoot, target);
+    if (!fs.statSync(targetDir).isDirectory()) {
+      continue;
+    }
+
+    for (const fileName of fs.readdirSync(targetDir).sort()) {
+      const filePath = path.join(targetDir, fileName);
+      if (!fs.statSync(filePath).isFile()) {
+        continue;
+      }
+
+      inputs.push({
+        name: `fuzz/${target}/${fileName}`,
+        data: fs.readFileSync(filePath),
+      });
+    }
+  }
+
+  if (inputs.length === 0) {
+    throw new Error('malformed fuzz seed corpus generation produced no inputs');
+  }
+
+  return inputs;
+}
+
+function buildMalformedInputs(rootDir) {
+  const corpusRoot = path.join(rootDir, 'malformed-fuzz-corpus');
+  fs.rmSync(corpusRoot, { recursive: true, force: true });
+  return [
+    ...buildInlineMalformedInputs(),
+    ...collectGeneratedFuzzSeeds(corpusRoot),
   ];
 }
 
@@ -212,11 +266,11 @@ function assertRssGrowthWithinLimit(samples, limitMb) {
 
 async function main() {
   const options = parseOptions();
-  const malformedInputs = buildMalformedInputs();
   const memorySamples = [];
   const rootDir = resolveTemp('napi-boundary-stress');
   fs.rmSync(rootDir, { recursive: true, force: true });
   fs.mkdirSync(rootDir, { recursive: true });
+  const malformedInputs = buildMalformedInputs(rootDir);
 
   recordMemorySample(memorySamples, 'start');
 
@@ -242,7 +296,8 @@ async function main() {
   const peakRssMb = Math.max(...memorySamples.map((sample) => sample.rssMb));
   console.error(
     `napi stress completed: iterations=${options.iterations}, ` +
-      `malformedRounds=${options.malformedRounds}, peakRss=${peakRssMb.toFixed(1)} MiB`,
+      `malformedRounds=${options.malformedRounds}, malformedInputs=${malformedInputs.length}, ` +
+      `peakRss=${peakRssMb.toFixed(1)} MiB`,
   );
 }
 
