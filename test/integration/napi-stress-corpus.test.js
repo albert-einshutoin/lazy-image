@@ -71,6 +71,7 @@ test('stress smoke includes generated malformed fuzz seeds and writes summaries'
   assert.equal(summary.malformedInputs.total, 25);
   assert.equal(summary.malformedInputs.inline, 5);
   assert.equal(summary.malformedInputs.generatedFuzzSeeds, 20);
+  assert.equal(summary.malformedInputs.generatedFuzzFilePathSeeds, 20);
   assert.equal(summary.memory.sampleCount, 2);
   assert.ok(summary.memory.peakRssMb > 0);
   assert.ok(summary.memory.samples.some((sample) => sample.phase === 'iteration-0'));
@@ -78,6 +79,7 @@ test('stress smoke includes generated malformed fuzz seeds and writes summaries'
   const markdown = fs.readFileSync(summaryMdPath, 'utf8');
   assert.match(markdown, /NAPI Boundary Stress Summary/);
   assert.match(markdown, /generatedFuzzSeeds: 20/);
+  assert.match(markdown, /generatedFuzzFilePathSeeds: 20/);
 });
 
 console.log(`\nTests passed: ${passed}, failed: ${failed}`);

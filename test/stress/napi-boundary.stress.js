@@ -143,6 +143,8 @@ function collectGeneratedFuzzSeeds(corpusRoot) {
 
       inputs.push({
         name: `fuzz/${target}/${fileName}`,
+        filePath,
+        generatedFuzzSeed: true,
         data: fs.readFileSync(filePath),
       });
     }
@@ -171,6 +173,7 @@ function roundMb(value) {
 function summarizeMalformedInputs(inputs) {
   const generatedFuzzTargets = {};
   let generatedFuzzSeeds = 0;
+  let generatedFuzzFilePathSeeds = 0;
 
   for (const input of inputs) {
     if (!input.name.startsWith('fuzz/')) {
@@ -178,6 +181,9 @@ function summarizeMalformedInputs(inputs) {
     }
 
     generatedFuzzSeeds += 1;
+    if (input.generatedFuzzSeed && input.filePath) {
+      generatedFuzzFilePathSeeds += 1;
+    }
     const target = input.name.split('/')[1] || 'unknown';
     generatedFuzzTargets[target] = (generatedFuzzTargets[target] || 0) + 1;
   }
@@ -186,6 +192,7 @@ function summarizeMalformedInputs(inputs) {
     total: inputs.length,
     inline: inputs.length - generatedFuzzSeeds,
     generatedFuzzSeeds,
+    generatedFuzzFilePathSeeds,
     generatedFuzzTargets,
   };
 }
@@ -258,6 +265,19 @@ async function runMalformedRound(round, malformedInputs) {
   for (const input of malformedInputs) {
     await expectRejects(`malformed round ${round}: ${input.name}`, () => (
       ImageEngine.from(input.data)
+        .sanitize({ policy: 'strict' })
+        .resize({ width: 64, fit: 'inside' })
+        .toBufferWithMetrics('jpeg', 80)
+    ));
+  }
+
+  for (const input of malformedInputs) {
+    if (!input.generatedFuzzSeed || !input.filePath) {
+      continue;
+    }
+
+    await expectRejects(`malformed round ${round}: file ${input.name}`, () => (
+      ImageEngine.fromPath(input.filePath)
         .sanitize({ policy: 'strict' })
         .resize({ width: 64, fit: 'inside' })
         .toBufferWithMetrics('jpeg', 80)
@@ -363,6 +383,7 @@ function formatSummaryMarkdown(summary) {
     `- malformedRounds: ${summary.options.malformedRounds}`,
     `- malformedInputs: ${summary.malformedInputs.total}`,
     `- generatedFuzzSeeds: ${summary.malformedInputs.generatedFuzzSeeds}`,
+    `- generatedFuzzFilePathSeeds: ${summary.malformedInputs.generatedFuzzFilePathSeeds}`,
     `- peakRss: ${summary.memory.peakRssMb.toFixed(1)} MiB`,
     `- rssGrowth: ${summary.memory.growthRssMb.toFixed(1)} MiB`,
     `- rssGrowthLimit: ${summary.options.rssGrowthLimitMb.toFixed(1)} MiB`,
@@ -394,7 +415,7 @@ function writeSummaryArtifacts(summary, options) {
 async function main() {
   const options = parseOptions();
   const memorySamples = [];
-  const rootDir = resolveTemp('napi-boundary-stress');
+  const rootDir = resolveTemp(`napi-boundary-stress-${process.pid}`);
   fs.rmSync(rootDir, { recursive: true, force: true });
   fs.mkdirSync(rootDir, { recursive: true });
   const malformedInputs = buildMalformedInputs(rootDir);
