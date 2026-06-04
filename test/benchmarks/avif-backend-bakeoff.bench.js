@@ -3,9 +3,13 @@ const os = require('os');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 const sharp = require('sharp');
-const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
+const { resolveRoot, resolveTemp } = require('../helpers/paths');
 const { calculateQualityMetrics } = require('../helpers/quality');
 const { buildCorpusManifestMarkdown, describeReferenceCorpusEntry } = require('../helpers/benchmark-corpus');
+const {
+  AVIF_BACKEND_BAKEOFF_CASES: CASES,
+  buildBakeoffCorpusExpectations,
+} = require('../helpers/codec-bakeoff-cases');
 const { buildPackageImpactMarkdown, collectBenchmarkPackageImpact } = require('../helpers/package-impact');
 const { ImageEngine } = require(resolveRoot('index'));
 
@@ -14,39 +18,6 @@ const REQUIRED_CODECS = ['rav1e', 'aom', 'svt'];
 const OUTPUT_FILE_BASE = 'avif-backend-bakeoff';
 const TEMP_DIR = resolveTemp('benchmarks', OUTPUT_FILE_BASE);
 const RSS_SAMPLE_INTERVAL_MS = 25;
-
-const CASES = [
-  {
-    label: 'large-png-q60',
-    source: 'fixture',
-    input: resolveFixture('test_4.5MB_5000x5000.png'),
-    width: 800,
-    quality: 60,
-  },
-  {
-    label: 'photo-jpeg-q75',
-    source: 'fixture',
-    input: resolveFixture('test_3.2MB_5000x5000.jpg'),
-    width: 800,
-    quality: 75,
-  },
-  {
-    label: 'alpha-gradient-q60',
-    source: 'generated-alpha-gradient',
-    width: 384,
-    height: 256,
-    quality: 60,
-    expectAlpha: true,
-  },
-  {
-    label: 'icc-gradient-q60',
-    source: 'generated-icc-gradient',
-    width: 384,
-    height: 256,
-    quality: 60,
-    expectIcc: true,
-  },
-];
 
 function getArg(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -489,6 +460,7 @@ async function runCase(testCase, options) {
       jobs: String(options.jobs),
     },
     expectations: {
+      ...buildBakeoffCorpusExpectations(testCase),
       alpha: Boolean(testCase.expectAlpha),
       icc: Boolean(testCase.expectIcc),
     },
