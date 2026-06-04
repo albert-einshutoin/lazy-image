@@ -5,6 +5,7 @@ on:
     paths:
       - "fuzz/**"
       - "src/**"
+      - "scripts/fuzz/**"
       - ".github/workflows/fuzz.yml"
       - "Cargo.lock"
       - "Cargo.toml"
@@ -100,6 +101,7 @@ jobs:
           if [ -z "$(ls -A fuzz/corpus/${{ matrix.target }} 2>/dev/null)" ]; then
             cp -r fuzz/seeds/* fuzz/corpus/${{ matrix.target }}/ 2>/dev/null || true
           fi
+          node scripts/fuzz/write-seed-corpus.mjs --target "${{ matrix.target }}"
 
       - name: Build fuzzer
         if: ${{ github.event_name == 'schedule' || github.event.inputs.target == '' || github.event.inputs.target == matrix.target }}
