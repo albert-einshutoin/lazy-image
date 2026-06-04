@@ -79,6 +79,88 @@ function firstLine(text) {
     .find(Boolean) || null;
 }
 
+function clampByte(value) {
+  return Math.max(0, Math.min(255, Math.round(value)));
+}
+
+function buildRgbGradient(width, height) {
+  const channels = 3;
+  const data = Buffer.alloc(width * height * channels);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const offset = (y * width + x) * channels;
+      data[offset] = clampByte((x / Math.max(width - 1, 1)) * 255);
+      data[offset + 1] = clampByte((y / Math.max(height - 1, 1)) * 255);
+      data[offset + 2] = clampByte(((x + y) / Math.max(width + height - 2, 1)) * 255);
+    }
+  }
+  return data;
+}
+
+function buildUiScreenshot(width, height) {
+  const channels = 3;
+  const data = Buffer.alloc(width * height * channels);
+  const topBar = Math.max(36, Math.round(height * 0.12));
+  const sidebar = Math.max(92, Math.round(width * 0.18));
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const offset = (y * width + x) * channels;
+      let r = 246;
+      let g = 248;
+      let b = 250;
+
+      if (y < topBar) {
+        r = 31;
+        g = 41;
+        b = 55;
+      } else if (x < sidebar) {
+        r = 229;
+        g = 233;
+        b = 240;
+      } else if ((x - sidebar) % 96 < 72 && (y - topBar) % 82 < 54) {
+        r = 255;
+        g = 255;
+        b = 255;
+      }
+
+      if ((x + y) % 41 === 0 || (x > sidebar && y > topBar && (x - y) % 137 === 0)) {
+        r = 59;
+        g = 130;
+        b = 246;
+      }
+
+      if (x % 128 === 0 || y % 96 === 0) {
+        r = Math.max(0, r - 16);
+        g = Math.max(0, g - 16);
+        b = Math.max(0, b - 16);
+      }
+
+      data[offset] = r;
+      data[offset + 1] = g;
+      data[offset + 2] = b;
+    }
+  }
+  return data;
+}
+
+function buildHighDetailTexture(width, height) {
+  const channels = 3;
+  const data = Buffer.alloc(width * height * channels);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const offset = (y * width + x) * channels;
+      const wave = Math.sin(x * 0.19) * 38 + Math.cos(y * 0.23) * 31;
+      const grain = ((x * 1103515245 + y * 12345 + (x ^ y) * 2654435761) >>> 0) & 0xff;
+      const base = 108 + wave + (grain - 128) * 0.42;
+      data[offset] = clampByte(base + ((x & 7) === 0 ? 28 : -8));
+      data[offset + 1] = clampByte(base + ((y & 7) === 0 ? 22 : 4));
+      data[offset + 2] = clampByte(base + (((x + y) & 15) === 0 ? 34 : -12));
+    }
+  }
+  return data;
+}
+
 function probeCjpegli(cjpegli, allowMissing) {
   const result = spawnSync(cjpegli, ['--help'], { encoding: 'utf8' });
 
@@ -100,7 +182,9 @@ function probeCjpegli(cjpegli, allowMissing) {
   }
 
   const versionResult = spawnSync(cjpegli, ['--version'], { encoding: 'utf8' });
-  const version = versionResult.error ? null : firstLine(versionResult.stdout || versionResult.stderr || '');
+  const version = versionResult.error || versionResult.status !== 0
+    ? null
+    : firstLine(versionResult.stdout || versionResult.stderr || '');
 
   return {
     available: true,
@@ -110,10 +194,42 @@ function probeCjpegli(cjpegli, allowMissing) {
 }
 
 async function buildReferencePng(testCase) {
+  if (testCase.source === 'generated-smooth-gradient') {
+    const data = buildRgbGradient(testCase.width, testCase.height);
+    return sharp(data, {
+      raw: { width: testCase.width, height: testCase.height, channels: 3 },
+    })
+      .png({ compressionLevel: 0 })
+      .toBuffer();
+  }
+
+  if (testCase.source === 'generated-ui-screenshot') {
+    const data = buildUiScreenshot(testCase.width, testCase.height);
+    return sharp(data, {
+      raw: { width: testCase.width, height: testCase.height, channels: 3 },
+    })
+      .png({ compressionLevel: 0 })
+      .toBuffer();
+  }
+
+  if (testCase.source === 'generated-high-detail-texture') {
+    const data = buildHighDetailTexture(testCase.width, testCase.height);
+    return sharp(data, {
+      raw: { width: testCase.width, height: testCase.height, channels: 3 },
+    })
+      .png({ compressionLevel: 0 })
+      .toBuffer();
+  }
+
   return sharp(testCase.input)
     .resize(testCase.width, null, { withoutEnlargement: true })
     .png({ compressionLevel: 0 })
     .toBuffer();
+}
+
+function inputLabel(testCase) {
+  if (testCase.input) return path.relative(resolveRoot(), testCase.input);
+  return testCase.source || testCase.label;
 }
 
 async function encodeMozjpeg(referencePng, quality) {
@@ -149,12 +265,14 @@ async function runCase(testCase, options) {
   fs.writeFileSync(pngPath, referencePng);
   const corpusEntry = await describeReferenceCorpusEntry({
     label: testCase.label,
-    sourcePath: testCase.input,
-    sourceKind: 'fixture',
+    sourcePath: testCase.input || null,
+    sourceKind: testCase.source || 'fixture',
+    generatedBy: testCase.source || null,
     referencePng,
     referencePngPath: pngPath,
     settings: {
       width: testCase.width,
+      ...(testCase.height ? { height: testCase.height } : {}),
       mozjpegQuality: testCase.mozjpegQuality,
       jpegliDistance: testCase.jpegliDistance,
     },
@@ -186,7 +304,7 @@ async function runCase(testCase, options) {
     corpusEntry,
     result: {
       label: testCase.label,
-      input: path.relative(resolveRoot(), testCase.input),
+      input: inputLabel(testCase),
       width: testCase.width,
       settings: {
         mozjpegQuality: testCase.mozjpegQuality,
