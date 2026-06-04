@@ -75,7 +75,7 @@
     "test:bench:avif-backends": "node test/benchmarks/avif-backend-bakeoff.bench.js"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.1",
+    "@napi-rs/cli": "^3.7.0",
     "@types/node": "^25.1.0",
     "sharp": "^0.34.5",
     "ssim.js": "^3.5.0",
