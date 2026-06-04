@@ -15,6 +15,8 @@ This document defines how benchmark regression monitoring is operated.
   - `npm run test:bench:wasm`
 - Optional JPEG backend bake-off command:
   - `npm run test:bench:jpegli`
+- Optional AVIF backend bake-off command:
+  - `npm run test:bench:avif-backends`
 
 ## Baseline Source
 
@@ -29,6 +31,9 @@ This document defines how benchmark regression monitoring is operated.
 - JPEG backend bake-off outputs:
   - `artifacts/benchmark/jpegli-bakeoff.md`
   - `artifacts/benchmark/jpegli-bakeoff.json`
+- AVIF backend bake-off outputs:
+  - `artifacts/benchmark/avif-backend-bakeoff.md`
+  - `artifacts/benchmark/avif-backend-bakeoff.json`
 
 The baseline file is the single source of truth for threshold comparison.
 
@@ -64,3 +69,8 @@ Regression means "current metric value is higher than baseline by more than thre
 - If `cjpegli --version` does not report an exact tag or commit, set `JPEGLI_VERSION=<tag-or-commit>` or pass `-- --jpegli-version <tag-or-commit>` so the artifact remains reproducible.
 - Cross-platform impact for this harness is limited to benchmark operation: lazy-image runtime and package contents are unchanged, and `cjpegli` is an operator-provided CLI. Any future backend switch proposal must attach macOS, Linux, and Windows build/package-size impact because that would introduce a production build dependency instead of an optional benchmark tool.
 - `JPEGLI_ALLOW_MISSING=1 npm run test:bench:jpegli` is only for smoke-checking script wiring in environments without jpegli. Do not use skip-mode output as benchmark evidence.
+- Run the AVIF backend bake-off before changing the production libavif backend away from the current rav1e feature.
+  The harness compares the current lazy-image AVIF path against `avifenc --codec rav1e|aom|svt` on the same resized PNG intermediates and records exact package/crate/tool versions, quality, speed, jobs/thread count, YUV/range settings, output bytes, encode/total wall time, peak RSS when observable, SSIM, PSNR, alpha behavior, and ICC preservation.
+- The AVIF bake-off requires libavif tools with all candidate encoder backends enabled. Set `AVIFENC=/path/to/avifenc` or pass `-- --avifenc /path/to/avifenc` when the binary is not on `PATH`.
+- `AVIF_BACKEND_ALLOW_MISSING=1 npm run test:bench:avif-backends` is only for smoke-checking script wiring in environments without `avifenc`. `--allow-missing-backends` is only for partial local experiments. Do not use skip-mode or partial-backend output as benchmark evidence.
+- Cross-platform impact for this harness is limited to benchmark operation: lazy-image runtime and package contents are unchanged, and `avifenc` is an operator-provided CLI. Any future backend switch proposal must attach macOS, Linux, and Windows build/package-size impact because that would introduce a production build dependency instead of an optional benchmark tool.
