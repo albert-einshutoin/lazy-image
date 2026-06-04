@@ -5,6 +5,7 @@ const { spawn, spawnSync } = require('child_process');
 const sharp = require('sharp');
 const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 const { calculateQualityMetrics } = require('../helpers/quality');
+const { buildCorpusManifestMarkdown, describeReferenceCorpusEntry } = require('../helpers/benchmark-corpus');
 const { buildPackageImpactMarkdown, collectBenchmarkPackageImpact } = require('../helpers/package-impact');
 const { ImageEngine } = require(resolveRoot('index'));
 
@@ -470,6 +471,28 @@ async function runCase(testCase, options) {
     iterations: options.iterations,
     speed: lazyImageAvifSpeed(testCase.quality),
   };
+  const corpusEntry = await describeReferenceCorpusEntry({
+    label: testCase.label,
+    sourcePath: testCase.input || null,
+    sourceKind: testCase.source || 'fixture',
+    generatedBy: testCase.input ? null : testCase.source,
+    referencePng,
+    referencePngPath,
+    settings: {
+      width: testCase.width,
+      height: testCase.height ?? null,
+      quality: testCase.quality,
+      speed: lazyCase.speed,
+      yuv: '420',
+      range: 'full',
+      qalpha: testCase.quality,
+      jobs: String(options.jobs),
+    },
+    expectations: {
+      alpha: Boolean(testCase.expectAlpha),
+      icc: Boolean(testCase.expectIcc),
+    },
+  });
   const baseline = await encodeLazyImage(referencePng, lazyCase);
   const backends = {};
   const deltas = {};
@@ -482,31 +505,34 @@ async function runCase(testCase, options) {
   }
 
   return {
-    label: testCase.label,
-    source: testCase.source,
-    input: testCase.input ? path.relative(resolveRoot(), testCase.input) : testCase.source,
-    width: testCase.width,
-    height: testCase.height ?? null,
-    settings: {
-      quality: testCase.quality,
-      speed: lazyCase.speed,
-      yuv: '420',
-      range: 'full',
-      qalpha: testCase.quality,
-      jobs: String(options.jobs),
-      lazyImageThreads: lazyImageAvifThreads(),
+    corpusEntry,
+    result: {
+      label: testCase.label,
+      source: testCase.source,
+      input: testCase.input ? path.relative(resolveRoot(), testCase.input) : testCase.source,
+      width: testCase.width,
+      height: testCase.height ?? null,
+      settings: {
+        quality: testCase.quality,
+        speed: lazyCase.speed,
+        yuv: '420',
+        range: 'full',
+        qalpha: testCase.quality,
+        jobs: String(options.jobs),
+        lazyImageThreads: lazyImageAvifThreads(),
+      },
+      expectations: {
+        alpha: Boolean(testCase.expectAlpha),
+        icc: Boolean(testCase.expectIcc),
+      },
+      commands: {
+        lazyImage: `ImageEngine.from(referencePng).toBufferWithMetrics('avif', ${testCase.quality})`,
+        avifenc: `avifenc --codec <backend> --qcolor ${testCase.quality} --qalpha ${testCase.quality} --speed ${lazyCase.speed} --jobs ${options.jobs} --yuv 420 --range full INPUT OUTPUT`,
+      },
+      lazyImage: baseline,
+      backends,
+      deltas,
     },
-    expectations: {
-      alpha: Boolean(testCase.expectAlpha),
-      icc: Boolean(testCase.expectIcc),
-    },
-    commands: {
-      lazyImage: `ImageEngine.from(referencePng).toBufferWithMetrics('avif', ${testCase.quality})`,
-      avifenc: `avifenc --codec <backend> --qcolor ${testCase.quality} --qalpha ${testCase.quality} --speed ${lazyCase.speed} --jobs ${options.jobs} --yuv 420 --range full INPUT OUTPUT`,
-    },
-    lazyImage: baseline,
-    backends,
-    deltas,
   };
 }
 
@@ -528,6 +554,8 @@ function buildMarkdown(report) {
     `Iterations: ${report.iterations}`,
     '',
     ...buildPackageImpactMarkdown(report.packageImpact),
+    '',
+    ...buildCorpusManifestMarkdown(report.corpus),
     '',
     'Command shape: `avifenc --codec <backend> --qcolor <quality> --qalpha <quality> --speed <speed> --jobs <jobs> --yuv 420 --range full INPUT OUTPUT`',
     'Quality/CQ mapping: `qcolor` and `qalpha` use the libavif 0..100 quality scale; codec-specific quantizer mapping remains inside libavif/avifenc.',
@@ -665,9 +693,12 @@ async function main() {
   console.log(`Output directory: ${options.outputDir}\n`);
 
   const results = [];
+  const corpus = [];
   for (const testCase of CASES) {
     console.log(`- ${testCase.label}`);
-    results.push(await runCase(testCase, options));
+    const { result, corpusEntry } = await runCase(testCase, options);
+    results.push(result);
+    corpus.push(corpusEntry);
   }
 
   const report = {
@@ -703,6 +734,7 @@ async function main() {
       benchmarkTool: 'avifenc',
       candidateBackend: 'libavif backend matrix',
     }),
+    corpus,
     commandShape:
       'avifenc --codec <backend> --qcolor <quality> --qalpha <quality> --speed <speed> --jobs <jobs> --yuv 420 --range full INPUT OUTPUT',
     timingNote:

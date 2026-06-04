@@ -4,6 +4,7 @@ const { spawnSync } = require('child_process');
 const sharp = require('sharp');
 const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 const { calculateQualityMetrics } = require('../helpers/quality');
+const { buildCorpusManifestMarkdown, describeReferenceCorpusEntry } = require('../helpers/benchmark-corpus');
 const { buildPackageImpactMarkdown, collectBenchmarkPackageImpact } = require('../helpers/package-impact');
 const { ImageEngine } = require(resolveRoot('index'));
 
@@ -166,6 +167,18 @@ async function runCase(testCase, options) {
   const referencePng = await buildReferencePng(testCase);
   const pngPath = path.join(TEMP_DIR, `${testCase.label}.png`);
   fs.writeFileSync(pngPath, referencePng);
+  const corpusEntry = await describeReferenceCorpusEntry({
+    label: testCase.label,
+    sourcePath: testCase.input,
+    sourceKind: 'fixture',
+    referencePng,
+    referencePngPath: pngPath,
+    settings: {
+      width: testCase.width,
+      mozjpegQuality: testCase.mozjpegQuality,
+      jpegliDistance: testCase.jpegliDistance,
+    },
+  });
 
   const mozjpegTimes = [];
   const jpegliTimes = [];
@@ -189,42 +202,45 @@ async function runCase(testCase, options) {
   ]);
 
   return {
-    label: testCase.label,
-    input: path.relative(resolveRoot(), testCase.input),
-    width: testCase.width,
-    settings: {
-      mozjpegQuality: testCase.mozjpegQuality,
-      jpegliDistance: testCase.jpegliDistance,
-    },
-    commands: {
-      mozjpeg: `ImageEngine.from(referencePng).toBuffer('jpeg', ${testCase.mozjpegQuality})`,
-      jpegli: [
-        options.cjpegli,
-        path.relative(resolveRoot(), pngPath),
-        path.relative(resolveRoot(), path.join(TEMP_DIR, `${testCase.label}-<iteration>.jpegli.jpg`)),
-        '--distance',
-        String(testCase.jpegliDistance),
-        '--quiet',
-      ].join(' '),
-    },
-    mozjpeg: {
-      bytes: mozjpegData.length,
-      avgEncodeMs: average(mozjpegTimes),
-      ssim: mozjpegQuality.ssim,
-      psnr: mozjpegQuality.psnr,
-    },
-    jpegli: {
-      bytes: jpegliData.length,
-      avgEncodeMs: average(jpegliTimes),
-      ssim: jpegliQuality.ssim,
-      psnr: jpegliQuality.psnr,
-    },
-    delta: {
-      bytesPercent: ((jpegliData.length - mozjpegData.length) / Math.max(mozjpegData.length, 1)) * 100,
-      encodeMsPercent:
-        ((average(jpegliTimes) - average(mozjpegTimes)) / Math.max(average(mozjpegTimes), 0.001)) * 100,
-      ssim: jpegliQuality.ssim - mozjpegQuality.ssim,
-      psnr: jpegliQuality.psnr - mozjpegQuality.psnr,
+    corpusEntry,
+    result: {
+      label: testCase.label,
+      input: path.relative(resolveRoot(), testCase.input),
+      width: testCase.width,
+      settings: {
+        mozjpegQuality: testCase.mozjpegQuality,
+        jpegliDistance: testCase.jpegliDistance,
+      },
+      commands: {
+        mozjpeg: `ImageEngine.from(referencePng).toBuffer('jpeg', ${testCase.mozjpegQuality})`,
+        jpegli: [
+          options.cjpegli,
+          path.relative(resolveRoot(), pngPath),
+          path.relative(resolveRoot(), path.join(TEMP_DIR, `${testCase.label}-<iteration>.jpegli.jpg`)),
+          '--distance',
+          String(testCase.jpegliDistance),
+          '--quiet',
+        ].join(' '),
+      },
+      mozjpeg: {
+        bytes: mozjpegData.length,
+        avgEncodeMs: average(mozjpegTimes),
+        ssim: mozjpegQuality.ssim,
+        psnr: mozjpegQuality.psnr,
+      },
+      jpegli: {
+        bytes: jpegliData.length,
+        avgEncodeMs: average(jpegliTimes),
+        ssim: jpegliQuality.ssim,
+        psnr: jpegliQuality.psnr,
+      },
+      delta: {
+        bytesPercent: ((jpegliData.length - mozjpegData.length) / Math.max(mozjpegData.length, 1)) * 100,
+        encodeMsPercent:
+          ((average(jpegliTimes) - average(mozjpegTimes)) / Math.max(average(mozjpegTimes), 0.001)) * 100,
+        ssim: jpegliQuality.ssim - mozjpegQuality.ssim,
+        psnr: jpegliQuality.psnr - mozjpegQuality.psnr,
+      },
     },
   };
 }
@@ -245,6 +261,8 @@ function buildMarkdown(report) {
     `Iterations: ${report.iterations}`,
     '',
     ...buildPackageImpactMarkdown(report.packageImpact),
+    '',
+    ...buildCorpusManifestMarkdown(report.corpus),
     '',
     'Command shape: `cjpegli INPUT OUTPUT --distance <distance> --quiet`',
     '',
@@ -326,9 +344,12 @@ async function main() {
   }
 
   const results = [];
+  const corpus = [];
   for (const testCase of CASES) {
     console.log(`- ${testCase.label}`);
-    results.push(await runCase(testCase, options));
+    const { result, corpusEntry } = await runCase(testCase, options);
+    results.push(result);
+    corpus.push(corpusEntry);
   }
 
   const report = {
@@ -353,6 +374,7 @@ async function main() {
       benchmarkTool: 'cjpegli',
       candidateBackend: 'jpegli',
     }),
+    corpus,
     commandShape: 'cjpegli INPUT OUTPUT --distance <distance> --quiet',
     timingNote:
       'MozJPEG time measures in-process encode from the resized reference PNG buffer; jpegli time measures cjpegli process wall time from the same resized reference PNG file.',
