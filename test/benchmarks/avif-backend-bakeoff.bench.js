@@ -5,6 +5,7 @@ const { spawn, spawnSync } = require('child_process');
 const sharp = require('sharp');
 const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 const { calculateQualityMetrics } = require('../helpers/quality');
+const { buildPackageImpactMarkdown, collectBenchmarkPackageImpact } = require('../helpers/package-impact');
 const { ImageEngine } = require(resolveRoot('index'));
 
 const DEFAULT_ITERATIONS = 2;
@@ -526,6 +527,8 @@ function buildMarkdown(report) {
     `lazy-image AVIF threads: ${report.settings.lazyImageThreads}`,
     `Iterations: ${report.iterations}`,
     '',
+    ...buildPackageImpactMarkdown(report.packageImpact),
+    '',
     'Command shape: `avifenc --codec <backend> --qcolor <quality> --qalpha <quality> --speed <speed> --jobs <jobs> --yuv 420 --range full INPUT OUTPUT`',
     'Quality/CQ mapping: `qcolor` and `qalpha` use the libavif 0..100 quality scale; codec-specific quantizer mapping remains inside libavif/avifenc.',
     `Tune settings: ${report.settings.tune}`,
@@ -696,6 +699,10 @@ async function main() {
     },
     iterations: options.iterations,
     codecs: options.codecs,
+    packageImpact: collectBenchmarkPackageImpact({
+      benchmarkTool: 'avifenc',
+      candidateBackend: 'libavif backend matrix',
+    }),
     commandShape:
       'avifenc --codec <backend> --qcolor <quality> --qalpha <quality> --speed <speed> --jobs <jobs> --yuv 420 --range full INPUT OUTPUT',
     timingNote:

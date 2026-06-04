@@ -4,6 +4,7 @@ const { spawnSync } = require('child_process');
 const sharp = require('sharp');
 const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 const { calculateQualityMetrics } = require('../helpers/quality');
+const { buildPackageImpactMarkdown, collectBenchmarkPackageImpact } = require('../helpers/package-impact');
 const { ImageEngine } = require(resolveRoot('index'));
 
 const DEFAULT_ITERATIONS = 3;
@@ -243,6 +244,8 @@ function buildMarkdown(report) {
     `cjpegli probe: ${report.tools.cjpegliProbe || 'unknown'}`,
     `Iterations: ${report.iterations}`,
     '',
+    ...buildPackageImpactMarkdown(report.packageImpact),
+    '',
     'Command shape: `cjpegli INPUT OUTPUT --distance <distance> --quiet`',
     '',
     '| Case | Input | Width | MozJPEG q | jpegli distance | MozJPEG bytes | jpegli bytes | jpegli bytes delta | MozJPEG ms | jpegli ms | jpegli ms delta | MozJPEG SSIM | jpegli SSIM | SSIM delta | MozJPEG PSNR | jpegli PSNR | PSNR delta |',
@@ -346,6 +349,10 @@ async function main() {
       cjpegliProbe: probe.help,
     },
     iterations: options.iterations,
+    packageImpact: collectBenchmarkPackageImpact({
+      benchmarkTool: 'cjpegli',
+      candidateBackend: 'jpegli',
+    }),
     commandShape: 'cjpegli INPUT OUTPUT --distance <distance> --quiet',
     timingNote:
       'MozJPEG time measures in-process encode from the resized reference PNG buffer; jpegli time measures cjpegli process wall time from the same resized reference PNG file.',
