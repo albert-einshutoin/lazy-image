@@ -9,7 +9,7 @@ function sha256(buffer) {
 }
 
 function relativeRoot(filePath) {
-  return path.relative(resolveRoot(), filePath);
+  return path.relative(resolveRoot(), filePath).replace(/\\/g, '/');
 }
 
 function describeSource({ sourcePath, sourceKind, generatedBy }) {

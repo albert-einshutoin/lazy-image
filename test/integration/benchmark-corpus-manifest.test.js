@@ -125,6 +125,7 @@ async function main() {
     assert.match(markdown, /## Corpus Manifest/);
     assert.match(markdown, /markdown-case/);
     assert.match(markdown, /test\/fixtures\/test_38kb_input\.jpg/);
+    assert.doesNotMatch(markdown, /test\\fixtures\\test_38kb_input\.jpg/);
     assert.match(markdown, /width=32, mozjpegQuality=80/);
     assert.match(markdown, /[a-f0-9]{12}/);
   });
