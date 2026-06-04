@@ -32,6 +32,21 @@ function parseNonNegativeInt(value, optionName) {
   throw new Error(`${optionName} must be a non-negative integer`);
 }
 
+function requireOptionValue(args, index, optionName) {
+  const value = args[index + 1];
+  if (!value || value.startsWith('-')) {
+    throw new Error(`${optionName} requires a path value`);
+  }
+  return value;
+}
+
+function resolveOutputPath(value) {
+  if (!value) {
+    return null;
+  }
+  return path.resolve(resolveRoot(), value);
+}
+
 function parseOptions() {
   const args = process.argv.slice(2);
   const options = {
@@ -44,6 +59,8 @@ function parseOptions() {
     rssGrowthLimitMb: process.env.NAPI_STRESS_RSS_GROWTH_LIMIT_MB
       ? parseNonNegativeNumber(process.env.NAPI_STRESS_RSS_GROWTH_LIMIT_MB, 'NAPI_STRESS_RSS_GROWTH_LIMIT_MB')
       : 0,
+    summaryJsonPath: resolveOutputPath(process.env.NAPI_STRESS_SUMMARY_JSON),
+    summaryMdPath: resolveOutputPath(process.env.NAPI_STRESS_SUMMARY_MD),
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -56,6 +73,12 @@ function parseOptions() {
       i += 1;
     } else if (arg === '--rss-growth-limit-mb') {
       options.rssGrowthLimitMb = parseNonNegativeNumber(args[i + 1], arg);
+      i += 1;
+    } else if (arg === '--summary-json') {
+      options.summaryJsonPath = resolveOutputPath(requireOptionValue(args, i, arg));
+      i += 1;
+    } else if (arg === '--summary-md') {
+      options.summaryMdPath = resolveOutputPath(requireOptionValue(args, i, arg));
       i += 1;
     } else if (!arg.startsWith('-')) {
       options.iterations = parsePositiveInt(arg, 'iterations');
@@ -139,6 +162,32 @@ function buildMalformedInputs(rootDir) {
     ...buildInlineMalformedInputs(),
     ...collectGeneratedFuzzSeeds(corpusRoot),
   ];
+}
+
+function roundMb(value) {
+  return Number(value.toFixed(1));
+}
+
+function summarizeMalformedInputs(inputs) {
+  const generatedFuzzTargets = {};
+  let generatedFuzzSeeds = 0;
+
+  for (const input of inputs) {
+    if (!input.name.startsWith('fuzz/')) {
+      continue;
+    }
+
+    generatedFuzzSeeds += 1;
+    const target = input.name.split('/')[1] || 'unknown';
+    generatedFuzzTargets[target] = (generatedFuzzTargets[target] || 0) + 1;
+  }
+
+  return {
+    total: inputs.length,
+    inline: inputs.length - generatedFuzzSeeds,
+    generatedFuzzSeeds,
+    generatedFuzzTargets,
+  };
 }
 
 async function expectRejects(label, fn) {
@@ -246,21 +295,99 @@ function recordMemorySample(samples, phase) {
   });
 }
 
-function assertRssGrowthWithinLimit(samples, limitMb) {
-  if (limitMb <= 0 || samples.length < 3) {
+function summarizeMemorySamples(samples) {
+  const measured = samples.slice(1);
+  const peakSamples = measured.length > 0 ? measured : samples;
+  const baseline = measured[0]?.rssMb || samples[0]?.rssMb || 0;
+  const peak = Math.max(...peakSamples.map((sample) => sample.rssMb), 0);
+  const growth = Math.max(0, peak - baseline);
+
+  return {
+    sampleCount: samples.length,
+    baselineRssMb: roundMb(baseline),
+    peakRssMb: roundMb(peak),
+    growthRssMb: roundMb(growth),
+    samples: samples.map((sample) => ({
+      phase: sample.phase,
+      rssMb: roundMb(sample.rssMb),
+    })),
+  };
+}
+
+function assertRssGrowthWithinLimit(memorySummary, limitMb) {
+  if (limitMb <= 0 || memorySummary.sampleCount < 3) {
     return;
   }
 
-  const measured = samples.slice(1);
-  const baseline = measured[0].rssMb;
-  const peak = Math.max(...measured.map((sample) => sample.rssMb));
-  const growth = peak - baseline;
-
-  if (growth > limitMb) {
+  if (memorySummary.growthRssMb > limitMb) {
     throw new Error(
-      `RSS growth ${growth.toFixed(1)} MiB exceeded limit ${limitMb} MiB ` +
-        `(baseline ${baseline.toFixed(1)} MiB, peak ${peak.toFixed(1)} MiB)`,
+      `RSS growth ${memorySummary.growthRssMb.toFixed(1)} MiB exceeded limit ${limitMb} MiB ` +
+        `(baseline ${memorySummary.baselineRssMb.toFixed(1)} MiB, ` +
+        `peak ${memorySummary.peakRssMb.toFixed(1)} MiB)`,
     );
+  }
+}
+
+function buildSummary(options, malformedInputs, memorySamples) {
+  return {
+    version: 1,
+    tool: 'napi-boundary-stress',
+    generatedAt: new Date().toISOString(),
+    status: 'passed',
+    options: {
+      iterations: options.iterations,
+      malformedRounds: options.malformedRounds,
+      rssGrowthLimitMb: options.rssGrowthLimitMb,
+    },
+    malformedInputs: summarizeMalformedInputs(malformedInputs),
+    memory: summarizeMemorySamples(memorySamples),
+  };
+}
+
+function formatSummaryMarkdown(summary) {
+  const targetEntries = Object.entries(summary.malformedInputs.generatedFuzzTargets);
+  const targetRows = targetEntries.length === 0
+    ? ['_No generated fuzz seed targets._']
+    : [
+        '| target | seeds |',
+        '| --- | ---: |',
+        ...targetEntries.map(([target, count]) => `| ${target} | ${count} |`),
+      ];
+
+  return [
+    '# NAPI Boundary Stress Summary',
+    '',
+    `- status: ${summary.status}`,
+    `- generatedAt: ${summary.generatedAt}`,
+    `- iterations: ${summary.options.iterations}`,
+    `- malformedRounds: ${summary.options.malformedRounds}`,
+    `- malformedInputs: ${summary.malformedInputs.total}`,
+    `- generatedFuzzSeeds: ${summary.malformedInputs.generatedFuzzSeeds}`,
+    `- peakRss: ${summary.memory.peakRssMb.toFixed(1)} MiB`,
+    `- rssGrowth: ${summary.memory.growthRssMb.toFixed(1)} MiB`,
+    `- rssGrowthLimit: ${summary.options.rssGrowthLimitMb.toFixed(1)} MiB`,
+    '',
+    '## Generated Fuzz Seed Targets',
+    '',
+    ...targetRows,
+    '',
+  ].join('\n');
+}
+
+function writeSummaryArtifacts(summary, options) {
+  const writes = [
+    [options.summaryJsonPath, `${JSON.stringify(summary, null, 2)}\n`],
+    [options.summaryMdPath, formatSummaryMarkdown(summary)],
+  ];
+
+  for (const [filePath, contents] of writes) {
+    if (!filePath) {
+      continue;
+    }
+
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, contents);
+    console.error(`napi stress summary written: ${filePath}`);
   }
 }
 
@@ -290,14 +417,22 @@ async function main() {
     recordMemorySample(memorySamples, `malformed-${i}`);
   }
 
-  assertRssGrowthWithinLimit(memorySamples, options.rssGrowthLimitMb);
+  const summary = buildSummary(options, malformedInputs, memorySamples);
+  try {
+    assertRssGrowthWithinLimit(summary.memory, options.rssGrowthLimitMb);
+  } catch (error) {
+    summary.status = 'failed';
+    summary.error = { message: error.message };
+    writeSummaryArtifacts(summary, options);
+    throw error;
+  }
+  writeSummaryArtifacts(summary, options);
 
   fs.rmSync(rootDir, { recursive: true, force: true });
-  const peakRssMb = Math.max(...memorySamples.map((sample) => sample.rssMb));
   console.error(
     `napi stress completed: iterations=${options.iterations}, ` +
       `malformedRounds=${options.malformedRounds}, malformedInputs=${malformedInputs.length}, ` +
-      `peakRss=${peakRssMb.toFixed(1)} MiB`,
+      `peakRss=${summary.memory.peakRssMb.toFixed(1)} MiB`,
   );
 }
 

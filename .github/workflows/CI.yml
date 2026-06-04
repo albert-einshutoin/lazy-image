@@ -495,7 +495,28 @@ jobs:
             exit 1
           fi
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
-          npm run test:stress:napi -- --iterations 10 --malformed-rounds 10 --rss-growth-limit-mb 1536
+          mkdir -p artifacts/reliability
+          npm run test:stress:napi -- \
+            --iterations 10 \
+            --malformed-rounds 10 \
+            --rss-growth-limit-mb 1536 \
+            --summary-json artifacts/reliability/napi-boundary-stress.json \
+            --summary-md artifacts/reliability/napi-boundary-stress.md
+
+      - name: Add NAPI stress summary
+        if: always()
+        run: |
+          if [ -f artifacts/reliability/napi-boundary-stress.md ]; then
+            cat artifacts/reliability/napi-boundary-stress.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload NAPI stress artifacts
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: napi-boundary-stress
+          path: artifacts/reliability/napi-boundary-stress.*
+          if-no-files-found: ignore
 
   publish:
     name: Publish to npm
