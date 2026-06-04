@@ -66,6 +66,7 @@ Regression means "current metric value is higher than baseline by more than thre
 - Run the JPEG backend bake-off before considering a mozjpeg-to-jpegli backend switch.
   The harness compares current lazy-image MozJPEG output against `cjpegli` on the same resized PNG intermediate and records exact package/crate versions, settings, command shape, output bytes, encode time, SSIM, and PSNR.
 - The JPEG bake-off requires `cjpegli` from jpegli. Set `JPEGLI_CJPEGLI=/path/to/cjpegli` or pass `-- --cjpegli /path/to/cjpegli` when the binary is not on `PATH`.
+- Do not substitute JPEG XL's `cjxl` for `cjpegli`; `cjxl` produces JPEG XL output, while this bake-off is for JPEG-compatible jpegli output.
 - If `cjpegli --version` does not report an exact tag or commit, set `JPEGLI_VERSION=<tag-or-commit>` or pass `-- --jpegli-version <tag-or-commit>` so the artifact remains reproducible.
 - Cross-platform impact for this harness is limited to benchmark operation: lazy-image runtime and package contents are unchanged, and `cjpegli` is an operator-provided CLI. Any future backend switch proposal must attach macOS, Linux, and Windows build/package-size impact because that would introduce a production build dependency instead of an optional benchmark tool.
 - `JPEGLI_ALLOW_MISSING=1 npm run test:bench:jpegli` is only for smoke-checking script wiring in environments without jpegli. Do not use skip-mode output as benchmark evidence.

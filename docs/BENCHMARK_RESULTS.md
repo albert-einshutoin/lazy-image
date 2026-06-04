@@ -110,3 +110,71 @@ Notes:
 - Current public size win is JPEG-specific in these measured scenarios.
 - Current AVIF/WebP measurements favor sharp for speed and usually output size.
 - Speed ratios use `sharp time / lazy-image time`; values below 1.0 mean sharp was faster.
+
+## Issue #638 (JPEG / jpegli Backend Bake-Off)
+
+Date: 2026-06-04
+Branch: `bench/638-jpegli-artifact`
+Environment: local darwin/arm64, Node.js v24.2.0, lazy-image v0.15.0
+
+### Tooling
+
+`cjpegli` was built from `google/jpegli` commit
+`031a0077f5799a6041004267fc12b956c1f52a20`.
+The Homebrew `jpeg-xl` package provided `cjxl`, but did not provide the
+JPEG-compatible `cjpegli` binary in this environment.
+
+```bash
+git clone --depth 1 https://github.com/google/jpegli.git /tmp/jpegli-src
+git -C /tmp/jpegli-src submodule update --init --depth 1
+cmake -S /tmp/jpegli-src -B /tmp/jpegli-src/build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_PREFIX_PATH="$(brew --prefix highway);$(brew --prefix little-cms2);$(brew --prefix libpng);$(brew --prefix jpeg-turbo)" \
+  -DBUILD_TESTING=OFF \
+  -DJPEGLI_ENABLE_DOXYGEN=OFF \
+  -DJPEGLI_ENABLE_MANPAGES=OFF \
+  -DJPEGLI_ENABLE_BENCHMARK=OFF \
+  -DJPEGLI_ENABLE_JNI=OFF \
+  -DJPEGLI_ENABLE_OPENEXR=OFF \
+  -DJPEGLI_ENABLE_DEVTOOLS=OFF \
+  -DJPEGLI_ENABLE_FUZZERS=OFF \
+  -DJPEGLI_ENABLE_TOOLS=ON \
+  -DJPEGLI_ENABLE_JPEGLI_LIBJPEG=ON \
+  -DJPEGLI_ENABLE_SJPEG=OFF \
+  -DJPEGLI_FORCE_SYSTEM_LCMS2=ON \
+  -DJPEGLI_FORCE_SYSTEM_HWY=ON
+cmake --build /tmp/jpegli-src/build --target cjpegli --config Release -j 4
+```
+
+### Command
+
+```bash
+JPEGLI_VERSION=031a0077f5799a6041004267fc12b956c1f52a20 \
+  npm run test:bench:jpegli -- \
+  --cjpegli /tmp/jpegli-src/build/tools/cjpegli \
+  --jpegli-version 031a0077f5799a6041004267fc12b956c1f52a20
+```
+
+The generated files were written to `artifacts/benchmark/jpegli-bakeoff.*`;
+`artifacts/` is intentionally ignored, so this section is the tracked snapshot.
+
+### Results
+
+| Case | Source class | MozJPEG bytes | jpegli bytes | jpegli bytes delta | MozJPEG ms | jpegli ms | jpegli ms delta | SSIM delta | PSNR delta |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| large-png-default-jpeg | large PNG/photo-like | 32664 | 85778 | +162.6% | 28.3 | 16.8 | -40.7% | +0.00267 | +3.00 |
+| photo-jpeg-default-jpeg | large JPEG/photo | 32710 | 87951 | +168.9% | 23.5 | 14.4 | -38.9% | +0.00278 | +3.21 |
+| small-jpeg-default-jpeg | small JPEG | 14140 | 28418 | +101.0% | 12.0 | 9.5 | -21.2% | +0.00024 | +1.98 |
+| mid-png-smaller-output | medium PNG | 15686 | 31518 | +100.9% | 16.0 | 14.5 | -9.2% | +0.02080 | +1.92 |
+| generated-gradient-default-jpeg | smooth gradient | 3168 | 6021 | +90.1% | 4.9 | 5.8 | +19.5% | +0.00541 | +2.21 |
+| generated-ui-default-jpeg | screenshot/UI | 33700 | 86024 | +155.3% | 30.0 | 18.1 | -39.7% | +0.09103 | +5.21 |
+| generated-texture-high-detail | high-detail texture | 77724 | 174348 | +124.3% | 26.4 | 10.5 | -60.3% | +0.00779 | +7.96 |
+
+### Decision
+
+Do not promote jpegli with the current distance mapping. In this first
+same-reference bake-off, jpegli improved objective quality and was usually
+faster as an external process, but produced 90.1% to 168.9% larger JPEGs than
+the current MozJPEG path. The next jpegli investigation should tune distance
+against matched-byte or matched-quality targets before considering an internal
+backend boundary or production dependency.
