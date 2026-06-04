@@ -13,6 +13,8 @@ This document defines how benchmark regression monitoring is operated.
   - `npm run test:bench:extended`
 - Wasm upload-preflight evidence command:
   - `npm run test:bench:wasm`
+- Optional JPEG backend bake-off command:
+  - `npm run test:bench:jpegli`
 
 ## Baseline Source
 
@@ -24,6 +26,9 @@ This document defines how benchmark regression monitoring is operated.
 - Wasm upload report outputs:
   - `artifacts/benchmark/wasm-upload-summary.md`
   - `artifacts/benchmark/wasm-upload-summary.json`
+- JPEG backend bake-off outputs:
+  - `artifacts/benchmark/jpegli-bakeoff.md`
+  - `artifacts/benchmark/jpegli-bakeoff.json`
 
 The baseline file is the single source of truth for threshold comparison.
 
@@ -53,3 +58,9 @@ Regression means "current metric value is higher than baseline by more than thre
 - Benchmark jobs are intentionally separated from required CI gates to avoid noisy PR failures.
 - Run manually before releases or after significant image pipeline/perf changes.
 - Run the Wasm upload benchmark before making browser/Edge upload-preflight claims. See [WASM_BENCHMARKING.md](./WASM_BENCHMARKING.md).
+- Run the JPEG backend bake-off before considering a mozjpeg-to-jpegli backend switch.
+  The harness compares current lazy-image MozJPEG output against `cjpegli` on the same resized PNG intermediate and records exact package/crate versions, settings, command shape, output bytes, encode time, SSIM, and PSNR.
+- The JPEG bake-off requires `cjpegli` from jpegli. Set `JPEGLI_CJPEGLI=/path/to/cjpegli` or pass `-- --cjpegli /path/to/cjpegli` when the binary is not on `PATH`.
+- If `cjpegli --version` does not report an exact tag or commit, set `JPEGLI_VERSION=<tag-or-commit>` or pass `-- --jpegli-version <tag-or-commit>` so the artifact remains reproducible.
+- Cross-platform impact for this harness is limited to benchmark operation: lazy-image runtime and package contents are unchanged, and `cjpegli` is an operator-provided CLI. Any future backend switch proposal must attach macOS, Linux, and Windows build/package-size impact because that would introduce a production build dependency instead of an optional benchmark tool.
+- `JPEGLI_ALLOW_MISSING=1 npm run test:bench:jpegli` is only for smoke-checking script wiring in environments without jpegli. Do not use skip-mode output as benchmark evidence.
