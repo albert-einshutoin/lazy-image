@@ -495,7 +495,7 @@ jobs:
             exit 1
           fi
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
-          npm run test:stress:napi -- --iterations 5
+          npm run test:stress:napi -- --iterations 10 --malformed-rounds 10 --rss-growth-limit-mb 1536
 
   publish:
     name: Publish to npm
