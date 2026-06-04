@@ -2,39 +2,19 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const sharp = require('sharp');
-const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
+const { resolveRoot, resolveTemp } = require('../helpers/paths');
 const { calculateQualityMetrics } = require('../helpers/quality');
 const { buildCorpusManifestMarkdown, describeReferenceCorpusEntry } = require('../helpers/benchmark-corpus');
+const {
+  JPEG_BACKEND_BAKEOFF_CASES: CASES,
+  buildBakeoffCorpusExpectations,
+} = require('../helpers/codec-bakeoff-cases');
 const { buildPackageImpactMarkdown, collectBenchmarkPackageImpact } = require('../helpers/package-impact');
 const { ImageEngine } = require(resolveRoot('index'));
 
 const DEFAULT_ITERATIONS = 3;
 const OUTPUT_FILE_BASE = 'jpegli-bakeoff';
 const TEMP_DIR = resolveTemp('benchmarks', OUTPUT_FILE_BASE);
-
-const CASES = [
-  {
-    label: 'large-png-default-jpeg',
-    input: resolveFixture('test_4.5MB_5000x5000.png'),
-    width: 800,
-    mozjpegQuality: 80,
-    jpegliDistance: 1.0,
-  },
-  {
-    label: 'small-jpeg-default-jpeg',
-    input: resolveFixture('test_38kb_input.jpg'),
-    width: 800,
-    mozjpegQuality: 80,
-    jpegliDistance: 1.0,
-  },
-  {
-    label: 'mid-png-smaller-output',
-    input: resolveFixture('test_100KB_1188x1188.png'),
-    width: 400,
-    mozjpegQuality: 75,
-    jpegliDistance: 1.4,
-  },
-];
 
 function getArg(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -178,6 +158,7 @@ async function runCase(testCase, options) {
       mozjpegQuality: testCase.mozjpegQuality,
       jpegliDistance: testCase.jpegliDistance,
     },
+    expectations: buildBakeoffCorpusExpectations(testCase),
   });
 
   const mozjpegTimes = [];
