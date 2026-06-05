@@ -59,6 +59,9 @@ function parseOptions() {
     rssGrowthLimitMb: process.env.NAPI_STRESS_RSS_GROWTH_LIMIT_MB
       ? parseNonNegativeNumber(process.env.NAPI_STRESS_RSS_GROWTH_LIMIT_MB, 'NAPI_STRESS_RSS_GROWTH_LIMIT_MB')
       : 0,
+    targetBytesRounds: process.env.NAPI_STRESS_TARGET_BYTES_ROUNDS
+      ? parseNonNegativeInt(process.env.NAPI_STRESS_TARGET_BYTES_ROUNDS, 'NAPI_STRESS_TARGET_BYTES_ROUNDS')
+      : null,
     summaryJsonPath: resolveOutputPath(process.env.NAPI_STRESS_SUMMARY_JSON),
     summaryMdPath: resolveOutputPath(process.env.NAPI_STRESS_SUMMARY_MD),
   };
@@ -74,6 +77,9 @@ function parseOptions() {
     } else if (arg === '--rss-growth-limit-mb') {
       options.rssGrowthLimitMb = parseNonNegativeNumber(args[i + 1], arg);
       i += 1;
+    } else if (arg === '--target-bytes-rounds') {
+      options.targetBytesRounds = parseNonNegativeInt(args[i + 1], arg);
+      i += 1;
     } else if (arg === '--summary-json') {
       options.summaryJsonPath = resolveOutputPath(requireOptionValue(args, i, arg));
       i += 1;
@@ -85,6 +91,12 @@ function parseOptions() {
     } else {
       throw new Error(`Unknown option: ${arg}`);
     }
+  }
+
+  if (options.targetBytesRounds == null) {
+    options.targetBytesRounds = Math.min(options.iterations, 5);
+  } else {
+    options.targetBytesRounds = Math.min(options.targetBytesRounds, options.iterations);
   }
 
   return options;
@@ -213,7 +225,43 @@ async function expectRejects(label, fn) {
   throw new Error(`${label}: unexpectedly succeeded`);
 }
 
-async function runIteration(iteration, rootDir) {
+async function runTargetBytesRound(iteration, iterationDir) {
+  const targetOptions = {
+    targetBytes: 2500,
+    minQuality: 35,
+    maxQuality: 90,
+  };
+
+  const bufferResult = await ImageEngine.fromPath(INPUT_JPEG)
+    .sanitize({ policy: 'strict' })
+    .resize({ width: 320, fit: 'inside' })
+    .toBufferTargetBytes('jpeg', targetOptions);
+
+  if (!Buffer.isBuffer(bufferResult.data) || bufferResult.data.length === 0) {
+    throw new Error(`iteration ${iteration}: target-bytes buffer search returned no bytes`);
+  }
+  if (bufferResult.bytesOut !== bufferResult.data.length) {
+    throw new Error(`iteration ${iteration}: target-bytes buffer bytesOut mismatch`);
+  }
+  if (bufferResult.targetBytes !== targetOptions.targetBytes) {
+    throw new Error(`iteration ${iteration}: target-bytes buffer target was not echoed`);
+  }
+
+  const targetFilePath = path.join(iterationDir, 'target-bytes-output.jpg');
+  const fileResult = await ImageEngine.fromPath(INPUT_JPEG)
+    .sanitize({ policy: 'strict' })
+    .resize({ width: 320, fit: 'inside' })
+    .toFileTargetBytes(targetFilePath, 'jpeg', targetOptions);
+
+  if (!fileResult || fileResult.bytesWritten <= 0 || !fs.existsSync(targetFilePath)) {
+    throw new Error(`iteration ${iteration}: target-bytes file search wrote no bytes`);
+  }
+  if (fileResult.targetBytes !== targetOptions.targetBytes) {
+    throw new Error(`iteration ${iteration}: target-bytes file target was not echoed`);
+  }
+}
+
+async function runIteration(iteration, rootDir, includeTargetBytesRound) {
   const iterationDir = path.join(rootDir, `iter-${iteration}`);
   const batchDir = path.join(iterationDir, 'batch');
   fs.mkdirSync(batchDir, { recursive: true });
@@ -243,6 +291,25 @@ async function runIteration(iteration, rootDir) {
     throw new Error(`iteration ${iteration}: file output wrote no bytes`);
   }
 
+  const cloneEngine = ImageEngine.fromPath(INPUT_PNG)
+    .sanitize({ policy: 'strict' })
+    .resize({ width: 160, fit: 'inside' });
+  const [cloneJpeg, cloneWebp, cloneMetrics] = await Promise.all([
+    cloneEngine.clone().toBuffer('jpeg', 76),
+    cloneEngine.clone().toBuffer('webp', 76),
+    cloneEngine.clone().toBufferWithMetrics('jpeg', 72),
+  ]);
+
+  if (!Buffer.isBuffer(cloneJpeg) || cloneJpeg.length === 0) {
+    throw new Error(`iteration ${iteration}: clone JPEG output returned no bytes`);
+  }
+  if (!Buffer.isBuffer(cloneWebp) || cloneWebp.length === 0) {
+    throw new Error(`iteration ${iteration}: clone WebP output returned no bytes`);
+  }
+  if (!Buffer.isBuffer(cloneMetrics.data) || cloneMetrics.data.length === 0) {
+    throw new Error(`iteration ${iteration}: clone metrics output returned no bytes`);
+  }
+
   const batchResult = await ImageEngine.fromPath(INPUT_JPEG)
     .resize({ width: 256, fit: 'inside' })
     .processBatchWithMetrics(
@@ -258,6 +325,10 @@ async function runIteration(iteration, rootDir) {
   const failed = batchResult.items.find((item) => !item.success);
   if (failed) {
     throw new Error(`iteration ${iteration}: batch failed for ${failed.source}: ${failed.error}`);
+  }
+
+  if (includeTargetBytesRound) {
+    await runTargetBytesRound(iteration, iterationDir);
   }
 }
 
@@ -357,7 +428,13 @@ function buildSummary(options, malformedInputs, memorySamples) {
     options: {
       iterations: options.iterations,
       malformedRounds: options.malformedRounds,
+      targetBytesRounds: options.targetBytesRounds,
       rssGrowthLimitMb: options.rssGrowthLimitMb,
+    },
+    boundaryCoverage: {
+      cloneMultiOutputRounds: options.iterations,
+      targetBytesSearchRounds: options.targetBytesRounds,
+      targetBytesSearches: options.targetBytesRounds * 2,
     },
     malformedInputs: summarizeMalformedInputs(malformedInputs),
     memory: summarizeMemorySamples(memorySamples),
@@ -381,6 +458,9 @@ function formatSummaryMarkdown(summary) {
     `- generatedAt: ${summary.generatedAt}`,
     `- iterations: ${summary.options.iterations}`,
     `- malformedRounds: ${summary.options.malformedRounds}`,
+    `- targetBytesRounds: ${summary.options.targetBytesRounds}`,
+    `- cloneMultiOutputRounds: ${summary.boundaryCoverage.cloneMultiOutputRounds}`,
+    `- targetBytesSearches: ${summary.boundaryCoverage.targetBytesSearches}`,
     `- malformedInputs: ${summary.malformedInputs.total}`,
     `- generatedFuzzSeeds: ${summary.malformedInputs.generatedFuzzSeeds}`,
     `- generatedFuzzFilePathSeeds: ${summary.malformedInputs.generatedFuzzFilePathSeeds}`,
@@ -423,7 +503,7 @@ async function main() {
   recordMemorySample(memorySamples, 'start');
 
   for (let i = 0; i < options.iterations; i += 1) {
-    await runIteration(i, rootDir);
+    await runIteration(i, rootDir, i < options.targetBytesRounds);
     if (i < options.malformedRounds) {
       await runMalformedRound(i, malformedInputs);
     }
@@ -452,7 +532,8 @@ async function main() {
   fs.rmSync(rootDir, { recursive: true, force: true });
   console.error(
     `napi stress completed: iterations=${options.iterations}, ` +
-      `malformedRounds=${options.malformedRounds}, malformedInputs=${malformedInputs.length}, ` +
+      `malformedRounds=${options.malformedRounds}, targetBytesRounds=${options.targetBytesRounds}, ` +
+      `malformedInputs=${malformedInputs.length}, ` +
       `peakRss=${summary.memory.peakRssMb.toFixed(1)} MiB`,
   );
 }
