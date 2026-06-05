@@ -179,6 +179,46 @@ the current MozJPEG path. The next jpegli investigation should tune distance
 against matched-byte or matched-quality targets before considering an internal
 backend boundary or production dependency.
 
+### Follow-up: Matched-Target Distance Tuning
+
+Date: 2026-06-05
+Branch: `bench/638-jpegli-tuned-evidence`
+Environment: local darwin/arm64, Node.js v24.2.0, lazy-image v0.15.0
+
+This run used the matched-target tuning harness added in #663 with the same
+`cjpegli` source commit as the first bake-off:
+`031a0077f5799a6041004267fc12b956c1f52a20`.
+
+```bash
+JPEGLI_VERSION=031a0077f5799a6041004267fc12b956c1f52a20 \
+  npm run test:bench:jpegli -- \
+  --cjpegli /tmp/jpegli-src-031a0077/build/tools/cjpegli \
+  --jpegli-version 031a0077f5799a6041004267fc12b956c1f52a20
+```
+
+The distance sweep used candidates
+`0.8, 1, 1.2, 1.4, 1.8, 2.2, 2.8, 3.4, 4.2, 5.2, 6.4, 8`.
+Matched-byte means closest output size to MozJPEG. Matched-quality means
+closest SSIM to MozJPEG on the same resized reference PNG.
+
+| Case | Matched-byte distance | Matched-byte bytes delta | Matched-byte SSIM delta | Matched-quality distance | Matched-quality bytes delta | Matched-quality SSIM delta |
+|---|---:|---:|---:|---:|---:|---:|
+| large-png-default-jpeg | 3.4 | -4.9% | -0.00070 | 2.8 | +16.7% | +0.00005 |
+| photo-jpeg-default-jpeg | 3.4 | +2.3% | -0.00071 | 2.8 | +23.1% | +0.00003 |
+| small-jpeg-default-jpeg | 6.4 | +3.7% | -0.00239 | 1.0 | +101.0% | +0.00024 |
+| mid-png-smaller-output | 3.4 | -1.7% | -0.00451 | 2.8 | +13.0% | +0.00209 |
+| generated-gradient-default-jpeg | 4.2 | -1.1% | +0.00097 | 6.4 | -10.6% | +0.00027 |
+| generated-ui-default-jpeg | 4.2 | +3.4% | +0.03457 | 6.4 | -27.2% | -0.00859 |
+| generated-texture-high-detail | 4.2 | -7.4% | -0.01088 | 2.8 | +22.4% | +0.00077 |
+
+Do not promote jpegli yet. The matched-byte sweep can get close to MozJPEG
+output size, but several cases pay measurable SSIM regressions at those
+distances. The matched-quality sweep often needs meaningfully larger files,
+especially small JPEG, large photo-like inputs, and high-detail texture.
+Before an internal backend boundary, the next evidence should evaluate
+`cjpegli --target_size` and/or a narrower per-corpus distance profile rather
+than relying on one global distance mapping.
+
 ## Issue #639 (AVIF / libavif Backend Bake-Off)
 
 Date: 2026-06-05
