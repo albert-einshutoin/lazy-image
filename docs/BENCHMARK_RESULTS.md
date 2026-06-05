@@ -178,3 +178,113 @@ faster as an external process, but produced 90.1% to 168.9% larger JPEGs than
 the current MozJPEG path. The next jpegli investigation should tune distance
 against matched-byte or matched-quality targets before considering an internal
 backend boundary or production dependency.
+
+## Issue #639 (AVIF / libavif Backend Bake-Off)
+
+Date: 2026-06-05
+Branch: `bench/639-avif-backend-evidence`
+Environment: local darwin/arm64, Node.js v24.2.0, lazy-image v0.15.0
+
+### Tooling
+
+`avifenc` was built from libavif tag `v1.4.2`, source commit
+`c5240fc79fe5c2407e10afd35f5505ef6333ea49`, with system codec libraries:
+
+- AOM/libaom 3.14.1
+- rav1e 0.8.1
+- SVT-AV1 4.1.0
+
+The current lazy-image production comparison path used Cargo dependencies
+`libavif-sys 0.17.0+libavif.1.0.4` and `rav1e 0.7.1`.
+
+```bash
+brew install aom rav1e svt-av1 libpng jpeg-turbo
+git clone --branch v1.4.2 --depth 1 https://github.com/AOMediaCodec/libavif.git /tmp/libavif-src
+cmake -S /tmp/libavif-src -B /tmp/libavif-src/build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_SHARED_LIBS=ON \
+  -DAVIF_BUILD_APPS=ON \
+  -DAVIF_BUILD_TESTS=OFF \
+  -DAVIF_CODEC_AOM=SYSTEM \
+  -DAVIF_CODEC_AOM_ENCODE=ON \
+  -DAVIF_CODEC_AOM_DECODE=ON \
+  -DAVIF_CODEC_RAV1E=SYSTEM \
+  -DAVIF_CODEC_SVT=SYSTEM \
+  -DAVIF_ZLIBPNG=SYSTEM \
+  -DAVIF_JPEG=SYSTEM \
+  -DCMAKE_PREFIX_PATH="$(brew --prefix aom);$(brew --prefix rav1e);$(brew --prefix svt-av1);$(brew --prefix libpng);$(brew --prefix jpeg-turbo)"
+cmake --build /tmp/libavif-src/build --target avifenc --config Release -j 4
+/tmp/libavif-src/build/avifenc --version
+```
+
+`avifenc --version` reported:
+
+```text
+Version: 1.4.2 (aom [enc/dec]:3.14.1, rav1e [enc]:0.8.1 (), svt [enc]:v4.1.0)
+libyuv : unavailable
+```
+
+### Command
+
+```bash
+npm run test:bench:avif-backends -- \
+  --avifenc /tmp/libavif-src/build/avifenc \
+  --jobs 4
+```
+
+The generated files were written to
+`artifacts/benchmark/avif-backend-bakeoff.*`; `artifacts/` is intentionally
+ignored, so this section is the tracked snapshot.
+
+### Settings
+
+- Candidate backends: rav1e, AOM/libaom, SVT-AV1 through libavif/avifenc.
+- Quality mapping: `--qcolor` and `--qalpha` use the same lazy-image quality value on libavif's 0..100 quality scale.
+- Speed mapping: lazy-image AVIF quality 60 -> speed 8, quality 75 -> speed 7.
+- Thread settings: `avifenc --jobs 4`; lazy-image AVIF thread cap reported 8.
+- Pixel settings: `--yuv 420 --range full`.
+- Tune settings: libavif/codec defaults; no codec-specific `--advanced` tuning.
+
+### Results
+
+| Case | Backend | Bytes | Bytes vs lazy-image | Encode ms | SSIM vs lazy-image | PSNR vs lazy-image | Alpha OK | ICC OK |
+|---|---|---:|---:|---:|---:|---:|---|---|
+| large-png-q60 | lazy-image current rav1e | 27789 | baseline | 421.1 | baseline | baseline | n/a | n/a |
+| large-png-q60 | avifenc rav1e | 26811 | -3.5% | 216.8 | +0.00035 | +0.30 | n/a | n/a |
+| large-png-q60 | avifenc AOM | 26031 | -6.3% | 18.7 | -0.00039 | -0.40 | n/a | n/a |
+| large-png-q60 | avifenc SVT | 18989 | -31.7% | 19.0 | -0.00092 | -0.93 | n/a | n/a |
+| photo-jpeg-q75 | lazy-image current rav1e | 41756 | baseline | 464.1 | baseline | baseline | n/a | n/a |
+| photo-jpeg-q75 | avifenc rav1e | 41560 | -0.5% | 259.8 | +0.00037 | +0.36 | n/a | n/a |
+| photo-jpeg-q75 | avifenc AOM | 45142 | +8.1% | 28.6 | -0.00001 | -0.01 | n/a | n/a |
+| photo-jpeg-q75 | avifenc SVT | 27112 | -35.1% | 22.3 | -0.00075 | -0.43 | n/a | n/a |
+| alpha-gradient-q60 | lazy-image current rav1e | 1163 | baseline | 21.5 | baseline | baseline | yes | n/a |
+| alpha-gradient-q60 | avifenc rav1e | 1123 | -3.4% | 22.2 | +0.00218 | -0.05 | yes | n/a |
+| alpha-gradient-q60 | avifenc AOM | 1483 | +27.5% | 6.3 | -0.00240 | -2.20 | yes | n/a |
+| alpha-gradient-q60 | avifenc SVT | 1017 | -12.6% | 8.2 | +0.00183 | -1.82 | yes | n/a |
+| icc-gradient-q60 | lazy-image current rav1e | 1383 | baseline | 12.0 | baseline | baseline | n/a | yes |
+| icc-gradient-q60 | avifenc rav1e | 1600 | +15.7% | 12.7 | +0.00218 | -0.09 | n/a | yes |
+| icc-gradient-q60 | avifenc AOM | 1959 | +41.6% | 5.1 | -0.00240 | -2.15 | n/a | yes |
+| icc-gradient-q60 | avifenc SVT | 1432 | +3.5% | 6.0 | +0.00183 | -1.86 | n/a | yes |
+
+### Build / Package Impact
+
+This PR is benchmark evidence only. Runtime package contents, public API,
+native package targets, and production build dependencies are unchanged for
+macOS, Linux, and Windows. `avifenc` is an operator-provided benchmark CLI, not
+a linked lazy-image dependency. Any production backend switch still needs a
+separate package-size, CI-build-time, and cross-platform native build impact
+report.
+
+### Decision
+
+Do not change the production AVIF default from the current rav1e-backed path in
+this PR. libavif v1.4.2 with rav1e is the strongest quality-preserving next
+prototype because it reduced bytes on photo-like cases and alpha while
+improving SSIM, but it regressed the ICC-gradient byte count by 15.7%.
+
+SVT-AV1 is promising as a future speed-oriented profile because it produced the
+largest byte reductions on photo-like cases, but it also reduced objective
+quality and still needs matched-quality tuning plus package/build impact
+evidence. AOM/libaom is not recommended as the default from this snapshot
+because it was not consistently smaller and showed larger regressions on the
+generated alpha and ICC cases.

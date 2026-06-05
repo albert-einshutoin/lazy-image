@@ -119,12 +119,16 @@ function parseAvailableCodecs(text) {
   return [...available];
 }
 
+function cleanCodecVersion(value) {
+  return value.trim().replace(/\s*\($/, '').trim();
+}
+
 function parseCodecVersions(text) {
   const versions = {};
   const regex = /\b(aom|rav1e|svt)\b\s*\[[^\]]*enc[^\]]*\]\s*:?\s*([^,\n)]+)/gi;
   let match;
   while ((match = regex.exec(text)) !== null) {
-    versions[match[1].toLowerCase()] = match[2].trim();
+    versions[match[1].toLowerCase()] = cleanCodecVersion(match[2]);
   }
   return versions;
 }
@@ -451,7 +455,7 @@ async function runCase(testCase, options) {
     referencePngPath,
     settings: {
       width: testCase.width,
-      height: testCase.height ?? null,
+      ...(testCase.height != null ? { height: testCase.height } : {}),
       quality: testCase.quality,
       speed: lazyCase.speed,
       yuv: '420',
