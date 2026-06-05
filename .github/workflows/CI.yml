@@ -499,6 +499,7 @@ jobs:
           npm run test:stress:napi -- \
             --iterations 10 \
             --malformed-rounds 10 \
+            --target-bytes-rounds 5 \
             --rss-growth-limit-mb 1536 \
             --summary-json artifacts/reliability/napi-boundary-stress.json \
             --summary-md artifacts/reliability/napi-boundary-stress.md

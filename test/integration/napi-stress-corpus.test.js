@@ -68,6 +68,10 @@ test('stress smoke includes generated malformed fuzz seeds and writes summaries'
   assert.equal(summary.status, 'passed');
   assert.equal(summary.options.iterations, 1);
   assert.equal(summary.options.malformedRounds, 1);
+  assert.equal(summary.options.targetBytesRounds, 1);
+  assert.equal(summary.boundaryCoverage.cloneMultiOutputRounds, 1);
+  assert.equal(summary.boundaryCoverage.targetBytesSearchRounds, 1);
+  assert.equal(summary.boundaryCoverage.targetBytesSearches, 2);
   assert.equal(summary.malformedInputs.total, 25);
   assert.equal(summary.malformedInputs.inline, 5);
   assert.equal(summary.malformedInputs.generatedFuzzSeeds, 20);
@@ -78,6 +82,9 @@ test('stress smoke includes generated malformed fuzz seeds and writes summaries'
 
   const markdown = fs.readFileSync(summaryMdPath, 'utf8');
   assert.match(markdown, /NAPI Boundary Stress Summary/);
+  assert.match(markdown, /targetBytesRounds: 1/);
+  assert.match(markdown, /cloneMultiOutputRounds: 1/);
+  assert.match(markdown, /targetBytesSearches: 2/);
   assert.match(markdown, /generatedFuzzSeeds: 20/);
   assert.match(markdown, /generatedFuzzFilePathSeeds: 20/);
 });
