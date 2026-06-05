@@ -49,6 +49,8 @@ test('stress smoke includes generated malformed fuzz seeds and writes summaries'
     '1',
     '--malformed-rounds',
     '1',
+    '--target-bytes-rounds',
+    '1',
     '--rss-growth-limit-mb',
     '0',
     '--summary-json',
