@@ -9,6 +9,14 @@ const {
   JPEG_BACKEND_BAKEOFF_CASES: CASES,
   buildBakeoffCorpusExpectations,
 } = require('../helpers/codec-bakeoff-cases');
+const {
+  DEFAULT_JPEGLI_DISTANCE_CANDIDATES,
+  buildDistanceCandidates,
+  buildTuningCandidate,
+  chooseMatchedBytesCandidate,
+  chooseMatchedQualityCandidate,
+  parseDistanceCandidateList,
+} = require('../helpers/jpegli-distance-tuning');
 const { buildPackageImpactMarkdown, collectBenchmarkPackageImpact } = require('../helpers/package-impact');
 const { ImageEngine } = require(resolveRoot('index'));
 
@@ -259,6 +267,68 @@ function runCjpegli(cjpegli, inputPath, outputPath, distance) {
   return { data: fs.readFileSync(outputPath), encodeMs };
 }
 
+async function runDistanceTuning({
+  testCase,
+  options,
+  referencePng,
+  pngPath,
+  mozjpegData,
+  mozjpegQuality,
+}) {
+  if (!options.tuneDistances) {
+    return {
+      enabled: false,
+      reason: 'disabled by --skip-distance-tuning or JPEGLI_SKIP_DISTANCE_TUNING=1',
+    };
+  }
+
+  const distanceCandidates = buildDistanceCandidates(testCase.jpegliDistance, options.distanceCandidates);
+  const candidates = [];
+
+  for (const distance of distanceCandidates) {
+    const outputPath = path.join(TEMP_DIR, `${testCase.label}-distance-${distance}.jpegli.jpg`);
+    const output = path.relative(resolveRoot(), outputPath);
+    const command = [
+      options.cjpegli,
+      path.relative(resolveRoot(), pngPath),
+      output,
+      '--distance',
+      String(distance),
+      '--quiet',
+    ].join(' ');
+    const encoded = runCjpegli(options.cjpegli, pngPath, outputPath, distance);
+    const quality = await calculateQualityMetrics(encoded.data, referencePng);
+
+    candidates.push({
+      ...buildTuningCandidate({
+        distance,
+        bytes: encoded.data.length,
+        encodeMs: encoded.encodeMs,
+        ssim: quality.ssim,
+        psnr: quality.psnr,
+        targetBytes: mozjpegData.length,
+        targetSsim: mozjpegQuality.ssim,
+        targetPsnr: mozjpegQuality.psnr,
+      }),
+      output,
+      command,
+    });
+  }
+
+  return {
+    enabled: true,
+    target: {
+      mozjpegBytes: mozjpegData.length,
+      mozjpegSsim: mozjpegQuality.ssim,
+      mozjpegPsnr: mozjpegQuality.psnr,
+    },
+    distanceCandidates,
+    candidates,
+    matchedBytes: chooseMatchedBytesCandidate(candidates),
+    matchedQuality: chooseMatchedQualityCandidate(candidates),
+  };
+}
+
 async function runCase(testCase, options) {
   const referencePng = await buildReferencePng(testCase);
   const pngPath = path.join(TEMP_DIR, `${testCase.label}.png`);
@@ -299,6 +369,14 @@ async function runCase(testCase, options) {
     calculateQualityMetrics(mozjpegData, referencePng),
     calculateQualityMetrics(jpegliData, referencePng),
   ]);
+  const tuning = await runDistanceTuning({
+    testCase,
+    options,
+    referencePng,
+    pngPath,
+    mozjpegData,
+    mozjpegQuality,
+  });
 
   return {
     corpusEntry,
@@ -340,6 +418,7 @@ async function runCase(testCase, options) {
         ssim: jpegliQuality.ssim - mozjpegQuality.ssim,
         psnr: jpegliQuality.psnr - mozjpegQuality.psnr,
       },
+      tuning,
     },
   };
 }
@@ -364,10 +443,26 @@ function buildMarkdown(report) {
     ...buildCorpusManifestMarkdown(report.corpus),
     '',
     'Command shape: `cjpegli INPUT OUTPUT --distance <distance> --quiet`',
-    '',
-    '| Case | Input | Width | MozJPEG q | jpegli distance | MozJPEG bytes | jpegli bytes | jpegli bytes delta | MozJPEG ms | jpegli ms | jpegli ms delta | MozJPEG SSIM | jpegli SSIM | SSIM delta | MozJPEG PSNR | jpegli PSNR | PSNR delta |',
-    '|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
+    `Distance tuning: ${report.tuning.enabled ? 'enabled' : 'disabled'}`,
   ];
+
+  if (report.tuning.enabled) {
+    lines.push(
+      `Requested distance candidates: ${report.tuning.requestedDistanceCandidates.join(', ')}`,
+      'Matched-byte target: minimize absolute byte delta against the MozJPEG output for the same resized reference PNG.',
+      'Matched-quality target: minimize absolute SSIM delta against the MozJPEG output for the same resized reference PNG.',
+      ''
+    );
+  } else if (report.tuning.reason) {
+    lines.push(`Distance tuning reason: ${report.tuning.reason}`, '');
+  } else {
+    lines.push('');
+  }
+
+  lines.push(
+    '| Case | Input | Width | MozJPEG q | jpegli distance | MozJPEG bytes | jpegli bytes | jpegli bytes delta | MozJPEG ms | jpegli ms | jpegli ms delta | MozJPEG SSIM | jpegli SSIM | SSIM delta | MozJPEG PSNR | jpegli PSNR | PSNR delta |',
+    '|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
+  );
 
   for (const result of report.results) {
     lines.push(
@@ -391,6 +486,31 @@ function buildMarkdown(report) {
         formatNumber(result.delta.psnr, 2),
       ].join(' | ').replace(/^/, '| ').replace(/$/, ' |')
     );
+  }
+
+  if (report.tuning.enabled) {
+    lines.push(
+      '',
+      '## Distance Tuning Summary',
+      '',
+      '| Case | Candidates | Matched-byte distance | Matched-byte bytes delta | Matched-byte SSIM delta | Matched-quality distance | Matched-quality bytes delta | Matched-quality SSIM delta |',
+      '|---|---:|---:|---:|---:|---:|---:|---:|'
+    );
+
+    for (const result of report.results) {
+      lines.push(
+        [
+          result.label,
+          result.tuning.distanceCandidates.length,
+          result.tuning.matchedBytes.distance,
+          formatPercent(result.tuning.matchedBytes.delta.bytesPercent),
+          formatNumber(result.tuning.matchedBytes.delta.ssim, 5),
+          result.tuning.matchedQuality.distance,
+          formatPercent(result.tuning.matchedQuality.delta.bytesPercent),
+          formatNumber(result.tuning.matchedQuality.delta.ssim, 5),
+        ].join(' | ').replace(/^/, '| ').replace(/$/, ' |')
+      );
+    }
   }
 
   lines.push(
@@ -423,6 +543,14 @@ async function main() {
     ),
     outputDir: path.resolve(getArg('--output-dir', resolveRoot('artifacts', 'benchmark'))),
     allowMissing: hasFlag('--allow-missing-jpegli') || process.env.JPEGLI_ALLOW_MISSING === '1',
+    tuneDistances: !hasFlag('--skip-distance-tuning') && process.env.JPEGLI_SKIP_DISTANCE_TUNING !== '1',
+    distanceCandidates: parseDistanceCandidateList(
+      getArg(
+        '--distance-candidates',
+        process.env.JPEGLI_DISTANCE_CANDIDATES || DEFAULT_JPEGLI_DISTANCE_CANDIDATES.join(',')
+      ),
+      '--distance-candidates'
+    ),
   };
 
   const probe = probeCjpegli(options.cjpegli, options.allowMissing);
@@ -437,6 +565,7 @@ async function main() {
   console.log('=== JPEG Backend Bake-Off ===');
   console.log(`cjpegli: ${options.cjpegli}`);
   console.log(`Iterations: ${options.iterations}`);
+  console.log(`Distance tuning: ${options.tuneDistances ? 'enabled' : 'disabled'}`);
   console.log(`Output directory: ${options.outputDir}\n`);
   if (!options.jpegliVersion && !probe.version) {
     console.log('Warning: cjpegli version is unknown. Set JPEGLI_VERSION=<tag-or-commit> for publishable evidence.');
@@ -473,6 +602,16 @@ async function main() {
       benchmarkTool: 'cjpegli',
       candidateBackend: 'jpegli',
     }),
+    tuning: {
+      enabled: options.tuneDistances,
+      reason: options.tuneDistances
+        ? null
+        : 'disabled by --skip-distance-tuning or JPEGLI_SKIP_DISTANCE_TUNING=1',
+      requestedDistanceCandidates: options.distanceCandidates,
+      runsPerCandidate: 1,
+      matchedBytesMetric: 'absolute output byte delta vs MozJPEG',
+      matchedQualityMetric: 'absolute SSIM delta vs MozJPEG',
+    },
     corpus,
     commandShape: 'cjpegli INPUT OUTPUT --distance <distance> --quiet',
     timingNote:
@@ -482,8 +621,8 @@ async function main() {
 
   const { jsonPath, mdPath } = writeReport(report, options.outputDir);
 
-  console.log('\n| Case | MozJPEG bytes | jpegli bytes | bytes delta | MozJPEG ms | jpegli ms | ms delta | jpegli SSIM delta |');
-  console.log('|---|---:|---:|---:|---:|---:|---:|---:|');
+  console.log('\n| Case | MozJPEG bytes | jpegli bytes | bytes delta | MozJPEG ms | jpegli ms | ms delta | jpegli SSIM delta | Matched-byte delta | Matched-quality byte delta |');
+  console.log('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
   for (const result of results) {
     console.log(
       [
@@ -495,6 +634,8 @@ async function main() {
         formatNumber(result.jpegli.avgEncodeMs, 1),
         formatPercent(result.delta.encodeMsPercent),
         formatNumber(result.delta.ssim, 5),
+        result.tuning.enabled ? formatPercent(result.tuning.matchedBytes.delta.bytesPercent) : 'n/a',
+        result.tuning.enabled ? formatPercent(result.tuning.matchedQuality.delta.bytesPercent) : 'n/a',
       ].join(' | ').replace(/^/, '| ').replace(/$/, ' |')
     );
   }
