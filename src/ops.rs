@@ -220,7 +220,7 @@ impl Operation {
                 OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
                 OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
             ),
-            Operation::Rotate { .. } => OperationContract::new(
+            Operation::Rotate(_) => OperationContract::new(
                 "rotate",
                 OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
                 OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,

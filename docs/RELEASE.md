@@ -72,6 +72,7 @@ The files below need to move from the current version to the new one. Skipping a
 | `package.json` | `version` field | Manual edit |
 | `package.json` | All entries under `optionalDependencies` (6 platform packages) | Manual edit |
 | `packages/lazy-image-wasm/package.json` | `version` field | Manual edit |
+| `packages/lazy-image-wasm/shared.js` | Exported `VERSION` constant | Manual edit |
 | `package-lock.json` | Root `version`, root `packages[""]` block, workspace package entry, and the six `@alberteinshutoin/lazy-image-*` optional dependency entries for the new version. Before publish, npm may keep the platform package lock entries as optional placeholders because the new packages are not in the registry yet. | `npm install --package-lock-only --ignore-scripts` |
 | `Cargo.toml` | `[package].version` | Manual edit |
 | `Cargo.lock` | `lazy-image` entry | `cargo update -p lazy-image` |
@@ -108,7 +109,7 @@ node scripts/check-release-policy.js 0.16.0  # expected to fail if breaking entr
 #### Commit and push
 
 ```bash
-git add package.json packages/lazy-image-wasm/package.json package-lock.json Cargo.toml Cargo.lock index.js CHANGELOG.md
+git add package.json packages/lazy-image-wasm/package.json packages/lazy-image-wasm/shared.js package-lock.json Cargo.toml Cargo.lock index.js CHANGELOG.md
 git commit -m "chore(release): prepare X.Y.Z"
 git push -u origin release/X.Y.Z
 ```
@@ -224,17 +225,21 @@ done
 
 # 3. Wasm package
 npm view @alberteinshutoin/lazy-image-wasm version
+# → should print X.Y.Z
 
 # 4. GitHub Release exists
 gh release view vX.Y.Z --json name,tagName,isDraft,isPrerelease,url
 ```
 
-Smoke test the published package:
+Smoke test the published packages:
 ```bash
 mkdir /tmp/lazy-image-smoke && cd /tmp/lazy-image-smoke
 npm init -y
 npm install @alberteinshutoin/lazy-image@X.Y.Z
 node -e "const li = require('@alberteinshutoin/lazy-image'); console.log(Object.keys(li))"
+
+npm install @alberteinshutoin/lazy-image-wasm@X.Y.Z
+node --input-type=module -e "import { VERSION } from '@alberteinshutoin/lazy-image-wasm/shared'; console.log(VERSION)"
 ```
 
 ---
@@ -322,7 +327,7 @@ git push -u origin chore/sync-package-lock-X.Y.Z
 gh pr create --base develop --title "chore: sync package-lock.json to X.Y.Z"
 ```
 
-**Prevention:** Update `package-lock.json` in Phase 1, alongside `package.json` / `packages/lazy-image-wasm/package.json` / `Cargo.toml` / `Cargo.lock` / `index.js` / `CHANGELOG.md`. Run `npm install --package-lock-only --ignore-scripts` after bumping `package.json`'s `optionalDependencies`.
+**Prevention:** Update `package-lock.json` in Phase 1, alongside `package.json` / `packages/lazy-image-wasm/package.json` / `packages/lazy-image-wasm/shared.js` / `Cargo.toml` / `Cargo.lock` / `index.js` / `CHANGELOG.md`. Run `npm install --package-lock-only --ignore-scripts` after bumping `package.json`'s `optionalDependencies`.
 
 ---
 
@@ -352,6 +357,8 @@ For quick reference, the canonical set of files updated for a routine version bu
 
 ```
 package.json        # version + optionalDependencies (×6)
+packages/lazy-image-wasm/package.json  # workspace package version
+packages/lazy-image-wasm/shared.js     # exported VERSION constant
 package-lock.json   # root version + workspace + 6 lazy-image-* optional entries (via `npm install --package-lock-only --ignore-scripts`)
 Cargo.toml          # [package].version
 Cargo.lock          # lazy-image entry (via `cargo update -p lazy-image`)
