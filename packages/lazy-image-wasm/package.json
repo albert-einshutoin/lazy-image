@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image-wasm",
-  "version": "0.1.0",
+  "version": "0.16.0",
   "description": "Browser and Edge upload-preflight optimizer for lazy-image policy APIs",
   "type": "module",
   "sideEffects": false,
@@ -46,6 +46,14 @@
   "engines": {
     "node": ">= 18"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/albert-einshutoin/lazy-image"
+  },
+  "bugs": {
+    "url": "https://github.com/albert-einshutoin/lazy-image/issues"
+  },
+  "homepage": "https://github.com/albert-einshutoin/lazy-image#readme",
   "publishConfig": {
     "access": "public"
   },

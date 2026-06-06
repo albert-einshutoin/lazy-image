@@ -65,20 +65,23 @@ git checkout -b release/X.Y.Z
 
 #### Files that must be updated
 
-All four files below need to move from the current version to the new one. Skipping any of them will fail CI or break consumers.
+The files below need to move from the current version to the new one. Skipping any of them will fail CI or break consumers.
 
 | File | What changes | How |
 |------|--------------|-----|
 | `package.json` | `version` field | Manual edit |
 | `package.json` | All entries under `optionalDependencies` (6 platform packages) | Manual edit |
-| `package-lock.json` | Root `version`, root `packages[""]` block, and the six `@alberteinshutoin/lazy-image-*` entries (version + resolved + integrity) | `npm install --package-lock-only --ignore-scripts` |
+| `packages/lazy-image-wasm/package.json` | `version` field | Manual edit |
+| `packages/lazy-image-wasm/shared.js` | Exported `VERSION` constant | Manual edit |
+| `package-lock.json` | Root `version`, root `packages[""]` block, workspace package entry, and the six `@alberteinshutoin/lazy-image-*` optional dependency entries for the new version. Before publish, npm may keep the platform package lock entries as optional placeholders because the new packages are not in the registry yet. | `npm install --package-lock-only --ignore-scripts` |
 | `Cargo.toml` | `[package].version` | Manual edit |
 | `Cargo.lock` | `lazy-image` entry | `cargo update -p lazy-image` |
+| `index.js` | Generated native loader version checks | `npm run build` |
 | `CHANGELOG.md` | Add new `[X.Y.Z]` section under `[Unreleased]` | Manual edit |
 
 > ⚠️ **`Cargo.lock` is required.** The Supply Chain CI job runs `cargo metadata --locked` and will fail if `Cargo.lock` does not match `Cargo.toml`. This is the most common release-time failure.
 >
-> ⚠️ **`package-lock.json` is required, even though it may pass CI on the release PR itself.** The release PR can pass `npm ci` even with an out-of-sync lock file because the new 0.15.0 platform packages don't exist on npm yet — npm silently skips the optional-deps check. Once the publish job runs on the `vX.Y.Z` tag, every subsequent PR's `npm ci` will fail with `Invalid: lock file's @alberteinshutoin/lazy-image-*@<prev> does not satisfy @alberteinshutoin/lazy-image-*@<new>`. See [Pitfall 6](#6-package-lockjson-not-bumped--every-post-release-pr-breaks) below.
+> ⚠️ **`package-lock.json` is required, even though it may pass CI on the release PR itself.** The release PR can pass `npm ci` even with an out-of-sync lock file because the new platform packages don't exist on npm yet — npm silently skips the optional-deps check. Once the publish job runs on the `vX.Y.Z` tag, every subsequent PR's `npm ci` will fail with `Invalid: lock file's @alberteinshutoin/lazy-image-*@<prev> does not satisfy @alberteinshutoin/lazy-image-*@<new>`. See [Pitfall 6](#6-package-lockjson-not-bumped--every-post-release-pr-breaks) below.
 
 Optional helper:
 ```bash
@@ -106,7 +109,7 @@ node scripts/check-release-policy.js 0.16.0  # expected to fail if breaking entr
 #### Commit and push
 
 ```bash
-git add package.json package-lock.json Cargo.toml Cargo.lock CHANGELOG.md
+git add package.json packages/lazy-image-wasm/package.json packages/lazy-image-wasm/shared.js package-lock.json Cargo.toml Cargo.lock index.js CHANGELOG.md
 git commit -m "chore(release): prepare X.Y.Z"
 git push -u origin release/X.Y.Z
 ```
@@ -170,8 +173,9 @@ git push origin vX.Y.Z
 Pushing the `vX.Y.Z` tag triggers the `Publish to npm` job in [CI.yml](../.github/workflows/CI.yml). The job:
 1. Downloads the prebuilt `.node` artifacts for all 6 platforms
 2. Publishes each platform package (`@alberteinshutoin/lazy-image-{platform}`)
-3. Publishes the main package
-4. Creates a GitHub Release with auto-generated notes
+3. Publishes the Wasm workspace package (`@alberteinshutoin/lazy-image-wasm`)
+4. Publishes the main package
+5. Creates a GitHub Release with auto-generated notes
 
 ---
 
@@ -219,16 +223,23 @@ for pkg in darwin-arm64 darwin-x64 linux-x64-gnu linux-x64-musl linux-arm64-gnu 
   echo "$pkg: $(npm view @alberteinshutoin/lazy-image-$pkg version)"
 done
 
-# 3. GitHub Release exists
+# 3. Wasm package
+npm view @alberteinshutoin/lazy-image-wasm version
+# → should print X.Y.Z
+
+# 4. GitHub Release exists
 gh release view vX.Y.Z --json name,tagName,isDraft,isPrerelease,url
 ```
 
-Smoke test the published package:
+Smoke test the published packages:
 ```bash
 mkdir /tmp/lazy-image-smoke && cd /tmp/lazy-image-smoke
 npm init -y
 npm install @alberteinshutoin/lazy-image@X.Y.Z
 node -e "const li = require('@alberteinshutoin/lazy-image'); console.log(Object.keys(li))"
+
+npm install @alberteinshutoin/lazy-image-wasm@X.Y.Z
+node --input-type=module -e "import { VERSION } from '@alberteinshutoin/lazy-image-wasm/shared'; console.log(VERSION)"
 ```
 
 ---
@@ -316,7 +327,7 @@ git push -u origin chore/sync-package-lock-X.Y.Z
 gh pr create --base develop --title "chore: sync package-lock.json to X.Y.Z"
 ```
 
-**Prevention:** Update `package-lock.json` in Phase 1, alongside `package.json` / `Cargo.toml` / `Cargo.lock` / `CHANGELOG.md`. Run `npm install --package-lock-only --ignore-scripts` after bumping `package.json`'s `optionalDependencies`.
+**Prevention:** Update `package-lock.json` in Phase 1, alongside `package.json` / `packages/lazy-image-wasm/package.json` / `packages/lazy-image-wasm/shared.js` / `Cargo.toml` / `Cargo.lock` / `index.js` / `CHANGELOG.md`. Run `npm install --package-lock-only --ignore-scripts` after bumping `package.json`'s `optionalDependencies`.
 
 ---
 
@@ -346,9 +357,12 @@ For quick reference, the canonical set of files updated for a routine version bu
 
 ```
 package.json        # version + optionalDependencies (×6)
-package-lock.json   # root version + 6 lazy-image-* entries (via `npm install --package-lock-only --ignore-scripts`)
+packages/lazy-image-wasm/package.json  # workspace package version
+packages/lazy-image-wasm/shared.js     # exported VERSION constant
+package-lock.json   # root version + workspace + 6 lazy-image-* optional entries (via `npm install --package-lock-only --ignore-scripts`)
 Cargo.toml          # [package].version
 Cargo.lock          # lazy-image entry (via `cargo update -p lazy-image`)
+index.js            # generated native loader version checks (via `npm run build`)
 CHANGELOG.md        # new [X.Y.Z] section
 ```
 

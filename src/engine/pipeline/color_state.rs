@@ -117,7 +117,7 @@ pub(super) fn update_color_state(mut state: ColorState, op: &Operation) -> Color
         Operation::Resize { .. }
         | Operation::Extract { .. }
         | Operation::Crop { .. }
-        | Operation::Rotate { .. }
+        | Operation::Rotate(_)
         | Operation::FlipH
         | Operation::FlipV
         | Operation::AutoOrient { .. } => {}

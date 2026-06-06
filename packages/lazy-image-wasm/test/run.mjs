@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createUploadOptimizer } from '../browser.js';
 import { createUploadOptimizer as createEdgeUploadOptimizer } from '../edge.js';
-import { LazyImageWasmError } from '../shared.js';
+import { LazyImageWasmError, VERSION } from '../shared.js';
 
 if (typeof globalThis.ImageData !== 'function') {
   globalThis.ImageData = class ImageData {
@@ -22,6 +22,7 @@ const require = createRequire(import.meta.url);
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = path.resolve(packageRoot, '..', '..');
 const fixtureRoot = path.join(repoRoot, 'test', 'fixtures');
+const packageJson = JSON.parse(await fs.readFile(path.join(packageRoot, 'package.json'), 'utf8'));
 
 function packageFile(packageName, relativePath) {
   return path.join(path.dirname(require.resolve(`${packageName}/package.json`)), relativePath);
@@ -60,6 +61,10 @@ const wasmModules = await loadWasmModules();
 const optimizer = await createUploadOptimizer({
   wasmModules,
   defaultOutput: 'arrayBuffer',
+});
+
+await test('exports the workspace package version', async () => {
+  assert.equal(VERSION, packageJson.version);
 });
 
 await test('optimizes JPEG input to JPEG with a target byte budget', async () => {

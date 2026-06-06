@@ -220,7 +220,7 @@ impl Operation {
                 OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
                 OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
             ),
-            Operation::Rotate { .. } => OperationContract::new(
+            Operation::Rotate(_) => OperationContract::new(
                 "rotate",
                 OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
                 OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
@@ -338,17 +338,9 @@ impl OutputFormat {
                 })
             }
             "png" => {
-                // PNG is lossless and has no quality knob. Reject an explicit
-                // quality instead of silently discarding it — a discarded value
-                // is a footgun (the caller believes it took effect). This is a
-                // recoverable UserError (E400), not an unsupported-format error.
-                if let Some(q) = quality {
-                    return Err(LazyImageError::invalid_argument(
-                        "quality",
-                        q.to_string(),
-                        "PNG is lossless and does not accept a quality value; omit quality for PNG",
-                    ));
-                }
+                // PNG is lossless and has no quality knob. Keep accepting and
+                // ignoring an in-range quality for 0.x compatibility; invalid
+                // quality values are rejected before this parser is called.
                 Ok(Self::Png)
             }
             "webp" => {
@@ -603,12 +595,9 @@ mod tests {
         }
 
         #[test]
-        fn test_png_rejects_quality() {
-            let err = OutputFormat::from_str("png", Some(50)).unwrap_err();
-            assert!(err.to_string().contains("does not accept"));
-            // Must be a recoverable UserError (E400 InvalidArgument), not an
-            // unsupported-format CodecError (E111).
-            assert_eq!(err.code().as_str(), "E400");
+        fn test_png_ignores_quality_for_compatibility() {
+            let format = OutputFormat::from_str("png", Some(50)).unwrap();
+            assert!(matches!(format, OutputFormat::Png));
         }
 
         #[test]

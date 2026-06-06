@@ -7,31 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> **Release policy:** This section currently contains a breaking behavior change.
-> Per `docs/SEMVER_POLICY.md`, the next release that includes it must use a
-> major boundary (currently `1.0.0`) unless maintainers explicitly reclassify
-> the entry as a bug-fix clarification before cutting the release.
+---
 
-### Changed (BREAKING)
-- **PNG + quality is now rejected instead of silently ignored.** Passing a `quality`
-  to a PNG output (e.g. `toBuffer('png', 50)`, `toFile`, `processBatch`, or the
-  `encode({ format: 'png', quality })` options object) now throws a recoverable
-  `UserError` with code **`E400`** (`InvalidArgument`) and an actionable message,
-  rather than discarding the value. PNG is lossless and has no quality knob; the
-  previous silent-ignore behavior masked the caller's mistake. **Migration:** omit
-  `quality` for PNG. (Encode profiles via `toBufferProfile`/`encode` automatically
-  skip quality for PNG, so no change is needed there.)
+## [0.16.0] - 2026-06-06
+
+### Added
+- **Wasm upload-preflight workspace package**: added `@alberteinshutoin/lazy-image-wasm`
+  with browser, Edge, shared policy, and worker entrypoints for upload-safe
+  resizing, metadata stripping, target-byte search, and metrics.
+- **Wasm strategy and benchmark docs**: added package API, strategy, and browser /
+  Edge benchmark guidance so runtime claims stay evidence-backed.
+- **Codec bake-off harnesses**: added reproducible JPEG jpegli and AVIF backend
+  bake-off tooling, corpus manifests, package-impact reporting, and tracked
+  benchmark evidence.
+- **Reliability hardening coverage**: expanded malformed-input seed corpus,
+  benchmark/fuzz alignment, and NAPI boundary stress coverage across clone,
+  malformed corpus, and target-byte paths.
+
+### Changed
+- **Benchmark claims are narrower and evidence-backed**: README and benchmark docs
+  now scope size claims to measured JPEG workloads and keep AVIF/WebP claims
+  workload-specific.
+- **Release publishing now includes the Wasm package**: tag releases publish
+  platform packages, `@alberteinshutoin/lazy-image-wasm`, and then the main
+  package.
+- **Release policy is guarded**: `npm run release:check` rejects non-major
+  releases that contain `BREAKING` or `Removed` changelog entries.
 
 ### Internal
-- Release policy guard: `npm run release:check` now rejects non-major releases
-  that contain `BREAKING` or `Removed` changelog entries.
 - Rust engineering hardening: `Quality` newtype (1..=100 enforced at construction),
   `RotationAngle` enum, `MetadataPolicy` sum type (makes "keep GPS without EXIF"
   unrepresentable), `OutputFormat` parsing now returns the typed `LazyImageError`
   (correct error codes at the NAPI boundary), crate-wide
   `#![deny(unsafe_op_in_unsafe_fn)]` with documented SAFETY contracts, a shared
-  work-steal batch helper, and assorted allocation/concurrency cleanups. No public
-  API change beyond the PNG behavior above.
+  work-steal batch helper, and assorted allocation/concurrency cleanups.
+
+### Fixed
+- Kept in-range PNG `quality` arguments accepted and ignored for 0.x compatibility
+  while preserving `E400` validation for out-of-range quality values.
 
 ---
 
@@ -522,7 +535,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.12.0...v0.13.0

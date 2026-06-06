@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.15.0"
+version = "0.16.0"
 edition = "2021"
 description = "Web image optimization engine - smaller JPEG outputs in simple canonical benchmarks, powered by Rust + mozjpeg"
 license = "MIT"
