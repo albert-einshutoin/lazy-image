@@ -103,8 +103,8 @@ impl ImageEngine {
     ) -> Result<AsyncTask<EncodeTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
-        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
-        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // Propagate the real parse error (e.g. E111 UnsupportedFormat for an
+        // unknown format) instead of flattening
         // everything to unsupported_format.
         let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|e| napi_err(&env, e))?;
@@ -172,8 +172,8 @@ impl ImageEngine {
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
         let fast_mode = fast_mode.unwrap_or(false);
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
-        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
-        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // Propagate the real parse error (e.g. E111 UnsupportedFormat for an
+        // unknown format) instead of flattening
         // everything to unsupported_format.
         let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|e| napi_err(&env, e))?;
@@ -338,8 +338,8 @@ impl ImageEngine {
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
 
-        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
-        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // Propagate the real parse error (e.g. E111 UnsupportedFormat for an
+        // unknown format) instead of flattening
         // everything to unsupported_format.
         let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|e| napi_err(&env, e))?;
@@ -368,8 +368,8 @@ impl ImageEngine {
         let quality = validation::sanitize_quality(quality).map_err(|e| napi_err(&env, e))?;
         validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
 
-        // Propagate the real parse error (e.g. E400 InvalidArgument for PNG+quality,
-        // E111 UnsupportedFormat for an unknown format) instead of flattening
+        // Propagate the real parse error (e.g. E111 UnsupportedFormat for an
+        // unknown format) instead of flattening
         // everything to unsupported_format.
         let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|e| napi_err(&env, e))?;

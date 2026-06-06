@@ -198,6 +198,9 @@ jobs:
       - name: Verify npm pack contract
         run: npm run test:pack-contract
 
+      - name: Verify Wasm workspace pack contract
+        run: npm --workspace @alberteinshutoin/lazy-image-wasm pack --dry-run
+
   test:
     name: Test (Node ${{ matrix.node }})
     needs: build
@@ -794,6 +797,25 @@ jobs:
             echo "4. Try publishing manually: cd npm/<platform> && npm publish --access public"
             exit 1
           fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Wasm package
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
+        run: |
+          pkg_name="@alberteinshutoin/lazy-image-wasm"
+          pkg_version="$(node -p "require('./packages/lazy-image-wasm/package.json').version")"
+
+          if npm view "$pkg_name@$pkg_version" version >/dev/null 2>&1; then
+            echo "$pkg_name@$pkg_version already exists; skipping publish."
+            exit 0
+          fi
+
+          npm publish \
+            --workspace "$pkg_name" \
+            --access public \
+            --provenance \
+            --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

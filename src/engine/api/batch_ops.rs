@@ -168,8 +168,8 @@ impl ImageEngine {
         let concurrency =
             validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
 
-        // Propagate the real parse error (E400 for PNG+quality, E111 for an
-        // unknown format) rather than flattening to unsupported_format.
+        // Propagate the real parse error for unknown formats rather than
+        // flattening to unsupported_format.
         let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
@@ -232,8 +232,8 @@ impl ImageEngine {
         let concurrency =
             validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
 
-        // Propagate the real parse error (E400 for PNG+quality, E111 for an
-        // unknown format) rather than flattening to unsupported_format.
+        // Propagate the real parse error for unknown formats rather than
+        // flattening to unsupported_format.
         let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
             .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
