@@ -1,6 +1,6 @@
 # 📋 Versioning Plan & Priorities
 
-> **Current package version**: v0.12.x  
+> **Current package version**: v0.15.x
 > **Working baseline**: `develop`
 
 このドキュメントは、古い issue 番号ベースの固定計画ではなく、`develop` の現状に合った優先順位を簡潔に示します。
@@ -28,5 +28,11 @@
 
 - patch/minor: additive changes, docs alignment, performance/safety improvements
 - major: API removal, semantic shifts, or new execution-model assumptions
+- 現在の `Unreleased` には PNG `quality` rejection の breaking marker があるため、
+  そのまま公開する次リリースは `1.0.0` 候補として扱う。minor/patch で出す場合は、
+  事前に `CHANGELOG.md` から breaking marker を外し、bug-fix clarification として
+  根拠を明文化する。
+- release branch では version/changelog 更新後に `npm run release:check` を実行し、
+  breaking marker を含む non-major release を拒否する。
 
 詳細な中長期方針は [ROADMAP.md](./ROADMAP.md) を参照してください。

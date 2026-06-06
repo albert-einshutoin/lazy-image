@@ -45,17 +45,14 @@ jobs:
           # Linux (glibc)
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            build: |
-              sudo apt-get update
-              sudo apt-get install -y nasm
-              npm run build -- --target x86_64-unknown-linux-gnu
+            build: npm run build -- --target x86_64-unknown-linux-gnu
 
           # Linux (glibc, ARM64)
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             build: |
               sudo apt-get update
-              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu lld nasm
+              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu lld
               export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
               export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
               export AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar
@@ -67,7 +64,7 @@ jobs:
             target: x86_64-unknown-linux-musl
             build: |
               sudo apt-get update
-              sudo apt-get install -y musl-tools nasm
+              sudo apt-get install -y musl-tools
               npm run build -- --target x86_64-unknown-linux-musl
 
     name: Build - ${{ matrix.settings.target }}
@@ -80,6 +77,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
+          cache: npm
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -87,13 +85,14 @@ jobs:
           toolchain: 1.88.0
           targets: ${{ matrix.settings.target }}
 
-      - name: Install NASM (macOS)
-        if: matrix.settings.host == 'macos-latest'
-        run: brew install nasm
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
-      - name: Install NASM (Windows)
-        if: matrix.settings.host == 'windows-latest'
-        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b # v1
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          cache-on-failure: true
+          shared-key: build-${{ matrix.settings.target }}
 
       - name: Install dependencies
         run: npm ci
@@ -125,13 +124,8 @@ jobs:
         with:
           toolchain: 1.88.0
 
-      - name: Install NASM (Linux)
-        if: matrix.host == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y nasm
-
-      - name: Install NASM (macOS)
-        if: matrix.host == 'macos-14'
-        run: brew install nasm
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -161,8 +155,8 @@ jobs:
           toolchain: 1.88.0
           components: clippy, rustfmt
 
-      - name: Install NASM
-        run: sudo apt-get update && sudo apt-get install -y nasm
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -172,8 +166,18 @@ jobs:
       - name: Check formatting
         run: cargo fmt --check
 
-      - name: Run Clippy
+      # Default features are the shipping Rust surface: NAPI bindings, jemalloc
+      # where supported, and AVIF support. Gate it separately from lean builds.
+      - name: Run Clippy (default features)
+        run: cargo clippy -- -D warnings
+
+      - name: Run Clippy (without default features)
         run: cargo clippy --no-default-features -- -D warnings
+
+      # The `stress` feature (example: stress_test) is not built by the default
+      # or no-default clippy/test jobs, so type changes can break it invisibly.
+      - name: Check stress feature compiles
+        run: cargo clippy --no-default-features --features stress -- -D warnings
 
   package-contract:
     name: Package Contract
@@ -186,12 +190,16 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Verify npm pack contract
         run: npm run test:pack-contract
+
+      - name: Verify Wasm workspace pack contract
+        run: npm --workspace @alberteinshutoin/lazy-image-wasm pack --dry-run
 
   test:
     name: Test (Node ${{ matrix.node }})
@@ -218,21 +226,13 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ matrix.node }}
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install NASM (Linux)
-        if: matrix.settings.host == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y nasm
-
-      - name: Install NASM (macOS)
-        if: matrix.settings.host == 'macos-14'
-        run: brew install nasm
-
-      - name: Install NASM (Windows)
-        if: matrix.settings.host == 'windows-latest'
-        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b # v1
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
       - name: Download artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -244,7 +244,7 @@ jobs:
         run: node test/helpers/create-test-image.js
 
       - name: Test
-        run: npm test
+        run: npm run test:js
 
   quality:
     name: Quality Regression
@@ -259,9 +259,10 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
+          cache: npm
 
-      - name: Install NASM
-        run: sudo apt-get update && sudo apt-get install -y nasm
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
       - name: Install dependencies
         run: npm ci
@@ -294,9 +295,10 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
+          cache: npm
 
-      - name: Install NASM
-        run: sudo apt-get update && sudo apt-get install -y nasm
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
       - name: Install dependencies
         run: npm ci
@@ -326,6 +328,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
+          cache: npm
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -376,8 +379,8 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@617b2c1f0f6355a96a120720d1c14499d0e12814 # cargo-llvm-cov
 
-      - name: Install NASM
-        run: sudo apt-get update && sudo apt-get install -y nasm
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -388,6 +391,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -420,9 +424,13 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 20
+          cache: npm
+
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y nasm lld
+        run: sudo apt-get update && sudo apt-get install -y lld
 
       - name: Install npm dependencies
         run: npm ci
@@ -490,7 +498,29 @@ jobs:
             exit 1
           fi
           export LD_PRELOAD="$ASAN_RT${LD_PRELOAD:+:$LD_PRELOAD}"
-          npm run test:stress:napi -- --iterations 5
+          mkdir -p artifacts/reliability
+          npm run test:stress:napi -- \
+            --iterations 10 \
+            --malformed-rounds 10 \
+            --target-bytes-rounds 5 \
+            --rss-growth-limit-mb 1536 \
+            --summary-json artifacts/reliability/napi-boundary-stress.json \
+            --summary-md artifacts/reliability/napi-boundary-stress.md
+
+      - name: Add NAPI stress summary
+        if: always()
+        run: |
+          if [ -f artifacts/reliability/napi-boundary-stress.md ]; then
+            cat artifacts/reliability/napi-boundary-stress.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload NAPI stress artifacts
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: napi-boundary-stress
+          path: artifacts/reliability/napi-boundary-stress.*
+          if-no-files-found: ignore
 
   publish:
     name: Publish to npm
@@ -522,6 +552,7 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
+          cache: npm
       
       # Note: OIDC authentication only works during npm publish
       # npm whoami will not work with OIDC - this is expected behavior
@@ -766,6 +797,25 @@ jobs:
             echo "4. Try publishing manually: cd npm/<platform> && npm publish --access public"
             exit 1
           fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Wasm package
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
+        run: |
+          pkg_name="@alberteinshutoin/lazy-image-wasm"
+          pkg_version="$(node -p "require('./packages/lazy-image-wasm/package.json').version")"
+
+          if npm view "$pkg_name@$pkg_version" version >/dev/null 2>&1; then
+            echo "$pkg_name@$pkg_version already exists; skipping publish."
+            exit 0
+          fi
+
+          npm publish \
+            --workspace "$pkg_name" \
+            --access public \
+            --provenance \
+            --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

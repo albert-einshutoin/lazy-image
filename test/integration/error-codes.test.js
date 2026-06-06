@@ -1,7 +1,7 @@
 /**
  * Error code matrix tests — covers previously untested error codes.
  *
- * Targets: E111, E121, E123, E130, E131, E204, E402, E900
+ * Targets: E111, E121, E123, E130, E131, E204, E400, E402, E900
  * (E122 PixelCountExceedsLimit is skipped — requires a real image whose
  *  decoded pixel count exceeds the limit, which cannot be synthesised cheaply.)
  *
@@ -60,6 +60,30 @@ async function asyncTest(name, fn) {
             assert(typeof e.recoveryHint === 'string' && e.recoveryHint.length > 0, 'recoveryHint should be present');
         }
         assert(threw, 'should throw for unsupported output format');
+    });
+
+    // ---------------------------------------------------------------
+    // E400 InvalidArgument — quality values must be in range.
+    // PNG remains compatibility-preserving for 0.x: an in-range quality is
+    // accepted and ignored because PNG is lossless. Out-of-range values are
+    // rejected before format-specific parsing.
+    // ---------------------------------------------------------------
+    await asyncTest('E400: InvalidArgument from out-of-range quality', async () => {
+        let threw = false;
+        try {
+            await ImageEngine.from(BUFFER).toBuffer('jpeg', 0);
+        } catch (e) {
+            threw = true;
+            assert.strictEqual(e.errorCode, 'E400', `expected E400, got ${e.errorCode}`);
+            const category = getErrorCategory(e);
+            assert.strictEqual(category, ErrorCategory.UserError, 'invalid quality should be a UserError');
+            assert(/quality/i.test(e.message), 'message should mention quality');
+            assert(typeof e.recoveryHint === 'string' && e.recoveryHint.length > 0, 'recoveryHint should be present');
+        }
+        assert(threw, 'quality 0 should throw');
+
+        const png = await ImageEngine.from(BUFFER).toBuffer('png', 50);
+        assert(png.length > 0, 'PNG with in-range quality remains accepted for 0.x compatibility');
     });
 
     // ---------------------------------------------------------------

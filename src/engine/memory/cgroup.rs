@@ -5,8 +5,6 @@
 // All functions in this module are NAPI-only because the only consumer
 // (`detect_available_memory` in the parent module) is itself NAPI-gated.
 
-#![cfg(feature = "napi")]
-
 use std::fs;
 
 /// Parsed cgroup mount entry: the on-disk mount point and the relative root
@@ -179,7 +177,7 @@ fn strip_mount_root(root: &str, rel: &str) -> String {
 fn join_mount_rel_file(mount_point: &str, rel: &str, file: &str) -> String {
     let base = mount_point.trim_end_matches('/');
     if rel.is_empty() {
-        return format!("{}/{}", base, file);
+        return format!("{base}/{file}");
     }
     format!("{}/{}/{}", base, rel.trim_start_matches('/'), file)
 }

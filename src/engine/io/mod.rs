@@ -10,6 +10,7 @@
 // historical `crate::engine::io::*` paths stable for the rest of the engine.
 
 pub mod exif;
+pub mod exif_embed;
 pub mod icc;
 pub mod source;
 
@@ -21,6 +22,9 @@ mod test_helpers;
 // -----------------------------------------------------------------------------
 
 pub use exif::{exif_has_gps, extract_exif_raw, has_exif};
+// `exif_embed`'s public fns are reached via the module path
+// (`crate::engine::io::exif_embed::...`) from `encoder.rs` and `processing.rs`;
+// no flat re-export is needed here.
 pub use icc::{extract_icc_profile, extract_icc_profile_lossy};
 // `IccExtractionResult` only appears in the signature of `extract_icc_profile`,
 // `MmapGuard` and `MemoryGuard` only inside `Source` variants. They're still

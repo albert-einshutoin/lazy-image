@@ -7,6 +7,90 @@ use std::str::FromStr;
 
 use bitflags::bitflags;
 
+use crate::error::LazyImageError;
+
+/// A validated lossy-encoder quality in the inclusive range `1..=100`.
+///
+/// Encoding the invariant in the type means an out-of-range quality is
+/// unrepresentable: every `OutputFormat` lossy variant stores a `Quality`, so
+/// it can only be built through [`Quality::new`] (range-checked) or
+/// [`Quality::unchecked`] (for values already proven in range, such as the
+/// compile-time preset table or a binary-search step bounded to `1..=100`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Quality(u8);
+
+impl Quality {
+    /// Minimum valid quality.
+    pub const MIN: u8 = 1;
+    /// Maximum valid quality.
+    pub const MAX: u8 = 100;
+
+    /// Construct a `Quality`, validating that `value` is in `1..=100`.
+    pub fn new(value: u8) -> Result<Self, LazyImageError> {
+        if (Self::MIN..=Self::MAX).contains(&value) {
+            Ok(Self(value))
+        } else {
+            Err(LazyImageError::invalid_argument(
+                "quality",
+                value.to_string(),
+                format!("must be {}-{}", Self::MIN, Self::MAX),
+            ))
+        }
+    }
+
+    /// Wrap a value that is already known to be in range.
+    ///
+    /// Use only for values proven valid at compile time (preset constants) or
+    /// already clamped to `1..=100` (e.g. a binary-search candidate). Passing
+    /// an out-of-range value yields a `Quality` that the encoders will clamp,
+    /// but it bypasses the range invariant and should be avoided on input paths.
+    pub const fn unchecked(value: u8) -> Self {
+        Self(value)
+    }
+
+    /// The underlying quality value (`1..=100`).
+    pub const fn get(self) -> u8 {
+        self.0
+    }
+}
+
+/// A supported image rotation, restricted to 90-degree increments.
+///
+/// Arbitrary-angle rotation is out of scope (see crate docs), so only the three
+/// non-identity quarter turns are representable. The identity rotation (0° or
+/// any 360° multiple) is modeled as the *absence* of a [`Operation::Rotate`]
+/// rather than a variant, which removes the defensive `_ => Err(..)` arm from
+/// the apply path — the match over `RotationAngle` is exhaustive by the compiler.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RotationAngle {
+    /// 90° clockwise.
+    Cw90,
+    /// 180°.
+    Cw180,
+    /// 270° clockwise (equivalently 90° counter-clockwise).
+    Cw270,
+}
+
+impl RotationAngle {
+    /// Interpret a signed degree value as accepted by the public `rotate` API.
+    ///
+    /// - `Ok(None)` — identity rotation (`0`, `±360` reduce to no-op).
+    /// - `Ok(Some(angle))` — a supported quarter turn.
+    /// - `Err(..)` — any unsupported angle.
+    ///
+    /// The accepted set (`0, ±90, ±180, ±270`) matches the historical behavior
+    /// of the `rotate` method exactly.
+    pub fn from_degrees(degrees: i32) -> Result<Option<Self>, LazyImageError> {
+        match degrees {
+            0 => Ok(None),
+            90 | -270 => Ok(Some(Self::Cw90)),
+            180 | -180 => Ok(Some(Self::Cw180)),
+            270 | -90 => Ok(Some(Self::Cw270)),
+            other => Err(LazyImageError::invalid_rotation_angle(other)),
+        }
+    }
+}
+
 bitflags! {
     /// Requirements an operation needs before execution.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,8 +174,9 @@ pub enum Operation {
         height: u32,
     },
 
-    /// Rotate by 90, 180, or 270 degrees
-    Rotate { degrees: i32 },
+    /// Rotate by a 90-degree increment. The identity rotation is represented by
+    /// the absence of this operation, so only real quarter turns are queued.
+    Rotate(RotationAngle),
 
     /// Flip horizontally
     FlipH,
@@ -135,7 +220,7 @@ impl Operation {
                 OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
                 OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
             ),
-            Operation::Rotate { .. } => OperationContract::new(
+            Operation::Rotate(_) => OperationContract::new(
                 "rotate",
                 OperationRequirement::DECODED_PIXELS | OperationRequirement::COLOR_STATE,
                 OperationEffect::MUTATES_PIXELS | OperationEffect::CHANGES_GEOMETRY,
@@ -191,7 +276,7 @@ pub enum ResizeFit {
 }
 
 impl FromStr for ResizeFit {
-    type Err = String;
+    type Err = LazyImageError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         let normalized = value.trim().to_ascii_lowercase();
@@ -199,9 +284,7 @@ impl FromStr for ResizeFit {
             "inside" => Ok(ResizeFit::Inside),
             "cover" => Ok(ResizeFit::Cover),
             "fill" => Ok(ResizeFit::Fill),
-            other => Err(format!(
-                "unknown resize fit '{other}'. Expected inside, cover, or fill"
-            )),
+            _ => Err(LazyImageError::invalid_resize_fit(value.to_string())),
         }
     }
 }
@@ -209,19 +292,15 @@ impl FromStr for ResizeFit {
 /// Output format for encoding
 #[derive(Clone, Debug)]
 pub enum OutputFormat {
-    Jpeg { quality: u8, fast_mode: bool },
+    Jpeg { quality: Quality, fast_mode: bool },
     Png,
-    WebP { quality: u8 },
-    Avif { quality: u8 },
+    WebP { quality: Quality },
+    Avif { quality: Quality },
 }
 
 impl OutputFormat {
-    fn validate_quality(quality: u8) -> Result<u8, String> {
-        if (1..=100).contains(&quality) {
-            Ok(quality)
-        } else {
-            Err(format!("invalid quality: {quality}. must be 1-100"))
-        }
+    fn validate_quality(quality: u8) -> Result<Quality, LazyImageError> {
+        Quality::new(quality)
     }
 
     /// Create OutputFormat from string with format-specific default quality.
@@ -232,7 +311,7 @@ impl OutputFormat {
     /// - AVIF: 60 (AVIF's high compression efficiency means lower quality still looks great)
     ///
     /// These defaults are chosen based on each format's characteristics and real-world usage.
-    pub fn from_str(format: &str, quality: Option<u8>) -> Result<Self, String> {
+    pub fn from_str(format: &str, quality: Option<u8>) -> Result<Self, LazyImageError> {
         Self::from_str_with_options(format, quality, false)
     }
 
@@ -246,29 +325,29 @@ impl OutputFormat {
         format: &str,
         quality: Option<u8>,
         fast_mode: bool,
-    ) -> Result<Self, String> {
+    ) -> Result<Self, LazyImageError> {
         match format.to_lowercase().as_str() {
             "jpeg" | "jpg" => {
                 let q = quality
                     .map(Self::validate_quality)
                     .transpose()?
-                    .unwrap_or(85); // JPEG default: 85
+                    .unwrap_or(Quality::unchecked(85)); // JPEG default: 85
                 Ok(Self::Jpeg {
                     quality: q,
                     fast_mode,
                 })
             }
             "png" => {
-                if let Some(quality) = quality {
-                    Self::validate_quality(quality)?;
-                }
+                // PNG is lossless and has no quality knob. Keep accepting and
+                // ignoring an in-range quality for 0.x compatibility; invalid
+                // quality values are rejected before this parser is called.
                 Ok(Self::Png)
             }
             "webp" => {
                 let q = quality
                     .map(Self::validate_quality)
                     .transpose()?
-                    .unwrap_or(80); // WebP default: 80
+                    .unwrap_or(Quality::unchecked(80)); // WebP default: 80
                 Ok(Self::WebP { quality: q })
             }
             #[cfg(feature = "avif")]
@@ -276,12 +355,14 @@ impl OutputFormat {
                 let q = quality
                     .map(Self::validate_quality)
                     .transpose()?
-                    .unwrap_or(60); // AVIF default: 60 (high compression efficiency)
+                    .unwrap_or(Quality::unchecked(60)); // AVIF default: 60 (high compression efficiency)
                 Ok(Self::Avif { quality: q })
             }
             #[cfg(not(feature = "avif"))]
-            "avif" => Err("unsupported format: avif (built without avif feature)".to_string()),
-            other => Err(format!("unsupported format: {other}")),
+            "avif" => Err(LazyImageError::unsupported_format(
+                "avif (built without avif feature)",
+            )),
+            _ => Err(LazyImageError::unsupported_format(format.to_string())),
         }
     }
 
@@ -297,7 +378,11 @@ impl OutputFormat {
 
     /// Create a copy of this format with a different quality value.
     /// For PNG (lossless), the format is returned unchanged.
+    ///
+    /// `quality` is expected to be in `1..=100` (e.g. a binary-search candidate
+    /// already bounded by the caller); it is wrapped via [`Quality::unchecked`].
     pub fn with_quality(&self, quality: u8) -> Self {
+        let quality = Quality::unchecked(quality);
         match self {
             OutputFormat::Jpeg { fast_mode, .. } => OutputFormat::Jpeg {
                 quality,
@@ -370,11 +455,11 @@ const PRESET_TABLE: &[PresetEntry] = &[
 fn preset_entry_to_config(entry: &PresetEntry) -> PresetConfig {
     let format = match entry.format {
         PresetFormat::Jpeg => OutputFormat::Jpeg {
-            quality: entry.quality,
+            quality: Quality::unchecked(entry.quality),
             fast_mode: false,
         },
         PresetFormat::WebP => OutputFormat::WebP {
-            quality: entry.quality,
+            quality: Quality::unchecked(entry.quality),
         },
     };
     PresetConfig {
@@ -456,51 +541,51 @@ mod tests {
         #[test]
         fn test_jpeg_with_quality() {
             let format = OutputFormat::from_str("jpeg", Some(90)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 90, .. }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality, .. } if quality.get() == 90));
         }
 
         #[test]
         fn test_jpeg_default_quality() {
             let format = OutputFormat::from_str("jpeg", None).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 85, .. }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality, .. } if quality.get() == 85));
         }
 
         #[test]
         fn test_jpg_alias() {
             let format = OutputFormat::from_str("jpg", None).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 85, .. }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality, .. } if quality.get() == 85));
         }
 
         #[test]
         fn test_jpg_with_quality() {
             let format = OutputFormat::from_str("jpg", Some(75)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 75, .. }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality, .. } if quality.get() == 75));
         }
 
         #[test]
         fn test_webp_with_quality() {
             let format = OutputFormat::from_str("webp", Some(90)).unwrap();
-            assert!(matches!(format, OutputFormat::WebP { quality: 90 }));
+            assert!(matches!(format, OutputFormat::WebP { quality } if quality.get() == 90));
         }
 
         #[test]
         fn test_webp_default_quality() {
             let format = OutputFormat::from_str("webp", None).unwrap();
-            assert!(matches!(format, OutputFormat::WebP { quality: 80 }));
+            assert!(matches!(format, OutputFormat::WebP { quality } if quality.get() == 80));
         }
 
         #[test]
         #[cfg(feature = "avif")]
         fn test_avif_with_quality() {
             let format = OutputFormat::from_str("avif", Some(70)).unwrap();
-            assert!(matches!(format, OutputFormat::Avif { quality: 70 }));
+            assert!(matches!(format, OutputFormat::Avif { quality } if quality.get() == 70));
         }
 
         #[test]
         #[cfg(feature = "avif")]
         fn test_avif_default_quality() {
             let format = OutputFormat::from_str("avif", None).unwrap();
-            assert!(matches!(format, OutputFormat::Avif { quality: 60 }));
+            assert!(matches!(format, OutputFormat::Avif { quality } if quality.get() == 60));
         }
 
         #[test]
@@ -510,7 +595,7 @@ mod tests {
         }
 
         #[test]
-        fn test_png_ignores_quality() {
+        fn test_png_ignores_quality_for_compatibility() {
             let format = OutputFormat::from_str("png", Some(50)).unwrap();
             assert!(matches!(format, OutputFormat::Png));
         }
@@ -546,8 +631,8 @@ mod tests {
         #[cfg(not(feature = "avif"))]
         fn test_avif_is_unsupported_without_feature() {
             let err = OutputFormat::from_str("avif", Some(60)).unwrap_err();
-            assert!(err.contains("unsupported format"));
-            assert!(err.contains("without avif feature"));
+            assert!(err.to_string().to_lowercase().contains("unsupported"));
+            assert!(err.to_string().contains("without avif feature"));
         }
 
         #[test]
@@ -560,43 +645,55 @@ mod tests {
         fn test_unsupported_format() {
             let result = OutputFormat::from_str("gif", None);
             assert!(result.is_err());
-            assert!(result.unwrap_err().contains("unsupported format"));
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .to_lowercase()
+                .contains("unsupported"));
         }
 
         #[test]
         fn test_unsupported_format_bmp() {
             let result = OutputFormat::from_str("bmp", None);
             assert!(result.is_err());
-            assert!(result.unwrap_err().contains("unsupported format"));
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .to_lowercase()
+                .contains("unsupported"));
         }
 
         #[test]
         fn test_empty_format() {
             let result = OutputFormat::from_str("", None);
             assert!(result.is_err());
-            assert!(result.unwrap_err().contains("unsupported format"));
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .to_lowercase()
+                .contains("unsupported"));
         }
 
         #[test]
         fn test_quality_range() {
             // Test quality value range (1-100 is valid)
             let format = OutputFormat::from_str("jpeg", Some(1)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 1, .. }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality, .. } if quality.get() == 1));
 
             let format = OutputFormat::from_str("jpeg", Some(100)).unwrap();
-            assert!(matches!(format, OutputFormat::Jpeg { quality: 100, .. }));
+            assert!(matches!(format, OutputFormat::Jpeg { quality, .. } if quality.get() == 100));
         }
 
         #[test]
         fn test_quality_below_range_is_rejected() {
             let err = OutputFormat::from_str("jpeg", Some(0)).unwrap_err();
-            assert!(err.contains("must be 1-100"));
+            assert!(err.to_string().contains("must be 1-100"));
         }
 
         #[test]
         fn test_quality_above_range_is_rejected() {
             let err = OutputFormat::from_str("jpeg", Some(101)).unwrap_err();
-            assert!(err.contains("must be 1-100"));
+            assert!(err.to_string().contains("must be 1-100"));
         }
 
         #[test]
@@ -604,7 +701,7 @@ mod tests {
             let format = OutputFormat::from_str_with_options("jpeg", Some(80), true).unwrap();
             match format {
                 OutputFormat::Jpeg { quality, fast_mode } => {
-                    assert_eq!(quality, 80);
+                    assert_eq!(quality.get(), 80);
                     assert!(fast_mode);
                 }
                 _ => panic!("expected Jpeg variant"),
@@ -616,7 +713,7 @@ mod tests {
             let format = OutputFormat::from_str_with_options("jpeg", Some(80), false).unwrap();
             match format {
                 OutputFormat::Jpeg { quality, fast_mode } => {
-                    assert_eq!(quality, 80);
+                    assert_eq!(quality.get(), 80);
                     assert!(!fast_mode);
                 }
                 _ => panic!("expected Jpeg variant"),
@@ -627,7 +724,7 @@ mod tests {
         fn test_from_str_with_options_fast_mode_ignored_for_non_jpeg() {
             // fast_mode only applies to JPEG; other formats should parse OK
             let webp = OutputFormat::from_str_with_options("webp", Some(80), true).unwrap();
-            assert!(matches!(webp, OutputFormat::WebP { quality: 80 }));
+            assert!(matches!(webp, OutputFormat::WebP { quality } if quality.get() == 80));
 
             let png = OutputFormat::from_str_with_options("png", None, true).unwrap();
             assert!(matches!(png, OutputFormat::Png));
@@ -635,7 +732,7 @@ mod tests {
             #[cfg(feature = "avif")]
             {
                 let avif = OutputFormat::from_str_with_options("avif", Some(60), true).unwrap();
-                assert!(matches!(avif, OutputFormat::Avif { quality: 60 }));
+                assert!(matches!(avif, OutputFormat::Avif { quality } if quality.get() == 60));
             }
         }
 
@@ -655,7 +752,7 @@ mod tests {
         fn test_as_str_all_formats() {
             assert_eq!(
                 OutputFormat::Jpeg {
-                    quality: 80,
+                    quality: Quality::unchecked(80),
                     fast_mode: false
                 }
                 .as_str(),
@@ -663,27 +760,39 @@ mod tests {
             );
             assert_eq!(
                 OutputFormat::Jpeg {
-                    quality: 80,
+                    quality: Quality::unchecked(80),
                     fast_mode: true
                 }
                 .as_str(),
                 "jpeg"
             );
             assert_eq!(OutputFormat::Png.as_str(), "png");
-            assert_eq!(OutputFormat::WebP { quality: 80 }.as_str(), "webp");
-            assert_eq!(OutputFormat::Avif { quality: 60 }.as_str(), "avif");
+            assert_eq!(
+                OutputFormat::WebP {
+                    quality: Quality::unchecked(80)
+                }
+                .as_str(),
+                "webp"
+            );
+            assert_eq!(
+                OutputFormat::Avif {
+                    quality: Quality::unchecked(60)
+                }
+                .as_str(),
+                "avif"
+            );
         }
 
         #[test]
         fn test_with_quality_jpeg() {
             let original = OutputFormat::Jpeg {
-                quality: 85,
+                quality: Quality::unchecked(85),
                 fast_mode: true,
             };
             let changed = original.with_quality(50);
             match changed {
                 OutputFormat::Jpeg { quality, fast_mode } => {
-                    assert_eq!(quality, 50);
+                    assert_eq!(quality.get(), 50);
                     assert!(fast_mode, "fast_mode should be preserved");
                 }
                 _ => panic!("expected Jpeg variant"),
@@ -692,16 +801,20 @@ mod tests {
 
         #[test]
         fn test_with_quality_webp() {
-            let original = OutputFormat::WebP { quality: 80 };
+            let original = OutputFormat::WebP {
+                quality: Quality::unchecked(80),
+            };
             let changed = original.with_quality(30);
-            assert!(matches!(changed, OutputFormat::WebP { quality: 30 }));
+            assert!(matches!(changed, OutputFormat::WebP { quality } if quality.get() == 30));
         }
 
         #[test]
         fn test_with_quality_avif() {
-            let original = OutputFormat::Avif { quality: 60 };
+            let original = OutputFormat::Avif {
+                quality: Quality::unchecked(60),
+            };
             let changed = original.with_quality(90);
-            assert!(matches!(changed, OutputFormat::Avif { quality: 90 }));
+            assert!(matches!(changed, OutputFormat::Avif { quality } if quality.get() == 90));
         }
 
         #[test]
@@ -720,7 +833,7 @@ mod tests {
             let preset = PresetConfig::get("thumbnail").unwrap();
             assert_eq!(preset.width, Some(150));
             assert_eq!(preset.height, Some(150));
-            assert!(matches!(preset.format, OutputFormat::WebP { quality: 75 }));
+            assert!(matches!(preset.format, OutputFormat::WebP { quality } if quality.get() == 75));
         }
 
         #[test]
@@ -728,7 +841,7 @@ mod tests {
             let preset = PresetConfig::get("avatar").unwrap();
             assert_eq!(preset.width, Some(200));
             assert_eq!(preset.height, Some(200));
-            assert!(matches!(preset.format, OutputFormat::WebP { quality: 80 }));
+            assert!(matches!(preset.format, OutputFormat::WebP { quality } if quality.get() == 80));
         }
 
         #[test]
@@ -738,7 +851,7 @@ mod tests {
             assert_eq!(preset.height, None); // Maintain aspect ratio
             assert!(matches!(
                 preset.format,
-                OutputFormat::Jpeg { quality: 85, .. }
+                OutputFormat::Jpeg { quality, .. } if quality.get() == 85
             ));
         }
 
@@ -749,7 +862,7 @@ mod tests {
             assert_eq!(preset.height, Some(630)); // OGP standard size
             assert!(matches!(
                 preset.format,
-                OutputFormat::Jpeg { quality: 80, .. }
+                OutputFormat::Jpeg { quality, .. } if quality.get() == 80
             ));
         }
 
@@ -808,7 +921,7 @@ mod tests {
                 Some(800),
                 Some(600),
                 OutputFormat::Jpeg {
-                    quality: 90,
+                    quality: Quality::unchecked(90),
                     fast_mode: false,
                 },
             );
@@ -816,16 +929,22 @@ mod tests {
             assert_eq!(preset.height, Some(600));
             assert!(matches!(
                 preset.format,
-                OutputFormat::Jpeg { quality: 90, .. }
+                OutputFormat::Jpeg { quality, .. } if quality.get() == 90
             ));
         }
 
         #[test]
         fn test_preset_new_with_none() {
-            let preset = PresetConfig::new(Some(1920), None, OutputFormat::WebP { quality: 80 });
+            let preset = PresetConfig::new(
+                Some(1920),
+                None,
+                OutputFormat::WebP {
+                    quality: Quality::unchecked(80),
+                },
+            );
             assert_eq!(preset.width, Some(1920));
             assert_eq!(preset.height, None);
-            assert!(matches!(preset.format, OutputFormat::WebP { quality: 80 }));
+            assert!(matches!(preset.format, OutputFormat::WebP { quality } if quality.get() == 80));
         }
     }
 }

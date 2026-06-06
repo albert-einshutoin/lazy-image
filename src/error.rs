@@ -159,7 +159,11 @@ impl ErrorCode {
 ///
 /// All errors are type-safe and provide clear, actionable messages.
 /// No numeric error codes - just clear error variants.
-#[derive(Debug, Error)]
+///
+/// `Clone` is derived: every field is itself `Clone` (`Cow<'static, str>`,
+/// primitives, and `Arc<std::io::Error>` for the non-`Clone` `io::Error`
+/// sources), so the derived implementation is identical to a hand-written one.
+#[derive(Debug, Clone, Error)]
 pub enum LazyImageError {
     // File I/O Errors
     #[error("File not found: {path}")]
@@ -280,113 +284,6 @@ pub enum LazyImageError {
     // Generic Error
     #[error("{message}")]
     Generic { message: Cow<'static, str> },
-}
-
-impl Clone for LazyImageError {
-    fn clone(&self) -> Self {
-        match self {
-            Self::FileNotFound { path } => Self::FileNotFound { path: path.clone() },
-            Self::FileReadFailed { path, source } => Self::FileReadFailed {
-                path: path.clone(),
-                source: Arc::clone(source),
-            },
-            Self::MmapFailed { path, source } => Self::MmapFailed {
-                path: path.clone(),
-                source: Arc::clone(source),
-            },
-            Self::FileWriteFailed { path, source } => Self::FileWriteFailed {
-                path: path.clone(),
-                source: Arc::clone(source),
-            },
-            Self::UnsupportedFormat { format } => Self::UnsupportedFormat {
-                format: format.clone(),
-            },
-            Self::DecodeFailed { message } => Self::DecodeFailed {
-                message: message.clone(),
-            },
-            Self::CorruptedImage => Self::CorruptedImage,
-            Self::DimensionExceedsLimit { dimension, max } => Self::DimensionExceedsLimit {
-                dimension: *dimension,
-                max: *max,
-            },
-            Self::PixelCountExceedsLimit { pixels, max } => Self::PixelCountExceedsLimit {
-                pixels: *pixels,
-                max: *max,
-            },
-            Self::FirewallViolation { reason } => Self::FirewallViolation {
-                reason: reason.clone(),
-            },
-            Self::InvalidCropBounds {
-                x,
-                y,
-                width,
-                height,
-                img_width,
-                img_height,
-            } => Self::InvalidCropBounds {
-                x: *x,
-                y: *y,
-                width: *width,
-                height: *height,
-                img_width: *img_width,
-                img_height: *img_height,
-            },
-            Self::InvalidCropDimensions { width, height } => Self::InvalidCropDimensions {
-                width: *width,
-                height: *height,
-            },
-            Self::InvalidRotationAngle { degrees } => {
-                Self::InvalidRotationAngle { degrees: *degrees }
-            }
-            Self::InvalidResizeDimensions { width, height } => Self::InvalidResizeDimensions {
-                width: *width,
-                height: *height,
-            },
-            Self::InvalidResizeFit { value } => Self::InvalidResizeFit {
-                value: value.clone(),
-            },
-            Self::ResizeFailed {
-                source_width,
-                source_height,
-                target_width,
-                target_height,
-                message,
-            } => Self::ResizeFailed {
-                source_width: *source_width,
-                source_height: *source_height,
-                target_width: *target_width,
-                target_height: *target_height,
-                message: message.clone(),
-            },
-            Self::UnsupportedColorSpace { color_space } => Self::UnsupportedColorSpace {
-                color_space: color_space.clone(),
-            },
-            Self::EncodeFailed { format, message } => Self::EncodeFailed {
-                format: format.clone(),
-                message: message.clone(),
-            },
-            Self::InvalidPreset { name } => Self::InvalidPreset { name: name.clone() },
-            Self::InvalidFirewallPolicy { policy } => Self::InvalidFirewallPolicy {
-                policy: policy.clone(),
-            },
-            Self::InvalidArgument {
-                name,
-                value,
-                reason,
-            } => Self::InvalidArgument {
-                name: name.clone(),
-                value: value.clone(),
-                reason: reason.clone(),
-            },
-            Self::SourceConsumed => Self::SourceConsumed,
-            Self::InternalPanic { message } => Self::InternalPanic {
-                message: message.clone(),
-            },
-            Self::Generic { message } => Self::Generic {
-                message: message.clone(),
-            },
-        }
-    }
 }
 
 // Constructor Helpers
@@ -677,50 +574,14 @@ impl LazyImageError {
         }
     }
 
-    /// Get the error category for this error
+    /// Get the error category for this error.
+    ///
+    /// Delegates to [`ErrorCode::category`] so the variant→category mapping has
+    /// a single source of truth. Previously this was a second 23-arm match that
+    /// had to be kept in sync with `code()` by hand; routing through the code
+    /// makes divergence impossible.
     pub fn category(&self) -> ErrorCategory {
-        match self {
-            // UserError: Invalid input, recoverable
-            Self::FileNotFound { .. }
-            | Self::InvalidCropBounds { .. }
-            | Self::InvalidCropDimensions { .. }
-            | Self::InvalidRotationAngle { .. }
-            | Self::InvalidResizeDimensions { .. }
-            | Self::InvalidResizeFit { .. }
-            | Self::InvalidPreset { .. }
-            | Self::InvalidFirewallPolicy { .. }
-            | Self::InvalidArgument { .. }
-            | Self::SourceConsumed => ErrorCategory::UserError,
-
-            // CodecError: Format/encoding issues
-            Self::UnsupportedFormat { .. }
-            | Self::DecodeFailed { .. }
-            | Self::CorruptedImage
-            | Self::EncodeFailed { .. }
-            | Self::UnsupportedColorSpace { .. }
-            // Note: ResizeFailed is classified as CodecError because it represents
-            // a processing failure during image transformation, which is similar to
-            // encoding/decoding issues. In a future version, a ProcessingError category
-            // might be more appropriate.
-            | Self::ResizeFailed { .. } => ErrorCategory::CodecError,
-
-            // ResourceLimit: Memory/time/dimension limits
-            // Note: FileReadFailed/MmapFailed/FileWriteFailed are classified as ResourceLimit
-            // because they often indicate resource constraints (disk full, memory pressure,
-            // file system limits). However, they can also represent I/O errors (permissions,
-            // file locks, etc.). These errors are recoverable by the user (fixing permissions,
-            // freeing disk space, etc.), which is consistent with is_recoverable() returning true.
-            Self::DimensionExceedsLimit { .. }
-            | Self::PixelCountExceedsLimit { .. }
-            | Self::FirewallViolation { .. }
-            | Self::FileReadFailed { .. }
-            | Self::MmapFailed { .. }
-            | Self::FileWriteFailed { .. } => ErrorCategory::ResourceLimit,
-
-            // InternalBug: Library bugs (should not happen)
-            Self::InternalPanic { .. }
-            | Self::Generic { .. } => ErrorCategory::InternalBug,
-        }
+        self.code().category()
     }
 }
 

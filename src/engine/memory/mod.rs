@@ -71,9 +71,7 @@ pub fn memory_semaphore() -> Arc<WeightedSemaphore> {
 fn compute_reserved_memory(total_bytes: u64) -> u64 {
     // reserve 5% of total, clamped to [64MB, 512MB]
     let five_percent = total_bytes / 20;
-    five_percent
-        .max(MIN_RESERVED_MEMORY)
-        .min(MAX_RESERVED_MEMORY)
+    five_percent.clamp(MIN_RESERVED_MEMORY, MAX_RESERVED_MEMORY)
 }
 
 #[cfg(not(feature = "napi"))]

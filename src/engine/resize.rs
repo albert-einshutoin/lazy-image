@@ -382,10 +382,20 @@ fn resize_with_source_image<'a>(
             .map_err(|e| format!("failed to premultiply alpha: {e}"))?;
     }
 
-    let mut resizer = fir::Resizer::new();
-    resizer
-        .resize(&src_image, &mut dst_image, &options)
-        .map_err(|e| format!("fir resize error: {e:?}"))?;
+    // Reuse a per-thread `Resizer` instead of allocating a fresh one (and its
+    // internal convolution scratch buffers) on every call. The resizer carries
+    // no cross-call state that affects output, and resize runs on rayon workers,
+    // so a thread-local gives each worker its own instance with no contention.
+    thread_local! {
+        static RESIZER: std::cell::RefCell<fir::Resizer> =
+            std::cell::RefCell::new(fir::Resizer::new());
+    }
+    RESIZER.with(|resizer| {
+        resizer
+            .borrow_mut()
+            .resize(&src_image, &mut dst_image, &options)
+            .map_err(|e| format!("fir resize error: {e:?}"))
+    })?;
 
     if needs_premultiply {
         mul_div

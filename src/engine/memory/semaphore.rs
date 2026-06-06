@@ -98,8 +98,10 @@ impl WeightedSemaphore {
         let ready_flag = {
             let mut state = self.state.lock();
 
-            // Fast path: if capacity available, acquire immediately
-            if state.available >= need {
+            // Fast path: acquire immediately only when no older waiter is queued.
+            // Once a waiter exists, every new request must join the queue to
+            // preserve FIFO fairness and avoid starving large operations.
+            if state.waiters.is_empty() && state.available >= need {
                 state.available -= need;
                 return MemoryPermit {
                     sem: Arc::clone(self),
@@ -116,20 +118,24 @@ impl WeightedSemaphore {
             ready
         };
 
-        // Wait for our turn (FIFO fairness)
-        loop {
-            if ready_flag.load(Ordering::Acquire) {
-                return MemoryPermit {
-                    sem: Arc::clone(self),
-                    weight: need,
-                };
-            }
-
-            // Sleep briefly before checking again
+        // Wait for our turn (FIFO fairness).
+        //
+        // Fast pre-check avoids taking the lock when the flag is already set.
+        if !ready_flag.load(Ordering::Acquire) {
             let mut guard = self.state.lock();
-            if !ready_flag.load(Ordering::Acquire) {
-                self.cvar.wait(&mut guard);
-            }
+            // `wait_while` re-evaluates the predicate before sleeping and on every
+            // (possibly spurious) wakeup, returning only once our flag is set. A
+            // broadcast `notify_all` thus wakes every waiter, but the ones whose
+            // flag is still clear go straight back to sleep instead of each
+            // spinning through a redundant lock/recheck/unlock cycle as the old
+            // hand-rolled loop did.
+            self.cvar
+                .wait_while(&mut guard, |_| !ready_flag.load(Ordering::Acquire));
+        }
+
+        MemoryPermit {
+            sem: Arc::clone(self),
+            weight: need,
         }
     }
 
@@ -162,6 +168,11 @@ impl WeightedSemaphore {
     #[cfg(test)]
     pub(super) fn available_for_test(&self) -> u64 {
         self.state.lock().available
+    }
+
+    #[cfg(test)]
+    pub(super) fn waiters_for_test(&self) -> usize {
+        self.state.lock().waiters.len()
     }
 }
 
@@ -243,6 +254,53 @@ mod tests {
             .recv_timeout(Duration::from_secs(1))
             .expect("waiter should acquire after release");
         handle.join().unwrap();
+    }
+
+    #[test]
+    fn queued_waiter_blocks_later_fast_path() {
+        let sem = Arc::new(WeightedSemaphore::new(100));
+        let permit = sem.acquire(80);
+
+        let sem_large = Arc::clone(&sem);
+        let (large_acquired_tx, large_acquired_rx) = std::sync::mpsc::channel();
+        let large = thread::spawn(move || {
+            let _permit = sem_large.acquire(100);
+            large_acquired_tx.send(()).unwrap();
+        });
+
+        let deadline = std::time::Instant::now() + Duration::from_secs(1);
+        while sem.waiters_for_test() == 0 {
+            assert!(
+                std::time::Instant::now() < deadline,
+                "large waiter should enqueue"
+            );
+            thread::yield_now();
+        }
+
+        let sem_small = Arc::clone(&sem);
+        let (small_acquired_tx, small_acquired_rx) = std::sync::mpsc::channel();
+        let small = thread::spawn(move || {
+            let _permit = sem_small.acquire(10);
+            small_acquired_tx.send(()).unwrap();
+        });
+
+        assert!(
+            small_acquired_rx
+                .recv_timeout(Duration::from_millis(50))
+                .is_err(),
+            "later small waiter must not bypass an older queued waiter"
+        );
+
+        drop(permit);
+        large_acquired_rx
+            .recv_timeout(Duration::from_secs(1))
+            .expect("large waiter should acquire first after release");
+        small_acquired_rx
+            .recv_timeout(Duration::from_secs(1))
+            .expect("small waiter should acquire after large permit drops");
+
+        large.join().unwrap();
+        small.join().unwrap();
     }
 
     #[test]

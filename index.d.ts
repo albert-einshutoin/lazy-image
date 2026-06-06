@@ -101,8 +101,11 @@ export declare class ImageEngine {
    *
    * Returns `TargetBytesResult` with the encoded data, chosen quality,
    * actual size, and whether the budget was met.
+   *
+   * @internal This is the low-level N-API bridge used by the JS `encode(...)`
+   * helper; prefer the public structured-options API. Not covered by semver.
    */
-  toBufferTargetBytesNative(format: string, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null): Promise<TargetBytesResult>
+  toBufferTargetBytesNative(format: OutputFormat, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null): Promise<TargetBytesResult>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -204,6 +207,12 @@ export declare class ImageEngine {
    * - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
    *
    * Returns the preset configuration for use with toBuffer/toFile.
+   *
+   * @deprecated This method both mutates engine state (queues the preset's
+   * resize) *and* returns a value for a separate output call, violating
+   * command-query separation — a footgun if the returned config is ignored or
+   * reused. Prefer the self-contained `encode({ preset: 'thumbnail' })` /
+   * `toBufferWithPreset(name)` / `toFileWithPreset(name)` APIs instead.
    */
   preset(name: PresetName): PresetResult
 }

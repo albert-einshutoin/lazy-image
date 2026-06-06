@@ -31,6 +31,12 @@ We follow SemVer 2.0.0.
 ### Pre-1.0 policy
 Even while on 0.x, we treat MINOR as additive and avoid breaking changes without the deprecation process below. True breaking changes should still ship in the next MAJOR bump (e.g., 0.x → 1.0.0).
 
+If `CHANGELOG.md` contains a `BREAKING` marker or a non-empty `Removed` section
+for the release being cut, the release version must be a major boundary
+(`x.0.0`). During current 0.x development, that means the next release must be
+`1.0.0` unless maintainers explicitly reclassify the entry as a bug-fix
+clarification under `Fixed`.
+
 ## What Counts as a Breaking Change
 - Requires code changes for existing consumers, or materially changes outputs/metadata/error categories under the same inputs
 - Changes default quality/preset values, fit/resize semantics, metadata defaults, or firewall limits
@@ -63,6 +69,9 @@ Each PR that changes user-visible behavior must update `CHANGELOG.md` accordingl
 - If breaking but postponed: mark as **Deprecated**, document alternative, and keep behavior until the next MAJOR.
 - If additive: ensure defaults are safe; version bump should be MINOR.
 - If a bug fix: PATCH is sufficient; note under **Fixed**.
+- Before cutting a release, run `npm run release:check` after updating the
+  target version and changelog. A release with `BREAKING` or `Removed` markers
+  must be `x.0.0`.
 
 ## Communication Channels
 - `CHANGELOG.md` (single source of truth)

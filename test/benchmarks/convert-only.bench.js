@@ -2,10 +2,10 @@
  * Benchmark: Format Conversion Only (No Resize)
  * 
  * This benchmark tests pure format conversion without pixel manipulation.
- * lazy-image's Copy-on-Write (CoW) architecture should excel here:
- * - No intermediate buffer allocations
- * - Direct decode → encode pipeline
- * - Memory efficiency advantage
+ * This isolates codec behavior from resize/crop/rotate work:
+ * - Direct decode -> encode pipeline
+ * - No operation materialization
+ * - Codec-level working buffers still exist
  */
 
 const fs = require('fs');
@@ -93,7 +93,7 @@ async function benchmarkSharpConvert(format, quality) {
 async function runBenchmark() {
     console.log('=== Format Conversion Benchmark (No Resize) ===\n');
     console.log('This test measures pure format conversion performance.');
-    console.log('lazy-image\'s CoW architecture should excel here.\n');
+    console.log('This isolates codec behavior from resize/crop/rotate work.\n');
     console.log(`Input: ${TEST_IMAGE}`);
     const stats = fs.statSync(TEST_IMAGE);
     console.log(`Size: ${(stats.size / 1024 / 1024).toFixed(1)} MB\n`);
@@ -197,4 +197,3 @@ runBenchmark()
         cleanup();
         process.exit(1);
     });
-

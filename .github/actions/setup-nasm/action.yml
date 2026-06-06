@@ -1,0 +1,19 @@
+name: Setup NASM
+description: Install NASM on Linux, macOS, and Windows runners.
+
+runs:
+  using: composite
+  steps:
+    - name: Install NASM (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y nasm
+
+    - name: Install NASM (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: brew install nasm
+
+    - name: Install NASM (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b # v1

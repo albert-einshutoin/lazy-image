@@ -311,6 +311,58 @@ async function runTests() {
         assert(result.bytesOut === result.data.length, 'bytesOut should match buffer length');
     });
 
+    await asyncTest('toBufferTargetBytes() rejects invalid native quality ranges', async () => {
+        await assert.rejects(
+            () => ImageEngine.fromPath(TEST_IMAGE)
+                .resize(400)
+                .toBufferTargetBytes('jpeg', {
+                    targetBytes: 2000,
+                    minQuality: 0,
+                    maxQuality: 90,
+                }),
+            /minQuality\/maxQuality/,
+            'public helper should reject minQuality=0 instead of silently clamping'
+        );
+
+        await assert.rejects(
+            () => ImageEngine.fromPath(TEST_IMAGE)
+                .resize(400)
+                .toBufferTargetBytes('jpeg', {
+                    targetBytes: 2000,
+                    minQuality: 40,
+                    maxQuality: 101,
+                }),
+            /minQuality\/maxQuality/,
+            'public helper should reject maxQuality=101 instead of silently clamping'
+        );
+
+        try {
+            await ImageEngine.fromPath(TEST_IMAGE)
+                .resize(400)
+                .toBufferTargetBytesNative('jpeg', 2000, 0, 90);
+            assert.fail('minQuality=0 should be rejected instead of silently clamped');
+        } catch (err) {
+            assert(/\[E400\].*minQuality/.test(err.message), `unexpected minQuality error: ${err.message}`);
+        }
+
+        try {
+            await ImageEngine.fromPath(TEST_IMAGE)
+                .resize(400)
+                .toBufferTargetBytesNative('jpeg', 2000, 40, 101);
+            assert.fail('maxQuality=101 should be rejected instead of silently clamped');
+        } catch (err) {
+            assert(/\[E400\].*maxQuality/.test(err.message), `unexpected maxQuality error: ${err.message}`);
+        }
+    });
+
+    await asyncTest('profile quality never resolves below native minimum', async () => {
+        const result = await ImageEngine.fromPath(TEST_IMAGE)
+            .resize(100)
+            .toBufferWithMetricsProfile('jpeg', 'speed-first', 1);
+        assert(result.data.length > 0, 'output should have content');
+        assert.strictEqual(result.metrics.formatOut, 'jpeg', 'profile output should be jpeg');
+    });
+
     await asyncTest('toFileTargetBytes() writes a budgeted file result', async () => {
         const outPath = resolveTemp('target_bytes.jpg');
         try {

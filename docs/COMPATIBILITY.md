@@ -5,7 +5,7 @@
 lazy-image is an **opinionated web image optimization engine**. It is **not** a
 drop-in replacement for sharp. The API is intentionally smaller and focuses on:
 
-- Smaller file sizes (especially JPEG/AVIF)
+- Smaller JPEG files in canonical benchmarks
 - Predictable, safe behavior (strict limits and error taxonomy)
 - Low memory usage for server workloads
 
@@ -31,7 +31,7 @@ You can query at runtime with `supportedInputFormats()` and
 | Animated images (GIF/WebP) | ❌ | ✅ |
 | Streaming pipeline | Disk-backed bounded-memory pipeline (`createStreamingPipeline()`), not true streaming transforms | ✅ |
 | Metadata | ICC + EXIF (GPS auto-strip, XMP unsupported) | ✅ (EXIF/XMP/etc) |
-| AVIF encoding | ✅ (focus area) | ✅ |
+| AVIF encoding | ✅ (supported; benchmark size/speed per workload) | ✅ |
 
 ## Non-goals
 
@@ -41,8 +41,8 @@ You can query at runtime with `supportedInputFormats()` and
 
 ## When to Choose lazy-image
 
-- You want **smaller files** and are OK with a smaller API surface.
-- You care about **AVIF speed** and **JPEG size optimization**.
+- You want **smaller JPEG files** and are OK with a smaller API surface.
+- You care about **JPEG size optimization**, metadata safety, and bounded-memory file-path processing.
 - You want clear error taxonomy and strict limits for user uploads.
 - You are fine with a disk-backed bounded-memory pipeline instead of true chunk transform streaming.
 

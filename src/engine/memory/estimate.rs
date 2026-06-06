@@ -7,7 +7,7 @@
 // per job. Used to weight `WeightedSemaphore` acquisitions.
 
 use crate::engine::resize::{calc_cover_resize_dimensions, calc_resize_dimensions};
-use crate::ops::{Operation, OutputFormat, ResizeFit};
+use crate::ops::{Operation, OutputFormat, ResizeFit, RotationAngle};
 use image::ImageFormat;
 use parking_lot::Mutex;
 use std::collections::HashMap;
@@ -319,8 +319,9 @@ fn project_operation(dims: (u32, u32), current_bpp: u64, op: &Operation) -> ((u3
             let h = (*height).max(1).min(dims.1);
             ((w, h), current_bpp, FILTER_OVERHEAD_BYTES / 2)
         }
-        Operation::Rotate { degrees } => {
-            let rotated = matches!(degrees.rem_euclid(360), 90 | 270);
+        Operation::Rotate(angle) => {
+            // 90/270 turns swap width and height; 180 keeps the dimensions.
+            let rotated = matches!(angle, RotationAngle::Cw90 | RotationAngle::Cw270);
             let next_dims = if rotated { (dims.1, dims.0) } else { dims };
             (next_dims, current_bpp, FILTER_OVERHEAD_BYTES)
         }
@@ -508,7 +509,7 @@ mod tests {
             Some(ImageFormat::Jpeg),
             &ops,
             Some(&OutputFormat::Jpeg {
-                quality: 80,
+                quality: crate::ops::Quality::unchecked(80),
                 fast_mode: false,
             }),
         );

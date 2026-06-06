@@ -73,6 +73,11 @@ fn detect_system_memory_impl() -> Option<u64> {
         fn GetPhysicallyInstalledSystemMemory(total_memory_in_kilobytes: *mut u64) -> i32;
     }
     let mut total_kb: u64 = 0;
+    // SAFETY: `total_kb` is a properly sized, stack-allocated `u64` initialized
+    // to zero. We pass its address as the sole out-parameter, which
+    // `GetPhysicallyInstalledSystemMemory` expects to be a valid, writable
+    // pointer to a `u64`. The pointer is live for the entire duration of the
+    // call. The return value is checked before the written value is used.
     unsafe {
         if GetPhysicallyInstalledSystemMemory(&mut total_kb) != 0 {
             Some(total_kb * 1024) // KB → bytes
@@ -108,6 +113,11 @@ pub fn try_shared_lock(file: &File) -> bool {
 fn try_shared_lock_impl(file: &File) -> bool {
     use std::os::unix::io::AsRawFd;
     let fd = file.as_raw_fd();
+    // SAFETY: `fd` is a valid open file descriptor obtained from a live `&File`
+    // via `AsRawFd::as_raw_fd()`, which guarantees the descriptor remains valid
+    // for the lifetime of `file`. `LOCK_SH | LOCK_NB` are the only flags
+    // passed; no pointers are involved. The return value is checked by the
+    // caller to determine whether the lock was acquired.
     unsafe { libc::flock(fd, libc::LOCK_SH | libc::LOCK_NB) == 0 }
 }
 
@@ -141,6 +151,13 @@ fn get_resource_usage_impl() -> Option<ResourceUsage> {
     use libc::{getrusage, rusage, RUSAGE_SELF};
     use std::mem;
 
+    // SAFETY: `usage` is initialized via `mem::zeroed()`, which is valid for
+    // `libc::rusage` (a plain-old-data C struct with no invalid bit patterns).
+    // We pass `RUSAGE_SELF` as the `who` argument (a well-defined constant) and
+    // a mutable pointer to the zeroed struct as the out-parameter, which
+    // `getrusage` requires to be a valid, writable pointer to a `rusage`. The
+    // pointer is live for the entire duration of the call. The return value is
+    // checked before any fields of `usage` are read.
     unsafe {
         let mut usage: rusage = mem::zeroed();
         if getrusage(RUSAGE_SELF, &mut usage) != 0 {

@@ -174,12 +174,9 @@ pub fn calculate_optimal_concurrency() -> usize {
 
     // 2. Detect memory limits and calculate memory-based concurrency
     let available_memory = memory::detect_available_memory();
-    let memory_based =
-        memory::calculate_memory_based_concurrency(available_memory, cpu_concurrency);
-
     // 3. Use the minimum of CPU and memory constraints
     // This ensures we don't exceed either CPU or memory limits
-    memory_based
+    memory::calculate_memory_based_concurrency(available_memory, cpu_concurrency)
 }
 
 #[cfg(feature = "napi")]
@@ -206,6 +203,12 @@ mod tests {
     use image::{DynamicImage, ImageBuffer, Rgb};
     use rayon::prelude::*;
     use std::io::Cursor;
+
+    /// Serializes the tests that mutate process-global state — the
+    /// `UV_THREADPOOL_SIZE` environment variable and the global rayon pool — so
+    /// they don't race when the test harness runs them on parallel threads.
+    /// (A dependency-free stand-in for `#[serial_test::serial]`.)
+    static POOL_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
     struct EnvGuard {
         original: Option<String>,
@@ -256,6 +259,7 @@ mod tests {
 
     #[test]
     fn pool_reinitializes_with_new_uv_reservation() {
+        let _serial = POOL_TEST_LOCK.lock().unwrap_or_else(|p| p.into_inner());
         let guard = EnvGuard::set("UV_THREADPOOL_SIZE", "8");
 
         let pool = reinitialize_global_pool().expect("pool should initialize");
@@ -275,6 +279,7 @@ mod tests {
 
     #[test]
     fn pool_handles_real_workloads_and_stays_usable() {
+        let _serial = POOL_TEST_LOCK.lock().unwrap_or_else(|p| p.into_inner());
         shutdown_global_pool();
         let pool = get_pool().expect("pool should initialize");
         let images = make_workload();

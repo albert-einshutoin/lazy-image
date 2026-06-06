@@ -6,14 +6,12 @@
 use crate::codecs::avif_safe::{create_rgb_image, SafeAvifEncoder, SafeAvifImage, SafeAvifRwData};
 use crate::engine::check_dimensions;
 use crate::engine::common::run_with_panic_policy;
+use crate::engine::io::exif_embed::{embed_icc_jpeg, embed_icc_png, embed_icc_webp};
 use crate::error::LazyImageError;
 use image::{DynamicImage, GenericImageView, ImageFormat};
-use img_parts::{jpeg::Jpeg, png::Png, ImageEXIF, ImageICC};
 #[cfg(feature = "avif")]
 use libavif_sys::*;
 use mozjpeg::{ColorSpace, Compress, ScanMode};
-#[cfg(feature = "avif")]
-use std::cmp;
 use std::io::Cursor;
 
 // Type alias for Result - always use LazyImageError to preserve error taxonomy
@@ -264,272 +262,17 @@ pub fn encode_jpeg_with_settings(
     })
 }
 
-/// Embed ICC profile into JPEG using img-parts
-pub fn embed_icc_jpeg(jpeg_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
-    run_with_panic_policy("encode:jpeg:embed_icc", || {
-        use img_parts::jpeg::{markers::APP2, JpegSegment};
-        use img_parts::Bytes;
-
-        let mut jpeg = Jpeg::from_bytes(Bytes::from(jpeg_data)).map_err(|e| {
-            LazyImageError::decode_failed(format!("failed to parse JPEG for ICC: {e}"))
-        })?;
-
-        let mut marker_data = Vec::with_capacity(14 + icc.len());
-        marker_data.extend_from_slice(b"ICC_PROFILE\0");
-        marker_data.push(1);
-        marker_data.push(1);
-        marker_data.extend_from_slice(icc);
-
-        let segment = JpegSegment::new_with_contents(APP2, Bytes::from(marker_data));
-
-        let segments = jpeg.segments_mut();
-        segments.insert(0, segment);
-
-        let mut output = Vec::new();
-        jpeg.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("jpeg", format!("failed to write JPEG with ICC: {e}"))
-        })?;
-
-        Ok(output)
-    })
-}
-
-/// Trait for image container types that support EXIF embedding.
-///
-/// Abstracts over `img_parts::jpeg::Jpeg`, `img_parts::png::Png`, and
-/// `img_parts::webp::WebP` so that EXIF embed logic can be written once
-/// in `embed_exif_generic`.
-trait ExifEmbeddable: Sized + ImageEXIF {
-    /// Format label used for panic-policy tracing and error messages (e.g. "jpeg").
-    const FORMAT: &'static str;
-
-    /// Label for `run_with_panic_policy` (must be `&'static str`).
-    const PANIC_LABEL: &'static str;
-
-    /// Parse raw image bytes into the container type.
-    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error>;
-
-    /// Serialize the (possibly modified) container back to bytes.
-    fn write_out(self) -> EncoderResult<Vec<u8>>;
-}
-
-impl ExifEmbeddable for Jpeg {
-    const FORMAT: &'static str = "jpeg";
-    const PANIC_LABEL: &'static str = "encode:jpeg:embed_exif";
-
-    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error> {
-        Jpeg::from_bytes(data)
-    }
-
-    fn write_out(self) -> EncoderResult<Vec<u8>> {
-        let mut output = Vec::new();
-        self.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("jpeg", format!("failed to write jpeg with EXIF: {e}"))
-        })?;
-        Ok(output)
-    }
-}
-
-impl ExifEmbeddable for Png {
-    const FORMAT: &'static str = "png";
-    const PANIC_LABEL: &'static str = "encode:png:embed_exif";
-
-    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error> {
-        Png::from_bytes(data)
-    }
-
-    fn write_out(self) -> EncoderResult<Vec<u8>> {
-        let mut output = Vec::new();
-        self.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("png", format!("failed to write png with EXIF: {e}"))
-        })?;
-        Ok(output)
-    }
-}
-
-impl ExifEmbeddable for img_parts::webp::WebP {
-    const FORMAT: &'static str = "webp";
-    const PANIC_LABEL: &'static str = "encode:webp:embed_exif";
-
-    fn parse(data: img_parts::Bytes) -> std::result::Result<Self, img_parts::Error> {
-        img_parts::webp::WebP::from_bytes(data)
-    }
-
-    fn write_out(self) -> EncoderResult<Vec<u8>> {
-        let mut output = Vec::new();
-        self.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("webp", format!("failed to write webp with EXIF: {e}"))
-        })?;
-        Ok(output)
-    }
-}
-
-/// Generic EXIF embed: parse → sanitize → set_exif → write.
-///
-/// Wrapped by the format-specific public functions below so callers
-/// never need to name the trait directly.
-fn embed_exif_generic<T: ExifEmbeddable>(
-    image_data: Vec<u8>,
-    exif: &[u8],
-    reset_orientation: bool,
-    strip_gps: bool,
-) -> EncoderResult<Vec<u8>> {
-    run_with_panic_policy(T::PANIC_LABEL, || {
-        let mut img = T::parse(img_parts::Bytes::from(image_data)).map_err(|e| {
-            LazyImageError::decode_failed(format!("failed to parse {} for EXIF: {e}", T::FORMAT))
-        })?;
-
-        let sanitized_exif = sanitize_exif_bytes(exif, reset_orientation, strip_gps)?;
-        img.set_exif(Some(img_parts::Bytes::from(sanitized_exif)));
-
-        img.write_out()
-    })
-}
-
-/// Embed EXIF metadata into JPEG using img-parts
-///
-/// Note: This function expects raw TIFF-format EXIF data (without the "Exif\0\0" header).
-/// Orientation is automatically reset to 1 if auto_orient was applied.
-/// GPS tags are stripped if strip_gps is true (default for privacy).
-#[cfg_attr(not(feature = "napi"), allow(dead_code))]
-pub fn embed_exif_jpeg(
-    jpeg_data: Vec<u8>,
-    exif: &[u8],
-    reset_orientation: bool,
-    strip_gps: bool,
-) -> EncoderResult<Vec<u8>> {
-    embed_exif_generic::<Jpeg>(jpeg_data, exif, reset_orientation, strip_gps)
-}
-
-pub fn embed_exif_png(
-    png_data: Vec<u8>,
-    exif: &[u8],
-    reset_orientation: bool,
-    strip_gps: bool,
-) -> EncoderResult<Vec<u8>> {
-    embed_exif_generic::<Png>(png_data, exif, reset_orientation, strip_gps)
-}
-
-pub fn embed_exif_webp(
-    webp_data: Vec<u8>,
-    exif: &[u8],
-    reset_orientation: bool,
-    strip_gps: bool,
-) -> EncoderResult<Vec<u8>> {
-    embed_exif_generic::<img_parts::webp::WebP>(webp_data, exif, reset_orientation, strip_gps)
-}
-
-/// Sanitize raw EXIF TIFF bytes (Zero-Copy approach):
-/// - Reset Orientation tag to 1 (if reset_orientation is true)
-/// - Strip GPS tags by zeroing GPS IFD pointer (if strip_gps is true)
-///
-/// This operates directly on the TIFF structure without creating temp files.
-#[cfg_attr(not(feature = "napi"), allow(dead_code))]
-fn sanitize_exif_bytes(
-    exif: &[u8],
-    reset_orientation: bool,
-    strip_gps: bool,
-) -> EncoderResult<Vec<u8>> {
-    // EXIF data is TIFF format - we can modify it directly
-    // Structure: [byte order (2)] [magic 0x002A (2)] [IFD0 offset (4)] [IFD data...]
-    if exif.len() < 8 {
-        return Ok(exif.to_vec());
-    }
-
-    // Determine byte order
-    let is_little_endian = match &exif[0..2] {
-        b"II" => true,
-        b"MM" => false,
-        _ => return Ok(exif.to_vec()), // Unknown byte order, return unchanged
-    };
-
-    // Helper functions for reading/writing with correct endianness
-    let read_u16 = |data: &[u8], offset: usize| -> u16 {
-        if is_little_endian {
-            u16::from_le_bytes([data[offset], data[offset + 1]])
-        } else {
-            u16::from_be_bytes([data[offset], data[offset + 1]])
-        }
-    };
-
-    let read_u32 = |data: &[u8], offset: usize| -> u32 {
-        if is_little_endian {
-            u32::from_le_bytes([
-                data[offset],
-                data[offset + 1],
-                data[offset + 2],
-                data[offset + 3],
-            ])
-        } else {
-            u32::from_be_bytes([
-                data[offset],
-                data[offset + 1],
-                data[offset + 2],
-                data[offset + 3],
-            ])
-        }
-    };
-
-    // Make a mutable copy for modification
-    let mut result = exif.to_vec();
-
-    // Get IFD0 offset
-    let ifd0_offset = read_u32(&result, 4) as usize;
-    if ifd0_offset >= result.len() || ifd0_offset < 8 {
-        return Ok(result);
-    }
-
-    // Parse IFD0 to find Orientation and GPS IFD pointer tags
-    let num_entries = read_u16(&result, ifd0_offset) as usize;
-    let mut offset = ifd0_offset + 2;
-
-    const ORIENTATION_TAG: u16 = 0x0112;
-    const GPS_IFD_TAG: u16 = 0x8825;
-
-    for _ in 0..num_entries {
-        if offset + 12 > result.len() {
-            break;
-        }
-
-        let tag = read_u16(&result, offset);
-        let tag_type = read_u16(&result, offset + 2);
-        // let count = read_u32(&result, offset + 4);
-        let value_offset = offset + 8;
-
-        // Reset Orientation tag to 1
-        if reset_orientation && tag == ORIENTATION_TAG && tag_type == 3 {
-            // Type 3 = SHORT (2 bytes)
-            if is_little_endian {
-                result[value_offset] = 1;
-                result[value_offset + 1] = 0;
-            } else {
-                result[value_offset] = 0;
-                result[value_offset + 1] = 1;
-            }
-        }
-
-        // Zero out GPS IFD pointer to effectively strip GPS data
-        if strip_gps && tag == GPS_IFD_TAG {
-            // Zero the value/offset field (4 bytes)
-            result[value_offset] = 0;
-            result[value_offset + 1] = 0;
-            result[value_offset + 2] = 0;
-            result[value_offset + 3] = 0;
-        }
-
-        offset += 12; // Each IFD entry is 12 bytes
-    }
-
-    Ok(result)
-}
-
 /// Encode to PNG using image crate
 pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:png", || {
         let (w, h) = img.dimensions();
         validate_encode_dimensions(w, h, "png")?;
 
-        let mut buf = Vec::new();
+        // Pre-size the encode buffer to a fraction of the raw pixel count; the
+        // exact compressed size is unknown, but this avoids the early doubling
+        // reallocations from an empty `Vec` on large images.
+        let buf_cap = ((w as usize).saturating_mul(h as usize) / 4).max(1024);
+        let mut buf = Vec::with_capacity(buf_cap);
         img.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png)
             .map_err(|e| LazyImageError::encode_failed("png", format!("PNG encode failed: {e}")))?;
 
@@ -547,26 +290,6 @@ pub fn encode_png(img: &DynamicImage, icc: Option<&[u8]>) -> EncoderResult<Vec<u
         } else {
             Ok(optimized)
         }
-    })
-}
-
-/// Embed ICC profile into PNG using img-parts
-pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
-    run_with_panic_policy("encode:png:embed_icc", || {
-        use img_parts::Bytes;
-
-        let mut png = Png::from_bytes(Bytes::from(png_data)).map_err(|e| {
-            LazyImageError::decode_failed(format!("failed to parse PNG for ICC: {e}"))
-        })?;
-
-        png.set_icc_profile(Some(Bytes::from(icc.to_vec())));
-
-        let mut output = Vec::new();
-        png.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("png", format!("failed to write PNG with ICC: {e}"))
-        })?;
-
-        Ok(output)
     })
 }
 
@@ -621,24 +344,19 @@ pub fn encode_webp(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
     })
 }
 
-/// Embed ICC profile into WebP using img-parts
-pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
-    run_with_panic_policy("encode:webp:embed_icc", || {
-        use img_parts::webp::WebP;
-        use img_parts::Bytes;
-
-        let mut webp = WebP::from_bytes(Bytes::from(webp_data)).map_err(|e| {
-            LazyImageError::decode_failed(format!("failed to parse WebP for ICC: {e}"))
-        })?;
-
-        webp.set_icc_profile(Some(Bytes::from(icc.to_vec())));
-
-        let mut output = Vec::new();
-        webp.encoder().write_to(&mut output).map_err(|e| {
-            LazyImageError::encode_failed("webp", format!("failed to write WebP with ICC: {e}"))
-        })?;
-
-        Ok(output)
+/// Resolve the AVIF encoder thread count once for the lifetime of the process.
+///
+/// `std::thread::available_parallelism()` performs a syscall; the chosen value
+/// (`clamp(cpu, 2..=8)`) is process-stable, so caching it in a `OnceLock`
+/// removes one syscall per `encode_avif` call (notably per file in a batch).
+#[cfg(feature = "avif")]
+fn avif_encoder_threads() -> i32 {
+    static AVIF_ENCODER_THREADS: std::sync::OnceLock<i32> = std::sync::OnceLock::new();
+    *AVIF_ENCODER_THREADS.get_or_init(|| {
+        let cpu_threads = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(2);
+        cpu_threads.clamp(2, 8) as i32
     })
 }
 
@@ -654,8 +372,6 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 #[cfg(feature = "avif")]
 pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:avif", || {
-        use std::borrow::Cow;
-
         let quality = validate_lossy_quality(quality)?;
         let settings = QualitySettings::new(quality);
         let (width, height) = img.dimensions();
@@ -663,22 +379,21 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
 
         let has_alpha = img.color().has_alpha();
 
-        let rgba: Cow<'_, image::RgbaImage> = match img {
-            DynamicImage::ImageRgba8(rgba_img) => Cow::Borrowed(rgba_img),
-            _ => Cow::Owned(img.to_rgba8()),
-        };
-        let pixels = rgba.as_raw();
-        validate_buffer_len(width, height, 4, pixels.len(), "avif")?;
+        let mut rgba = img.to_rgba8();
+        validate_buffer_len(width, height, 4, rgba.as_raw().len(), "avif")?;
+        let pixels = rgba.as_mut_ptr();
 
         let mut avif_image = SafeAvifImage::new(width, height, 8, AVIF_PIXEL_FORMAT_YUV420)
             .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
-        avif_image.set_color_properties(
-            AVIF_COLOR_PRIMARIES_BT709 as u16,
-            AVIF_TRANSFER_CHARACTERISTICS_SRGB as u16,
-            AVIF_MATRIX_COEFFICIENTS_BT709 as u16,
-            AVIF_RANGE_FULL,
-        );
+        avif_image
+            .set_color_properties(
+                AVIF_COLOR_PRIMARIES_BT709 as u16,
+                AVIF_TRANSFER_CHARACTERISTICS_SRGB as u16,
+                AVIF_MATRIX_COEFFICIENTS_BT709 as u16,
+                AVIF_RANGE_FULL,
+            )
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         if let Some(icc_data) = icc {
             avif_image
@@ -686,7 +401,11 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
                 .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
         }
 
-        let rgb = create_rgb_image(&mut avif_image, pixels.as_ptr(), width, height)
+        // SAFETY: `pixels` is `rgba.as_mut_ptr()`, validated above to hold exactly
+        // `width * height * 4` RGBA8 bytes via `validate_buffer_len`. `rgba`
+        // owns the buffer, outlives `rgb`, and is not accessed while libavif
+        // reads from the pointer.
+        let rgb = unsafe { create_rgb_image(&mut avif_image, pixels, width, height) }
             .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         avif_image
@@ -720,13 +439,23 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
                         .ok_or_else(|| {
                             LazyImageError::encode_failed("avif", "Alpha plane size overflow")
                         })?;
-                debug_assert!(alpha_row_bytes >= width as usize);
+                // Hard bounds check (not debug_assert!, which is elided in release):
+                // every write index is `y * alpha_row_bytes + x` with `x < width`,
+                // so guaranteeing `alpha_row_bytes >= width` makes every `dst_idx`
+                // strictly less than `alpha_plane_len`. Without this a libavif
+                // stride smaller than `width` would be a silent OOB write.
+                if alpha_row_bytes < width as usize {
+                    return Err(LazyImageError::encode_failed(
+                        "avif",
+                        "alpha plane row stride is smaller than image width",
+                    ));
+                }
                 for y in 0..height as usize {
                     for x in 0..width as usize {
                         let src_idx = (y * width as usize + x) * 4 + 3;
                         let dst_idx = y * alpha_row_bytes + x;
                         debug_assert!(dst_idx < alpha_plane_len);
-                        *alpha_plane.as_ptr().add(dst_idx) = pixels[src_idx];
+                        *alpha_plane.as_ptr().add(dst_idx) = *pixels.add(src_idx);
                     }
                 }
             }
@@ -735,13 +464,14 @@ pub fn encode_avif(img: &DynamicImage, quality: u8, icc: Option<&[u8]>) -> Encod
         let mut encoder = SafeAvifEncoder::new()
             .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
-        let cpu_threads = std::thread::available_parallelism()
-            .map(|n| n.get())
-            .unwrap_or(2);
-        let capped = cmp::min(8, cpu_threads);
-        let encoder_threads = cmp::max(2, capped) as i32;
+        // `available_parallelism()` is a syscall; the AVIF encoder thread count
+        // is process-stable, so resolve it once and reuse it across every
+        // `encode_avif` call (e.g. each file in a batch).
+        let encoder_threads = avif_encoder_threads();
 
-        encoder.configure(quality, quality, settings.avif_speed(), encoder_threads);
+        encoder
+            .configure(quality, quality, settings.avif_speed(), encoder_threads)
+            .map_err(|e| LazyImageError::encode_failed("avif", e.to_string()))?;
 
         let mut output = SafeAvifRwData::new();
 

@@ -1,0 +1,53 @@
+{
+  "name": "@alberteinshutoin/lazy-image-wasm",
+  "version": "0.16.0",
+  "description": "Browser and Edge upload-preflight optimizer for lazy-image policy APIs",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./browser": {
+      "types": "./browser.d.ts",
+      "import": "./browser.js"
+    },
+    "./edge": {
+      "types": "./edge.d.ts",
+      "import": "./edge.js"
+    },
+    "./shared": {
+      "types": "./shared.d.ts",
+      "import": "./shared.js"
+    },
+    "./worker": {
+      "types": "./worker.d.ts",
+      "import": "./worker.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "browser.js",
+    "browser.d.ts",
+    "edge.js",
+    "edge.d.ts",
+    "shared.js",
+    "shared.d.ts",
+    "worker.js",
+    "worker.d.ts",
+    "examples/"
+  ],
+  "scripts": {
+    "test": "node test/run.mjs"
+  },
+  "dependencies": {
+    "@jsquash/jpeg": "1.6.0",
+    "@jsquash/png": "3.1.1",
+    "@jsquash/resize": "2.1.1",
+    "@jsquash/webp": "1.5.0"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

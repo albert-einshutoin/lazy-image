@@ -128,6 +128,9 @@ impl ImageEngine {
     /// Backward compatibility: the legacy positional signature
     ///   processBatch(inputs, outputDir, format, quality?, fastMode?, concurrency?)
     /// is still accepted for now but will be removed in a future major release.
+    // The exported N-API signature intentionally keeps legacy positional
+    // arguments alongside the options object for JS compatibility.
+    #[allow(clippy::too_many_arguments)]
     #[napi(js_name = "processBatch", ts_return_type = "Promise<BatchResult[]>")]
     pub fn process_batch(
         &self,
@@ -165,15 +168,12 @@ impl ImageEngine {
         let concurrency =
             validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
 
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error for unknown formats rather than
+        // flattening to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         Ok(AsyncTask::new(BatchTask {
             inputs,
@@ -183,12 +183,15 @@ impl ImageEngine {
             concurrency,
             metadata_policy: policy,
             auto_orient: self.auto_orient,
-            firewall: self.firewall.clone(),
+            firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,
         }))
     }
 
+    // The exported N-API signature intentionally keeps legacy positional
+    // arguments alongside the options object for JS compatibility.
+    #[allow(clippy::too_many_arguments)]
     #[napi(
         js_name = "processBatchWithMetrics",
         ts_return_type = "Promise<BatchOutputWithMetrics>"
@@ -229,15 +232,12 @@ impl ImageEngine {
         let concurrency =
             validation::sanitize_concurrency(concurrency).map_err(|e| napi_err(&env, e))?;
 
-        let output_format = match OutputFormat::from_str_with_options(&format, quality, fast_mode) {
-            Ok(format) => format,
-            Err(_e) => {
-                let lazy_err = LazyImageError::unsupported_format(format.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
+        // Propagate the real parse error for unknown formats rather than
+        // flattening to unsupported_format.
+        let output_format = OutputFormat::from_str_with_options(&format, quality, fast_mode)
+            .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
-        let mut policy = self.metadata_policy.clone();
+        let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
 
         Ok(AsyncTask::new(BatchWithMetricsTask {
@@ -248,7 +248,7 @@ impl ImageEngine {
             concurrency,
             metadata_policy: policy,
             auto_orient: self.auto_orient,
-            firewall: self.firewall.clone(),
+            firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,
         }))

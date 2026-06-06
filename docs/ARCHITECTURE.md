@@ -4,7 +4,7 @@
 
 1. **mozjpeg** — Progressive mode, optimized Huffman tables, scan optimization, trellis quantization
 2. **libwebp** — Method 4 (balanced), single-pass encoding (v0.8.1+ optimized for speed)
-3. **ravif** — Pure Rust AVIF encoder, AV1-based compression
+3. **libavif** — AVIF encoder backend with safe Rust FFI wrappers
 4. **Chroma subsampling** (4:2:0) for web-optimal output
 5. **Adaptive preprocessing** — JPEG: compression optimization; WebP (v0.8.1+): speed optimization
 
@@ -16,7 +16,7 @@ lazy-image uses a **Copy-on-Write (CoW)** design and avoids the V8 (JS) heap on 
 2. **V8-heap bypass for file inputs** — `fromPath()` and `processBatch()` never copy the source file into the Node.js heap. Implementation is size-tiered to eliminate SIGBUS/SIGSEGV risk:
    - **Files ≤ 256 MB**: read once into a Rust-owned buffer (no mmap).
    - **Files > 256 MB**: opened via `mmap` with an advisory lock + fd retained for the engine lifetime.
-   The size threshold (`MMAP_SIZE_THRESHOLD`) lives in [`src/engine/io.rs`](../src/engine/io.rs).
+   The size threshold (`MMAP_SIZE_THRESHOLD`) lives in [`src/engine/io/mod.rs`](../src/engine/io/mod.rs).
 3. **Zero-copy conversions** — Format conversion without resize/crop reuses the decoded buffer (no extra pixel buffer).
 4. **Clone** — `.clone()` is cheap and does not allocate until a destructive op runs.
 5. **Verification** — See [ZERO_COPY.md](./ZERO_COPY.md). Run `node --expose-gc docs/scripts/measure-zero-copy.js` to check heap/RSS.
@@ -26,14 +26,14 @@ See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact boundary between eage
 
 ## Color Management
 
-**AVIF**: ICC preserved in v0.9.0+ (libavif-sys). On &lt;0.9.0 or ravif-only builds, ICC is dropped — convert to sRGB before encoding if needed.
+**AVIF**: ICC preserved in v0.9.0+ (libavif-sys). On older or alternate AVIF backend builds, ICC may be dropped — convert to sRGB before encoding if needed.
 
 | Format | ICC |
 |--------|-----|
 | JPEG   | ✅ Extracted and embedded |
 | PNG    | ✅ iCCP chunk |
 | WebP   | ✅ ICCP chunk |
-| AVIF   | ✅ v0.9.0+ libavif-sys; dropped on ravif-only |
+| AVIF   | ✅ v0.9.0+ libavif-sys; may be dropped on older/alternate backend builds |
 
 ## Platform Notes
 
@@ -59,7 +59,7 @@ On Windows, memory-mapped files **cannot be deleted** while mapped. Keep the `Im
 ├─────────────────────────────────────────────────────────────┤
 │                         Rust Core                           │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────┐  │
-│  │ mozjpeg  │  │ libwebp  │  │  ravif   │  │ fast_image  │  │
+│  │ mozjpeg  │  │ libwebp  │  │ libavif  │  │ fast_image  │  │
 │  │ (JPEG)   │  │ (WebP)   │  │ (AVIF)   │  │ _resize     │  │
 │  └──────────┘  └──────────┘  └──────────┘  └─────────────┘  │
 │  ┌──────────┐  ┌──────────┐                                 │

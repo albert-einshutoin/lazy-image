@@ -3,7 +3,7 @@
 use arbitrary::Arbitrary;
 use image::{ImageBuffer, Rgba};
 use lazy_image::engine::encode_png;
-use lazy_image::ops::OutputFormat;
+use lazy_image::ops::{OutputFormat, Quality};
 use libfuzzer_sys::fuzz_target;
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
@@ -17,10 +17,10 @@ struct Input {
 
 fn format_from_byte(b: u8) -> OutputFormat {
     match b % 4 {
-        0 => OutputFormat::Jpeg { quality: 80, fast_mode: false },
+        0 => OutputFormat::Jpeg { quality: Quality::unchecked(80), fast_mode: false },
         1 => OutputFormat::Png,
-        2 => OutputFormat::WebP { quality: 75 },
-        _ => OutputFormat::Avif { quality: 60 },
+        2 => OutputFormat::WebP { quality: Quality::unchecked(75) },
+        _ => OutputFormat::Avif { quality: Quality::unchecked(60) },
     }
 }
 

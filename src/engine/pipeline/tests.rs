@@ -102,7 +102,7 @@ mod operation_contract_tests {
                 fit: ResizeFit::Inside,
             },
             Operation::Grayscale,
-            Operation::Rotate { degrees: 90 },
+            Operation::Rotate(crate::ops::RotationAngle::Cw90),
         ];
         assert!(validate_operation_sequence(&ops).is_ok());
     }
