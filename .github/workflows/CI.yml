@@ -754,6 +754,14 @@ jobs:
               if ! grep -q '"publishConfig"' package.json; then
                 echo "⚠️  Warning: publishConfig not found in package.json"
               fi
+
+              full_pkg_name=$(node -p "require('./package.json').name")
+              pkg_version=$(node -p "require('./package.json').version")
+              if npm view "$full_pkg_name@$pkg_version" version >/dev/null 2>&1; then
+                echo "✅ $full_pkg_name@$pkg_version already exists; skipping publish."
+                cd ../..
+                continue
+              fi
               
               # Try to publish with provenance (works with OIDC or NPM_TOKEN)
               if npm publish --access public --provenance 2>&1; then
