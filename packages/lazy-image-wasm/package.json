@@ -46,6 +46,14 @@
   "engines": {
     "node": ">= 18"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/albert-einshutoin/lazy-image"
+  },
+  "bugs": {
+    "url": "https://github.com/albert-einshutoin/lazy-image/issues"
+  },
+  "homepage": "https://github.com/albert-einshutoin/lazy-image#readme",
   "publishConfig": {
     "access": "public"
   },
