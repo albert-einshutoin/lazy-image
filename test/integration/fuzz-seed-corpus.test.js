@@ -62,8 +62,10 @@ try {
 
     test('dry-run validates the full malformed seed catalog', () => {
         const stdout = runSeedScript(['--dry-run']);
-        assert.match(stdout, /validated 20 malformed fuzz seed\(s\)/);
+        assert.match(stdout, /validated 25 malformed fuzz seed\(s\)/);
         assert.match(stdout, /avif-ftyp-only\.bin/);
+        assert.match(stdout, /jpeg-exif-truncated-ifd-app1\.bin/);
+        assert.match(stdout, /jpeg-icc-profile-size-mismatch-app2\.bin/);
         assert.match(stdout, /jpeg-truncated-exif-app1\.bin/);
         assert.match(stdout, /png-huge-ihdr\.bin/);
     });
@@ -106,6 +108,31 @@ try {
 
         assert.match(stdout, /no malformed seed corpus configured for target: firewall_bypass/);
         assert.equal(fs.existsSync(path.join(TEST_ROOT, 'firewall_bypass')), false);
+    });
+
+    test('metadata targets include EXIF and ICC marker-bearing malformed seeds', () => {
+        let stdout = runSeedScript([
+            '--target',
+            'exif_parse',
+            '--corpus-root',
+            TEST_ROOT,
+        ]);
+
+        assert.match(stdout, /wrote 6 malformed fuzz seed\(s\)/);
+        assert.equal(fileSize('exif_parse', 'jpeg-exif-empty-tiff-app1.bin'), 14);
+        assert.equal(fileSize('exif_parse', 'jpeg-exif-truncated-ifd-app1.bin'), 24);
+        assert.equal(fileSize('exif_parse', 'jpeg-exif-overstated-length-app1.bin'), 16);
+
+        stdout = runSeedScript([
+            '--target',
+            'icc_profile',
+            '--corpus-root',
+            TEST_ROOT,
+        ]);
+
+        assert.match(stdout, /wrote 4 malformed fuzz seed\(s\)/);
+        assert.equal(fileSize('icc_profile', 'jpeg-icc-profile-header-only-app2.bin'), 22);
+        assert.equal(fileSize('icc_profile', 'jpeg-icc-profile-size-mismatch-app2.bin'), 150);
     });
 } finally {
     resetTestRoot();

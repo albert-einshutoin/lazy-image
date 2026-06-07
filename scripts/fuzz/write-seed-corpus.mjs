@@ -56,6 +56,47 @@ function jpegWithTruncatedAppSegment(marker) {
   ]);
 }
 
+const EXIF_ID = Buffer.from('Exif\0\0', 'binary');
+const ICC_ID = Buffer.from('ICC_PROFILE\0', 'binary');
+
+function jpegWithExifSegment(payload, options = {}) {
+  const segmentLength = options.declaredSegmentLength
+    ?? (2 + EXIF_ID.byteLength + payload.byteLength);
+  return Buffer.concat([
+    Buffer.from([0xff, 0xd8, 0xff, 0xe1]),
+    Buffer.from([(segmentLength >> 8) & 0xff, segmentLength & 0xff]),
+    EXIF_ID,
+    payload,
+    options.omitEoi ? Buffer.alloc(0) : Buffer.from([0xff, 0xd9]),
+  ]);
+}
+
+function jpegWithIccSegment(payload) {
+  const segmentPayload = Buffer.concat([
+    ICC_ID,
+    Buffer.from([0x01, 0x01]),
+    payload,
+  ]);
+  const segmentLength = 2 + segmentPayload.byteLength;
+  return Buffer.concat([
+    Buffer.from([0xff, 0xd8, 0xff, 0xe2]),
+    Buffer.from([(segmentLength >> 8) & 0xff, segmentLength & 0xff]),
+    segmentPayload,
+    Buffer.from([0xff, 0xd9]),
+  ]);
+}
+
+function iccPayloadWithSizeMismatch() {
+  const payload = Buffer.alloc(128);
+  payload.writeUInt32BE(256, 0);
+  payload.write('TEST', 4, 'ascii');
+  payload[8] = 2;
+  payload.write('mntr', 12, 'ascii');
+  payload.write('RGB ', 16, 'ascii');
+  payload.write('XYZ ', 20, 'ascii');
+  return payload;
+}
+
 function jpegWithInvalidSegmentLength() {
   return Buffer.from([
     0xff, 0xd8,
@@ -110,10 +151,28 @@ const seedsByTarget = {
   inspect_header: headerMalformedSeeds,
   icc_profile: {
     'jpeg-truncated-icc-app2.bin': jpegWithTruncatedAppSegment(0xe2),
+    'jpeg-icc-profile-header-only-app2.bin': jpegWithIccSegment(Buffer.alloc(0)),
+    'jpeg-icc-profile-size-mismatch-app2.bin': jpegWithIccSegment(iccPayloadWithSizeMismatch()),
     'jpeg-invalid-segment-length.bin': jpegWithInvalidSegmentLength(),
   },
   exif_parse: {
     'jpeg-truncated-exif-app1.bin': jpegWithTruncatedAppSegment(0xe1),
+    'jpeg-exif-empty-tiff-app1.bin': jpegWithExifSegment(Buffer.alloc(0)),
+    'jpeg-exif-truncated-ifd-app1.bin': jpegWithExifSegment(
+      Buffer.from([
+        0x49, 0x49,
+        0x2a, 0x00,
+        0x08, 0x00, 0x00, 0x00,
+        0x02, 0x00,
+      ]),
+    ),
+    'jpeg-exif-overstated-length-app1.bin': jpegWithExifSegment(
+      Buffer.from([
+        0x49, 0x49,
+        0x2a, 0x00,
+      ]),
+      { declaredSegmentLength: 0x20, omitEoi: true },
+    ),
     'little-endian-tiff-header-only.bin': Buffer.from('II*\0', 'binary'),
     'big-endian-tiff-header-only.bin': Buffer.from('MM\0*', 'binary'),
   },
