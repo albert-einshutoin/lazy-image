@@ -196,3 +196,29 @@ await test('edge entrypoint defaults to ArrayBuffer output', async () => {
   assert.ok(result.data instanceof ArrayBuffer);
   assert.equal(result.metrics.runtime, 'edge-isolate');
 });
+
+await test('edge optimizer accepts precompiled WebAssembly.Module inputs', async () => {
+  const compiledModules = {
+    jpegDecode: await WebAssembly.compile(
+      await readWasm('@jsquash/jpeg', 'codec/dec/mozjpeg_dec.wasm')
+    ),
+    jpegEncode: await WebAssembly.compile(
+      await readWasm('@jsquash/jpeg', 'codec/enc/mozjpeg_enc.wasm')
+    ),
+  };
+
+  const edgeOptimizer = await createEdgeUploadOptimizer({ wasmModules: compiledModules });
+  const input = await fixture('test_100KB_1057x1057.jpg');
+  const result = await edgeOptimizer.optimizeUpload(input, {
+    format: 'jpeg',
+    maxWidth: 640,
+    maxHeight: 640,
+    targetBytes: 45_000,
+    output: 'arrayBuffer',
+  });
+
+  assert.equal(result.metrics.runtime, 'edge-isolate');
+  assert.equal(result.format, 'jpeg');
+  assert.ok(result.data instanceof ArrayBuffer);
+  assert.equal(typeof result.metrics.encodeMs, 'number');
+});

@@ -37,6 +37,42 @@ const result = await optimizer.optimizeUpload(new Uint8Array(await request.array
 });
 ```
 
+### Example (Cloudflare Workers / V8 isolate)
+
+`packages/lazy-image-wasm/examples/edge.mjs` provides a small runtime-safe pattern:
+
+```js
+import {
+  getEdgeUploadOptimizer,
+  handleOptimizeRequest,
+} from './examples/edge.mjs';
+
+export default {
+  async fetch(request, env) {
+    return handleOptimizeRequest(request, env);
+  },
+};
+```
+
+### Edge and browser constraints
+
+- Supported formats stay limited to `jpeg` and `webp` output, and input is currently
+  `jpeg` / `png` / `webp`.
+- No filesystem, native filesystem APIs, or Node built-ins are available.
+- `@jsquash/*` codec Wasm blobs are loaded from your deployment/runtime and must be
+  provided via `wasmModules`.
+- If you use `output: 'blob'` in runtimes that do not expose `Blob`, the API returns
+  an error and you should request `arrayBuffer` or `uint8Array` instead.
+
+Bundle considerations:
+
+- Keep this package behind lazy-loading where possible and avoid eagerly shipping the
+  full browser/resize codec set for pages that do not optimize uploads.
+- Run `npm run test:bench:wasm` locally and inspect generated artifacts to decide
+  whether full `resize`/`webp` codec loading is justified for your target flow.
+- For browser/Edge evidence, collect both bundle/gzip size and encode-metrics before
+  publishing any performance claim.
+
 ## Worker
 
 ```js
