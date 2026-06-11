@@ -157,20 +157,20 @@ An I/O error occurred while reading the file.
 
 ---
 
-#### E110: Invalid Image Format
-**Recoverable**: No
+#### E102: Memory Map Failed
+**Recoverable**: Yes
 
-The file format is not recognized or is invalid.
+The input image could not be memory-mapped.
 
 **Common causes:**
-- File is corrupted
-- File is not an image
-- File extension doesn't match content
+- System memory pressure
+- File system limitations
+- Large memory-mapped read requests
 
 **How to fix:**
-- Verify the file is a valid image
-- Check if the file is corrupted
-- Try opening the file in an image viewer
+- Retry after freeing memory
+- Reduce concurrent workload
+- Use a smaller image
 
 ---
 
@@ -187,18 +187,6 @@ The image format is recognized but not supported by lazy-image.
 **How to fix:**
 - Convert the image to a supported format
 - Use a different image processing library for unsupported formats
-
----
-
-#### E120: Image Too Large
-**Recoverable**: No
-
-The image exceeds size limits (file size or memory constraints).
-
-**How to fix:**
-- Resize or compress the image before processing
-- Process the image in smaller chunks
-- Increase available memory
 
 ---
 
@@ -221,6 +209,18 @@ Total pixel count (width × height) exceeds the maximum allowed.
 **How to fix:**
 - Resize the image to reduce pixel count
 - Process smaller images or use batch processing
+
+---
+
+#### E123: Firewall Violation
+**Recoverable**: Yes
+
+A firewall policy rejected the image input based on bytes, pixels, metadata, or timeout limits.
+
+**How to fix:**
+- Review configured `limits()` policy values
+- Retry with a less restrictive policy
+- Reduce image size or complexity before processing
 
 ---
 
@@ -272,7 +272,18 @@ Crop coordinates exceed image dimensions.
 
 ---
 
-#### E201: Invalid Rotation Angle
+#### E201: Invalid Crop Dimensions
+**Recoverable**: Yes
+
+Crop dimensions are invalid (negative or out-of-range values).
+
+**How to fix:**
+- Ensure crop dimensions are valid
+- Validate crop bounds against image dimensions before calling resize/crop
+
+---
+
+#### E202: Invalid Rotation Angle
 **Recoverable**: Yes
 
 Rotation angle is not a multiple of 90 degrees.
@@ -287,7 +298,7 @@ Rotation angle is not a multiple of 90 degrees.
 
 ---
 
-#### E202: Invalid Resize Dimensions
+#### E203: Invalid Resize Dimensions
 **Recoverable**: Yes
 
 Resize dimensions are invalid (e.g., both width and height are None).
@@ -296,6 +307,17 @@ Resize dimensions are invalid (e.g., both width and height are None).
 - Provide at least one valid dimension (width or height)
 - Ensure dimensions are positive integers
 - Use `None` for one dimension to maintain aspect ratio
+
+---
+
+#### E204: Invalid Resize Fit
+**Recoverable**: Yes
+
+Unsupported resize fit value was provided.
+
+**How to fix:**
+- Use one of the documented fit values
+- Keep the value null/undefined if default fit should be used
 
 ---
 
@@ -310,15 +332,15 @@ The requested color space conversion is not supported.
 
 ---
 
-#### E299: Operation Failed
-**Recoverable**: Depends
+#### E299: Resize Failed
+**Recoverable**: No
 
-A general processing operation failed.
+The resize operation failed after validation due to a codec or processing error.
 
 **How to fix:**
 - Check the error message for specific details
-- Verify input parameters
-- Try a different approach
+- Try different resize parameters
+- Re-encode the input before resizing if the source image is unusual
 
 ---
 
@@ -358,28 +380,16 @@ An I/O error occurred while writing the output file.
 
 ---
 
-#### E302: Output Path Invalid
-**Recoverable**: Yes
-
-The output file path is invalid or inaccessible.
-
-**How to fix:**
-- Verify the output directory exists
-- Check path format (no invalid characters)
-- Ensure write permissions for the directory
-
----
-
 ### Configuration Errors (E4xx)
 
-#### E400: Invalid Quality Value
+#### E400: Invalid Argument
 **Recoverable**: Yes
 
-Quality parameter is out of valid range (typically 1-100).
+An invalid argument value was provided (format, quality, preset, policy, etc.).
 
 **How to fix:**
-- Use a quality value between 1 and 100
-- Check format-specific quality requirements
+- Check API arguments are valid for the target image and format
+- Use values within documented ranges
 
 ---
 
@@ -396,7 +406,18 @@ The specified preset name is not recognized.
 
 **How to fix:**
 - Use one of the available preset names
-- Check preset names are case-insensitive
+- Use `encode({ preset })` in current API usage
+
+---
+
+#### E402: Invalid Firewall Policy
+**Recoverable**: Yes
+
+An unknown or unsupported firewall policy was provided.
+
+**How to fix:**
+- Use a documented policy value
+- Check the requested policy format
 
 ---
 
@@ -471,7 +492,7 @@ match result {
 import { ImageEngine, ErrorCode } from '@alberteinshutoin/lazy-image';
 
 try {
-    const result = await ImageEngine.fromFile('input.jpg')
+    const result = await ImageEngine.fromPath('input.jpg')
         .resize(800)
         .toBuffer('jpeg', 85);
 } catch (error) {
