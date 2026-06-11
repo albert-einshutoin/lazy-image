@@ -31,12 +31,14 @@ function extractErrorCodesFromDocs() {
 function extractErrorMetadataFromRust() {
     const rustSource = fs.readFileSync(resolveRoot('src/error.rs'), 'utf8');
     const codeMatches = [...rustSource.matchAll(/ErrorCode::(\w+) => "(E\d{3})"/g)];
-    const categoryBlock = rustSource.match(/pub fn category\(&self\) -> ErrorCategory \{\s*match self \{([\s\S]*?)\n        \}\n    \}/);
-    assert(categoryBlock, 'could not find ErrorCode::category() match block');
-
     const variantToCategory = new Map(
-        [...categoryBlock[1].matchAll(/ErrorCode::(\w+) => ErrorCategory::(\w+),/g)]
+        [...rustSource.matchAll(/ErrorCode::(\w+) => ErrorCategory::(\w+),/g)]
             .map((match) => [match[1], match[2]])
+    );
+    assert.strictEqual(
+        variantToCategory.size,
+        codeMatches.length,
+        'ErrorCode::category() must map every ErrorCode variant exactly once'
     );
 
     return new Map(codeMatches.map((match) => {
