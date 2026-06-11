@@ -1,7 +1,7 @@
 /**
  * Error code matrix tests — covers previously untested error codes.
  *
- * Targets: E111, E121, E123, E130, E131, E204, E400, E402, E900
+ * Targets: E102, E111, E121, E123, E130, E131, E201, E202, E203, E204, E400, E402, E900
  * (E122 PixelCountExceedsLimit is skipped — requires a real image whose
  *  decoded pixel count exceeds the limit, which cannot be synthesised cheaply.)
  *
@@ -15,6 +15,18 @@ const { ImageEngine, ErrorCategory, getErrorCategory } = require(resolveRoot('in
 
 const TEST_IMAGE = resolveFixture('test_input.jpg');
 const BUFFER = fs.readFileSync(TEST_IMAGE);
+
+function extractErrorCodesFromRust() {
+    const rustSource = fs.readFileSync(resolveRoot('src/error.rs'), 'utf8');
+    const matches = [...rustSource.matchAll(/ErrorCode::\w+ => "(E\d{3})"/g)];
+    return new Set(matches.map((match) => match[1]));
+}
+
+function extractErrorCodesFromDocs() {
+    const docSource = fs.readFileSync(resolveRoot('docs/ERROR_CODES.md'), 'utf8');
+    const matches = [...docSource.matchAll(/^#### (E\d{3}):/gm)];
+    return new Set(matches.map((match) => match[1]));
+}
 
 let passed = 0;
 let failed = 0;
@@ -235,6 +247,19 @@ async function asyncTest(name, fn) {
             );
         }
         assert(threw, 'should throw for invalid firewall policy');
+    });
+
+    await asyncTest('Docs and Rust error code tables are synchronized', async () => {
+        const rustCodes = extractErrorCodesFromRust();
+        const docCodes = extractErrorCodesFromDocs();
+        assert.deepStrictEqual(
+            [...docCodes].sort(),
+            [...rustCodes].sort(),
+            'Error code headings in docs/ERROR_CODES.md must match src/error.rs as_str() mapping'
+        );
+
+        const docs = fs.readFileSync(resolveRoot('docs/ERROR_CODES.md'), 'utf8');
+        assert.ok(!docs.includes('fromFile('), 'fromFile should be replaced with fromPath in docs examples');
     });
 
     // ---------------------------------------------------------------
