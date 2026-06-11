@@ -39,13 +39,16 @@ const result = await optimizer.optimizeUpload(new Uint8Array(await request.array
 
 ### Example (Cloudflare Workers / V8 isolate)
 
-`packages/lazy-image-wasm/examples/edge.mjs` provides a small runtime-safe pattern:
+`examples/edge.mjs` (shipped in this package) is a small runtime-safe pattern:
+it caches one optimizer per isolate, reads `@jsquash` Wasm bindings from
+`env.JSQUASH_*` keys, and maps `LazyImageWasmError` input errors to HTTP 400.
+
+Copy the file into your Worker project and change its relative imports to the
+package specifiers (`@alberteinshutoin/lazy-image-wasm/edge` and
+`@alberteinshutoin/lazy-image-wasm/shared`), then wire it up:
 
 ```js
-import {
-  getEdgeUploadOptimizer,
-  handleOptimizeRequest,
-} from './examples/edge.mjs';
+import { handleOptimizeRequest } from './lazy-image-edge.mjs';
 
 export default {
   async fetch(request, env) {
@@ -53,6 +56,11 @@ export default {
   },
 };
 ```
+
+Your deployment must provide the codec Wasm as bindings named
+`JSQUASH_JPEG_DECODER`, `JSQUASH_JPEG_ENCODER`, `JSQUASH_PNG_DECODER`,
+`JSQUASH_RESIZE`, `JSQUASH_WEBP_DECODER`, and `JSQUASH_WEBP_ENCODER`
+(`WebAssembly.Module`, `ArrayBuffer`, or `Uint8Array` values).
 
 ### Edge and browser constraints
 

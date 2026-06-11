@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createUploadOptimizer } from '../browser.js';
 import { createUploadOptimizer as createEdgeUploadOptimizer } from '../edge.js';
+import edgeExampleHandler from '../examples/edge.mjs';
 import { LazyImageWasmError, VERSION } from '../shared.js';
 
 if (typeof globalThis.ImageData !== 'function') {
@@ -221,4 +222,53 @@ await test('edge optimizer accepts precompiled WebAssembly.Module inputs', async
   assert.equal(result.format, 'jpeg');
   assert.ok(result.data instanceof ArrayBuffer);
   assert.equal(typeof result.metrics.encodeMs, 'number');
+});
+
+await test('edge example handler guards method and maps input errors to HTTP statuses', async () => {
+  const env = {
+    JSQUASH_JPEG_DECODER: wasmModules.jpegDecode,
+    JSQUASH_JPEG_ENCODER: wasmModules.jpegEncode,
+    JSQUASH_PNG_DECODER: wasmModules.pngDecode,
+    JSQUASH_RESIZE: wasmModules.resize,
+    JSQUASH_WEBP_DECODER: wasmModules.webpDecode,
+    JSQUASH_WEBP_ENCODER: wasmModules.webpEncode,
+  };
+
+  const methodResponse = await edgeExampleHandler.fetch(
+    new Request('http://localhost/', { method: 'GET' }),
+    env
+  );
+  assert.equal(methodResponse.status, 405);
+  assert.equal(methodResponse.headers.get('allow'), 'POST');
+
+  const input = await fixture('test_100KB_1057x1057.jpg');
+  const okResponse = await edgeExampleHandler.fetch(
+    new Request('http://localhost/', { method: 'POST', body: input, duplex: 'half' }),
+    env
+  );
+  assert.equal(okResponse.status, 200);
+  assert.equal(okResponse.headers.get('content-type'), 'image/jpeg');
+  const optimized = new Uint8Array(await okResponse.arrayBuffer());
+  assert.equal(
+    optimized.byteLength,
+    Number(okResponse.headers.get('x-lazy-image-metric-bytes-out'))
+  );
+  assert.ok(optimized[0] === 0xff && optimized[1] === 0xd8, 'output is JPEG');
+
+  const emptyResponse = await edgeExampleHandler.fetch(
+    new Request('http://localhost/', { method: 'POST' }),
+    env
+  );
+  assert.equal(emptyResponse.status, 400);
+
+  const badResponse = await edgeExampleHandler.fetch(
+    new Request('http://localhost/', {
+      method: 'POST',
+      body: new Uint8Array([1, 2, 3, 4]),
+      duplex: 'half',
+    }),
+    env
+  );
+  assert.equal(badResponse.status, 400);
+  assert.match(await badResponse.text(), /^\[E103\]/);
 });
