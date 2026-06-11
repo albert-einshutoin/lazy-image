@@ -37,6 +37,50 @@ const result = await optimizer.optimizeUpload(new Uint8Array(await request.array
 });
 ```
 
+### Example (Cloudflare Workers / V8 isolate)
+
+`examples/edge.mjs` (shipped in this package) is a small runtime-safe pattern:
+it caches one optimizer per isolate, reads `@jsquash` Wasm bindings from
+`env.JSQUASH_*` keys, and maps `LazyImageWasmError` input errors to HTTP 400.
+
+Copy the file into your Worker project and change its relative imports to the
+package specifiers (`@alberteinshutoin/lazy-image-wasm/edge` and
+`@alberteinshutoin/lazy-image-wasm/shared`), then wire it up:
+
+```js
+import { handleOptimizeRequest } from './lazy-image-edge.mjs';
+
+export default {
+  async fetch(request, env) {
+    return handleOptimizeRequest(request, env);
+  },
+};
+```
+
+Your deployment must provide the codec Wasm as bindings named
+`JSQUASH_JPEG_DECODER`, `JSQUASH_JPEG_ENCODER`, `JSQUASH_PNG_DECODER`,
+`JSQUASH_RESIZE`, `JSQUASH_WEBP_DECODER`, and `JSQUASH_WEBP_ENCODER`
+(`WebAssembly.Module`, `ArrayBuffer`, or `Uint8Array` values).
+
+### Edge and browser constraints
+
+- Supported formats stay limited to `jpeg` and `webp` output, and input is currently
+  `jpeg` / `png` / `webp`.
+- No filesystem, native filesystem APIs, or Node built-ins are available.
+- `@jsquash/*` codec Wasm blobs are loaded from your deployment/runtime and must be
+  provided via `wasmModules`.
+- If you use `output: 'blob'` in runtimes that do not expose `Blob`, the API returns
+  an error and you should request `arrayBuffer` or `uint8Array` instead.
+
+Bundle considerations:
+
+- Keep this package behind lazy-loading where possible and avoid eagerly shipping the
+  full browser/resize codec set for pages that do not optimize uploads.
+- Run `npm run test:bench:wasm` locally and inspect generated artifacts to decide
+  whether full `resize`/`webp` codec loading is justified for your target flow.
+- For browser/Edge evidence, collect both bundle/gzip size and encode-metrics before
+  publishing any performance claim.
+
 ## Worker
 
 ```js
