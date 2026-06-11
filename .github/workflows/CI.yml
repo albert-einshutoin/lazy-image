@@ -282,6 +282,9 @@ jobs:
       - name: Run benchmark verification (size/quality guards)
         run: npm run test:bench:verify
 
+      - name: Run extended benchmark suite (AVIF/memory/cold-start)
+        run: npm run test:bench:extended
+
   perf-safety:
     name: Perf Safety Gate
     needs: build
