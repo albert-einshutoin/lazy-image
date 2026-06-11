@@ -332,15 +332,15 @@ The requested color space conversion is not supported.
 
 ---
 
-#### E299: Operation Failed
-**Recoverable**: Depends
+#### E299: Resize Failed
+**Recoverable**: No
 
-A general processing operation failed.
+The resize operation failed after validation due to a codec or processing error.
 
 **How to fix:**
 - Check the error message for specific details
-- Verify input parameters
-- Try a different approach
+- Try different resize parameters
+- Re-encode the input before resizing if the source image is unusual
 
 ---
 

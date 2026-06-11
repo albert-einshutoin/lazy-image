@@ -1,7 +1,7 @@
 /**
  * Error code matrix tests — covers previously untested error codes.
  *
- * Targets: E102, E111, E121, E123, E130, E131, E201, E202, E203, E204, E400, E402, E900
+ * Targets: E102, E111, E121, E123, E130, E131, E201, E202, E203, E204, E299, E400, E402, E900
  * (E122 PixelCountExceedsLimit is skipped — requires a real image whose
  *  decoded pixel count exceeds the limit, which cannot be synthesised cheaply.)
  *
@@ -26,6 +26,37 @@ function extractErrorCodesFromDocs() {
     const docSource = fs.readFileSync(resolveRoot('docs/ERROR_CODES.md'), 'utf8');
     const matches = [...docSource.matchAll(/^#### (E\d{3}):/gm)];
     return new Set(matches.map((match) => match[1]));
+}
+
+function extractErrorMetadataFromRust() {
+    const rustSource = fs.readFileSync(resolveRoot('src/error.rs'), 'utf8');
+    const codeMatches = [...rustSource.matchAll(/ErrorCode::(\w+) => "(E\d{3})"/g)];
+    const categoryBlock = rustSource.match(/pub fn category\(&self\) -> ErrorCategory \{\s*match self \{([\s\S]*?)\n        \}\n    \}/);
+    assert(categoryBlock, 'could not find ErrorCode::category() match block');
+
+    const variantToCategory = new Map(
+        [...categoryBlock[1].matchAll(/ErrorCode::(\w+) => ErrorCategory::(\w+),/g)]
+            .map((match) => [match[1], match[2]])
+    );
+
+    return new Map(codeMatches.map((match) => {
+        const variant = match[1];
+        const code = match[2];
+        const category = variantToCategory.get(variant);
+        assert(category, `missing category mapping for ${variant}`);
+
+        return [code, {
+            variant,
+            category,
+            recoverable: category === 'UserError' || category === 'ResourceLimit',
+        }];
+    }));
+}
+
+function extractErrorRecoverabilityFromDocs() {
+    const docSource = fs.readFileSync(resolveRoot('docs/ERROR_CODES.md'), 'utf8');
+    const matches = [...docSource.matchAll(/^#### (E\d{3}):[^\n]*\n\*\*Recoverable\*\*: (Yes|No)\s*$/gm)];
+    return new Map(matches.map((match) => [match[1], match[2] === 'Yes']));
 }
 
 let passed = 0;
@@ -260,6 +291,24 @@ async function asyncTest(name, fn) {
 
         const docs = fs.readFileSync(resolveRoot('docs/ERROR_CODES.md'), 'utf8');
         assert.ok(!docs.includes('fromFile('), 'fromFile should be replaced with fromPath in docs examples');
+    });
+
+    await asyncTest('Docs and Rust error recoverability flags are synchronized', async () => {
+        const rustMetadata = extractErrorMetadataFromRust();
+        const docRecoverability = extractErrorRecoverabilityFromDocs();
+        assert.deepStrictEqual(
+            [...docRecoverability.keys()].sort(),
+            [...rustMetadata.keys()].sort(),
+            'Each documented error code must include a Yes/No recoverable flag'
+        );
+
+        for (const [code, metadata] of rustMetadata) {
+            assert.strictEqual(
+                docRecoverability.get(code),
+                metadata.recoverable,
+                `${code} (${metadata.variant}) recoverability must match ${metadata.category}`
+            );
+        }
     });
 
     // ---------------------------------------------------------------
