@@ -942,7 +942,6 @@ dependencies = [
  "tikv-jemallocator",
  "tracing",
  "webp",
- "zune-core",
  "zune-png",
 ]
 
