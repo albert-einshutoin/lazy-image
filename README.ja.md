@@ -16,12 +16,6 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 英語版では簡潔なクイックスタートと README 構成の要点を先に示しており、同じ順序を維持しています。
 
-## Architecture Overview
-
-- `ImageEngine` は「構成 → キュー投入 → エンコード実行」の遅延実行モデル
-- 小〜中サイズ画像は V8 ヒープ経由を避け、ネイティブ側の Rust バッファ優先の処理
-- メタデータはデフォルトで除去、`keepMetadata()` で明示維持
-
 ## Choose lazy-image if / Choose sharp if
 
 **採用したい場合**
@@ -47,6 +41,17 @@ console.log(`Wrote ${bytesWritten} bytes`);
 ```bash
 npm install @alberteinshutoin/lazy-image
 ```
+
+| 配布経路 | 補足 |
+|---|---|
+| npm optional binaries | macOS arm64/x64、Linux x64/arm64 GNU、Linux x64 musl、Windows x64 |
+| ソースビルド | Node.js 18+、Rust 1.88+、ネイティブ codec toolchain が必要 |
+
+## Architecture Overview
+
+- `ImageEngine` は「構成 → キュー投入 → エンコード実行」の遅延実行モデル
+- 小〜中サイズ画像は V8 ヒープ経由を避け、ネイティブ側の Rust バッファ優先の処理
+- メタデータはデフォルトで除去、`keepMetadata()` で明示維持
 
 ## Basic Usage
 
@@ -83,4 +88,3 @@ MIT
 ## Credits
 
 [mozjpeg](https://github.com/mozilla/mozjpeg), [libwebp](https://chromium.googlesource.com/webm/libwebp), [libavif](https://github.com/AOMediaCodec/libavif), [napi-rs](https://napi.rs/)
-
