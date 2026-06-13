@@ -2,40 +2,85 @@
 
 英語版 README が正です。このファイルは主要ポイントの日本語サマリーです。詳細・最新情報は必ず [README.md](./README.md) を参照してください。
 
-## 位置付け
-- Web 向け画像最適化に特化した意図的なエンジン
-- まだ sharp のドロップイン代替ではありません（互換 API が必要なら sharp を使用）
-- 現行の正本ベンチマークでは、PNG → JPEG の単純な 2 シナリオ（no-resize 変換 / 800px resize）で sharp より **17-20% 小さい JPEG** を生成。AVIF/WebP と複合操作 JPEG pipeline の速度・サイズはワークロード依存で、現行測定では sharp が有利なケースがあります
-- セキュリティ優先: 全メタデータ（EXIF/XMP/ICC）をデフォルトで削除。`keepMetadata()` で保持可能
-- V8 ヒープを経由しない入力パス: `fromPath()/processBatch()` → `toFile()` で入力ファイルを JS ヒープへコピーしない（256 MB 以下は Rust 所有バッファに読み込み、256 MB 超は advisory lock 付き mmap）
-- AVIF の ICC は v0.9.x（libavif-sys）で保持。古い/別構成の AVIF backend では破棄される場合があります
-- `lazy` の意味: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) を参照（constructor は無作業ではない）
-- 思想と非目標: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md)
-- Wasm / browser / Edge 方針: [docs/WASM_STRATEGY.md](./docs/WASM_STRATEGY.md)
-- Wasm package / policy API 方針: [docs/WASM_PACKAGE_API.md](./docs/WASM_PACKAGE_API.md)
-- Wasm upload benchmark 方針: [docs/WASM_BENCHMARKING.md](./docs/WASM_BENCHMARKING.md)
+## Quick Start (5 lines)
 
-## 計測可能な指標
-- JS ヒープ増加: `fromPath → toBufferWithMetrics` で **2MB 以下**（`node --expose-gc docs/scripts/measure-zero-copy.js` で検証）
-- RSS 目安: `peak_rss ≤ decoded_bytes + 24MB`（decoded_bytes = width × height × bpp; JPEG bpp=3, PNG/WebP/AVIF bpp=4）。例: 6000×4000 PNG (≈96MB) → 目標 RSS ≤ 120MB
-- 品質比較: `npm run test:bench:compare` は sharp 出力との SSIM/PSNR を出力。公開性能 claim の正本は [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md)
+```javascript
+const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 
-## 主な特徴
-- AVIF/WebP/JPEG/PNG エンコード（AVIF/WebP の速度・サイズ優位はワークロードごとに要検証）
-- ICC/EXIF 保持オプション（AVIFの ICC は v0.9.x 以降、GPS は自動削除）
-- EXIF 自動回転（`autoOrient(false)` で無効化）
-- ディスクバッファ型ストリーミングでメモリを O(1) 近傍に抑制
-- Rust コアによるメモリ安全 & Node.js バインディング (napi-rs)
+const bytesWritten = await ImageEngine.fromPath('input.png')
+  .resize(800)
+  .toFile('output.jpg', 'jpeg', 80);
 
-## 推奨シナリオ
-- CDN/モバイル向けの JPEG 帯域削減
-- バッチ処理・静的サイト生成
-- メモリ制約環境（512MB コンテナなど）
-- AVIF 生成・色精度重視ワークフロー（サイズ/速度は対象画像で検証）
+console.log(`Wrote ${bytesWritten} bytes`);
+```
 
-## セキュリティと互換性
-- 安全策の詳細とサポートバージョン: [SECURITY.md](./SECURITY.md)
-- 互換性のマトリクスと移行ノート: [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md)
+英語版では簡潔なクイックスタートと README 構成の要点を先に示しており、同じ順序を維持しています。
 
----
-英語版で更新が先行します。疑問点や翻訳改善の提案は Issue/PR で歓迎します。
+## Architecture Overview
+
+- `ImageEngine` は「構成 → キュー投入 → エンコード実行」の遅延実行モデル
+- 小〜中サイズ画像は V8 ヒープ経由を避け、ネイティブ側の Rust バッファ優先の処理
+- メタデータはデフォルトで除去、`keepMetadata()` で明示維持
+
+## Choose lazy-image if / Choose sharp if
+
+**採用したい場合**
+- バンドル帯域を節約したい、CDN 配信コストを抑えたい
+- 入力ファイルを大きめに扱うサーバーレスやコンテナでメモリ上限が重要
+
+**使い分け**
+- full API の drop-in が必要、または複雑なフィルタ/ドローイングが中心なら sharp
+
+## Recommended Paths
+
+- Web 配信最適化: `fromPath()` → `resize()` → `toFile()`
+- ビルド時バッチ: `processBatch()` を中心に利用
+- 入稿画像の安全性担保: `sanitize({ policy: 'strict' })`
+
+## Cost Savings Example (ROI)
+
+1MB 画像を月 10M 回配信するケースでは、平均 15% 近い縮小差で月間数百ドル規模の帯域削減を見込めます。詳細は英語版の ROI セクションと
+[docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md) を参照してください。
+
+## Installation
+
+```bash
+npm install @alberteinshutoin/lazy-image
+```
+
+## Basic Usage
+
+- `fromPath()` でファイルを読み込む
+- `.resize()`, `.rotate()`, `.grayscale()` などを連鎖
+- `toBuffer()` / `toFile()` で JPEG/WebP/AVIF/PNG へ変換
+
+## Documentation
+
+- API: [docs/API.md](./docs/API.md)
+- 受け入れ条件・非ゴール: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md)
+- 性能・互換: [docs/PERFORMANCE.md](./docs/PERFORMANCE.md), [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md)
+
+## Features (summary)
+
+- AVIF/WebP/JPEG/PNG エンコード
+- Image Firewall とメタデータ安全性（`keepMetadata()`）
+- ファイルパス入力のメモリ特性最適化
+- Rust コア (napi-rs) + Node.js API
+
+## Development
+
+```bash
+npm install && npm run build
+npm test
+```
+
+コントリビュート手順は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照。
+
+## License
+
+MIT
+
+## Credits
+
+[mozjpeg](https://github.com/mozilla/mozjpeg), [libwebp](https://chromium.googlesource.com/webm/libwebp), [libavif](https://github.com/AOMediaCodec/libavif), [napi-rs](https://napi.rs/)
+
