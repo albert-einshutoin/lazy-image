@@ -1,7 +1,7 @@
 {
   "name": "@alberteinshutoin/lazy-image",
   "version": "0.16.0",
-  "description": "Web image optimization engine for Node.js focused on smaller browser-facing JPEG outputs, security defaults, and low-memory workflows powered by Rust + mozjpeg",
+  "description": "Web image optimization engine for Node.js focused on smaller browser-facing JPEG outputs, built-in upload sanitization (Image Firewall), and low-memory Rust workflows",
   "main": "index.js",
   "exports": {
     ".": {
@@ -28,14 +28,13 @@
     "avif",
     "image-optimization",
     "image-processing",
-    "compression",
     "compress",
     "thumbnail",
     "exif",
+    "mozjpeg",
     "sharp",
     "rust",
-    "napi",
-    "mozjpeg"
+    "napi"
   ],
   "author": "albert-einshutoin",
   "license": "MIT",

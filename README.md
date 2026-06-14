@@ -34,36 +34,6 @@ const bytesWritten = await ImageEngine.fromPath('input.png')
 console.log(`Wrote ${bytesWritten} bytes`);
 ```
 
----
-
-## Architecture Overview
-
-```
-src/                        # selected high-level Rust core modules
-├── engine/
-│   ├── api/                # ImageEngine public API + NAPI-facing operations
-│   ├── pipeline/           # Operation application, color state, capabilities, optimization
-│   ├── tasks/              # NAPI async task contexts and encode/batch/write execution
-│   ├── memory/             # Cgroup detection, memory estimates, weighted semaphore
-│   ├── io/                 # File sources, mmap, ICC/EXIF extraction and embedding
-│   ├── resize.rs           # Dimension calc, fast_image_resize dispatch
-│   ├── encoder.rs          # JPEG/PNG/WebP/AVIF encoding + ICC/EXIF embedding
-│   ├── decoder.rs          # Format detection + decoding
-│   ├── firewall.rs         # Input sanitization policies
-│   ├── metadata.rs         # Metadata policy and preservation state
-│   └── validation.rs       # Input, operation, and output validation helpers
-├── ops.rs                  # Operation enum, presets, output formats
-├── error.rs                # 4-tier error taxonomy (E1xx–E9xx)
-└── codecs/avif_safe.rs     # Safe libavif FFI wrappers
-
-lib/helpers.js              # Encoding profiles, target-bytes binary search
-streaming/pipeline.js       # Disk-backed bounded-memory streaming
-```
-
-**Key design decisions:** lazy execution (ops queue until output), file-path inputs bypass the V8 heap (read-into-memory for ≤ 256 MB, mmap with advisory locks for > 256 MB), memory-bounded concurrency via weighted semaphore, panic guards on all codec entry points. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details.
-
----
-
 ## Choose lazy-image if / Choose sharp if
 
 | **Choose lazy-image if** | **Choose sharp if** |
@@ -132,6 +102,39 @@ npm install @alberteinshutoin/lazy-image
 ```
 
 Platform-specific binaries (~6–9 MB per platform) are installed automatically. Build from source: `npm run build`. See [docs/PERFORMANCE.md](./docs/PERFORMANCE.md#serverless) for package size comparison with sharp.
+
+| Distribution path | Notes |
+|---|---|
+| npm optional binaries | macOS arm64/x64, Linux x64/arm64 GNU, Linux x64 musl, Windows x64 |
+| Source build | Node.js 18+, Rust 1.88+, and the native codec toolchain documented in [CONTRIBUTING.md](./CONTRIBUTING.md) |
+
+---
+
+## Architecture Overview
+
+```
+src/                        # selected high-level Rust core modules
+├── engine/
+│   ├── api/                # ImageEngine public API + NAPI-facing operations
+│   ├── pipeline/           # Operation application, color state, capabilities, optimization
+│   ├── tasks/              # NAPI async task contexts and encode/batch/write execution
+│   ├── memory/             # Cgroup detection, memory estimates, weighted semaphore
+│   ├── io/                 # File sources, mmap, ICC/EXIF extraction and embedding
+│   ├── resize.rs           # Dimension calc, fast_image_resize dispatch
+│   ├── encoder.rs          # JPEG/PNG/WebP/AVIF encoding + ICC/EXIF embedding
+│   ├── decoder.rs          # Format detection + decoding
+│   ├── firewall.rs         # Input sanitization policies
+│   ├── metadata.rs         # Metadata policy and preservation state
+│   └── validation.rs       # Input, operation, and output validation helpers
+├── ops.rs                  # Operation enum, presets, output formats
+├── error.rs                # 4-tier error taxonomy (E1xx–E9xx)
+└── codecs/avif_safe.rs     # Safe libavif FFI wrappers
+
+lib/helpers.js              # Encoding profiles, target-bytes binary search
+streaming/pipeline.js       # Disk-backed bounded-memory streaming
+```
+
+**Key design decisions:** lazy execution (ops queue until output), file-path inputs bypass the V8 heap (read-into-memory for ≤ 256 MB, mmap with advisory locks for > 256 MB), memory-bounded concurrency via weighted semaphore, panic guards on all codec entry points. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details.
 
 ---
 
