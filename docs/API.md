@@ -62,6 +62,7 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `.toFileProfile(path, format, profile, quality?)` | Profile-based file encode. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |
 | `.processBatchWithMetrics(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Batch processing with per-item metrics and a summary. |
+| `processBatchChunked(inputs, outDir, { format, quality?, fastMode?, concurrency?, chunkSize?, onProgress?, signal? })` | Top-level batch helper that splits inputs into native `processBatch()` chunks. Reports progress after each chunk and checks `AbortSignal` before starting the next chunk. |
 | `.clone()` | Clone the engine for multi-output (e.g. same pipeline to JPEG + WebP + AVIF). |
 
 ## Utilities
@@ -74,6 +75,38 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
 | `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
 | `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Not a true chunk-by-chunk transform stream. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
+
+---
+
+## Chunked Batch Progress
+
+Use `processBatchChunked()` when a large build-time batch needs chunk-level
+progress or a safe stop point between native batch calls:
+
+```javascript
+const { processBatchChunked } = require('@alberteinshutoin/lazy-image');
+
+const controller = new AbortController();
+const results = await processBatchChunked(files, './optimized', {
+  format: 'webp',
+  quality: 80,
+  concurrency: 4,
+  chunkSize: 16,
+  signal: controller.signal,
+  onProgress: ({ completed, total, failed }) => {
+    console.log(`${completed}/${total} complete (${failed} failed)`);
+  },
+});
+```
+
+`chunkSize` defaults to `16`. For long-running native batches, start with roughly
+`concurrency * 2` to `concurrency * 4`; very small chunks add synchronization
+overhead and can leave native workers idle.
+
+`signal.aborted` is checked only before each chunk starts. Aborting does not
+cancel work already running inside native `processBatch()`, and files written by
+completed chunks remain on disk. If `onProgress` throws, lazy-image logs the
+callback error and continues processing the next chunk.
 
 ---
 

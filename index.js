@@ -590,7 +590,9 @@ module.exports.version = nativeBinding.version
 const { createStreamingPipeline } = require('./streaming/pipeline')
 const helpers = require('./lib/helpers')
 const _getErrorCategory = helpers.createGetErrorCategory(nativeBinding.ErrorCategory, nativeBinding.ErrorCode)
+const _processBatchChunked = helpers.createProcessBatchChunked(nativeBinding.ImageEngine)
 module.exports.getErrorCategory = _getErrorCategory
+module.exports.processBatchChunked = _processBatchChunked
 module.exports.createStreamingPipeline = createStreamingPipeline
 module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
 if (nativeBinding && nativeBinding.ImageEngine) {
