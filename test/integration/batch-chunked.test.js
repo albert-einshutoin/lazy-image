@@ -88,21 +88,25 @@ async function main() {
     assert.deepEqual(resultShape(chunked), resultShape(direct));
   });
 
-  await test('delegates single default-size chunk without progress callback overhead', async () => {
+  await test('reports progress for a single default-size chunk', async () => {
     const inputs = makeInputs('delegated', 3);
     const outputDir = resetDir(path.join(ROOT, 'delegated', 'out'));
-    let progressCalls = 0;
+    const progress = [];
 
     const results = await processBatchChunked(inputs, outputDir, {
       format: 'webp',
       quality: 80,
-      onProgress: () => {
-        progressCalls += 1;
+      onProgress: (event) => {
+        progress.push(event);
       },
     });
 
     assert.equal(results.length, 3);
-    assert.equal(progressCalls, 0);
+    assert.equal(progress.length, 1);
+    assert.equal(progress[0].completed, 3);
+    assert.equal(progress[0].total, 3);
+    assert.equal(progress[0].failed, 0);
+    assert.equal(progress[0].lastChunk.length, 3);
     assert(results.every((result) => result.success));
   });
 
@@ -187,6 +191,28 @@ async function main() {
     assert(failed, 'one result should fail');
     assert.equal(failed.source, missing);
     assert.equal(typeof failed.errorCode, 'string');
+  });
+
+  await test('returns failed results when a chunk has no readable bootstrap input', async () => {
+    const missingA = path.join(ROOT, 'all-missing', 'missing-a.jpg');
+    const missingB = path.join(ROOT, 'all-missing', 'missing-b.jpg');
+    const outputDir = resetDir(path.join(ROOT, 'all-missing', 'out'));
+    const progress = [];
+
+    const results = await processBatchChunked([missingA, missingB], outputDir, {
+      format: 'webp',
+      quality: 80,
+      chunkSize: 1,
+      onProgress: (event) => progress.push(event),
+    });
+
+    assert.equal(results.length, 2);
+    assert.deepEqual(results.map((result) => result.source), [missingA, missingB]);
+    assert(results.every((result) => result.success === false));
+    assert.deepEqual(results.map((result) => result.errorCode), ['E100', 'E100']);
+    assert.deepEqual(results.map((result) => result.errorCategory), ['UserError', 'UserError']);
+    assert.deepEqual(progress.map((event) => event.completed), [1, 2]);
+    assert.deepEqual(progress.map((event) => event.failed), [1, 2]);
   });
 
   await test('rejects invalid chunk sizes before returning a promise', async () => {
