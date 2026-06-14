@@ -151,7 +151,7 @@ pub fn fast_resize(
         }
     };
 
-    fast_resize_internal_with_options(
+    fast_resize_internal_impl(
         src_width,
         src_height,
         src_pixels,
@@ -159,21 +159,6 @@ pub fn fast_resize(
         dst_width,
         dst_height,
         default_resize_options(),
-    )
-}
-
-/// Internal resize implementation (shared by both owned and reference versions)
-pub fn fast_resize_internal_with_options(
-    src_width: u32,
-    src_height: u32,
-    src_pixels: Vec<u8>,
-    pixel_type: PixelType,
-    dst_width: u32,
-    dst_height: u32,
-    options: ResizeOptions,
-) -> std::result::Result<DynamicImage, String> {
-    fast_resize_internal_impl(
-        src_width, src_height, src_pixels, pixel_type, dst_width, dst_height, options,
     )
 }
 
