@@ -125,7 +125,7 @@ pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
     let metadata = match inspect_header_from_bytes(buffer.as_ref()) {
         Ok(metadata) => metadata,
         Err(err) => {
-            return Err(crate::error::napi_error_with_code(&env, err.clone())?);
+            return Err(crate::error::napi_error_with_code(&env, err)?);
         }
     };
     Ok(metadata.into())
@@ -147,7 +147,7 @@ pub fn inspect_file(env: Env, path: String) -> Result<ImageMetadata> {
     let metadata = match inspect_header_from_path(&path) {
         Ok(metadata) => metadata,
         Err(err) => {
-            return Err(crate::error::napi_error_with_code(&env, err.clone())?);
+            return Err(crate::error::napi_error_with_code(&env, err)?);
         }
     };
     Ok(metadata.into())
@@ -161,40 +161,26 @@ pub fn version() -> String {
 }
 
 #[cfg(feature = "napi")]
+const BASE_FORMATS: &[&str] = &["jpeg", "jpg", "png", "webp"];
+
+#[cfg(feature = "napi")]
 /// Get supported input formats
 #[napi]
 pub fn supported_input_formats() -> Vec<String> {
-    vec![
-        "jpeg".to_string(),
-        "jpg".to_string(),
-        "png".to_string(),
-        "webp".to_string(),
-    ]
+    BASE_FORMATS
+        .iter()
+        .map(|format| format.to_string())
+        .collect()
 }
 
 #[cfg(feature = "napi")]
 /// Get supported output formats
 #[napi]
 pub fn supported_output_formats() -> Vec<String> {
+    let mut formats = supported_input_formats();
     #[cfg(feature = "avif")]
-    {
-        vec![
-            "jpeg".to_string(),
-            "jpg".to_string(),
-            "png".to_string(),
-            "webp".to_string(),
-            "avif".to_string(),
-        ]
-    }
-    #[cfg(not(feature = "avif"))]
-    {
-        vec![
-            "jpeg".to_string(),
-            "jpg".to_string(),
-            "png".to_string(),
-            "webp".to_string(),
-        ]
-    }
+    formats.push("avif".to_string());
+    formats
 }
 
 /// Metrics payload version. Keep in sync with docs/metrics-schema.json

@@ -45,15 +45,7 @@ fn validate_buffer_len(
 }
 
 fn validate_lossy_quality(quality: u8) -> EncoderResult<u8> {
-    if (1..=100).contains(&quality) {
-        Ok(quality)
-    } else {
-        Err(LazyImageError::invalid_argument(
-            "quality",
-            quality.to_string(),
-            "must be 1-100",
-        ))
-    }
+    crate::ops::Quality::new(quality).map(|quality| quality.get())
 }
 
 /// Single source of truth for mapping quality (1-100) to per-format encoder knobs.

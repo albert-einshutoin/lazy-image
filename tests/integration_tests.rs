@@ -10,7 +10,7 @@
 
 #[cfg(feature = "napi")]
 mod tests {
-    use lazy_image::ImageEngine;
+    use lazy_image::{supported_input_formats, supported_output_formats, ImageEngine};
     use napi::bindgen_prelude::*;
 
     // Helper to create a minimal test image buffer
@@ -32,6 +32,35 @@ mod tests {
     // without requiring a real Node.js runtime in cargo test.
     fn dummy_env() -> Env {
         unsafe { Env::from_raw(std::ptr::null_mut()) }
+    }
+
+    #[test]
+    fn test_supported_format_lists_keep_public_order() {
+        assert_eq!(
+            supported_input_formats(),
+            ["jpeg", "jpg", "png", "webp"]
+                .into_iter()
+                .map(String::from)
+                .collect::<Vec<_>>()
+        );
+
+        let expected_output = {
+            #[cfg(feature = "avif")]
+            {
+                ["jpeg", "jpg", "png", "webp", "avif"]
+            }
+            #[cfg(not(feature = "avif"))]
+            {
+                ["jpeg", "jpg", "png", "webp"]
+            }
+        };
+        assert_eq!(
+            supported_output_formats(),
+            expected_output
+                .into_iter()
+                .map(String::from)
+                .collect::<Vec<_>>()
+        );
     }
 
     #[test]

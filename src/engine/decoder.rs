@@ -240,7 +240,7 @@ const _: () = assert!(
 pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
     run_with_panic_policy("decode:png", || {
         // Try to read dimensions from PNG header without full decode
-        if let Ok((width, height)) = read_png_dimensions(data) {
+        if let Some((width, height)) = read_png_dimensions(data) {
             // Global safety check (avoid decompression bombs)
             check_dimensions(width, height)?;
 
@@ -316,20 +316,17 @@ pub fn decode_png_zune(data: &[u8]) -> DecoderResult<DynamicImage> {
 }
 
 /// Read PNG dimensions from header without full decode.
-/// Returns (width, height) or error if header is invalid.
-fn read_png_dimensions(data: &[u8]) -> Result<(u32, u32), ()> {
+/// Returns (width, height) if the header is valid.
+fn read_png_dimensions(data: &[u8]) -> Option<(u32, u32)> {
     // PNG signature: 89 50 4E 47 0D 0A 1A 0A
     if data.len() < 24 || &data[0..8] != b"\x89PNG\r\n\x1a\n" {
-        return Err(());
+        return None;
     }
     // First chunk (IHDR) starts at offset 8
     // Width: bytes 16-19, Height: bytes 20-23 (big-endian)
-    if data.len() < 24 {
-        return Err(());
-    }
     let width = u32::from_be_bytes([data[16], data[17], data[18], data[19]]);
     let height = u32::from_be_bytes([data[20], data[21], data[22], data[23]]);
-    Ok((width, height))
+    Some((width, height))
 }
 
 /// Decode WebP using libwebp (via webp crate). Falls back to image crate for animated WebP.
@@ -434,7 +431,7 @@ pub fn ensure_dimensions_safe(bytes: &[u8]) -> DecoderResult<()> {
     }
 
     // PNG: read header directly when available to avoid full decode.
-    if let Ok((width, height)) = read_png_dimensions(bytes) {
+    if let Some((width, height)) = read_png_dimensions(bytes) {
         return check_dimensions(width, height);
     }
 
