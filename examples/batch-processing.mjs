@@ -5,7 +5,7 @@
  *   node examples/batch-processing.mjs
  */
 
-import { ImageEngine } from '@alberteinshutoin/lazy-image';
+import { ImageEngine, processBatchChunked } from '@alberteinshutoin/lazy-image';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -48,3 +48,20 @@ console.log(`  Concurrency: ${summary.effectiveConcurrency} (auto: ${summary.aut
 console.log(`  Total in: ${(summary.totalBytesIn / 1024).toFixed(0)} KB`);
 console.log(`  Total out: ${(summary.totalBytesOut / 1024).toFixed(0)} KB`);
 console.log(`  Wall time: ${summary.totalWallMs.toFixed(0)} ms`);
+
+// ── 3. Chunked batch with progress and AbortSignal ─────────────────
+const controller = new AbortController();
+const chunkedResults = await processBatchChunked(files, outputDir, {
+  format: 'webp',
+  quality: 80,
+  concurrency: 4,
+  chunkSize: 16,
+  signal: controller.signal,
+  onProgress: ({ completed, total, failed }) => {
+    const percent = Math.round((completed / total) * 100);
+    process.stdout.write(`\r${completed}/${total} (${percent}%) complete, ${failed} failed`);
+  },
+});
+
+process.stdout.write('\n');
+console.log(`Chunked batch complete: ${chunkedResults.length} results`);
