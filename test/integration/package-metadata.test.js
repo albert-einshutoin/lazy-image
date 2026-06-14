@@ -26,7 +26,9 @@ function containsQuickStart(markdown) {
 }
 
 function headingIndex(markdown, heading) {
-  return markdown.split('\n').findIndex((line) => line.trim() === heading);
+  const index = markdown.split('\n').findIndex((line) => line.trim() === heading);
+  assert(index >= 0, `${heading} should exist`);
+  return index;
 }
 
 function parseCargoKeywords(manifest) {
