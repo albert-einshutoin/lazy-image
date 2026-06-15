@@ -306,18 +306,7 @@ impl ImageEngine {
         this: Reference<ImageEngine>,
         value: f64,
     ) -> Result<Reference<ImageEngine>> {
-        let value = validation::ensure_finite_integer("brightness", value)
-            .and_then(|int| {
-                if !(-100..=100).contains(&int) {
-                    Err(LazyImageError::invalid_argument(
-                        "brightness",
-                        int.to_string(),
-                        "expected value between -100 and 100",
-                    ))
-                } else {
-                    Ok(int as i32)
-                }
-            })
+        let value = validation::sanitize_signed_percent("brightness", value)
             .map_err(|e| napi_err(&env, e))?;
 
         self.ops.push(Operation::Brightness { value });
@@ -332,18 +321,7 @@ impl ImageEngine {
         this: Reference<ImageEngine>,
         value: f64,
     ) -> Result<Reference<ImageEngine>> {
-        let value = validation::ensure_finite_integer("contrast", value)
-            .and_then(|int| {
-                if !(-100..=100).contains(&int) {
-                    Err(LazyImageError::invalid_argument(
-                        "contrast",
-                        int.to_string(),
-                        "expected value between -100 and 100",
-                    ))
-                } else {
-                    Ok(int as i32)
-                }
-            })
+        let value = validation::sanitize_signed_percent("contrast", value)
             .map_err(|e| napi_err(&env, e))?;
 
         self.ops.push(Operation::Contrast { value });

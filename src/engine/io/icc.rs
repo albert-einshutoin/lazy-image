@@ -170,6 +170,12 @@ where
 
 /// Validate ICC profile header
 /// ICC profiles must start with a 128-byte header containing specific fields
+fn is_printable_ascii_field(bytes: &[u8]) -> bool {
+    bytes
+        .iter()
+        .all(|&byte| (32..=126).contains(&byte) || byte == 0)
+}
+
 pub(crate) fn validate_icc_profile(icc_data: &[u8]) -> bool {
     // Minimum ICC profile size is 128 bytes (header)
     if icc_data.len() < 128 {
@@ -185,13 +191,17 @@ pub(crate) fn validate_icc_profile(icc_data: &[u8]) -> bool {
         return false;
     }
 
-    // Check preferred CMM type (bytes 4-7) - should be ASCII
-    // Common values: "ADBE", "appl", "lcms", etc.
-    // We just check that it's printable ASCII
-    for &byte in &icc_data[4..8] {
-        if !(32..=126).contains(&byte) && byte != 0 {
-            return false;
-        }
+    // Check printable ASCII tag fields:
+    // - preferred CMM type (bytes 4-7), common values: "ADBE", "appl", "lcms"
+    // - profile class signature (bytes 12-15), common values: "mntr", "prtr", "scnr", "spac"
+    // - data color space (bytes 16-19)
+    // - PCS (Profile Connection Space) signature (bytes 20-23)
+    if !is_printable_ascii_field(&icc_data[4..8])
+        || !is_printable_ascii_field(&icc_data[12..16])
+        || !is_printable_ascii_field(&icc_data[16..20])
+        || !is_printable_ascii_field(&icc_data[20..24])
+    {
+        return false;
     }
 
     // Check profile version (bytes 8-11)
@@ -199,29 +209,6 @@ pub(crate) fn validate_icc_profile(icc_data: &[u8]) -> bool {
     let major_version = icc_data[8];
     if major_version > 10 {
         return false;
-    }
-
-    // Check profile class signature (bytes 12-15)
-    // Common: "mntr" (monitor), "prtr" (printer), "scnr" (scanner), "spac" (color space)
-    // We just check that it's ASCII
-    for &byte in &icc_data[12..16] {
-        if !(32..=126).contains(&byte) && byte != 0 {
-            return false;
-        }
-    }
-
-    // Check data color space (bytes 16-19) - should be ASCII
-    for &byte in &icc_data[16..20] {
-        if !(32..=126).contains(&byte) && byte != 0 {
-            return false;
-        }
-    }
-
-    // Check PCS (Profile Connection Space) signature (bytes 20-23) - should be ASCII
-    for &byte in &icc_data[20..24] {
-        if !(32..=126).contains(&byte) && byte != 0 {
-            return false;
-        }
     }
 
     // Basic validation passed
