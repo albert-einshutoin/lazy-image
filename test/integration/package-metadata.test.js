@@ -24,7 +24,29 @@ function countH2Headings(content) {
 const packageJson = require(resolveRoot('package.json'));
 const readmeMd = fs.readFileSync(resolveRoot('README.md'), 'utf8');
 const readmeJaMd = fs.readFileSync(resolveRoot('README.ja.md'), 'utf8');
+const cargoToml = fs.readFileSync(resolveRoot('Cargo.toml'), 'utf8');
 const readmeMdLines = readmeMd.split('\n');
+
+function assertQuickStartWithinFirst80(content, label) {
+  const lines = content.split('\n');
+  const quickStartLine = lines.findIndex((line) => /^##\s+Quick Start/.test(line));
+  assert(quickStartLine >= 0, `${label} should contain \"## Quick Start\" heading`);
+  assert(
+    quickStartLine < 80,
+    `${label} Quick Start should be within first 80 lines, currently at ${quickStartLine + 1}`,
+  );
+}
+
+function extractCargoKeywords(content) {
+  const match = content.match(/^keywords\s*=\s*\[([^\]]*)\]/m);
+  if (!match) {
+    return [];
+  }
+  return match[1]
+    .split(',')
+    .map((item) => item.trim().replace(/^[\"']|[\"']$/g, ''))
+    .filter(Boolean);
+}
 
 test('package keywords include avif', () => {
   assert(
@@ -57,13 +79,9 @@ test('package description is 80-250 chars', () => {
   );
 });
 
-test('README has Quick Start in first 80 lines', () => {
-  const quickStartLine = readmeMdLines.findIndex((line) => /^##\s+Quick Start/.test(line));
-  assert(quickStartLine >= 0, 'README.md should contain "## Quick Start" heading');
-  assert(
-    quickStartLine < 80,
-    `Quick Start should be within first 80 lines, currently at ${quickStartLine + 1}`,
-  );
+test('README and README.ja.md should keep Quick Start within first 80 lines', () => {
+  assertQuickStartWithinFirst80(readmeMd, 'README.md');
+  assertQuickStartWithinFirst80(readmeJaMd, 'README.ja.md');
 });
 
 test('README and README.ja.md should have matching ## heading count', () => {
@@ -71,6 +89,25 @@ test('README and README.ja.md should have matching ## heading count', () => {
     countH2Headings(readmeMd),
     countH2Headings(readmeJaMd),
     'README.md and README.ja.md should have the same number of ## headings',
+  );
+});
+
+test('package description keeps Image Firewall positioning', () => {
+  assert(
+    /Image Firewall/.test(packageJson.description),
+    'package description should keep Image Firewall positioning in discovery-facing copy',
+  );
+});
+
+test('package keywords keep parity with cargo avif keyword', () => {
+  const cargoKeywords = extractCargoKeywords(cargoToml);
+  assert(
+    cargoKeywords.includes('avif'),
+    'Cargo.toml should keep `avif` keyword as core runtime story source of truth',
+  );
+  assert(
+    packageJson.keywords.includes('avif'),
+    'package.json should keep `avif` keyword for package discoverability',
   );
 });
 
