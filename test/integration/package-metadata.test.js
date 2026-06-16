@@ -21,12 +21,6 @@ function countH2Headings(content) {
   return content.split('\n').filter((line) => line.startsWith('## ')).length;
 }
 
-const packageJson = require(resolveRoot('package.json'));
-const readmeMd = fs.readFileSync(resolveRoot('README.md'), 'utf8');
-const readmeJaMd = fs.readFileSync(resolveRoot('README.ja.md'), 'utf8');
-const cargoToml = fs.readFileSync(resolveRoot('Cargo.toml'), 'utf8');
-const readmeMdLines = readmeMd.split('\n');
-
 function assertQuickStartWithinFirst80(content, label) {
   const lines = content.split('\n');
   const quickStartLine = lines.findIndex((line) => /^##\s+Quick Start/.test(line));
@@ -34,6 +28,25 @@ function assertQuickStartWithinFirst80(content, label) {
   assert(
     quickStartLine < 80,
     `${label} Quick Start should be within first 80 lines, currently at ${quickStartLine + 1}`,
+  );
+}
+
+function assertQuickStartOrdering(content, label) {
+  const lines = content.split('\n');
+  const quickStartLine = lines.findIndex((line) => /^##\s+Quick Start/.test(line));
+  const chooserLine = lines.findIndex((line) => /^##\s+Choose lazy-image if/.test(line));
+  const architectureLine = lines.findIndex((line) => /^##\s+Architecture Overview/.test(line));
+
+  assert(quickStartLine >= 0, `${label} should contain \"## Quick Start\" heading`);
+  assert(chooserLine >= 0, `${label} should contain \"## Choose lazy-image if / Choose sharp if\" heading`);
+  assert(architectureLine >= 0, `${label} should contain \"## Architecture Overview\" heading`);
+  assert(
+    quickStartLine < chooserLine,
+    `${label}: Quick Start should appear before Choose lazy-image guidance`,
+  );
+  assert(
+    chooserLine < architectureLine,
+    `${label}: Choose lazy-image guidance should appear before Architecture Overview`,
   );
 }
 
@@ -48,19 +61,24 @@ function extractCargoKeywords(content) {
     .filter(Boolean);
 }
 
+const packageJson = require(resolveRoot('package.json'));
+const readmeMd = fs.readFileSync(resolveRoot('README.md'), 'utf8');
+const readmeJaMd = fs.readFileSync(resolveRoot('README.ja.md'), 'utf8');
+const cargoToml = fs.readFileSync(resolveRoot('Cargo.toml'), 'utf8');
+
 test('package keywords include avif', () => {
   assert(
     Array.isArray(packageJson.keywords),
     'package.json should define an array of keywords',
   );
-  assert(packageJson.keywords.includes('avif'), 'keywords should include "avif"');
+  assert(packageJson.keywords.includes('avif'), 'keywords should include \"avif\"');
   assert(
     packageJson.keywords.includes('image-optimization'),
-    'keywords should include "image-optimization"',
+    'keywords should include \"image-optimization\"',
   );
   assert(
     packageJson.keywords.includes('compression'),
-    'keywords should include "compression"',
+    'keywords should include \"compression\"',
   );
 });
 
@@ -92,6 +110,11 @@ test('README and README.ja.md should have matching ## heading count', () => {
   );
 });
 
+test('README and README.ja.md should keep discovery flow ordering', () => {
+  assertQuickStartOrdering(readmeMd, 'README.md');
+  assertQuickStartOrdering(readmeJaMd, 'README.ja.md');
+});
+
 test('package description keeps Image Firewall positioning', () => {
   assert(
     /Image Firewall/.test(packageJson.description),
@@ -103,7 +126,7 @@ test('package keywords keep parity with cargo avif keyword', () => {
   const cargoKeywords = extractCargoKeywords(cargoToml);
   assert(
     cargoKeywords.includes('avif'),
-    'Cargo.toml should keep `avif` keyword as core runtime story source of truth',
+    'Cargo.toml should keep `avif` keyword as core runtime story of truth',
   );
   assert(
     packageJson.keywords.includes('avif'),
