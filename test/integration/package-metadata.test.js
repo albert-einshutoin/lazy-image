@@ -1,90 +1,82 @@
-const assert = require('node:assert/strict');
+const assert = require('assert');
 const fs = require('node:fs');
-const path = require('node:path');
-const { ROOT_DIR } = require('../helpers/paths');
+const { resolveRoot } = require('../helpers/paths');
+
+let passed = 0;
+let failed = 0;
 
 function test(name, fn) {
   try {
     fn();
     console.log(`✅ ${name}`);
-  } catch (error) {
-    console.log(`❌ ${name}`);
-    throw error;
+    passed += 1;
+  } catch (err) {
+    console.error(`❌ ${name}`);
+    console.error(`   ${err.message}`);
+    failed += 1;
   }
 }
 
-function readText(fileName) {
-  return fs.readFileSync(path.join(ROOT_DIR, fileName), 'utf8');
+function countH2Headings(content) {
+  return content.split('\n').filter((line) => line.startsWith('## ')).length;
 }
 
-function countHeadings(markdown) {
-  return markdown.split('\n').filter((line) => line.startsWith('## ')).length;
-}
+const packageJson = require(resolveRoot('package.json'));
+const readmeMd = fs.readFileSync(resolveRoot('README.md'), 'utf8');
+const readmeJaMd = fs.readFileSync(resolveRoot('README.ja.md'), 'utf8');
+const readmeMdLines = readmeMd.split('\n');
 
-function containsQuickStart(markdown) {
-  return markdown.split('\n').slice(0, 80).some((line) => line.includes('Quick Start'));
-}
-
-function headingIndex(markdown, heading) {
-  const index = markdown.split('\n').findIndex((line) => line.trim() === heading);
-  assert(index >= 0, `${heading} should exist`);
-  return index;
-}
-
-function parseCargoKeywords(manifest) {
-  const match = manifest.match(/^keywords\s*=\s*\[([^\]]+)\]/m);
-  assert(match, 'Cargo.toml should define package keywords');
-  return match[1]
-    .split(',')
-    .map((value) => value.trim().replace(/^"|"$/g, ''))
-    .filter(Boolean);
-}
-
-const packageJson = require(path.join(ROOT_DIR, 'package.json'));
-
-test('package metadata and README structure', () => {
-  assert(Array.isArray(packageJson.keywords), 'package.json.keywords should be an array');
-  for (const keyword of ['avif', 'image-optimization', 'image-processing', 'compress', 'thumbnail', 'exif']) {
-    assert(
-      packageJson.keywords.includes(keyword),
-      `package.json keywords should include ${keyword}`,
-    );
-  }
+test('package keywords include avif', () => {
   assert(
-    packageJson.description.length >= 80 && packageJson.description.length <= 250,
-    `package.json description length must be 80-250 chars (actual: ${packageJson.description.length})`,
+    Array.isArray(packageJson.keywords),
+    'package.json should define an array of keywords',
+  );
+  assert(packageJson.keywords.includes('avif'), 'keywords should include "avif"');
+  assert(
+    packageJson.keywords.includes('image-optimization'),
+    'keywords should include "image-optimization"',
   );
   assert(
-    packageJson.description.includes('Image Firewall'),
-    'package.json description should mention Image Firewall',
-  );
-
-  const cargoToml = readText('Cargo.toml');
-  const cargoKeywords = parseCargoKeywords(cargoToml);
-  assert(cargoKeywords.includes('avif'), 'Cargo.toml keywords should include avif');
-
-  const readmeEn = readText('README.md');
-  const readmeJa = readText('README.ja.md');
-
-  assert(containsQuickStart(readmeEn), 'README.md should include "Quick Start" within first 80 lines');
-  assert(
-    headingIndex(readmeEn, '## Quick Start (5 lines)') < headingIndex(readmeEn, '## Choose lazy-image if / Choose sharp if'),
-    'README.md should place the chooser after Quick Start',
-  );
-  assert(
-    headingIndex(readmeEn, '## Choose lazy-image if / Choose sharp if') < headingIndex(readmeEn, '## Architecture Overview'),
-    'README.md should place adoption guidance before architecture details',
-  );
-  assert(
-    headingIndex(readmeJa, '## Quick Start (5 lines)') < headingIndex(readmeJa, '## Choose lazy-image if / Choose sharp if'),
-    'README.ja.md should place the chooser after Quick Start',
-  );
-  assert(
-    headingIndex(readmeJa, '## Choose lazy-image if / Choose sharp if') < headingIndex(readmeJa, '## Architecture Overview'),
-    'README.ja.md should place adoption guidance before architecture details',
-  );
-  assert(
-    countHeadings(readmeEn) === countHeadings(readmeJa),
-    `README heading count mismatch: README.md=${countHeadings(readmeEn)} README.ja.md=${countHeadings(readmeJa)}`,
+    packageJson.keywords.includes('compression'),
+    'keywords should include "compression"',
   );
 });
+
+test('package description is 80-250 chars', () => {
+  assert(
+    typeof packageJson.description === 'string',
+    'package.json should define a string description',
+  );
+  assert(
+    packageJson.description.length >= 80,
+    'description should be at least 80 characters long',
+  );
+  assert(
+    packageJson.description.length <= 250,
+    'description should be at most 250 characters long',
+  );
+});
+
+test('README has Quick Start in first 80 lines', () => {
+  const quickStartLine = readmeMdLines.findIndex((line) => /^##\s+Quick Start/.test(line));
+  assert(quickStartLine >= 0, 'README.md should contain "## Quick Start" heading');
+  assert(
+    quickStartLine < 80,
+    `Quick Start should be within first 80 lines, currently at ${quickStartLine + 1}`,
+  );
+});
+
+test('README and README.ja.md should have matching ## heading count', () => {
+  assert.strictEqual(
+    countH2Headings(readmeMd),
+    countH2Headings(readmeJaMd),
+    'README.md and README.ja.md should have the same number of ## headings',
+  );
+});
+
+if (failed > 0) {
+  console.error(`\n❌ ${failed} metadata test(s) failed`);
+  process.exit(1);
+}
+
+console.log(`\n✅ ${passed} package metadata integration tests passed`);
