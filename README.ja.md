@@ -2,6 +2,12 @@
 
 英語版 README が正です。このファイルは主要ポイントの日本語サマリーです。詳細・最新情報は必ず [README.md](./README.md) を参照してください。
 
+- `lazy-image` は Web 画像最適化に特化した Node.js エンジンです。
+- `sharp` のドロップイン代替ではありません。
+- 現行ベンチマークは PNG → JPEG の2つの代表シナリオ（変換・800px リサイズ）で、`sharp` より画像サイズが小さくなるケースがあります。
+- セキュリティ優先: メタデータ（EXIF/XMP/ICC）を既定で除去し、必要な場合のみ保持。`Image Firewall` で入力を検証。
+- V8 ヒープを経由しない入力パス（`fromPath()`）を採用し、256MB 以下は Rust 所有バッファ、256MB 超は advisory lock 付き mmap を使います。
+
 ## Quick Start (5 lines)
 
 ```javascript
@@ -14,27 +20,24 @@ const bytesWritten = await ImageEngine.fromPath('input.png')
 console.log(`Wrote ${bytesWritten} bytes`);
 ```
 
-英語版では簡潔なクイックスタートと README 構成の要点を先に示しており、同じ順序を維持しています。
-
 ## Choose lazy-image if / Choose sharp if
 
-**採用したい場合**
-- バンドル帯域を節約したい、CDN 配信コストを抑えたい
-- 入力ファイルを大きめに扱うサーバーレスやコンテナでメモリ上限が重要
-
-**使い分け**
-- full API の drop-in が必要、または複雑なフィルタ/ドローイングが中心なら sharp
+| **Choose lazy-image if** | **Choose sharp if** |
+|---|---|
+| 帯域コストが重要 | 速度優先で最大スループットが必要 |
+| サーバレス/メモリ制約環境 | 高機能編集 API が必要 |
+| 安全な既定値が重要（Image Firewall） | 完全互換 API が必要 |
+| PNG→JPEG の体感でサイズ最適化が必要 | GIF / SVG / TIFF など広範なフォーマットを必要とする |
 
 ## Recommended Paths
 
-- Web 配信最適化: `fromPath()` → `resize()` → `toFile()`
-- ビルド時バッチ: `processBatch()` を中心に利用
-- 入稿画像の安全性担保: `sanitize({ policy: 'strict' })`
+- **Web 配信最適化**: `fromPath() -> resize()/crop() -> toFile()`
+- **アップロード検証**: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
+- **バッチ生成**: `processBatch()` / `clone()`
 
 ## Cost Savings Example (ROI)
 
-1MB 画像を月 10M 回配信するケースでは、平均 15% 近い縮小差で月間数百ドル規模の帯域削減を見込めます。詳細は英語版の ROI セクションと
-[docs/ROI_CALCULATOR.md](./docs/ROI_CALCULATOR.md) を参照してください。
+本体価格最適化は画像数・サイズと配信回数で変わるため、実運用に合わせて [docs/roi-calculator.html](./docs/roi-calculator.html) を参照してください。
 
 ## Installation
 
@@ -42,35 +45,46 @@ console.log(`Wrote ${bytesWritten} bytes`);
 npm install @alberteinshutoin/lazy-image
 ```
 
-| 配布経路 | 補足 |
-|---|---|
-| npm optional binaries | macOS arm64/x64、Linux x64/arm64 GNU、Linux x64 musl、Windows x64 |
-| ソースビルド | Node.js 18+、Rust 1.88+、ネイティブ codec toolchain が必要 |
+`npm` の optional binaries（macOS / Linux / Windows）が入り、`README.md` の最新手順に従ってビルド可能です。
 
 ## Architecture Overview
 
-- `ImageEngine` は「構成 → キュー投入 → エンコード実行」の遅延実行モデル
-- 小〜中サイズ画像は V8 ヒープ経由を避け、ネイティブ側の Rust バッファ優先の処理
-- メタデータはデフォルトで除去、`keepMetadata()` で明示維持
+`lazy-image` は Rust NAPI コアと軽量な JS バインディングで、
+- 入力検証・最適化パイプライン
+- メトリクス付き変換実行
+- メモリ上限を意識した並列制御
+
+を合わせた構成で、`src/`（Rust）と `lib/`（JS 補助）で分離しています。
 
 ## Basic Usage
 
-- `fromPath()` でファイルを読み込む
-- `.resize()`, `.rotate()`, `.grayscale()` などを連鎖
-- `toBuffer()` / `toFile()` で JPEG/WebP/AVIF/PNG へ変換
+**リサイズ + 保存**
+
+```javascript
+await ImageEngine.fromPath('photo.jpg')
+  .resize({ width: 800, fit: 'inside' })
+  .toFile('thumb.jpg', 'jpeg', 85);
+```
+
+**フォーマット変換**
+
+```javascript
+const buffer = await ImageEngine.fromPath('input.png')
+  .resize({ width: 600 })
+  .toBuffer('webp', 80);
+```
 
 ## Documentation
 
-- API: [docs/API.md](./docs/API.md)
-- 受け入れ条件・非ゴール: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md)
-- 性能・互換: [docs/PERFORMANCE.md](./docs/PERFORMANCE.md), [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md)
+- **概要**: [README.md](./README.md)
+- **API 参照**: [docs/API.md](./docs/API.md)
+- **仕様/アーキテクチャ**: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- **互換性・性能**: [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md), [docs/PERFORMANCE.md](./docs/PERFORMANCE.md)
+- **セキュリティ**: [SECURITY.md](./SECURITY.md)
 
 ## Features (summary)
 
-- AVIF/WebP/JPEG/PNG エンコード
-- Image Firewall とメタデータ安全性（`keepMetadata()`）
-- ファイルパス入力のメモリ特性最適化
-- Rust コア (napi-rs) + Node.js API
+smaller JPEG (mozjpeg) · WebP (libwebp) · AVIF (libavif) · メタデータ制御 · メモリ制御を前提にした API · Rust コア + NAPI-RS。
 
 ## Development
 
@@ -79,7 +93,7 @@ npm install && npm run build
 npm test
 ```
 
-コントリビュート手順は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照。
+`CONTRIBUTING.md` の手順に従って運用します。
 
 ## License
 
@@ -87,4 +101,4 @@ MIT
 
 ## Credits
 
-[mozjpeg](https://github.com/mozilla/mozjpeg), [libwebp](https://chromium.googlesource.com/webm/libwebp), [libavif](https://github.com/AOMediaCodec/libavif), [napi-rs](https://napi.rs/)
+[mozjpeg](https://github.com/mozilla/mozjpeg) · [libwebp](https://chromium.googlesource.com/webm/libwebp) · [libavif](https://github.com/AOMediaCodec/libavif) · [fast_image_resize](https://github.com/Cykooz/fast_image_resize) · [img-parts](https://github.com/paolobarbolini/img-parts) · [napi-rs](https://napi.rs/)
