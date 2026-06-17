@@ -407,19 +407,8 @@ fn resize_with_source_image<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
-
-    fn create_test_image(width: u32, height: u32) -> DynamicImage {
-        DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
-            image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
-        }))
-    }
-
-    fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
-        DynamicImage::ImageRgba8(RgbaImage::from_fn(width, height, |x, y| {
-            image::Rgba([(x % 256) as u8, (y % 256) as u8, 128, 255])
-        }))
-    }
+    use crate::engine::test_support::{create_test_image, create_test_image_rgba};
+    use image::GenericImageView;
 
     mod resize_calc_tests {
         use super::*;

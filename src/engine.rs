@@ -47,6 +47,8 @@ mod pool;
 pub(crate) mod resize;
 mod stress;
 mod tasks;
+#[cfg(test)]
+pub(crate) mod test_support;
 pub(crate) mod validation;
 
 // -----------------------------------------------------------------------------
@@ -122,16 +124,11 @@ mod tests {
     use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
     use crate::engine::tasks::{EncodeTask, TaskContext};
+    use crate::engine::test_support::create_test_image;
     use crate::error::LazyImageError;
     use crate::ops::OutputFormat;
-    use image::{DynamicImage, GenericImageView, RgbImage};
+    use image::GenericImageView;
     use std::sync::Arc;
-
-    fn create_test_image(width: u32, height: u32) -> DynamicImage {
-        DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
-            image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
-        }))
-    }
 
     fn create_png(width: u32, height: u32) -> Vec<u8> {
         let img = create_test_image(width, height);
