@@ -7,7 +7,14 @@
 In current canonical benchmarks, lazy-image produces **17-20% smaller JPEG outputs** than sharp for the two simple PNG → JPEG cases: no-resize conversion and resize-to-800px. AVIF/WebP size and speed, and multi-operation JPEG pipelines, are workload-specific; benchmark your target image mix before assuming a win.
 
 - **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
-- **Security-first**: Metadata stripped by default; `keepMetadata()` to preserve. File-path inputs (`fromPath()`/`processBatch()` → `toFile()`) bypass the V8 heap — small/medium files (≤ 256 MB) are read into Rust-owned memory for SIGBUS safety; only files larger than 256 MB use mmap with advisory locks. See [docs/ZERO_COPY.md](./docs/ZERO_COPY.md).
+- **Security-first**: Metadata is stripped by default; `keepMetadata()` preserves
+  ICC and EXIF (not XMP in this runtime). GPS is stripped unless explicitly
+  disabled. File-path inputs (`fromPath()`/`processBatch()` → `toFile()`) bypass
+  the V8 heap. Small/medium files (≤ 256 MB) are read into Rust-owned memory
+  for SIGBUS safety, and files larger than 256 MB use mmap with advisory locks.
+  For mmap paths, avoid modifying, truncating, or deleting source files during
+  processing; use a copy or `from(Buffer)` for mutable inputs.
+  See [docs/ZERO_COPY.md](./docs/ZERO_COPY.md).
 - Japanese: [README.ja.md](./README.ja.md). **mmap (files > 256 MB)**: do not modify or delete source files while processing; use a copy or `from(Buffer)` for mutable inputs.
 - Lazy contract: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) explains what is deferred vs eager.
 - Metadata matrix: [docs/METADATA_SUPPORT.md](./docs/METADATA_SUPPORT.md).
