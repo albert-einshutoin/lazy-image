@@ -48,6 +48,7 @@ function test(name, fn) {
 (async () => {
   test('package keywords include discoverability terms', () => {
     const keywords = packageJson.keywords || [];
+    assert(Array.isArray(keywords), 'package.json keywords must be an array');
     assert(keywords.includes('avif'), 'package.json keywords must include avif');
     assert(keywords.includes('image-optimization'), 'package.json keywords must include image-optimization');
     assert(keywords.includes('compress'), 'package.json keywords must include compress');
@@ -78,6 +79,14 @@ function test(name, fn) {
     assert(hasQuickStart, 'README.md should include ## Quick Start in above-the-fold area');
   });
 
+  test('README.ja.md has Quick Start section in first 80 lines', () => {
+    const first80Ja = readmeJa.split('\n').slice(0, 80);
+    const hasQuickStartJa = first80Ja.some(
+      (line) => /##\s+Quick Start/.test(line) || /##\s+クイックスタート/.test(line),
+    );
+    assert(hasQuickStartJa, 'README.ja.md should include a Quick Start section in above-the-fold area');
+  });
+
   test('README heading structure is synchronized with README.ja.md', () => {
     const readmeHeadings = readmeHeadlineCount(readmeMd);
     const readmeJaHeadings = readmeHeadlineCount(readmeJa);
@@ -104,6 +113,17 @@ function test(name, fn) {
     assert(
       /mozjpeg/.test(cargoDescription),
       'Cargo.toml description should mention mozjpeg position as a positioning anchor',
+    );
+  });
+
+  test('package description keeps Image Firewall positioning', () => {
+    assert(
+      /Image Firewall/i.test(packageJson.description),
+      'package description should keep Image Firewall positioning in discovery-facing copy',
+    );
+    assert(
+      /upload/i.test(packageJson.description),
+      'package description should keep upload-focused safety positioning',
     );
   });
 
