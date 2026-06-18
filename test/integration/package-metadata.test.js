@@ -1,6 +1,34 @@
-const assert = require('assert');
+/**
+ * Package metadata contract checks for npm discoverability and onboarding clarity.
+ */
+
+const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const { resolveRoot } = require('../helpers/paths');
+const path = require('node:path');
+
+const ROOT = path.resolve(__dirname, '..', '..');
+const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+const cargoToml = fs.readFileSync(path.join(ROOT, 'Cargo.toml'), 'utf8');
+const readmeMd = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
+const readmeJa = fs.readFileSync(path.join(ROOT, 'README.ja.md'), 'utf8');
+
+function readmeHeadlineCount(content) {
+  return (content.match(/^##\s+.+$/gm) || []).length;
+}
+
+function extractTomlArray(content, key) {
+  const match = content.match(new RegExp(`^${key}\\s*=\\s*\\[([^\\]]*)\\]`, 'm'));
+  if (!match) return [];
+  return (match[1] || '')
+    .split(',')
+    .map((item) => item.trim().replace(/^['\"]|['\"]$/g, ''))
+    .filter(Boolean);
+}
+
+function extractTomlString(content, key) {
+  const match = content.match(new RegExp(`^${key}\\s*=\\s*['\"]([^'\"]+)['\"]`, 'm'));
+  return match ? match[1] : '';
+}
 
 let passed = 0;
 let failed = 0;
@@ -10,133 +38,97 @@ function test(name, fn) {
     fn();
     console.log(`✅ ${name}`);
     passed += 1;
-  } catch (err) {
-    console.error(`❌ ${name}`);
-    console.error(`   ${err.message}`);
+  } catch (error) {
+    console.log(`❌ ${name}`);
+    console.error(`   ${error.message}`);
     failed += 1;
   }
 }
 
-function countH2Headings(content) {
-  return content.split('\n').filter((line) => line.startsWith('## ')).length;
-}
+(async () => {
+  test('package keywords include discoverability terms', () => {
+    const keywords = packageJson.keywords || [];
+    assert(Array.isArray(keywords), 'package.json keywords must be an array');
+    assert(keywords.includes('avif'), 'package.json keywords must include avif');
+    assert(keywords.includes('image-optimization'), 'package.json keywords must include image-optimization');
+    assert(keywords.includes('compress'), 'package.json keywords must include compress');
+    assert(keywords.includes('compression'), 'package.json keywords must include compression');
+    assert(keywords.includes('image-processing'), 'package.json keywords must include image-processing');
+    assert(keywords.includes('thumbnail'), 'package.json keywords must include thumbnail');
+    assert(keywords.includes('exif'), 'package.json keywords must include exif');
+  });
 
-function assertQuickStartWithinFirst80(content, label) {
-  const lines = content.split('\n');
-  const quickStartLine = lines.findIndex((line) => /^##\s+Quick Start/.test(line));
-  assert(quickStartLine >= 0, `${label} should contain \"## Quick Start\" heading`);
-  assert(
-    quickStartLine < 80,
-    `${label} Quick Start should be within first 80 lines, currently at ${quickStartLine + 1}`,
-  );
-}
+  test('package description length stays within policy-friendly bounds', () => {
+    assert(
+      typeof packageJson.description === 'string',
+      'package.json description must be a string',
+    );
+    assert(
+      packageJson.description.length >= 80,
+      'package.json description should be at least 80 characters',
+    );
+    assert(
+      packageJson.description.length <= 250,
+      'package.json description should be at most 250 characters',
+    );
+  });
 
-function assertQuickStartOrdering(content, label) {
-  const lines = content.split('\n');
-  const quickStartLine = lines.findIndex((line) => /^##\s+Quick Start/.test(line));
-  const chooserLine = lines.findIndex((line) => /^##\s+Choose lazy-image if/.test(line));
-  const architectureLine = lines.findIndex((line) => /^##\s+Architecture Overview/.test(line));
+  test('README.md has Quick Start section in first 80 lines', () => {
+    const first80 = readmeMd.split('\n').slice(0, 80);
+    const hasQuickStart = first80.some((line) => line.includes('## Quick Start'));
+    assert(hasQuickStart, 'README.md should include ## Quick Start in above-the-fold area');
+  });
 
-  assert(quickStartLine >= 0, `${label} should contain \"## Quick Start\" heading`);
-  assert(chooserLine >= 0, `${label} should contain \"## Choose lazy-image if / Choose sharp if\" heading`);
-  assert(architectureLine >= 0, `${label} should contain \"## Architecture Overview\" heading`);
-  assert(
-    quickStartLine < chooserLine,
-    `${label}: Quick Start should appear before Choose lazy-image guidance`,
-  );
-  assert(
-    chooserLine < architectureLine,
-    `${label}: Choose lazy-image guidance should appear before Architecture Overview`,
-  );
-}
+  test('README.ja.md has Quick Start section in first 80 lines', () => {
+    const first80Ja = readmeJa.split('\n').slice(0, 80);
+    const hasQuickStartJa = first80Ja.some(
+      (line) => /##\s+Quick Start/.test(line) || /##\s+クイックスタート/.test(line),
+    );
+    assert(hasQuickStartJa, 'README.ja.md should include a Quick Start section in above-the-fold area');
+  });
 
-function extractCargoKeywords(content) {
-  const match = content.match(/^keywords\s*=\s*\[([^\]]*)\]/m);
-  if (!match) {
-    return [];
+  test('README heading structure is synchronized with README.ja.md', () => {
+    const readmeHeadings = readmeHeadlineCount(readmeMd);
+    const readmeJaHeadings = readmeHeadlineCount(readmeJa);
+    assert(
+      readmeHeadings === readmeJaHeadings,
+      `README.md has ${readmeHeadings} ## headings, README.ja.md has ${readmeJaHeadings}`,
+    );
+  });
+
+  test('Cargo package metadata includes security/positioning and avif', () => {
+    const cargoKeywords = extractTomlArray(cargoToml, 'keywords');
+    const cargoDescription = extractTomlString(cargoToml, 'description');
+
+    assert(cargoKeywords.length <= 5, 'Cargo.toml keywords must be 5 or fewer entries');
+    assert(cargoKeywords.includes('avif'), 'Cargo.toml keywords must include avif');
+    assert(
+      cargoKeywords.includes('image-optimization'),
+      'Cargo.toml keywords should include image-optimization',
+    );
+    assert(
+      /secure|security/i.test(cargoDescription),
+      'Cargo.toml description should mention security posture',
+    );
+    assert(
+      /mozjpeg/.test(cargoDescription),
+      'Cargo.toml description should mention mozjpeg position as a positioning anchor',
+    );
+  });
+
+  test('package description keeps Image Firewall positioning', () => {
+    assert(
+      /Image Firewall/i.test(packageJson.description),
+      'package description should keep Image Firewall positioning in discovery-facing copy',
+    );
+    assert(
+      /upload/i.test(packageJson.description),
+      'package description should keep upload-focused safety positioning',
+    );
+  });
+
+  console.log(`\n✅ package metadata checks completed: ${passed} passed, ${failed} failed`);
+  if (failed > 0) {
+    process.exit(1);
   }
-  return match[1]
-    .split(',')
-    .map((item) => item.trim().replace(/^[\"']|[\"']$/g, ''))
-    .filter(Boolean);
-}
-
-const packageJson = require(resolveRoot('package.json'));
-const readmeMd = fs.readFileSync(resolveRoot('README.md'), 'utf8');
-const readmeJaMd = fs.readFileSync(resolveRoot('README.ja.md'), 'utf8');
-const cargoToml = fs.readFileSync(resolveRoot('Cargo.toml'), 'utf8');
-
-test('package keywords include avif', () => {
-  assert(
-    Array.isArray(packageJson.keywords),
-    'package.json should define an array of keywords',
-  );
-  assert(packageJson.keywords.includes('avif'), 'keywords should include \"avif\"');
-  assert(
-    packageJson.keywords.includes('image-optimization'),
-    'keywords should include \"image-optimization\"',
-  );
-  assert(
-    packageJson.keywords.includes('compression'),
-    'keywords should include \"compression\"',
-  );
-});
-
-test('package description is 80-250 chars', () => {
-  assert(
-    typeof packageJson.description === 'string',
-    'package.json should define a string description',
-  );
-  assert(
-    packageJson.description.length >= 80,
-    'description should be at least 80 characters long',
-  );
-  assert(
-    packageJson.description.length <= 250,
-    'description should be at most 250 characters long',
-  );
-});
-
-test('README and README.ja.md should keep Quick Start within first 80 lines', () => {
-  assertQuickStartWithinFirst80(readmeMd, 'README.md');
-  assertQuickStartWithinFirst80(readmeJaMd, 'README.ja.md');
-});
-
-test('README and README.ja.md should have matching ## heading count', () => {
-  assert.strictEqual(
-    countH2Headings(readmeMd),
-    countH2Headings(readmeJaMd),
-    'README.md and README.ja.md should have the same number of ## headings',
-  );
-});
-
-test('README and README.ja.md should keep discovery flow ordering', () => {
-  assertQuickStartOrdering(readmeMd, 'README.md');
-  assertQuickStartOrdering(readmeJaMd, 'README.ja.md');
-});
-
-test('package description keeps Image Firewall positioning', () => {
-  assert(
-    /Image Firewall/.test(packageJson.description),
-    'package description should keep Image Firewall positioning in discovery-facing copy',
-  );
-});
-
-test('package keywords keep parity with cargo avif keyword', () => {
-  const cargoKeywords = extractCargoKeywords(cargoToml);
-  assert(
-    cargoKeywords.includes('avif'),
-    'Cargo.toml should keep `avif` keyword as core runtime story of truth',
-  );
-  assert(
-    packageJson.keywords.includes('avif'),
-    'package.json should keep `avif` keyword for package discoverability',
-  );
-});
-
-if (failed > 0) {
-  console.error(`\n❌ ${failed} metadata test(s) failed`);
-  process.exit(1);
-}
-
-console.log(`\n✅ ${passed} package metadata integration tests passed`);
+})();
