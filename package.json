@@ -1,7 +1,7 @@
 {
   "name": "@alberteinshutoin/lazy-image",
   "version": "0.16.0",
-  "description": "Web image optimization engine for Node.js with smaller JPEG outputs in canonical benchmarked simple scenarios than sharp defaults, including Image Firewall upload sanitization and Rust + mozjpeg core",
+  "description": "Web image optimization engine for Node.js with smaller default JPEG outputs in simple canonical benchmarks, powered by Rust + mozjpeg and secure upload defaults",
   "main": "index.js",
   "exports": {
     ".": {
