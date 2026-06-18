@@ -5,8 +5,8 @@
 - `lazy-image` は Web 画像最適化に特化した Node.js エンジンです。
 - `sharp` のドロップイン代替ではありません。
 - 現行ベンチマークは PNG → JPEG の2つの代表シナリオ（変換・800px リサイズ）で、`sharp` より画像サイズが小さくなるケースがあります。
-- セキュリティ優先: メタデータ（EXIF/XMP/ICC）を既定で除去し、必要な場合のみ保持。`Image Firewall` で入力を検証。
-- V8 ヒープを経由しない入力パス（`fromPath()`）を採用し、256MB 以下は Rust 所有バッファ、256MB 超は advisory lock 付き mmap を使います。
+- セキュリティ優先: メタデータ（EXIF/ICC）は既定で除去され、`keepMetadata()` で明示的に保持。XMP は現状保持されません。`Image Firewall` で入力を検証。
+- V8 ヒープを経由しない入力パス（`fromPath()`）を採用し、256MB 以下は Rust 所有バッファ、256MB 超は advisory lock 付き mmap を使います。処理中に対象ファイルを更新・トリム・削除すると破損や失敗に繋がるため、mutable な更新ワークフローではコピー経由の API を使ってください。
 
 ## Quick Start (5 lines)
 
