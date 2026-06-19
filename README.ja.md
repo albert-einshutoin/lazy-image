@@ -26,7 +26,7 @@ console.log(`Wrote ${bytesWritten} bytes`);
 **差分が出る主要点**
 
 - JPEG サイズは「canonical な PNG→JPEG の単純ケース」で 17-20% の改善が成立
-- 256MB 以下ファイルは Rust 側バッファへ読み込み、超過分はメモリ安全な mmap 経路
+- 256MB 以下ファイルは Rust 側バッファへ読み込み、超過分はメモリ安全な mmap 経路で処理します
 - メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
 - API は drop-in 置換ではない（互換が必要なら sharp）
 
@@ -40,8 +40,8 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 ## Recommended Paths
 
-- 画像配信最適化: `fromPath() -> resize()/crop() -> toFile()`  
-- アップロード検証: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`  
+- 画像配信最適化: `fromPath() -> resize()/crop() -> toFile()`
+- アップロード検証: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
 - 静的サイト生成バッチ: `processBatch()` / `clone()`
 - 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
 
