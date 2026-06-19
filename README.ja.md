@@ -26,7 +26,7 @@ console.log(`Wrote ${bytesWritten} bytes`);
 **差分が出る主要点**
 
 - JPEG サイズは「canonical な PNG→JPEG の単純ケース」で 17-20% の改善が成立
-- 256MB 以下ファイルは Rust 側バッファへ読み込み、超過分はメモリ安全な mmap 経路で処理します
+- 256MB を超える大きな入力は Rust 側バッファへ全量読み込まず、メモリ安全な mmap 経路で処理します。`fromPath()` を使う際は、同時に対象ファイルの変更・切り詰め・削除を避け、破損や `SIGBUS` / `SIGSEGV` を防いでください。
 - メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
 - API は drop-in 置換ではない（互換が必要なら sharp）
 
