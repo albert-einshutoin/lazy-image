@@ -1,12 +1,6 @@
 # lazy-image 🦀 (日本語サマリー)
 
-英語版 README が正です。このファイルは主要ポイントの日本語サマリーです。詳細・最新情報は必ず [README.md](./README.md) を参照してください。
-
-- `lazy-image` は Web 画像最適化に特化した Node.js エンジンです。
-- `sharp` のドロップイン代替ではありません。
-- 現行ベンチマークは PNG → JPEG の2つの代表シナリオ（変換・800px リサイズ）で、`sharp` より画像サイズが小さくなるケースがあります。
-- セキュリティ優先: メタデータ（EXIF/ICC）は既定で除去され、`keepMetadata()` で明示的に保持。XMP は現状保持されません。`Image Firewall` で入力を検証。
-- V8 ヒープを経由しない入力パス（`fromPath()`）を採用し、256MB 以下は Rust 所有バッファ、256MB 超は advisory lock 付き mmap を使います。処理中に対象ファイルを更新・トリム・削除すると破損や失敗に繋がるため、mutable な更新ワークフローではコピー経由の API を使ってください。
+英語版 README.md が正本です。詳細は必ず [README.md](./README.md) を優先してください。
 
 ## Quick Start (5 lines)
 
@@ -22,22 +16,38 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 ## Choose lazy-image if / Choose sharp if
 
-| **Choose lazy-image if** | **Choose sharp if** |
+| **lazy-image を選ぶ場合** | **sharp を選ぶ場合** |
 |---|---|
-| 帯域コストが重要 | 速度優先で最大スループットが必要 |
-| サーバレス/メモリ制約環境 | 高機能編集 API が必要 |
-| 安全な既定値が重要（Image Firewall） | 完全互換 API が必要 |
-| PNG→JPEG の体感でサイズ最適化が必要 | GIF / SVG / TIFF など広範なフォーマットを必要とする |
+| CDN / 画像配信最適化の帯域節約を優先 | 最大スループットや API 網羅が必要 |
+| serverless・メモリ制約環境で運用 | 描画・合成・高度な画像編集 API が必要 |
+| 既定で安全側寄りの処理を優先 | 既存 sharp エコシステムとの完全互換が必要 |
+| JPEG サイズ最適化を重視 | GIF / SVG / TIFF などが前提で必要 |
+
+**差分が出る主要点**
+
+- JPEG サイズは「canonical な PNG→JPEG の単純ケース」で 17-20% の改善が成立
+- 256MB を超える大きな入力は Rust 側バッファへ全量読み込まず、メモリ安全な mmap 経路で処理します。`fromPath()` を使う際は、同時に対象ファイルの変更・切り詰め・削除を避け、破損や `SIGBUS` / `SIGSEGV` を防いでください。
+- メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
+- API は drop-in 置換ではない（互換が必要なら sharp）
+
+**プロジェクト方針**
+- 目的は smaller web payload + bounded memory + 安全デフォルト
+- 「速い」「常に軽量」は断定しない。ワークロード別検証が必要
+
+## Architecture Overview
+
+`lazy-image` は Rust コア + Node.js バインディングで、入力・変換・エンコードを lazy 実行します。詳細は [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) を参照してください。
 
 ## Recommended Paths
 
-- **Web 配信最適化**: `fromPath() -> resize()/crop() -> toFile()`
-- **アップロード検証**: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
-- **バッチ生成**: `processBatch()` / `clone()`
+- 画像配信最適化: `fromPath() -> resize()/crop() -> toFile()`
+- アップロード検証: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
+- 静的サイト生成バッチ: `processBatch()` / `clone()`
+- 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
 
 ## Cost Savings Example (ROI)
 
-本体価格最適化は画像数・サイズと配信回数で変わるため、実運用に合わせて [docs/roi-calculator.html](./docs/roi-calculator.html) を参照してください。
+README（英語版）と同じ想定計算を参照します。月間配信量とエンコーディング回数次第で節約は拡大します。
 
 ## Installation
 
@@ -45,20 +55,13 @@ console.log(`Wrote ${bytesWritten} bytes`);
 npm install @alberteinshutoin/lazy-image
 ```
 
-`npm` の optional binaries（macOS / Linux / Windows）が入り、`README.md` の最新手順に従ってビルド可能です。
-
-## Architecture Overview
-
-`lazy-image` は Rust NAPI コアと軽量な JS バインディングで、
-- 入力検証・最適化パイプライン
-- メトリクス付き変換実行
-- メモリ上限を意識した並列制御
-
-を合わせた構成で、`src/`（Rust）と `lib/`（JS 補助）で分離しています。
+| 環境 | 概要 |
+|---|---|
+| ランタイム | platform optional dependencies が自動インストール |
+| パッケージサイズ | プラットフォーム別で 6〜9MB 前後 |
+| 自前ビルド | `npm run build` |
 
 ## Basic Usage
-
-**リサイズ + 保存**
 
 ```javascript
 await ImageEngine.fromPath('photo.jpg')
@@ -66,25 +69,21 @@ await ImageEngine.fromPath('photo.jpg')
   .toFile('thumb.jpg', 'jpeg', 85);
 ```
 
-**フォーマット変換**
-
 ```javascript
-const buffer = await ImageEngine.fromPath('input.png')
-  .resize({ width: 600 })
-  .toBuffer('webp', 80);
+const { inspectFile } = require('@alberteinshutoin/lazy-image');
+const meta = inspectFile('input.jpg');
 ```
 
 ## Documentation
 
-- **概要**: [README.md](./README.md)
-- **API 参照**: [docs/API.md](./docs/API.md)
-- **仕様/アーキテクチャ**: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
-- **互換性・性能**: [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md), [docs/PERFORMANCE.md](./docs/PERFORMANCE.md)
-- **セキュリティ**: [SECURITY.md](./SECURITY.md)
+英語版の構成と同じです。`docs/`, `examples/`, `spec/` を順に確認してください。
 
 ## Features (summary)
 
-smaller JPEG (mozjpeg) · WebP (libwebp) · AVIF (libavif) · メタデータ制御 · メモリ制御を前提にした API · Rust コア + NAPI-RS。
+- JPEG/PNG/WebP/AVIF エンコード
+- ICC / EXIF / GPS オフロード
+- フォーマット別最適化・メトリクス
+- Image Firewall / Rust メモリ安全
 
 ## Development
 
@@ -92,8 +91,6 @@ smaller JPEG (mozjpeg) · WebP (libwebp) · AVIF (libavif) · メタデータ制
 npm install && npm run build
 npm test
 ```
-
-`CONTRIBUTING.md` の手順に従って運用します。
 
 ## License
 
