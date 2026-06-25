@@ -36,6 +36,10 @@ Best for:
 - Community/social platforms
 - Admin dashboards handling user content
 
+Runnable companion: [`examples/upload-sanitize-server.mjs`](../examples/upload-sanitize-server.mjs)
+shows a dependency-free raw upload endpoint with header inspection, Image
+Firewall limits, and error-category to HTTP status mapping.
+
 ### 3. Build-time static asset optimization
 
 Use batch processing or cloning when the same source needs multiple outputs.
@@ -54,6 +58,10 @@ Best for:
 - Static site generation
 - CMS export pipelines
 - Media preprocessing jobs
+
+Runnable companion: [`examples/build-time-optimize.mjs`](../examples/build-time-optimize.mjs)
+shows a static asset batch job using `processBatchWithMetrics()` plus a
+summary suitable for CI or build logs.
 
 ### 4. Final optimization after editing elsewhere
 
@@ -410,6 +418,9 @@ const { data, metrics } = await engine.toBufferWithMetrics('jpeg', 80);
 //            formatIn, formatOut, iccPreserved,
 //            metadataStripped, policyViolations }
 ```
+
+Runnable companion: [`examples/metrics-observability.mjs`](../examples/metrics-observability.mjs)
+turns `ProcessingMetrics` into structured JSON logs and aggregate counters.
 
 ### Structured logging pattern
 

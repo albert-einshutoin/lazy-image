@@ -53,7 +53,7 @@ function generateCorpus() {
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /wrote 20 malformed fuzz seed\(s\)/);
+  assert.match(result.stdout, /wrote 25 malformed fuzz seed\(s\)/);
 }
 
 function collectCorpusFiles() {
@@ -107,7 +107,7 @@ console.log('=== Malformed Corpus Replay Tests ===\n');
     const files = collectCorpusFiles();
 
     await asyncTest('generated corpus keeps the expected target coverage', async () => {
-      assert.equal(files.length, 20);
+      assert.equal(files.length, 25);
       assert.deepEqual(
         Array.from(new Set(files.map((file) => file.target))).sort(),
         ['decode_avif', 'decode_from_buffer', 'exif_parse', 'icc_profile', 'inspect_header'],

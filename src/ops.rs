@@ -299,10 +299,6 @@ pub enum OutputFormat {
 }
 
 impl OutputFormat {
-    fn validate_quality(quality: u8) -> Result<Quality, LazyImageError> {
-        Quality::new(quality)
-    }
-
     /// Create OutputFormat from string with format-specific default quality.
     ///
     /// Default quality by format (when quality is None):
@@ -329,7 +325,7 @@ impl OutputFormat {
         match format.to_lowercase().as_str() {
             "jpeg" | "jpg" => {
                 let q = quality
-                    .map(Self::validate_quality)
+                    .map(Quality::new)
                     .transpose()?
                     .unwrap_or(Quality::unchecked(85)); // JPEG default: 85
                 Ok(Self::Jpeg {
@@ -345,7 +341,7 @@ impl OutputFormat {
             }
             "webp" => {
                 let q = quality
-                    .map(Self::validate_quality)
+                    .map(Quality::new)
                     .transpose()?
                     .unwrap_or(Quality::unchecked(80)); // WebP default: 80
                 Ok(Self::WebP { quality: q })
@@ -353,7 +349,7 @@ impl OutputFormat {
             #[cfg(feature = "avif")]
             "avif" => {
                 let q = quality
-                    .map(Self::validate_quality)
+                    .map(Quality::new)
                     .transpose()?
                     .unwrap_or(Quality::unchecked(60)); // AVIF default: 60 (high compression efficiency)
                 Ok(Self::Avif { quality: q })

@@ -11,6 +11,8 @@ This document defines how benchmark regression monitoring is operated.
 - Main execution command set:
   - `npm run test:bench:compare`
   - `npm run test:bench:extended`
+- Main CI quality gate:
+  - `.github/workflows/CI.yml` now runs `npm run test:bench:extended` as part of the `quality` job.
 - Wasm upload-preflight evidence command:
   - `npm run test:bench:wasm`
 - Optional JPEG backend bake-off command:
@@ -37,6 +39,16 @@ This document defines how benchmark regression monitoring is operated.
 
 The baseline file is the single source of truth for threshold comparison.
 
+## Baseline update strategy
+
+- Baseline updates are intentional/manual today and must be done in a dedicated PR so claim changes and numbers are reviewable.
+- When a release, dependency bump, or optimizer-path change justifies new baseline numbers, follow this sequence:
+  - Run `npm run test:bench:compare` in a clean environment.
+  - Run `npm run test:bench:extended` to refresh the extended suite outputs.
+  - Re-run `node scripts/bench/check-regression.js --baseline .github/benchmarks/baseline.json --current artifacts/benchmark/sharp-comparison.json --mode warn` to verify the new measurements.
+  - Update `.github/benchmarks/baseline.json` only if changes are intentional and add a short rationale in the PR summary.
+  - Update downstream benchmark artifacts/docs (`docs/TRUE_BENCHMARKS.md`, `docs/BENCHMARK_CLAIMS.md`) in the same PR before merging.
+
 ## Threshold Policy
 
 - Speed regression threshold: `+15%` (default)
@@ -60,7 +72,7 @@ Regression means "current metric value is higher than baseline by more than thre
 
 ## Practical Notes
 
-- Benchmark jobs are intentionally separated from required CI gates to avoid noisy PR failures.
+- `test:bench:extended` is now a required quality check in main CI (`quality` job), while full benchmark regression comparison remains in the scheduled workflow.
 - Run manually before releases or after significant image pipeline/perf changes.
 - Run the Wasm upload benchmark before making browser/Edge upload-preflight claims. See [WASM_BENCHMARKING.md](./WASM_BENCHMARKING.md).
 - Run the JPEG backend bake-off before considering a mozjpeg-to-jpegli backend switch.

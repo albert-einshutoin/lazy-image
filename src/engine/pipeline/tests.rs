@@ -8,16 +8,10 @@
 
 use super::capabilities::{validate_operation_sequence_with_caps, OperationCapabilities};
 use super::*;
+use crate::engine::test_support::create_test_image;
 use crate::ops::{Operation, ResizeFit};
 use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
 use std::borrow::Cow;
-
-// Helper function used by every submodule below.
-fn create_test_image(width: u32, height: u32) -> DynamicImage {
-    DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
-        image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
-    }))
-}
 
 #[path = "tests/apply_ops.rs"]
 mod apply_ops_tests;

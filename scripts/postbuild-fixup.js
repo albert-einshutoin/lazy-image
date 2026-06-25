@@ -54,6 +54,32 @@ export interface EncodeOptionsInput {
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null
 
+export interface BatchProgressEvent {
+  /** Completed file count after the latest chunk finishes */
+  completed: number
+  /** Total input file count */
+  total: number
+  /** Results returned by the latest processBatch chunk */
+  lastChunk: BatchResult[]
+  /** Cumulative failed result count through the latest chunk */
+  failed: number
+}
+
+export interface ProcessBatchChunkedOptions extends BatchOptions {
+  /** Number of files per native processBatch call. Default: 16. */
+  chunkSize?: number
+  /** Called after each chunk. Throwing is logged and does not stop processing. */
+  onProgress?: (event: BatchProgressEvent) => void
+  /** Checked before each chunk starts. Aborted signals reject with AbortError. */
+  signal?: AbortSignal
+}
+
+export declare function processBatchChunked(
+  inputs: string[],
+  outputDir: string,
+  options: ProcessBatchChunkedOptions,
+): Promise<BatchResult[]>
+
 export declare function createStreamingPipeline(options: {
   format?: OutputFormat
   quality?: number
@@ -143,7 +169,9 @@ function patchIndexJs() {
 const { createStreamingPipeline } = require('./streaming/pipeline')
 const helpers = require('./lib/helpers')
 const _getErrorCategory = helpers.createGetErrorCategory(nativeBinding.ErrorCategory, nativeBinding.ErrorCode)
+const _processBatchChunked = helpers.createProcessBatchChunked(nativeBinding.ImageEngine)
 module.exports.getErrorCategory = _getErrorCategory
+module.exports.processBatchChunked = _processBatchChunked
 module.exports.createStreamingPipeline = createStreamingPipeline
 module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
 if (nativeBinding && nativeBinding.ImageEngine) {
