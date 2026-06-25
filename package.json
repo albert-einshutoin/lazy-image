@@ -46,7 +46,7 @@
     "packages/lazy-image-wasm"
   ],
   "scripts": {
-    "build": "napi build --platform --release && node scripts/postbuild-fixup.js",
+    "build": "node scripts/postbuild-fixup.js --prepare && napi build --platform --release && node scripts/postbuild-fixup.js",
     "test": "npm run test:js && npm run test:rust && npm run test:wasm:package",
     "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:types && npm run test:examples",
     "test:js:specs": "node test/integration/run.js",
