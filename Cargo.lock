@@ -492,6 +492,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctor"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01334b89b69ff726750c5ce5073fc8bd860e99aa9a8fc5ca11b04730e3aee97a"
+
+[[package]]
 name = "ctor-proc-macro"
 version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1149,7 +1155,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6944d0bf100571cd6e1a98a316cdca262deb6fccf8d93f5ae1502ca3fc88bd3"
 dependencies = [
  "bitflags",
- "ctor",
+ "ctor 0.6.3",
  "futures",
  "napi-build",
  "napi-sys",
@@ -1166,12 +1172,12 @@ checksum = "d376940fd5b723c6893cd1ee3f33abbfd86acb1cd1ec079f3ab04a2a3bc4d3b1"
 
 [[package]]
 name = "napi-derive"
-version = "3.5.2"
+version = "3.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c914b5e420182bfb73504e0607592cdb8e2e21437d450883077669fb72a114d"
+checksum = "61d66f70256ad5aef58659966064471d0ad90e2897bc36a5a5e0389c85aabc1e"
 dependencies = [
  "convert_case",
- "ctor",
+ "ctor 1.0.7",
  "napi-derive-backend",
  "proc-macro2",
  "quote",
@@ -1180,9 +1186,9 @@ dependencies = [
 
 [[package]]
 name = "napi-derive-backend"
-version = "5.0.2"
+version = "5.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0864cf6a82e2cfb69067374b64c9253d7e910e5b34db833ed7495dda56ccb18"
+checksum = "81b4b08f15eed7a2a20c3f4c6314013fc3ac890a3afa9892b594485299ebdb2d"
 dependencies = [
  "convert_case",
  "proc-macro2",
