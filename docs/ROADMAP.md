@@ -2,11 +2,11 @@
 
 > **Vision:** To be the most efficient, secure, and portable web image optimization engine for the cloud age.
 
-This document reflects the current state of `develop` and focuses on the work that still meaningfully remains.
+This document reflects the current state of `main` and focuses on the work that still meaningfully remains.
 
 ## Current State
 
-The following foundations are already in place on `develop`:
+The following foundations are already in place on `main`:
 
 - **Lazy, non-destructive pipeline**: deferred decode, `clone()`, file-based happy path
 - **V8-heap bypass for file inputs**: `fromPath()` and `processBatch()` keep source bytes out of the Node.js heap (read-into-memory ≤ 256 MB, mmap with advisory locks > 256 MB)
@@ -76,11 +76,11 @@ To maintain focus and stability, the following features are explicitly **out of 
 
 > **ビジョン:** クラウド時代における、最も効率的で、安全で、ポータブルなWeb画像最適化エンジンとなること。
 
-このドキュメントは `develop` の現状を反映し、今後本当に残っている課題に絞って整理したものです。
+このドキュメントは `main` の現状を反映し、今後本当に残っている課題に絞って整理したものです。
 
 ## 現在の状態
 
-`develop` にはすでに以下の基盤があります。
+`main` にはすでに以下の基盤があります。
 
 - **lazy / 非破壊パイプライン**: deferred decode、`clone()`、file-to-file の主導線
 - **V8 ヒープを経由しないファイル入力**: `fromPath()` と `processBatch()` は入力バイトを Node.js ヒープに載せない（256 MB 以下は Rust 所有バッファに読み込み、256 MB 超は advisory lock 付き mmap）

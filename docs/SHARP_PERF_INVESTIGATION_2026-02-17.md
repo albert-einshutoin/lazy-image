@@ -1,7 +1,7 @@
 # sharp 比較パフォーマンス徹底調査 (2026-02-17)
 
-## 1. 実施体制 (gitflow + worktree)
-- Base: `develop`
+## 1. 実施体制 (GitHub Flow + worktree)
+- Base: `main`
 - Investigation branch: `codex/feature-sharp-perf-investigation`
 - Worktree: `/Users/shutoide/Developer/perf-sharp-investigate`
 

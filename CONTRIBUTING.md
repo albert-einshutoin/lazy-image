@@ -73,17 +73,17 @@ npm run test:stress:napi
 
 ### Branch Strategy (GitHub Flow)
 
-1. **develop branch**: Base branch for development
-2. **feature/\*** branches: For new feature development
-3. **fix/\*** branches: For bug fixes
-4. **main branch**: For releases (do not push directly)
+1. **main branch**: Protected default branch and release source (do not push directly)
+2. **feature/\*** branches: Short-lived branches for new feature work
+3. **fix/\*** branches: Short-lived branches for bug fixes
+4. **docs/\*** and **chore/\*** branches: Short-lived branches for documentation and maintenance
 
 ### PR Creation Workflow
 
 ```bash
-# 1. Get the latest from develop branch
-git checkout develop
-git pull origin develop
+# 1. Get the latest from main
+git checkout main
+git pull --ff-only origin main
 
 # 2. Create a working branch (include issue number)
 git checkout -b feature/123-add-new-feature
@@ -98,7 +98,7 @@ git commit -m "feat: add new feature (#123)"
 
 # 6. Push and create PR
 git push origin feature/123-add-new-feature
-gh pr create --base develop --title "feat: add new feature" --body "Closes #123"
+gh pr create --base main --title "feat: add new feature" --body "Closes #123"
 ```
 
 ### PR Checklist
@@ -315,17 +315,17 @@ npm run test:types
 
 ### ブランチ戦略（GitHub Flow）
 
-1. **develop ブランチ**: 開発用のベースブランチ
-2. **feature/\*** ブランチ: 新機能開発用
-3. **fix/\*** ブランチ: バグ修正用
-4. **main ブランチ**: リリース用（直接pushしない）
+1. **main ブランチ**: 保護されたデフォルトブランチ兼リリース元（直接pushしない）
+2. **feature/\*** ブランチ: 新機能用の短命ブランチ
+3. **fix/\*** ブランチ: バグ修正用の短命ブランチ
+4. **docs/\*** / **chore/\*** ブランチ: ドキュメント・保守用の短命ブランチ
 
 ### PR作成の流れ
 
 ```bash
-# 1. developブランチから最新を取得
-git checkout develop
-git pull origin develop
+# 1. mainブランチから最新を取得
+git checkout main
+git pull --ff-only origin main
 
 # 2. 作業ブランチを作成（Issue番号を含める）
 git checkout -b feature/123-add-new-feature
@@ -340,7 +340,7 @@ git commit -m "feat: add new feature (#123)"
 
 # 6. プッシュしてPRを作成
 git push origin feature/123-add-new-feature
-gh pr create --base develop --title "feat: add new feature" --body "Closes #123"
+gh pr create --base main --title "feat: add new feature" --body "Closes #123"
 ```
 
 ### PRのチェックリスト
