@@ -1,41 +1,101 @@
 # lazy-image 🦀 (日本語サマリー)
 
-英語版 README が正です。このファイルは主要ポイントの日本語サマリーです。詳細・最新情報は必ず [README.md](./README.md) を参照してください。
+英語版 README.md が正本です。詳細は必ず [README.md](./README.md) を優先してください。
 
-## 位置付け
-- Web 向け画像最適化に特化した意図的なエンジン
-- まだ sharp のドロップイン代替ではありません（互換 API が必要なら sharp を使用）
-- 現行の正本ベンチマークでは、PNG → JPEG の単純な 2 シナリオ（no-resize 変換 / 800px resize）で sharp より **17-20% 小さい JPEG** を生成。AVIF/WebP と複合操作 JPEG pipeline の速度・サイズはワークロード依存で、現行測定では sharp が有利なケースがあります
-- セキュリティ優先: 全メタデータ（EXIF/XMP/ICC）をデフォルトで削除。`keepMetadata()` で保持可能
-- V8 ヒープを経由しない入力パス: `fromPath()/processBatch()` → `toFile()` で入力ファイルを JS ヒープへコピーしない（256 MB 以下は Rust 所有バッファに読み込み、256 MB 超は advisory lock 付き mmap）
-- AVIF の ICC は v0.9.x（libavif-sys）で保持。古い/別構成の AVIF backend では破棄される場合があります
-- `lazy` の意味: [docs/LAZY_SEMANTICS.md](./docs/LAZY_SEMANTICS.md) を参照（constructor は無作業ではない）
-- 思想と非目標: [docs/PROJECT_PHILOSOPHY.md](./docs/PROJECT_PHILOSOPHY.md)
-- Wasm / browser / Edge 方針: [docs/WASM_STRATEGY.md](./docs/WASM_STRATEGY.md)
-- Wasm package / policy API 方針: [docs/WASM_PACKAGE_API.md](./docs/WASM_PACKAGE_API.md)
-- Wasm upload benchmark 方針: [docs/WASM_BENCHMARKING.md](./docs/WASM_BENCHMARKING.md)
+## Quick Start (5 lines)
 
-## 計測可能な指標
-- JS ヒープ増加: `fromPath → toBufferWithMetrics` で **2MB 以下**（`node --expose-gc docs/scripts/measure-zero-copy.js` で検証）
-- RSS 目安: `peak_rss ≤ decoded_bytes + 24MB`（decoded_bytes = width × height × bpp; JPEG bpp=3, PNG/WebP/AVIF bpp=4）。例: 6000×4000 PNG (≈96MB) → 目標 RSS ≤ 120MB
-- 品質比較: `npm run test:bench:compare` は sharp 出力との SSIM/PSNR を出力。公開性能 claim の正本は [docs/TRUE_BENCHMARKS.md](./docs/TRUE_BENCHMARKS.md)
+```javascript
+const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 
-## 主な特徴
-- AVIF/WebP/JPEG/PNG エンコード（AVIF/WebP の速度・サイズ優位はワークロードごとに要検証）
-- ICC/EXIF 保持オプション（AVIFの ICC は v0.9.x 以降、GPS は自動削除）
-- EXIF 自動回転（`autoOrient(false)` で無効化）
-- ディスクバッファ型ストリーミングでメモリを O(1) 近傍に抑制
-- Rust コアによるメモリ安全 & Node.js バインディング (napi-rs)
+const bytesWritten = await ImageEngine.fromPath('input.png')
+  .resize(800)
+  .toFile('output.jpg', 'jpeg', 80);
 
-## 推奨シナリオ
-- CDN/モバイル向けの JPEG 帯域削減
-- バッチ処理・静的サイト生成
-- メモリ制約環境（512MB コンテナなど）
-- AVIF 生成・色精度重視ワークフロー（サイズ/速度は対象画像で検証）
+console.log(`Wrote ${bytesWritten} bytes`);
+```
 
-## セキュリティと互換性
-- 安全策の詳細とサポートバージョン: [SECURITY.md](./SECURITY.md)
-- 互換性のマトリクスと移行ノート: [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md)
+## Choose lazy-image if / Choose sharp if
 
----
-英語版で更新が先行します。疑問点や翻訳改善の提案は Issue/PR で歓迎します。
+| **lazy-image を選ぶ場合** | **sharp を選ぶ場合** |
+|---|---|
+| CDN / 画像配信最適化の帯域節約を優先 | 最大スループットや API 網羅が必要 |
+| serverless・メモリ制約環境で運用 | 描画・合成・高度な画像編集 API が必要 |
+| 既定で安全側寄りの処理を優先 | 既存 sharp エコシステムとの完全互換が必要 |
+| JPEG サイズ最適化を重視 | GIF / SVG / TIFF などが前提で必要 |
+
+**差分が出る主要点**
+
+- JPEG サイズは「canonical な PNG→JPEG の単純ケース」で 17-20% の改善が成立
+- 256MB を超える大きな入力は Rust 側バッファへ全量読み込まず、メモリ安全な mmap 経路で処理します。`fromPath()` を使う際は、同時に対象ファイルの変更・切り詰め・削除を避け、破損や `SIGBUS` / `SIGSEGV` を防いでください。
+- メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
+- API は drop-in 置換ではない（互換が必要なら sharp）
+
+**プロジェクト方針**
+- 目的は smaller web payload + bounded memory + 安全デフォルト
+- 「速い」「常に軽量」は断定しない。ワークロード別検証が必要
+
+## Architecture Overview
+
+`lazy-image` は Rust コア + Node.js バインディングで、入力・変換・エンコードを lazy 実行します。詳細は [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) を参照してください。
+
+## Recommended Paths
+
+- 画像配信最適化: `fromPath() -> resize()/crop() -> toFile()`
+- アップロード検証: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
+- 静的サイト生成バッチ: `processBatch()` / `clone()`
+- 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
+
+## Cost Savings Example (ROI)
+
+README（英語版）と同じ想定計算を参照します。月間配信量とエンコーディング回数次第で節約は拡大します。
+
+## Installation
+
+```bash
+npm install @alberteinshutoin/lazy-image
+```
+
+| 環境 | 概要 |
+|---|---|
+| ランタイム | platform optional dependencies が自動インストール |
+| パッケージサイズ | プラットフォーム別で 6〜9MB 前後 |
+| 自前ビルド | `npm run build` |
+
+## Basic Usage
+
+```javascript
+await ImageEngine.fromPath('photo.jpg')
+  .resize({ width: 800, fit: 'inside' })
+  .toFile('thumb.jpg', 'jpeg', 85);
+```
+
+```javascript
+const { inspectFile } = require('@alberteinshutoin/lazy-image');
+const meta = inspectFile('input.jpg');
+```
+
+## Documentation
+
+英語版の構成と同じです。`docs/`, `examples/`, `spec/` を順に確認してください。
+
+## Features (summary)
+
+- JPEG/PNG/WebP/AVIF エンコード
+- ICC / EXIF / GPS オフロード
+- フォーマット別最適化・メトリクス
+- Image Firewall / Rust メモリ安全
+
+## Development
+
+```bash
+npm install && npm run build
+npm test
+```
+
+## License
+
+MIT
+
+## Credits
+
+[mozjpeg](https://github.com/mozilla/mozjpeg) · [libwebp](https://chromium.googlesource.com/webm/libwebp) · [libavif](https://github.com/AOMediaCodec/libavif) · [fast_image_resize](https://github.com/Cykooz/fast_image_resize) · [img-parts](https://github.com/paolobarbolini/img-parts) · [napi-rs](https://napi.rs/)

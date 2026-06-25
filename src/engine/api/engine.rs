@@ -89,20 +89,7 @@ impl ImageEngine {
     /// deferred until output methods run (true lazy evaluation).
     #[napi(factory)]
     pub fn from(buffer: Buffer) -> Self {
-        let data = buffer.to_vec();
-
-        ImageEngine {
-            source: Some(Source::from_vec(data)),
-            decoded: None,
-            ops: Vec::new(),
-            last_preset: None,
-            icc_profile: OnceLock::new(),
-            exif_data: OnceLock::new(),
-            auto_orient: true,
-            metadata_policy: MetadataPolicy::default_policy(),
-            xmp_warning_emitted: false,
-            firewall: FirewallConfig::disabled(),
-        }
+        Self::with_source(Source::from_vec(buffer.to_vec()))
     }
 
     /// Create engine from a file path.
@@ -127,41 +114,14 @@ impl ImageEngine {
             Err(e) => return Err(crate::error::napi_error_with_code(&env, e)?),
         };
 
-        Ok(ImageEngine {
-            source: Some(source),
-            decoded: None,
-            ops: Vec::new(),
-            last_preset: None,
-            icc_profile: OnceLock::new(),
-            exif_data: OnceLock::new(),
-            auto_orient: true,
-            metadata_policy: MetadataPolicy::default_policy(),
-            xmp_warning_emitted: false,
-            firewall: FirewallConfig::disabled(),
-        })
+        Ok(Self::with_source(source))
     }
 
     /// Create a clone of this engine (for multi-output scenarios)
     #[napi(js_name = "clone")]
     pub fn clone_engine(&self) -> Result<ImageEngine> {
-        // If OnceLock is already initialized, clone the value into a new initialized OnceLock.
-        // If not yet initialized, create a fresh uninitialized OnceLock (avoids forcing extraction).
-        let icc_profile = {
-            let lock = OnceLock::new();
-            if let Some(val) = self.icc_profile.get() {
-                lock.set(val.clone())
-                    .expect("freshly-created OnceLock must accept its first set");
-            }
-            lock
-        };
-        let exif_data = {
-            let lock = OnceLock::new();
-            if let Some(val) = self.exif_data.get() {
-                lock.set(val.clone())
-                    .expect("freshly-created OnceLock must accept its first set");
-            }
-            lock
-        };
+        let icc_profile = clone_once_lock(&self.icc_profile);
+        let exif_data = clone_once_lock(&self.exif_data);
 
         Ok(ImageEngine {
             source: self.source.clone(),
@@ -183,6 +143,22 @@ impl ImageEngine {
 // =============================================================================
 
 impl ImageEngine {
+    /// Build an engine around `source` with all other state at its defaults.
+    pub(crate) fn with_source(source: Source) -> Self {
+        ImageEngine {
+            source: Some(source),
+            decoded: None,
+            ops: Vec::new(),
+            last_preset: None,
+            icc_profile: OnceLock::new(),
+            exif_data: OnceLock::new(),
+            auto_orient: true,
+            metadata_policy: MetadataPolicy::default_policy(),
+            xmp_warning_emitted: false,
+            firewall: FirewallConfig::disabled(),
+        }
+    }
+
     /// Lazily extract and return the ICC profile from the source data.
     /// The extraction runs at most once; subsequent calls return the cached result.
     pub(super) fn icc_profile(&self) -> Option<&Arc<Vec<u8>>> {
@@ -207,5 +183,71 @@ impl ImageEngine {
                     .and_then(|bytes| extract_exif_raw(bytes).map(Arc::new))
             })
             .as_ref()
+    }
+}
+
+/// Clone an initialized `OnceLock` value into a fresh lock without forcing lazy extraction.
+fn clone_once_lock<T: Clone>(source: &OnceLock<T>) -> OnceLock<T> {
+    let lock = OnceLock::new();
+    if let Some(value) = source.get() {
+        lock.set(value.clone())
+            .unwrap_or_else(|_| unreachable!("freshly-created OnceLock must accept its first set"));
+    }
+    lock
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn with_source_initializes_default_engine_state() {
+        let engine = ImageEngine::with_source(Source::from_vec(Vec::new()));
+
+        assert!(engine.source.is_some());
+        assert!(engine.decoded.is_none());
+        assert!(engine.ops.is_empty());
+        assert!(engine.last_preset.is_none());
+        assert!(engine.icc_profile.get().is_none());
+        assert!(engine.exif_data.get().is_none());
+        assert!(engine.auto_orient);
+        assert_eq!(engine.metadata_policy, MetadataPolicy::default_policy());
+        assert!(!engine.xmp_warning_emitted);
+        assert!(!engine.firewall.enabled);
+        assert_eq!(
+            engine.firewall.policy,
+            crate::engine::firewall::FirewallPolicy::Disabled
+        );
+        assert_eq!(engine.firewall.max_pixels, None);
+        assert_eq!(engine.firewall.max_bytes, None);
+        assert_eq!(engine.firewall.timeout_ms, None);
+        assert!(!engine.firewall.reject_metadata);
+    }
+
+    #[test]
+    fn clone_once_lock_does_not_force_uninitialized_lock() {
+        let source = OnceLock::<Option<Arc<Vec<u8>>>>::new();
+
+        let cloned = clone_once_lock(&source);
+
+        assert!(source.get().is_none());
+        assert!(cloned.get().is_none());
+    }
+
+    #[test]
+    fn clone_once_lock_copies_initialized_value() {
+        let source = OnceLock::new();
+        source.set(Some(Arc::new(vec![1, 2, 3]))).unwrap();
+
+        let cloned = clone_once_lock(&source);
+
+        assert_eq!(
+            source.get().unwrap().as_ref().unwrap().as_slice(),
+            &[1, 2, 3]
+        );
+        assert_eq!(
+            cloned.get().unwrap().as_ref().unwrap().as_slice(),
+            &[1, 2, 3]
+        );
     }
 }

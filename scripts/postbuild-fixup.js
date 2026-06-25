@@ -1,9 +1,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 
 const root = path.resolve(__dirname, '..');
 const indexJsPath = path.join(root, 'index.js');
 const indexDtsPath = path.join(root, 'index.d.ts');
+const backupDir = path.join(root, '.tmp', 'postbuild-fixup');
+const indexDtsBackupPath = path.join(backupDir, 'index.d.ts');
 
 const dtsExtraBlock = `
 
@@ -53,6 +56,32 @@ export interface EncodeOptionsInput {
 }
 
 export declare function getErrorCategory(err: unknown): ErrorCategory | null
+
+export interface BatchProgressEvent {
+  /** Completed file count after the latest chunk finishes */
+  completed: number
+  /** Total input file count */
+  total: number
+  /** Results returned by the latest processBatch chunk */
+  lastChunk: BatchResult[]
+  /** Cumulative failed result count through the latest chunk */
+  failed: number
+}
+
+export interface ProcessBatchChunkedOptions extends BatchOptions {
+  /** Number of files per native processBatch call. Default: 16. */
+  chunkSize?: number
+  /** Called after each chunk. Throwing is logged and does not stop processing. */
+  onProgress?: (event: BatchProgressEvent) => void
+  /** Checked before each chunk starts. Aborted signals reject with AbortError. */
+  signal?: AbortSignal
+}
+
+export declare function processBatchChunked(
+  inputs: string[],
+  outputDir: string,
+  options: ProcessBatchChunkedOptions,
+): Promise<BatchResult[]>
 
 export declare function createStreamingPipeline(options: {
   format?: OutputFormat
@@ -119,6 +148,57 @@ export interface FileTargetBytesResult {
 export declare function resolveEncodeProfile(format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): ResolvedEncodeProfile
 `;
 
+function readTextIfExists(filePath) {
+  try {
+    return fs.readFileSync(filePath, 'utf8');
+  } catch (err) {
+    if (err && err.code === 'ENOENT') return null;
+    throw err;
+  }
+}
+
+function readCommittedIndexDts() {
+  try {
+    return execFileSync('git', ['show', 'HEAD:index.d.ts'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch {
+    return null;
+  }
+}
+
+function prepareBuild() {
+  let content = readTextIfExists(indexDtsPath);
+
+  if (!content || content.trim().length === 0) {
+    content = readCommittedIndexDts();
+  }
+
+  if (!content || content.trim().length === 0) {
+    throw new Error('postbuild-fixup: cannot prepare index.d.ts backup; current and committed files are empty or unavailable');
+  }
+
+  fs.mkdirSync(backupDir, { recursive: true });
+  fs.writeFileSync(indexDtsBackupPath, content);
+  console.log('Prepared postbuild index.d.ts backup.');
+}
+
+function restoreDtsIfGeneratedEmpty(content) {
+  if (content.trim().length > 0) return content;
+
+  // NAPI-RS can write an empty index.d.ts when no intermediate typedef files
+  // are emitted. Restoring the last public declarations prevents a clean
+  // build from publishing an empty type surface while still letting the
+  // explicit patch checks below catch real signature drift.
+  const backup = readTextIfExists(indexDtsBackupPath) || readCommittedIndexDts();
+  if (!backup || backup.trim().length === 0) {
+    throw new Error('postbuild-fixup: generated index.d.ts is empty and no usable backup is available');
+  }
+  return backup;
+}
+
 function replaceIfNeeded(content, searchValue, replaceValue) {
   if (content.includes(replaceValue)) return content;
   if (!content.includes(searchValue)) {
@@ -143,7 +223,9 @@ function patchIndexJs() {
 const { createStreamingPipeline } = require('./streaming/pipeline')
 const helpers = require('./lib/helpers')
 const _getErrorCategory = helpers.createGetErrorCategory(nativeBinding.ErrorCategory, nativeBinding.ErrorCode)
+const _processBatchChunked = helpers.createProcessBatchChunked(nativeBinding.ImageEngine)
 module.exports.getErrorCategory = _getErrorCategory
+module.exports.processBatchChunked = _processBatchChunked
 module.exports.createStreamingPipeline = createStreamingPipeline
 module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
 if (nativeBinding && nativeBinding.ImageEngine) {
@@ -155,7 +237,7 @@ if (nativeBinding && nativeBinding.ImageEngine) {
 }
 
 function patchIndexDts() {
-  let content = fs.readFileSync(indexDtsPath, 'utf8');
+  let content = restoreDtsIfGeneratedEmpty(fs.readFileSync(indexDtsPath, 'utf8'));
 
   content = replaceIfNeeded(content, '  preset(name: string): PresetResult', '  preset(name: PresetName): PresetResult');
   content = replaceIfNeeded(content, '  toBuffer(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>', '  toBuffer(format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>');
@@ -196,6 +278,10 @@ function patchIndexDts() {
   fs.writeFileSync(indexDtsPath, content);
 }
 
-patchIndexJs();
-patchIndexDts();
-console.log('Applied postbuild fixups to index.js and index.d.ts.');
+if (process.argv.includes('--prepare')) {
+  prepareBuild();
+} else {
+  patchIndexJs();
+  patchIndexDts();
+  console.log('Applied postbuild fixups to index.js and index.d.ts.');
+}

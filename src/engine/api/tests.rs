@@ -4,15 +4,9 @@
 // Kept as a sibling file so the production modules stay focused.
 
 use crate::engine::resize::fast_resize_owned;
+use crate::engine::test_support::create_test_image;
 #[allow(unused_imports)]
 use image::GenericImageView;
-use image::{DynamicImage, RgbImage};
-
-fn create_test_image(width: u32, height: u32) -> DynamicImage {
-    DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
-        image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
-    }))
-}
 
 #[test]
 fn fast_resize_owned_returns_error_instead_of_dummy_image() {

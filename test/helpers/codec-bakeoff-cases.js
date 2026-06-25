@@ -13,9 +13,11 @@ const FUZZ_TARGET_SEED_COVERAGE = {
     'webp-truncated-riff.bin',
   ],
   exif_parse: [
+    'jpeg-exif-truncated-ifd-app1.bin',
     'jpeg-truncated-exif-app1.bin',
   ],
   icc_profile: [
+    'jpeg-icc-profile-size-mismatch-app2.bin',
     'jpeg-truncated-icc-app2.bin',
   ],
   inspect_header: [

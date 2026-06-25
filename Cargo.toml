@@ -2,10 +2,10 @@
 name = "lazy-image"
 version = "0.16.0"
 edition = "2021"
-description = "Web image optimization engine - smaller JPEG outputs in simple canonical benchmarks, powered by Rust + mozjpeg"
+description = "Web image optimization engine for Node.js with secure defaults and smaller browser-facing JPEG outputs, powered by Rust + mozjpeg"
 license = "MIT"
 repository = "https://github.com/albert-einshutoin/lazy-image"
-keywords = ["image", "resize", "jpeg", "webp", "optimization"]
+keywords = ["image", "resize", "jpeg", "avif", "image-optimization"]
 categories = ["multimedia::images", "compression"]
 rust-version = "1.88"
 exclude = [".github", "test", "docs", "fuzz", "npm"]
@@ -59,7 +59,6 @@ webp = "0.3"
 # PNG decoding (SIMD最適化デコーダ)
 # zune-png 0.5 and zune-jpeg both use zune-core 0.5 (single version in tree).
 zune-png = "0.5"
-zune-core = "0.5"
 
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
@@ -82,7 +81,7 @@ tempfile = "3.27"
 rayon = "1.8"
 
 # Lightweight static bit flags for operation contracts
-bitflags = "2.11"
+bitflags = "2.13"
 
 # Memory mapping for zero-copy file access
 memmap2 = "0.9"
@@ -101,7 +100,7 @@ parking_lot = "0.12"
 # disable_initial_exec_tls feature is required for Node.js native module compatibility
 # (prevents "cannot allocate memory in static TLS block" error)
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
-tikv-jemallocator = { version = "0.6", optional = true, features = ["disable_initial_exec_tls"] }
+tikv-jemallocator = { version = "0.7", optional = true, features = ["disable_initial_exec_tls"] }
 
 [dev-dependencies]
 criterion = "0.8"

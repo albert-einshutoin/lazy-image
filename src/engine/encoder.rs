@@ -45,15 +45,7 @@ fn validate_buffer_len(
 }
 
 fn validate_lossy_quality(quality: u8) -> EncoderResult<u8> {
-    if (1..=100).contains(&quality) {
-        Ok(quality)
-    } else {
-        Err(LazyImageError::invalid_argument(
-            "quality",
-            quality.to_string(),
-            "must be 1-100",
-        ))
-    }
+    crate::ops::Quality::new(quality).map(|quality| quality.get())
 }
 
 /// Single source of truth for mapping quality (1-100) to per-format encoder knobs.
@@ -501,20 +493,9 @@ pub fn encode_avif(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::{DynamicImage, RgbImage, RgbaImage};
-
-    // Helper function to create test images
-    fn create_test_image(width: u32, height: u32) -> DynamicImage {
-        DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
-            image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
-        }))
-    }
-
-    fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
-        DynamicImage::ImageRgba8(RgbaImage::from_fn(width, height, |x, y| {
-            image::Rgba([(x % 256) as u8, (y % 256) as u8, 128, 255])
-        }))
-    }
+    use crate::engine::test_support::{
+        create_test_image, create_test_image_rgba, minimal_icc_profile,
+    };
 
     mod encode_tests {
         use super::*;
@@ -544,30 +525,7 @@ mod tests {
         #[test]
         fn test_encode_jpeg_with_icc() {
             let img = create_test_image(100, 100);
-            // Minimal valid ICC profile
-            let mut icc_data = vec![0u8; 128];
-            icc_data[0] = 0x00;
-            icc_data[1] = 0x00;
-            icc_data[2] = 0x00;
-            icc_data[3] = 0x80; // 128 bytes
-            icc_data[4] = b'A';
-            icc_data[5] = b'D';
-            icc_data[6] = b'B';
-            icc_data[7] = b'E';
-            icc_data[8] = 2;
-            icc_data[12] = b'm';
-            icc_data[13] = b'n';
-            icc_data[14] = b't';
-            icc_data[15] = b'r';
-            icc_data[16] = b'R';
-            icc_data[17] = b'G';
-            icc_data[18] = b'B';
-            icc_data[19] = b' ';
-            icc_data[20] = b'X';
-            icc_data[21] = b'Y';
-            icc_data[22] = b'Z';
-            icc_data[23] = b' ';
-
+            let icc_data = minimal_icc_profile();
             let result = encode_jpeg(&img, 80, Some(&icc_data)).unwrap();
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
         }
@@ -603,29 +561,7 @@ mod tests {
         #[test]
         fn test_encode_jpeg_fast_mode_with_icc() {
             let img = create_test_image(100, 100);
-            let mut icc_data = vec![0u8; 128];
-            icc_data[0] = 0x00;
-            icc_data[1] = 0x00;
-            icc_data[2] = 0x00;
-            icc_data[3] = 0x80;
-            icc_data[4] = b'A';
-            icc_data[5] = b'D';
-            icc_data[6] = b'B';
-            icc_data[7] = b'E';
-            icc_data[8] = 2;
-            icc_data[12] = b'm';
-            icc_data[13] = b'n';
-            icc_data[14] = b't';
-            icc_data[15] = b'r';
-            icc_data[16] = b'R';
-            icc_data[17] = b'G';
-            icc_data[18] = b'B';
-            icc_data[19] = b' ';
-            icc_data[20] = b'X';
-            icc_data[21] = b'Y';
-            icc_data[22] = b'Z';
-            icc_data[23] = b' ';
-
+            let icc_data = minimal_icc_profile();
             let result = encode_jpeg_with_settings(&img, 80, Some(&icc_data), true).unwrap();
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
         }
@@ -655,29 +591,7 @@ mod tests {
         #[test]
         fn test_encode_png_with_icc() {
             let img = create_test_image(100, 100);
-            let mut icc_data = vec![0u8; 128];
-            icc_data[0] = 0x00;
-            icc_data[1] = 0x00;
-            icc_data[2] = 0x00;
-            icc_data[3] = 0x80;
-            icc_data[4] = b'A';
-            icc_data[5] = b'D';
-            icc_data[6] = b'B';
-            icc_data[7] = b'E';
-            icc_data[8] = 2;
-            icc_data[12] = b'm';
-            icc_data[13] = b'n';
-            icc_data[14] = b't';
-            icc_data[15] = b'r';
-            icc_data[16] = b'R';
-            icc_data[17] = b'G';
-            icc_data[18] = b'B';
-            icc_data[19] = b' ';
-            icc_data[20] = b'X';
-            icc_data[21] = b'Y';
-            icc_data[22] = b'Z';
-            icc_data[23] = b' ';
-
+            let icc_data = minimal_icc_profile();
             let result = encode_png(&img, Some(&icc_data)).unwrap();
             assert_eq!(
                 &result[0..8],
@@ -697,29 +611,7 @@ mod tests {
         #[test]
         fn test_encode_webp_with_icc() {
             let img = create_test_image(100, 100);
-            let mut icc_data = vec![0u8; 128];
-            icc_data[0] = 0x00;
-            icc_data[1] = 0x00;
-            icc_data[2] = 0x00;
-            icc_data[3] = 0x80;
-            icc_data[4] = b'A';
-            icc_data[5] = b'D';
-            icc_data[6] = b'B';
-            icc_data[7] = b'E';
-            icc_data[8] = 2;
-            icc_data[12] = b'm';
-            icc_data[13] = b'n';
-            icc_data[14] = b't';
-            icc_data[15] = b'r';
-            icc_data[16] = b'R';
-            icc_data[17] = b'G';
-            icc_data[18] = b'B';
-            icc_data[19] = b' ';
-            icc_data[20] = b'X';
-            icc_data[21] = b'Y';
-            icc_data[22] = b'Z';
-            icc_data[23] = b' ';
-
+            let icc_data = minimal_icc_profile();
             let result = encode_webp(&img, 80, Some(&icc_data)).unwrap();
             assert_eq!(&result[0..4], b"RIFF");
             assert_eq!(&result[8..12], b"WEBP");

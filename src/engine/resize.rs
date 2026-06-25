@@ -151,7 +151,7 @@ pub fn fast_resize(
         }
     };
 
-    fast_resize_internal_with_options(
+    fast_resize_internal_impl(
         src_width,
         src_height,
         src_pixels,
@@ -159,21 +159,6 @@ pub fn fast_resize(
         dst_width,
         dst_height,
         default_resize_options(),
-    )
-}
-
-/// Internal resize implementation (shared by both owned and reference versions)
-pub fn fast_resize_internal_with_options(
-    src_width: u32,
-    src_height: u32,
-    src_pixels: Vec<u8>,
-    pixel_type: PixelType,
-    dst_width: u32,
-    dst_height: u32,
-    options: ResizeOptions,
-) -> std::result::Result<DynamicImage, String> {
-    fast_resize_internal_impl(
-        src_width, src_height, src_pixels, pixel_type, dst_width, dst_height, options,
     )
 }
 
@@ -422,19 +407,8 @@ fn resize_with_source_image<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::{DynamicImage, GenericImageView, RgbImage, RgbaImage};
-
-    fn create_test_image(width: u32, height: u32) -> DynamicImage {
-        DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
-            image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
-        }))
-    }
-
-    fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
-        DynamicImage::ImageRgba8(RgbaImage::from_fn(width, height, |x, y| {
-            image::Rgba([(x % 256) as u8, (y % 256) as u8, 128, 255])
-        }))
-    }
+    use crate::engine::test_support::{create_test_image, create_test_image_rgba};
+    use image::GenericImageView;
 
     mod resize_calc_tests {
         use super::*;

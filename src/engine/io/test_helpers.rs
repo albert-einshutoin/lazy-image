@@ -6,14 +6,12 @@
 // the helpers via `super::super::test_helpers::*` without exposing them to
 // production builds.
 
-use image::{DynamicImage, RgbImage};
+use crate::engine::test_support;
+use image::DynamicImage;
 use std::io::Cursor;
 
-/// Build a deterministic RGB test image.
 pub(super) fn create_test_image(width: u32, height: u32) -> DynamicImage {
-    DynamicImage::ImageRgb8(RgbImage::from_fn(width, height, |x, y| {
-        image::Rgb([(x % 256) as u8, (y % 256) as u8, 128])
-    }))
+    test_support::create_test_image(width, height)
 }
 
 /// Produce a minimal valid JPEG via mozjpeg so format-aware parsers accept it.

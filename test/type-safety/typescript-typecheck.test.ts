@@ -4,12 +4,14 @@
  */
 import * as path from 'path';
 import {
+    BatchProgressEvent,
     ImageEngine,
     ImageMetadata,
     OutputFormat,
     PresetName,
     PresetResult,
     ResizeFit,
+    processBatchChunked,
 } from '../../index';
 import { createStreamingPipeline } from '../../streaming/pipeline';
 
@@ -79,6 +81,20 @@ async function testTypeSafety() {
     );
     
     console.log(`Batch processing: ${batchResults.length} results`);
+
+    const chunkedBatchResults = await processBatchChunked(
+        [imagePath],
+        path.resolve(__dirname, '../../.tmp/type-safety-batch-chunked'),
+        {
+            format: 'webp',
+            quality: 80,
+            chunkSize: 1,
+            onProgress: (event: BatchProgressEvent) => {
+                console.log(`Chunked progress: ${event.completed}/${event.total}`);
+            },
+        }
+    );
+    console.log(`Chunked batch processing: ${chunkedBatchResults.length} results`);
 
     const streamingPipeline = createStreamingPipeline({
         format: 'webp',

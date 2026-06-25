@@ -171,6 +171,22 @@ pub fn sanitize_quality(quality: Option<f64>) -> std::result::Result<Option<u8>,
 }
 
 #[cfg(feature = "napi")]
+pub(crate) fn sanitize_signed_percent(
+    name: &'static str,
+    value: f64,
+) -> std::result::Result<i32, LazyImageError> {
+    let int = ensure_finite_integer(name, value)?;
+    if !(-100..=100).contains(&int) {
+        return Err(LazyImageError::invalid_argument(
+            name,
+            int.to_string(),
+            "expected value between -100 and 100",
+        ));
+    }
+    Ok(int as i32)
+}
+
+#[cfg(feature = "napi")]
 pub fn sanitize_concurrency(concurrency: Option<f64>) -> std::result::Result<u32, LazyImageError> {
     match concurrency {
         None => Ok(0),
@@ -259,4 +275,55 @@ pub fn validate_output_path(path: &str) -> std::result::Result<(), LazyImageErro
     }
 
     Ok(())
+}
+
+#[cfg(all(test, feature = "napi"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sanitize_signed_percent_accepts_boundaries() {
+        assert_eq!(sanitize_signed_percent("brightness", -100.0).unwrap(), -100);
+        assert_eq!(sanitize_signed_percent("brightness", 0.0).unwrap(), 0);
+        assert_eq!(sanitize_signed_percent("brightness", 100.0).unwrap(), 100);
+    }
+
+    #[test]
+    fn sanitize_signed_percent_rejects_out_of_range_values() {
+        let below = sanitize_signed_percent("brightness", -101.0).unwrap_err();
+        assert_eq!(
+            below.to_string(),
+            "Invalid value for brightness: -101. expected value between -100 and 100"
+        );
+
+        let above = sanitize_signed_percent("contrast", 101.0).unwrap_err();
+        assert_eq!(
+            above.to_string(),
+            "Invalid value for contrast: 101. expected value between -100 and 100"
+        );
+    }
+
+    #[test]
+    fn sanitize_signed_percent_rejects_non_finite_values() {
+        let nan = sanitize_signed_percent("brightness", f64::NAN).unwrap_err();
+        assert_eq!(
+            nan.to_string(),
+            "Invalid value for brightness: NaN. must be a finite number"
+        );
+
+        let infinity = sanitize_signed_percent("contrast", f64::INFINITY).unwrap_err();
+        assert_eq!(
+            infinity.to_string(),
+            "Invalid value for contrast: Infinity. must be a finite number"
+        );
+    }
+
+    #[test]
+    fn sanitize_signed_percent_rejects_fractional_values() {
+        let err = sanitize_signed_percent("brightness", 50.5).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Invalid value for brightness: 50.5. must be an integer"
+        );
+    }
 }

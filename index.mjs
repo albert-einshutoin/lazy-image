@@ -13,6 +13,7 @@ export const {
   supportedOutputFormats,
   version,
   getErrorCategory,
+  processBatchChunked,
   createStreamingPipeline,
   resolveEncodeProfile,
 } = mod;
