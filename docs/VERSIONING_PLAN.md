@@ -1,9 +1,9 @@
 # 📋 Versioning Plan & Priorities
 
-> **Current package version**: v0.15.x
-> **Working baseline**: `develop`
+> **Current package version**: v0.16.x
+> **Working baseline**: `main`
 
-このドキュメントは、古い issue 番号ベースの固定計画ではなく、`develop` の現状に合った優先順位を簡潔に示します。
+このドキュメントは、古い issue 番号ベースの固定計画ではなく、`main` の現状に合った優先順位を簡潔に示します。
 
 ## 現在の優先順位
 
