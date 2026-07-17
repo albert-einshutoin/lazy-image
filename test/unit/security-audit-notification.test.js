@@ -106,10 +106,9 @@ test('reports notification failures with actionable context', async () => {
 })
 
 test('only the Cargo audit job receives issue write access and calls the tested module', () => {
-  const workflow = fs.readFileSync(
-    path.join(__dirname, '../../.github/workflows/security.yml'),
-    'utf8',
-  )
+  const workflow = fs
+    .readFileSync(path.join(__dirname, '../../.github/workflows/security.yml'), 'utf8')
+    .replace(/\r\n/g, '\n')
 
   assert.match(workflow, /permissions:\n  contents: read\n\njobs:/)
   assert.match(
