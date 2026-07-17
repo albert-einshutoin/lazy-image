@@ -24,6 +24,7 @@ This document defines how benchmark regression monitoring is operated.
 
 - Baseline file: `.github/benchmarks/baseline.json`
 - Result comparison input: `artifacts/benchmark/sharp-comparison.json`
+- Source-reference quality gate: `artifacts/benchmark/sharp-comparison-quality.json`
 - Result summary outputs:
   - `artifacts/benchmark/regression-summary.md`
   - `artifacts/benchmark/regression-summary.json`
