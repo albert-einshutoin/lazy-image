@@ -61,6 +61,11 @@ export declare class ImageEngine {
    * This is the recommended way for server-side processing of large images.
    */
   static fromPath(path: string): ImageEngine
+  /**
+   * Create an engine from a file path without reading the source on Node's
+   * main thread. File open/read/mmap setup runs on an N-API worker.
+   */
+  static fromPathAsync(path: string): Promise<ImageEngine>
   /** Create a clone of this engine (for multi-output scenarios) */
   clone(): ImageEngine
   /**
@@ -73,10 +78,7 @@ export declare class ImageEngine {
    * The source data is cloned internally, allowing multiple format outputs.
    */
   toBuffer(format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>
-  /**
-   * Convenience: encode using the last applied preset by name.
-   * Equivalent to calling `preset(name)` then `toBuffer(preset.format, preset.quality)`.
-   */
+  /** Encode with a named preset without changing the engine's queued operations. */
   toBufferWithPreset(presetName: PresetName): Promise<Buffer>
   /**
    * Encode to buffer asynchronously with performance metrics.
@@ -86,10 +88,7 @@ export declare class ImageEngine {
    * The source data is cloned internally, allowing multiple format outputs.
    */
   toBufferWithMetrics(format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>
-  /**
-   * Convenience: encode with metrics using a preset name.
-   * Equivalent to `preset(name)` then `toBufferWithMetrics(preset.format, preset.quality)`.
-   */
+  /** Encode with metrics using a named preset without changing the engine's queued operations. */
   toBufferWithMetricsPreset(presetName: PresetName): Promise<OutputWithMetrics>
   /**
    * Encode to buffer with a byte-budget constraint.
@@ -138,7 +137,7 @@ export declare class ImageEngine {
    * Returns `FileEncodeResult { bytesWritten, metrics? }`.
    */
   encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>
-  /** Convenience: encode to file using the preset's recommended format/quality. */
+  /** Encode to file with a named preset without changing the engine's queued operations. */
   toFileWithPreset(path: string, presetName: PresetName): Promise<number>
   /**
    * Resize image. Width or height can be null to maintain aspect ratio.

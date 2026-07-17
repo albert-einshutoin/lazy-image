@@ -10,10 +10,16 @@ API is intentionally narrower and is documented separately in
 
 | Method | Description |
 |--------|-------------|
-| `ImageEngine.from(buffer)` | Create engine from a Buffer (loads into V8 heap). Full pixel decode is deferred, but constructor-time metadata extraction still runs. |
-| `ImageEngine.fromPath(path)` | **Recommended**: Create engine from file path (bypasses V8 heap). Full pixel decode is deferred, but constructor-time file setup and metadata extraction still run. Size-tiered: files ≤ 256 MB are read once into a Rust-owned buffer; files > 256 MB are accessed via `mmap` with an advisory lock and a retained fd. **Note**: On Windows, memory-mapped files (the > 256 MB tier) cannot be deleted while mapped. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#windows-file-locking) and [ZERO_COPY.md](./ZERO_COPY.md). |
+| `ImageEngine.from(buffer)` | Create engine from a Buffer. The bytes cross the V8 boundary and are copied into Rust-owned memory; metadata extraction and full pixel decode are deferred. |
+| `await ImageEngine.fromPathAsync(path)` | **Recommended for servers**: performs file open/read/mmap setup on an N-API worker so a ≤256 MB source read does not block the Node.js event loop. It uses the same SIGBUS-safe source policy and error codes as `fromPath()`. |
+| `ImageEngine.fromPath(path)` | Synchronous compatibility API (bypasses V8 heap but not the event loop). Files ≤ 256 MB are synchronously read into Rust-owned memory on the calling thread; files > 256 MB use `mmap` with an advisory lock and retained fd. **Note**: On Windows, mapped files cannot be deleted while open. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#windows-file-locking) and [ZERO_COPY.md](./ZERO_COPY.md). |
 
 See [LAZY_SEMANTICS.md](./LAZY_SEMANTICS.md) for the exact deferred vs eager contract.
+
+```javascript
+const engine = await ImageEngine.fromPathAsync('input.jpg');
+const bytes = await engine.resize(800).toFile('output.jpg', 'jpeg', 80);
+```
 
 ## Pipeline Operations (chainable)
 

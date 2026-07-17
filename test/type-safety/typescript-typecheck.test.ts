@@ -27,7 +27,9 @@ async function testTypeSafety() {
         console.log(`Testing format: ${format}`);
         
         // These are type-safe and do not cause compile errors
-        const engine = ImageEngine.fromPath(imagePath);
+    const engine = ImageEngine.fromPath(imagePath);
+    const asyncEngine: ImageEngine = await ImageEngine.fromPathAsync(imagePath);
+    await asyncEngine.toBuffer('jpeg', 80);
         const fitMode = fitModes[index % fitModes.length];
         const result = await engine.resize(400, 300, fitMode).toBuffer(format, 80);
         console.log(`✅ ${format}: ${result.length} bytes`);

@@ -48,12 +48,15 @@
   "scripts": {
     "build": "node scripts/postbuild-fixup.js --prepare && napi build --platform --release && node scripts/postbuild-fixup.js",
     "test": "npm run test:js && npm run test:rust && npm run test:wasm:package",
-    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:types && npm run test:examples",
+    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
     "test:js:specs": "node test/integration/run.js",
     "test:js:type-safety": "node test/type-safety/runtime-type-safety-exit.test.js && node test/type-safety/runtime-type-safety.test.js && node test/unit/target-bytes-search.test.js",
     "test:pack-contract": "node scripts/verify-pack.js",
     "test:pack-metadata": "node test/integration/package-metadata.test.js",
     "test:release-policy": "node test/unit/release-policy.test.js",
+    "test:benchmark-quality-gate": "node test/unit/benchmark-quality-gate.test.js",
+    "test:generated-artifact-policy": "node test/unit/generated-artifact-policy.test.js",
+    "test:security-audit-notification": "node test/unit/security-audit-notification.test.js",
     "test:types": "tsc --noEmit",
     "test:examples": "node examples/run-all.mjs",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
@@ -81,10 +84,11 @@
     "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js",
     "test:bench:quality-dual-axis": "node test/benchmarks/quality-dual-axis.bench.js",
     "test:bench:jpegli": "node test/benchmarks/jpegli-bakeoff.bench.js",
-    "test:bench:avif-backends": "node test/benchmarks/avif-backend-bakeoff.bench.js"
+    "test:bench:avif-backends": "node test/benchmarks/avif-backend-bakeoff.bench.js",
+    "check:generated-artifacts": "git diff --exit-code -- index.js index.d.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.7.2",
+    "@napi-rs/cli": "3.7.2",
     "@types/node": "^25.9.3",
     "sharp": "^0.34.5",
     "ssim.js": "^3.5.0",

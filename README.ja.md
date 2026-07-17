@@ -25,8 +25,9 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 **差分が出る主要点**
 
-- JPEG サイズは「canonical な PNG→JPEG の単純ケース」で 17-20% の改善が成立
+- JPEG サイズは同じ encoder quality 設定の canonical な PNG→JPEG 2ケースで 17-20% 小さい。resize ケースは source-reference 品質下限を通過しますが、完全な知覚品質一致を意味しません
 - 256MB を超える大きな入力は Rust 側バッファへ全量読み込まず、メモリ安全な mmap 経路で処理します。`fromPath()` を使う際は、同時に対象ファイルの変更・切り詰め・削除を避け、破損や `SIGBUS` / `SIGSEGV` を防いでください。
+- `fromPath()` は256MB以下のsourceを呼び出しthreadで同期readします。HTTP/serverless経路では `await ImageEngine.fromPathAsync(path)` を使い、source setupをNode.js event loop外へ移してください。
 - メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
 - API は drop-in 置換ではない（互換が必要なら sharp）
 
@@ -40,8 +41,8 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 ## Recommended Paths
 
-- 画像配信最適化: `fromPath() -> resize()/crop() -> toFile()`
-- アップロード検証: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
+- 画像配信最適化: `await fromPathAsync() -> resize()/crop() -> toFile()`
+- アップロード検証: `await fromPathAsync() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
 - 静的サイト生成バッチ: `processBatch()` / `clone()`
 - 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
 

@@ -61,6 +61,7 @@ jobs:
       - name: Run benchmark baseline suite (JSON output)
         env:
           BENCHMARK_OUTPUT_JSON: artifacts/benchmark/sharp-comparison.json
+          BENCHMARK_QUALITY_OUTPUT_JSON: artifacts/benchmark/sharp-comparison-quality.json
         run: |
           mkdir -p artifacts/benchmark
           npm run test:bench:compare
@@ -95,6 +96,9 @@ jobs:
         run: cat artifacts/benchmark/regression-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload benchmark artifacts
+        # Quality gates intentionally fail after writing diagnostics; always
+        # retain those files so a failed run remains actionable.
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: benchmark-regression
