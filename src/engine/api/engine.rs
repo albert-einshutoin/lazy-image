@@ -21,6 +21,38 @@ use std::sync::OnceLock;
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
 
+#[cfg(feature = "napi")]
+pub struct LoadFileTask {
+    path: std::path::PathBuf,
+    last_error: Option<LazyImageError>,
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for LoadFileTask {
+    type Output = Source;
+    type JsValue = ImageEngine;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        load_file_safe(&self.path).map_err(|error| {
+            self.last_error = Some(error.clone());
+            napi::Error::from(error)
+        })
+    }
+
+    fn resolve(&mut self, _env: Env, source: Self::Output) -> Result<Self::JsValue> {
+        Ok(ImageEngine::with_source(source))
+    }
+
+    fn reject(&mut self, env: Env, error: napi::Error) -> Result<Self::JsValue> {
+        let lazy_error = self
+            .last_error
+            .take()
+            .unwrap_or_else(|| LazyImageError::generic(error.to_string()));
+        Err(crate::error::napi_error_with_code(&env, lazy_error)?)
+    }
+}
+
 // MetadataPolicy lives in the sibling `metadata` module (src/engine/metadata.rs).
 // Re-export so downstream code (tasks.rs, engine.rs tests) can still reach it
 // via `super::api::MetadataPolicy` or `crate::engine::api::MetadataPolicy`.
@@ -116,6 +148,30 @@ impl ImageEngine {
         };
 
         Ok(Self::with_source(source))
+    }
+
+    /// Create an engine from a file path without reading the source on Node's
+    /// main thread. File open/read/mmap setup runs on an N-API worker.
+    #[napi(js_name = "fromPathAsync", ts_return_type = "Promise<ImageEngine>")]
+    pub fn from_path_async(env: Env, path: String) -> Result<AsyncTask<LoadFileTask>> {
+        if path.trim().is_empty() {
+            return Err(napi_err(
+                &env,
+                LazyImageError::invalid_argument("path", "<empty>", "path must not be empty"),
+            ));
+        }
+
+        // Resolve relative paths before enqueueing. The worker may run after a
+        // caller changes process.cwd(), but the selected source must retain the
+        // same call-time semantics as synchronous fromPath().
+        let path = std::path::absolute(&path).map_err(|error| {
+            napi_err(&env, LazyImageError::file_read_failed(path.clone(), error))
+        })?;
+
+        Ok(AsyncTask::new(LoadFileTask {
+            path,
+            last_error: None,
+        }))
     }
 
     /// Create a clone of this engine (for multi-output scenarios)

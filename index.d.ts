@@ -61,6 +61,11 @@ export declare class ImageEngine {
    * This is the recommended way for server-side processing of large images.
    */
   static fromPath(path: string): ImageEngine
+  /**
+   * Create an engine from a file path without reading the source on Node's
+   * main thread. File open/read/mmap setup runs on an N-API worker.
+   */
+  static fromPathAsync(path: string): Promise<ImageEngine>
   /** Create a clone of this engine (for multi-output scenarios) */
   clone(): ImageEngine
   /**
