@@ -98,7 +98,8 @@ pub struct ImageEngine {
     /// ICC color profile extracted from source image (lazy: extracted on first access)
     pub(crate) icc_profile: OnceLock<Option<Arc<Vec<u8>>>>,
     /// Raw EXIF data extracted from source image (lazy: extracted on first access)
-    /// Stored as raw bytes to avoid serialization issues with little_exif::Metadata
+    /// Stored as raw bytes so metadata can be sanitized and embedded without
+    /// retaining a parser-specific object graph between lazy output operations.
     pub(crate) exif_data: OnceLock<Option<Arc<Vec<u8>>>>,
     /// Whether to auto-apply EXIF Orientation (default: true)
     pub(crate) auto_orient: bool,
