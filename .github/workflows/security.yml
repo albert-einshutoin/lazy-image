@@ -9,10 +9,16 @@ on:
     - cron: '0 0 * * 0'  # 毎週日曜0時
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   audit:
     name: Cargo Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       
@@ -40,26 +46,11 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
-            const title = '🚨 Security vulnerability detected in dependencies';
-            const body = `Cargo audit found vulnerabilities. Check the [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.`;
-            
-            // 既存のIssueがないか確認
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: 'security',
-              state: 'open'
-            });
-            
-            if (issues.data.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['security', 'priority:high']
-              });
-            }
+            const { upsertSecurityAuditIssue } = require(
+              `${process.env.GITHUB_WORKSPACE}/scripts/security-audit-notification.js`
+            );
+            const result = await upsertSecurityAuditIssue({ github, context });
+            core.info(`Security audit notification: ${result.action} issue #${result.issueNumber}`);
 
   npm-audit:
     name: NPM Audit

@@ -43,10 +43,17 @@ impl ImageEngine {
     ///
     /// `last_error` is always initialised to `None`; task implementations set
     /// it in their `compute` / `reject` path.
-    fn build_task_context(&mut self, format: OutputFormat) -> TaskContext {
+    fn build_task_context(&self, format: OutputFormat) -> TaskContext {
+        self.build_task_context_with_ops(format, self.ops.clone())
+    }
+
+    fn build_task_context_with_ops(
+        &self,
+        format: OutputFormat,
+        ops: Vec<Operation>,
+    ) -> TaskContext {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
-        let ops = self.ops.clone();
         let mut policy = self.metadata_policy;
         policy.apply_firewall(self.firewall.reject_metadata);
         let auto_orient = self.auto_orient;
@@ -76,6 +83,25 @@ impl ImageEngine {
             #[cfg(feature = "napi")]
             last_error: None,
         }
+    }
+
+    fn resolve_preset(env: &Env, preset_name: &str) -> Result<PresetConfig> {
+        PresetConfig::get(preset_name)
+            .ok_or_else(|| napi_err(env, LazyImageError::invalid_preset(preset_name.to_string())))
+    }
+
+    /// Build output-only preset state without mutating the reusable engine.
+    ///
+    /// The resize belongs to this task snapshot, not `self.ops`: retaining it
+    /// on the engine would make later outputs depend on call order.
+    fn build_preset_task_context(&self, preset: &PresetConfig) -> TaskContext {
+        let mut ops = self.ops.clone();
+        ops.push(Operation::Resize {
+            width: preset.width,
+            height: preset.height,
+            fit: ResizeFit::Inside,
+        });
+        self.build_task_context_with_ops(preset.format.clone(), ops)
     }
 }
 
@@ -115,46 +141,17 @@ impl ImageEngine {
         }))
     }
 
-    /// Convenience: encode using the last applied preset by name.
-    /// Equivalent to calling `preset(name)` then `toBuffer(preset.format, preset.quality)`.
+    /// Encode with a named preset without changing the engine's queued operations.
     #[napi(js_name = "toBufferWithPreset", ts_return_type = "Promise<Buffer>")]
     pub fn to_buffer_with_preset(
         &mut self,
         env: Env,
         preset_name: String,
     ) -> Result<AsyncTask<EncodeTask>> {
-        let preset = match PresetConfig::get(&preset_name) {
-            Some(config) => config,
-            None => {
-                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
-
-        // Apply resize ops in-place, mirroring preset()
-        self.ops.push(Operation::Resize {
-            width: preset.width,
-            height: preset.height,
-            fit: ResizeFit::Inside,
-        });
-
-        self.last_preset = Some(preset.clone());
-
-        let (format_str, quality, fast_mode) = match &preset.format {
-            OutputFormat::Jpeg { quality, fast_mode } => {
-                ("jpeg", Some(quality.get()), Some(*fast_mode))
-            }
-            OutputFormat::Png => ("png", None, None),
-            OutputFormat::WebP { quality } => ("webp", Some(quality.get()), None),
-            OutputFormat::Avif { quality } => ("avif", Some(quality.get()), None),
-        };
-
-        self.to_buffer(
-            env,
-            format_str.to_string(),
-            quality.map(|q| q as f64),
-            fast_mode,
-        )
+        let preset = Self::resolve_preset(&env, &preset_name)?;
+        Ok(AsyncTask::new(EncodeTask {
+            ctx: self.build_preset_task_context(&preset),
+        }))
     }
 
     /// Encode to buffer asynchronously with performance metrics.
@@ -184,8 +181,7 @@ impl ImageEngine {
         }))
     }
 
-    /// Convenience: encode with metrics using a preset name.
-    /// Equivalent to `preset(name)` then `toBufferWithMetrics(preset.format, preset.quality)`.
+    /// Encode with metrics using a named preset without changing the engine's queued operations.
     #[napi(
         js_name = "toBufferWithMetricsPreset",
         ts_return_type = "Promise<OutputWithMetrics>"
@@ -195,37 +191,10 @@ impl ImageEngine {
         env: Env,
         preset_name: String,
     ) -> Result<AsyncTask<EncodeWithMetricsTask>> {
-        let preset = match PresetConfig::get(&preset_name) {
-            Some(config) => config,
-            None => {
-                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
-
-        self.ops.push(Operation::Resize {
-            width: preset.width,
-            height: preset.height,
-            fit: ResizeFit::Inside,
-        });
-
-        self.last_preset = Some(preset.clone());
-
-        let (format_str, quality, fast_mode) = match &preset.format {
-            OutputFormat::Jpeg { quality, fast_mode } => {
-                ("jpeg", Some(quality.get()), Some(*fast_mode))
-            }
-            OutputFormat::Png => ("png", None, None),
-            OutputFormat::WebP { quality } => ("webp", Some(quality.get()), None),
-            OutputFormat::Avif { quality } => ("avif", Some(quality.get()), None),
-        };
-
-        self.to_buffer_with_metrics(
-            env,
-            format_str.to_string(),
-            quality.map(|q| q as f64),
-            fast_mode,
-        )
+        let preset = Self::resolve_preset(&env, &preset_name)?;
+        Ok(AsyncTask::new(EncodeWithMetricsTask {
+            ctx: self.build_preset_task_context(&preset),
+        }))
     }
 
     /// Encode to buffer with a byte-budget constraint.
@@ -403,50 +372,24 @@ impl ImageEngine {
     ) -> Result<AsyncTask<crate::engine::tasks::UnifiedEncodeTask>> {
         let want_metrics = options.metrics.unwrap_or(false);
 
-        // Resolve format/quality/fastMode — preset wins when supplied.
-        let (format_str, quality_f64, fast_mode) = if let Some(ref preset_name) = options.preset {
-            let preset = match PresetConfig::get(preset_name) {
-                Some(c) => c,
-                None => {
-                    let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-                }
-            };
-
-            // Apply the preset's resize ops.
-            self.ops.push(Operation::Resize {
-                width: preset.width,
-                height: preset.height,
-                fit: ResizeFit::Inside,
-            });
-            self.last_preset = Some(preset.clone());
-
-            let (f, q, fm) = match &preset.format {
-                OutputFormat::Jpeg { quality, fast_mode } => (
-                    "jpeg".to_string(),
-                    Some(quality.get() as f64),
-                    Some(*fast_mode),
-                ),
-                OutputFormat::Png => ("png".to_string(), None, None),
-                OutputFormat::WebP { quality } => {
-                    ("webp".to_string(), Some(quality.get() as f64), None)
-                }
-                OutputFormat::Avif { quality } => {
-                    ("avif".to_string(), Some(quality.get() as f64), None)
-                }
-            };
-            (f, q, fm.unwrap_or(false))
+        let ctx = if let Some(ref preset_name) = options.preset {
+            let preset = Self::resolve_preset(&env, preset_name)?;
+            self.build_preset_task_context(&preset)
         } else {
-            let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
-            (fmt, options.quality, options.fast_mode.unwrap_or(false))
+            let format = options.format.unwrap_or_else(|| "jpeg".to_string());
+            let quality =
+                validation::sanitize_quality(options.quality).map_err(|e| napi_err(&env, e))?;
+            let output_format = OutputFormat::from_str_with_options(
+                &format,
+                quality,
+                options.fast_mode.unwrap_or(false),
+            )
+            .map_err(|e| napi_err(&env, e))?;
+            self.build_task_context(output_format)
         };
 
-        let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
-        let output_format = OutputFormat::from_str_with_options(&format_str, quality, fast_mode)
-            .map_err(|e| napi_err(&env, e))?;
-
         Ok(AsyncTask::new(crate::engine::tasks::UnifiedEncodeTask {
-            ctx: self.build_task_context(output_format),
+            ctx,
             want_metrics,
         }))
     }
@@ -465,56 +408,32 @@ impl ImageEngine {
         validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
         let want_metrics = options.metrics.unwrap_or(false);
 
-        let (format_str, quality_f64, fast_mode) = if let Some(ref preset_name) = options.preset {
-            let preset = match PresetConfig::get(preset_name) {
-                Some(c) => c,
-                None => {
-                    let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
-                    return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-                }
-            };
-
-            self.ops.push(Operation::Resize {
-                width: preset.width,
-                height: preset.height,
-                fit: ResizeFit::Inside,
-            });
-            self.last_preset = Some(preset.clone());
-
-            let (f, q, fm) = match &preset.format {
-                OutputFormat::Jpeg { quality, fast_mode } => (
-                    "jpeg".to_string(),
-                    Some(quality.get() as f64),
-                    Some(*fast_mode),
-                ),
-                OutputFormat::Png => ("png".to_string(), None, None),
-                OutputFormat::WebP { quality } => {
-                    ("webp".to_string(), Some(quality.get() as f64), None)
-                }
-                OutputFormat::Avif { quality } => {
-                    ("avif".to_string(), Some(quality.get() as f64), None)
-                }
-            };
-            (f, q, fm.unwrap_or(false))
+        let ctx = if let Some(ref preset_name) = options.preset {
+            let preset = Self::resolve_preset(&env, preset_name)?;
+            self.build_preset_task_context(&preset)
         } else {
-            let fmt = options.format.unwrap_or_else(|| "jpeg".to_string());
-            (fmt, options.quality, options.fast_mode.unwrap_or(false))
-        };
-
-        let quality = validation::sanitize_quality(quality_f64).map_err(|e| napi_err(&env, e))?;
-        let output_format = OutputFormat::from_str_with_options(&format_str, quality, fast_mode)
+            let format = options.format.unwrap_or_else(|| "jpeg".to_string());
+            let quality =
+                validation::sanitize_quality(options.quality).map_err(|e| napi_err(&env, e))?;
+            let output_format = OutputFormat::from_str_with_options(
+                &format,
+                quality,
+                options.fast_mode.unwrap_or(false),
+            )
             .map_err(|e| napi_err(&env, e))?;
+            self.build_task_context(output_format)
+        };
 
         Ok(AsyncTask::new(
             crate::engine::tasks::UnifiedEncodeToFileTask {
-                ctx: self.build_task_context(output_format),
+                ctx,
                 want_metrics,
                 output_path: path,
             },
         ))
     }
 
-    /// Convenience: encode to file using the preset's recommended format/quality.
+    /// Encode to file with a named preset without changing the engine's queued operations.
     #[napi(js_name = "toFileWithPreset", ts_return_type = "Promise<number>")]
     pub fn to_file_with_preset(
         &mut self,
@@ -522,37 +441,11 @@ impl ImageEngine {
         path: String,
         preset_name: String,
     ) -> Result<AsyncTask<WriteFileTask>> {
-        let preset = match PresetConfig::get(&preset_name) {
-            Some(config) => config,
-            None => {
-                let lazy_err = LazyImageError::invalid_preset(preset_name.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
-
-        self.ops.push(Operation::Resize {
-            width: preset.width,
-            height: preset.height,
-            fit: ResizeFit::Inside,
-        });
-
-        self.last_preset = Some(preset.clone());
-
-        let (format_str, quality, fast_mode) = match &preset.format {
-            OutputFormat::Jpeg { quality, fast_mode } => {
-                ("jpeg", Some(quality.get()), Some(*fast_mode))
-            }
-            OutputFormat::Png => ("png", None, None),
-            OutputFormat::WebP { quality } => ("webp", Some(quality.get()), None),
-            OutputFormat::Avif { quality } => ("avif", Some(quality.get()), None),
-        };
-
-        self.to_file(
-            env,
-            path,
-            format_str.to_string(),
-            quality.map(|q| q as f64),
-            fast_mode,
-        )
+        let preset = Self::resolve_preset(&env, &preset_name)?;
+        validation::validate_output_path(&path).map_err(|e| napi_err(&env, e))?;
+        Ok(AsyncTask::new(WriteFileTask {
+            ctx: self.build_preset_task_context(&preset),
+            output_path: path,
+        }))
     }
 }
