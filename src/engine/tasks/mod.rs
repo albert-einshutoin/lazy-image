@@ -40,7 +40,7 @@ pub use batch::{BatchTask, BatchWithMetricsTask};
 #[cfg(feature = "napi")]
 pub use context::BatchResult;
 pub use context::TaskContext;
-pub use encode::{EncodeTargetBytesTask, EncodeTask, EncodeWithMetricsTask};
+pub use encode::{EncodeTargetBytesTask, EncodeTask, EncodeWithMetricsTask, WriteTargetBytesTask};
 pub use write::{
     UnifiedEncodeTask, UnifiedEncodeToFileTask, WriteFileTask, WriteFileWithMetricsTask,
 };

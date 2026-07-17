@@ -1,6 +1,10 @@
 const assert = require('node:assert/strict');
 
-const { runTargetBytesSearch } = require('../../lib/helpers');
+const {
+  attachPrototypeMethods,
+  runTargetBytesFileSearch,
+  runTargetBytesSearch,
+} = require('../../lib/helpers');
 
 function test(name, fn) {
   fn()
@@ -93,3 +97,44 @@ test('runTargetBytesSearch throws explicit guidance when native target-bytes met
     /Reinstall @alberteinshutoin\/lazy-image/, 'should instruct reinstall when native method is absent',
   );
 });
+
+test('toFileTargetBytes delegates to native atomic output without returning image data', async () => {
+  class Engine {}
+  attachPrototypeMethods(Engine)
+  const engine = new Engine()
+  let received
+  engine.toFileTargetBytesNative = async (...args) => {
+    received = args
+    return {
+      bytesWritten: 1234,
+      quality: 77,
+      budgetMet: true,
+      targetBytes: 1500,
+      metrics: { totalMs: 1 },
+    }
+  }
+
+  const result = await engine.toFileTargetBytes('/tmp/output.jpg', 'JPG', {
+    targetBytes: 1500,
+    minQuality: 40,
+    maxQuality: 90,
+  })
+
+  assert.deepEqual(received, ['/tmp/output.jpg', 'jpeg', 1500, 40, 90, false, false])
+  assert.equal(result.bytesWritten, 1234)
+  assert.equal('data' in result, false)
+})
+
+test('file search fails clearly when native file output is unavailable', async () => {
+  await assert.rejects(
+    runTargetBytesFileSearch({}, '/tmp/output.jpg', 'jpeg', { targetBytes: 1000 }),
+    /native binding with toFileTargetBytesNative/,
+  )
+})
+
+test('target-bytes options reject values above the native u32 contract', async () => {
+  await assert.rejects(
+    runTargetBytesSearch({}, 'jpeg', { targetBytes: 0x1_0000_0000 }),
+    /u32 limit \(4294967295\)/,
+  )
+})

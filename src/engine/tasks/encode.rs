@@ -5,6 +5,7 @@
 // - `EncodeWithMetricsTask`  — `toBuffer()` with ProcessingMetrics
 // - `EncodeTargetBytesTask`  — binary search over quality for a byte budget
 
+use super::atomic::write_encoded_output;
 use super::context::TaskContext;
 use super::processing::{encode_prepared, prepare_for_encode, EncodeContext};
 use crate::error::LazyImageError;
@@ -95,6 +96,16 @@ pub struct TargetBytesOutput {
     pub metrics: crate::ProcessingMetrics,
 }
 
+/// Result payload for native target-bytes file output. The selected encoded
+/// bytes never cross into V8; only metadata is resolved to JavaScript.
+pub struct FileTargetBytesOutput {
+    pub bytes_written: u32,
+    pub quality: u8,
+    pub budget_met: bool,
+    pub target_bytes: u32,
+    pub metrics: crate::ProcessingMetrics,
+}
+
 define_encode_task! {
     /// Async task that performs byte-budget binary search entirely in Rust.
     ///
@@ -173,7 +184,19 @@ impl EncodeTargetBytesTask {
             let mut metrics = crate::ProcessingMetrics::default();
             let encoded = encode_prepared(&prepared, &iter_ctx, Some(&mut metrics))?;
 
-            let size = encoded.len() as u32;
+            let size = match u32::try_from(encoded.len()) {
+                Ok(size) => size,
+                Err(_) => {
+                    // target_bytes is a u32, so an unrepresentable candidate is
+                    // necessarily over budget. Keep searching lower qualities
+                    // instead of aborting before a representable winner is tried.
+                    high = quality.saturating_sub(1);
+                    if quality == 0 {
+                        break;
+                    }
+                    continue;
+                }
+            };
 
             if size <= self.target_bytes {
                 best_under = Some((encoded, quality, size, metrics));
@@ -226,5 +249,54 @@ impl EncodeTargetBytesTask {
             target_bytes: self.target_bytes,
             metrics,
         })
+    }
+}
+
+/// Async target-bytes search whose winning Rust-owned candidate is written
+/// atomically before resolving metadata to JavaScript.
+pub struct WriteTargetBytesTask {
+    pub search: EncodeTargetBytesTask,
+    pub output_path: String,
+}
+
+#[cfg(feature = "napi")]
+#[napi]
+impl Task for WriteTargetBytesTask {
+    type Output = FileTargetBytesOutput;
+    type JsValue = crate::FileTargetBytesNativeResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let output = match self.search.search() {
+            Ok(output) => output,
+            Err(error) => return Err(self.search.ctx.store_and_convert_error(error)),
+        };
+        let bytes_written = match write_encoded_output(&self.output_path, &output.data) {
+            Ok(bytes_written) => bytes_written,
+            Err(error) => return Err(self.search.ctx.store_and_convert_error(error)),
+        };
+
+        self.search.ctx.last_error = None;
+        Ok(FileTargetBytesOutput {
+            bytes_written,
+            quality: output.quality,
+            budget_met: output.budget_met,
+            target_bytes: output.target_bytes,
+            metrics: output.metrics,
+        })
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        Ok(crate::FileTargetBytesNativeResult {
+            bytes_written: output.bytes_written,
+            quality: output.quality as u32,
+            budget_met: output.budget_met,
+            target_bytes: output.target_bytes,
+            metrics: output.metrics,
+        })
+    }
+
+    fn reject(&mut self, env: Env, error: napi::Error) -> Result<Self::JsValue> {
+        let lazy_error = self.search.ctx.take_stored_error(error);
+        Err(crate::error::napi_error_with_code(&env, lazy_error)?)
     }
 }
