@@ -12,6 +12,9 @@ In current canonical benchmarks, lazy-image produces **17-20% smaller JPEG outpu
   disabled. File-path inputs (`fromPath()`/`processBatch()` → `toFile()`) bypass
   the V8 heap. Small/medium files (≤ 256 MB) are read into Rust-owned memory
   for SIGBUS safety, and files larger than 256 MB use mmap with advisory locks.
+  `fromPath()` performs that setup synchronously; use
+  `await ImageEngine.fromPathAsync(path)` in request-serving code to move it
+  off the Node.js event loop.
   For mmap paths, avoid modifying, truncating, or deleting source files during
   processing; use a copy or `from(Buffer)` for mutable inputs.
   See [docs/ZERO_COPY.md](./docs/ZERO_COPY.md).
@@ -69,8 +72,8 @@ Benchmarks and details: [docs/PERFORMANCE.md](./docs/PERFORMANCE.md). Full compa
 
 Start with one of these workflows:
 
-- **Web delivery optimization**: `fromPath() -> resize()/crop() -> toFile()` for the lowest heap usage and the clearest operational path
-- **Upload sanitization**: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()` for untrusted user uploads
+- **Web delivery optimization**: `await fromPathAsync() -> resize()/crop() -> toFile()` for event-loop-safe source loading and low V8 heap use
+- **Upload sanitization**: `await fromPathAsync() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()` for untrusted user uploads
 - **Build-time / batch generation**: `processBatch()` or `clone()` for static sites, media pipelines, and multi-output generation
 - **Final optimization after editing**: use sharp/ImageMagick for compositing, filters, or animation, then pass the result through lazy-image for final JPEG/WebP/AVIF optimization
 
