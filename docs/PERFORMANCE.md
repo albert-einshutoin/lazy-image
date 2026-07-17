@@ -16,10 +16,12 @@ For the full inventory of public claims and quoting rules, see [BENCHMARK_CLAIMS
 |---------|--------|------------|-------|----------------|
 | PNG → JPEG (no resize, 5000×5000) | Output size | **1,224,894 bytes** | 1,475,223 bytes | lazy-image output is **17.0% smaller** |
 | PNG → JPEG (resize 800px, 5000×5000 input) | Output size | **31,518 bytes** | 39,416 bytes | lazy-image output is **20.0% smaller** |
-| PNG → JPEG (resize 800px, 5000×5000 input) | Encode time | **70ms** | 79ms | lazy-image was **1.13x faster** in this run |
-| PNG → AVIF (no resize, 5000×5000) | Encode time | 12,668ms | **4,729ms** | sharp is faster for this workload |
+| PNG → JPEG (resize 800px, 5000×5000 input) | Encode time | 114ms | **78ms** | sharp was faster in this run |
+| PNG → AVIF (no resize, 5000×5000) | Encode time | 13,440ms | **5,849ms** | sharp is faster for this workload |
 | PNG → AVIF (no resize, 5000×5000) | Output size | 1,718,430 bytes | **1,290,501 bytes** | sharp output is smaller for this workload |
-| PNG → WebP (no resize, 5000×5000) | Encode time | 4,323ms | **909ms** | sharp is much faster for this workload |
+| PNG → WebP (no resize, 5000×5000) | Encode time | 4,379ms | **964ms** | sharp is much faster for this workload |
+
+The JPEG size comparison uses the same encoder quality setting. In the resize case, lazy-image measured SSIM 0.9942 / PSNR 37.07 dB against the resized source reference versus sharp at 0.9955 / 37.65 dB; this is not an exact perceptual-quality-match claim.
 | JPEG/WebP real-time resize workloads | Latency | varies by codec and settings | often faster | use sharp if sub-100ms latency is the main priority |
 
 Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).

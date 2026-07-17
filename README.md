@@ -4,7 +4,7 @@
 
 > **Web image optimization engine for Node.js.** Rust core, smaller JPEG outputs, bounded memory.
 
-In current canonical benchmarks, lazy-image produces **17-20% smaller JPEG outputs** than sharp for the two simple PNG → JPEG cases: no-resize conversion and resize-to-800px. AVIF/WebP size and speed, and multi-operation JPEG pipelines, are workload-specific; benchmark your target image mix before assuming a win.
+At the same encoder quality setting in current canonical benchmarks, lazy-image produces **17-20% smaller JPEG outputs** than sharp for two PNG → JPEG cases: no-resize conversion and resize-to-800px. The resize case passes a source-reference quality floor but is not an exact perceptual-quality match. AVIF/WebP and multi-operation pipelines are workload-specific.
 
 - **Not** a drop-in replacement for sharp — use sharp if you need its full API or maximum throughput.
 - **Security-first**: Metadata is stripped by default; `keepMetadata()` preserves
