@@ -15,7 +15,7 @@ use super::engine::{napi_err, ImageEngine};
 #[cfg(feature = "napi")]
 use crate::engine::tasks::{
     EncodeTargetBytesTask, EncodeTask, EncodeWithMetricsTask, TaskContext, WriteFileTask,
-    WriteFileWithMetricsTask,
+    WriteFileWithMetricsTask, WriteTargetBytesTask,
 };
 #[cfg(feature = "napi")]
 use crate::engine::validation;
@@ -76,6 +76,72 @@ impl ImageEngine {
             #[cfg(feature = "napi")]
             last_error: None,
         }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn build_target_bytes_search(
+        &mut self,
+        env: &Env,
+        format: &str,
+        target_bytes: u32,
+        min_quality: Option<u32>,
+        max_quality: Option<u32>,
+        fast_mode: Option<bool>,
+        strict: Option<bool>,
+    ) -> Result<EncodeTargetBytesTask> {
+        let fast_mode = fast_mode.unwrap_or(false);
+        let min_q_raw = min_quality.unwrap_or(30);
+        let max_q_raw = max_quality.unwrap_or(100);
+        if !(1..=100).contains(&min_q_raw) {
+            return Err(napi_err(
+                env,
+                LazyImageError::invalid_argument(
+                    "minQuality",
+                    min_q_raw.to_string(),
+                    "must be between 1 and 100",
+                ),
+            ));
+        }
+        if !(1..=100).contains(&max_q_raw) {
+            return Err(napi_err(
+                env,
+                LazyImageError::invalid_argument(
+                    "maxQuality",
+                    max_q_raw.to_string(),
+                    "must be between 1 and 100",
+                ),
+            ));
+        }
+        let min_quality = min_q_raw as u8;
+        let max_quality = max_q_raw as u8;
+        if min_quality > max_quality {
+            return Err(napi_err(
+                env,
+                LazyImageError::invalid_argument(
+                    "minQuality",
+                    min_quality.to_string(),
+                    "must be less than or equal to maxQuality",
+                ),
+            ));
+        }
+        if target_bytes == 0 {
+            return Err(napi_err(
+                env,
+                LazyImageError::invalid_argument("targetBytes", "0", "must be a positive number"),
+            ));
+        }
+
+        let output_format =
+            OutputFormat::from_str_with_options(format, Some(max_quality), fast_mode)
+                .map_err(|error| napi_err(env, error))?;
+
+        Ok(EncodeTargetBytesTask {
+            ctx: self.build_task_context(output_format),
+            target_bytes,
+            min_quality,
+            max_quality,
+            quality_floor_policy_strict: strict.unwrap_or(false),
+        })
     }
 }
 
@@ -258,62 +324,48 @@ impl ImageEngine {
         fast_mode: Option<bool>,
         strict: Option<bool>,
     ) -> Result<AsyncTask<EncodeTargetBytesTask>> {
-        let fast_mode = fast_mode.unwrap_or(false);
-
-        // Validate quality range without silently clamping so direct native
-        // callers get the same 1-100 contract as the rest of the API.
-        let min_q_raw = min_quality.unwrap_or(30);
-        let max_q_raw = max_quality.unwrap_or(100);
-        if !(1..=100).contains(&min_q_raw) {
-            return Err(napi_err(
-                &env,
-                LazyImageError::invalid_argument(
-                    "minQuality",
-                    min_q_raw.to_string(),
-                    "must be between 1 and 100",
-                ),
-            ));
-        }
-        if !(1..=100).contains(&max_q_raw) {
-            return Err(napi_err(
-                &env,
-                LazyImageError::invalid_argument(
-                    "maxQuality",
-                    max_q_raw.to_string(),
-                    "must be between 1 and 100",
-                ),
-            ));
-        }
-        let min_q = min_q_raw as u8;
-        let max_q = max_q_raw as u8;
-        if min_q > max_q {
-            return Err(napi_err(
-                &env,
-                LazyImageError::invalid_argument(
-                    "minQuality",
-                    min_q.to_string(),
-                    "must be less than or equal to maxQuality",
-                ),
-            ));
-        }
-        if target_bytes == 0 {
-            return Err(napi_err(
-                &env,
-                LazyImageError::invalid_argument("targetBytes", "0", "must be a positive number"),
-            ));
-        }
-
-        // Parse format (the per-iteration quality is overridden by the byte-budget
-        // search; propagate the real parse error rather than flattening it).
-        let output_format = OutputFormat::from_str_with_options(&format, Some(max_q), fast_mode)
-            .map_err(|e| napi_err(&env, e))?;
-
-        Ok(AsyncTask::new(EncodeTargetBytesTask {
-            ctx: self.build_task_context(output_format),
+        Ok(AsyncTask::new(self.build_target_bytes_search(
+            &env,
+            &format,
             target_bytes,
-            min_quality: min_q,
-            max_quality: max_q,
-            quality_floor_policy_strict: strict.unwrap_or(false),
+            min_quality,
+            max_quality,
+            fast_mode,
+            strict,
+        )?))
+    }
+
+    /// Search for a byte-budget candidate and atomically write it in Rust.
+    #[napi(
+        js_name = "toFileTargetBytesNative",
+        ts_args_type = "path: string, format: OutputFormat, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null",
+        ts_return_type = "Promise<FileTargetBytesNativeResult>"
+    )]
+    #[allow(clippy::too_many_arguments)]
+    pub fn to_file_target_bytes_native(
+        &mut self,
+        env: Env,
+        path: String,
+        format: String,
+        target_bytes: u32,
+        min_quality: Option<u32>,
+        max_quality: Option<u32>,
+        fast_mode: Option<bool>,
+        strict: Option<bool>,
+    ) -> Result<AsyncTask<WriteTargetBytesTask>> {
+        validation::validate_output_path(&path).map_err(|error| napi_err(&env, error))?;
+        let search = self.build_target_bytes_search(
+            &env,
+            &format,
+            target_bytes,
+            min_quality,
+            max_quality,
+            fast_mode,
+            strict,
+        )?;
+        Ok(AsyncTask::new(WriteTargetBytesTask {
+            search,
+            output_path: path,
         }))
     }
 

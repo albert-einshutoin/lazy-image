@@ -368,6 +368,18 @@ pub struct TargetBytesResult {
     pub metrics: ProcessingMetrics,
 }
 
+/// Native file result for byte-budget encoding. The selected image bytes are
+/// written inside the Rust task and are intentionally absent from this object.
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct FileTargetBytesNativeResult {
+    pub bytes_written: u32,
+    pub quality: u32,
+    pub budget_met: bool,
+    pub target_bytes: u32,
+    pub metrics: ProcessingMetrics,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

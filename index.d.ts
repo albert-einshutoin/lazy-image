@@ -106,6 +106,8 @@ export declare class ImageEngine {
    * helper; prefer the public structured-options API. Not covered by semver.
    */
   toBufferTargetBytesNative(format: OutputFormat, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null): Promise<TargetBytesResult>
+  /** Search for a byte-budget candidate and atomically write it in Rust. */
+  toFileTargetBytesNative(path: string, format: OutputFormat, targetBytes: number, minQuality?: number | undefined | null, maxQuality?: number | undefined | null, fastMode?: boolean | undefined | null, strict?: boolean | undefined | null): Promise<FileTargetBytesNativeResult>
   /**
    * Encode and write directly to a file asynchronously.
    * **Memory-efficient**: Combined with fromPath(), this enables
@@ -379,6 +381,18 @@ export interface FileEncodeResult {
 
 export interface FileOutputWithMetrics {
   bytesWritten: number
+  metrics: ProcessingMetrics
+}
+
+/**
+ * Native file result for byte-budget encoding. The selected image bytes are
+ * written inside the Rust task and are intentionally absent from this object.
+ */
+export interface FileTargetBytesNativeResult {
+  bytesWritten: number
+  quality: number
+  budgetMet: boolean
+  targetBytes: number
   metrics: ProcessingMetrics
 }
 
