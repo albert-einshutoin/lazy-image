@@ -30,6 +30,19 @@ async function main() {
     fs.rmSync(outputPath, { force: true })
   }
 
+  const originalCwd = process.cwd()
+  const bareNameDirectory = fs.mkdtempSync(resolveTemp('target-bytes-bare-'))
+  try {
+    process.chdir(bareNameDirectory)
+    const bareNameResult = await ImageEngine.fromPath(INPUT)
+      .resize(400)
+      .toFileTargetBytes('output.jpg', 'jpeg', OPTIONS)
+    assert.equal(fs.statSync('output.jpg').size, bareNameResult.bytesWritten)
+  } finally {
+    process.chdir(originalCwd)
+    fs.rmSync(bareNameDirectory, { recursive: true, force: true })
+  }
+
   const protectedPath = resolveTemp('target-bytes-native-protected.jpg')
   fs.writeFileSync(protectedPath, 'keep this file')
   try {

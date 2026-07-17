@@ -353,7 +353,13 @@ impl ImageEngine {
         fast_mode: Option<bool>,
         strict: Option<bool>,
     ) -> Result<AsyncTask<WriteTargetBytesTask>> {
-        validation::validate_output_path(&path).map_err(|error| napi_err(&env, error))?;
+        // Resolve at API-call time so bare filenames retain the previous JS
+        // implementation's cwd semantics and the worker cannot observe a later chdir.
+        let output_path = std::path::absolute(&path).map_err(|error| {
+            napi_err(&env, LazyImageError::file_write_failed(path.clone(), error))
+        })?;
+        let output_path = output_path.to_string_lossy().into_owned();
+        validation::validate_output_path(&output_path).map_err(|error| napi_err(&env, error))?;
         let search = self.build_target_bytes_search(
             &env,
             &format,
@@ -365,7 +371,7 @@ impl ImageEngine {
         )?;
         Ok(AsyncTask::new(WriteTargetBytesTask {
             search,
-            output_path: path,
+            output_path,
         }))
     }
 

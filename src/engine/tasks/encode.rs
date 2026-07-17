@@ -184,12 +184,19 @@ impl EncodeTargetBytesTask {
             let mut metrics = crate::ProcessingMetrics::default();
             let encoded = encode_prepared(&prepared, &iter_ctx, Some(&mut metrics))?;
 
-            let size = u32::try_from(encoded.len()).map_err(|_| {
-                LazyImageError::encode_failed(
-                    self.ctx.format.as_str(),
-                    "Encoded candidate exceeds the current 4 GiB u32 output contract",
-                )
-            })?;
+            let size = match u32::try_from(encoded.len()) {
+                Ok(size) => size,
+                Err(_) => {
+                    // target_bytes is a u32, so an unrepresentable candidate is
+                    // necessarily over budget. Keep searching lower qualities
+                    // instead of aborting before a representable winner is tried.
+                    high = quality.saturating_sub(1);
+                    if quality == 0 {
+                        break;
+                    }
+                    continue;
+                }
+            };
 
             if size <= self.target_bytes {
                 best_under = Some((encoded, quality, size, metrics));
