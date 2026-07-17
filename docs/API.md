@@ -58,7 +58,7 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `.toFileWithPreset(path, name)` | Self-contained preset file output. Prefer this over deprecated `.preset(name)` when writing a preset result to a file. |
 | `.toFileWithMetrics(path, format, quality?)` | File output with metrics. Returns `{ bytesWritten, metrics }`. |
 | `.toBufferTargetBytes(format, options)` | Searches quality to stay under a byte budget. Returns `{ data, quality, bytesOut, budgetMet, targetBytes, metrics }`. |
-| `.toFileTargetBytes(path, format, options)` | File variant of byte-budget encoding. Returns `{ bytesWritten, quality, budgetMet, targetBytes, metrics }`. |
+| `.toFileTargetBytes(path, format, options)` | Native file variant of byte-budget encoding. Search candidates stay Rust-owned and the winner is atomically written without crossing V8 as a Buffer. Returns metadata only: `{ bytesWritten, quality, budgetMet, targetBytes, metrics }`. The current byte/count contract is `u32`; outputs above 4 GiB fail explicitly. |
 | `.toFileProfile(path, format, profile, quality?)` | Profile-based file encode. |
 | `.processBatch(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Process multiple images in parallel. Returns array of `BatchResult`. `concurrency`: workers (0 = CPU cores). |
 | `.processBatchWithMetrics(inputs, outDir, { format, quality?, fastMode?, concurrency? })` | Batch processing with per-item metrics and a summary. |
@@ -213,6 +213,7 @@ interface FileOutputWithMetrics {
 }
 
 interface TargetBytesOptions {
+  // Positive integer; current native contract is capped at u32::MAX (4,294,967,295).
   targetBytes?: number;
   maxBytes?: number;
   minQuality?: number;
