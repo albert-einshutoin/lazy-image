@@ -160,8 +160,15 @@ impl ImageEngine {
             ));
         }
 
+        // Resolve relative paths before enqueueing. The worker may run after a
+        // caller changes process.cwd(), but the selected source must retain the
+        // same call-time semantics as synchronous fromPath().
+        let path = std::path::absolute(&path).map_err(|error| {
+            napi_err(&env, LazyImageError::file_read_failed(path.clone(), error))
+        })?;
+
         Ok(AsyncTask::new(LoadFileTask {
-            path: std::path::PathBuf::from(path),
+            path,
             last_error: None,
         }))
     }
