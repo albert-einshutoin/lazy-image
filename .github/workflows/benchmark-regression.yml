@@ -61,6 +61,7 @@ jobs:
       - name: Run benchmark baseline suite (JSON output)
         env:
           BENCHMARK_OUTPUT_JSON: artifacts/benchmark/sharp-comparison.json
+          BENCHMARK_QUALITY_OUTPUT_JSON: artifacts/benchmark/sharp-comparison-quality.json
         run: |
           mkdir -p artifacts/benchmark
           npm run test:bench:compare
