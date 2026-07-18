@@ -75,7 +75,7 @@ flate2 = "1.1"
 tempfile = "3.27"
 
 # Parallel processing for batch operations
-rayon = "1.8"
+rayon = "1.12"
 
 # Lightweight static bit flags for operation contracts
 bitflags = "2.13"
