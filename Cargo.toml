@@ -101,7 +101,7 @@ tikv-jemallocator = { version = "0.7", optional = true, features = ["disable_ini
 
 [dev-dependencies]
 criterion = "0.8"
-proptest = "1.10"
+proptest = "1.11"
 semver = "1"
 
 [[bench]]
