@@ -636,8 +636,8 @@ mod tests {
             let high_quality = encode_avif(&img, 80, None).unwrap();
             let low_quality = encode_avif(&img, 40, None).unwrap();
             // Both outputs should be valid AVIF
-            assert!(high_quality.len() > 0);
-            assert!(low_quality.len() > 0);
+            assert!(!high_quality.is_empty());
+            assert!(!low_quality.is_empty());
         }
 
         #[test]

@@ -557,9 +557,7 @@ mod tests {
         let cache_len = get_estimate_cache().lock().len();
         assert!(
             cache_len <= ESTIMATE_CACHE_MAX_ENTRIES,
-            "cache size {} should be <= {}",
-            cache_len,
-            ESTIMATE_CACHE_MAX_ENTRIES
+            "cache size {cache_len} should be <= {ESTIMATE_CACHE_MAX_ENTRIES}"
         );
 
         get_estimate_cache().lock().clear();
