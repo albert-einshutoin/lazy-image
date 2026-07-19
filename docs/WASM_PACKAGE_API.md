@@ -193,16 +193,30 @@ result, unless the runtime can report them cheaply and accurately.
 
 ## Errors
 
-The Wasm package should keep the same broad error taxonomy as the native
-package:
+The Wasm package uses the native package as the source of truth for error
+codes and categories. A shared code always has the same meaning in both
+packages. The `E5xx` range is reserved for failures that exist only at a Wasm
+runtime boundary.
 
-| Range | Category | Wasm examples |
-|---|---|---|
-| `E1xx` | Input | unsupported input type, corrupt image, unsupported input format |
-| `E2xx` | Processing | invalid resize, byte-budget search failure in strict mode |
-| `E3xx` | Output | unsupported output format, encode failure |
-| `E4xx` | Config | invalid profile, invalid policy, invalid limits |
-| `E9xx` | Internal | Wasm initialization failure, unexpected codec panic boundary |
+| Code | Meaning | Category | Previous Wasm code |
+|---|---|---|---|
+| `E111` | Unsupported input image format | `CodecError` | `E103` |
+| `E122` | Input exceeds the pixel limit | `ResourceLimit` | `E105` |
+| `E123` | Input-byte or timeout policy violation | `ResourceLimit` | `E104` / `E205` |
+| `E131` | Codec failed to decode the input | `CodecError` | `E102` |
+| `E203` | Cover resize is missing a required dimension | `UserError` | `E202` |
+| `E204` | Unsupported resize fit | `UserError` | `E202` |
+| `E300` | Codec failed to encode the output | `CodecError` | `E303` |
+| `E400` | Invalid input type, option, output format, or output kind | `UserError` | `E101` / `E301` / `E302` / `E402` |
+| `E401` | Invalid Wasm profile | `UserError` | `E401` |
+| `E500` | Operation aborted through `AbortSignal` | `UserError` | `E204` |
+| `E501` | Requested output kind is unavailable in the runtime | `ResourceLimit` | `E303` |
+| `E502` | Strict target-byte budget cannot be met above the quality floor | `ResourceLimit` | `E201` |
+| `E901` | Codec returned an invalid buffer type | `InternalBug` | `E901` |
+
+`UserError` and `ResourceLimit` are recoverable by default. `CodecError` and
+`InternalBug` are not. Callers should branch on both `code` and `category`
+instead of deriving a category from the numeric range.
 
 Native filesystem errors such as file-not-found, mmap failure, and file-write
 failure must not appear in the browser/Edge API.
@@ -210,7 +224,7 @@ failure must not appear in the browser/Edge API.
 ```typescript
 interface LazyImageWasmError extends Error {
   code: string;
-  category: 'Input' | 'Processing' | 'Output' | 'Config' | 'Internal';
+  category: 'UserError' | 'CodecError' | 'ResourceLimit' | 'InternalBug';
   recoverable: boolean;
   recoveryHint?: string;
 }

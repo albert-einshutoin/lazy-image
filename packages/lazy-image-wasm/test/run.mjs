@@ -7,7 +7,12 @@ import { fileURLToPath } from 'node:url';
 import { createUploadOptimizer } from '../browser.js';
 import { createUploadOptimizer as createEdgeUploadOptimizer } from '../edge.js';
 import edgeExampleHandler from '../examples/edge.mjs';
-import { LazyImageWasmError, VERSION } from '../shared.js';
+import {
+  categoryForCode,
+  ERROR_CATEGORIES,
+  LazyImageWasmError,
+  VERSION,
+} from '../shared.js';
 
 if (typeof globalThis.ImageData !== 'function') {
   globalThis.ImageData = class ImageData {
@@ -66,6 +71,63 @@ const optimizer = await createUploadOptimizer({
 
 await test('exports the workspace package version', async () => {
   assert.equal(VERSION, packageJson.version);
+});
+
+await test('uses the native error category vocabulary and code semantics', async () => {
+  assert.deepEqual(ERROR_CATEGORIES, {
+    UserError: 'UserError',
+    CodecError: 'CodecError',
+    ResourceLimit: 'ResourceLimit',
+    InternalBug: 'InternalBug',
+  });
+
+  const expectedSemantics = {
+    E111: ['CodecError', false],
+    E122: ['ResourceLimit', true],
+    E123: ['ResourceLimit', true],
+    E131: ['CodecError', false],
+    E203: ['UserError', true],
+    E204: ['UserError', true],
+    E300: ['CodecError', false],
+    E400: ['UserError', true],
+    E401: ['UserError', true],
+    E500: ['UserError', true],
+    E501: ['ResourceLimit', true],
+    E502: ['ResourceLimit', true],
+    E901: ['InternalBug', false],
+  };
+
+  for (const [code, [category, recoverable]] of Object.entries(expectedSemantics)) {
+    assert.equal(categoryForCode(code), category, `${code} must use native category semantics`);
+    assert.equal(
+      new LazyImageWasmError(code, 'test').recoverable,
+      recoverable,
+      `${code} must use native recoverability semantics`
+    );
+  }
+});
+
+await test('keeps every non-E5xx Wasm throw code in the native code registry', async () => {
+  const [nativeErrorSource, sharedSource, browserSource] = await Promise.all([
+    fs.readFile(path.join(repoRoot, 'src', 'error.rs'), 'utf8'),
+    fs.readFile(path.join(packageRoot, 'shared.js'), 'utf8'),
+    fs.readFile(path.join(packageRoot, 'browser.js'), 'utf8'),
+  ]);
+  const nativeCodes = new Set(
+    [...nativeErrorSource.matchAll(/=>\s*"(E\d{3})"/g)].map((match) => match[1])
+  );
+  const wasmCodes = new Set(
+    [...`${sharedSource}\n${browserSource}`.matchAll(/throwWasmError\('(E\d{3})'/g)].map(
+      (match) => match[1]
+    )
+  );
+
+  for (const code of wasmCodes) {
+    assert(
+      nativeCodes.has(code) || /^E5\d{2}$/.test(code),
+      `${code} must match a native code or use the Wasm-reserved E5xx range`
+    );
+  }
 });
 
 await test('optimizes JPEG input to JPEG with a target byte budget', async () => {
@@ -135,7 +197,7 @@ await test('cover fit produces exact target dimensions', async () => {
   assert.equal(result.metrics.heightOut, 180);
 });
 
-await test('strict target byte policy fails with structured processing error', async () => {
+await test('strict target byte policy fails with a Wasm resource-limit error', async () => {
   const input = await fixture('test_38kb_input.jpg');
   await assert.rejects(
     () =>
@@ -147,11 +209,14 @@ await test('strict target byte policy fails with structured processing error', a
         qualityFloorPolicy: 'strict',
         output: 'arrayBuffer',
       }),
-    (error) => error instanceof LazyImageWasmError && error.code === 'E201' && error.category === 'Processing'
+    (error) =>
+      error instanceof LazyImageWasmError &&
+      error.code === 'E502' &&
+      error.category === 'ResourceLimit'
   );
 });
 
-await test('limits.timeoutMs fails with structured processing error', async () => {
+await test('limits.timeoutMs uses the native firewall violation contract', async () => {
   let fakeNow = 0;
   const timeoutOptimizer = await createUploadOptimizer({
     wasmModules,
@@ -172,18 +237,25 @@ await test('limits.timeoutMs fails with structured processing error', async () =
           timeoutMs: 1,
         },
       }),
-    (error) => error instanceof LazyImageWasmError && error.code === 'E205' && error.category === 'Processing'
+    (error) =>
+      error instanceof LazyImageWasmError &&
+      error.code === 'E123' &&
+      error.category === 'ResourceLimit'
   );
 });
 
-await test('unsupported input format fails with E103', async () => {
+await test('unsupported input format fails with native E111 semantics', async () => {
   await assert.rejects(
     () =>
       optimizer.optimizeUpload(new Uint8Array([1, 2, 3, 4]), {
         format: 'jpeg',
         output: 'arrayBuffer',
       }),
-    (error) => error instanceof LazyImageWasmError && error.code === 'E103' && error.category === 'Input'
+    (error) =>
+      error instanceof LazyImageWasmError &&
+      error.code === 'E111' &&
+      error.category === 'CodecError' &&
+      error.recoverable === false
   );
 });
 
@@ -270,5 +342,16 @@ await test('edge example handler guards method and maps input errors to HTTP sta
     env
   );
   assert.equal(badResponse.status, 400);
-  assert.match(await badResponse.text(), /^\[E103\]/);
+  assert.match(await badResponse.text(), /^\[E111\]/);
+
+  const corruptJpegResponse = await edgeExampleHandler.fetch(
+    new Request('http://localhost/', {
+      method: 'POST',
+      body: new Uint8Array([0xff, 0xd8, 0xff, 0x00, 0x00, 0x00]),
+      duplex: 'half',
+    }),
+    env
+  );
+  assert.equal(corruptJpegResponse.status, 400);
+  assert.match(await corruptJpegResponse.text(), /^\[E131\]/);
 });

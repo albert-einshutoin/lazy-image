@@ -13,6 +13,10 @@ lazy-image uses a 4-tier error taxonomy to enable proper error handling in JavaS
 | **ResourceLimit** | Memory/time/dimension limits | Sometimes | Dimension exceeds limit, file I/O errors (disk full, memory pressure) |
 | **InternalBug** | Library bugs (should not happen) | No | Internal panic, unexpected state |
 
+Native codes use `E1xx` through `E4xx` and `E9xx`. `E5xx` is reserved for
+Wasm-only runtime boundary failures. When native and Wasm expose the same
+code, the meaning and category must be identical.
+
 ## Panic Policy
 
 All codec entry points (decode/encode/ICC embedding) execute inside a unified

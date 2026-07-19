@@ -1,12 +1,31 @@
 export const VERSION = '0.16.0';
 
-export const ERROR_CATEGORIES = {
-  Input: 'Input',
-  Processing: 'Processing',
-  Output: 'Output',
-  Config: 'Config',
-  Internal: 'Internal',
-};
+export const ERROR_CATEGORIES = Object.freeze({
+  UserError: 'UserError',
+  CodecError: 'CodecError',
+  ResourceLimit: 'ResourceLimit',
+  InternalBug: 'InternalBug',
+});
+
+// Keep this table explicit instead of deriving categories from number ranges.
+// Native codes within the same range intentionally have different recovery
+// semantics, and upload preflight must make the same decision as server-side
+// processing when callers branch on `code` and `category`.
+const ERROR_CODE_CATEGORIES = Object.freeze({
+  E111: ERROR_CATEGORIES.CodecError,
+  E122: ERROR_CATEGORIES.ResourceLimit,
+  E123: ERROR_CATEGORIES.ResourceLimit,
+  E131: ERROR_CATEGORIES.CodecError,
+  E203: ERROR_CATEGORIES.UserError,
+  E204: ERROR_CATEGORIES.UserError,
+  E300: ERROR_CATEGORIES.CodecError,
+  E400: ERROR_CATEGORIES.UserError,
+  E401: ERROR_CATEGORIES.UserError,
+  E500: ERROR_CATEGORIES.UserError,
+  E501: ERROR_CATEGORIES.ResourceLimit,
+  E502: ERROR_CATEGORIES.ResourceLimit,
+  E901: ERROR_CATEGORIES.InternalBug,
+});
 
 const FORMATS = new Set(['jpeg', 'webp']);
 const OUTPUT_KINDS = new Set(['blob', 'arrayBuffer', 'uint8Array']);
@@ -41,7 +60,10 @@ export class LazyImageWasmError extends Error {
     this.name = 'LazyImageWasmError';
     this.code = code;
     this.category = options.category ?? categoryForCode(code);
-    this.recoverable = options.recoverable ?? this.category !== ERROR_CATEGORIES.Internal;
+    this.recoverable =
+      options.recoverable ??
+      (this.category === ERROR_CATEGORIES.UserError ||
+        this.category === ERROR_CATEGORIES.ResourceLimit);
     if (options.recoveryHint) {
       this.recoveryHint = options.recoveryHint;
     }
@@ -49,11 +71,7 @@ export class LazyImageWasmError extends Error {
 }
 
 export function categoryForCode(code) {
-  if (/^E1\d\d$/.test(code)) return ERROR_CATEGORIES.Input;
-  if (/^E2\d\d$/.test(code)) return ERROR_CATEGORIES.Processing;
-  if (/^E3\d\d$/.test(code)) return ERROR_CATEGORIES.Output;
-  if (/^E4\d\d$/.test(code)) return ERROR_CATEGORIES.Config;
-  return ERROR_CATEGORIES.Internal;
+  return ERROR_CODE_CATEGORIES[code] ?? ERROR_CATEGORIES.InternalBug;
 }
 
 export function throwWasmError(code, message, options) {
@@ -71,7 +89,7 @@ export async function inputToBytes(input) {
     const buffer = await input.arrayBuffer();
     return new Uint8Array(buffer);
   }
-  throwWasmError('E101', 'Unsupported input type for Wasm upload optimization.', {
+  throwWasmError('E400', 'Unsupported input type for Wasm upload optimization.', {
     recoveryHint: 'Pass a File, Blob, ArrayBuffer, or Uint8Array.',
   });
 }
@@ -106,7 +124,7 @@ export function detectInputFormat(bytes) {
   ) {
     return 'webp';
   }
-  throwWasmError('E103', 'Unsupported input image format for the Wasm MVP.', {
+  throwWasmError('E111', 'Unsupported input image format for the Wasm MVP.', {
     recoveryHint: 'Use JPEG, PNG, or WebP input for the first upload-preflight slice.',
   });
 }
@@ -129,24 +147,24 @@ export function normalizeOptions(options = {}, runtimeDefaults = {}) {
   };
 
   if (!FORMATS.has(normalized.format)) {
-    throwWasmError('E301', `Unsupported Wasm output format: ${normalized.format}`, {
+    throwWasmError('E400', `Unsupported Wasm output format: ${normalized.format}`, {
       recoveryHint: 'Use "jpeg" or "webp". AVIF is deferred for the MVP.',
     });
   }
   if (!OUTPUT_KINDS.has(normalized.output)) {
-    throwWasmError('E302', `Unsupported Wasm output kind: ${normalized.output}`);
+    throwWasmError('E400', `Unsupported Wasm output kind: ${normalized.output}`);
   }
   if (!FITS.has(normalized.fit)) {
-    throwWasmError('E202', `Unsupported resize fit: ${normalized.fit}`);
+    throwWasmError('E204', `Unsupported resize fit: ${normalized.fit}`);
   }
   if (!FLOOR_POLICIES.has(normalized.qualityFloorPolicy)) {
-    throwWasmError('E402', `Unsupported qualityFloorPolicy: ${normalized.qualityFloorPolicy}`);
+    throwWasmError('E400', `Unsupported qualityFloorPolicy: ${normalized.qualityFloorPolicy}`);
   }
 
   normalized.minQuality = normalizeQuality(normalized.minQuality, 'minQuality');
   normalized.maxQuality = normalizeQuality(normalized.maxQuality, 'maxQuality');
   if (normalized.minQuality > normalized.maxQuality) {
-    throwWasmError('E402', 'minQuality must be less than or equal to maxQuality.');
+    throwWasmError('E400', 'minQuality must be less than or equal to maxQuality.');
   }
 
   for (const key of ['maxWidth', 'maxHeight', 'targetBytes']) {
@@ -168,14 +186,14 @@ export function normalizeOptions(options = {}, runtimeDefaults = {}) {
 
 export function validateInputLimits(bytes, options) {
   if (options.limits.maxBytes !== undefined && bytes.byteLength > options.limits.maxBytes) {
-    throwWasmError('E104', `Input exceeds limits.maxBytes (${options.limits.maxBytes}).`);
+    throwWasmError('E123', `Input exceeds limits.maxBytes (${options.limits.maxBytes}).`);
   }
 }
 
 export function validatePixelLimits(width, height, options) {
   const pixels = width * height;
   if (options.limits.maxPixels !== undefined && pixels > options.limits.maxPixels) {
-    throwWasmError('E105', `Input exceeds limits.maxPixels (${options.limits.maxPixels}).`);
+    throwWasmError('E122', `Input exceeds limits.maxPixels (${options.limits.maxPixels}).`);
   }
 }
 
@@ -188,7 +206,7 @@ export function resolveTargetDimensions(width, height, options) {
 
   if (options.fit === 'cover') {
     if (!maxWidth || !maxHeight) {
-      throwWasmError('E202', 'cover fit requires both maxWidth and maxHeight.');
+      throwWasmError('E203', 'cover fit requires both maxWidth and maxHeight.');
     }
     return {
       width: maxWidth,
@@ -214,7 +232,7 @@ export function resolveTargetDimensions(width, height, options) {
 
 export function checkAbort(signal) {
   if (signal?.aborted) {
-    throwWasmError('E204', 'Wasm upload optimization was aborted.', {
+    throwWasmError('E500', 'Wasm upload optimization was aborted.', {
       recoverable: true,
     });
   }
@@ -228,7 +246,7 @@ export function checkTimeout(startMs, stage, options, now) {
 
   const elapsedMs = nowMs(now) - startMs;
   if (elapsedMs > timeoutMs) {
-    throwWasmError('E205', `Wasm upload optimization exceeded limits.timeoutMs (${timeoutMs}) at ${stage}.`, {
+    throwWasmError('E123', `Wasm upload optimization exceeded limits.timeoutMs (${timeoutMs}) at ${stage}.`, {
       recoveryHint:
         'Increase limits.timeoutMs, reduce max dimensions, or use AbortController for external cancellation.',
     });
@@ -256,7 +274,7 @@ export function makeResultData(arrayBuffer, output, format) {
     return new Uint8Array(exact);
   }
   if (typeof Blob !== 'function') {
-    throwWasmError('E303', 'Blob output is not available in this runtime.', {
+    throwWasmError('E501', 'Blob output is not available in this runtime.', {
       recoveryHint: 'Use output: "arrayBuffer" or output: "uint8Array".',
     });
   }
@@ -270,7 +288,7 @@ export function nowMs(now) {
 function normalizeQuality(value, key) {
   const quality = value === undefined ? undefined : Number(value);
   if (!Number.isInteger(quality) || quality < 1 || quality > 100) {
-    throwWasmError('E402', `${key} must be an integer from 1 to 100.`);
+    throwWasmError('E400', `${key} must be an integer from 1 to 100.`);
   }
   return quality;
 }
@@ -278,7 +296,7 @@ function normalizeQuality(value, key) {
 function normalizePositiveInteger(value, key) {
   const normalized = Number(value);
   if (!Number.isInteger(normalized) || normalized <= 0) {
-    throwWasmError('E402', `${key} must be a positive integer.`);
+    throwWasmError('E400', `${key} must be a positive integer.`);
   }
   return normalized;
 }

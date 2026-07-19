@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **BREAKING (Wasm error contract)**: aligned
+  `@alberteinshutoin/lazy-image-wasm` with the native error taxonomy. Categories
+  are now `UserError`, `CodecError`, `ResourceLimit`, and `InternalBug`.
+  Remapped codes: `E101→E400`, `E102→E131`, `E103→E111`, `E104→E123`,
+  `E105→E122`, fit-related `E202→E203/E204`, `E201→E502`, abort
+  `E204→E500`, timeout `E205→E123`, `E301/E302→E400`, encode
+  `E303→E300`, unavailable Blob `E303→E501`, and validation `E402→E400`.
+
 ---
 
 ## [0.16.0] - 2026-06-06
