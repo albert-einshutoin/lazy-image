@@ -68,6 +68,17 @@ lazy-image implements several security measures to protect against common vulner
 
 Key upstreams: mozjpeg, libwebp, libavif-sys/rav1e, image crate.
 
+### Cargo audit exceptions
+
+CI audits both `Cargo.lock` and the independent `fuzz/Cargo.lock` through
+`scripts/cargo-audit-policy.js`. Temporary advisory exceptions live in
+`.github/security/cargo-audit-exceptions.json` and must include the affected
+lockfile, impact assessment, upstream tracking URL, remediation plan, owner,
+and a `reviewBy` date. The policy test fails once that date expires, so an
+exception cannot silently become permanent. Scope an exception only to the
+lockfile whose dependency path was reviewed; a new occurrence in the other
+dependency graph must fail the audit.
+
 - We monitor upstream security advisories (CVE feeds, GitHub Security Advisories, distro trackers).
 - **Critical/High upstream CVEs**: update dependency and release a patched version within 14 days.
 - **Medium upstream CVEs**: update in the next regular release (target ≤ 30 days).
