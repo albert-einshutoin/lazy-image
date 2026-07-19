@@ -68,7 +68,7 @@ export async function handleOptimizeRequest(request, env = {}) {
     });
   } catch (error) {
     if (error instanceof LazyImageWasmError) {
-      const isCallerError = error.category === 'Input' || error.category === 'Config';
+      const isCallerError = error.category === 'UserError' || error.code === 'E111';
       return new Response(`[${error.code}] ${error.message}`, {
         status: isCallerError ? 400 : 500,
       });

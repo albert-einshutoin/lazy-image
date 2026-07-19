@@ -5,6 +5,11 @@ export type WasmResizeFit = 'inside' | 'cover' | 'fill';
 export type WasmQualityFloorPolicy = 'best-effort' | 'strict';
 export type WasmProfile = 'upload-safe' | 'avatar' | 'attachment' | 'balanced';
 export type WasmRuntime = 'browser' | 'browser-worker' | 'edge-isolate';
+export type WasmErrorCategory =
+  | 'UserError'
+  | 'CodecError'
+  | 'ResourceLimit'
+  | 'InternalBug';
 
 export interface CreateUploadOptimizerOptions {
   wasmModules?: {
@@ -82,9 +87,18 @@ export interface WasmProcessingMetrics {
 
 export declare class LazyImageWasmError extends Error {
   code: string;
-  category: 'Input' | 'Processing' | 'Output' | 'Config' | 'Internal';
+  category: WasmErrorCategory;
   recoverable: boolean;
   recoveryHint?: string;
 }
+
+export declare const ERROR_CATEGORIES: Readonly<{
+  UserError: 'UserError';
+  CodecError: 'CodecError';
+  ResourceLimit: 'ResourceLimit';
+  InternalBug: 'InternalBug';
+}>;
+
+export declare function categoryForCode(code: string): WasmErrorCategory;
 
 export declare const VERSION: string;
