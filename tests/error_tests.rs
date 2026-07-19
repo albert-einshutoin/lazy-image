@@ -664,8 +664,7 @@ fn test_error_code_as_str_exhaustive() {
         assert_eq!(
             code.as_str(),
             *expected,
-            "ErrorCode::{:?} should map to {expected}",
-            code
+            "ErrorCode::{code:?} should map to {expected}"
         );
     }
 }
@@ -703,9 +702,7 @@ fn test_error_code_category_exhaustive() {
         assert_eq!(
             code.category(),
             *expected_cat,
-            "ErrorCode::{:?} should have category {:?}",
-            code,
-            expected_cat
+            "ErrorCode::{code:?} should have category {expected_cat:?}"
         );
     }
 }
@@ -743,15 +740,13 @@ fn test_error_code_is_recoverable_exhaustive() {
     for code in &recoverable_codes {
         assert!(
             code.is_recoverable(),
-            "ErrorCode::{:?} should be recoverable",
-            code
+            "ErrorCode::{code:?} should be recoverable"
         );
     }
     for code in &non_recoverable_codes {
         assert!(
             !code.is_recoverable(),
-            "ErrorCode::{:?} should NOT be recoverable",
-            code
+            "ErrorCode::{code:?} should NOT be recoverable"
         );
     }
 }

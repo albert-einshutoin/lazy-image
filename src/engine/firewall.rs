@@ -568,8 +568,7 @@ mod tests {
         let err_msg = result.unwrap_err().to_string();
         assert!(
             err_msg.contains("EXIF metadata") && err_msg.contains("exceeds limit"),
-            "Expected EXIF size limit message, got: {}",
-            err_msg
+            "Expected EXIF size limit message, got: {err_msg}"
         );
     }
 

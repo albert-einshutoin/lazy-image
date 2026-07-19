@@ -210,8 +210,7 @@ mod corrupted_image_tests {
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("EOI"),
-            "expected EOI error for truncated JPEG, got: {}",
-            err
+            "expected EOI error for truncated JPEG, got: {err}"
         );
     }
 

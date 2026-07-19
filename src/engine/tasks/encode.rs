@@ -44,6 +44,7 @@ define_encode_task! {
 #[cfg(test)]
 impl EncodeTask {
     /// Delegate to TaskContext for backward compatibility with test callers.
+    #[cfg(not(feature = "napi"))]
     pub(crate) fn process_and_encode(
         &self,
         metrics: Option<&mut crate::ProcessingMetrics>,
