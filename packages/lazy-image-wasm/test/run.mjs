@@ -343,4 +343,15 @@ await test('edge example handler guards method and maps input errors to HTTP sta
   );
   assert.equal(badResponse.status, 400);
   assert.match(await badResponse.text(), /^\[E111\]/);
+
+  const corruptJpegResponse = await edgeExampleHandler.fetch(
+    new Request('http://localhost/', {
+      method: 'POST',
+      body: new Uint8Array([0xff, 0xd8, 0xff, 0x00, 0x00, 0x00]),
+      duplex: 'half',
+    }),
+    env
+  );
+  assert.equal(corruptJpegResponse.status, 400);
+  assert.match(await corruptJpegResponse.text(), /^\[E131\]/);
 });
