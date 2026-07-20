@@ -124,7 +124,40 @@ pub fn inspect_header_from_path(path: &str) -> Result<InspectMetadata, LazyImage
 mod tests {
     use super::*;
     use image::{DynamicImage, ImageFormat, Rgb, RgbImage, Rgba, RgbaImage};
+    use std::io::{Read, Seek};
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
     use webp::{AnimEncoder, AnimFrame, WebPConfig};
+
+    struct CountingReader<R> {
+        inner: R,
+        bytes_read: Arc<AtomicUsize>,
+    }
+
+    impl<R: Read> Read for CountingReader<R> {
+        fn read(&mut self, output: &mut [u8]) -> std::io::Result<usize> {
+            let read = self.inner.read(output)?;
+            self.bytes_read.fetch_add(read, Ordering::Relaxed);
+            Ok(read)
+        }
+    }
+
+    impl<R: std::io::BufRead> std::io::BufRead for CountingReader<R> {
+        fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+            self.inner.fill_buf()
+        }
+
+        fn consume(&mut self, amount: usize) {
+            self.bytes_read.fetch_add(amount, Ordering::Relaxed);
+            self.inner.consume(amount);
+        }
+    }
+
+    impl<R: Seek> Seek for CountingReader<R> {
+        fn seek(&mut self, position: SeekFrom) -> std::io::Result<u64> {
+            self.inner.seek(position)
+        }
+    }
 
     fn encode_image(image: DynamicImage, format: ImageFormat) -> Vec<u8> {
         let mut encoded = Vec::new();
@@ -200,5 +233,41 @@ mod tests {
         let metadata = inspect_header_from_bytes(jpeg).unwrap();
         assert_eq!((metadata.width, metadata.height), (8, 8));
         assert_eq!(metadata.orientation, Some(6));
+    }
+
+    #[test]
+    fn jpeg_header_inspection_does_not_read_large_scan_payload() {
+        let base = encode_image(
+            DynamicImage::ImageRgb8(RgbImage::from_pixel(32, 32, Rgb([1, 2, 3]))),
+            ImageFormat::Jpeg,
+        );
+        let mut padded = base;
+        let eoi = padded.len() - 2;
+        padded.splice(eoi..eoi, std::iter::repeat_n(0u8, 4 * 1024 * 1024));
+
+        let bytes_read = Arc::new(AtomicUsize::new(0));
+        let reader = CountingReader {
+            inner: BufReader::with_capacity(8 * 1024, Cursor::new(padded)),
+            bytes_read: Arc::clone(&bytes_read),
+        };
+        let metadata = read_inspect_metadata(reader).unwrap();
+
+        assert_eq!((metadata.width, metadata.height), (32, 32));
+        assert!(
+            bytes_read.load(Ordering::Relaxed) < 64 * 1024,
+            "JPEG inspection must stop after bounded header reads"
+        );
+    }
+
+    #[test]
+    fn path_and_buffer_inspection_return_identical_metadata() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("test/fixtures/test_with_exif.jpg");
+        let bytes = std::fs::read(&path).unwrap();
+
+        assert_eq!(
+            inspect_header_from_path(path.to_str().unwrap()).unwrap(),
+            inspect_header_from_bytes(&bytes).unwrap(),
+        );
     }
 }
