@@ -101,16 +101,90 @@ Expected: compilation fails because `detect_exif_orientation_from_reader` is not
 Replace the existing `detect_exif_orientation()` implementation with:
 
 ```rust
+const MAX_ORIENTATION_SCAN_BYTES: u64 = 64 * 1024;
+
+struct LimitedSeekReader<R> {
+    inner: R,
+    start: u64,
+    position: u64,
+    limit: u64,
+}
+
+impl<R: std::io::Seek> LimitedSeekReader<R> {
+    fn new(mut inner: R, limit: u64) -> std::io::Result<Self> {
+        let start = inner.stream_position()?;
+        Ok(Self { inner, start, position: 0, limit })
+    }
+
+    fn remaining(&self) -> u64 {
+        self.limit.saturating_sub(self.position)
+    }
+}
+
+impl<R: std::io::Read + std::io::Seek> std::io::Read for LimitedSeekReader<R> {
+    fn read(&mut self, output: &mut [u8]) -> std::io::Result<usize> {
+        let allowed = usize::try_from(self.remaining().min(output.len() as u64))
+            .expect("allowed read length is bounded by the output slice");
+        if allowed == 0 {
+            return Ok(0);
+        }
+        let read = self.inner.read(&mut output[..allowed])?;
+        self.position += read as u64;
+        Ok(read)
+    }
+}
+
+impl<R: std::io::BufRead + std::io::Seek> std::io::BufRead for LimitedSeekReader<R> {
+    fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+        let allowed = usize::try_from(self.remaining()).unwrap_or(usize::MAX);
+        let buffer = self.inner.fill_buf()?;
+        Ok(&buffer[..buffer.len().min(allowed)])
+    }
+
+    fn consume(&mut self, amount: usize) {
+        let consumed = usize::try_from(self.remaining().min(amount as u64))
+            .expect("consumed length is bounded by the requested amount");
+        self.inner.consume(consumed);
+        self.position += consumed as u64;
+    }
+}
+
+impl<R: std::io::Seek> std::io::Seek for LimitedSeekReader<R> {
+    fn seek(&mut self, position: std::io::SeekFrom) -> std::io::Result<u64> {
+        let target = match position {
+            std::io::SeekFrom::Start(offset) => i128::from(offset),
+            std::io::SeekFrom::Current(offset) => i128::from(self.position) + i128::from(offset),
+            std::io::SeekFrom::End(offset) => i128::from(self.limit) + i128::from(offset),
+        };
+        if target < 0 || target > i128::from(self.limit) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "seek exceeds orientation scan budget",
+            ));
+        }
+        let target = u64::try_from(target).expect("validated non-negative seek target");
+        let absolute = self.start.checked_add(target).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "orientation seek overflow",
+            )
+        })?;
+        self.inner.seek(std::io::SeekFrom::Start(absolute))?;
+        self.position = target;
+        Ok(target)
+    }
+}
+
 /// Extract EXIF Orientation from a seekable container without decoding pixels.
 ///
 /// The reader form exists so `inspectFile()` can stream EXIF through a
-/// `BufReader<File>` instead of materializing the full file. Invalid containers,
-/// absent tags, and values outside 1-8 all map to `None` because orientation is
-/// optional metadata, not proof that the image pixels are decodable.
+/// `BufReader<File>` instead of materializing the full file. The scan is capped
+/// at 64 KiB so missing metadata cannot consume an image payload.
 pub(crate) fn detect_exif_orientation_from_reader<R: std::io::BufRead + std::io::Seek>(
     reader: &mut R,
 ) -> Option<u16> {
-    let exif = exif::Reader::new().read_from_container(reader).ok()?;
+    let mut limited = LimitedSeekReader::new(reader, MAX_ORIENTATION_SCAN_BYTES).ok()?;
+    let exif = exif::Reader::new().read_from_container(&mut limited).ok()?;
     let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
     let orientation = field.value.get_uint(0)? as u16;
     (1..=8).contains(&orientation).then_some(orientation)
