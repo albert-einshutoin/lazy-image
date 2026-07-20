@@ -1,4 +1,4 @@
-use crate::engine::{detect_exif_orientation_from_reader, run_with_panic_policy};
+use crate::engine::{detect_exif_orientation_bounded_from_reader, run_with_panic_policy};
 use crate::error::LazyImageError;
 use image::{ImageDecoder, ImageFormat, ImageReader};
 use std::fs::File;
@@ -70,10 +70,10 @@ fn inspect_webp<R: BufRead + Seek>(reader: R) -> Result<(u32, u32, bool, bool), 
 }
 
 fn read_inspect_metadata<R: BufRead + Seek>(
-    mut reader: R,
+    reader: &mut R,
 ) -> Result<InspectMetadata, LazyImageError> {
     let format = {
-        let image_reader = ImageReader::new(&mut reader)
+        let image_reader = ImageReader::new(&mut *reader)
             .with_guessed_format()
             .map_err(|error| decode_failed("failed to read image signature", error))?;
         image_reader
@@ -86,9 +86,9 @@ fn read_inspect_metadata<R: BufRead + Seek>(
         .map_err(|error| decode_failed("failed to rewind image header", error))?;
 
     let (width, height, has_alpha, is_animated) = match format {
-        ImageFormat::Jpeg => inspect_jpeg(reader)?,
-        ImageFormat::Png => inspect_png(reader)?,
-        ImageFormat::WebP => inspect_webp(reader)?,
+        ImageFormat::Jpeg => inspect_jpeg(&mut *reader)?,
+        ImageFormat::Png => inspect_png(&mut *reader)?,
+        ImageFormat::WebP => inspect_webp(&mut *reader)?,
         unsupported => return Err(LazyImageError::unsupported_format(format_name(unsupported))),
     };
 
@@ -102,22 +102,27 @@ fn read_inspect_metadata<R: BufRead + Seek>(
     })
 }
 
-pub fn inspect_header_from_bytes(data: &[u8]) -> Result<InspectMetadata, LazyImageError> {
-    let mut metadata = read_inspect_metadata(Cursor::new(data))?;
-    let mut orientation_reader = Cursor::new(data);
-    metadata.orientation = detect_exif_orientation_from_reader(&mut orientation_reader);
+fn inspect_header_from_reader<R: BufRead + Seek>(
+    reader: &mut R,
+) -> Result<InspectMetadata, LazyImageError> {
+    let mut metadata = read_inspect_metadata(reader)?;
+    reader
+        .seek(SeekFrom::Start(0))
+        .map_err(|error| decode_failed("failed to rewind image for EXIF inspection", error))?;
+    metadata.orientation = detect_exif_orientation_bounded_from_reader(reader);
     Ok(metadata)
 }
 
-pub fn inspect_header_from_path(path: &str) -> Result<InspectMetadata, LazyImageError> {
-    let open = || {
-        File::open(path).map_err(|error| LazyImageError::file_read_failed(path.to_string(), error))
-    };
+pub fn inspect_header_from_bytes(data: &[u8]) -> Result<InspectMetadata, LazyImageError> {
+    inspect_header_from_reader(&mut Cursor::new(data))
+}
 
-    let mut metadata = read_inspect_metadata(BufReader::new(open()?))?;
-    let mut orientation_reader = BufReader::new(open()?);
-    metadata.orientation = detect_exif_orientation_from_reader(&mut orientation_reader);
-    Ok(metadata)
+pub fn inspect_header_from_path(path: &str) -> Result<InspectMetadata, LazyImageError> {
+    // Open once so dimensions, traits, and orientation are derived from the
+    // same inode even if an attacker replaces the path during inspection.
+    let file = File::open(path)
+        .map_err(|error| LazyImageError::file_read_failed(path.to_string(), error))?;
+    inspect_header_from_reader(&mut BufReader::new(file))
 }
 
 #[cfg(test)]
@@ -247,17 +252,17 @@ mod tests {
         let orientation_input = padded.clone();
 
         let metadata_bytes_read = Arc::new(AtomicUsize::new(0));
-        let reader = CountingReader {
+        let mut reader = CountingReader {
             inner: BufReader::with_capacity(8 * 1024, Cursor::new(padded)),
             bytes_read: Arc::clone(&metadata_bytes_read),
         };
-        let metadata = read_inspect_metadata(reader).unwrap();
+        let metadata = read_inspect_metadata(&mut reader).unwrap();
         let orientation_bytes_read = Arc::new(AtomicUsize::new(0));
         let mut orientation_reader = CountingReader {
             inner: BufReader::with_capacity(8 * 1024, Cursor::new(orientation_input)),
             bytes_read: Arc::clone(&orientation_bytes_read),
         };
-        let orientation = detect_exif_orientation_from_reader(&mut orientation_reader);
+        let orientation = detect_exif_orientation_bounded_from_reader(&mut orientation_reader);
 
         assert_eq!((metadata.width, metadata.height), (32, 32));
         assert_eq!(orientation, None);
@@ -281,5 +286,27 @@ mod tests {
             inspect_header_from_path(path.to_str().unwrap()).unwrap(),
             inspect_header_from_bytes(&bytes).unwrap(),
         );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn opened_reader_keeps_metadata_from_one_file_after_path_replacement() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("upload");
+        let original = include_bytes!("../test/fixtures/test_with_exif.jpg");
+        std::fs::write(&path, original).unwrap();
+        let opened = File::open(&path).unwrap();
+
+        std::fs::rename(&path, directory.path().join("original")).unwrap();
+        let replacement = encode_image(
+            DynamicImage::ImageRgba8(RgbaImage::from_pixel(1, 1, Rgba([1, 2, 3, 4]))),
+            ImageFormat::Png,
+        );
+        std::fs::write(&path, replacement).unwrap();
+
+        let metadata = inspect_header_from_reader(&mut BufReader::new(opened)).unwrap();
+        assert_eq!((metadata.width, metadata.height), (8, 8));
+        assert_eq!(metadata.format.as_deref(), Some("jpeg"));
+        assert_eq!(metadata.orientation, Some(6));
     }
 }

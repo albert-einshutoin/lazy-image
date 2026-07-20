@@ -10,7 +10,9 @@ use image::{
     RgbaImage,
 };
 use mozjpeg::Decompress;
-use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
+use std::io::Cursor;
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+use std::io::{self, BufRead, Read, Seek, SeekFrom};
 use webp::{BitstreamFeatures, Decoder as WebPDecoder};
 use zune_png::zune_core::bytestream::ZCursor;
 use zune_png::zune_core::colorspace::ColorSpace;
@@ -451,6 +453,7 @@ fn is_webp_riff(bytes: &[u8]) -> bool {
     bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP"
 }
 
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 const MAX_ORIENTATION_SCAN_BYTES: u64 = 64 * 1024;
 
 /// Presents a seekable reader as a smaller virtual stream.
@@ -459,6 +462,7 @@ const MAX_ORIENTATION_SCAN_BYTES: u64 = 64 * 1024;
 /// consume image payloads. Inspection only needs a best-effort Orientation tag,
 /// so cap that scan at the documented 64 KiB preflight budget. The wrapper also
 /// constrains seeks, preventing a container parser from bypassing the budget.
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 struct LimitedSeekReader<R> {
     inner: R,
     start: u64,
@@ -466,6 +470,7 @@ struct LimitedSeekReader<R> {
     limit: u64,
 }
 
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 impl<R: Seek> LimitedSeekReader<R> {
     fn new(mut inner: R, limit: u64) -> io::Result<Self> {
         let start = inner.stream_position()?;
@@ -482,6 +487,7 @@ impl<R: Seek> LimitedSeekReader<R> {
     }
 }
 
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 impl<R: Read + Seek> Read for LimitedSeekReader<R> {
     fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
         let allowed = usize::try_from(self.remaining().min(output.len() as u64))
@@ -495,6 +501,7 @@ impl<R: Read + Seek> Read for LimitedSeekReader<R> {
     }
 }
 
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 impl<R: BufRead + Seek> BufRead for LimitedSeekReader<R> {
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
         let allowed = usize::try_from(self.remaining()).unwrap_or(usize::MAX);
@@ -510,6 +517,7 @@ impl<R: BufRead + Seek> BufRead for LimitedSeekReader<R> {
     }
 }
 
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 impl<R: Seek> Seek for LimitedSeekReader<R> {
     fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
         let target = match position {
@@ -535,12 +543,13 @@ impl<R: Seek> Seek for LimitedSeekReader<R> {
 
 /// Extract EXIF Orientation from a seekable container without decoding pixels.
 ///
-/// The reader form exists so `inspectFile()` can stream EXIF through a
+/// This bounded reader form exists so `inspectFile()` can stream EXIF through a
 /// `BufReader<File>` instead of materializing the full file. The scan is capped
 /// at 64 KiB so missing metadata cannot consume an image payload. Invalid
 /// containers, absent tags, and values outside 1-8 all map to `None` because
 /// orientation is optional metadata, not proof that pixels are decodable.
-pub(crate) fn detect_exif_orientation_from_reader<R: BufRead + Seek>(
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub(crate) fn detect_exif_orientation_bounded_from_reader<R: BufRead + Seek>(
     reader: &mut R,
 ) -> Option<u16> {
     let mut limited = LimitedSeekReader::new(reader, MAX_ORIENTATION_SCAN_BYTES).ok()?;
@@ -551,9 +560,16 @@ pub(crate) fn detect_exif_orientation_from_reader<R: BufRead + Seek>(
 }
 
 /// Extract EXIF Orientation tag (1-8). Returns None if missing or invalid.
+///
+/// Processing intentionally scans the complete in-memory source. Its firewall
+/// checks already run before this call, and preserving auto-orientation for
+/// valid EXIF after large APP/ICC/XMP segments is part of the existing API.
 pub fn detect_exif_orientation(bytes: &[u8]) -> Option<u16> {
     let mut cursor = Cursor::new(bytes);
-    detect_exif_orientation_from_reader(&mut cursor)
+    let exif = exif::Reader::new().read_from_container(&mut cursor).ok()?;
+    let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
+    let orientation = field.value.get_uint(0)? as u16;
+    (1..=8).contains(&orientation).then_some(orientation)
 }
 
 #[cfg(test)]
@@ -561,17 +577,42 @@ mod tests {
     use super::*;
     use image::{ImageFormat, Rgb, RgbImage};
 
+    fn exif_after_large_app_segment() -> Vec<u8> {
+        let jpeg = include_bytes!("../../test/fixtures/test_with_exif.jpg");
+        let mut padded = Vec::with_capacity(jpeg.len() + 65_537);
+        padded.extend_from_slice(&jpeg[..2]);
+        padded.extend_from_slice(&[0xff, 0xe2, 0xff, 0xff]);
+        padded.extend(std::iter::repeat_n(0u8, 65_533));
+        padded.extend_from_slice(&jpeg[2..]);
+        padded
+    }
+
     #[test]
-    fn test_detect_exif_orientation_from_reader_matches_byte_api() {
+    fn bounded_orientation_reader_matches_byte_api_within_budget() {
         let jpeg = include_bytes!("../../test/fixtures/test_with_exif.jpg");
         let mut reader = std::io::BufReader::new(std::io::Cursor::new(jpeg));
 
         assert_eq!(detect_exif_orientation(jpeg), Some(6));
-        assert_eq!(detect_exif_orientation_from_reader(&mut reader), Some(6));
+        assert_eq!(
+            detect_exif_orientation_bounded_from_reader(&mut reader),
+            Some(6)
+        );
     }
 
     #[test]
-    fn test_detect_exif_orientation_from_reader_rejects_out_of_range_value() {
+    fn processing_orientation_lookup_scans_beyond_preflight_budget() {
+        let jpeg = exif_after_large_app_segment();
+        let mut preflight_reader = std::io::BufReader::new(std::io::Cursor::new(&jpeg));
+
+        assert_eq!(detect_exif_orientation(&jpeg), Some(6));
+        assert_eq!(
+            detect_exif_orientation_bounded_from_reader(&mut preflight_reader),
+            None
+        );
+    }
+
+    #[test]
+    fn bounded_orientation_reader_rejects_out_of_range_value() {
         let mut invalid = include_bytes!("../../test/fixtures/test_with_exif.jpg").to_vec();
         let orientation_value = invalid
             .windows(4)
@@ -580,7 +621,10 @@ mod tests {
         invalid[orientation_value] = 9;
         let mut reader = std::io::BufReader::new(std::io::Cursor::new(invalid));
 
-        assert_eq!(detect_exif_orientation_from_reader(&mut reader), None);
+        assert_eq!(
+            detect_exif_orientation_bounded_from_reader(&mut reader),
+            None
+        );
     }
 
     #[test]

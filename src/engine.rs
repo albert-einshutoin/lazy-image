@@ -67,7 +67,7 @@ pub use io::Source;
 #[cfg(any(feature = "napi", feature = "fuzzing", test))]
 pub(crate) use common::run_with_panic_policy;
 #[cfg(any(feature = "napi", feature = "fuzzing", test))]
-pub(crate) use decoder::detect_exif_orientation_from_reader;
+pub(crate) use decoder::detect_exif_orientation_bounded_from_reader;
 
 // -----------------------------------------------------------------------------
 // Internal items exposed to integration tests and fuzz targets
