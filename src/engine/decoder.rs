@@ -451,26 +451,53 @@ fn is_webp_riff(bytes: &[u8]) -> bool {
     bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP"
 }
 
+/// Extract EXIF Orientation from a seekable container without decoding pixels.
+///
+/// The reader form exists so `inspectFile()` can parse EXIF through a bounded
+/// `BufReader<File>` instead of materializing the full file. Invalid containers,
+/// absent tags, and values outside 1-8 all map to `None` because orientation is
+/// optional metadata, not proof that the image pixels are decodable.
+pub(crate) fn detect_exif_orientation_from_reader<R: std::io::BufRead + std::io::Seek>(
+    reader: &mut R,
+) -> Option<u16> {
+    let exif = exif::Reader::new().read_from_container(reader).ok()?;
+    let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
+    let orientation = field.value.get_uint(0)? as u16;
+    (1..=8).contains(&orientation).then_some(orientation)
+}
+
 /// Extract EXIF Orientation tag (1-8). Returns None if missing or invalid.
 pub fn detect_exif_orientation(bytes: &[u8]) -> Option<u16> {
     let mut cursor = Cursor::new(bytes);
-    let exif_reader = exif::Reader::new();
-    let exif = exif_reader.read_from_container(&mut cursor).ok()?;
-    let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
-    // exif crate can represent as Short/Long; use get_uint for safety
-    let value = field.value.get_uint(0)?;
-    let orientation = value as u16;
-    if (1..=8).contains(&orientation) {
-        Some(orientation)
-    } else {
-        None
-    }
+    detect_exif_orientation_from_reader(&mut cursor)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use image::{ImageFormat, Rgb, RgbImage};
+
+    #[test]
+    fn test_detect_exif_orientation_from_reader_matches_byte_api() {
+        let jpeg = include_bytes!("../../test/fixtures/test_with_exif.jpg");
+        let mut reader = std::io::BufReader::new(std::io::Cursor::new(jpeg));
+
+        assert_eq!(detect_exif_orientation(jpeg), Some(6));
+        assert_eq!(detect_exif_orientation_from_reader(&mut reader), Some(6));
+    }
+
+    #[test]
+    fn test_detect_exif_orientation_from_reader_rejects_out_of_range_value() {
+        let mut invalid = include_bytes!("../../test/fixtures/test_with_exif.jpg").to_vec();
+        let orientation_value = invalid
+            .windows(4)
+            .position(|window| window == [0x06, 0x00, 0x00, 0x00])
+            .expect("fixture must contain the little-endian orientation value");
+        invalid[orientation_value] = 9;
+        let mut reader = std::io::BufReader::new(std::io::Cursor::new(invalid));
+
+        assert_eq!(detect_exif_orientation_from_reader(&mut reader), None);
+    }
 
     fn encode_webp(width: u32, height: u32) -> Vec<u8> {
         let rgb: Vec<u8> = std::iter::repeat_n([10u8, 20u8, 30u8], (width * height) as usize)
