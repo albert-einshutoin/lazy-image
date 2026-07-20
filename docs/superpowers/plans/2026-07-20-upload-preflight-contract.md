@@ -1158,7 +1158,7 @@ Expected: native build and all JS, Rust, type, package, example, and Wasm tests 
 
 ```bash
 npm audit --audit-level=high
-cargo audit --locked
+cargo audit
 ```
 
 Expected: npm reports zero high/critical vulnerabilities. Cargo audit reports no unapproved vulnerability; the repository's documented unmaintained-warning exception, if still current, must be reported rather than hidden.
@@ -1220,7 +1220,7 @@ existing typed error taxonomy instead of returning optimistic trait values.
 - `npm run build`
 - `npm test`
 - `npm audit --audit-level=high`
-- `cargo audit --locked`
+- `cargo audit`
 - counted-reader regression included; benchmark JSON posted as a PR comment
 
 Closes #700
