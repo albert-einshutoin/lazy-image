@@ -75,12 +75,32 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 
 | Method | Description |
 |--------|-------------|
-| `inspect(buffer)` | Get metadata from Buffer without decoding pixels |
-| `inspectFile(path)` | **Recommended**: Get metadata from file without loading into memory |
+| `inspect(buffer)` | Inspect JPEG/PNG/WebP header traits without decoding pixels |
+| `inspectFile(path)` | **Recommended**: Inspect the same traits from a path without copying encoded bytes into the Node.js heap |
 | `.dimensions()` | Get `{ width, height }` (requires decode) |
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
 | `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
 | `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Not a true chunk-by-chunk transform stream. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
+
+### Upload preflight contract
+
+`inspect()` and `inspectFile()` use format-specific JPEG, PNG, and WebP header
+readers. They never decode pixel buffers. On every successful call:
+
+- `hasAlpha` is authoritative: `false` means the supported container was
+  confirmed opaque, not that an unknown state was coerced to false.
+- `isAnimated` is authoritative: APNG and animated WebP return `true`; JPEG is
+  always static.
+- `orientation` is the EXIF Orientation value `1` through `8`, or `undefined`
+  when the tag is absent, invalid, or cannot be parsed.
+- `width` and `height` are the encoded dimensions. They are not swapped for
+  Orientation values such as `6` or `8`.
+
+Malformed supported headers reject with the typed decode error `E131`.
+Unsupported containers reject with `E111`; callers must not invent safe trait
+values after either failure. `inspectFile()` uses filesystem readers for header
+and EXIF inspection, so encoded image bytes do not cross the V8 boundary as a
+`Buffer`.
 
 ---
 
@@ -134,7 +154,10 @@ See [QUALITY_EFFORT_SPEED_MAPPING.md](./QUALITY_EFFORT_SPEED_MAPPING.md) for cro
 interface ImageMetadata {
   width: number;
   height: number;
-  format: string | null;
+  format?: InputFormat;
+  hasAlpha: boolean;
+  isAnimated: boolean;
+  orientation?: number;
 }
 
 interface Dimensions {

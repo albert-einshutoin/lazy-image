@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Authoritative upload preflight traits**: `inspect()` and `inspectFile()` now
+  report `hasAlpha`, `isAnimated`, and optional EXIF `orientation` for
+  JPEG/PNG/WebP without decoding pixels. Unknown or malformed traits fail
+  through the typed error contract instead of being treated as safe defaults.
+
 ### Changed
 - **BREAKING (Wasm error contract)**: aligned
   `@alberteinshutoin/lazy-image-wasm` with the native error taxonomy. Categories
