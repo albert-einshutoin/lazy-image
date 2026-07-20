@@ -69,6 +69,10 @@ async function testTypeSafety() {
     // Metadata inspection is also type-safe
     const metadata: ImageMetadata = await import('../../index').then(m => m.inspectFile(imagePath));
     console.log(`Image: ${metadata.width}x${metadata.height}, format: ${metadata.format}`);
+    const alpha: boolean = metadata.hasAlpha;
+    const animated: boolean = metadata.isAnimated;
+    const orientation: number | undefined = metadata.orientation;
+    console.log(`Traits: alpha=${alpha}, animated=${animated}, orientation=${orientation}`);
     
     // Batch processing is also type-safe
     const batchEngine = ImageEngine.fromPath(imagePath).resize(200, 200);

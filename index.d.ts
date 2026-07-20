@@ -401,29 +401,36 @@ export interface FirewallLimitOptions {
   timeoutMs?: number
 }
 
-/** Image metadata returned by inspect() */
+/** Header-only image traits returned by inspect() and inspectFile(). */
 export interface ImageMetadata {
-  /** Image width in pixels */
+  /** Encoded width in pixels; orientation is reported separately. */
   width: number
-  /** Image height in pixels */
+  /** Encoded height in pixels; orientation is reported separately. */
   height: number
-  /** Detected input format from runtime inspection (for example: jpeg, jpg, png, webp, gif) */
+  /** Detected supported input format. */
   format?: InputFormat
+  /** Whether the encoded image has alpha/transparency. */
+  hasAlpha: boolean
+  /** Whether the container declares animation frames. */
+  isAnimated: boolean
+  /** EXIF Orientation 1-8, or undefined when absent or invalid. */
+  orientation?: number
 }
 
 /**
- * Inspect image metadata WITHOUT decoding pixels.
- * This reads only the header bytes - extremely fast (<1ms).
+ * Inspect image header/container metadata without decoding pixels.
  *
- * Use this to check dimensions before processing, or to reject
- * images that are too large without wasting CPU on decoding.
+ * Use this to check dimensions, alpha, animation, and EXIF orientation before
+ * processing untrusted input. A successful result contains authoritative
+ * alpha and animation booleans for JPEG, PNG, or WebP.
  */
 export declare function inspect(buffer: Buffer): ImageMetadata
 
 /**
- * Inspect image metadata from a file path WITHOUT loading into Node.js heap.
- * **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
- * This is the recommended way for server-side metadata inspection.
+ * Inspect image header/container metadata directly from a file path.
+ *
+ * The file path variant avoids loading encoded image bytes into the Node.js
+ * heap and is the recommended server-side preflight API.
  */
 export declare function inspectFile(path: string): ImageMetadata
 
