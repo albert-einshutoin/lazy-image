@@ -104,6 +104,29 @@ function createApng(width = 2, height = 2) {
     ]);
 }
 
+function createIndexedTransparentPng(width = 2, height = 2) {
+    const signature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+    const ihdr = Buffer.alloc(13);
+    ihdr.writeUInt32BE(width, 0);
+    ihdr.writeUInt32BE(height, 4);
+    ihdr[8] = 8;
+    ihdr[9] = 3; // indexed color
+
+    const raw = Buffer.alloc((width + 1) * height);
+    for (let y = 0; y < height; y++) {
+        raw[y * (width + 1)] = 0; // filter type 0; all pixels use palette index 0
+    }
+
+    return Buffer.concat([
+        signature,
+        pngChunk('IHDR', ihdr),
+        pngChunk('PLTE', Buffer.from([255, 0, 0])),
+        pngChunk('tRNS', Buffer.from([0])), // palette index 0 is fully transparent
+        pngChunk('IDAT', zlib.deflateSync(raw)),
+        pngChunk('IEND', Buffer.alloc(0)),
+    ]);
+}
+
 module.exports = {
     buildCrc32Table,
     crc32,
@@ -111,4 +134,5 @@ module.exports = {
     createGrayscalePng,
     createRgbaPng,
     createApng,
+    createIndexedTransparentPng,
 };

@@ -4,7 +4,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { inspect, inspectFile } = require('../../index');
 const { resolveFixture, resolveTemp } = require('../helpers/paths');
-const { createApng, createGrayscalePng, createRgbaPng } = require('../helpers/png-helpers');
+const {
+    createApng,
+    createGrayscalePng,
+    createIndexedTransparentPng,
+    createRgbaPng,
+} = require('../helpers/png-helpers');
 
 function assertParity(buffer, fileName) {
     const path = resolveTemp(fileName);
@@ -35,6 +40,11 @@ const alphaPng = createRgbaPng(3, 2);
 assert.equal(inspect(alphaPng).hasAlpha, true);
 assert.equal(inspect(alphaPng).isAnimated, false);
 assertParity(alphaPng, 'inspect-preflight/alpha.png');
+
+const indexedTransparency = createIndexedTransparentPng();
+assert.equal(inspect(indexedTransparency).hasAlpha, true);
+assert.equal(inspect(indexedTransparency).isAnimated, false);
+assertParity(indexedTransparency, 'inspect-preflight/indexed-transparency.png');
 
 const apng = createApng();
 assert.equal(inspect(apng).hasAlpha, true);
