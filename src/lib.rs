@@ -41,7 +41,7 @@ use napi::bindgen_prelude::*;
 // Re-export the engine for NAPI
 #[cfg(feature = "napi")]
 pub use engine::ImageEngine;
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
+#[cfg(feature = "napi")]
 use error::LazyImageError;
 
 #[cfg(any(feature = "napi", feature = "fuzzing", test))]
