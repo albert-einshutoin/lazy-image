@@ -54,6 +54,8 @@ A successful call never has an unknown alpha or animation state. If a supported 
 
 **Files:**
 - Modify: `src/engine/decoder.rs:454-468`
+- Modify: `test/fixtures/create-exif-test-image.js:110-122`
+- Generated: `test/fixtures/test_with_exif.jpg`
 - Test: `src/engine/decoder.rs` test module
 
 - [ ] **Step 1: Add the failing reader-parity test**
@@ -99,16 +101,90 @@ Expected: compilation fails because `detect_exif_orientation_from_reader` is not
 Replace the existing `detect_exif_orientation()` implementation with:
 
 ```rust
+const MAX_ORIENTATION_SCAN_BYTES: u64 = 64 * 1024;
+
+struct LimitedSeekReader<R> {
+    inner: R,
+    start: u64,
+    position: u64,
+    limit: u64,
+}
+
+impl<R: std::io::Seek> LimitedSeekReader<R> {
+    fn new(mut inner: R, limit: u64) -> std::io::Result<Self> {
+        let start = inner.stream_position()?;
+        Ok(Self { inner, start, position: 0, limit })
+    }
+
+    fn remaining(&self) -> u64 {
+        self.limit.saturating_sub(self.position)
+    }
+}
+
+impl<R: std::io::Read + std::io::Seek> std::io::Read for LimitedSeekReader<R> {
+    fn read(&mut self, output: &mut [u8]) -> std::io::Result<usize> {
+        let allowed = usize::try_from(self.remaining().min(output.len() as u64))
+            .expect("allowed read length is bounded by the output slice");
+        if allowed == 0 {
+            return Ok(0);
+        }
+        let read = self.inner.read(&mut output[..allowed])?;
+        self.position += read as u64;
+        Ok(read)
+    }
+}
+
+impl<R: std::io::BufRead + std::io::Seek> std::io::BufRead for LimitedSeekReader<R> {
+    fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+        let allowed = usize::try_from(self.remaining()).unwrap_or(usize::MAX);
+        let buffer = self.inner.fill_buf()?;
+        Ok(&buffer[..buffer.len().min(allowed)])
+    }
+
+    fn consume(&mut self, amount: usize) {
+        let consumed = usize::try_from(self.remaining().min(amount as u64))
+            .expect("consumed length is bounded by the requested amount");
+        self.inner.consume(consumed);
+        self.position += consumed as u64;
+    }
+}
+
+impl<R: std::io::Seek> std::io::Seek for LimitedSeekReader<R> {
+    fn seek(&mut self, position: std::io::SeekFrom) -> std::io::Result<u64> {
+        let target = match position {
+            std::io::SeekFrom::Start(offset) => i128::from(offset),
+            std::io::SeekFrom::Current(offset) => i128::from(self.position) + i128::from(offset),
+            std::io::SeekFrom::End(offset) => i128::from(self.limit) + i128::from(offset),
+        };
+        if target < 0 || target > i128::from(self.limit) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "seek exceeds orientation scan budget",
+            ));
+        }
+        let target = u64::try_from(target).expect("validated non-negative seek target");
+        let absolute = self.start.checked_add(target).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "orientation seek overflow",
+            )
+        })?;
+        self.inner.seek(std::io::SeekFrom::Start(absolute))?;
+        self.position = target;
+        Ok(target)
+    }
+}
+
 /// Extract EXIF Orientation from a seekable container without decoding pixels.
 ///
-/// The reader form exists so `inspectFile()` can parse EXIF through a bounded
-/// `BufReader<File>` instead of materializing the full file. Invalid containers,
-/// absent tags, and values outside 1-8 all map to `None` because orientation is
-/// optional metadata, not proof that the image pixels are decodable.
+/// The reader form exists so `inspectFile()` can stream EXIF through a
+/// `BufReader<File>` instead of materializing the full file. The scan is capped
+/// at 64 KiB so missing metadata cannot consume an image payload.
 pub(crate) fn detect_exif_orientation_from_reader<R: std::io::BufRead + std::io::Seek>(
     reader: &mut R,
 ) -> Option<u16> {
-    let exif = exif::Reader::new().read_from_container(reader).ok()?;
+    let mut limited = LimitedSeekReader::new(reader, MAX_ORIENTATION_SCAN_BYTES).ok()?;
+    let exif = exif::Reader::new().read_from_container(&mut limited).ok()?;
     let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
     let orientation = field.value.get_uint(0)? as u16;
     (1..=8).contains(&orientation).then_some(orientation)
@@ -123,6 +199,31 @@ pub fn detect_exif_orientation(bytes: &[u8]) -> Option<u16> {
 
 - [ ] **Step 4: Run the decoder tests**
 
+Before running the reader parity test, repair the fixture generator's GPS
+rational pointer. Its payload begins after the GPS entry count, two entries,
+and the next-IFD pointer; the historical `+ 50` offset makes kamadak-exif reject
+the entire container as truncated.
+
+```js
+const gpsEntriesCount = 2;
+// ...
+createIfdEntry(
+  0x0002,
+  5,
+  3,
+  gpsIfdOffset + 2 + (gpsEntriesCount * 12) + 4,
+)
+```
+
+Regenerate the committed fixture:
+
+```bash
+node test/fixtures/create-exif-test-image.js
+```
+
+Expected: a 232-byte JPEG is regenerated and a standards-compliant EXIF reader
+can read Orientation `6` without a truncated-field error.
+
 Run:
 
 ```bash
@@ -134,6 +235,8 @@ Expected: both new tests and existing orientation consumers pass.
 - [ ] **Step 5: Commit the focused refactor**
 
 ```bash
+git add test/fixtures/create-exif-test-image.js test/fixtures/test_with_exif.jpg
+git commit -m "fix(test): generate valid GPS EXIF offsets"
 git add src/engine/decoder.rs
 git commit -m "refactor(inspect): share seekable orientation parser"
 ```
@@ -142,6 +245,7 @@ git commit -m "refactor(inspect): share seekable orientation parser"
 
 **Files:**
 - Create: `src/inspect.rs`
+- Modify: `src/engine.rs:55-70`
 - Modify: `src/lib.rs:30-92`
 - Test: `src/inspect.rs`
 
@@ -150,8 +254,7 @@ git commit -m "refactor(inspect): share seekable orientation parser"
 Create `src/inspect.rs` with the imports, public result type, and the following tests first. The production functions named in the tests intentionally do not exist yet.
 
 ```rust
-use crate::engine::common::run_with_panic_policy;
-use crate::engine::decoder::detect_exif_orientation_from_reader;
+use crate::engine::{detect_exif_orientation_from_reader, run_with_panic_policy};
 use crate::error::LazyImageError;
 use image::{ImageDecoder, ImageFormat, ImageReader};
 use std::fs::File;
@@ -260,6 +363,17 @@ mod inspect;
 ```
 
 Do not remove the old `InspectMetadata` implementation yet; the red test only establishes the new module contract.
+
+The new sibling module cannot reach `engine`'s private child modules directly.
+After observing the missing-function RED state, add only these crate-private
+coordination points in `src/engine.rs`; do not expose either internal module:
+
+```rust
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub(crate) use common::run_with_panic_policy;
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub(crate) use decoder::detect_exif_orientation_from_reader;
+```
 
 - [ ] **Step 2: Run the new module tests and verify the missing API fails**
 
@@ -398,7 +512,7 @@ stays internal. The extra `test` module condition above lets
 creating dead code in a non-test, no-feature build.
 
 ```rust
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 pub use inspect::{inspect_header_from_bytes, inspect_header_from_path, InspectMetadata};
 ```
 
@@ -419,7 +533,7 @@ Expected: all inspection tests pass, fuzz regression returns errors without pani
 - [ ] **Step 6: Commit the new inspection core**
 
 ```bash
-git add src/inspect.rs src/lib.rs
+git add src/inspect.rs src/lib.rs src/engine.rs
 git commit -m "feat(inspect): report authoritative image traits"
 ```
 
@@ -481,18 +595,30 @@ fn jpeg_header_inspection_does_not_read_large_scan_payload() {
     let mut padded = base;
     let eoi = padded.len() - 2;
     padded.splice(eoi..eoi, std::iter::repeat_n(0u8, 4 * 1024 * 1024));
+    let orientation_input = padded.clone();
 
-    let bytes_read = Arc::new(AtomicUsize::new(0));
+    let metadata_bytes_read = Arc::new(AtomicUsize::new(0));
     let reader = CountingReader {
         inner: BufReader::with_capacity(8 * 1024, Cursor::new(padded)),
-        bytes_read: Arc::clone(&bytes_read),
+        bytes_read: Arc::clone(&metadata_bytes_read),
     };
     let metadata = read_inspect_metadata(reader).unwrap();
+    let orientation_bytes_read = Arc::new(AtomicUsize::new(0));
+    let mut orientation_reader = CountingReader {
+        inner: BufReader::with_capacity(8 * 1024, Cursor::new(orientation_input)),
+        bytes_read: Arc::clone(&orientation_bytes_read),
+    };
+    let orientation = detect_exif_orientation_from_reader(&mut orientation_reader);
 
     assert_eq!((metadata.width, metadata.height), (32, 32));
+    assert_eq!(orientation, None);
     assert!(
-        bytes_read.load(Ordering::Relaxed) < 64 * 1024,
-        "JPEG inspection must stop after bounded header reads"
+        metadata_bytes_read.load(Ordering::Relaxed) < 64 * 1024,
+        "JPEG trait inspection must stop after bounded header reads"
+    );
+    assert!(
+        orientation_bytes_read.load(Ordering::Relaxed) <= 64 * 1024,
+        "EXIF inspection must honor the 64 KiB scan budget"
     );
 }
 ```
@@ -550,6 +676,8 @@ git commit -m "test(inspect): bound file header reads"
 **Files:**
 - Modify: `src/lib.rs:94-115`
 - Modify: `test/type-safety/typescript-typecheck.test.ts:68-73`
+- Modify: `scripts/postbuild-fixup.js`
+- Modify: `test/unit/generated-artifact-policy.test.js`
 - Generated: `index.d.ts`
 
 - [ ] **Step 1: Add the TypeScript usage that must fail before the N-API fields exist**
@@ -637,19 +765,42 @@ export interface ImageMetadata {
 ```
 
 Expected: typecheck passes and generated `index.d.ts` retains the existing
-`format?: InputFormat` narrowing while adding the three new properties. A
-`format?: string` result fails this step and must be fixed in the existing
-postbuild declaration transformer, with its fixture test, before committing.
+`format?: InputFormat` narrowing while adding the three new properties. Update
+the postbuild transform to match the new Rustdoc and export the focused helper
+behind a `require.main === module` guard:
+
+```js
+function patchImageMetadataFormat(content) {
+  return replaceIfNeeded(
+    content,
+    '  /** Detected supported input format. */\n  format?: string',
+    '  /** Detected supported input format. */\n  format?: InputFormat',
+  );
+}
+```
+
+In `test/unit/generated-artifact-policy.test.js`, pass a minimal generated
+`ImageMetadata` fixture to this helper and assert both the `InputFormat`
+narrowing and a thrown `replacement target not found` error for
+`format?: unknown`. Run:
+
+```bash
+node test/unit/generated-artifact-policy.test.js
+```
+
+Expected: the fixture passes and generator drift fails closed.
 
 - [ ] **Step 5: Verify generated artifact provenance**
 
 Run:
 
 ```bash
-npm run check:generated-artifacts
+git diff -- index.js index.d.ts
 ```
 
-Expected: only intended generated `index.d.ts` changes remain; `index.js` is unchanged unless N-API legitimately updates its export footer.
+Expected before commit: only intended generated `index.d.ts` changes remain;
+`index.js` is unchanged. After committing the public type surface, run
+`npm run check:generated-artifacts`; it must exit 0.
 
 - [ ] **Step 6: Commit the public type surface**
 
@@ -1007,7 +1158,7 @@ Expected: native build and all JS, Rust, type, package, example, and Wasm tests 
 
 ```bash
 npm audit --audit-level=high
-cargo audit --locked
+cargo audit
 ```
 
 Expected: npm reports zero high/critical vulnerabilities. Cargo audit reports no unapproved vulnerability; the repository's documented unmaintained-warning exception, if still current, must be reported rather than hidden.
@@ -1069,7 +1220,7 @@ existing typed error taxonomy instead of returning optimistic trait values.
 - `npm run build`
 - `npm test`
 - `npm audit --audit-level=high`
-- `cargo audit --locked`
+- `cargo audit`
 - counted-reader regression included; benchmark JSON posted as a PR comment
 
 Closes #700
@@ -1103,3 +1254,7 @@ gh pr comment feat/700-upload-preflight --body "$(INSPECT_BENCH_ITERATIONS=50 no
 - Placeholder scan: the plan contains no `TBD`, `TODO`, “similar to”, unspecified error handling, or unspecified test requests.
 - Type consistency: Rust `has_alpha`/`is_animated`/`orientation` consistently become JS/TS `hasAlpha`/`isAnimated`/`orientation`; `InspectMetadata` is defined once in `src/inspect.rs` and re-exported at the historical crate root.
 - Scope control: #781 policy semantics and artifact compiler implementation remain separate plans.
+- Execution correction: the existing GPS EXIF fixture used an invalid rational
+  offset and was repaired at its generator before reader parity was accepted;
+  sibling-module visibility and pre-commit generated-artifact checks were also
+  corrected above after their fail-closed tests exposed the original assumptions.

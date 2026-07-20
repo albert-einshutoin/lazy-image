@@ -47,6 +47,22 @@ await ImageEngine.fromPath('input.jpg')
 - `sanitize({ policy: 'strict' })` can override metadata preservation and strip metadata for safety.
 - For workflows that depend on exact metadata retention, validate behavior in integration tests against your target output format.
 
+## Inspection is separate from preservation
+
+`inspect()` and `inspectFile()` expose EXIF Orientation as a preflight fact;
+they do not preserve metadata or transform dimensions. The returned
+`orientation` is `1` through `8` when a valid primary-image tag is present and
+found within the 64 KiB preflight scan budget, and `undefined` otherwise. The
+budget prevents an EXIF-free container from forcing inspection to consume the
+encoded image payload. `width` and `height` remain the encoded dimensions.
+
+The same successful preflight also returns authoritative `hasAlpha` and
+`isAnimated` booleans for JPEG, PNG, and WebP. A malformed or unsupported
+container fails through the typed error contract instead of turning an unknown
+trait into `false`. Output metadata stripping, GPS policy, ICC preservation,
+and auto-orient behavior remain controlled by the processing APIs described
+above.
+
 ## Recommended Usage
 
 - Web delivery: keep the default strip behavior unless ICC/EXIF is genuinely required

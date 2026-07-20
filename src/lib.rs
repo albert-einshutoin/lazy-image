@@ -32,75 +32,37 @@ pub mod engine;
 pub mod error;
 pub mod ops;
 
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-use image::ImageReader;
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+mod inspect;
+
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-use std::io::{BufRead, BufReader, Cursor, Seek};
 
 // Re-export the engine for NAPI
 #[cfg(feature = "napi")]
 pub use engine::ImageEngine;
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
+#[cfg(feature = "napi")]
 use error::LazyImageError;
 
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InspectMetadata {
-    pub width: u32,
-    pub height: u32,
-    pub format: Option<String>,
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-fn read_inspect_metadata<R: BufRead + Seek>(
-    reader: R,
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    let reader = ImageReader::new(reader)
-        .with_guessed_format()
-        .map_err(|e| LazyImageError::decode_failed(format!("failed to read image header: {e}")))?;
-
-    let format = reader.format().map(|f| format!("{f:?}").to_lowercase());
-    let (width, height) = reader
-        .into_dimensions()
-        .map_err(|e| LazyImageError::decode_failed(format!("failed to read dimensions: {e}")))?;
-
-    Ok(InspectMetadata {
-        width,
-        height,
-        format,
-    })
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_bytes(
-    data: &[u8],
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    read_inspect_metadata(Cursor::new(data))
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_path(
-    path: &str,
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    use std::fs::File;
-
-    let file =
-        File::open(path).map_err(|e| LazyImageError::file_read_failed(path.to_string(), e))?;
-    read_inspect_metadata(BufReader::new(file))
-}
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub use inspect::{inspect_header_from_bytes, inspect_header_from_path, InspectMetadata};
 
 #[cfg(feature = "napi")]
-/// Image metadata returned by inspect()
+/// Header-only image traits returned by inspect() and inspectFile().
 #[napi(object)]
 pub struct ImageMetadata {
-    /// Image width in pixels
+    /// Encoded width in pixels; orientation is reported separately.
     pub width: u32,
-    /// Image height in pixels
+    /// Encoded height in pixels; orientation is reported separately.
     pub height: u32,
-    /// Detected format (jpeg, png, webp, gif, etc.)
+    /// Detected supported input format.
     pub format: Option<String>,
+    /// Whether the encoded image has alpha/transparency.
+    pub has_alpha: bool,
+    /// Whether the container declares animation frames.
+    pub is_animated: bool,
+    /// EXIF Orientation 1-8, or undefined when absent or invalid.
+    pub orientation: Option<u16>,
 }
 
 #[cfg(feature = "napi")]
@@ -110,16 +72,19 @@ impl From<InspectMetadata> for ImageMetadata {
             width: value.width,
             height: value.height,
             format: value.format,
+            has_alpha: value.has_alpha,
+            is_animated: value.is_animated,
+            orientation: value.orientation,
         }
     }
 }
 
 #[cfg(feature = "napi")]
-/// Inspect image metadata WITHOUT decoding pixels.
-/// This reads only the header bytes - extremely fast (<1ms).
+/// Inspect image header/container metadata without decoding pixels.
 ///
-/// Use this to check dimensions before processing, or to reject
-/// images that are too large without wasting CPU on decoding.
+/// Use this to check dimensions, alpha, animation, and EXIF orientation before
+/// processing untrusted input. A successful result contains authoritative
+/// alpha and animation booleans for JPEG, PNG, or WebP.
 #[napi]
 pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
     let metadata = match inspect_header_from_bytes(buffer.as_ref()) {
@@ -132,9 +97,10 @@ pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
 }
 
 #[cfg(feature = "napi")]
-/// Inspect image metadata from a file path WITHOUT loading into Node.js heap.
-/// **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
-/// This is the recommended way for server-side metadata inspection.
+/// Inspect image header/container metadata directly from a file path.
+///
+/// The file path variant avoids loading encoded image bytes into the Node.js
+/// heap and is the recommended server-side preflight API.
 #[napi(js_name = "inspectFile")]
 pub fn inspect_file(env: Env, path: String) -> Result<ImageMetadata> {
     if path.trim().is_empty() {
