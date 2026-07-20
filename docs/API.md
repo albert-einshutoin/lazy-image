@@ -101,7 +101,9 @@ Malformed supported headers reject with the typed decode error `E131`.
 Unsupported containers reject with `E111`; callers must not invent safe trait
 values after either failure. `inspectFile()` uses filesystem readers for header
 and EXIF inspection, so encoded image bytes do not cross the V8 boundary as a
-`Buffer`.
+`Buffer`. Successful preflight proves these container traits, not that every
+entropy-coded payload or animation frame will decode; upload pipelines must
+still decode and re-encode before publishing an artifact.
 
 ---
 
