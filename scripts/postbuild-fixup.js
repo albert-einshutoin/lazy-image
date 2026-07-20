@@ -211,6 +211,14 @@ function replaceIfNeeded(content, searchValue, replaceValue) {
   return content.replaceAll(searchValue, replaceValue);
 }
 
+function patchImageMetadataFormat(content) {
+  return replaceIfNeeded(
+    content,
+    '  /** Detected supported input format. */\n  format?: string',
+    '  /** Detected supported input format. */\n  format?: InputFormat',
+  );
+}
+
 function patchIndexJs() {
   let content = fs.readFileSync(indexJsPath, 'utf8');
   if (!content.includes("require('./lib/helpers')")) {
@@ -248,7 +256,7 @@ function patchIndexDts() {
   content = replaceIfNeeded(content, '  toFileWithPreset(path: string, presetName: string): Promise<number>', '  toFileWithPreset(path: string, presetName: PresetName): Promise<number>');
   content = replaceIfNeeded(content, '  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>', '  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>');
   content = replaceIfNeeded(content, '  /** Output format ("jpeg", "png", "webp", "avif") */\n  format: string', '  /** Output format ("jpeg", "jpg", "png", "webp", "avif") */\n  format: OutputFormat');
-  content = replaceIfNeeded(content, '  /** Detected format (jpeg, png, webp, gif, etc.) */\n  format?: string', '  /** Detected input format from runtime inspection (for example: jpeg, jpg, png, webp, gif) */\n  format?: InputFormat');
+  content = patchImageMetadataFormat(content);
   content = replaceIfNeeded(content, '  /** Recommended output format */\n  format: string', '  /** Recommended output format */\n  format: CanonicalOutputFormat');
   content = replaceIfNeeded(content, 'export interface PresetResult {\n  /** Recommended output format */\n  format: string', 'export interface PresetResult {\n  /** Recommended output format */\n  format: CanonicalOutputFormat');
   content = replaceIfNeeded(content, '  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */\n  formatIn?: string', '  /** Detected input format reported by runtime metrics */\n  formatIn?: InputFormat');
@@ -278,10 +286,14 @@ function patchIndexDts() {
   fs.writeFileSync(indexDtsPath, content);
 }
 
-if (process.argv.includes('--prepare')) {
-  prepareBuild();
-} else {
-  patchIndexJs();
-  patchIndexDts();
-  console.log('Applied postbuild fixups to index.js and index.d.ts.');
+if (require.main === module) {
+  if (process.argv.includes('--prepare')) {
+    prepareBuild();
+  } else {
+    patchIndexJs();
+    patchIndexDts();
+    console.log('Applied postbuild fixups to index.js and index.d.ts.');
+  }
 }
+
+module.exports = { patchImageMetadataFormat };
