@@ -32,12 +32,11 @@ pub mod engine;
 pub mod error;
 pub mod ops;
 
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-use image::ImageReader;
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+mod inspect;
+
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-use std::io::{BufRead, BufReader, Cursor, Seek};
 
 // Re-export the engine for NAPI
 #[cfg(feature = "napi")]
@@ -45,51 +44,8 @@ pub use engine::ImageEngine;
 #[cfg(any(feature = "napi", feature = "fuzzing"))]
 use error::LazyImageError;
 
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InspectMetadata {
-    pub width: u32,
-    pub height: u32,
-    pub format: Option<String>,
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-fn read_inspect_metadata<R: BufRead + Seek>(
-    reader: R,
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    let reader = ImageReader::new(reader)
-        .with_guessed_format()
-        .map_err(|e| LazyImageError::decode_failed(format!("failed to read image header: {e}")))?;
-
-    let format = reader.format().map(|f| format!("{f:?}").to_lowercase());
-    let (width, height) = reader
-        .into_dimensions()
-        .map_err(|e| LazyImageError::decode_failed(format!("failed to read dimensions: {e}")))?;
-
-    Ok(InspectMetadata {
-        width,
-        height,
-        format,
-    })
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_bytes(
-    data: &[u8],
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    read_inspect_metadata(Cursor::new(data))
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_path(
-    path: &str,
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    use std::fs::File;
-
-    let file =
-        File::open(path).map_err(|e| LazyImageError::file_read_failed(path.to_string(), e))?;
-    read_inspect_metadata(BufReader::new(file))
-}
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub use inspect::{inspect_header_from_bytes, inspect_header_from_path, InspectMetadata};
 
 #[cfg(feature = "napi")]
 /// Image metadata returned by inspect()
