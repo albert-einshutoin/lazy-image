@@ -54,6 +54,8 @@ A successful call never has an unknown alpha or animation state. If a supported 
 
 **Files:**
 - Modify: `src/engine/decoder.rs:454-468`
+- Modify: `test/fixtures/create-exif-test-image.js:110-122`
+- Generated: `test/fixtures/test_with_exif.jpg`
 - Test: `src/engine/decoder.rs` test module
 
 - [ ] **Step 1: Add the failing reader-parity test**
@@ -123,6 +125,31 @@ pub fn detect_exif_orientation(bytes: &[u8]) -> Option<u16> {
 
 - [ ] **Step 4: Run the decoder tests**
 
+Before running the reader parity test, repair the fixture generator's GPS
+rational pointer. Its payload begins after the GPS entry count, two entries,
+and the next-IFD pointer; the historical `+ 50` offset makes kamadak-exif reject
+the entire container as truncated.
+
+```js
+const gpsEntriesCount = 2;
+// ...
+createIfdEntry(
+  0x0002,
+  5,
+  3,
+  gpsIfdOffset + 2 + (gpsEntriesCount * 12) + 4,
+)
+```
+
+Regenerate the committed fixture:
+
+```bash
+node test/fixtures/create-exif-test-image.js
+```
+
+Expected: a 232-byte JPEG is regenerated and a standards-compliant EXIF reader
+can read Orientation `6` without a truncated-field error.
+
 Run:
 
 ```bash
@@ -134,6 +161,8 @@ Expected: both new tests and existing orientation consumers pass.
 - [ ] **Step 5: Commit the focused refactor**
 
 ```bash
+git add test/fixtures/create-exif-test-image.js test/fixtures/test_with_exif.jpg
+git commit -m "fix(test): generate valid GPS EXIF offsets"
 git add src/engine/decoder.rs
 git commit -m "refactor(inspect): share seekable orientation parser"
 ```
@@ -142,6 +171,7 @@ git commit -m "refactor(inspect): share seekable orientation parser"
 
 **Files:**
 - Create: `src/inspect.rs`
+- Modify: `src/engine.rs:55-70`
 - Modify: `src/lib.rs:30-92`
 - Test: `src/inspect.rs`
 
@@ -150,8 +180,7 @@ git commit -m "refactor(inspect): share seekable orientation parser"
 Create `src/inspect.rs` with the imports, public result type, and the following tests first. The production functions named in the tests intentionally do not exist yet.
 
 ```rust
-use crate::engine::common::run_with_panic_policy;
-use crate::engine::decoder::detect_exif_orientation_from_reader;
+use crate::engine::{detect_exif_orientation_from_reader, run_with_panic_policy};
 use crate::error::LazyImageError;
 use image::{ImageDecoder, ImageFormat, ImageReader};
 use std::fs::File;
@@ -260,6 +289,17 @@ mod inspect;
 ```
 
 Do not remove the old `InspectMetadata` implementation yet; the red test only establishes the new module contract.
+
+The new sibling module cannot reach `engine`'s private child modules directly.
+After observing the missing-function RED state, add only these crate-private
+coordination points in `src/engine.rs`; do not expose either internal module:
+
+```rust
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub(crate) use common::run_with_panic_policy;
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub(crate) use decoder::detect_exif_orientation_from_reader;
+```
 
 - [ ] **Step 2: Run the new module tests and verify the missing API fails**
 
@@ -398,7 +438,7 @@ stays internal. The extra `test` module condition above lets
 creating dead code in a non-test, no-feature build.
 
 ```rust
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 pub use inspect::{inspect_header_from_bytes, inspect_header_from_path, InspectMetadata};
 ```
 
@@ -419,7 +459,7 @@ Expected: all inspection tests pass, fuzz regression returns errors without pani
 - [ ] **Step 6: Commit the new inspection core**
 
 ```bash
-git add src/inspect.rs src/lib.rs
+git add src/inspect.rs src/lib.rs src/engine.rs
 git commit -m "feat(inspect): report authoritative image traits"
 ```
 
@@ -550,6 +590,8 @@ git commit -m "test(inspect): bound file header reads"
 **Files:**
 - Modify: `src/lib.rs:94-115`
 - Modify: `test/type-safety/typescript-typecheck.test.ts:68-73`
+- Modify: `scripts/postbuild-fixup.js`
+- Modify: `test/unit/generated-artifact-policy.test.js`
 - Generated: `index.d.ts`
 
 - [ ] **Step 1: Add the TypeScript usage that must fail before the N-API fields exist**
@@ -637,19 +679,42 @@ export interface ImageMetadata {
 ```
 
 Expected: typecheck passes and generated `index.d.ts` retains the existing
-`format?: InputFormat` narrowing while adding the three new properties. A
-`format?: string` result fails this step and must be fixed in the existing
-postbuild declaration transformer, with its fixture test, before committing.
+`format?: InputFormat` narrowing while adding the three new properties. Update
+the postbuild transform to match the new Rustdoc and export the focused helper
+behind a `require.main === module` guard:
+
+```js
+function patchImageMetadataFormat(content) {
+  return replaceIfNeeded(
+    content,
+    '  /** Detected supported input format. */\n  format?: string',
+    '  /** Detected supported input format. */\n  format?: InputFormat',
+  );
+}
+```
+
+In `test/unit/generated-artifact-policy.test.js`, pass a minimal generated
+`ImageMetadata` fixture to this helper and assert both the `InputFormat`
+narrowing and a thrown `replacement target not found` error for
+`format?: unknown`. Run:
+
+```bash
+node test/unit/generated-artifact-policy.test.js
+```
+
+Expected: the fixture passes and generator drift fails closed.
 
 - [ ] **Step 5: Verify generated artifact provenance**
 
 Run:
 
 ```bash
-npm run check:generated-artifacts
+git diff -- index.js index.d.ts
 ```
 
-Expected: only intended generated `index.d.ts` changes remain; `index.js` is unchanged unless N-API legitimately updates its export footer.
+Expected before commit: only intended generated `index.d.ts` changes remain;
+`index.js` is unchanged. After committing the public type surface, run
+`npm run check:generated-artifacts`; it must exit 0.
 
 - [ ] **Step 6: Commit the public type surface**
 
@@ -1103,3 +1168,7 @@ gh pr comment feat/700-upload-preflight --body "$(INSPECT_BENCH_ITERATIONS=50 no
 - Placeholder scan: the plan contains no `TBD`, `TODO`, “similar to”, unspecified error handling, or unspecified test requests.
 - Type consistency: Rust `has_alpha`/`is_animated`/`orientation` consistently become JS/TS `hasAlpha`/`isAnimated`/`orientation`; `InspectMetadata` is defined once in `src/inspect.rs` and re-exported at the historical crate root.
 - Scope control: #781 policy semantics and artifact compiler implementation remain separate plans.
+- Execution correction: the existing GPS EXIF fixture used an invalid rational
+  offset and was repaired at its generator before reader parity was accepted;
+  sibling-module visibility and pre-commit generated-artifact checks were also
+  corrected above after their fail-closed tests exposed the original assumptions.
