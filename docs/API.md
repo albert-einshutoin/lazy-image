@@ -92,7 +92,8 @@ readers. They never decode pixel buffers. On every successful call:
 - `isAnimated` is authoritative: APNG and animated WebP return `true`; JPEG is
   always static.
 - `orientation` is the EXIF Orientation value `1` through `8`, or `undefined`
-  when the tag is absent, invalid, or cannot be parsed.
+  when the tag is absent, invalid, cannot be parsed, or is not found within the
+  64 KiB preflight scan budget.
 - `width` and `height` are the encoded dimensions. They are not swapped for
   Orientation values such as `6` or `8`.
 

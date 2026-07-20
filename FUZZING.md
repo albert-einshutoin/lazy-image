@@ -51,6 +51,9 @@ Notes:
 - Successful JPEG/PNG/WebP inspection must produce definite alpha and animation
   states. Malformed or unsupported inputs must return typed errors without a
   panic; third-party header decoders remain inside the engine panic policy.
+- EXIF Orientation scanning is capped at 64 KiB for both buffer and path APIs;
+  missing metadata must not make inspection consume arbitrary payload bytes or
+  permit seeks outside that virtual stream.
 
 ### AddressSanitizer
 

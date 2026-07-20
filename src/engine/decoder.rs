@@ -10,7 +10,7 @@ use image::{
     RgbaImage,
 };
 use mozjpeg::Decompress;
-use std::io::Cursor;
+use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
 use webp::{BitstreamFeatures, Decoder as WebPDecoder};
 use zune_png::zune_core::bytestream::ZCursor;
 use zune_png::zune_core::colorspace::ColorSpace;
@@ -451,16 +451,100 @@ fn is_webp_riff(bytes: &[u8]) -> bool {
     bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP"
 }
 
+const MAX_ORIENTATION_SCAN_BYTES: u64 = 64 * 1024;
+
+/// Presents a seekable reader as a smaller virtual stream.
+///
+/// `kamadak-exif` scans container chunks until it finds EXIF and otherwise may
+/// consume image payloads. Inspection only needs a best-effort Orientation tag,
+/// so cap that scan at the documented 64 KiB preflight budget. The wrapper also
+/// constrains seeks, preventing a container parser from bypassing the budget.
+struct LimitedSeekReader<R> {
+    inner: R,
+    start: u64,
+    position: u64,
+    limit: u64,
+}
+
+impl<R: Seek> LimitedSeekReader<R> {
+    fn new(mut inner: R, limit: u64) -> io::Result<Self> {
+        let start = inner.stream_position()?;
+        Ok(Self {
+            inner,
+            start,
+            position: 0,
+            limit,
+        })
+    }
+
+    fn remaining(&self) -> u64 {
+        self.limit.saturating_sub(self.position)
+    }
+}
+
+impl<R: Read + Seek> Read for LimitedSeekReader<R> {
+    fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
+        let allowed = usize::try_from(self.remaining().min(output.len() as u64))
+            .expect("allowed read length is bounded by the output slice");
+        if allowed == 0 {
+            return Ok(0);
+        }
+        let read = self.inner.read(&mut output[..allowed])?;
+        self.position += read as u64;
+        Ok(read)
+    }
+}
+
+impl<R: BufRead + Seek> BufRead for LimitedSeekReader<R> {
+    fn fill_buf(&mut self) -> io::Result<&[u8]> {
+        let allowed = usize::try_from(self.remaining()).unwrap_or(usize::MAX);
+        let buffer = self.inner.fill_buf()?;
+        Ok(&buffer[..buffer.len().min(allowed)])
+    }
+
+    fn consume(&mut self, amount: usize) {
+        let consumed = usize::try_from(self.remaining().min(amount as u64))
+            .expect("consumed length is bounded by the requested amount");
+        self.inner.consume(consumed);
+        self.position += consumed as u64;
+    }
+}
+
+impl<R: Seek> Seek for LimitedSeekReader<R> {
+    fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
+        let target = match position {
+            SeekFrom::Start(offset) => i128::from(offset),
+            SeekFrom::Current(offset) => i128::from(self.position) + i128::from(offset),
+            SeekFrom::End(offset) => i128::from(self.limit) + i128::from(offset),
+        };
+        if target < 0 || target > i128::from(self.limit) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "seek exceeds orientation scan budget",
+            ));
+        }
+        let target = u64::try_from(target).expect("validated non-negative seek target");
+        let absolute = self.start.checked_add(target).ok_or_else(|| {
+            io::Error::new(io::ErrorKind::InvalidInput, "orientation seek overflow")
+        })?;
+        self.inner.seek(SeekFrom::Start(absolute))?;
+        self.position = target;
+        Ok(target)
+    }
+}
+
 /// Extract EXIF Orientation from a seekable container without decoding pixels.
 ///
-/// The reader form exists so `inspectFile()` can parse EXIF through a bounded
-/// `BufReader<File>` instead of materializing the full file. Invalid containers,
-/// absent tags, and values outside 1-8 all map to `None` because orientation is
-/// optional metadata, not proof that the image pixels are decodable.
-pub(crate) fn detect_exif_orientation_from_reader<R: std::io::BufRead + std::io::Seek>(
+/// The reader form exists so `inspectFile()` can stream EXIF through a
+/// `BufReader<File>` instead of materializing the full file. The scan is capped
+/// at 64 KiB so missing metadata cannot consume an image payload. Invalid
+/// containers, absent tags, and values outside 1-8 all map to `None` because
+/// orientation is optional metadata, not proof that pixels are decodable.
+pub(crate) fn detect_exif_orientation_from_reader<R: BufRead + Seek>(
     reader: &mut R,
 ) -> Option<u16> {
-    let exif = exif::Reader::new().read_from_container(reader).ok()?;
+    let mut limited = LimitedSeekReader::new(reader, MAX_ORIENTATION_SCAN_BYTES).ok()?;
+    let exif = exif::Reader::new().read_from_container(&mut limited).ok()?;
     let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
     let orientation = field.value.get_uint(0)? as u16;
     (1..=8).contains(&orientation).then_some(orientation)
@@ -497,6 +581,27 @@ mod tests {
         let mut reader = std::io::BufReader::new(std::io::Cursor::new(invalid));
 
         assert_eq!(detect_exif_orientation_from_reader(&mut reader), None);
+    }
+
+    #[test]
+    fn test_orientation_scan_reader_caps_reads_and_seeks() {
+        let source = vec![0u8; (MAX_ORIENTATION_SCAN_BYTES as usize) * 2];
+        let mut limited =
+            LimitedSeekReader::new(std::io::Cursor::new(source), MAX_ORIENTATION_SCAN_BYTES)
+                .unwrap();
+        let mut visible = Vec::new();
+
+        limited.read_to_end(&mut visible).unwrap();
+        assert_eq!(visible.len(), MAX_ORIENTATION_SCAN_BYTES as usize);
+        assert_eq!(
+            limited
+                .seek(SeekFrom::Start(MAX_ORIENTATION_SCAN_BYTES))
+                .unwrap(),
+            MAX_ORIENTATION_SCAN_BYTES
+        );
+        assert!(limited
+            .seek(SeekFrom::Start(MAX_ORIENTATION_SCAN_BYTES + 1))
+            .is_err());
     }
 
     fn encode_webp(width: u32, height: u32) -> Vec<u8> {

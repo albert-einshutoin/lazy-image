@@ -52,7 +52,9 @@ await ImageEngine.fromPath('input.jpg')
 `inspect()` and `inspectFile()` expose EXIF Orientation as a preflight fact;
 they do not preserve metadata or transform dimensions. The returned
 `orientation` is `1` through `8` when a valid primary-image tag is present and
-`undefined` otherwise. `width` and `height` remain the encoded dimensions.
+found within the 64 KiB preflight scan budget, and `undefined` otherwise. The
+budget prevents an EXIF-free container from forcing inspection to consume the
+encoded image payload. `width` and `height` remain the encoded dimensions.
 
 The same successful preflight also returns authoritative `hasAlpha` and
 `isAnimated` booleans for JPEG, PNG, and WebP. A malformed or unsupported

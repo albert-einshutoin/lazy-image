@@ -244,18 +244,30 @@ mod tests {
         let mut padded = base;
         let eoi = padded.len() - 2;
         padded.splice(eoi..eoi, std::iter::repeat_n(0u8, 4 * 1024 * 1024));
+        let orientation_input = padded.clone();
 
-        let bytes_read = Arc::new(AtomicUsize::new(0));
+        let metadata_bytes_read = Arc::new(AtomicUsize::new(0));
         let reader = CountingReader {
             inner: BufReader::with_capacity(8 * 1024, Cursor::new(padded)),
-            bytes_read: Arc::clone(&bytes_read),
+            bytes_read: Arc::clone(&metadata_bytes_read),
         };
         let metadata = read_inspect_metadata(reader).unwrap();
+        let orientation_bytes_read = Arc::new(AtomicUsize::new(0));
+        let mut orientation_reader = CountingReader {
+            inner: BufReader::with_capacity(8 * 1024, Cursor::new(orientation_input)),
+            bytes_read: Arc::clone(&orientation_bytes_read),
+        };
+        let orientation = detect_exif_orientation_from_reader(&mut orientation_reader);
 
         assert_eq!((metadata.width, metadata.height), (32, 32));
+        assert_eq!(orientation, None);
         assert!(
-            bytes_read.load(Ordering::Relaxed) < 64 * 1024,
-            "JPEG inspection must stop after bounded header reads"
+            metadata_bytes_read.load(Ordering::Relaxed) < 64 * 1024,
+            "JPEG trait inspection must stop after bounded header reads"
+        );
+        assert!(
+            orientation_bytes_read.load(Ordering::Relaxed) <= 64 * 1024,
+            "EXIF inspection must honor the 64 KiB scan budget"
         );
     }
 
