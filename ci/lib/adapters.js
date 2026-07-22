@@ -12,4 +12,10 @@ function adapterForManifest(file) {
   return adapters.find(adapter => adapter.manifests.includes(basename));
 }
 
-module.exports = { adapters, adapterForManifest };
+function getAdapter(id) {
+  const adapter = adapters.find(candidate => candidate.id === id);
+  if (!adapter) throw new Error(`unknown test adapter: ${id}`);
+  return adapter;
+}
+
+module.exports = { adapters, adapterForManifest, getAdapter };

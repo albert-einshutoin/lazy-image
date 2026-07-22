@@ -3,40 +3,27 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawn, spawnSync } = require('node:child_process');
+const { spawn } = require('node:child_process');
 const { loadConfig } = require('./lib/config');
-const { countMatchingRustTests } = require('./lib/test-targets');
+const { getAdapter } = require('./lib/adapters');
 
 function argument(name, fallback) {
   const index = process.argv.indexOf(name);
   return index === -1 ? fallback : process.argv[index + 1];
 }
 
-function commandForTarget(target, category) {
-  if (target.startsWith('rust::')) {
-    return { category, target, command: 'cargo', args: ['test', '--no-default-features', target.slice(6)] };
-  }
-  const file = target.startsWith('javascript::') ? target.slice(12) : target;
-  if (!file || !fs.existsSync(file)) throw new Error(`selected test target does not exist: ${file || target}`);
-  return { category, target: file, command: process.execPath, args: [file] };
+function commandForTarget(target, category, defaultAdapter) {
+  const separator = target.indexOf('::');
+  const adapterId = separator === -1 ? defaultAdapter : target.slice(0, separator);
+  const adapterTarget = separator === -1 ? target : target.slice(separator + 2);
+  if (!adapterTarget) throw new Error(`selected test target is empty: ${target}`);
+  return getAdapter(adapterId).commandForTarget(adapterTarget, category);
 }
 
-function validateRustTargets(tasks) {
-  const filters = tasks
-    .filter(task => task.command === 'cargo')
-    .map(task => task.args.at(-1));
-  if (filters.length === 0) return;
-  const result = spawnSync('cargo', ['test', '--no-default-features', '--', '--list'], {
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-  });
-  if (result.status !== 0) {
-    throw new Error(`Rust test discovery failed: ${(result.stderr || result.stdout).trim()}`);
-  }
-  for (const filter of filters) {
-    if (countMatchingRustTests(filter, result.stdout) === 0) {
-      throw new Error(`Rust test filter selected zero tests: ${filter}`);
-    }
+function validateAdapterTargets(tasks) {
+  const adapterIds = [...new Set(tasks.map(task => task.adapter))];
+  for (const adapterId of adapterIds) {
+    getAdapter(adapterId).validateTargets(tasks.filter(task => task.adapter === adapterId));
   }
 }
 
@@ -95,15 +82,15 @@ async function main() {
       tasks = [{ category: 'full', target: 'all', command, args }];
     } else {
       tasks = [
-        ...plan.unitTestTargets.map(target => commandForTarget(target, 'unit')),
-        ...plan.integrationTestTargets.map(target => commandForTarget(target, 'integration')),
-        ...plan.e2eTestTargets.map(target => commandForTarget(target, 'e2e')),
-        ...plan.smokeTestTargets.map(target => commandForTarget(target, 'smoke')),
+        ...plan.unitTestTargets.map(target => commandForTarget(target, 'unit', config.defaultTestAdapter)),
+        ...plan.integrationTestTargets.map(target => commandForTarget(target, 'integration', config.defaultTestAdapter)),
+        ...plan.e2eTestTargets.map(target => commandForTarget(target, 'e2e', config.defaultTestAdapter)),
+        ...plan.smokeTestTargets.map(target => commandForTarget(target, 'smoke', config.defaultTestAdapter)),
       ];
       const deduplicated = new Map(tasks.map(task => [`${task.command}\0${task.args.join('\0')}`, task]));
       tasks = [...deduplicated.values()];
       if (tasks.length === 0) throw new Error('selective strategy produced zero executable targets');
-      validateRustTargets(tasks);
+      validateAdapterTargets(tasks);
     }
   } catch (error) {
     effectiveMode = 'full';

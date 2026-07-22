@@ -61,7 +61,12 @@ a new language is not considered proof that its tests can be selected: until
 its modules are mapped, its changes fall back to the full suite.
 
 Each file in `ci/adapters/` declares manifest names, full-test commands, build
-and static-analysis commands, and cache candidates. To add an adapter:
+and static-analysis commands, cache candidates, additional high-risk patterns,
+the related-test selection method, target command generation, and target
+validation. Mapped targets may use `<adapter>::<target>`; unprefixed targets use
+`defaultTestAdapter` from project settings. Language-specific command and
+discovery behavior must stay in the adapter rather than the common runner. To
+add an adapter:
 
 1. Add `ci/adapters/<language>.js` with the same exported fields.
 2. Register it in `ci/lib/adapters.js`.

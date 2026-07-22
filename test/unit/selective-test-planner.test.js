@@ -7,6 +7,7 @@ const { detectProjects, planSelectiveTests } = require('../../ci/lib/planner');
 const { parseNameStatus } = require('../../ci/lib/git');
 const { countMatchingRustTests } = require('../../ci/lib/test-targets');
 const { loadConfig } = require('../../ci/lib/config');
+const { getAdapter } = require('../../ci/lib/adapters');
 
 const fixtureConfig = {
   fullTestRules: [
@@ -64,6 +65,28 @@ assert.equal(
   countMatchingRustTests('engine::memory', 'engine::memory::tests::limit: test\nengine::api::tests::smoke: test\n'),
   1,
   'Rustフィルターが実在するテストを選ぶことを事前検証できる',
+);
+
+assert.deepEqual(
+  getAdapter('python').commandForTarget('tests/test_image.py', 'unit'),
+  {
+    adapter: 'python',
+    category: 'unit',
+    target: 'tests/test_image.py',
+    command: 'python',
+    args: ['-m', 'pytest', 'tests/test_image.py'],
+  },
+  '言語固有の関連テストコマンドはアダプターが生成する',
+);
+assert.deepEqual(
+  getAdapter('go').commandForTarget('./internal/image', 'unit'),
+  {
+    adapter: 'go',
+    category: 'unit',
+    target: './internal/image',
+    command: 'go',
+    args: ['test', './internal/image'],
+  },
 );
 
 {

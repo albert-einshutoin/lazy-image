@@ -1,5 +1,6 @@
 {
   "knownSourceRoots": ["src/", "streaming/", "lib/", "packages/", "scripts/", "examples/", "docs/"],
+  "defaultTestAdapter": "javascript",
   "maxParallelTests": 2,
   "fullTestCommand": ["npm", "test"]
 }
