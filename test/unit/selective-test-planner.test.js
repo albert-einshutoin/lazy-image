@@ -3,6 +3,7 @@ const path = require('node:path');
 
 const { detectProjects, planSelectiveTests } = require('../../ci/lib/planner');
 const { parseNameStatus } = require('../../ci/lib/git');
+const { countMatchingRustTests } = require('../../ci/lib/test-targets');
 
 const fixtureConfig = {
   fullTestRules: [
@@ -54,6 +55,12 @@ assert.deepEqual(
     { path: 'copy.js', oldPath: 'source.js', status: 'C090', exists: true },
   ],
   '追加・変更・削除・rename・copyを欠落なく正規化する',
+);
+
+assert.equal(
+  countMatchingRustTests('engine::memory', 'engine::memory::tests::limit: test\nengine::api::tests::smoke: test\n'),
+  1,
+  'Rustフィルターが実在するテストを選ぶことを事前検証できる',
 );
 
 assert.deepEqual(

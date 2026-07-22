@@ -87,6 +87,8 @@ function planSelectiveTests({ config, changes, baseRevision, headRevision, proje
   const changedTests = changes
     .filter(change => change.exists && /(^|\/)test(s)?\//.test(change.path) && /\.(test|spec)\.[^.]+$/.test(change.path))
     .map(change => change.path);
+  const changedUnitTests = changedTests.filter(file => file.includes('/unit/'));
+  const changedIntegrationTests = changedTests.filter(file => file.includes('/integration/'));
   const sourceChanges = changes.filter(change =>
     (config.knownSourceRoots || []).some(root => change.path.startsWith(root)),
   );
@@ -120,10 +122,13 @@ function planSelectiveTests({ config, changes, baseRevision, headRevision, proje
   }
 
   const selectedModules = (config.modules || []).filter(module => modules.includes(module.name));
-  const unitTestTargets = uniqueSorted(selectedModules.flatMap(module => module.unitTests || []));
+  const unitTestTargets = uniqueSorted([
+    ...selectedModules.flatMap(module => module.unitTests || []),
+    ...changedUnitTests.map(file => `javascript::${file}`),
+  ]);
   const integrationTestTargets = uniqueSorted([
     ...selectedModules.flatMap(module => module.integrationTests || []),
-    ...changedTests.filter(file => file.includes('/integration/') || file.includes('/unit/')),
+    ...changedIntegrationTests,
   ]);
   const e2eTestTargets = uniqueSorted(selectedModules.flatMap(module => module.e2eTests || []));
   const smokeTestTargets = uniqueSorted(config.smokeTests || []);

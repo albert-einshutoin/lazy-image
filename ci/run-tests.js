@@ -3,8 +3,9 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const { loadConfig } = require('./lib/config');
+const { countMatchingRustTests } = require('./lib/test-targets');
 
 function argument(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -18,6 +19,25 @@ function commandForTarget(target, category) {
   const file = target.startsWith('javascript::') ? target.slice(12) : target;
   if (!file || !fs.existsSync(file)) throw new Error(`selected test target does not exist: ${file || target}`);
   return { category, target: file, command: process.execPath, args: [file] };
+}
+
+function validateRustTargets(tasks) {
+  const filters = tasks
+    .filter(task => task.command === 'cargo')
+    .map(task => task.args.at(-1));
+  if (filters.length === 0) return;
+  const result = spawnSync('cargo', ['test', '--no-default-features', '--', '--list'], {
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (result.status !== 0) {
+    throw new Error(`Rust test discovery failed: ${(result.stderr || result.stdout).trim()}`);
+  }
+  for (const filter of filters) {
+    if (countMatchingRustTests(filter, result.stdout) === 0) {
+      throw new Error(`Rust test filter selected zero tests: ${filter}`);
+    }
+  }
 }
 
 function execute(task) {
@@ -83,6 +103,7 @@ async function main() {
       const deduplicated = new Map(tasks.map(task => [`${task.command}\0${task.args.join('\0')}`, task]));
       tasks = [...deduplicated.values()];
       if (tasks.length === 0) throw new Error('selective strategy produced zero executable targets');
+      validateRustTargets(tasks);
     }
   } catch (error) {
     effectiveMode = 'full';
