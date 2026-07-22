@@ -1,0 +1,5 @@
+{
+  "knownSourceRoots": ["src/", "streaming/", "lib/", "packages/", "scripts/", "examples/", "docs/"],
+  "maxParallelTests": 2,
+  "fullTestCommand": ["npm", "test"]
+}

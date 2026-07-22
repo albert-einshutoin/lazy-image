@@ -48,7 +48,10 @@
   "scripts": {
     "build": "node scripts/postbuild-fixup.js --prepare && napi build --platform --release && node scripts/postbuild-fixup.js",
     "test": "npm run test:js && npm run test:rust && npm run test:wasm:package",
-    "test:js": "npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
+    "test:js": "npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
+    "test:ci-planner": "node test/unit/selective-test-planner.test.js",
+    "ci:plan-tests": "node ci/plan-tests.js",
+    "ci:run-tests": "node ci/run-tests.js",
     "test:js:specs": "node test/integration/run.js",
     "test:js:type-safety": "node test/type-safety/runtime-type-safety-exit.test.js && node test/type-safety/runtime-type-safety.test.js && node test/unit/target-bytes-search.test.js",
     "test:pack-contract": "node scripts/verify-pack.js",

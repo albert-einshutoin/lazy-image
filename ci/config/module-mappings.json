@@ -1,0 +1,87 @@
+[
+  {
+    "name": "codecs",
+    "paths": ["src/codecs/**"],
+    "unitTests": ["rust::codecs"],
+    "integrationTests": ["test/integration/format-matrix.test.js", "test/integration/quality-metrics.test.js"]
+  },
+  {
+    "name": "memory",
+    "paths": ["src/engine/memory/**", "src/engine/pool.rs"],
+    "unitTests": ["rust::engine::memory", "rust::engine::pool"],
+    "integrationTests": ["test/integration/concurrency-validation.test.js", "test/integration/zero-copy-safety.test.js"]
+  },
+  {
+    "name": "io",
+    "paths": ["src/engine/io/**", "src/engine/decoder.rs", "src/engine/encoder.rs"],
+    "unitTests": ["rust::engine::io", "rust::engine::decoder", "rust::engine::encoder"],
+    "integrationTests": ["test/integration/exif-roundtrip.test.js", "test/integration/from-path-async.test.js", "test/integration/metadata-options.test.js"]
+  },
+  {
+    "name": "pipeline",
+    "paths": ["src/engine/pipeline/**", "src/engine/resize.rs"],
+    "dependsOn": ["codecs", "io", "memory"],
+    "unitTests": ["rust::engine::pipeline", "rust::engine::resize"],
+    "integrationTests": ["test/integration/extract.test.js", "test/integration/golden.test.js", "test/integration/preset-output-isolation.test.js"]
+  },
+  {
+    "name": "firewall",
+    "paths": ["src/engine/firewall.rs", "src/engine/validation.rs", "src/inspect.rs"],
+    "dependsOn": ["io"],
+    "unitTests": ["rust::engine::firewall", "rust::engine::validation", "rust::inspect"],
+    "integrationTests": ["test/integration/firewall.test.js", "test/integration/input-validation.test.js", "test/integration/inspect-preflight.test.js"]
+  },
+  {
+    "name": "tasks",
+    "paths": ["src/engine/tasks/**"],
+    "dependsOn": ["pipeline", "memory"],
+    "unitTests": ["rust::engine::tasks"],
+    "integrationTests": ["test/integration/batch-chunked.test.js", "test/integration/target-bytes-file-native.test.js"]
+  },
+  {
+    "name": "api",
+    "paths": ["src/engine/api/**", "src/engine/common.rs", "src/engine/metadata.rs", "src/engine/platform.rs"],
+    "dependsOn": ["tasks", "firewall"],
+    "unitTests": ["rust::engine::api", "rust::engine::metadata", "rust::engine::platform"],
+    "integrationTests": ["test/integration/basic.test.js", "test/integration/error-codes.test.js", "test/integration/type-improvements.test.js"]
+  },
+  {
+    "name": "streaming",
+    "paths": ["streaming/**"],
+    "dependsOn": ["api"],
+    "integrationTests": ["test/integration/streaming.test.js"]
+  },
+  {
+    "name": "javascript-helpers",
+    "paths": ["lib/**"],
+    "dependsOn": ["api"],
+    "integrationTests": ["test/integration/basic.test.js", "test/integration/batch-chunked.test.js"]
+  },
+  {
+    "name": "wasm",
+    "paths": ["packages/lazy-image-wasm/**"],
+    "unitTests": ["javascript::packages/lazy-image-wasm/test/run.mjs"]
+  },
+  {
+    "name": "release-tools",
+    "paths": ["scripts/check-release-policy.js", "scripts/sync-version.js", "scripts/verify-pack.js", "scripts/postbuild-fixup.js"],
+    "unitTests": ["javascript::test/unit/release-policy.test.js", "javascript::test/unit/generated-artifact-policy.test.js"],
+    "integrationTests": ["test/integration/package-metadata.test.js"]
+  },
+  {
+    "name": "security-tools",
+    "paths": ["scripts/security-audit-notification.js", "scripts/cargo-audit-policy.js"],
+    "unitTests": ["javascript::test/unit/security-audit-notification.test.js", "javascript::test/unit/cargo-audit-policy.test.js"]
+  },
+  {
+    "name": "benchmark-tools",
+    "paths": ["scripts/bench/**", "scripts/fuzz/**"],
+    "unitTests": ["javascript::test/unit/benchmark-quality-gate.test.js"],
+    "integrationTests": ["test/integration/benchmark-fuzz-alignment.test.js", "test/integration/fuzz-seed-corpus.test.js"]
+  },
+  {
+    "name": "documentation",
+    "paths": ["README.md", "README.ja.md", "docs/**", "examples/**", "CHANGELOG.md"],
+    "integrationTests": ["test/integration/docs-contract.test.js"]
+  }
+]
