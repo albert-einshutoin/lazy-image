@@ -16,7 +16,7 @@ function detectProjects(files) {
     const root = slash === -1 ? '.' : file.slice(0, slash);
     const key = `${adapter.id}:${root}`;
     if (!projects.has(key)) {
-      projects.set(key, { name: root, root, adapter: adapter.id, manifest: file });
+      projects.set(key, { name: `${root}:${adapter.id}`, root, adapter: adapter.id, manifest: file });
     }
   }
   return [...projects.values()];
