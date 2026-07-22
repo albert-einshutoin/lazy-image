@@ -156,6 +156,16 @@ jobs:
       - name: Run Rust tests (release mode, without NAPI features)
         run: cargo test --no-default-features --release
 
+      - name: Setup Node.js for selector contract validation
+        if: matrix.host == 'ubuntu-latest'
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 20
+
+      - name: Validate configured Rust test selectors
+        if: matrix.host == 'ubuntu-latest'
+        run: npm run test:ci-planner:rust-targets
+
       # Note: NAPI tests require Node.js runtime and cannot be run with cargo test alone.
       # NAPI functionality is tested via JavaScript integration tests in the 'test' job.
       # The napi_tests.rs file exists for local development with Node.js installed.
@@ -218,6 +228,9 @@ jobs:
 
       - name: Verify Wasm workspace pack contract
         run: npm --workspace @alberteinshutoin/lazy-image-wasm pack --dry-run
+
+      - name: Run Wasm workspace tests
+        run: npm run test:wasm:package
 
   test:
     name: Test (Node ${{ matrix.node }})
