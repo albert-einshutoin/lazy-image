@@ -31,6 +31,10 @@ env:
   FUZZ_SANITIZER: address
   FUZZ_TOOLCHAIN: nightly-2026-03-25
 
+concurrency:
+  group: fuzz-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   fuzz:
     name: Fuzz ${{ matrix.target }}

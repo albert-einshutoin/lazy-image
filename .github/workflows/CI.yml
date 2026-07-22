@@ -12,11 +12,18 @@ on:
   push:
     branches:
       - main
+      - 'release/**'
     tags:
       - 'v*'
-  pull_request:
+  schedule:
+    - cron: '17 18 * * *' # 03:17 JST; avoid the top-of-hour runner spike.
   workflow_dispatch:  # Allow manual trigger
     inputs:
+      full_validation:
+        description: 'Run the complete validation suite'
+        required: false
+        default: true
+        type: boolean
       dry_run:
         description: 'Skip npm publish and GitHub Release creation/update'
         required: false
@@ -553,9 +560,9 @@ jobs:
       - supply-chain
       - coverage
       - leak-detection
-    # Only publish on tag releases (semantic versioning) or manual workflow dispatch
-    # CI/README changes are tested by build/test jobs, but don't trigger npm publish
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    # Manual full validation is safe by default and never enters the publish job.
+    # A deliberate manual publish must disable full_validation (and dry_run).
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.full_validation)
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
