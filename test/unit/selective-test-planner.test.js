@@ -1,9 +1,12 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const { detectProjects, planSelectiveTests } = require('../../ci/lib/planner');
 const { parseNameStatus } = require('../../ci/lib/git');
 const { countMatchingRustTests } = require('../../ci/lib/test-targets');
+const { loadConfig } = require('../../ci/lib/config');
 
 const fixtureConfig = {
   fullTestRules: [
@@ -62,6 +65,30 @@ assert.equal(
   1,
   'Rustフィルターが実在するテストを選ぶことを事前検証できる',
 );
+
+{
+  const root = path.join(__dirname, '../..');
+  const config = loadConfig(root);
+  const rustList = spawnSync('cargo', ['test', '--no-default-features', '--', '--list'], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  assert.equal(rustList.status, 0, rustList.stderr);
+  for (const module of config.modules) {
+    for (const target of module.unitTests || []) {
+      if (target.startsWith('rust::')) {
+        const filter = target.slice(6);
+        assert.ok(countMatchingRustTests(filter, rustList.stdout) > 0, `${filter} must select Rust tests`);
+      } else if (target.startsWith('javascript::')) {
+        assert.ok(fs.existsSync(path.join(root, target.slice(12))), `${target} must exist`);
+      }
+    }
+    for (const target of [...(module.integrationTests || []), ...(module.e2eTests || [])]) {
+      assert.ok(fs.existsSync(path.join(root, target)), `${target} must exist`);
+    }
+  }
+}
 
 assert.deepEqual(
   detectProjects(

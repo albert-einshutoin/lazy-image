@@ -2,13 +2,12 @@
   {
     "name": "codecs",
     "paths": ["src/codecs/**"],
-    "unitTests": ["rust::codecs"],
     "integrationTests": ["test/integration/format-matrix.test.js", "test/integration/quality-metrics.test.js"]
   },
   {
     "name": "memory",
     "paths": ["src/engine/memory/**", "src/engine/pool.rs"],
-    "unitTests": ["rust::engine::memory", "rust::engine::pool"],
+    "unitTests": ["rust::engine::memory"],
     "integrationTests": ["test/integration/concurrency-validation.test.js", "test/integration/zero-copy-safety.test.js"]
   },
   {
@@ -28,7 +27,7 @@
     "name": "firewall",
     "paths": ["src/engine/firewall.rs", "src/engine/validation.rs", "src/inspect.rs"],
     "dependsOn": ["io"],
-    "unitTests": ["rust::engine::firewall", "rust::engine::validation", "rust::inspect"],
+    "unitTests": ["rust::engine::firewall", "rust::inspect"],
     "integrationTests": ["test/integration/firewall.test.js", "test/integration/input-validation.test.js", "test/integration/inspect-preflight.test.js"]
   },
   {
