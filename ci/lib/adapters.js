@@ -5,6 +5,7 @@ const adapters = [
   require('../adapters/rust'),
   require('../adapters/python'),
   require('../adapters/go'),
+  require('../adapters/default'),
 ];
 
 function adapterForManifest(file) {

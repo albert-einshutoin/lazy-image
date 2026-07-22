@@ -60,6 +60,11 @@ assert.deepEqual(
   ],
   '追加・変更・削除・rename・copyを欠落なく正規化する',
 );
+assert.throws(
+  () => getAdapter('default').commandForTarget('unknown-target'),
+  /unsupported adapter target/,
+  '未対応形式は実行を推測せず全件フォールバックへ送れる',
+);
 
 assert.equal(
   countMatchingRustTests('engine::memory', 'engine::memory::tests::limit: test\nengine::api::tests::smoke: test\n'),
