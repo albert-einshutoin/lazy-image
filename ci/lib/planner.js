@@ -87,7 +87,7 @@ function planSelectiveTests({ config, changes, baseRevision, headRevision, proje
   const changedTests = changes
     .filter(change => change.exists && /(^|\/)test(s)?\//.test(change.path) && /\.(test|spec)\.[^.]+$/.test(change.path))
     .map(change => change.path);
-  const changedUnitTests = changedTests.filter(file => file.includes('/unit/'));
+  const changedUnitTests = changedTests.filter(file => !file.includes('/integration/'));
   const changedIntegrationTests = changedTests.filter(file => file.includes('/integration/'));
   const sourceChanges = changes.filter(change =>
     (config.knownSourceRoots || []).some(root => change.path.startsWith(root)),
