@@ -1,0 +1,259 @@
+name: PR Selective Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base_revision:
+        description: 'Base revision used for impact analysis'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: selective-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEBUG: napi:*
+  MACOSX_DEPLOYMENT_TARGET: '10.13'
+
+jobs:
+  plan:
+    name: Analyze change impact
+    runs-on: ubuntu-latest
+    outputs:
+      strategy: ${{ steps.plan.outputs.strategy }}
+      fallback: ${{ steps.plan.outputs.fallback }}
+      target-count: ${{ steps.plan.outputs.target-count }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 20
+
+      - name: Select test strategy
+        id: plan
+        env:
+          BASE_REVISION: ${{ github.event.pull_request.base.sha || inputs.base_revision }}
+          HEAD_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: >-
+          node ci/plan-tests.js
+          --base "$BASE_REVISION"
+          --head "$HEAD_REVISION"
+          --output artifacts/ci/test-plan.json
+
+      - name: Upload machine-readable test plan
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: selective-test-plan
+          path: artifacts/ci/test-plan.json
+          if-no-files-found: error
+
+  build-quality:
+    name: Static analysis, types, and canonical build
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: 1.88.0
+          components: clippy, rustfmt
+
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
+
+      - name: Cache Cargo dependencies and build outputs
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          cache-on-failure: true
+          shared-key: pr-canonical-linux
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Rust formatting
+        run: cargo fmt --check
+
+      - name: Run Rust static analysis
+        run: cargo clippy --no-default-features -- -D warnings
+
+      - name: Run TypeScript type checking
+        run: npm run test:types
+
+      - name: Build canonical native binding
+        run: npm run build -- --target x86_64-unknown-linux-gnu
+
+      - name: Upload canonical binding
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: pr-binding-linux-x64-gnu
+          path: '*.node'
+          if-no-files-found: error
+
+  selective-tests:
+    name: Required selective test gate
+    needs: [plan, build-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: 1.88.0
+
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
+
+      - name: Cache Cargo test outputs
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          cache-on-failure: true
+          shared-key: pr-tests-linux
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download canonical binding
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: pr-binding-linux-x64-gnu
+          path: .
+
+      - name: Download test plan
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: selective-test-plan
+          path: artifacts/ci
+
+      - name: Create generated test fixture
+        run: node test/helpers/create-test-image.js
+
+      - name: Run selected tests or safe full fallback
+        run: >-
+          node ci/run-tests.js
+          --plan artifacts/ci/test-plan.json
+          --summary artifacts/ci/selective-summary.json
+          --history artifacts/ci/selective-history.jsonl
+
+      - name: Upload selective-test results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: selective-test-results
+          path: artifacts/ci/selective-*
+          if-no-files-found: error
+
+  shadow-full-tests:
+    name: Full-suite comparison (non-blocking rollout)
+    if: needs.plan.outputs.strategy == 'selective'
+    continue-on-error: true
+    needs: [plan, build-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: 1.88.0
+
+      - name: Setup NASM
+        uses: ./.github/actions/setup-nasm
+
+      - name: Cache Cargo test outputs
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          cache-on-failure: true
+          shared-key: pr-shadow-full-linux
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download canonical binding
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: pr-binding-linux-x64-gnu
+          path: .
+
+      - name: Download test plan
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: selective-test-plan
+          path: artifacts/ci
+
+      - name: Create generated test fixture
+        run: node test/helpers/create-test-image.js
+
+      - name: Run full suite for comparison
+        run: >-
+          node ci/run-tests.js
+          --mode full
+          --plan artifacts/ci/test-plan.json
+          --summary artifacts/ci/full-summary.json
+          --history artifacts/ci/full-history.jsonl
+
+      - name: Upload full-suite comparison results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: full-test-results
+          path: artifacts/ci/full-*
+          if-no-files-found: error
+
+  compare:
+    name: Compare selective and full results
+    if: always() && needs.plan.outputs.strategy == 'selective'
+    needs: [plan, selective-tests, shadow-full-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Download selective results
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: selective-test-results
+          path: comparison/selective
+
+      - name: Download full results
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: full-test-results
+          path: comparison/full
+
+      - name: Compare detection and duration
+        run: >-
+          node ci/compare-results.js
+          comparison/selective/selective-summary.json
+          comparison/full/full-summary.json
