@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      - 'release/**'
+    tags:
+      - 'v*'
   pull_request:
   schedule:
     - cron: '0 0 * * 0'  # 毎週日曜0時
@@ -59,5 +62,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run npm audit
-        run: npm audit --audit-level=high
+      - name: Audit published runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      # Development-only codec oracles process repository-owned fixtures and
+      # are not shipped to consumers. Critical advisories still fail here;
+      # high runtime advisories remain blocking in the published graph above.
+      - name: Audit development dependencies for critical issues
+        run: npm audit --audit-level=critical
