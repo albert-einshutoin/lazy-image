@@ -205,6 +205,7 @@ More: batch processing, presets, metrics, streaming — [docs/API.md](./docs/API
 | **Binary size comparison (AVIF on/off)** | [docs/BINARY_SIZE.md](./docs/BINARY_SIZE.md) |
 | **Benchmark snapshots log** | [docs/BENCHMARK_RESULTS.md](./docs/BENCHMARK_RESULTS.md) |
 | **Benchmark operations** | [docs/BENCHMARK_OPERATIONS.md](./docs/BENCHMARK_OPERATIONS.md) |
+| **Selective test CI and safe fallback** | [docs/SELECTIVE_TESTING.md](./docs/SELECTIVE_TESTING.md) |
 
 ---
 
@@ -222,6 +223,11 @@ npm test
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for workflow, test commands, and contribution guidelines. Benchmark testing: [lazy-image-test](https://github.com/albert-einshutoin/lazy-image-test) Docker environment. Fuzzing: [FUZZING.md](./FUZZING.md).
+
+Pull requests use conservative change-impact analysis with an always-on smoke
+test and automatic full-suite fallback. See
+[docs/SELECTIVE_TESTING.md](./docs/SELECTIVE_TESTING.md) for local reproduction,
+rules, adapters, rollout metrics, and manual full validation.
 
 ---
 

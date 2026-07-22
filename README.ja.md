@@ -78,6 +78,8 @@ const meta = inspectFile('input.jpg');
 ## Documentation
 
 英語版の構成と同じです。`docs/`, `examples/`, `spec/` を順に確認してください。
+選択的テストCIの判定方法、安全側の全件フォールバック、ローカル再現手順は
+[docs/SELECTIVE_TESTING.md](./docs/SELECTIVE_TESTING.md) を参照してください。
 
 ## Features (summary)
 
