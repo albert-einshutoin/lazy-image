@@ -93,7 +93,7 @@
     "check:generated-artifacts": "git diff --exit-code -- index.js index.d.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "3.7.2",
+    "@napi-rs/cli": "3.7.4",
     "@types/node": "^25.9.3",
     "sharp": "^0.34.5",
     "ssim.js": "^3.5.0",
