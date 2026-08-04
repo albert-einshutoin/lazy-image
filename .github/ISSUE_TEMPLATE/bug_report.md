@@ -22,7 +22,7 @@ What actually happened.
 
 ## Environment
 - **OS**: (e.g., macOS 14.0, Ubuntu 22.04, Windows 11)
-- **Node.js version**: (e.g., 18.17.0)
+- **Node.js version**: (e.g., 22.0.0)
 - **lazy-image version**: (e.g., 0.7.8)
 
 ## Code Example
