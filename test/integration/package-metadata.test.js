@@ -8,9 +8,19 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+const wasmPackageJson = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'packages', 'lazy-image-wasm', 'package.json'), 'utf8'),
+);
 const cargoToml = fs.readFileSync(path.join(ROOT, 'Cargo.toml'), 'utf8');
 const readmeMd = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
 const readmeJa = fs.readFileSync(path.join(ROOT, 'README.ja.md'), 'utf8');
+const contributing = fs.readFileSync(path.join(ROOT, 'CONTRIBUTING.md'), 'utf8');
+const compatibility = fs.readFileSync(path.join(ROOT, 'docs', 'COMPATIBILITY.md'), 'utf8');
+const troubleshooting = fs.readFileSync(path.join(ROOT, 'docs', 'TROUBLESHOOTING.md'), 'utf8');
+const ciWorkflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'CI.yml'), 'utf8');
+const nodeWorkflows = ['CI.yml', 'selective-pr.yml', 'security.yml', 'benchmark-regression.yml', 'fuzz.yml']
+  .map((name) => fs.readFileSync(path.join(ROOT, '.github', 'workflows', name), 'utf8'))
+  .join('\n');
 
 function readmeHeadlineCount(content) {
   return (content.match(/^##\s+.+$/gm) || []).length;
@@ -125,6 +135,19 @@ function test(name, fn) {
       /upload/i.test(packageJson.description),
       'package description should keep upload-focused safety positioning',
     );
+  });
+
+  test('Node runtime contract is consistently Node 22 and 24', () => {
+    assert.equal(packageJson.engines?.node, '>= 22');
+    assert.equal(wasmPackageJson.engines?.node, packageJson.engines.node);
+    assert.match(readmeMd, /Node\.js 22\+/);
+    assert.match(readmeJa, /Node\.js 22\+/);
+    assert.match(contributing, /\*\*Node\.js\*\*: >= 22/);
+    assert.match(compatibility, /Node\.js 22 or newer/);
+    assert.match(troubleshooting, /Node\.js 22\+/);
+    assert.match(ciWorkflow, /node: \[22, 24\]/);
+    assert.doesNotMatch(nodeWorkflows, /node-version: (?:18|20)\b/);
+    assert.match(ciWorkflow, /engines:\s*\{\s*node: '>= 22'/);
   });
 
   console.log(`\n✅ package metadata checks completed: ${passed} passed, ${failed} failed`);

@@ -58,7 +58,7 @@ npm install @alberteinshutoin/lazy-image
 
 | 環境 | 概要 |
 |---|---|
-| ランタイム | platform optional dependencies が自動インストール |
+| ランタイム | Node.js 22+。platform optional dependencies が自動インストール |
 | パッケージサイズ | プラットフォーム別で 6〜9MB 前後 |
 | 自前ビルド | `npm run build` |
 

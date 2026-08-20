@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   through the typed error contract instead of being treated as safe defaults.
 
 ### Changed
+- **BREAKING (Node.js runtime)**: dropped EOL Node.js 18 and 20. The native and
+  Wasm packages now require Node.js 22 or newer, with CI coverage on Node.js 22
+  and 24. Upgrade your runtime to Node.js 22 or 24 before updating lazy-image.
 - **BREAKING (Wasm error contract)**: aligned
   `@alberteinshutoin/lazy-image-wasm` with the native error taxonomy. Categories
   are now `UserError`, `CodecError`, `ResourceLimit`, and `InternalBug`.

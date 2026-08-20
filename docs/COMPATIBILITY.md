@@ -11,6 +11,11 @@ drop-in replacement for sharp. The API is intentionally smaller and focuses on:
 
 If you need broad image editing features or a sharp-compatible API, use sharp.
 
+## Runtime Support
+
+The native and Wasm packages require Node.js 22 or newer. CI covers Node.js 22
+and 24; Node.js 18 and 20 are unsupported because they are end-of-life.
+
 ## Supported Formats
 
 - **Input**: jpeg/jpg, png, webp
