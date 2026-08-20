@@ -23,13 +23,13 @@ fn test_validate_icc_profile_too_small() {
 
 #[test]
 fn test_validate_icc_profile_minimal_valid() {
-    // Minimal valid ICC profile (128 bytes)
-    let mut data = vec![0u8; 128];
+    // Minimal valid ICC profile (128-byte header + zero-entry tag table)
+    let mut data = vec![0u8; 132];
     // Profile size (first 4 bytes, big-endian)
     data[0] = 0x00;
     data[1] = 0x00;
     data[2] = 0x00;
-    data[3] = 0x80; // 128 bytes
+    data[3] = 0x84; // 132 bytes
                     // CMM type (bytes 4-7): "ADBE" (ASCII)
     data[4] = b'A';
     data[5] = b'D';
@@ -52,8 +52,42 @@ fn test_validate_icc_profile_minimal_valid() {
     data[21] = b'Y';
     data[22] = b'Z';
     data[23] = b' ';
+    data[36..40].copy_from_slice(b"acsp");
 
     assert!(validate_icc_profile(&data));
+}
+
+#[test]
+fn test_validate_icc_profile_rejects_missing_signature_and_bad_tag_table() {
+    let mut missing_signature = create_minimal_srgb_icc();
+    missing_signature[36..40].fill(0);
+    assert!(!validate_icc_profile(&missing_signature));
+
+    let mut truncated_tag_table = create_minimal_srgb_icc();
+    truncated_tag_table[128..132].copy_from_slice(&1u32.to_be_bytes());
+    assert!(!validate_icc_profile(&truncated_tag_table));
+}
+
+#[test]
+fn test_validate_icc_profile_allows_shared_tag_data_but_rejects_partial_overlap() {
+    let mut shared = create_minimal_srgb_icc();
+    shared.resize(164, 0);
+    shared[0..4].copy_from_slice(&164u32.to_be_bytes());
+    shared[128..132].copy_from_slice(&2u32.to_be_bytes());
+    shared[132..136].copy_from_slice(b"rTRC");
+    shared[136..140].copy_from_slice(&156u32.to_be_bytes());
+    shared[140..144].copy_from_slice(&8u32.to_be_bytes());
+    shared[144..148].copy_from_slice(b"gTRC");
+    shared[148..152].copy_from_slice(&156u32.to_be_bytes());
+    shared[152..156].copy_from_slice(&8u32.to_be_bytes());
+    shared[156..160].copy_from_slice(b"curv");
+    assert!(validate_icc_profile(&shared));
+
+    let mut overlapping = shared;
+    overlapping.resize(168, 0);
+    overlapping[0..4].copy_from_slice(&168u32.to_be_bytes());
+    overlapping[148..152].copy_from_slice(&160u32.to_be_bytes());
+    assert!(!validate_icc_profile(&overlapping));
 }
 
 #[test]
@@ -127,6 +161,37 @@ fn test_extract_icc_profile_large_input_skips_icc() {
 }
 
 #[test]
+fn classification_distinguishes_unsafe_and_public_large_valid_icc() {
+    let icc = create_minimal_srgb_icc();
+    let mut incomplete = create_jpeg_with_icc(&icc);
+    let marker = incomplete
+        .windows(12)
+        .position(|window| window == b"ICC_PROFILE\0")
+        .unwrap();
+    incomplete[marker + 13] = 2;
+    assert_eq!(
+        classify_icc_profile(&incomplete).state,
+        IccSourceState::Unsafe
+    );
+
+    let mut large = create_webp_with_icc(&icc);
+    large.extend_from_slice(b"JUNK");
+    large.extend_from_slice(&(9 * 1024 * 1024u32).to_le_bytes());
+    large.resize(large.len() + 9 * 1024 * 1024, 0);
+    let riff_size = (large.len() - 8) as u32;
+    large[4..8].copy_from_slice(&riff_size.to_le_bytes());
+    assert_eq!(classify_icc_profile(&large).state, IccSourceState::Unsafe);
+    assert_eq!(
+        classify_public_upload_icc(&large).state,
+        IccSourceState::Valid
+    );
+
+    let mut filled = create_jpeg_with_icc(&icc);
+    filled.insert(2, 0xFF);
+    assert_eq!(classify_icc_profile(&filled).state, IccSourceState::Valid);
+}
+
+#[test]
 fn test_extract_icc_profile_jpeg() {
     let jpeg_data = create_minimal_jpeg();
     // Extract ICC profile from JPEG (when not present)
@@ -138,13 +203,13 @@ fn test_extract_icc_profile_jpeg() {
 
 // Helper function to create a minimal valid ICC profile (sRGB)
 fn create_minimal_srgb_icc() -> Vec<u8> {
-    // Minimal valid sRGB ICC profile (128 bytes)
-    let mut data = vec![0u8; 128];
+    // Minimal valid sRGB ICC profile (128-byte header + zero-entry tag table)
+    let mut data = vec![0u8; 132];
     // Profile size (first 4 bytes, big-endian)
     data[0] = 0x00;
     data[1] = 0x00;
     data[2] = 0x00;
-    data[3] = 0x80; // 128 bytes
+    data[3] = 0x84; // 132 bytes
                     // CMM type (bytes 4-7): "ADBE" (ASCII)
     data[4] = b'A';
     data[5] = b'D';
@@ -167,6 +232,7 @@ fn create_minimal_srgb_icc() -> Vec<u8> {
     data[21] = b'Y';
     data[22] = b'Z';
     data[23] = b' ';
+    data[36..40].copy_from_slice(b"acsp");
     data
 }
 

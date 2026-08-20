@@ -37,7 +37,7 @@ const bytes = await engine.resize(800).toFile('output.jpg', 'jpeg', 80);
 | `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without color space conversion. |
 | `.toColorspace(space)` | ⚠️ **DEPRECATED** - Use `.normalizePixelFormat()` instead. |
 | `.preset(name)` | ⚠️ **DEPRECATED** - Applies a preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) by mutating the pipeline and returning a separate `PresetResult`. Prefer `encode({ preset: name })`, `.toBufferWithPreset(name)`, or `.toFileWithPreset(path, name)` for self-contained preset output. |
-| `.sanitize({ policy?, ... })` | Image Firewall: apply strict/lenient limits. See [ARCHITECTURE.md](./ARCHITECTURE.md#image-firewall-mode-strict--lenient). |
+| `.sanitize({ policy? })` | Image Firewall: apply `strict`, `lenient`, or `public-upload`. The public-upload policy keeps strict resource limits, preserves only validated ICC up to 512 KiB, and always strips EXIF/GPS/XMP. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md). |
 | `.limits({ maxPixels?, maxBytes?, timeoutMs? })` | Override firewall limits. |
 
 For preset-based output, prefer the self-contained APIs above the deprecated `.preset(name)` command/query mix:
@@ -218,6 +218,7 @@ interface ProcessingMetrics {
   formatIn?: string | null;
   formatOut: string;
   iccPreserved: boolean;
+  iccOutcome: 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported';
   metadataStripped: boolean;
   policyViolations: string[];
   /** @deprecated use decodeMs */

@@ -263,7 +263,7 @@ pub enum LazyImageError {
     #[error("Unknown preset: '{name}'. Available: thumbnail, avatar, hero, social")]
     InvalidPreset { name: Cow<'static, str> },
 
-    #[error("Unknown firewall policy: '{policy}'. Expected strict or lenient")]
+    #[error("Unknown firewall policy: '{policy}'. Expected strict, lenient, or public-upload")]
     InvalidFirewallPolicy { policy: Cow<'static, str> },
 
     #[error("Invalid value for {name}: {value}. {reason}")]
@@ -389,7 +389,9 @@ impl LazyImageError {
             ErrorCode::InvalidPreset => {
                 "Use a supported preset name (thumbnail, avatar, hero, social)."
             }
-            ErrorCode::InvalidFirewallPolicy => "Use firewall policy 'strict' or 'lenient'.",
+            ErrorCode::InvalidFirewallPolicy => {
+                "Use firewall policy 'strict', 'lenient', or 'public-upload'."
+            }
 
             // Internal errors
             ErrorCode::SourceConsumed => "Clone the engine or reload the source before reusing it.",

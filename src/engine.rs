@@ -131,6 +131,7 @@ pub use stress::run_stress_iteration;
 mod tests {
     use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
+    use crate::engine::io::IccSourceState;
     use crate::engine::tasks::{EncodeTask, TaskContext};
     use crate::engine::test_support::create_test_image;
     use crate::error::LazyImageError;
@@ -164,7 +165,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -190,7 +191,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -214,7 +215,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -245,7 +246,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -272,7 +273,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),

@@ -1,4 +1,4 @@
-# Metrics API (v1.0.0)
+# Metrics API (v1.1.0)
 
 lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`, `ImageEngine.toFileWithMetrics()`, and `ImageEngine.processBatchWithMetrics()`. The single-image payload is versioned and validated so that downstream services can ingest it safely.
 
@@ -6,7 +6,7 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`,
 
 ```jsonc
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "decodeMs": 12.4,
   "opsMs": 8.1,
   "encodeMs": 15.3,
@@ -20,6 +20,7 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`,
   "formatIn": "jpeg",
   "formatOut": "webp",
   "iccPreserved": false,
+  "iccOutcome": "absent",
   "metadataStripped": true,
   "policyViolations": ["firewall_rejected_metadata"],
   // Legacy aliases kept for backward compatibility
@@ -34,13 +35,14 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`,
 
 ## Field guide
 
-- **version**: Schema version. Current value: `1.0.0`.
+- **version**: Schema version. Current value: `1.1.0`.
 - **decodeMs / opsMs / encodeMs / totalMs**: Wall-clock timings in milliseconds.
 - **peakRss**: Peak resident set size (bytes) during the operation.
 - **cpuTime**: CPU time (user + system) in seconds.
 - **bytesIn / bytesOut / compressionRatio**: I/O sizes and ratio (`bytesOut / bytesIn`).
 - **formatIn / formatOut**: Detected input format (nullable) and requested output format.
-- **iccPreserved / metadataStripped**: Whether ICC profile was preserved or stripped.
+- **iccPreserved / metadataStripped**: Whether ICC profile was preserved or metadata was stripped.
+- **iccOutcome**: `absent`, `preserved`, `unsafe-stripped`, `policy-stripped`, or `unsupported`; use this instead of inferring ICC presence from `iccPreserved: false`.
 - **policyViolations**: Non-fatal Image Firewall actions that altered output (e.g., forced metadata strip under strict policy).
 - **Legacy aliases** (deprecated): `decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize` map 1:1 to the new fields. They will be removed in v2.0.0; migrate to `decodeMs`, `opsMs`, `encodeMs`, `peakRss`, `bytesIn`, `bytesOut`.
 

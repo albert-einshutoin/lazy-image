@@ -2,7 +2,7 @@
 //
 // Image Firewall configuration and enforcement helpers.
 
-use crate::engine::io::extract_icc_profile;
+use crate::engine::io::{classify_public_upload_icc, extract_icc_profile};
 use crate::error::LazyImageError;
 use std::time::Instant;
 
@@ -29,6 +29,7 @@ pub enum FirewallPolicy {
     Disabled,
     Strict,
     Lenient,
+    PublicUpload,
     Custom,
 }
 
@@ -93,6 +94,20 @@ impl FirewallConfig {
         }
     }
 
+    /// Strict resource limits with bounded, validated ICC preservation.
+    pub fn public_upload() -> Self {
+        Self {
+            enabled: true,
+            policy: FirewallPolicy::PublicUpload,
+            max_pixels: Some(STRICT_MAX_PIXELS),
+            max_bytes: Some(STRICT_MAX_BYTES),
+            timeout_ms: Some(STRICT_TIMEOUT_MS),
+            reject_metadata: false,
+            metadata_max_bytes: Some(LENIENT_METADATA_LIMIT),
+            exif_max_bytes: Some(STRICT_MAX_EXIF_BYTES),
+        }
+    }
+
     pub fn custom() -> Self {
         Self {
             enabled: true,
@@ -111,6 +126,7 @@ impl FirewallConfig {
             FirewallPolicy::Disabled => Self::disabled(),
             FirewallPolicy::Strict => Self::strict(),
             FirewallPolicy::Lenient => Self::lenient(),
+            FirewallPolicy::PublicUpload => Self::public_upload(),
             FirewallPolicy::Custom => Self::custom(),
         }
     }
@@ -221,7 +237,12 @@ impl FirewallConfig {
     /// disabled.  This catches obviously malicious payloads without requiring
     /// the caller to opt-in via `sanitize()`.
     pub fn scan_metadata_base(&self, data: &[u8]) -> Result<(), LazyImageError> {
-        if let Some(icc) = extract_icc_profile(data)? {
+        let icc = if self.policy == FirewallPolicy::PublicUpload {
+            classify_public_upload_icc(data).profile
+        } else {
+            extract_icc_profile(data)?
+        };
+        if let Some(icc) = icc {
             let icc_len = icc.len() as u64;
             if icc_len > BASE_METADATA_LIMIT {
                 return Err(LazyImageError::firewall_violation(format!(
@@ -247,7 +268,12 @@ impl FirewallConfig {
         }
 
         // --- ICC profile scanning ---
-        if let Some(icc) = extract_icc_profile(data)? {
+        let icc = if self.policy == FirewallPolicy::PublicUpload {
+            classify_public_upload_icc(data).profile
+        } else {
+            extract_icc_profile(data)?
+        };
+        if let Some(icc) = icc {
             if self.reject_metadata {
                 return Err(LazyImageError::firewall_violation(
                     "Image Firewall: embedded ICC profile blocked under strict policy. \
@@ -354,7 +380,7 @@ mod tests {
     use img_parts::{png::Png, Bytes, ImageICC};
 
     fn build_icc_payload(len: usize) -> Vec<u8> {
-        let size = len.max(128);
+        let size = len.max(132).next_multiple_of(4);
         let mut data = vec![0u8; size];
         data[..4].copy_from_slice(&(size as u32).to_be_bytes());
         data[4..8].copy_from_slice(b"TEST");
@@ -362,6 +388,7 @@ mod tests {
         data[12..16].copy_from_slice(b"mntr");
         data[16..20].copy_from_slice(b"RGB ");
         data[20..24].copy_from_slice(b"XYZ ");
+        data[36..40].copy_from_slice(b"acsp");
         data
     }
 
@@ -477,6 +504,20 @@ mod tests {
         assert!(cfg.scan_metadata(&safe_png).is_ok());
         let oversized_png = png_with_icc((LENIENT_METADATA_LIMIT + 1) as usize);
         assert!(cfg.scan_metadata(&oversized_png).is_err());
+    }
+
+    #[test]
+    fn public_upload_uses_strict_limits_and_bounded_icc() {
+        let cfg = FirewallConfig::public_upload();
+        assert_eq!(cfg.policy, FirewallPolicy::PublicUpload);
+        assert_eq!(cfg.max_pixels, Some(STRICT_MAX_PIXELS));
+        assert_eq!(cfg.max_bytes, Some(STRICT_MAX_BYTES));
+        assert_eq!(cfg.timeout_ms, Some(STRICT_TIMEOUT_MS));
+        assert!(!cfg.reject_metadata);
+        assert!(cfg.scan_metadata(&png_with_icc(256)).is_ok());
+        assert!(cfg
+            .scan_metadata(&png_with_icc((LENIENT_METADATA_LIMIT + 1) as usize))
+            .is_err());
     }
 
     #[test]

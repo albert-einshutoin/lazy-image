@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Public upload firewall policy**: `sanitize({ policy: 'public-upload' })`
+  combines the strict 32 MiB / 40 MP / 5-second limits with validated ICC
+  preservation up to 512 KiB, while forcing EXIF/GPS/XMP removal regardless of
+  `keepMetadata()` call order. Metrics now report `iccOutcome`.
 - **Authoritative upload preflight traits**: `inspect()` and `inspectFile()` now
   report `hasAlpha`, `isAnimated`, and optional EXIF `orientation` for
   JPEG/PNG/WebP without decoding pixels. Unknown or malformed traits fail
