@@ -120,7 +120,7 @@
     "@alberteinshutoin/lazy-image-win32-x64-msvc": "0.16.0"
   },
   "engines": {
-    "node": ">= 18"
+    "node": ">= 22"
   },
   "files": [
     "index.js",

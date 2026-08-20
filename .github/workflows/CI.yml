@@ -83,7 +83,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install Rust
@@ -108,7 +108,7 @@ jobs:
         run: ${{ matrix.settings.build }}
         shell: bash
 
-      # Node 20 on Linux x64 is the canonical generator environment for the
+      # Node 22 on Linux x64 is the canonical generator environment for the
       # committed NAPI loader and declarations. Other matrix entries verify
       # platform builds without redefining the reviewed public artifacts.
       - name: Verify committed NAPI artifacts are reproducible
@@ -160,7 +160,7 @@ jobs:
         if: matrix.host == 'ubuntu-latest'
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Validate configured Rust test selectors
         if: matrix.host == 'ubuntu-latest'
@@ -217,7 +217,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -245,7 +245,7 @@ jobs:
             artifact: bindings-aarch64-apple-darwin
           - host: windows-latest
             artifact: bindings-x86_64-pc-windows-msvc
-        node: [18, 20, 22]
+        node: [22, 24]
 
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 20
@@ -289,7 +289,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup NASM
@@ -328,7 +328,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup NASM
@@ -361,7 +361,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install Rust
@@ -424,7 +424,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -457,7 +457,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup NASM
@@ -583,7 +583,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
           cache: npm
@@ -711,7 +711,7 @@ jobs:
                   url: 'https://github.com/albert-einshutoin/lazy-image.git'
                 },
                 engines: {
-                  node: '>= 18'
+                  node: '>= 22'
                 }
               };
               fs.writeFileSync('npm/$platform/package.json', JSON.stringify(pkg, null, 2));
@@ -737,7 +737,7 @@ jobs:
           echo "=== Verifying package.json contents ==="
           for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-arm64-gnu linux-x64-musl; do
             echo "Package: $platform"
-            cat "npm/$platform/package.json" | jq -r '.name, .version, .main' || cat "npm/$platform/package.json"
+            node -e "const pkg = require('./npm/$platform/package.json'); if (pkg.engines?.node !== '>= 22') process.exit(1); console.log(pkg.name, pkg.version, pkg.main, pkg.engines.node)"
             echo ""
           done
           

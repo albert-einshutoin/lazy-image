@@ -141,7 +141,7 @@ separate, reviewed policy change. Main, release, tag, and scheduled full runs
 remain after adoption.
 
 The PR workflow caps test-process parallelism at two and uses one canonical
-Linux/Node 20 binding. This limits runner startup overhead and avoids parallel
+Linux/Node 22 binding. This limits runner startup overhead and avoids parallel
 native builds fighting for CPU and memory. Cross-platform and multi-Node
 coverage remains in full CI. npm downloads and Cargo registry/build outputs
 are cached with separate canonical, selective, and shadow keys. To diagnose a

@@ -223,7 +223,7 @@ The current product direction is documented in [WASM_STRATEGY.md](./WASM_STRATEG
 ### Docker / Kubernetes
 
 ```dockerfile
-FROM node:20-slim
+FROM node:22-slim
 # No extra apt-get or system libraries needed
 WORKDIR /app
 COPY package*.json ./
