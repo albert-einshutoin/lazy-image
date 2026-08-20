@@ -14,8 +14,23 @@ use libavif_sys::*;
 /// Hard cap on input size to keep fuzz inputs bounded without breaking large
 /// images. Inputs larger than this skip ICC parsing entirely.
 const MAX_ICC_SOURCE_BYTES: usize = 8 * 1024 * 1024;
+// Bounds decompression before policy-specific checks; profiles above the
+// always-on 10 MiB ceiling can never be accepted.
+const MAX_EXTRACTED_ICC_BYTES: u64 = 10 * 1024 * 1024 + 4096;
 
 pub type IccExtractionResult = std::result::Result<Option<Vec<u8>>, LazyImageError>;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum IccSourceState {
+    Absent,
+    Valid,
+    Unsafe,
+}
+
+pub struct ClassifiedIcc {
+    pub state: IccSourceState,
+    pub profile: Option<Vec<u8>>,
+}
 
 fn icc_decode_error(format: &str, reason: &str) -> LazyImageError {
     LazyImageError::decode_failed(format!("{format} ICC extraction failed: {reason}"))
@@ -154,6 +169,122 @@ pub fn extract_icc_profile(data: &[u8]) -> IccExtractionResult {
     extract_and_validate_icc(extractor, data)
 }
 
+fn has_icc_payload(data: &[u8]) -> bool {
+    if data.starts_with(&[0xFF, 0xD8]) {
+        let mut offset = 2;
+        while offset + 1 < data.len() {
+            if data[offset] != 0xFF {
+                return false;
+            }
+            while offset < data.len() && data[offset] == 0xFF {
+                offset += 1;
+            }
+            if offset >= data.len() {
+                return false;
+            }
+            let marker = data[offset];
+            offset += 1;
+            if marker == 0xDA || marker == 0xD9 {
+                break;
+            }
+            if (0xD0..=0xD7).contains(&marker) || marker == 0x01 {
+                continue;
+            }
+            if offset + 1 >= data.len() {
+                return false;
+            }
+            let size = u16::from_be_bytes([data[offset], data[offset + 1]]) as usize;
+            let Some(end) = offset.checked_add(size) else {
+                return false;
+            };
+            if size < 2 || end > data.len() {
+                return false;
+            }
+            if marker == 0xE2 && data[offset + 2..end].starts_with(b"ICC_PROFILE\0") {
+                return true;
+            }
+            offset = end;
+        }
+        return false;
+    }
+
+    let (mut offset, kind, is_png) = if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        (8usize, b"iCCP".as_slice(), true)
+    } else if data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"WEBP" {
+        (12usize, b"ICCP".as_slice(), false)
+    } else {
+        return false;
+    };
+
+    while offset + 8 <= data.len() {
+        let (chunk_kind, payload_start, padded) = if is_png {
+            let size = u32::from_be_bytes(data[offset..offset + 4].try_into().unwrap()) as usize;
+            (
+                &data[offset + 4..offset + 8],
+                offset + 8,
+                size.saturating_add(4),
+            )
+        } else {
+            let size =
+                u32::from_le_bytes(data[offset + 4..offset + 8].try_into().unwrap()) as usize;
+            (
+                &data[offset..offset + 4],
+                offset + 8,
+                size.next_multiple_of(2),
+            )
+        };
+        let Some(end) = payload_start.checked_add(padded) else {
+            break;
+        };
+        if end > data.len() {
+            break;
+        }
+        if chunk_kind == kind {
+            return true;
+        }
+        offset = end;
+    }
+    false
+}
+
+fn classify_icc_profile_inner(data: &[u8], allow_public_source_size: bool) -> ClassifiedIcc {
+    if !has_icc_payload(data) {
+        return ClassifiedIcc {
+            state: IccSourceState::Absent,
+            profile: None,
+        };
+    }
+    if (!allow_public_source_size && data.len() > MAX_ICC_SOURCE_BYTES)
+        || (allow_public_source_size && data.len() > 32 * 1024 * 1024)
+    {
+        return ClassifiedIcc {
+            state: IccSourceState::Unsafe,
+            profile: None,
+        };
+    }
+
+    let profile = select_icc_extractor(data)
+        .and_then(|extractor| extract_and_validate_icc(extractor, data).ok().flatten());
+    match profile {
+        Some(profile) => ClassifiedIcc {
+            state: IccSourceState::Valid,
+            profile: Some(profile),
+        },
+        None => ClassifiedIcc {
+            state: IccSourceState::Unsafe,
+            profile: None,
+        },
+    }
+}
+
+pub fn classify_icc_profile(data: &[u8]) -> ClassifiedIcc {
+    classify_icc_profile_inner(data, false)
+}
+
+pub fn classify_public_upload_icc(data: &[u8]) -> ClassifiedIcc {
+    classify_icc_profile_inner(data, true)
+}
+
 /// Lossy helper for callers that cannot propagate errors (legacy NAPI constructor).
 /// Panics are still trapped and converted to `None` via the guard.
 pub fn extract_icc_profile_lossy(data: &[u8]) -> Option<Vec<u8>> {
@@ -177,8 +308,11 @@ fn is_printable_ascii_field(bytes: &[u8]) -> bool {
 }
 
 pub(crate) fn validate_icc_profile(icc_data: &[u8]) -> bool {
-    // Minimum ICC profile size is 128 bytes (header)
-    if icc_data.len() < 128 {
+    const TAG_TABLE_START: usize = 132;
+    const MAX_TAGS: usize = 4096;
+
+    // Header plus the required tag-count field, padded to a 4-byte boundary.
+    if icc_data.len() < TAG_TABLE_START || !icc_data.len().is_multiple_of(4) {
         return false;
     }
 
@@ -191,27 +325,69 @@ pub(crate) fn validate_icc_profile(icc_data: &[u8]) -> bool {
         return false;
     }
 
-    // Check printable ASCII tag fields:
-    // - preferred CMM type (bytes 4-7), common values: "ADBE", "appl", "lcms"
-    // - profile class signature (bytes 12-15), common values: "mntr", "prtr", "scnr", "spac"
-    // - data color space (bytes 16-19)
-    // - PCS (Profile Connection Space) signature (bytes 20-23)
     if !is_printable_ascii_field(&icc_data[4..8])
-        || !is_printable_ascii_field(&icc_data[12..16])
-        || !is_printable_ascii_field(&icc_data[16..20])
-        || !is_printable_ascii_field(&icc_data[20..24])
+        || !matches!(&icc_data[12..16], b"mntr" | b"scnr" | b"prtr")
+        || !matches!(&icc_data[16..20], b"RGB " | b"GRAY")
+        || !matches!(&icc_data[20..24], b"XYZ " | b"Lab ")
+        || &icc_data[36..40] != b"acsp"
+        || icc_data[100..128].iter().any(|&byte| byte != 0)
     {
         return false;
     }
 
-    // Check profile version (bytes 8-11)
-    // Major version should be reasonable (typically 2, 4, or 5)
-    let major_version = icc_data[8];
-    if major_version > 10 {
+    if !matches!(icc_data[8], 2 | 4 | 5) {
         return false;
     }
 
-    // Basic validation passed
+    let tag_count = u32::from_be_bytes(icc_data[128..132].try_into().unwrap()) as usize;
+    if tag_count > MAX_TAGS {
+        return false;
+    }
+    let Some(table_end) = tag_count
+        .checked_mul(12)
+        .and_then(|bytes| TAG_TABLE_START.checked_add(bytes))
+    else {
+        return false;
+    };
+    if table_end > icc_data.len() {
+        return false;
+    }
+
+    let mut signatures = std::collections::HashSet::with_capacity(tag_count);
+    let mut ranges = Vec::with_capacity(tag_count);
+    for entry in icc_data[TAG_TABLE_START..table_end].chunks_exact(12) {
+        let signature: [u8; 4] = entry[0..4].try_into().unwrap();
+        if !signature.iter().all(|byte| (32..=126).contains(byte)) || !signatures.insert(signature)
+        {
+            return false;
+        }
+
+        let offset = u32::from_be_bytes(entry[4..8].try_into().unwrap()) as usize;
+        let size = u32::from_be_bytes(entry[8..12].try_into().unwrap()) as usize;
+        let Some(end) = offset.checked_add(size) else {
+            return false;
+        };
+        if offset < table_end
+            || !offset.is_multiple_of(4)
+            || size < 8
+            || end > icc_data.len()
+            || icc_data[offset + 4..offset + 8]
+                .iter()
+                .any(|&byte| byte != 0)
+        {
+            return false;
+        }
+        ranges.push((offset, end));
+    }
+
+    ranges.sort_unstable_by_key(|range| range.0);
+    if ranges
+        .windows(2)
+        .any(|pair| pair[0] != pair[1] && pair[0].1 > pair[1].0)
+    {
+        return false;
+    }
+
     true
 }
 
@@ -430,9 +606,13 @@ pub(crate) fn extract_icc_from_png_direct(data: &[u8]) -> Option<Vec<u8>> {
             let compressed_data = &data[compressed_start..compressed_end];
 
             // Decompress zlib data
-            let mut decoder = ZlibDecoder::new(compressed_data);
+            let decoder = ZlibDecoder::new(compressed_data);
             let mut decompressed = Vec::new();
-            if decoder.read_to_end(&mut decompressed).is_ok() {
+            if decoder
+                .take(MAX_EXTRACTED_ICC_BYTES)
+                .read_to_end(&mut decompressed)
+                .is_ok()
+            {
                 return Some(decompressed);
             }
             break;

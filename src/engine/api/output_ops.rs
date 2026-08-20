@@ -13,6 +13,8 @@
 #[cfg(feature = "napi")]
 use super::engine::{napi_err, ImageEngine};
 #[cfg(feature = "napi")]
+use crate::engine::io::{classify_icc_profile, classify_public_upload_icc, IccSourceState};
+#[cfg(feature = "napi")]
 use crate::engine::tasks::{
     EncodeTargetBytesTask, EncodeTask, EncodeWithMetricsTask, TaskContext, WriteFileTask,
     WriteFileWithMetricsTask, WriteTargetBytesTask,
@@ -26,6 +28,8 @@ use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit};
 
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
+#[cfg(feature = "napi")]
+use std::sync::Arc;
 
 // =============================================================================
 // INTERNAL HELPER
@@ -55,11 +59,31 @@ impl ImageEngine {
         let source = self.source.clone();
         let decoded = self.decoded.clone();
         let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
-        let auto_orient = self.auto_orient;
-        let icc_present = self.icc_profile().is_some();
+        policy.apply_firewall(self.firewall.policy);
+        let auto_orient = self.auto_orient
+            || self.firewall.policy == crate::engine::firewall::FirewallPolicy::PublicUpload;
+        let classified_icc = source
+            .as_ref()
+            .and_then(|value| value.as_bytes())
+            .map(|bytes| {
+                if self.firewall.policy == crate::engine::firewall::FirewallPolicy::PublicUpload {
+                    classify_public_upload_icc(bytes)
+                } else {
+                    classify_icc_profile(bytes)
+                }
+            });
+        let icc_state = classified_icc
+            .as_ref()
+            .map(|value| value.state)
+            .unwrap_or_else(|| {
+                if self.icc_profile().is_some() {
+                    IccSourceState::Valid
+                } else {
+                    IccSourceState::Absent
+                }
+            });
         let icc_profile = if policy.effective_icc() {
-            self.icc_profile().cloned()
+            classified_icc.and_then(|value| value.profile).map(Arc::new)
         } else {
             None
         };
@@ -75,7 +99,7 @@ impl ImageEngine {
             ops,
             format,
             icc_profile,
-            icc_present,
+            icc_state,
             exif_data,
             auto_orient,
             metadata_policy: policy,

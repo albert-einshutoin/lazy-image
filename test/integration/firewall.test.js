@@ -28,6 +28,22 @@ function test(name, fn) {
     }
 }
 
+function jpegWithIcc(jpeg, valid) {
+    const profile = Buffer.alloc(132);
+    profile.writeUInt32BE(132, 0);
+    profile.write('TEST', 4, 'ascii');
+    profile[8] = 2;
+    profile.write('mntr', 12, 'ascii');
+    profile.write('RGB ', 16, 'ascii');
+    profile.write('XYZ ', 20, 'ascii');
+    if (valid) profile.write('acsp', 36, 'ascii');
+    const payload = Buffer.concat([Buffer.from('ICC_PROFILE\0'), Buffer.from([1, 1]), profile]);
+    const marker = Buffer.alloc(4);
+    marker.writeUInt16BE(0xffe2, 0);
+    marker.writeUInt16BE(payload.length + 2, 2);
+    return Buffer.concat([jpeg.subarray(0, 2), marker, payload, jpeg.subarray(2)]);
+}
+
 async function asyncTest(name, fn) {
     try {
         await fn();
@@ -67,6 +83,53 @@ async function runTests() {
             .resize(100)
             .toBuffer('jpeg', 80);
         assert(result.length > 0, 'output should have content');
+    });
+
+    await asyncTest('public-upload forces privacy-safe metadata regardless of call order', async () => {
+        const exifInput = resolveFixture('test_with_exif.jpg');
+        const engines = [
+            ImageEngine.fromPath(exifInput)
+                .keepMetadata({ icc: true, exif: true, stripGps: false })
+                .sanitize({ policy: 'public-upload' }),
+            ImageEngine.fromPath(exifInput)
+                .sanitize({ policy: 'public-upload' })
+                .keepMetadata({ icc: true, exif: true, stripGps: false }),
+            ImageEngine.fromPath(exifInput)
+                .autoOrient(false)
+                .sanitize({ policy: 'public-upload' }),
+            ImageEngine.fromPath(exifInput)
+                .sanitize({ policy: 'public-upload' })
+                .autoOrient(false),
+        ];
+
+        let orientedData;
+        for (const engine of engines) {
+            const { data, metrics } = await engine.toBufferWithMetrics('jpeg', 80);
+            assert(!data.includes(Buffer.from('Exif\0\0')), 'public-upload must strip EXIF/GPS');
+            assert(
+                ['absent', 'preserved', 'unsafe-stripped', 'policy-stripped', 'unsupported'].includes(metrics.iccOutcome),
+                `unexpected ICC outcome: ${metrics.iccOutcome}`,
+            );
+            if (!orientedData) orientedData = data;
+            else assert.deepStrictEqual(data, orientedData, 'public-upload must force auto orientation');
+        }
+
+        const safe = await ImageEngine.from(jpegWithIcc(smallBuffer, true))
+            .sanitize({ policy: 'public-upload' })
+            .toBufferWithMetrics('jpeg', 80);
+        assert.strictEqual(safe.metrics.iccOutcome, 'preserved');
+
+        const malformed = await ImageEngine.from(jpegWithIcc(smallBuffer, false))
+            .sanitize({ policy: 'public-upload' })
+            .toBufferWithMetrics('jpeg', 80);
+        assert.strictEqual(malformed.metrics.iccOutcome, 'unsafe-stripped');
+
+        assert.throws(
+            () => ImageEngine.from(smallBuffer)
+                .sanitize({ policy: 'public-upload' })
+                .limits({ maxBytes: 0 }),
+            /cannot be disabled/,
+        );
     });
 
     await asyncTest('sanitize() defaults to strict policy', async () => {

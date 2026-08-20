@@ -5,6 +5,8 @@
 // MetadataPolicy: single source of truth for which metadata to preserve
 // in output images. Extracted from api.rs to keep the NAPI surface thin.
 
+use crate::engine::firewall::FirewallPolicy;
+
 /// Policy for which metadata to preserve in output images.
 ///
 /// Modeled as a sum type so that incoherent combinations are *unrepresentable*:
@@ -52,10 +54,12 @@ impl MetadataPolicy {
         }
     }
 
-    /// Apply firewall override: if reject_metadata is true, strip everything.
-    pub fn apply_firewall(&mut self, reject_metadata: bool) {
-        if reject_metadata {
-            *self = Self::StripAll;
+    /// Apply the output metadata invariant owned by a built-in firewall policy.
+    pub fn apply_firewall(&mut self, firewall: FirewallPolicy) {
+        match firewall {
+            FirewallPolicy::Strict => *self = Self::StripAll,
+            FirewallPolicy::PublicUpload => *self = Self::KeepIcc,
+            _ => {}
         }
     }
 
@@ -134,7 +138,18 @@ mod tests {
     #[test]
     fn firewall_override_strips_all() {
         let mut p = MetadataPolicy::KeepAll { strip_gps: false };
-        p.apply_firewall(true);
+        p.apply_firewall(FirewallPolicy::Strict);
         assert_eq!(p, MetadataPolicy::StripAll);
+    }
+
+    #[test]
+    fn public_upload_forces_icc_only_regardless_of_prior_policy() {
+        for mut policy in [
+            MetadataPolicy::StripAll,
+            MetadataPolicy::KeepAll { strip_gps: false },
+        ] {
+            policy.apply_firewall(FirewallPolicy::PublicUpload);
+            assert_eq!(policy, MetadataPolicy::KeepIcc);
+        }
     }
 }

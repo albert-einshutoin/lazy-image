@@ -178,7 +178,7 @@ export declare class ImageEngine {
    */
   keepMetadata(options?: KeepMetadataOptions | undefined | null): ImageEngine
   /**
-   * Enable Image Firewall mode with built-in policies (strict or lenient).
+   * Enable Image Firewall mode with a built-in policy.
    * Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).
    * Lenient mode keeps generous limits but still guards against decompression bombs.
    */
@@ -505,6 +505,8 @@ export interface ProcessingMetrics {
   formatOut: CanonicalOutputFormat
   /** True when ICC profile was present and preserved */
   iccPreserved: boolean
+  /** ICC handling result: absent, preserved, unsafe-stripped, policy-stripped, or unsupported */
+  iccOutcome: IccOutcome
   /** True when metadata was stripped (either by default or policy) */
   metadataStripped: boolean
   /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
@@ -567,7 +569,8 @@ export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
 export type TargetBytesFormat = CaseInsensitive<'jpeg' | 'jpg' | 'webp' | 'avif'>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
-export type FirewallPolicy = 'strict' | 'lenient'
+export type FirewallPolicy = 'strict' | 'lenient' | 'public-upload'
+export type IccOutcome = 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported'
 export type EncodeProfile = 'size-first' | 'balanced' | 'speed-first'
 
 export interface ResolvedEncodeProfile {

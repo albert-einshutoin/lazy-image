@@ -22,7 +22,8 @@ export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
 export type TargetBytesFormat = CaseInsensitive<'jpeg' | 'jpg' | 'webp' | 'avif'>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
-export type FirewallPolicy = 'strict' | 'lenient'
+export type FirewallPolicy = 'strict' | 'lenient' | 'public-upload'
+export type IccOutcome = 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported'
 export type EncodeProfile = 'size-first' | 'balanced' | 'speed-first'
 
 export interface ResolvedEncodeProfile {
@@ -261,6 +262,7 @@ function patchIndexDts() {
   content = replaceIfNeeded(content, 'export interface PresetResult {\n  /** Recommended output format */\n  format: string', 'export interface PresetResult {\n  /** Recommended output format */\n  format: CanonicalOutputFormat');
   content = replaceIfNeeded(content, '  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */\n  formatIn?: string', '  /** Detected input format reported by runtime metrics */\n  formatIn?: InputFormat');
   content = replaceIfNeeded(content, '  /** Output format */\n  formatOut: string', '  /** Output format */\n  formatOut: CanonicalOutputFormat');
+  content = replaceIfNeeded(content, '  iccOutcome: string', '  iccOutcome: IccOutcome');
   content = replaceIfNeeded(content, '  toFileWithMetrics(path: string, format: string,', '  toFileWithMetrics(path: string, format: OutputFormat,');
   content = replaceIfNeeded(content, '  encode(options: EncodeOptions): Promise<EncodeResult>', '  encode(options: EncodeOptionsInput): Promise<EncodeResult>');
   content = replaceIfNeeded(content, '  encodeToFile(path: string, options: EncodeOptions): Promise<FileEncodeResult>', '  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>');
