@@ -6,6 +6,7 @@ const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths')
 
 const INPUT_JPEG = resolveFixture('test_input.jpg');
 const INPUT_PNG = resolveFixture('test_input.png');
+const INPUT_EXIF_JPEG = resolveFixture('test_with_exif.jpg');
 const FUZZ_SEED_SCRIPT = resolveRoot('scripts/fuzz/write-seed-corpus.mjs');
 
 function parsePositiveInt(value, optionName) {
@@ -291,8 +292,10 @@ async function runIteration(iteration, rootDir, includeTargetBytesRound) {
     throw new Error(`iteration ${iteration}: file output wrote no bytes`);
   }
 
-  const cloneEngine = ImageEngine.fromPath(INPUT_PNG)
-    .sanitize({ policy: 'strict' })
+  const cloneEngine = ImageEngine.fromPath(INPUT_EXIF_JPEG)
+    .keepMetadata({ icc: true, exif: true, stripGps: false })
+    .autoOrient(false)
+    .sanitize({ policy: 'public-upload' })
     .resize({ width: 160, fit: 'inside' });
   const [cloneJpeg, cloneWebp, cloneMetrics] = await Promise.all([
     cloneEngine.clone().toBuffer('jpeg', 76),
@@ -302,6 +305,9 @@ async function runIteration(iteration, rootDir, includeTargetBytesRound) {
 
   if (!Buffer.isBuffer(cloneJpeg) || cloneJpeg.length === 0) {
     throw new Error(`iteration ${iteration}: clone JPEG output returned no bytes`);
+  }
+  if (cloneJpeg.includes(Buffer.from('Exif\0\0'))) {
+    throw new Error(`iteration ${iteration}: public-upload clone retained EXIF`);
   }
   if (!Buffer.isBuffer(cloneWebp) || cloneWebp.length === 0) {
     throw new Error(`iteration ${iteration}: clone WebP output returned no bytes`);
@@ -336,7 +342,7 @@ async function runMalformedRound(round, malformedInputs) {
   for (const input of malformedInputs) {
     await expectRejects(`malformed round ${round}: ${input.name}`, () => (
       ImageEngine.from(input.data)
-        .sanitize({ policy: 'strict' })
+        .sanitize({ policy: 'public-upload' })
         .resize({ width: 64, fit: 'inside' })
         .toBufferWithMetrics('jpeg', 80)
     ));
@@ -433,6 +439,8 @@ function buildSummary(options, malformedInputs, memorySamples) {
     },
     boundaryCoverage: {
       cloneMultiOutputRounds: options.iterations,
+      publicUploadCloneRounds: options.iterations,
+      publicUploadMalformedBufferAttempts: options.malformedRounds * malformedInputs.length,
       targetBytesSearchRounds: options.targetBytesRounds,
       targetBytesSearches: options.targetBytesRounds * 2,
     },
@@ -460,6 +468,8 @@ function formatSummaryMarkdown(summary) {
     `- malformedRounds: ${summary.options.malformedRounds}`,
     `- targetBytesRounds: ${summary.options.targetBytesRounds}`,
     `- cloneMultiOutputRounds: ${summary.boundaryCoverage.cloneMultiOutputRounds}`,
+    `- publicUploadCloneRounds: ${summary.boundaryCoverage.publicUploadCloneRounds}`,
+    `- publicUploadMalformedBufferAttempts: ${summary.boundaryCoverage.publicUploadMalformedBufferAttempts}`,
     `- targetBytesSearches: ${summary.boundaryCoverage.targetBytesSearches}`,
     `- malformedInputs: ${summary.malformedInputs.total}`,
     `- generatedFuzzSeeds: ${summary.malformedInputs.generatedFuzzSeeds}`,
