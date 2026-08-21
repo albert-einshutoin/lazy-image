@@ -1,4 +1,4 @@
-export const VERSION = '0.16.0';
+export const VERSION = '1.0.0';
 
 export const ERROR_CATEGORIES = Object.freeze({
   UserError: 'UserError',
