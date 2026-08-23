@@ -573,9 +573,9 @@ jobs:
       - supply-chain
       - coverage
       - leak-detection
-    # Manual full validation is safe by default and never enters the publish job.
-    # A deliberate manual publish must disable full_validation (and dry_run).
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.full_validation)
+    # Publishing requires a release tag. Manual runs may exercise packaging only
+    # when both full validation is disabled and dry-run is explicitly enabled.
+    if: (github.event_name != 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && !inputs.full_validation && inputs.dry_run)
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -594,6 +594,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify release tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: node scripts/check-release-policy.js "$(node -p "require('./package.json').version")" "$GITHUB_REF_NAME"
 
       - name: Download all artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -864,8 +868,15 @@ jobs:
       - name: Publish main package
         if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
+          pkg_name="$(node -p "require('./package.json').name")"
+          pkg_version="$(node -p "require('./package.json').version")"
+          if npm view "$pkg_name@$pkg_version" version >/dev/null 2>&1; then
+            echo "$pkg_name@$pkg_version already exists; skipping publish."
+            exit 0
+          fi
+
           # Remove .node files from main package (they're in platform packages now)
-          rm -f *.node
+          rm -f -- ./*.node
           # Restore original package.json if napi prepublish modified it
           git checkout package.json || true
           # Publish without running prepublishOnly (we already ran napi prepublish manually)
