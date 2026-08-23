@@ -13,7 +13,7 @@ use super::atomic::write_encoded_output;
 #[cfg(feature = "napi")]
 use super::context::BatchResult;
 use super::processing::{process_and_encode_from_parts, EncodeContext};
-use crate::engine::io::{extract_exif_raw, extract_icc_profile};
+use crate::engine::io::{classify_icc_profile, classify_public_upload_icc, extract_exif_raw};
 #[cfg(feature = "napi")]
 use crate::engine::pool;
 use crate::error::LazyImageError;
@@ -73,10 +73,15 @@ fn process_batch_file(
 
     ctx.firewall.scan_metadata(data)?;
 
-    let extracted_icc = extract_icc_profile(data)?;
-    let icc_present = extracted_icc.is_some();
+    let classified_icc =
+        if ctx.firewall.policy == super::super::firewall::FirewallPolicy::PublicUpload {
+            classify_public_upload_icc(data)
+        } else {
+            classify_icc_profile(data)
+        };
+    let icc_state = classified_icc.state;
     let icc_profile = if keep_icc {
-        extracted_icc.map(Arc::new)
+        classified_icc.profile.map(Arc::new)
     } else {
         None
     };
@@ -93,7 +98,7 @@ fn process_batch_file(
         ops: ctx.ops,
         format: ctx.format,
         icc_profile: icc_profile.as_ref(),
-        icc_present,
+        icc_state,
         exif_data: exif_data.as_ref(),
         auto_orient: ctx.auto_orient,
         policy: ctx.policy,

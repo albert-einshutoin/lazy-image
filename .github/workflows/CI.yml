@@ -83,7 +83,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install Rust
@@ -108,7 +108,7 @@ jobs:
         run: ${{ matrix.settings.build }}
         shell: bash
 
-      # Node 20 on Linux x64 is the canonical generator environment for the
+      # Node 22 on Linux x64 is the canonical generator environment for the
       # committed NAPI loader and declarations. Other matrix entries verify
       # platform builds without redefining the reviewed public artifacts.
       - name: Verify committed NAPI artifacts are reproducible
@@ -155,6 +155,16 @@ jobs:
 
       - name: Run Rust tests (release mode, without NAPI features)
         run: cargo test --no-default-features --release
+
+      - name: Setup Node.js for selector contract validation
+        if: matrix.host == 'ubuntu-latest'
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 22
+
+      - name: Validate configured Rust test selectors
+        if: matrix.host == 'ubuntu-latest'
+        run: npm run test:ci-planner:rust-targets
 
       # Note: NAPI tests require Node.js runtime and cannot be run with cargo test alone.
       # NAPI functionality is tested via JavaScript integration tests in the 'test' job.
@@ -207,7 +217,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -218,6 +228,9 @@ jobs:
 
       - name: Verify Wasm workspace pack contract
         run: npm --workspace @alberteinshutoin/lazy-image-wasm pack --dry-run
+
+      - name: Run Wasm workspace tests
+        run: npm run test:wasm:package
 
   test:
     name: Test (Node ${{ matrix.node }})
@@ -232,7 +245,7 @@ jobs:
             artifact: bindings-aarch64-apple-darwin
           - host: windows-latest
             artifact: bindings-x86_64-pc-windows-msvc
-        node: [18, 20, 22]
+        node: [22, 24]
 
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 20
@@ -276,7 +289,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup NASM
@@ -315,7 +328,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup NASM
@@ -348,7 +361,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install Rust
@@ -411,7 +424,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -444,7 +457,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup NASM
@@ -560,9 +573,9 @@ jobs:
       - supply-chain
       - coverage
       - leak-detection
-    # Manual full validation is safe by default and never enters the publish job.
-    # A deliberate manual publish must disable full_validation (and dry_run).
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.full_validation)
+    # Publishing requires a release tag. Manual runs may exercise packaging only
+    # when both full validation is disabled and dry-run is explicitly enabled.
+    if: (github.event_name != 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && !inputs.full_validation && inputs.dry_run)
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -570,7 +583,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
           cache: npm
@@ -581,6 +594,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify release tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: node scripts/check-release-policy.js "$(node -p "require('./package.json').version")" "$GITHUB_REF_NAME"
 
       - name: Download all artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -698,7 +715,7 @@ jobs:
                   url: 'https://github.com/albert-einshutoin/lazy-image.git'
                 },
                 engines: {
-                  node: '>= 18'
+                  node: '>= 22'
                 }
               };
               fs.writeFileSync('npm/$platform/package.json', JSON.stringify(pkg, null, 2));
@@ -724,7 +741,7 @@ jobs:
           echo "=== Verifying package.json contents ==="
           for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-arm64-gnu linux-x64-musl; do
             echo "Package: $platform"
-            cat "npm/$platform/package.json" | jq -r '.name, .version, .main' || cat "npm/$platform/package.json"
+            node -e "const pkg = require('./npm/$platform/package.json'); if (pkg.engines?.node !== '>= 22') process.exit(1); console.log(pkg.name, pkg.version, pkg.main, pkg.engines.node)"
             echo ""
           done
           
@@ -851,8 +868,15 @@ jobs:
       - name: Publish main package
         if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
+          pkg_name="$(node -p "require('./package.json').name")"
+          pkg_version="$(node -p "require('./package.json').version")"
+          if npm view "$pkg_name@$pkg_version" version >/dev/null 2>&1; then
+            echo "$pkg_name@$pkg_version already exists; skipping publish."
+            exit 0
+          fi
+
           # Remove .node files from main package (they're in platform packages now)
-          rm -f *.node
+          rm -f -- ./*.node
           # Restore original package.json if napi prepublish modified it
           git checkout package.json || true
           # Publish without running prepublishOnly (we already ran napi prepublish manually)

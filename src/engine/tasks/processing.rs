@@ -14,7 +14,7 @@ use super::context::{decode_internal_from_parts, detect_input_format};
 use crate::engine::encoder::{encode_avif, encode_jpeg_with_settings, encode_png, encode_webp};
 use crate::engine::io::exif_embed::{embed_exif_jpeg, embed_exif_png, embed_exif_webp};
 #[allow(unused_imports)]
-use crate::engine::io::{exif_has_gps, has_exif, Source};
+use crate::engine::io::{exif_has_gps, has_exif, IccSourceState, Source};
 use crate::engine::memory;
 use crate::engine::pipeline::{apply_ops_tracked, ColorState, IccState};
 use crate::error::LazyImageError;
@@ -41,7 +41,7 @@ fn get_resource_usage() -> Option<ResourceUsage> {
 /// per-iteration `OutputFormat`).
 ///
 /// `encode_prepared` ignores the prepare-only fields (`source`, `decoded`,
-/// `ops`, `icc_present`); they live here rather than in a separate struct so
+/// `ops`, `icc_state`); they live here rather than in a separate struct so
 /// every callsite builds exactly one context object.
 #[derive(Clone, Copy)]
 pub(super) struct EncodeContext<'a> {
@@ -50,7 +50,7 @@ pub(super) struct EncodeContext<'a> {
     pub(super) ops: &'a [Operation],
     pub(super) format: &'a OutputFormat,
     pub(super) icc_profile: Option<&'a Arc<Vec<u8>>>,
-    pub(super) icc_present: bool,
+    pub(super) icc_state: IccSourceState,
     pub(super) exif_data: Option<&'a Arc<Vec<u8>>>,
     pub(super) auto_orient: bool,
     pub(super) policy: &'a MetadataPolicy,
@@ -91,7 +91,7 @@ pub(super) fn prepare_for_encode(
     source: Option<&Source>,
     decoded: Option<&Arc<DynamicImage>>,
     ops: &[Operation],
-    icc_present: bool,
+    icc_state: IccSourceState,
     auto_orient: bool,
     firewall: &FirewallConfig,
     format_for_memory_estimate: &OutputFormat,
@@ -166,7 +166,7 @@ pub(super) fn prepare_for_encode(
         ops
     };
 
-    let icc_state = if icc_present {
+    let icc_state = if icc_state == IccSourceState::Valid {
         IccState::Present
     } else {
         IccState::Absent
@@ -273,8 +273,16 @@ pub(super) fn encode_prepared(
         // Get final resource usage & finalize metrics
         let final_usage = get_resource_usage();
         // Use tracked color state to reason about ICC preservation.
-        let icc_present = matches!(prepared.final_color_state.icc, IccState::Present);
-        let icc_preserved = keep_icc && icc_present;
+        let valid_icc_present = ctx.icc_profile.is_some()
+            && matches!(prepared.final_color_state.icc, IccState::Present);
+        let icc_preserved = keep_icc && valid_icc_present;
+        let icc_outcome = match (ctx.icc_state, icc_preserved, keep_icc) {
+            (IccSourceState::Absent, _, _) => "absent",
+            (IccSourceState::Unsafe, _, _) => "unsafe-stripped",
+            (IccSourceState::Valid, true, _) => "preserved",
+            (IccSourceState::Valid, false, false) => "policy-stripped",
+            (IccSourceState::Valid, false, true) => "unsupported",
+        };
         // EXIF presence detection: prefer the in-memory copy that the API layer may
         // have already extracted, otherwise fall back to a lightweight presence scan
         // recorded during the prepare phase.
@@ -290,11 +298,12 @@ pub(super) fn encode_prepared(
             .map(|exif| exif_has_gps(exif.as_slice()))
             .unwrap_or(false);
         let gps_stripped_from_exif = exif_preserved && strip_gps && gps_present_in_exif;
-        let metadata_stripped = (icc_present && !icc_preserved)
+        let metadata_stripped = (ctx.icc_state != IccSourceState::Absent && !icc_preserved)
             || (exif_present && !exif_preserved)
             || gps_stripped_from_exif;
-        let metadata_blocked_by_policy =
-            (keep_icc || keep_exif) && firewall.reject_metadata && (icc_present || exif_present);
+        let metadata_blocked_by_policy = (keep_icc || keep_exif)
+            && firewall.reject_metadata
+            && (ctx.icc_state != IccSourceState::Absent || exif_present);
         let mut policy_violations = Vec::new();
         if metadata_blocked_by_policy {
             policy_violations.push("firewall_rejected_metadata".to_string());
@@ -328,6 +337,7 @@ pub(super) fn encode_prepared(
         m.format_in = prepared.input_format.map(|s| s.to_string());
         m.format_out = format.as_str().to_string();
         m.icc_preserved = icc_preserved;
+        m.icc_outcome = icc_outcome.to_string();
         m.metadata_stripped = metadata_stripped;
         m.policy_violations = policy_violations;
     }
@@ -348,7 +358,7 @@ pub(super) fn process_and_encode_from_parts(
         ctx.source,
         ctx.decoded,
         ctx.ops,
-        ctx.icc_present,
+        ctx.icc_state,
         ctx.auto_orient,
         ctx.firewall,
         ctx.format,

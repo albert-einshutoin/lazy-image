@@ -116,7 +116,8 @@ Platform-specific binaries (~6–9 MB per platform) are installed automatically.
 | Distribution path | Notes |
 |---|---|
 | npm optional binaries | macOS arm64/x64, Linux x64/arm64 GNU, Linux x64 musl, Windows x64 |
-| Source build | Node.js 18+, Rust 1.88+, and the native codec toolchain documented in [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| Runtime requirement | Node.js 22+ for prebuilt binaries and source builds |
+| Source build | Rust 1.88+ and the native codec toolchain documented in [CONTRIBUTING.md](./CONTRIBUTING.md) |
 
 ---
 

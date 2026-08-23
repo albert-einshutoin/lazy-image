@@ -150,7 +150,7 @@ pub fn supported_output_formats() -> Vec<String> {
 }
 
 /// Metrics payload version. Keep in sync with docs/metrics-schema.json
-pub const PROCESSING_METRICS_VERSION: &str = "1.0.0";
+pub const PROCESSING_METRICS_VERSION: &str = "1.1.0";
 
 /// Processing metrics for performance monitoring
 #[derive(Debug)]
@@ -189,6 +189,8 @@ pub struct ProcessingMetrics {
     pub format_out: String,
     /// True when ICC profile was present and preserved
     pub icc_preserved: bool,
+    /// ICC handling result: absent, preserved, unsafe-stripped, policy-stripped, or unsupported
+    pub icc_outcome: String,
     /// True when metadata was stripped (either by default or policy)
     pub metadata_stripped: bool,
     /// Non-fatal policy rejections (e.g., strict policy forcing metadata strip)
@@ -212,6 +214,7 @@ impl Default for ProcessingMetrics {
             format_in: None,
             format_out: String::new(),
             icc_preserved: false,
+            icc_outcome: "absent".to_string(),
             metadata_stripped: true,
             policy_violations: Vec::new(),
         }
@@ -362,7 +365,7 @@ mod tests {
 
     #[test]
     fn test_processing_metrics_version_constant() {
-        assert_eq!(PROCESSING_METRICS_VERSION, "1.0.0");
+        assert_eq!(PROCESSING_METRICS_VERSION, "1.1.0");
     }
 
     #[test]
