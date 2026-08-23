@@ -2,8 +2,8 @@
 
 Full API reference for lazy-image. For a quick start, see [README.md](../README.md#-basic-usage).
 
-This page documents the native Node.js package. The planned browser/Edge Wasm
-API is intentionally narrower and is documented separately in
+This page documents the native Node.js package. The published browser/Edge Wasm
+MVP is intentionally narrower and is documented separately in
 [WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
 
 ## Constructors
@@ -35,7 +35,6 @@ const bytes = await engine.resize(800).toFile('output.jpg', 'jpeg', 80);
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without color space conversion. |
-| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Use `.normalizePixelFormat()` instead. |
 | `.preset(name)` | ⚠️ **DEPRECATED** - Applies a preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) by mutating the pipeline and returning a separate `PresetResult`. Prefer `encode({ preset: name })`, `.toBufferWithPreset(name)`, or `.toFileWithPreset(path, name)` for self-contained preset output. |
 | `.sanitize({ policy? })` | Image Firewall: apply `strict`, `lenient`, or `public-upload`. The public-upload policy keeps strict resource limits, preserves only validated ICC up to 512 KiB, and always strips EXIF/GPS/XMP. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md). |
 | `.limits({ maxPixels?, maxBytes?, timeoutMs? })` | Override firewall limits. |
@@ -221,18 +220,6 @@ interface ProcessingMetrics {
   iccOutcome: 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported';
   metadataStripped: boolean;
   policyViolations: string[];
-  /** @deprecated use decodeMs */
-  decodeTime: number;
-  /** @deprecated use opsMs */
-  processTime: number;
-  /** @deprecated use encodeMs */
-  encodeTime: number;
-  /** @deprecated use peakRss */
-  memoryPeak: number;
-  /** @deprecated use bytesIn */
-  inputSize: number;
-  /** @deprecated use bytesOut */
-  outputSize: number;
 }
 
 interface OutputWithMetrics {
@@ -310,7 +297,8 @@ interface BatchOutputWithMetrics {
 
 Metrics payloads are versioned. See [metrics-api.md](./metrics-api.md) and [metrics-schema.json](./metrics-schema.json).
 
-**Deprecation**: Legacy metric field names (`decodeTime`, `processTime`, etc.) will be removed in v2.0.0. Use `decodeMs`, `opsMs`, `peakRss`, `bytesIn`, `bytesOut`.
+Only the canonical fields above are part of the v1.x contract. Legacy metric
+aliases removed before v1 are not returned.
 
 ---
 

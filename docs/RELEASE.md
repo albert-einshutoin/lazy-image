@@ -35,14 +35,16 @@ Key rules:
 Before starting a release:
 
 1. **`main` is green**: all required CI workflows pass on the latest commit.
-2. **No open release PR**: only one release in flight at a time.
-3. **`NPM_TOKEN` secret is valid**: check expiry in GitHub repo settings (Settings -> Secrets and variables -> Actions).
-4. **Local tooling**: `gh`, `cargo`, `npm`, `git` installed and authenticated.
-5. **Decide the next version**: follow [SEMVER_POLICY.md](SEMVER_POLICY.md).
+2. **`main` is protected**: require a pull request, successful CI/security checks,
+   and resolved review conversations before merging.
+3. **No open release PR**: only one release in flight at a time.
+4. **`NPM_TOKEN` secret is valid**: check expiry in GitHub repo settings (Settings -> Secrets and variables -> Actions).
+5. **Local tooling**: `gh`, `cargo`, `npm`, `git` installed and authenticated.
+6. **Decide the next version**: follow [SEMVER_POLICY.md](SEMVER_POLICY.md).
    - MAJOR (`x.0.0`): breaking changes
    - MINOR (`0.x.0`): backward-compatible additions
    - PATCH (`0.0.x`): bug fixes only
-6. **Check breaking-change markers**: if the target changelog section contains
+7. **Check breaking-change markers**: if the target changelog section contains
    `BREAKING` or `Removed`, the release version must be a major boundary
    (`x.0.0`). For current 0.x work, that means `1.0.0`.
 

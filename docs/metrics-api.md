@@ -22,14 +22,7 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`,
   "iccPreserved": false,
   "iccOutcome": "absent",
   "metadataStripped": true,
-  "policyViolations": ["firewall_rejected_metadata"],
-  // Legacy aliases kept for backward compatibility
-  "decodeTime": 12.4,
-  "processTime": 8.1,
-  "encodeTime": 15.3,
-  "memoryPeak": 28450000,
-  "inputSize": 152004,
-  "outputSize": 62488
+  "policyViolations": ["firewall_rejected_metadata"]
 }
 ```
 
@@ -44,7 +37,6 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`,
 - **iccPreserved / metadataStripped**: Whether ICC profile was preserved or metadata was stripped.
 - **iccOutcome**: `absent`, `preserved`, `unsafe-stripped`, `policy-stripped`, or `unsupported`; use this instead of inferring ICC presence from `iccPreserved: false`.
 - **policyViolations**: Non-fatal Image Firewall actions that altered output (e.g., forced metadata strip under strict policy).
-- **Legacy aliases** (deprecated): `decodeTime`, `processTime`, `encodeTime`, `memoryPeak`, `inputSize`, `outputSize` map 1:1 to the new fields. They will be removed in v2.0.0; migrate to `decodeMs`, `opsMs`, `encodeMs`, `peakRss`, `bytesIn`, `bytesOut`.
 
 ## Validation
 
@@ -56,4 +48,5 @@ lazy-image exposes structured telemetry via `ImageEngine.toBufferWithMetrics()`,
 
 - Additive changes only within minor versions. Breaking changes (field removal/rename or semantic shifts) require a new `version` value.
 - Downstream clients should gate on `version` and ignore unknown fields to remain forward compatible.
-- Legacy aliases are supported through v1.x with @deprecated annotations in `index.d.ts`. Removal is planned for v2.0.0.
+- The v1.x contract contains only the canonical fields above. Legacy metric
+  aliases removed before v1 are not emitted and are not accepted by the schema.

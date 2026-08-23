@@ -20,13 +20,7 @@
     "iccPreserved",
     "iccOutcome",
     "metadataStripped",
-    "policyViolations",
-    "decodeTime",
-    "processTime",
-    "encodeTime",
-    "memoryPeak",
-    "inputSize",
-    "outputSize"
+    "policyViolations"
   ],
   "properties": {
     "version": {
@@ -60,36 +54,6 @@
       "type": "array",
       "description": "Non-fatal Image Firewall enforcement that altered output",
       "items": { "type": "string" }
-    },
-    "decodeTime": {
-      "type": "number",
-      "minimum": 0,
-      "description": "Legacy alias of decodeMs (ms)"
-    },
-    "processTime": {
-      "type": "number",
-      "minimum": 0,
-      "description": "Legacy alias of opsMs (ms)"
-    },
-    "encodeTime": {
-      "type": "number",
-      "minimum": 0,
-      "description": "Legacy alias of encodeMs (ms)"
-    },
-    "memoryPeak": {
-      "type": "number",
-      "minimum": 0,
-      "description": "Legacy alias of peakRss (bytes)"
-    },
-    "inputSize": {
-      "type": "number",
-      "minimum": 0,
-      "description": "Legacy alias of bytesIn (bytes)"
-    },
-    "outputSize": {
-      "type": "number",
-      "minimum": 0,
-      "description": "Legacy alias of bytesOut (bytes)"
     }
   },
   "additionalProperties": false
