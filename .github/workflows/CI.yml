@@ -575,7 +575,7 @@ jobs:
       - leak-detection
     # Publishing requires a release tag. Manual runs may exercise packaging only
     # when both full validation is disabled and dry-run is explicitly enabled.
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.full_validation && inputs.dry_run)
+    if: (github.event_name != 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && !inputs.full_validation && inputs.dry_run)
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

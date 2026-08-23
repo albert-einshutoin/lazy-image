@@ -73,7 +73,7 @@ test("release tag must match the package version", () => {
 test("manual release workflow can only enter the publish job in dry-run mode", () => {
   assert.match(
     workflow,
-    /if: startsWith\(github\.ref, 'refs\/tags\/v'\) \|\| \(github\.event_name == 'workflow_dispatch' && !inputs\.full_validation && inputs\.dry_run\)/,
+    /if: \(github\.event_name != 'workflow_dispatch' && startsWith\(github\.ref, 'refs\/tags\/v'\)\) \|\| \(github\.event_name == 'workflow_dispatch' && !inputs\.full_validation && inputs\.dry_run\)/,
   );
 });
 
