@@ -1,18 +1,18 @@
 # Wasm Package And Policy API
 
 This document defines the package shape and shared policy contract for the
-Wasm/browser/Edge track. The initial package lives under
-`packages/lazy-image-wasm`; it is not yet a public npm release. The native Node
-package remains the production package until the Wasm package is benchmarked in
-real browser and Edge runtimes.
+Wasm/browser/Edge track. The v1.0.0 MVP is published as
+`@alberteinshutoin/lazy-image-wasm` and lives under `packages/lazy-image-wasm`.
+The native Node package remains the recommended production path until the Wasm
+package is benchmarked in real browser and Edge runtimes.
 
 ## Package Shape
 
-Planned package name:
+Package name:
 
 - `@alberteinshutoin/lazy-image-wasm`
 
-Planned entrypoints:
+Published entrypoints:
 
 | Entrypoint | Runtime | Purpose |
 |---|---|---|
@@ -57,7 +57,7 @@ core can replace that adapter without changing the public policy shape.
 
 ## Public API
 
-The first public API should be high-level and policy-oriented:
+The public API is high-level and policy-oriented:
 
 ```typescript
 import { optimizeUpload } from '@alberteinshutoin/lazy-image-wasm/browser';
@@ -249,7 +249,7 @@ If a future Wasm API needs batch behavior, it should be a browser/Edge-specific
 helper built around repeated `optimizeUpload()` calls and explicit caller-side
 concurrency.
 
-## First Release Scope
+## v1.0.0 Scope
 
 In scope:
 
@@ -273,9 +273,8 @@ Out of scope:
 - drawing, compositing, filters, animation, TIFF, PDF, SVG, RAW
 - filesystem or Node-only APIs
 
-## Acceptance For Implementation Work
+## Compatibility Guardrails
 
-Implementation-heavy Wasm issues should not start until this contract is either
-accepted as-is or updated by a dedicated design PR. After implementation begins,
-changes to the public policy shape should be treated as API design changes, not
-incidental benchmark or build-system work.
+The package is public as of v1.0.0. Changes to its policy shape, error taxonomy,
+entrypoints, or default behavior follow the same SemVer policy as the native
+package and must not be introduced as incidental benchmark or build-system work.

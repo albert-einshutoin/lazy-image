@@ -33,4 +33,14 @@
 - release branch では version/changelog 更新後に `npm run release:check` を実行し、
   breaking marker を含む non-major release を拒否する。
 
+## v1.x 互換性契約
+
+- `toBufferWithMetrics()` などの既存 output convenience API と deprecated
+  metrics aliases は v1.x では維持し、削除は v2.0.0 でのみ検討する。
+- #703（artifact compiler）、#769（実画像 benchmark evidence）、#645
+  （Wasm runtime expansion）は additive な将来作業であり、v1.0.1 の blocker
+  にはしない。
+- v1.0.1 は公開契約・ドキュメント・release governance の整合修正に限定し、
+  API removal や新しい runtime assumption を含めない。
+
 詳細な中長期方針は [ROADMAP.md](./ROADMAP.md) を参照してください。

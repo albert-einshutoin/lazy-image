@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Synchronized the v1.x documentation with the published Wasm MVP and removed
+  stale references to planned or unavailable package entrypoints.
+- Clarified that deprecated output conveniences and metrics aliases remain
+  available throughout v1.x and are candidates for removal only in v2.0.0.
+
 ---
 
 ## [1.0.0] - 2026-08-22
