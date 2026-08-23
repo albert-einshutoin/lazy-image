@@ -35,8 +35,9 @@
 
 ## v1.x 互換性契約
 
-- `toBufferWithMetrics()` などの既存 output convenience API と deprecated
-  metrics aliases は v1.x では維持し、削除は v2.0.0 でのみ検討する。
+- `toBufferWithMetrics()` などの既存 output convenience API は v1.x では
+  維持し、削除は v2.0.0 でのみ検討する。v1 より前に削除済みの metrics
+  aliases は v1.x の公開契約に含めない。
 - #703（artifact compiler）、#769（実画像 benchmark evidence）、#645
   （Wasm runtime expansion）は additive な将来作業であり、v1.0.1 の blocker
   にはしない。

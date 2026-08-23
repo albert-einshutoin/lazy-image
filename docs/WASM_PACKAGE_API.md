@@ -40,11 +40,16 @@ fetched or embedded.
 
 ```typescript
 import { createUploadOptimizer } from '@alberteinshutoin/lazy-image-wasm/browser';
+import type { CreateUploadOptimizerOptions } from '@alberteinshutoin/lazy-image-wasm/shared';
 
-const optimizer = await createUploadOptimizer({
-  wasmUrl: new URL('./lazy_image_wasm_bg.wasm', import.meta.url),
-});
+declare const wasmModules: NonNullable<CreateUploadOptimizerOptions['wasmModules']>;
+
+const optimizer = await createUploadOptimizer({ wasmModules });
 ```
+
+Each value is a `WebAssembly.Module`, `ArrayBuffer`, or `Uint8Array` resolved by
+the target bundler or runtime. See the shipped Edge example for deployment
+binding names and isolate-level optimizer caching.
 
 The package may use `WebAssembly.instantiateStreaming()` when available, but it
 must provide a fallback for runtimes that return the wrong MIME type for Wasm

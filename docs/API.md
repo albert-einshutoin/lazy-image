@@ -220,18 +220,6 @@ interface ProcessingMetrics {
   iccOutcome: 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported';
   metadataStripped: boolean;
   policyViolations: string[];
-  /** @deprecated use decodeMs */
-  decodeTime: number;
-  /** @deprecated use opsMs */
-  processTime: number;
-  /** @deprecated use encodeMs */
-  encodeTime: number;
-  /** @deprecated use peakRss */
-  memoryPeak: number;
-  /** @deprecated use bytesIn */
-  inputSize: number;
-  /** @deprecated use bytesOut */
-  outputSize: number;
 }
 
 interface OutputWithMetrics {
@@ -309,7 +297,8 @@ interface BatchOutputWithMetrics {
 
 Metrics payloads are versioned. See [metrics-api.md](./metrics-api.md) and [metrics-schema.json](./metrics-schema.json).
 
-**Deprecation**: Legacy metric field names (`decodeTime`, `processTime`, etc.) will be removed in v2.0.0. Use `decodeMs`, `opsMs`, `peakRss`, `bytesIn`, `bytesOut`.
+Only the canonical fields above are part of the v1.x contract. Legacy metric
+aliases removed before v1 are not returned.
 
 ---
 
