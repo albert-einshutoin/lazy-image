@@ -18,6 +18,7 @@
     "compressionRatio",
     "formatOut",
     "iccPreserved",
+    "iccOutcome",
     "metadataStripped",
     "policyViolations",
     "decodeTime",
@@ -30,7 +31,7 @@
   "properties": {
     "version": {
       "type": "string",
-      "const": "1.0.0",
+      "const": "1.1.0",
       "description": "Schema version for compatibility negotiation"
     },
     "decodeMs": { "type": "number", "minimum": 0, "description": "Decode stage duration (ms)" },
@@ -49,6 +50,11 @@
     },
     "formatOut": { "type": "string", "description": "Output format (jpeg, png, webp, avif)" },
     "iccPreserved": { "type": "boolean", "description": "True when ICC profile existed and was preserved" },
+    "iccOutcome": {
+      "type": "string",
+      "enum": ["absent", "preserved", "unsafe-stripped", "policy-stripped", "unsupported"],
+      "description": "Outcome of ICC detection, validation, and output support"
+    },
     "metadataStripped": { "type": "boolean", "description": "True when metadata was stripped" },
     "policyViolations": {
       "type": "array",

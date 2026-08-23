@@ -81,6 +81,12 @@ function isMajorBoundary(version) {
   return version.minor === 0 && version.patch === 0;
 }
 
+function assertTagMatchesVersion(tag, version) {
+  if (tag !== `v${version}`) {
+    throw new Error(`Release tag ${tag} does not match package version ${version}.`);
+  }
+}
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -88,6 +94,10 @@ function escapeRegExp(value) {
 function main() {
   const pkg = readJson(pkgPath);
   const version = process.argv[2] || pkg.version;
+  const tag = process.argv[3];
+  if (tag) {
+    assertTagMatchesVersion(tag, version);
+  }
   const parsed = parseVersion(version);
   const changelog = fs.readFileSync(changelogPath, "utf8");
   const section = sectionForVersion(changelog, version);
@@ -122,6 +132,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  assertTagMatchesVersion,
   hasBreakingMarker,
   hasRemovedEntry,
   isMajorBoundary,

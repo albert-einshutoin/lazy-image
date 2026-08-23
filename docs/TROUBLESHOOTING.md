@@ -41,7 +41,7 @@ Use `error.recoveryHint` when present. Recoverable errors (path, bounds, etc.) c
 
 ## Build / install issues
 
-- **Native build fails**: Ensure Node.js 18+, Rust 1.70+, and (for mozjpeg SIMD) nasm. For libavif, cmake is required.
+- **Native build fails**: Ensure Node.js 22+, Rust 1.70+, and (for mozjpeg SIMD) nasm. For libavif, cmake is required.
 - **Platform binary missing**: Use `npm run build` to build from source, or check [GitHub Actions](https://github.com/albert-einshutoin/lazy-image/actions) that the release for your platform was published.
 
 ## mmap and file modification

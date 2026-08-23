@@ -1,6 +1,6 @@
 # 📋 Versioning Plan & Priorities
 
-> **Current package version**: v0.16.x
+> **Current package version**: v1.0.x
 > **Working baseline**: `main`
 
 このドキュメントは、古い issue 番号ベースの固定計画ではなく、`main` の現状に合った優先順位を簡潔に示します。
@@ -28,10 +28,8 @@
 
 - patch/minor: additive changes, docs alignment, performance/safety improvements
 - major: API removal, semantic shifts, or new execution-model assumptions
-- 現在の `Unreleased` には PNG `quality` rejection の breaking marker があるため、
-  そのまま公開する次リリースは `1.0.0` 候補として扱う。minor/patch で出す場合は、
-  事前に `CHANGELOG.md` から breaking marker を外し、bug-fix clarification として
-  根拠を明文化する。
+- `1.0.0` は Wasm error contract と Node.js runtime floor の breaking change を
+  major boundary として公開する。
 - release branch では version/changelog 更新後に `npm run release:check` を実行し、
   breaking marker を含む non-major release を拒否する。
 
