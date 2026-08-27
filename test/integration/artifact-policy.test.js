@@ -169,4 +169,37 @@ assertPolicyError(
   /compilerFingerprint/,
 );
 
+const inheritedSource = { ...SOURCE };
+delete inheritedSource.hasAlpha;
+Object.defineProperty(Object.prototype, 'hasAlpha', { value: false, configurable: true });
+try {
+  assertPolicyError(() => compileArtifactPlan(inheritedSource, {}, COMPILER_FINGERPRINT), /own data property/);
+} finally {
+  delete Object.prototype.hasAlpha;
+}
+const accessorSource = { ...SOURCE };
+Object.defineProperty(accessorSource, 'format', { get: () => 'jpeg' });
+assertPolicyError(() => compileArtifactPlan(accessorSource, {}, COMPILER_FINGERPRINT), /own data property/);
+const accessorPolicy = {};
+Object.defineProperty(accessorPolicy, 'widths', { get: () => [320] });
+assertPolicyError(() => compileArtifactPlan(SOURCE, accessorPolicy, COMPILER_FINGERPRINT), /own data property/);
+Object.defineProperty(Object.prototype, 'widths', { value: [320], configurable: true });
+try {
+  assertPolicyError(() => compileArtifactPlan(SOURCE, {}, COMPILER_FINGERPRINT), /own data property/);
+} finally {
+  delete Object.prototype.widths;
+}
+const accessorFormats = [];
+Object.defineProperty(accessorFormats, '0', { get: () => 'webp' });
+assertPolicyError(
+  () => compileArtifactPlan(SOURCE, { formats: accessorFormats }, COMPILER_FINGERPRINT),
+  /own data properties/,
+);
+const accessorBudget = {};
+Object.defineProperty(accessorBudget, 'width', { get: () => 320 });
+assertPolicyError(
+  () => compileArtifactPlan(SOURCE, { budgets: [accessorBudget] }, COMPILER_FINGERPRINT),
+  /own data property/,
+);
+
 console.log('artifact policy contract passed');
