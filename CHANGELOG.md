@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.0.1] - 2026-08-27
+
+### Changed
+- Updated development-only `js-yaml` and `sharp` dependencies to versions
+  without the advisories reported after v1.0.0.
+- Simplified the README around installation, common tasks, supported platforms,
+  and the canonical public APIs.
+
 ### Fixed
 - Synchronized the v1.x documentation with the published Wasm MVP and removed
   stale references to planned or unavailable package entrypoints.
@@ -583,7 +593,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.16.0...v1.0.0
 [0.16.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.14.0...v0.15.0
