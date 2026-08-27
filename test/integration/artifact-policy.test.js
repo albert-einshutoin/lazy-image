@@ -59,6 +59,19 @@ assert.deepEqual(canonical.artifacts.map(({ id }) => id), [
 assert.equal(canonical.artifacts.find(({ id }) => id === '768/webp').targetBytes, 50_000);
 assert.equal(canonical.placeholder, null);
 
+const duplicateWidths = compileArtifactPlan(
+  SOURCE,
+  { widths: Array(9).fill(320) },
+  COMPILER_FINGERPRINT,
+);
+assert.deepEqual(duplicateWidths.policy.widths, [320]);
+const duplicateFormats = compileArtifactPlan(
+  SOURCE,
+  { formats: ['avif', 'jpeg', 'jpeg', 'webp'] },
+  COMPILER_FINGERPRINT,
+);
+assert.deepEqual(duplicateFormats.policy.formats, ['jpeg', 'webp', 'avif']);
+
 const withoutEnlargement = compileArtifactPlan(
   { ...SOURCE, width: 500, height: 300 },
   { widths: [1000] },
@@ -134,6 +147,23 @@ assertPolicyError(
   () => compileArtifactPlan(SOURCE, { widths: [, 32] }, COMPILER_FINGERPRINT),
   /widths/,
 );
+assertPolicyError(
+  () => compileArtifactPlan(SOURCE, { widths: Array(65).fill(320) }, COMPILER_FINGERPRINT),
+  /at most 64 raw entries/,
+);
+assertPolicyError(
+  () => compileArtifactPlan(SOURCE, { formats: Array(13).fill('webp') }, COMPILER_FINGERPRINT),
+  /at most 12 raw entries/,
+);
+for (const [policy, message] of [
+  [{ preset: null }, /policy\.preset/],
+  [{ widths: null }, /widths/],
+  [{ formats: null }, /formats/],
+  [{ budgets: null }, /budgets/],
+  [{ placeholder: null }, /placeholder/],
+]) {
+  assertPolicyError(() => compileArtifactPlan(SOURCE, policy, COMPILER_FINGERPRINT), message);
+}
 assertPolicyError(
   () => compileArtifactPlan(SOURCE, {}, { toString: () => 'b'.repeat(64), toJSON: () => 'leak' }),
   /compilerFingerprint/,
