@@ -25,6 +25,91 @@ export type ResizeFit = 'inside' | 'cover' | 'fill'
 export type FirewallPolicy = 'strict' | 'lenient' | 'public-upload'
 export type IccOutcome = 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported'
 export type EncodeProfile = 'size-first' | 'balanced' | 'speed-first'
+export type ArtifactFormat = 'jpeg' | 'webp' | 'avif'
+
+export interface ArtifactByteBudget {
+  readonly width: number
+  readonly format: ArtifactFormat
+  readonly maxBytes: number
+}
+
+export interface PublicUploadPolicy {
+  readonly preset?: 'publicUpload'
+  readonly widths?: readonly number[]
+  readonly formats?: readonly ArtifactFormat[]
+  readonly budgets?: readonly ArtifactByteBudget[]
+  readonly placeholder?: boolean
+}
+
+export interface ArtifactSourceFacts {
+  readonly sha256: string
+  readonly bytes: number
+  readonly format: 'jpeg' | 'jpg' | 'png' | 'webp'
+  readonly width: number
+  readonly height: number
+  readonly hasAlpha: boolean
+  readonly isAnimated: boolean
+  readonly orientationKnown: true
+  readonly orientation: number | null
+}
+
+export interface ArtifactPlanSource {
+  readonly sha256: string
+  readonly bytes: number
+  readonly detectedFormat: 'jpeg' | 'png' | 'webp'
+  readonly encodedWidth: number
+  readonly encodedHeight: number
+  readonly displayWidth: number
+  readonly displayHeight: number
+  readonly hasAlpha: boolean
+  readonly isAnimated: false
+  readonly orientationKnown: true
+  readonly orientation: number | null
+  readonly orientationApplied: boolean
+}
+
+export interface ArtifactPlanPolicy {
+  readonly preset: 'publicUpload'
+  readonly widths: readonly number[]
+  readonly formats: readonly ArtifactFormat[]
+  readonly budgets: readonly ArtifactByteBudget[]
+  readonly placeholder: boolean
+}
+
+export interface ArtifactPlanItem {
+  readonly id: string
+  readonly path: string
+  readonly format: ArtifactFormat
+  readonly width: number
+  readonly quality: number
+  readonly targetBytes?: number
+}
+
+export interface ArtifactPlan {
+  readonly schemaVersion: 1
+  readonly compilerFingerprint: string
+  readonly policyFingerprint: string
+  readonly cacheKey: string
+  readonly source: ArtifactPlanSource
+  readonly policy: ArtifactPlanPolicy
+  readonly artifacts: readonly ArtifactPlanItem[]
+  readonly delivery: {
+    readonly srcsets: readonly { readonly format: ArtifactFormat; readonly value: string }[]
+  }
+  readonly placeholder: {
+    readonly id: 'placeholder'
+    readonly path: 'placeholder.webp'
+    readonly format: 'webp'
+    readonly width: 16
+    readonly quality: 20
+  } | null
+}
+
+export declare function compileArtifactPlan(
+  source: ArtifactSourceFacts,
+  policy: PublicUploadPolicy | undefined,
+  compilerFingerprint: string,
+): ArtifactPlan
 
 export interface ResolvedEncodeProfile {
   format: CanonicalOutputFormat
@@ -231,12 +316,14 @@ function patchIndexJs() {
 // High-level helpers and streaming API (extracted to lib/helpers.js)
 const { createStreamingPipeline } = require('./streaming/pipeline')
 const helpers = require('./lib/helpers')
+const { compileArtifactPlan } = require('./lib/artifact-policy')
 const _getErrorCategory = helpers.createGetErrorCategory(nativeBinding.ErrorCategory, nativeBinding.ErrorCode)
 const _processBatchChunked = helpers.createProcessBatchChunked(nativeBinding.ImageEngine)
 module.exports.getErrorCategory = _getErrorCategory
 module.exports.processBatchChunked = _processBatchChunked
 module.exports.createStreamingPipeline = createStreamingPipeline
 module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
+module.exports.compileArtifactPlan = compileArtifactPlan
 if (nativeBinding && nativeBinding.ImageEngine) {
   helpers.attachPrototypeMethods(nativeBinding.ImageEngine)
 }

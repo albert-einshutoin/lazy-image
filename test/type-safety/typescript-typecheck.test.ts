@@ -4,10 +4,14 @@
  */
 import * as path from 'path';
 import {
+    ArtifactPlan,
+    ArtifactSourceFacts,
     BatchProgressEvent,
+    compileArtifactPlan,
     ImageEngine,
     ImageMetadata,
     OutputFormat,
+    PublicUploadPolicy,
     PresetName,
     PresetResult,
     ResizeFit,
@@ -17,6 +21,31 @@ import { createStreamingPipeline } from '../../streaming/pipeline';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
+
+    const artifactSource: ArtifactSourceFacts = {
+        sha256: 'a'.repeat(64),
+        bytes: 1024,
+        format: 'jpeg',
+        width: 1280,
+        height: 720,
+        hasAlpha: false,
+        isAnimated: false,
+        orientationKnown: true,
+        orientation: null,
+    };
+    const publicUploadPolicy: PublicUploadPolicy = {
+        preset: 'publicUpload',
+        widths: [320, 640],
+        formats: ['webp'],
+        placeholder: true,
+    };
+    const artifactPlan = null as ArtifactPlan | null;
+    const compiledArtifactPlan: ArtifactPlan = compileArtifactPlan(
+        artifactSource,
+        publicUploadPolicy,
+        'b'.repeat(64),
+    );
+    console.log(`Artifact policy: ${artifactSource.format} ${publicUploadPolicy.widths?.length} ${artifactPlan} ${compiledArtifactPlan.cacheKey}`);
     
     // Type-safe OutputFormat usage
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];

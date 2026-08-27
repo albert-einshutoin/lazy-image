@@ -16,6 +16,7 @@ export const {
   processBatchChunked,
   createStreamingPipeline,
   resolveEncodeProfile,
+  compileArtifactPlan,
 } = mod;
 
 // Default export for convenience
