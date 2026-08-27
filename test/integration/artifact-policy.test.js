@@ -1,5 +1,8 @@
 const assert = require('node:assert/strict');
 const { compileArtifactPlan } = require('../../lib/artifact-policy');
+const packageApi = require('../../index');
+
+assert.equal(packageApi.compileArtifactPlan, compileArtifactPlan);
 
 const SOURCE = Object.freeze({
   sha256: 'a'.repeat(64),
@@ -203,3 +206,12 @@ assertPolicyError(
 );
 
 console.log('artifact policy contract passed');
+
+import('../../index.mjs')
+  .then(({ compileArtifactPlan: esmCompileArtifactPlan }) => {
+    assert.equal(esmCompileArtifactPlan, compileArtifactPlan);
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });

@@ -105,6 +105,12 @@ export interface ArtifactPlan {
   } | null
 }
 
+export declare function compileArtifactPlan(
+  source: ArtifactSourceFacts,
+  policy: PublicUploadPolicy | undefined,
+  compilerFingerprint: string,
+): ArtifactPlan
+
 export interface ResolvedEncodeProfile {
   format: CanonicalOutputFormat
   quality?: number
@@ -310,12 +316,14 @@ function patchIndexJs() {
 // High-level helpers and streaming API (extracted to lib/helpers.js)
 const { createStreamingPipeline } = require('./streaming/pipeline')
 const helpers = require('./lib/helpers')
+const { compileArtifactPlan } = require('./lib/artifact-policy')
 const _getErrorCategory = helpers.createGetErrorCategory(nativeBinding.ErrorCategory, nativeBinding.ErrorCode)
 const _processBatchChunked = helpers.createProcessBatchChunked(nativeBinding.ImageEngine)
 module.exports.getErrorCategory = _getErrorCategory
 module.exports.processBatchChunked = _processBatchChunked
 module.exports.createStreamingPipeline = createStreamingPipeline
 module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
+module.exports.compileArtifactPlan = compileArtifactPlan
 if (nativeBinding && nativeBinding.ImageEngine) {
   helpers.attachPrototypeMethods(nativeBinding.ImageEngine)
 }

@@ -652,6 +652,12 @@ export interface ArtifactPlan {
   } | null
 }
 
+export declare function compileArtifactPlan(
+  source: ArtifactSourceFacts,
+  policy: PublicUploadPolicy | undefined,
+  compilerFingerprint: string,
+): ArtifactPlan
+
 export interface ResolvedEncodeProfile {
   format: CanonicalOutputFormat
   quality?: number

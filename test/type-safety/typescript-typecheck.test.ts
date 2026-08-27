@@ -7,6 +7,7 @@ import {
     ArtifactPlan,
     ArtifactSourceFacts,
     BatchProgressEvent,
+    compileArtifactPlan,
     ImageEngine,
     ImageMetadata,
     OutputFormat,
@@ -39,7 +40,12 @@ async function testTypeSafety() {
         placeholder: true,
     };
     const artifactPlan = null as ArtifactPlan | null;
-    console.log(`Artifact policy: ${artifactSource.format} ${publicUploadPolicy.widths?.length} ${artifactPlan}`);
+    const compiledArtifactPlan: ArtifactPlan = compileArtifactPlan(
+        artifactSource,
+        publicUploadPolicy,
+        'b'.repeat(64),
+    );
+    console.log(`Artifact policy: ${artifactSource.format} ${publicUploadPolicy.widths?.length} ${artifactPlan} ${compiledArtifactPlan.cacheKey}`);
     
     // Type-safe OutputFormat usage
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];
