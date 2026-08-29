@@ -73,6 +73,22 @@ On Windows, memory-mapped files **cannot be deleted** while mapped. Keep the `Im
 
 ## Security
 
+### Transactional public-upload compilation
+
+The native-only `compileImage()` API keeps the public artifact set private
+until every plan item, placeholder, hash, dimension, byte budget, and metadata
+invariant has passed. It uses a random sibling staging directory, executes the
+immutable `compileArtifactPlan()` sequentially through `ImageEngine.clone()`,
+writes `manifest.json` last, then renames the directory into place. Existing
+files, directories, and symlinks are never overwritten. Abort or any failure
+before the rename removes the current staging directory; the returned manifest
+is assembled before the rename so no filesystem work follows a successful
+commit.
+
+The output parent is an application-owned trust boundary. Node.js does not
+offer a portable no-replace directory rename, so the application must prevent
+another process from replacing that parent during compilation.
+
 For vulnerability reporting and supported versions, see [SECURITY.md](../SECURITY.md).
 
 ### Rust memory safety

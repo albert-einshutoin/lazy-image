@@ -6,9 +6,13 @@ import * as path from 'path';
 import {
     ArtifactPlan,
     ArtifactSourceFacts,
+    ArtifactCompilationError,
     BatchProgressEvent,
+    CompileImageOptions,
     compileArtifactPlan,
+    compileImage,
     ImageEngine,
+    ImageArtifactManifest,
     ImageMetadata,
     OutputFormat,
     PublicUploadPolicy,
@@ -46,6 +50,15 @@ async function testTypeSafety() {
         'b'.repeat(64),
     );
     console.log(`Artifact policy: ${artifactSource.format} ${publicUploadPolicy.widths?.length} ${artifactPlan} ${compiledArtifactPlan.cacheKey}`);
+
+    const compileOptions: CompileImageOptions = {
+        inputPath: imagePath,
+        outputDir: path.resolve(__dirname, '../../.tmp/type-safety-artifacts'),
+        policy: publicUploadPolicy,
+    };
+    const compiledManifest: Promise<ImageArtifactManifest> = compileImage(compileOptions);
+    const compilationError: ArtifactCompilationError | null = null;
+    console.log(`Transactional compiler: ${compiledManifest} ${compilationError}`);
     
     // Type-safe OutputFormat usage
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];

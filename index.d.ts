@@ -275,6 +275,9 @@ export interface BatchResultWithMetrics {
   metrics?: ProcessingMetrics
 }
 
+/** Return the stable native codec/build identity used by artifact fingerprints. */
+export declare function compilerIdentity(): string
+
 export interface Dimensions {
   width: number
   height: number
@@ -658,6 +661,93 @@ export declare function compileArtifactPlan(
   compilerFingerprint: string,
 ): ArtifactPlan
 
+export interface CompileImageOptions {
+  readonly inputPath: string
+  readonly outputDir: string
+  readonly policy: PublicUploadPolicy
+  readonly signal?: AbortSignal
+}
+
+export interface ImageArtifactManifest {
+  readonly schemaVersion: 1
+  readonly compiler: {
+    readonly name: '@alberteinshutoin/lazy-image'
+    readonly version: string
+    readonly platform: string
+    readonly arch: string
+    readonly fingerprint: string
+  }
+  readonly policy: {
+    readonly preset: 'publicUpload'
+    readonly fingerprint: string
+    readonly widths: readonly number[]
+    readonly formats: readonly ArtifactFormat[]
+    readonly placeholder: boolean
+  }
+  readonly source: {
+    readonly sha256: string
+    readonly bytes: number
+    readonly detectedFormat: 'jpeg' | 'png' | 'webp'
+    readonly encodedWidth: number
+    readonly encodedHeight: number
+    readonly displayWidth: number
+    readonly displayHeight: number
+    readonly hasAlpha: boolean
+    readonly orientation: number | null
+    readonly orientationApplied: boolean
+  }
+  readonly metadata: {
+    readonly mode: 'privacySafe'
+    readonly exif: 'stripped'
+    readonly gps: 'stripped'
+    readonly xmp: 'stripped'
+    readonly comments: 'stripped'
+    readonly unknownAncillary: 'stripped'
+    readonly artifactIccPolicy: 'preserve-if-safe'
+    readonly placeholderIccPolicy: 'strip'
+  }
+  readonly artifacts: readonly {
+    readonly id: string
+    readonly path: string
+    readonly format: ArtifactFormat
+    readonly width: number
+    readonly height: number
+    readonly bytes: number
+    readonly quality: number
+    readonly targetBytes?: number
+    readonly iccOutcome: IccOutcome
+    readonly sha256: string
+  }[]
+  readonly delivery: {
+    readonly srcsets: readonly { readonly format: ArtifactFormat; readonly value: string }[]
+  }
+  readonly placeholder?: {
+    readonly path: 'placeholder.webp'
+    readonly dataUrl: string
+    readonly format: 'webp'
+    readonly width: number
+    readonly height: number
+    readonly bytes: number
+    readonly iccOutcome: 'stripped-for-placeholder'
+    readonly sha256: string
+  }
+  readonly cacheKey: string
+}
+
+export interface ArtifactCompilationError extends Error {
+  readonly phase: 'preflight' | 'planning' | 'processing' | 'verification' | 'commit' | 'cleanup'
+  readonly artifactId?: string
+  readonly errorCode?: string
+  readonly category?: ErrorCategory
+  readonly errorCategory?: ErrorCategory
+  readonly code?: string
+  readonly recoveryHint?: string
+  readonly cause?: unknown
+  readonly cleanupError?: unknown
+}
+
+export declare function compileImage(options: CompileImageOptions): Promise<ImageArtifactManifest>
+
 export interface ResolvedEncodeProfile {
   format: CanonicalOutputFormat
   quality?: number
@@ -748,6 +838,8 @@ export interface TargetBytesOptions {
   fastMode?: boolean
   /** Behaviour when budget cannot be met: 'best-effort' (default) or 'strict' */
   qualityFloorPolicy?: 'best-effort' | 'strict'
+  /** Fail when the target cannot be met (alias for qualityFloorPolicy: 'strict') */
+  strict?: boolean
 }
 
 export interface BufferTargetBytesResult {

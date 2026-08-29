@@ -46,6 +46,22 @@ console.log(`Wrote ${bytesWritten} bytes`);
 - 静的サイト生成バッチ: `processBatch()` / `clone()`
 - 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
 
+未信頼のローカル画像から公開用成果物一式を安全に作る場合は、
+transactional compilerを使います。全artifact、placeholder、manifestを
+private stagingで検証してから一度だけ公開ディレクトリへcommitします。
+
+```javascript
+const { compileImage } = require('@alberteinshutoin/lazy-image');
+
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/image.bin',
+  outputDir: '/srv/public/images/v1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+既存の出力ディレクトリは上書きせず、artifact全体をNode.jsのBufferへ戻しません。
+
 ## Cost Savings Example (ROI)
 
 README（英語版）と同じ想定計算を参照します。月間配信量とエンコーディング回数次第で節約は拡大します。

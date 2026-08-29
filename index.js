@@ -588,6 +588,7 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.ImageEngine = nativeBinding.ImageEngine
+module.exports.compilerIdentity = nativeBinding.compilerIdentity
 module.exports.ErrorCategory = nativeBinding.ErrorCategory
 module.exports.ErrorCode = nativeBinding.ErrorCode
 module.exports.inspect = nativeBinding.inspect
@@ -601,6 +602,7 @@ module.exports.version = nativeBinding.version
 const { createStreamingPipeline } = require('./streaming/pipeline')
 const helpers = require('./lib/helpers')
 const { compileArtifactPlan } = require('./lib/artifact-policy')
+const { compileImage } = require('./lib/artifact-compiler')
 const _getErrorCategory = helpers.createGetErrorCategory(nativeBinding.ErrorCategory, nativeBinding.ErrorCode)
 const _processBatchChunked = helpers.createProcessBatchChunked(nativeBinding.ImageEngine)
 module.exports.getErrorCategory = _getErrorCategory
@@ -608,6 +610,7 @@ module.exports.processBatchChunked = _processBatchChunked
 module.exports.createStreamingPipeline = createStreamingPipeline
 module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
 module.exports.compileArtifactPlan = compileArtifactPlan
+module.exports.compileImage = compileImage
 if (nativeBinding && nativeBinding.ImageEngine) {
   helpers.attachPrototypeMethods(nativeBinding.ImageEngine)
 }

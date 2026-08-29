@@ -70,6 +70,32 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `processBatchChunked(inputs, outDir, { format, quality?, fastMode?, concurrency?, chunkSize?, onProgress?, signal? })` | Top-level batch helper that splits inputs into native `processBatch()` chunks. Reports progress after each chunk and checks `AbortSignal` before starting the next chunk. |
 | `.clone()` | Clone the engine for multi-output (e.g. same pipeline to JPEG + WebP + AVIF). |
 
+### Transactional public-upload compilation
+
+`compileImage()` is the high-level native Node.js entrypoint for one untrusted
+local image. It consumes the deterministic `compileArtifactPlan()` contract,
+writes plan-owned artifacts and an optional 16px WebP placeholder into a
+private sibling staging directory, verifies hashes/metadata, and publishes by
+one directory rename. Existing output directories are rejected; failures and
+abort signals remove the unpublished staging set.
+
+```javascript
+const { compileImage } = require('@alberteinshutoin/lazy-image');
+
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/upload.bin',
+  outputDir: '/srv/public/images/version-1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+The input is content-sniffed (the filename is not trusted), artifact filenames
+are library-owned, and full artifact bytes never cross into a V8 `Buffer`.
+`manifest.json` is deterministic for the same source, policy, and compiler
+identity. The output parent must be trusted and on the same filesystem as the
+staging directory; portable Node.js has no cross-platform no-replace directory
+rename primitive, so another process must not replace that parent concurrently.
+
 ## Utilities
 
 | Method | Description |
@@ -79,6 +105,7 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `.dimensions()` | Get `{ width, height }` (requires decode) |
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
 | `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
+| `compilerIdentity()` | Return the stable native codec/build identity used by artifact fingerprints. |
 | `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Not a true chunk-by-chunk transform stream. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
 
 ### Upload preflight contract
@@ -240,6 +267,7 @@ interface TargetBytesOptions {
   maxQuality?: number;
   fastMode?: boolean;
   qualityFloorPolicy?: 'best-effort' | 'strict';
+  strict?: boolean;
 }
 
 interface BufferTargetBytesResult {

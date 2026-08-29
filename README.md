@@ -69,6 +69,23 @@ const output = await ImageEngine.from(uploadBuffer)
 The `public-upload` policy enforces resource limits and strips EXIF, GPS, and
 XMP while preserving only validated ICC profiles.
 
+For a complete, fail-closed artifact set, use the transactional compiler. It
+creates library-owned responsive filenames and `manifest.json` in private
+staging, then publishes the directory only after verification:
+
+```javascript
+const { compileImage } = require('@alberteinshutoin/lazy-image');
+
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/image.bin',
+  outputDir: '/srv/public/images/v1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+Existing output directories are rejected and full artifact bytes are never
+returned as Node.js buffers.
+
 ## Inspect without decoding
 
 ```javascript
