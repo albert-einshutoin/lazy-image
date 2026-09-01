@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image-wasm",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Browser and Edge upload-preflight optimizer for lazy-image policy APIs",
   "type": "module",
   "sideEffects": false,
