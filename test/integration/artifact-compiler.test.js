@@ -204,6 +204,34 @@ async function main() {
     assert.equal(await fsp.stat(outputDir).catch(() => null), null);
   });
 
+  await withTempParent(async (parent) => {
+    const outputDir = path.join(parent, 'abort-before-rename');
+    const controller = new AbortController();
+    const originalUnlink = fsp.unlink;
+    fsp.unlink = async function abortAfterMarkerRemoval(filePath) {
+      const result = await originalUnlink.call(this, filePath);
+      if (path.basename(filePath) === '.lazy-image-staging') controller.abort();
+      return result;
+    };
+    try {
+      await assertRejected(
+        () => compileImage({
+          inputPath: INPUT,
+          outputDir,
+          policy: { widths: [16], formats: ['webp'], placeholder: false },
+          signal: controller.signal,
+        }),
+        (error) => {
+          assert.equal(error.name, 'AbortError');
+          assert.equal(error.phase, 'commit');
+        },
+      );
+    } finally {
+      fsp.unlink = originalUnlink;
+    }
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
   for (const format of ['png', 'webp']) {
     await withTempParent(async (parent) => {
       const inputPath = path.join(parent, `unknown-orientation.${format}`);
