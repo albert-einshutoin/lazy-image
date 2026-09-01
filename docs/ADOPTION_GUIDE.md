@@ -40,6 +40,22 @@ Runnable companion: [`examples/upload-sanitize-server.mjs`](../examples/upload-s
 shows a dependency-free raw upload endpoint with header inspection, Image
 Firewall limits, and error-category to HTTP status mapping.
 
+For the complete public artifact transaction, use `compileImage()` instead of
+manually wiring several output calls:
+
+```javascript
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/upload.bin',
+  outputDir: '/srv/public/images/v1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+It rejects an existing output directory, writes only library-owned names,
+verifies the generated files and privacy metadata, and publishes only after a
+single directory rename. The output parent must be trusted and remain on the
+same filesystem during the call.
+
 ### 3. Build-time static asset optimization
 
 Use batch processing or cloning when the same source needs multiple outputs.

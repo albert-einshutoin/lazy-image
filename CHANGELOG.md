@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Transactional native `compileImage()` for deterministic public-upload
+  artifacts, optional placeholder data URLs, verified hashes, and atomic
+  directory publication. Existing output directories are never overwritten.
+
 ---
 
 ## [1.0.1] - 2026-08-27

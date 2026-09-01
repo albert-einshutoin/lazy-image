@@ -26,6 +26,11 @@ EXIF (including GPS), XMP, comments, and unknown ancillary metadata out of the
 re-encoded output. Calling `keepMetadata()` before or after cannot weaken this
 policy; `.limits()` may only tighten its fixed resource limits.
 
+`compileImage()` applies the same privacy-safe policy to every delivery
+artifact, records the existing `IccOutcome` value in the manifest, and uses a
+separate strip-all metadata policy for the 16px placeholder. The placeholder
+is the only artifact read into a bounded Node.js buffer (to build its data URL).
+
 ## Feature Matrix
 
 | Metadata type | Default | Opt-in API | Current status |

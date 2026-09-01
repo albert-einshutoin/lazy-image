@@ -127,6 +127,24 @@ pub fn version() -> String {
 }
 
 #[cfg(feature = "napi")]
+/// Return the stable native codec/build identity used by artifact fingerprints.
+#[napi(js_name = "compilerIdentity")]
+pub fn compiler_identity() -> String {
+    let avif = if cfg!(feature = "avif") {
+        "avif"
+    } else {
+        "no-avif"
+    };
+    format!(
+        "lazy-image-native:{};config={};target={};profile={};feature={avif}",
+        env!("CARGO_PKG_VERSION"),
+        env!("LAZY_IMAGE_COMPILER_CONFIG"),
+        env!("LAZY_IMAGE_COMPILER_TARGET"),
+        env!("LAZY_IMAGE_COMPILER_PROFILE"),
+    )
+}
+
+#[cfg(feature = "napi")]
 const BASE_FORMATS: &[&str] = &["jpeg", "jpg", "png", "webp"];
 
 #[cfg(feature = "napi")]
