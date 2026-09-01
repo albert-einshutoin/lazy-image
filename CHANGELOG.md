@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.1.0] - 2026-09-02
+
 ### Added
+- Deterministic `compileArtifactPlan()` policy compilation for responsive
+  artifacts, byte budgets, placeholders, fingerprints, and cache keys.
 - Transactional native `compileImage()` for deterministic public-upload
   artifacts, optional placeholder data URLs, verified hashes, and atomic
   directory publication. Existing output directories are never overwritten.
@@ -598,7 +604,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.16.0...v1.0.0
 [0.16.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.15.0...v0.16.0
