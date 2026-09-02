@@ -46,12 +46,12 @@ async function main() {
     const output = await ImageEngine.fromPath(INPUT).toFilesResponsive(pattern, {
       widths: [64, 32],
       format: 'webp',
-    });
+    }, '/images/image-{width}.webp');
 
     assert.deepEqual(output.files.map(({ width }) => width), [64, 32]);
     assert.equal(
       output.srcset,
-      `${path.join(directory, 'image-64.webp')} 64w, ${path.join(directory, 'image-32.webp')} 32w`,
+      '/images/image-64.webp 64w, /images/image-32.webp 32w',
     );
     for (const file of output.files) {
       assert.equal(file.bytesWritten, (await fs.stat(file.path)).size);
@@ -79,6 +79,10 @@ async function main() {
     () => ImageEngine.fromPath(INPUT).toFilesResponsive('image.webp', { widths: [100], format: 'webp' }),
     /pattern must contain a \{width\} placeholder/,
   );
+  assert.throws(
+    () => ImageEngine.fromPath(INPUT).toFilesResponsive('/tmp/image-{width}.webp', { widths: [100], format: 'webp' }),
+    /srcsetPattern is required when pattern is an absolute filesystem path/,
+  );
 
   const transformed = await ImageEngine.fromPath(INPUT)
     .grayscale()
@@ -96,4 +100,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
