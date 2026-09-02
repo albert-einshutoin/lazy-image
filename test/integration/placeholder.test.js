@@ -25,6 +25,12 @@ async function main() {
   assert.equal(landscape.height, 16);
   assert.match(landscape.dataUrl, /^data:image\/jpeg;base64,/);
 
+  const extreme = await ImageEngine.from(
+    await ImageEngine.fromPath(INPUT).resize({ width: 1000, height: 1, fit: 'fill' }).toBuffer('jpeg', 80),
+  ).toPlaceholder();
+  assert.equal(extreme.width, 16);
+  assert.equal(extreme.height, 1);
+
   const png = await ImageEngine.fromPath(INPUT).toPlaceholder({ format: 'png', quality: 1 });
   assert.match(png.dataUrl, /^data:image\/png;base64,/);
   assert.equal(inspect(Buffer.from(png.dataUrl.split(',', 2)[1], 'base64')).format, 'png');
@@ -62,4 +68,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
