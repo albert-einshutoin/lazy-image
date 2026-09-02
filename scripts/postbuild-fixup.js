@@ -254,7 +254,7 @@ export interface ImageEngine {
   toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
   toResponsiveSet(options: ResponsiveSetOptions): Promise<ResponsiveVariant[]>
-  toFilesResponsive(pattern: string, options: ResponsiveSetOptions): Promise<ResponsiveFilesOutput>
+  toFilesResponsive(pattern: string, options: ResponsiveSetOptions, srcsetPattern?: string): Promise<ResponsiveFilesOutput>
   toPlaceholder(options?: PlaceholderOptions): Promise<PlaceholderResult>
   // Note: encode() / encodeToFile() are declared on the ImageEngine class
   // (see patchIndexDts patches that retype them to EncodeOptionsInput) and

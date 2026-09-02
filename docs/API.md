@@ -93,7 +93,10 @@ console.log(output.srcset);
 
 `widths` must contain positive integers; duplicate values are removed while
 preserving input order. `toFilesResponsive()` requires a `{width}` placeholder
-and returns the generated paths plus a ready-to-use `srcset` string. Each
+and returns the generated paths plus a ready-to-use `srcset` string. When the
+output pattern is an absolute filesystem path, pass a third `srcsetPattern`
+argument (for example, `/images/hero-{width}.webp`) so private filesystem
+paths are never exposed to browsers. Each
 variant is decoded and encoded independently, so CPU and memory scale with the
 number of requested widths. For a privacy-safe artifact set with deterministic
 library-owned names, use `compileImage()` instead.
