@@ -59,6 +59,7 @@ async function runSelfTest() {
     const responsive = await ImageEngine.fromPath(inputJpeg).toFilesResponsive(
       path.join(tmp, 'responsive-{width}.webp'),
       { widths: [320, 160], format: 'webp' },
+      '/images/responsive-{width}.webp',
     );
     assert.deepEqual(responsive.files.map(({ width }) => width), [320, 160]);
     assert.equal(responsive.files.length, 2);
