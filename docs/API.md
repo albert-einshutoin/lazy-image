@@ -98,8 +98,10 @@ output pattern is an absolute filesystem path, pass a third `srcsetPattern`
 argument (for example, `/images/hero-{width}.webp`) so private filesystem
 paths are never exposed to browsers. Each
 variant is decoded and encoded independently, so CPU and memory scale with the
-number of requested widths. For a privacy-safe artifact set with deterministic
-library-owned names, use `compileImage()` instead.
+number of requested widths. Widths larger than the source image are enlarged;
+there is no `withoutEnlargement` option in this initial helper. For a
+privacy-safe artifact set with deterministic library-owned names, use
+`compileImage()` instead.
 
 ### Transactional public-upload compilation
 
