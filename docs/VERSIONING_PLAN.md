@@ -1,11 +1,22 @@
 # 📋 Versioning Plan & Priorities
 
-> **Current package version**: v1.0.x
+> **Current package version**: v1.2.0 (release preparation)
 > **Working baseline**: `main`
 
 このドキュメントは、古い issue 番号ベースの固定計画ではなく、`main` の現状に合った優先順位を簡潔に示します。
 
 ## 現在の優先順位
+
+### v1.2.0 release scope
+
+- #697: `toResponsiveSet()` / `toFilesResponsive()` responsive output helpers
+- #698: `toPlaceholder()` LQIP / `blurDataURL` helper
+- API types, documentation, examples, and generated artifacts
+- Native, JavaScript, Rust, Wasm package, pack, and release-policy verification
+
+The responsive and placeholder helpers are additive Node.js APIs. They reuse
+the existing lazy pipeline and do not change the native ABI or the
+privacy-safe `compileImage()` contract.
 
 ### P1
 
@@ -38,10 +49,10 @@
 - `toBufferWithMetrics()` などの既存 output convenience API は v1.x では
   維持し、削除は v2.0.0 でのみ検討する。v1 より前に削除済みの metrics
   aliases は v1.x の公開契約に含めない。
-- #703（artifact compiler）、#769（実画像 benchmark evidence）、#645
-  （Wasm runtime expansion）は additive な将来作業であり、v1.0.1 の blocker
-  にはしない。
-- v1.0.1 は公開契約・ドキュメント・release governance の整合修正に限定し、
-  API removal や新しい runtime assumption を含めない。
+- #703（artifact compiler）はv1.2.0で#697/#698の完了を追跡する。#696（CLI）と
+  #769（実画像 benchmark evidence）は後続リリースで扱い、v1.2.0のblockerには
+  しない。
+- #645（Wasm runtime expansion）と#88（Web Streams）はv2.0以降の計画であり、
+  v1.2.0には含めない。
 
 詳細な中長期方針は [ROADMAP.md](./ROADMAP.md) を参照してください。
