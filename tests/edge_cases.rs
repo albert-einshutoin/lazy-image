@@ -181,7 +181,7 @@ mod large_image_tests {
     fn test_calc_resize_extreme_aspect_ratio() {
         // 極端なアスペクト比でのリサイズ計算
         let (w, h) = calc_resize_dimensions(32768, 1, Some(100), None);
-        assert_eq!((w, h), (100, 0));
+        assert_eq!((w, h), (100, 1));
     }
 }
 
@@ -438,11 +438,9 @@ mod extreme_aspect_ratio_tests {
             height: None,
             fit: ResizeFit::Inside,
         }];
-        let result = apply_ops(Cow::Owned(img), &ops);
-        assert!(
-            result.is_err(),
-            "Expect resize to report error for extreme aspect ratio producing zero height"
-        );
+        let result =
+            apply_ops(Cow::Owned(img), &ops).expect("short edge should clamp to one pixel");
+        assert_eq!(result.dimensions(), (100, 1));
     }
 
     #[test]
@@ -456,11 +454,9 @@ mod extreme_aspect_ratio_tests {
             height: Some(100),
             fit: ResizeFit::Inside,
         }];
-        let result = apply_ops(Cow::Owned(img), &ops);
-        assert!(
-            result.is_err(),
-            "Expect resize to report error for extreme aspect ratio producing zero width"
-        );
+        let result =
+            apply_ops(Cow::Owned(img), &ops).expect("short edge should clamp to one pixel");
+        assert_eq!(result.dimensions(), (1, 100));
     }
 }
 
