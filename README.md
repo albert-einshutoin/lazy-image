@@ -110,7 +110,7 @@ await .toFile(path, format, quality?)
 await .toBuffer(format, quality?)
 await .encode({ format, quality?, preset?, metrics? })
 await .toResponsiveSet({ widths, format, quality? })
-await .toFilesResponsive('path-{width}.webp', { widths, format, quality? })
+await .toFilesResponsive('path-{width}.webp', { widths, format, quality? }, srcsetPattern?)
 ```
 
 Operations are queued and evaluated once when an output method runs. Use

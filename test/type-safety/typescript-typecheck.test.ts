@@ -93,7 +93,7 @@ async function testTypeSafety() {
     const responsiveVariants: ResponsiveVariant[] = await ImageEngine.fromPath(imagePath)
         .toResponsiveSet(responsiveOptions);
     const responsiveFiles: ResponsiveFilesOutput = await ImageEngine.fromPath(imagePath)
-        .toFilesResponsive(path.resolve(__dirname, '../../.tmp/image-{width}.webp'), responsiveOptions);
+        .toFilesResponsive(path.resolve(__dirname, '../../.tmp/image-{width}.webp'), responsiveOptions, '/images/image-{width}.webp');
     console.log(`Responsive outputs: ${responsiveVariants.length} ${responsiveFiles.files.length}`);
 
     // Uppercase format is also accepted
