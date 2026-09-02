@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added TypeScript types, integration coverage, API examples, and README
   guidance for responsive output and UI placeholders.
 
+### Fixed
+- Extreme-aspect-ratio resize and extract operations now clamp a derived
+  short edge to one pixel instead of failing with zero dimensions.
+
 ## [1.1.0] - 2026-09-02
 
 ### Added
