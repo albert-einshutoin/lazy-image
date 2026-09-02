@@ -56,6 +56,13 @@ async function runSelfTest() {
     assert(jpegBytes > 0);
     assert(webpBytes > 0);
 
+    const responsive = await ImageEngine.fromPath(inputJpeg).toFilesResponsive(
+      path.join(tmp, 'responsive-{width}.webp'),
+      { widths: [320, 160], format: 'webp' },
+    );
+    assert.deepEqual(responsive.files.map(({ width }) => width), [320, 160]);
+    assert.equal(responsive.files.length, 2);
+
     const meta = inspectFile(inputJpeg);
     assert(meta.width > 0);
     assert(meta.height > 0);
@@ -107,17 +114,24 @@ async function runDemo() {
 
   console.log(`JPEG: ${jpegBytes} bytes, AVIF: ${avifBytes} bytes`);
 
-  // 4. Inspect metadata without decoding
+  // 4. Responsive variants and srcset
+  const responsive = await ImageEngine.fromPath('hero.jpg').toFilesResponsive(
+    'dist/hero-{width}.webp',
+    { widths: [320, 768, 1280], format: 'webp' },
+  );
+  console.log(`srcset: ${responsive.srcset}`);
+
+  // 5. Inspect metadata without decoding
   const meta = inspectFile('input.jpg');
   console.log(`${meta.width}x${meta.height} ${meta.format}`);
 
-  // 5. Presets for common use cases
+  // 6. Presets for common use cases
   const thumbnail = await ImageEngine.fromPath('photo.jpg')
     .toBufferWithPreset('thumbnail');
 
   console.log(`Thumbnail: ${thumbnail.length} bytes`);
 
-  // 6. Crop, rotate, and grayscale
+  // 7. Crop, rotate, and grayscale
   const processed = await ImageEngine.fromPath('photo.jpg')
     .crop(100, 100, 400, 400)
     .rotate(90)
@@ -126,7 +140,7 @@ async function runDemo() {
 
   console.log(`Processed: ${processed.length} bytes`);
 
-  // 7. Encode with metrics
+  // 8. Encode with metrics
   const { data, metrics } = await ImageEngine.fromPath('photo.jpg')
     .resize(600)
     .toBufferWithMetrics('webp', 80);

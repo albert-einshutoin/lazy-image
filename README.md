@@ -109,12 +109,14 @@ await ImageEngine.fromPathAsync(path)
 await .toFile(path, format, quality?)
 await .toBuffer(format, quality?)
 await .encode({ format, quality?, preset?, metrics? })
+await .toResponsiveSet({ widths, format, quality? })
+await .toFilesResponsive('path-{width}.webp', { widths, format, quality? })
 ```
 
 Operations are queued and evaluated once when an output method runs. Use
 `clone()` when producing multiple variants from one source. See the
 [full API reference](./docs/API.md) for batch processing, presets, metrics,
-streaming, metadata controls, and error codes.
+streaming, metadata controls, responsive output helpers, and error codes.
 
 ## When to use it
 

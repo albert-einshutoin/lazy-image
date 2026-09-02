@@ -18,6 +18,9 @@ import {
     PublicUploadPolicy,
     PresetName,
     PresetResult,
+    ResponsiveFilesOutput,
+    ResponsiveSetOptions,
+    ResponsiveVariant,
     ResizeFit,
     processBatchChunked,
 } from '../../index';
@@ -81,6 +84,17 @@ async function testTypeSafety() {
     const coverFit: ResizeFit = 'cover';
     await ImageEngine.fromPath(imagePath).resize(300, 300, coverFit).toBuffer('jpeg', 75);
     await ImageEngine.fromPath(imagePath).resize({ width: 320, fit: coverFit }).toBuffer('jpeg', 75);
+
+    const responsiveOptions: ResponsiveSetOptions = {
+        widths: [320, 640],
+        format: 'webp',
+        quality: 80,
+    };
+    const responsiveVariants: ResponsiveVariant[] = await ImageEngine.fromPath(imagePath)
+        .toResponsiveSet(responsiveOptions);
+    const responsiveFiles: ResponsiveFilesOutput = await ImageEngine.fromPath(imagePath)
+        .toFilesResponsive(path.resolve(__dirname, '../../.tmp/image-{width}.webp'), responsiveOptions);
+    console.log(`Responsive outputs: ${responsiveVariants.length} ${responsiveFiles.files.length}`);
 
     // Uppercase format is also accepted
     await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);

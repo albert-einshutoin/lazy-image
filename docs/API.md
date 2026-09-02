@@ -70,6 +70,34 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `processBatchChunked(inputs, outDir, { format, quality?, fastMode?, concurrency?, chunkSize?, onProgress?, signal? })` | Top-level batch helper that splits inputs into native `processBatch()` chunks. Reports progress after each chunk and checks `AbortSignal` before starting the next chunk. |
 | `.clone()` | Clone the engine for multi-output (e.g. same pipeline to JPEG + WebP + AVIF). |
 
+### Responsive output helpers
+
+Use the responsive helpers when a caller needs a small set of variants without
+writing its own `clone()` loop. The input engine is not consumed, and any
+queued operations (for example `grayscale()` or `crop()`) are inherited by
+every variant.
+
+```javascript
+const variants = await ImageEngine.fromPath('hero.jpg').toResponsiveSet({
+  widths: [320, 768, 1280],
+  format: 'webp',
+  quality: 80,
+});
+
+const output = await ImageEngine.fromPath('hero.jpg').toFilesResponsive(
+  'dist/hero-{width}.webp',
+  { widths: [320, 768, 1280], format: 'webp' },
+);
+console.log(output.srcset);
+```
+
+`widths` must contain positive integers; duplicate values are removed while
+preserving input order. `toFilesResponsive()` requires a `{width}` placeholder
+and returns the generated paths plus a ready-to-use `srcset` string. Each
+variant is decoded and encoded independently, so CPU and memory scale with the
+number of requested widths. For a privacy-safe artifact set with deterministic
+library-owned names, use `compileImage()` instead.
+
 ### Transactional public-upload compilation
 
 `compileImage()` is the high-level native Node.js entrypoint for one untrusted
