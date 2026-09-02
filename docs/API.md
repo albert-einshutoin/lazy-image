@@ -98,6 +98,25 @@ variant is decoded and encoded independently, so CPU and memory scale with the
 number of requested widths. For a privacy-safe artifact set with deterministic
 library-owned names, use `compileImage()` instead.
 
+### Placeholder output
+
+`toPlaceholder()` creates a small data URL for UI placeholders such as
+Next.js `blurDataURL`. The long edge defaults to 16 pixels and must be between
+4 and 64 pixels; the source aspect ratio is preserved.
+
+```javascript
+const { dataUrl, width, height, bytes } = await ImageEngine
+  .fromPath('hero.jpg')
+  .toPlaceholder({ format: 'webp', size: 16, quality: 20 });
+
+// <Image src="/hero.jpg" placeholder="blur" blurDataURL={dataUrl} ... />
+```
+
+Supported formats are WebP, JPEG, and PNG. PNG is lossless and does not accept
+a quality value. The source engine is not consumed, and the returned `bytes`
+count is measured before base64 conversion. For the privacy-safe placeholder
+inside a deterministic artifact set, use `compileImage()` instead.
+
 ### Transactional public-upload compilation
 
 `compileImage()` is the high-level native Node.js entrypoint for one untrusted

@@ -103,6 +103,7 @@ const meta = inspectFile('input.jpg');
 - ICC / EXIF / GPS オフロード
 - フォーマット別最適化・メトリクス
 - レスポンシブ画像セット / srcset 生成ヘルパー
+- LQIPプレースホルダ / blurDataURL生成
 - Image Firewall / Rust メモリ安全
 
 ## Development

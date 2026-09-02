@@ -15,6 +15,8 @@ import {
     ImageArtifactManifest,
     ImageMetadata,
     OutputFormat,
+    PlaceholderOptions,
+    PlaceholderResult,
     PublicUploadPolicy,
     PresetName,
     PresetResult,
@@ -95,6 +97,11 @@ async function testTypeSafety() {
     const responsiveFiles: ResponsiveFilesOutput = await ImageEngine.fromPath(imagePath)
         .toFilesResponsive(path.resolve(__dirname, '../../.tmp/image-{width}.webp'), responsiveOptions);
     console.log(`Responsive outputs: ${responsiveVariants.length} ${responsiveFiles.files.length}`);
+
+    const placeholderOptions: PlaceholderOptions = { size: 16, format: 'webp', quality: 20 };
+    const placeholder: PlaceholderResult = await ImageEngine.fromPath(imagePath)
+        .toPlaceholder(placeholderOptions);
+    console.log(`Placeholder: ${placeholder.width}x${placeholder.height} ${placeholder.bytes}`);
 
     // Uppercase format is also accepted
     await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);
