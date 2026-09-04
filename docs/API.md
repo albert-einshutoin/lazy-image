@@ -117,10 +117,11 @@ const { dataUrl, width, height, bytes } = await ImageEngine
 // <Image src="/hero.jpg" placeholder="blur" blurDataURL={dataUrl} ... />
 ```
 
-Supported formats are WebP, JPEG, and PNG. PNG is lossless and does not accept
-a quality value. The source engine is not consumed, and the returned `bytes`
-count is measured before base64 conversion. For the privacy-safe placeholder
-inside a deterministic artifact set, use `compileImage()` instead.
+Supported formats are WebP, JPEG, and PNG. PNG is lossless, so `quality` is
+ignored and is not passed to the native encoder. The source engine is not
+consumed, and the returned `bytes` count is measured before base64 conversion.
+For the privacy-safe placeholder inside a deterministic artifact set, use
+`compileImage()` instead.
 
 ### Transactional public-upload compilation
 
