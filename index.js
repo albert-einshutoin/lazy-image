@@ -612,5 +612,5 @@ module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
 module.exports.compileArtifactPlan = compileArtifactPlan
 module.exports.compileImage = compileImage
 if (nativeBinding && nativeBinding.ImageEngine) {
-  helpers.attachPrototypeMethods(nativeBinding.ImageEngine)
+  helpers.attachPrototypeMethods(nativeBinding.ImageEngine, { inspect: nativeBinding.inspect })
 }

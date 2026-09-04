@@ -64,6 +64,11 @@ async function runSelfTest() {
     assert.deepEqual(responsive.files.map(({ width }) => width), [320, 160]);
     assert.equal(responsive.files.length, 2);
 
+    const placeholder = await ImageEngine.fromPath(inputJpeg).toPlaceholder();
+    assert.equal(placeholder.width, 16);
+    assert.equal(placeholder.height, 16);
+    assert.match(placeholder.dataUrl, /^data:image\/webp;base64,/);
+
     const meta = inspectFile(inputJpeg);
     assert(meta.width > 0);
     assert(meta.height > 0);
@@ -122,17 +127,21 @@ async function runDemo() {
   );
   console.log(`srcset: ${responsive.srcset}`);
 
-  // 5. Inspect metadata without decoding
+  // 5. LQIP placeholder for blurDataURL
+  const placeholder = await ImageEngine.fromPath('hero.jpg').toPlaceholder();
+  console.log(`Placeholder: ${placeholder.width}x${placeholder.height} (${placeholder.bytes} bytes)`);
+
+  // 6. Inspect metadata without decoding
   const meta = inspectFile('input.jpg');
   console.log(`${meta.width}x${meta.height} ${meta.format}`);
 
-  // 6. Presets for common use cases
+  // 7. Presets for common use cases
   const thumbnail = await ImageEngine.fromPath('photo.jpg')
     .toBufferWithPreset('thumbnail');
 
   console.log(`Thumbnail: ${thumbnail.length} bytes`);
 
-  // 7. Crop, rotate, and grayscale
+  // 8. Crop, rotate, and grayscale
   const processed = await ImageEngine.fromPath('photo.jpg')
     .crop(100, 100, 400, 400)
     .rotate(90)
@@ -141,7 +150,7 @@ async function runDemo() {
 
   console.log(`Processed: ${processed.length} bytes`);
 
-  // 8. Encode with metrics
+  // 9. Encode with metrics
   const { data, metrics } = await ImageEngine.fromPath('photo.jpg')
     .resize(600)
     .toBufferWithMetrics('webp', 80);

@@ -222,6 +222,25 @@ export interface ResponsiveFilesOutput {
   srcset: string
 }
 
+export interface PlaceholderOptions {
+  /** Longest edge in pixels. Defaults to 16 and must be between 4 and 64. */
+  size?: number
+  /** Output format. Defaults to WebP. */
+  format?: 'webp' | 'jpeg' | 'png'
+  /** Quality for lossy formats. Defaults to 20; ignored for PNG. */
+  quality?: number
+}
+
+export interface PlaceholderResult {
+  /** A data URL suitable for an image src or blurDataURL. */
+  dataUrl: string
+  /** Actual encoded dimensions after preserving the source aspect ratio. */
+  width: number
+  height: number
+  /** Encoded bytes before base64 conversion. */
+  bytes: number
+}
+
 export interface ResolvedEncodeProfile {
   format: CanonicalOutputFormat
   quality?: number
@@ -236,6 +255,7 @@ export interface ImageEngine {
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
   toResponsiveSet(options: ResponsiveSetOptions): Promise<ResponsiveVariant[]>
   toFilesResponsive(pattern: string, options: ResponsiveSetOptions, srcsetPattern?: string): Promise<ResponsiveFilesOutput>
+  toPlaceholder(options?: PlaceholderOptions): Promise<PlaceholderResult>
   // Note: encode() / encodeToFile() are declared on the ImageEngine class
   // (see patchIndexDts patches that retype them to EncodeOptionsInput) and
   // are deliberately NOT re-declared here to avoid duplicate signatures.
@@ -442,7 +462,7 @@ module.exports.resolveEncodeProfile = helpers.resolveEncodeProfile
 module.exports.compileArtifactPlan = compileArtifactPlan
 module.exports.compileImage = compileImage
 if (nativeBinding && nativeBinding.ImageEngine) {
-  helpers.attachPrototypeMethods(nativeBinding.ImageEngine)
+  helpers.attachPrototypeMethods(nativeBinding.ImageEngine, { inspect: nativeBinding.inspect })
 }
 `;
     fs.writeFileSync(indexJsPath, content);
