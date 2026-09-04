@@ -102,6 +102,7 @@ const meta = inspectFile('input.jpg');
 - JPEG/PNG/WebP/AVIF エンコード
 - ICC / EXIF / GPS オフロード
 - フォーマット別最適化・メトリクス
+- レスポンシブ画像セット / srcset 生成ヘルパー
 - Image Firewall / Rust メモリ安全
 
 ## Development

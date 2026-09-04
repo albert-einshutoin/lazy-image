@@ -748,6 +748,30 @@ export interface ArtifactCompilationError extends Error {
 
 export declare function compileImage(options: CompileImageOptions): Promise<ImageArtifactManifest>
 
+export interface ResponsiveVariant {
+  readonly width: number
+  readonly data: Buffer
+  readonly bytes: number
+}
+
+export interface ResponsiveSetOptions {
+  widths: number[]
+  format: OutputFormat
+  quality?: number
+  fastMode?: boolean
+}
+
+export interface ResponsiveFileResult {
+  readonly width: number
+  readonly path: string
+  readonly bytesWritten: number
+}
+
+export interface ResponsiveFilesOutput {
+  files: ResponsiveFileResult[]
+  srcset: string
+}
+
 export interface ResolvedEncodeProfile {
   format: CanonicalOutputFormat
   quality?: number
@@ -760,6 +784,8 @@ export interface ImageEngine {
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
   toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
+  toResponsiveSet(options: ResponsiveSetOptions): Promise<ResponsiveVariant[]>
+  toFilesResponsive(pattern: string, options: ResponsiveSetOptions, srcsetPattern?: string): Promise<ResponsiveFilesOutput>
   // Note: encode() / encodeToFile() are declared on the ImageEngine class
   // (see patchIndexDts patches that retype them to EncodeOptionsInput) and
   // are deliberately NOT re-declared here to avoid duplicate signatures.
