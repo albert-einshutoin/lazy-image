@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2.0] - 2026-09-03
+## [1.2.0]
 
 ### Added
 - Added `toResponsiveSet()` and `toFilesResponsive()` for generating
