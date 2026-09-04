@@ -6,16 +6,21 @@ const MAX_ATTEMPTS = 2
 const AUDIT_TIMEOUT_MS = 9 * 60 * 1000
 
 function isRetryableAuditFailure(result) {
-  const output = `${result.stdout || ''}\n${result.stderr || ''}`
-  return (
-    output.includes('503 Service Unavailable') &&
-    output.includes('audit endpoint returned an error')
-  )
+  try {
+    const report = JSON.parse(result.stdout || '')
+    return (
+      report.statusCode === 503 &&
+      !Object.hasOwn(report, 'metadata') &&
+      !Object.hasOwn(report, 'vulnerabilities')
+    )
+  } catch {
+    return false
+  }
 }
 
 function runNpmAudit(args, runCommand = spawnSync) {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    const result = runCommand('npm', ['audit', ...args], {
+    const result = runCommand('npm', ['audit', '--json', ...args], {
       encoding: 'utf8',
       timeout: AUDIT_TIMEOUT_MS,
     })

@@ -21,7 +21,11 @@ function test(name, fn) {
 
 const serviceUnavailable = {
   status: 1,
-  stdout: '',
+  stdout: `${JSON.stringify({
+    message: '503 Service Unavailable',
+    method: 'POST',
+    statusCode: 503,
+  })}\n`,
   stderr: [
     'npm warn audit 503 Service Unavailable',
     'npm error audit endpoint returned an error',
@@ -39,7 +43,7 @@ test('retries one audit endpoint 503 and preserves the audit arguments', () => {
 
   assert.equal(calls.length, 2)
   assert.equal(calls[0].command, 'npm')
-  assert.deepEqual(calls[0].args, ['audit', '--omit=dev', '--audit-level=high'])
+  assert.deepEqual(calls[0].args, ['audit', '--json', '--omit=dev', '--audit-level=high'])
   assert.equal(calls[0].options.timeout, 9 * 60 * 1000)
 })
 
@@ -51,6 +55,29 @@ test('does not retry a vulnerability failure', () => {
       runNpmAudit(['--audit-level=critical'], () => {
         calls += 1
         return { status: 1, stdout: '1 critical severity vulnerability\n', stderr: '' }
+      }),
+    /npm audit failed with status 1/,
+  )
+  assert.equal(calls, 1)
+})
+
+test('does not retry when a 503 message is mixed with another failure', () => {
+  let calls = 0
+
+  assert.throws(
+    () =>
+      runNpmAudit(['--audit-level=critical'], () => {
+        calls += 1
+        return calls === 1
+          ? {
+              status: 1,
+              stdout: `${JSON.stringify({
+                statusCode: 503,
+                vulnerabilities: { example: { severity: 'critical' } },
+              })}\n`,
+              stderr: serviceUnavailable.stderr,
+            }
+          : { status: 0, stdout: 'found 0 vulnerabilities\n', stderr: '' }
       }),
     /npm audit failed with status 1/,
   )
