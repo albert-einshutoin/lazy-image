@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Web image optimization engine for Node.js with Image Firewall-backed secure upload defaults and smaller JPEG outputs in canonical PNG → JPEG benchmarks, powered by Rust + mozjpeg",
   "main": "index.js",
   "exports": {
@@ -48,7 +48,7 @@
   "scripts": {
     "build": "node scripts/postbuild-fixup.js --prepare && napi build --platform --release && node scripts/postbuild-fixup.js",
     "test": "npm run test:js && npm run test:ci-planner:rust-targets && npm run test:rust && npm run test:wasm:package",
-    "test:js": "npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
+    "test:js": "npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
     "test:ci-planner": "node test/unit/selective-test-planner.test.js",
     "test:ci-planner:rust-targets": "node test/unit/selective-rust-targets.test.js",
     "ci:plan-tests": "node ci/plan-tests.js",
@@ -62,6 +62,7 @@
     "test:generated-artifact-policy": "node test/unit/generated-artifact-policy.test.js",
     "test:security-audit-notification": "node test/unit/security-audit-notification.test.js",
     "test:cargo-audit-policy": "node test/unit/cargo-audit-policy.test.js",
+    "test:npm-audit-policy": "node test/unit/npm-audit-policy.test.js",
     "test:types": "tsc --noEmit",
     "test:examples": "node examples/run-all.mjs",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
@@ -112,12 +113,12 @@
     ]
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "1.1.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "1.1.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.1.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.1.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.1.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.1.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "1.2.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "1.2.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.2.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.2.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.2.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.2.0"
   },
   "engines": {
     "node": ">= 22"
