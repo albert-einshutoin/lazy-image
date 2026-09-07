@@ -125,6 +125,48 @@ async function main() {
   });
 
   await withTempParent(async (parent) => {
+    const originalOpen = fsp.open;
+    const originalToFileWithMetrics = ImageEngine.prototype.toFileWithMetrics;
+    const outputPaths = new Set();
+    const readsByPath = new Map();
+    const sizesByPath = new Map();
+    fsp.open = async function countedOpen(filePath, ...args) {
+      const handle = await originalOpen.call(this, filePath, ...args);
+      if (path.basename(filePath) !== 'source.bin' && !outputPaths.has(filePath)) return handle;
+      sizesByPath.set(filePath, (await handle.stat()).size);
+      const read = handle.read.bind(handle);
+      handle.read = async function countedRead(...readArgs) {
+        const reads = readsByPath.get(filePath) || [];
+        reads.push(readArgs[2]);
+        readsByPath.set(filePath, reads);
+        return read(...readArgs);
+      };
+      return handle;
+    };
+    ImageEngine.prototype.toFileWithMetrics = async function trackedOutput(...args) {
+      outputPaths.add(args[0]);
+      return originalToFileWithMetrics.apply(this, args);
+    };
+    try {
+      await compileImage({
+        inputPath: INPUT,
+        outputDir: path.join(parent, 'jpeg-buffer-output'),
+        policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+      });
+    } finally {
+      fsp.open = originalOpen;
+      ImageEngine.prototype.toFileWithMetrics = originalToFileWithMetrics;
+    }
+    assert.equal(readsByPath.size, 2, 'JPEG preflight and output verification must use the bounded reader');
+    for (const [filePath, reads] of readsByPath) {
+      const size = sizesByPath.get(filePath);
+      assert.ok(reads.length > 0);
+      assert.ok(reads.every((length) => length > 1 && length <= 64 * 1024));
+      assert.ok(reads.length <= Math.ceil(size / (64 * 1024)) * 2 + 1, `${filePath} should be read by bounded chunks`);
+    }
+  });
+
+  await withTempParent(async (parent) => {
     const outputDir = path.join(parent, 'already-there');
     await fsp.mkdir(outputDir);
     await assertRejected(
