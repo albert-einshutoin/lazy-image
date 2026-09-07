@@ -33,6 +33,39 @@ async function assertRejected(run, check) {
   });
 }
 
+async function withSourceReadBehavior(readBehavior, run) {
+  const originalOpen = fsp.open;
+  fsp.open = async function instrumentedOpen(filePath, ...args) {
+    const handle = await originalOpen.call(this, filePath, ...args);
+    if (path.basename(filePath) !== 'source.bin') return handle;
+    const read = handle.read.bind(handle);
+    handle.read = (...readArgs) => readBehavior(read, readArgs);
+    return handle;
+  };
+  try {
+    return await run();
+  } finally {
+    fsp.open = originalOpen;
+  }
+}
+
+function limitSourceReads({ maxBytes = Infinity, eofAfterBytes, controller, abortAfterReads } = {}) {
+  let totalBytes = 0;
+  let readCount = 0;
+  return async (read, readArgs) => {
+    const available = eofAfterBytes === undefined ? readArgs[2] : eofAfterBytes - totalBytes;
+    const length = Math.min(readArgs[2], maxBytes, available);
+    if (length <= 0) return { buffer: readArgs[0], bytesRead: 0 };
+    const limitedArgs = [...readArgs];
+    limitedArgs[2] = length;
+    const result = await read(...limitedArgs);
+    totalBytes += result.bytesRead;
+    readCount += 1;
+    if (controller && readCount === abortAfterReads) controller.abort();
+    return result;
+  };
+}
+
 async function writeUnknownOrientationFixture(format, outputPath) {
   const data = await ImageEngine.fromPath(resolveFixture('test_with_exif.jpg'))
     .keepMetadata({ icc: false, exif: true, stripGps: false })
@@ -164,6 +197,85 @@ async function main() {
       assert.ok(reads.every((length) => length > 1 && length <= 64 * 1024));
       assert.ok(reads.length <= Math.ceil(size / (64 * 1024)) * 2 + 1, `${filePath} should be read by bounded chunks`);
     }
+  });
+
+  await withTempParent(async (parent) => {
+    // This fixture has FF sequences crossing 17-byte boundaries; it exercises partial refills without a wall-time threshold.
+    await withSourceReadBehavior(limitSourceReads({ maxBytes: 17 }), async () => {
+      const manifest = await compileImage({
+        inputPath: INPUT,
+        outputDir: path.join(parent, 'jpeg-partial-read-output'),
+        policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+      });
+      assert.equal(manifest.artifacts[0].format, 'jpeg');
+    });
+  });
+
+  await withTempParent(async (parent) => {
+    const outputDir = path.join(parent, 'jpeg-eof-output');
+    await assertRejected(
+      () => withSourceReadBehavior(
+        limitSourceReads({ maxBytes: 64 * 1024, eofAfterBytes: 32 * 1024 }),
+        () => compileImage({
+          inputPath: INPUT,
+          outputDir,
+          policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+        }),
+      ),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
+  await withTempParent(async (parent) => {
+    const inputPath = path.join(parent, 'jpeg-invalid-length.jpg');
+    const data = await fsp.readFile(INPUT);
+    const eoi = data.lastIndexOf(Buffer.from([0xff, 0xd9]));
+    assert.ok(eoi > 0);
+    await fsp.writeFile(inputPath, Buffer.concat([
+      data.subarray(0, eoi),
+      Buffer.from([0xff, 0xe1, 0xff, 0xff]),
+      data.subarray(eoi),
+    ]));
+    const outputDir = path.join(parent, 'jpeg-invalid-length-output');
+    await assertRejected(
+      () => compileImage({
+        inputPath,
+        outputDir,
+        policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+      }),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
+  await withTempParent(async (parent) => {
+    const outputDir = path.join(parent, 'jpeg-abort-output');
+    const controller = new AbortController();
+    await assertRejected(
+      () => withSourceReadBehavior(
+        limitSourceReads({ maxBytes: 64 * 1024, controller, abortAfterReads: 1 }),
+        () => compileImage({
+          inputPath: INPUT,
+          outputDir,
+          policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+          signal: controller.signal,
+        }),
+      ),
+      (error) => {
+        assert.equal(error.name, 'AbortError');
+        assert.equal(error.phase, 'preflight');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
   });
 
   await withTempParent(async (parent) => {
