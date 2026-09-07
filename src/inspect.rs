@@ -1,4 +1,6 @@
-use crate::engine::{detect_exif_orientation_bounded_from_reader, run_with_panic_policy};
+use crate::engine::{
+    inspect_exif_orientation_bounded_from_reader, run_with_panic_policy, OrientationInspection,
+};
 use crate::error::LazyImageError;
 use image::{ImageDecoder, ImageFormat, ImageReader};
 use std::fs::File;
@@ -12,6 +14,7 @@ pub struct InspectMetadata {
     pub has_alpha: bool,
     pub is_animated: bool,
     pub orientation: Option<u16>,
+    pub orientation_known: bool,
 }
 
 fn decode_failed(context: &str, error: impl std::fmt::Display) -> LazyImageError {
@@ -99,6 +102,7 @@ fn read_inspect_metadata<R: BufRead + Seek>(
         has_alpha,
         is_animated,
         orientation: None,
+        orientation_known: true,
     })
 }
 
@@ -109,7 +113,11 @@ fn inspect_header_from_reader<R: BufRead + Seek>(
     reader
         .seek(SeekFrom::Start(0))
         .map_err(|error| decode_failed("failed to rewind image for EXIF inspection", error))?;
-    metadata.orientation = detect_exif_orientation_bounded_from_reader(reader);
+    match inspect_exif_orientation_bounded_from_reader(reader) {
+        OrientationInspection::Absent => {}
+        OrientationInspection::Value(orientation) => metadata.orientation = Some(orientation),
+        OrientationInspection::Unknown => metadata.orientation_known = false,
+    }
     Ok(metadata)
 }
 
@@ -194,6 +202,7 @@ mod tests {
         assert_eq!(metadata.format.as_deref(), Some("jpeg"));
         assert!(!metadata.has_alpha);
         assert!(!metadata.is_animated);
+        assert!(metadata.orientation_known);
     }
 
     #[test]
@@ -238,6 +247,7 @@ mod tests {
         let metadata = inspect_header_from_bytes(jpeg).unwrap();
         assert_eq!((metadata.width, metadata.height), (8, 8));
         assert_eq!(metadata.orientation, Some(6));
+        assert!(metadata.orientation_known);
     }
 
     #[test]
@@ -262,10 +272,10 @@ mod tests {
             inner: BufReader::with_capacity(8 * 1024, Cursor::new(orientation_input)),
             bytes_read: Arc::clone(&orientation_bytes_read),
         };
-        let orientation = detect_exif_orientation_bounded_from_reader(&mut orientation_reader);
+        let orientation = inspect_exif_orientation_bounded_from_reader(&mut orientation_reader);
 
         assert_eq!((metadata.width, metadata.height), (32, 32));
-        assert_eq!(orientation, None);
+        assert_eq!(orientation, OrientationInspection::Absent);
         assert!(
             metadata_bytes_read.load(Ordering::Relaxed) < 64 * 1024,
             "JPEG trait inspection must stop after bounded header reads"
@@ -308,5 +318,6 @@ mod tests {
         assert_eq!((metadata.width, metadata.height), (8, 8));
         assert_eq!(metadata.format.as_deref(), Some("jpeg"));
         assert_eq!(metadata.orientation, Some(6));
+        assert!(metadata.orientation_known);
     }
 }

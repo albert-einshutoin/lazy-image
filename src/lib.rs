@@ -61,8 +61,10 @@ pub struct ImageMetadata {
     pub has_alpha: bool,
     /// Whether the container declares animation frames.
     pub is_animated: bool,
-    /// EXIF Orientation 1-8, or undefined when absent or invalid.
+    /// EXIF Orientation 1-8, or undefined when absent.
     pub orientation: Option<u16>,
+    /// Whether EXIF inspection confirmed the Orientation value is present or absent.
+    pub orientation_known: bool,
 }
 
 #[cfg(feature = "napi")]
@@ -75,6 +77,7 @@ impl From<InspectMetadata> for ImageMetadata {
             has_alpha: value.has_alpha,
             is_animated: value.is_animated,
             orientation: value.orientation,
+            orientation_known: value.orientation_known,
         }
     }
 }
