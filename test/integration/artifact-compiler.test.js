@@ -33,6 +33,63 @@ async function assertRejected(run, check) {
   });
 }
 
+async function withSourceReadBehavior(readBehavior, run) {
+  const originalOpen = fsp.open;
+  fsp.open = async function instrumentedOpen(filePath, ...args) {
+    const handle = await originalOpen.call(this, filePath, ...args);
+    if (path.basename(filePath) !== 'source.bin') return handle;
+    const read = handle.read.bind(handle);
+    handle.read = (...readArgs) => readBehavior(read, readArgs);
+    return handle;
+  };
+  try {
+    return await run();
+  } finally {
+    fsp.open = originalOpen;
+  }
+}
+
+async function withOutputReadBehavior(readBehaviorFactory, run) {
+  const originalOpen = fsp.open;
+  const originalToFileWithMetrics = ImageEngine.prototype.toFileWithMetrics;
+  const outputPaths = new Set();
+  fsp.open = async function instrumentedOpen(filePath, ...args) {
+    const handle = await originalOpen.call(this, filePath, ...args);
+    if (!outputPaths.has(filePath)) return handle;
+    const read = handle.read.bind(handle);
+    const readBehavior = readBehaviorFactory();
+    handle.read = (...readArgs) => readBehavior(read, readArgs);
+    return handle;
+  };
+  ImageEngine.prototype.toFileWithMetrics = async function trackedOutput(...args) {
+    outputPaths.add(args[0]);
+    return originalToFileWithMetrics.apply(this, args);
+  };
+  try {
+    return await run();
+  } finally {
+    fsp.open = originalOpen;
+    ImageEngine.prototype.toFileWithMetrics = originalToFileWithMetrics;
+  }
+}
+
+function limitSourceReads({ maxBytes = Infinity, eofAfterBytes, controller, abortAfterReads } = {}) {
+  let totalBytes = 0;
+  let readCount = 0;
+  return async (read, readArgs) => {
+    const available = eofAfterBytes === undefined ? readArgs[2] : eofAfterBytes - totalBytes;
+    const length = Math.min(readArgs[2], maxBytes, available);
+    if (length <= 0) return { buffer: readArgs[0], bytesRead: 0 };
+    const limitedArgs = [...readArgs];
+    limitedArgs[2] = length;
+    const result = await read(...limitedArgs);
+    totalBytes += result.bytesRead;
+    readCount += 1;
+    if (controller && readCount === abortAfterReads) controller.abort();
+    return result;
+  };
+}
+
 async function writeUnknownOrientationFixture(format, outputPath) {
   const data = await ImageEngine.fromPath(resolveFixture('test_with_exif.jpg'))
     .keepMetadata({ icc: false, exif: true, stripGps: false })
@@ -123,6 +180,241 @@ async function main() {
       'image-320.webp', 'manifest.json', 'placeholder.webp',
     ]);
   });
+
+  await withTempParent(async (parent) => {
+    const originalOpen = fsp.open;
+    const originalToFileWithMetrics = ImageEngine.prototype.toFileWithMetrics;
+    const outputPaths = new Set();
+    const readsByPath = new Map();
+    const sizesByPath = new Map();
+    fsp.open = async function countedOpen(filePath, ...args) {
+      const handle = await originalOpen.call(this, filePath, ...args);
+      if (path.basename(filePath) !== 'source.bin' && !outputPaths.has(filePath)) return handle;
+      sizesByPath.set(filePath, (await handle.stat()).size);
+      const read = handle.read.bind(handle);
+      handle.read = async function countedRead(...readArgs) {
+        const reads = readsByPath.get(filePath) || [];
+        reads.push(readArgs[2]);
+        readsByPath.set(filePath, reads);
+        return read(...readArgs);
+      };
+      return handle;
+    };
+    ImageEngine.prototype.toFileWithMetrics = async function trackedOutput(...args) {
+      outputPaths.add(args[0]);
+      return originalToFileWithMetrics.apply(this, args);
+    };
+    try {
+      await compileImage({
+        inputPath: INPUT,
+        outputDir: path.join(parent, 'jpeg-buffer-output'),
+        policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+      });
+    } finally {
+      fsp.open = originalOpen;
+      ImageEngine.prototype.toFileWithMetrics = originalToFileWithMetrics;
+    }
+    assert.equal(readsByPath.size, 2, 'JPEG preflight and output verification must use the bounded reader');
+    for (const [filePath, reads] of readsByPath) {
+      const size = sizesByPath.get(filePath);
+      assert.ok(reads.length > 0);
+      assert.ok(reads.every((length) => length > 1 && length <= 64 * 1024));
+      assert.ok(reads.length <= Math.ceil(size / (64 * 1024)) * 2 + 1, `${filePath} should be read by bounded chunks`);
+    }
+  });
+
+  await withTempParent(async (parent) => {
+    // This fixture has FF sequences crossing 17-byte boundaries; it exercises partial refills without a wall-time threshold.
+    await withSourceReadBehavior(limitSourceReads({ maxBytes: 17 }), async () => {
+      const manifest = await compileImage({
+        inputPath: INPUT,
+        outputDir: path.join(parent, 'jpeg-partial-read-output'),
+        policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+      });
+      assert.equal(manifest.artifacts[0].format, 'jpeg');
+    });
+  });
+
+  await withTempParent(async (parent) => {
+    const originalToFileWithMetrics = ImageEngine.prototype.toFileWithMetrics;
+    let injected = false;
+    ImageEngine.prototype.toFileWithMetrics = async function patchedJpegScanBoundaries(...args) {
+      const result = await originalToFileWithMetrics.apply(this, args);
+      if (!injected && args[1] === 'jpeg') {
+        injected = true;
+        const data = await fsp.readFile(args[0]);
+        const eoi = data.lastIndexOf(Buffer.from([0xff, 0xd9]));
+        assert.ok(eoi > 0);
+        const prefixPaddingLength = (16 - (eoi % 17) + 17) % 17;
+        const restart = Buffer.from([0xff, 0xd0]);
+        const suffixPadding = Buffer.alloc(15);
+        const restartOffset = eoi + prefixPaddingLength;
+        const eoiOffset = restartOffset + restart.length + suffixPadding.length;
+        assert.equal(restartOffset % 17, 16);
+        assert.equal(eoiOffset % 17, 16);
+        const mutated = Buffer.concat([
+          data.subarray(0, eoi),
+          Buffer.alloc(prefixPaddingLength),
+          restart,
+          suffixPadding,
+          data.subarray(eoi),
+        ]);
+        await fsp.writeFile(args[0], mutated);
+        return {
+          ...result,
+          bytesWritten: mutated.length,
+          metrics: { ...result.metrics, bytesOut: mutated.length },
+        };
+      }
+      return result;
+    };
+    try {
+      const manifest = await withOutputReadBehavior(
+        () => limitSourceReads({ maxBytes: 17 }),
+        () => compileImage({
+          inputPath: INPUT,
+          outputDir: path.join(parent, 'jpeg-scan-boundary-output'),
+          policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+        }),
+      );
+      assert.equal(manifest.artifacts[0].format, 'jpeg');
+    } finally {
+      ImageEngine.prototype.toFileWithMetrics = originalToFileWithMetrics;
+    }
+  });
+
+  await withTempParent(async (parent) => {
+    const outputDir = path.join(parent, 'jpeg-eof-output');
+    await assertRejected(
+      () => withSourceReadBehavior(
+        limitSourceReads({ maxBytes: 64 * 1024, eofAfterBytes: 32 * 1024 }),
+        () => compileImage({
+          inputPath: INPUT,
+          outputDir,
+          policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+        }),
+      ),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
+  await withTempParent(async (parent) => {
+    const inputPath = path.join(parent, 'jpeg-invalid-length.jpg');
+    const data = await fsp.readFile(INPUT);
+    const eoi = data.lastIndexOf(Buffer.from([0xff, 0xd9]));
+    assert.ok(eoi > 0);
+    await fsp.writeFile(inputPath, Buffer.concat([
+      data.subarray(0, eoi),
+      Buffer.from([0xff, 0xe1, 0xff, 0xff]),
+      data.subarray(eoi),
+    ]));
+    const outputDir = path.join(parent, 'jpeg-invalid-length-output');
+    await assertRejected(
+      () => compileImage({
+        inputPath,
+        outputDir,
+        policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+      }),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
+  await withTempParent(async (parent) => {
+    const outputDir = path.join(parent, 'jpeg-abort-output');
+    const controller = new AbortController();
+    await assertRejected(
+      () => withSourceReadBehavior(
+        limitSourceReads({ maxBytes: 64 * 1024, controller, abortAfterReads: 1 }),
+        () => compileImage({
+          inputPath: INPUT,
+          outputDir,
+          policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+          signal: controller.signal,
+        }),
+      ),
+      (error) => {
+        assert.equal(error.name, 'AbortError');
+        assert.equal(error.phase, 'preflight');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
+  for (const failure of [
+    {
+      name: 'eof',
+      setup() {
+        return {
+          readBehaviorFactory: () => limitSourceReads({ maxBytes: 17, eofAfterBytes: 17 }),
+        };
+      },
+      check(error) {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'verification');
+        assert.equal(error.errorCode, 'E900');
+      },
+    },
+    {
+      name: 'abort',
+      setup() {
+        const controller = new AbortController();
+        return {
+          signal: controller.signal,
+          readBehaviorFactory: () => limitSourceReads({
+            maxBytes: 64 * 1024,
+            controller,
+            abortAfterReads: 1,
+          }),
+        };
+      },
+      check(error) {
+        assert.equal(error.name, 'AbortError');
+        assert.equal(error.phase, 'verification');
+      },
+    },
+  ]) {
+    await withTempParent(async (parent) => {
+      const outputDir = path.join(parent, `jpeg-verification-${failure.name}-output`);
+      const { signal, readBehaviorFactory } = failure.setup();
+      const originalMkdtemp = fsp.mkdtemp;
+      const sourceSnapshots = [];
+      fsp.mkdtemp = async function trackedMkdtemp(...args) {
+        const directory = await originalMkdtemp.call(this, ...args);
+        if (String(args[0]).endsWith('lazy-image-source-')) sourceSnapshots.push(directory);
+        return directory;
+      };
+      try {
+        await assertRejected(
+          () => withOutputReadBehavior(
+            readBehaviorFactory,
+            () => compileImage({
+              inputPath: INPUT,
+              outputDir,
+              policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+              ...(signal ? { signal } : {}),
+            }),
+          ),
+          failure.check,
+        );
+      } finally {
+        fsp.mkdtemp = originalMkdtemp;
+      }
+      assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+      assert.deepEqual(await fsp.readdir(parent), [], 'verification failure must remove staging');
+      assert.equal(sourceSnapshots.length, 1);
+      assert.equal(await fsp.stat(sourceSnapshots[0]).catch(() => null), null, 'verification failure must remove source snapshot');
+    });
+  }
 
   await withTempParent(async (parent) => {
     const outputDir = path.join(parent, 'already-there');
