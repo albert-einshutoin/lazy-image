@@ -49,6 +49,30 @@ async function withSourceReadBehavior(readBehavior, run) {
   }
 }
 
+async function withOutputReadBehavior(readBehaviorFactory, run) {
+  const originalOpen = fsp.open;
+  const originalToFileWithMetrics = ImageEngine.prototype.toFileWithMetrics;
+  const outputPaths = new Set();
+  fsp.open = async function instrumentedOpen(filePath, ...args) {
+    const handle = await originalOpen.call(this, filePath, ...args);
+    if (!outputPaths.has(filePath)) return handle;
+    const read = handle.read.bind(handle);
+    const readBehavior = readBehaviorFactory();
+    handle.read = (...readArgs) => readBehavior(read, readArgs);
+    return handle;
+  };
+  ImageEngine.prototype.toFileWithMetrics = async function trackedOutput(...args) {
+    outputPaths.add(args[0]);
+    return originalToFileWithMetrics.apply(this, args);
+  };
+  try {
+    return await run();
+  } finally {
+    fsp.open = originalOpen;
+    ImageEngine.prototype.toFileWithMetrics = originalToFileWithMetrics;
+  }
+}
+
 function limitSourceReads({ maxBytes = Infinity, eofAfterBytes, controller, abortAfterReads } = {}) {
   let totalBytes = 0;
   let readCount = 0;
@@ -212,6 +236,54 @@ async function main() {
   });
 
   await withTempParent(async (parent) => {
+    const originalToFileWithMetrics = ImageEngine.prototype.toFileWithMetrics;
+    let injected = false;
+    ImageEngine.prototype.toFileWithMetrics = async function patchedJpegScanBoundaries(...args) {
+      const result = await originalToFileWithMetrics.apply(this, args);
+      if (!injected && args[1] === 'jpeg') {
+        injected = true;
+        const data = await fsp.readFile(args[0]);
+        const eoi = data.lastIndexOf(Buffer.from([0xff, 0xd9]));
+        assert.ok(eoi > 0);
+        const prefixPaddingLength = (16 - (eoi % 17) + 17) % 17;
+        const restart = Buffer.from([0xff, 0xd0]);
+        const suffixPadding = Buffer.alloc(15);
+        const restartOffset = eoi + prefixPaddingLength;
+        const eoiOffset = restartOffset + restart.length + suffixPadding.length;
+        assert.equal(restartOffset % 17, 16);
+        assert.equal(eoiOffset % 17, 16);
+        const mutated = Buffer.concat([
+          data.subarray(0, eoi),
+          Buffer.alloc(prefixPaddingLength),
+          restart,
+          suffixPadding,
+          data.subarray(eoi),
+        ]);
+        await fsp.writeFile(args[0], mutated);
+        return {
+          ...result,
+          bytesWritten: mutated.length,
+          metrics: { ...result.metrics, bytesOut: mutated.length },
+        };
+      }
+      return result;
+    };
+    try {
+      const manifest = await withOutputReadBehavior(
+        () => limitSourceReads({ maxBytes: 17 }),
+        () => compileImage({
+          inputPath: INPUT,
+          outputDir: path.join(parent, 'jpeg-scan-boundary-output'),
+          policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+        }),
+      );
+      assert.equal(manifest.artifacts[0].format, 'jpeg');
+    } finally {
+      ImageEngine.prototype.toFileWithMetrics = originalToFileWithMetrics;
+    }
+  });
+
+  await withTempParent(async (parent) => {
     const outputDir = path.join(parent, 'jpeg-eof-output');
     await assertRejected(
       () => withSourceReadBehavior(
@@ -277,6 +349,72 @@ async function main() {
     );
     assert.equal(await fsp.stat(outputDir).catch(() => null), null);
   });
+
+  for (const failure of [
+    {
+      name: 'eof',
+      setup() {
+        return {
+          readBehaviorFactory: () => limitSourceReads({ maxBytes: 17, eofAfterBytes: 17 }),
+        };
+      },
+      check(error) {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'verification');
+        assert.equal(error.errorCode, 'E900');
+      },
+    },
+    {
+      name: 'abort',
+      setup() {
+        const controller = new AbortController();
+        return {
+          signal: controller.signal,
+          readBehaviorFactory: () => limitSourceReads({
+            maxBytes: 64 * 1024,
+            controller,
+            abortAfterReads: 1,
+          }),
+        };
+      },
+      check(error) {
+        assert.equal(error.name, 'AbortError');
+        assert.equal(error.phase, 'verification');
+      },
+    },
+  ]) {
+    await withTempParent(async (parent) => {
+      const outputDir = path.join(parent, `jpeg-verification-${failure.name}-output`);
+      const { signal, readBehaviorFactory } = failure.setup();
+      const originalMkdtemp = fsp.mkdtemp;
+      const sourceSnapshots = [];
+      fsp.mkdtemp = async function trackedMkdtemp(...args) {
+        const directory = await originalMkdtemp.call(this, ...args);
+        if (String(args[0]).endsWith('lazy-image-source-')) sourceSnapshots.push(directory);
+        return directory;
+      };
+      try {
+        await assertRejected(
+          () => withOutputReadBehavior(
+            readBehaviorFactory,
+            () => compileImage({
+              inputPath: INPUT,
+              outputDir,
+              policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+              ...(signal ? { signal } : {}),
+            }),
+          ),
+          failure.check,
+        );
+      } finally {
+        fsp.mkdtemp = originalMkdtemp;
+      }
+      assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+      assert.deepEqual(await fsp.readdir(parent), [], 'verification failure must remove staging');
+      assert.equal(sourceSnapshots.length, 1);
+      assert.equal(await fsp.stat(sourceSnapshots[0]).catch(() => null), null, 'verification failure must remove source snapshot');
+    });
+  }
 
   await withTempParent(async (parent) => {
     const outputDir = path.join(parent, 'already-there');
