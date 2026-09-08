@@ -27,6 +27,7 @@ assert.deepEqual(jpegMetadata, {
     format: 'jpeg',
     hasAlpha: false,
     isAnimated: false,
+    orientationKnown: true,
     orientation: 6,
 });
 assertParity(jpeg, 'inspect-preflight/oriented.jpg');
