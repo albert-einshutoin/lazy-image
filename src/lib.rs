@@ -32,75 +32,40 @@ pub mod engine;
 pub mod error;
 pub mod ops;
 
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-use image::ImageReader;
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+mod inspect;
+
 #[cfg(feature = "napi")]
 use napi::bindgen_prelude::*;
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-use std::io::{BufRead, BufReader, Cursor, Seek};
 
 // Re-export the engine for NAPI
 #[cfg(feature = "napi")]
 pub use engine::ImageEngine;
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
+#[cfg(feature = "napi")]
 use error::LazyImageError;
 
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InspectMetadata {
-    pub width: u32,
-    pub height: u32,
-    pub format: Option<String>,
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-fn read_inspect_metadata<R: BufRead + Seek>(
-    reader: R,
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    let reader = ImageReader::new(reader)
-        .with_guessed_format()
-        .map_err(|e| LazyImageError::decode_failed(format!("failed to read image header: {e}")))?;
-
-    let format = reader.format().map(|f| format!("{f:?}").to_lowercase());
-    let (width, height) = reader
-        .into_dimensions()
-        .map_err(|e| LazyImageError::decode_failed(format!("failed to read dimensions: {e}")))?;
-
-    Ok(InspectMetadata {
-        width,
-        height,
-        format,
-    })
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_bytes(
-    data: &[u8],
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    read_inspect_metadata(Cursor::new(data))
-}
-
-#[cfg(any(feature = "napi", feature = "fuzzing"))]
-pub fn inspect_header_from_path(
-    path: &str,
-) -> std::result::Result<InspectMetadata, LazyImageError> {
-    use std::fs::File;
-
-    let file =
-        File::open(path).map_err(|e| LazyImageError::file_read_failed(path.to_string(), e))?;
-    read_inspect_metadata(BufReader::new(file))
-}
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub use inspect::{inspect_header_from_bytes, inspect_header_from_path, InspectMetadata};
 
 #[cfg(feature = "napi")]
-/// Image metadata returned by inspect()
+/// Header-only image traits returned by inspect() and inspectFile().
 #[napi(object)]
 pub struct ImageMetadata {
-    /// Image width in pixels
+    /// Encoded width in pixels; orientation is reported separately.
     pub width: u32,
-    /// Image height in pixels
+    /// Encoded height in pixels; orientation is reported separately.
     pub height: u32,
-    /// Detected format (jpeg, png, webp, gif, etc.)
+    /// Detected supported input format.
     pub format: Option<String>,
+    /// Whether the encoded image has alpha/transparency.
+    pub has_alpha: bool,
+    /// Whether the container declares animation frames.
+    pub is_animated: bool,
+    /// EXIF Orientation 1-8, or undefined when absent or inspection is unknown.
+    /// Check `orientationKnown` before using the value.
+    pub orientation: Option<u16>,
+    /// Whether EXIF inspection confirmed the Orientation value is present or absent.
+    pub orientation_known: bool,
 }
 
 #[cfg(feature = "napi")]
@@ -110,16 +75,20 @@ impl From<InspectMetadata> for ImageMetadata {
             width: value.width,
             height: value.height,
             format: value.format,
+            has_alpha: value.has_alpha,
+            is_animated: value.is_animated,
+            orientation: value.orientation,
+            orientation_known: value.orientation_known,
         }
     }
 }
 
 #[cfg(feature = "napi")]
-/// Inspect image metadata WITHOUT decoding pixels.
-/// This reads only the header bytes - extremely fast (<1ms).
+/// Inspect image header/container metadata without decoding pixels.
 ///
-/// Use this to check dimensions before processing, or to reject
-/// images that are too large without wasting CPU on decoding.
+/// Use this to check dimensions, alpha, animation, and EXIF orientation before
+/// processing untrusted input. A successful result contains authoritative
+/// alpha and animation booleans for JPEG, PNG, or WebP.
 #[napi]
 pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
     let metadata = match inspect_header_from_bytes(buffer.as_ref()) {
@@ -132,9 +101,10 @@ pub fn inspect(env: Env, buffer: Buffer) -> Result<ImageMetadata> {
 }
 
 #[cfg(feature = "napi")]
-/// Inspect image metadata from a file path WITHOUT loading into Node.js heap.
-/// **Memory-efficient**: Reads directly from filesystem, bypassing V8 entirely.
-/// This is the recommended way for server-side metadata inspection.
+/// Inspect image header/container metadata directly from a file path.
+///
+/// The file path variant avoids loading encoded image bytes into the Node.js
+/// heap and is the recommended server-side preflight API.
 #[napi(js_name = "inspectFile")]
 pub fn inspect_file(env: Env, path: String) -> Result<ImageMetadata> {
     if path.trim().is_empty() {
@@ -161,6 +131,24 @@ pub fn version() -> String {
 }
 
 #[cfg(feature = "napi")]
+/// Return the stable native codec/build identity used by artifact fingerprints.
+#[napi(js_name = "compilerIdentity")]
+pub fn compiler_identity() -> String {
+    let avif = if cfg!(feature = "avif") {
+        "avif"
+    } else {
+        "no-avif"
+    };
+    format!(
+        "lazy-image-native:{};config={};target={};profile={};feature={avif}",
+        env!("CARGO_PKG_VERSION"),
+        env!("LAZY_IMAGE_COMPILER_CONFIG"),
+        env!("LAZY_IMAGE_COMPILER_TARGET"),
+        env!("LAZY_IMAGE_COMPILER_PROFILE"),
+    )
+}
+
+#[cfg(feature = "napi")]
 const BASE_FORMATS: &[&str] = &["jpeg", "jpg", "png", "webp"];
 
 #[cfg(feature = "napi")]
@@ -184,7 +172,7 @@ pub fn supported_output_formats() -> Vec<String> {
 }
 
 /// Metrics payload version. Keep in sync with docs/metrics-schema.json
-pub const PROCESSING_METRICS_VERSION: &str = "1.0.0";
+pub const PROCESSING_METRICS_VERSION: &str = "1.1.0";
 
 /// Processing metrics for performance monitoring
 #[derive(Debug)]
@@ -223,6 +211,8 @@ pub struct ProcessingMetrics {
     pub format_out: String,
     /// True when ICC profile was present and preserved
     pub icc_preserved: bool,
+    /// ICC handling result: absent, preserved, unsafe-stripped, policy-stripped, or unsupported
+    pub icc_outcome: String,
     /// True when metadata was stripped (either by default or policy)
     pub metadata_stripped: bool,
     /// Non-fatal policy rejections (e.g., strict policy forcing metadata strip)
@@ -246,6 +236,7 @@ impl Default for ProcessingMetrics {
             format_in: None,
             format_out: String::new(),
             icc_preserved: false,
+            icc_outcome: "absent".to_string(),
             metadata_stripped: true,
             policy_violations: Vec::new(),
         }
@@ -368,6 +359,18 @@ pub struct TargetBytesResult {
     pub metrics: ProcessingMetrics,
 }
 
+/// Native file result for byte-budget encoding. The selected image bytes are
+/// written inside the Rust task and are intentionally absent from this object.
+#[cfg(feature = "napi")]
+#[napi(object)]
+pub struct FileTargetBytesNativeResult {
+    pub bytes_written: u32,
+    pub quality: u32,
+    pub budget_met: bool,
+    pub target_bytes: u32,
+    pub metrics: ProcessingMetrics,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -384,7 +387,7 @@ mod tests {
 
     #[test]
     fn test_processing_metrics_version_constant() {
-        assert_eq!(PROCESSING_METRICS_VERSION, "1.0.0");
+        assert_eq!(PROCESSING_METRICS_VERSION, "1.1.0");
     }
 
     #[test]

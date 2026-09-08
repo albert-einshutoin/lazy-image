@@ -1,301 +1,277 @@
 /**
- * Benchmark comparison: lazy-image vs sharp
- * Based on README.md benchmark conditions:
- * - test/fixtures/test_4.5MB_5000x5000.png (4.5MB PNG input, 5000×5000 pixels)
- * - Resize to 800px (width, auto height)
- * - Quality 60-80
+ * Canonical lazy-image vs sharp comparison.
+ *
+ * Quality is gated against a resized lossless source reference. Similarity
+ * between the two encoders is reported separately and is never treated as
+ * proof that either output retained source quality.
  */
 
-const fs = require('fs');
-const path = require('path');
-const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
-const { ImageEngine } = require(resolveRoot('index'));
-const { calculateQualityMetrics } = require('../helpers/quality');
+'use strict'
 
-// Check if sharp is available
-let sharp;
-try {
-    sharp = require('sharp');
-} catch (e) {
-    console.error('❌ sharp is not installed. Please install it first:');
-    console.error('   npm install sharp');
-    process.exit(1);
+const fs = require('node:fs')
+const path = require('node:path')
+const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths')
+const { ImageEngine } = require(resolveRoot('index'))
+const { calculateQualityMetrics } = require('../helpers/quality')
+
+const TEST_IMAGE = resolveFixture('test_4.5MB_5000x5000.png')
+const DEFAULT_QUALITY_ARTIFACT = resolveTemp(
+  'benchmarks',
+  'sharp-comparison-quality.json',
+)
+
+const TEST_CASES = [
+  { format: 'jpeg', quality: 80, name: 'JPEG', required: true },
+  { format: 'webp', quality: 80, name: 'WebP', required: true },
+  { format: 'avif', quality: 60, name: 'AVIF', required: true },
+]
+
+// These are source-reference regression floors, calibrated below the current
+// canonical snapshot to tolerate normal cross-platform metric noise while
+// still rejecting a material codec-quality regression.
+const SOURCE_QUALITY_TARGETS = {
+  jpeg: { ssim: 0.9935, psnr: 36.5 },
+  webp: { ssim: 0.9905, psnr: 36.5 },
+  avif: { ssim: 0.9940, psnr: 38.5 },
 }
 
-const TEST_IMAGE = resolveFixture('test_4.5MB_5000x5000.png');
-const OUTPUT_DIR = resolveTemp('benchmarks', 'sharp-comparison');
-
-// Ensure output directory exists
-if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-}
-
-// Helper to format bytes
-function formatBytes(bytes) {
-    return bytes.toLocaleString('en-US', { maximumFractionDigits: 0 });
-}
-
-// Helper to calculate percentage difference
 function calcDiff(lazy, sharp) {
-    const diff = ((lazy - sharp) / sharp) * 100;
-    return diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
+  return ((lazy - sharp) / sharp) * 100
 }
 
-const QUALITY_TARGETS = {
-    ssim: 0.995,
-    psnr: 40,
-};
-
-async function benchmarkLazyImage(format, quality) {
-    const start = Date.now();
-    const buffer = await ImageEngine.fromPath(TEST_IMAGE)
-        .resize(800, null)
-        .toBuffer(format, quality);
-    const time = Date.now() - start;
-    return { size: buffer.length, time, buffer };
+function isUnsupported(error) {
+  const message = String(error?.message || error).toLowerCase()
+  return /unsupported|not support|not available|no codec/.test(message)
 }
 
-async function benchmarkSharp(format, quality) {
-    const start = Date.now();
-    let sharpInstance = sharp(TEST_IMAGE)
-        .resize(800, null, { withoutEnlargement: true });
-    
-    let buffer;
-    if (format === 'jpeg') {
-        buffer = await sharpInstance.jpeg({ quality, mozjpeg: true }).toBuffer();
-    } else if (format === 'webp') {
-        buffer = await sharpInstance.webp({ quality }).toBuffer();
-    } else if (format === 'avif') {
-        buffer = await sharpInstance.avif({ quality }).toBuffer();
-    } else {
-        throw new Error(`Unsupported format: ${format}`);
+function qualityPasses(metrics, target) {
+  return metrics.ssim >= target.ssim && metrics.psnr >= target.psnr
+}
+
+function requiredFailures(results) {
+  return results.filter(
+    (result) =>
+      result.required &&
+      ['unsupported', 'benchmark-failure', 'quality-regression', 'skipped'].includes(
+        result.status,
+      ),
+  )
+}
+
+function assertRequiredCasesPassed(results) {
+  const failures = requiredFailures(results)
+  if (failures.length === 0) return
+  const summary = failures
+    .map((result) => `${result.name}: ${result.status} (${result.reason})`)
+    .join('; ')
+  throw new Error(`Benchmark gate failed after all cases completed: ${summary}`)
+}
+
+async function benchmarkLazy(format, quality) {
+  const start = Date.now()
+  const buffer = await ImageEngine.fromPath(TEST_IMAGE)
+    .resize(800, null)
+    .toBuffer(format, quality)
+  return { size: buffer.length, time: Date.now() - start, buffer }
+}
+
+async function createSharpAdapter() {
+  let sharp
+  try {
+    sharp = require('sharp')
+  } catch (error) {
+    throw new Error(`sharp is not installed: ${error.message}`)
+  }
+
+  return {
+    async encode(format, quality) {
+      const start = Date.now()
+      let pipeline = sharp(TEST_IMAGE).resize(800, null, { withoutEnlargement: true })
+      if (format === 'jpeg') pipeline = pipeline.jpeg({ quality, mozjpeg: true })
+      else if (format === 'webp') pipeline = pipeline.webp({ quality })
+      else if (format === 'avif') pipeline = pipeline.avif({ quality })
+      else throw new Error(`Unsupported format: ${format}`)
+      const buffer = await pipeline.toBuffer()
+      return { size: buffer.length, time: Date.now() - start, buffer }
+    },
+    reference() {
+      return sharp(TEST_IMAGE)
+        .resize(800, null, { withoutEnlargement: true })
+        .png({ compressionLevel: 0 })
+        .toBuffer()
+    },
+    async complex() {
+      const start = Date.now()
+      const buffer = await sharp(TEST_IMAGE)
+        .resize(800, null, { withoutEnlargement: true })
+        .rotate(90)
+        .greyscale()
+        .jpeg({ quality: 75, mozjpeg: true })
+        .toBuffer()
+      return { size: buffer.length, time: Date.now() - start }
+    },
+  }
+}
+
+function writeJson(outputPath, value) {
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+  fs.writeFileSync(outputPath, `${JSON.stringify(value, null, 2)}\n`)
+}
+
+async function runBenchmark(options = {}) {
+  const log = options.log || console
+  const cases = options.cases || TEST_CASES
+  const targets = options.targets || SOURCE_QUALITY_TARGETS
+  const lazyEncode = options.lazyEncode || benchmarkLazy
+  const sharpAdapter = options.sharpAdapter || (await createSharpAdapter())
+  const metrics = options.calculateMetrics || calculateQualityMetrics
+  const reference = await sharpAdapter.reference()
+  const results = []
+  const summaryMetrics = []
+  const performanceOnly = []
+
+  log.log('=== lazy-image vs sharp Benchmark ===')
+  log.log(`Input: ${TEST_IMAGE}`)
+  log.log('Canonical quality axis: encoder output vs resized lossless source reference')
+
+  for (const testCase of cases) {
+    const result = {
+      name: testCase.name,
+      format: testCase.format,
+      quality: testCase.quality,
+      required: testCase.required !== false,
+      status: 'benchmark-failure',
+      reason: 'case did not complete',
     }
-    
-    const time = Date.now() - start;
-    return { size: buffer.length, time, buffer };
-}
+    results.push(result)
 
-async function runBenchmark() {
-    console.log('=== lazy-image vs sharp Benchmark ===\n');
-    console.log(`Input: ${TEST_IMAGE}`);
-    const stats = fs.statSync(TEST_IMAGE);
-    console.log(`Size: ${(stats.size / 1024 / 1024).toFixed(1)} MB\n`);
-    console.log('Conditions: resize to 800px width, auto height\n');
-    console.log(`Quality targets: SSIM >= ${QUALITY_TARGETS.ssim}, PSNR >= ${QUALITY_TARGETS.psnr} dB\n`);
-    console.log('─'.repeat(60));
-    
-    const results = [];
-    const summaryMetrics = [];
-    
-    // Test formats
-    const testCases = [
-        { format: 'jpeg', quality: 80, name: 'JPEG' },
-        { format: 'webp', quality: 80, name: 'WebP' },
-        { format: 'avif', quality: 60, name: 'AVIF' },
-    ];
-    
-    for (const testCase of testCases) {
-        const { format, quality, name } = testCase;
-        console.log(`\n📊 Testing ${name} (quality ${quality})...`);
-        
-        try {
-            // lazy-image
-            console.log('  Testing lazy-image...');
-            const lazyResult = await benchmarkLazyImage(format, quality);
-            
-            // sharp
-            console.log('  Testing sharp...');
-            let sharpResult;
-            if (format === 'avif') {
-                try {
-                    sharpResult = await benchmarkSharp(format, quality);
-                } catch (e) {
-                    if (e.message.includes('avif') || e.message.includes('AVIF')) {
-                        console.log('  ⚠️  sharp does not support AVIF (or not available)');
-                        sharpResult = null;
-                    } else {
-                        throw e;
-                    }
-                }
-            } else {
-                sharpResult = await benchmarkSharp(format, quality);
-            }
-            
-            results.push({
-                format: name,
-                quality,
-                lazy: lazyResult,
-                sharp: sharpResult,
-                qualityMetrics: null,
-            });
-
-            summaryMetrics.push(
-                {
-                    name: `${name} size (lazy-image)`,
-                    value: lazyResult.size,
-                    unit: 'bytes',
-                },
-                {
-                    name: `${name} time (lazy-image)`,
-                    value: lazyResult.time,
-                    unit: 'ms',
-                }
-            );
-            
-            console.log(`  ✅ lazy-image: ${formatBytes(lazyResult.size)} bytes (${lazyResult.time}ms)`);
-            if (sharpResult) {
-                console.log(`  ✅ sharp:      ${formatBytes(sharpResult.size)} bytes (${sharpResult.time}ms)`);
-                const sizeDiff = calcDiff(lazyResult.size, sharpResult.size);
-                const sizeEmoji = lazyResult.size < sharpResult.size ? '✅' : '⚠️';
-                const speedRatio = (sharpResult.time / lazyResult.time).toFixed(2);
-                const speedEmoji = lazyResult.time < sharpResult.time ? '⚡' : '🐢';
-                console.log(`  ${sizeEmoji} Size diff: ${sizeDiff}`);
-                console.log(`  ${speedEmoji} Speed: ${speedRatio}x ${lazyResult.time < sharpResult.time ? 'faster' : 'slower'}`);
-
-                // Quality metrics vs sharp output
-                const qualityMetrics = await calculateQualityMetrics(
-                    lazyResult.buffer,
-                    sharpResult.buffer
-                );
-                results[results.length - 1].qualityMetrics = qualityMetrics;
-
-                const ssimOk = qualityMetrics.ssim >= QUALITY_TARGETS.ssim;
-                const psnrOk = qualityMetrics.psnr >= QUALITY_TARGETS.psnr;
-                console.log(
-                    `  🎯 Quality vs sharp: SSIM ${qualityMetrics.ssim.toFixed(4)} (${ssimOk ? '✅' : '❌'} target ${
-                        QUALITY_TARGETS.ssim
-                    }), PSNR ${qualityMetrics.psnr.toFixed(2)} dB (${psnrOk ? '✅' : '❌'} target ${QUALITY_TARGETS.psnr} dB)`
-                );
-                if (!ssimOk || !psnrOk) {
-                    throw new Error('Quality target not met');
-                }
-            }
-        } catch (e) {
-            console.error(`  ❌ Error testing ${name}:`, e.message);
-        }
+    if (testCase.skip) {
+      result.status = 'skipped'
+      result.reason = testCase.skip
+      continue
     }
-    
-    // Complex pipeline test (resize + rotate + grayscale)
-    console.log('\n📊 Testing Complex Pipeline (resize + rotate + grayscale)...');
+
     try {
-        // lazy-image
-        console.log('  Testing lazy-image...');
-        const lazyComplexStart = Date.now();
-        const lazyComplex = await ImageEngine.fromPath(TEST_IMAGE)
-            .resize(800, null)
-            .rotate(90)
-            .grayscale()
-            .toBuffer('jpeg', 75);
-        const lazyComplexTime = Date.now() - lazyComplexStart;
-        
-        // sharp
-        console.log('  Testing sharp...');
-        const sharpComplexStart = Date.now();
-        const sharpComplex = await sharp(TEST_IMAGE)
-            .resize(800, null, { withoutEnlargement: true })
-            .rotate(90)
-            .greyscale()
-            .jpeg({ quality: 75, mozjpeg: true })
-            .toBuffer();
-        const sharpComplexTime = Date.now() - sharpComplexStart;
-        
-        results.push({
-            format: 'Complex Pipeline',
-            quality: 75,
-            lazy: { size: lazyComplex.length, time: lazyComplexTime },
-            sharp: { size: sharpComplex.length, time: sharpComplexTime },
-        });
+      let lazy
+      try {
+        lazy = await lazyEncode(testCase.format, testCase.quality)
+      } catch (error) {
+        if (isUnsupported(error)) {
+          result.status = 'unsupported'
+          result.reason = `lazy-image: ${error.message}`
+          continue
+        }
+        throw error
+      }
+      let sharpResult
+      try {
+        sharpResult = await sharpAdapter.encode(testCase.format, testCase.quality)
+      } catch (error) {
+        if (isUnsupported(error)) {
+          result.status = 'unsupported'
+          result.reason = error.message
+          result.lazy = { size: lazy.size, time: lazy.time }
+          continue
+        }
+        throw error
+      }
 
-        summaryMetrics.push(
-            {
-                name: 'Complex pipeline size (lazy-image)',
-                value: lazyComplex.length,
-                unit: 'bytes',
-            },
-            {
-                name: 'Complex pipeline time (lazy-image)',
-                value: lazyComplexTime,
-                unit: 'ms',
-            }
-        );
-        
-        console.log(`  ✅ lazy-image: ${formatBytes(lazyComplex.length)} bytes (${lazyComplexTime}ms)`);
-        console.log(`  ✅ sharp:      ${formatBytes(sharpComplex.length)} bytes (${sharpComplexTime}ms)`);
-        const sizeDiff = calcDiff(lazyComplex.length, sharpComplex.length);
-        const sizeEmoji = lazyComplex.length < sharpComplex.length ? '✅' : '⚠️';
-        const speedRatio = (sharpComplexTime / lazyComplexTime).toFixed(2);
-        const speedEmoji = lazyComplexTime < sharpComplexTime ? '⚡' : '🐢';
-        console.log(`  ${sizeEmoji} Size diff: ${sizeDiff}`);
-        console.log(`  ${speedEmoji} Speed: ${speedRatio}x ${lazyComplexTime < sharpComplexTime ? 'faster' : 'slower'}`);
-    } catch (e) {
-        console.error(`  ❌ Error testing complex pipeline:`, e.message);
-    }
-    
-    // Summary table - File Size
-    console.log('\n' + '─'.repeat(80));
-    console.log('\n📊 Summary Table - File Size\n');
-    console.log('| Format | lazy-image | sharp | Difference |');
-    console.log('|--------|------------|-------|------------|');
-    
-    for (const result of results) {
-        const lazySize = formatBytes(result.lazy.size);
-        if (result.sharp) {
-            const sharpSize = formatBytes(result.sharp.size);
-            const diff = calcDiff(result.lazy.size, result.sharp.size);
-            const emoji = result.lazy.size < result.sharp.size ? '✅' : '⚠️';
-            console.log(`| **${result.format}** | ${lazySize} bytes | ${sharpSize} bytes | ${emoji} ${diff} |`);
-        } else {
-            console.log(`| **${result.format}** | ${lazySize} bytes | N/A | 🏆 **Next-gen** |`);
-        }
-    }
-    
-    // Summary table - Speed
-    console.log('\n📊 Summary Table - Processing Speed\n');
-    console.log('| Format | lazy-image | sharp | Speed Ratio |');
-    console.log('|--------|------------|-------|-------------|');
-    
-    for (const result of results) {
-        if (result.sharp) {
-            const speedRatio = (result.sharp.time / result.lazy.time).toFixed(2);
-            const emoji = result.lazy.time < result.sharp.time ? '⚡' : '🐢';
-            console.log(`| **${result.format}** | ${result.lazy.time}ms | ${result.sharp.time}ms | ${emoji} ${speedRatio}x |`);
-        } else {
-            console.log(`| **${result.format}** | ${result.lazy.time}ms | N/A | - |`);
-        }
-    }
-    
-    console.log('\n' + '─'.repeat(60));
-    console.log('\n✅ Benchmark completed!\n');
+      const [lazyVsSharp, lazyVsReference, sharpVsReference] = await Promise.all([
+        metrics(lazy.buffer, sharpResult.buffer),
+        metrics(lazy.buffer, reference),
+        metrics(sharpResult.buffer, reference),
+      ])
+      const target = targets[testCase.format]
+      const passed = target && qualityPasses(lazyVsReference, target)
 
-    const outputPath = process.env.BENCHMARK_OUTPUT_JSON;
-    if (outputPath) {
-        const dir = path.dirname(outputPath);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        fs.writeFileSync(outputPath, JSON.stringify(summaryMetrics, null, 2));
-        console.log(`📄 JSON metrics saved to ${outputPath}`);
+      Object.assign(result, {
+        status: passed ? 'pass' : 'quality-regression',
+        reason: passed
+          ? 'source-reference quality target met'
+          : `source-reference target not met (SSIM >= ${target?.ssim}, PSNR >= ${target?.psnr})`,
+        target,
+        lazy: { size: lazy.size, time: lazy.time },
+        sharp: { size: sharpResult.size, time: sharpResult.time },
+        axes: { lazyVsSharp, lazyVsReference, sharpVsReference },
+        sizeDifferencePercent: calcDiff(lazy.size, sharpResult.size),
+      })
+
+      summaryMetrics.push(
+        { name: `${testCase.name} size (lazy-image)`, value: lazy.size, unit: 'bytes' },
+        { name: `${testCase.name} time (lazy-image)`, value: lazy.time, unit: 'ms' },
+      )
+    } catch (error) {
+      result.status = 'benchmark-failure'
+      result.reason = error.message
     }
+  }
+
+  // Complex pipeline is reported for performance only; it has no canonical
+  // quality target and therefore cannot mask or replace format gate failures.
+  if (options.includeComplex !== false) {
+    try {
+      const start = Date.now()
+      const lazy = await ImageEngine.fromPath(TEST_IMAGE)
+        .resize(800, null)
+        .rotate(90)
+        .grayscale()
+        .toBuffer('jpeg', 75)
+      const lazyTime = Date.now() - start
+      const sharpResult = await sharpAdapter.complex()
+      performanceOnly.push({
+        name: 'Complex Pipeline',
+        lazy: { size: lazy.length, time: lazyTime },
+        sharp: sharpResult,
+      })
+      summaryMetrics.push(
+        { name: 'Complex pipeline size (lazy-image)', value: lazy.length, unit: 'bytes' },
+        { name: 'Complex pipeline time (lazy-image)', value: lazyTime, unit: 'ms' },
+      )
+      log.log(`Complex pipeline: lazy ${lazy.length} bytes, sharp ${sharpResult.size} bytes`)
+    } catch (error) {
+      results.push({
+        name: 'Complex Pipeline',
+        required: false,
+        status: 'benchmark-failure',
+        reason: error.message,
+      })
+    }
+  }
+
+  for (const result of results) {
+    log.log(`${result.name}: ${result.status} — ${result.reason}`)
+  }
+
+  const metricsPath = options.metricsOutputPath ?? process.env.BENCHMARK_OUTPUT_JSON
+  if (metricsPath) writeJson(metricsPath, summaryMetrics)
+  const qualityPath =
+    options.qualityOutputPath ??
+    process.env.BENCHMARK_QUALITY_OUTPUT_JSON ??
+    DEFAULT_QUALITY_ARTIFACT
+  writeJson(qualityPath, {
+    schemaVersion: 1,
+    input: TEST_IMAGE,
+    resizeWidth: 800,
+    results,
+    performanceOnly,
+  })
+  log.log(`Quality artifact: ${qualityPath}`)
+
+  assertRequiredCasesPassed(results)
+  return { results, summaryMetrics, qualityPath }
 }
 
-// Cleanup function
-function cleanup() {
-    if (fs.existsSync(OUTPUT_DIR)) {
-        fs.readdirSync(OUTPUT_DIR).forEach(file => {
-            fs.unlinkSync(path.join(OUTPUT_DIR, file));
-        });
-        fs.rmdirSync(OUTPUT_DIR);
-    }
+if (require.main === module) {
+  runBenchmark().catch((error) => {
+    console.error(error.message)
+    process.exitCode = 1
+  })
 }
 
-// Run benchmark
-runBenchmark()
-    .then(() => {
-        cleanup();
-        process.exit(0);
-    })
-    .catch(e => {
-        console.error('Benchmark error:', e);
-        cleanup();
-        process.exit(1);
-    });
+module.exports = {
+  SOURCE_QUALITY_TARGETS,
+  assertRequiredCasesPassed,
+  qualityPasses,
+  requiredFailures,
+  runBenchmark,
+}

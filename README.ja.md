@@ -25,8 +25,9 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 **差分が出る主要点**
 
-- JPEG サイズは「canonical な PNG→JPEG の単純ケース」で 17-20% の改善が成立
+- JPEG サイズは同じ encoder quality 設定の canonical な PNG→JPEG 2ケースで 17-20% 小さい。resize ケースは source-reference 品質下限を通過しますが、完全な知覚品質一致を意味しません
 - 256MB を超える大きな入力は Rust 側バッファへ全量読み込まず、メモリ安全な mmap 経路で処理します。`fromPath()` を使う際は、同時に対象ファイルの変更・切り詰め・削除を避け、破損や `SIGBUS` / `SIGSEGV` を防いでください。
+- `fromPath()` は256MB以下のsourceを呼び出しthreadで同期readします。HTTP/serverless経路では `await ImageEngine.fromPathAsync(path)` を使い、source setupをNode.js event loop外へ移してください。
 - メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
 - API は drop-in 置換ではない（互換が必要なら sharp）
 
@@ -40,10 +41,26 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 ## Recommended Paths
 
-- 画像配信最適化: `fromPath() -> resize()/crop() -> toFile()`
-- アップロード検証: `fromPath() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
+- 画像配信最適化: `await fromPathAsync() -> resize()/crop() -> toFile()`
+- アップロード検証: `await fromPathAsync() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
 - 静的サイト生成バッチ: `processBatch()` / `clone()`
 - 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
+
+未信頼のローカル画像から公開用成果物一式を安全に作る場合は、
+transactional compilerを使います。全artifact、placeholder、manifestを
+private stagingで検証してから一度だけ公開ディレクトリへcommitします。
+
+```javascript
+const { compileImage } = require('@alberteinshutoin/lazy-image');
+
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/image.bin',
+  outputDir: '/srv/public/images/v1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+既存の出力ディレクトリは上書きせず、artifact全体をNode.jsのBufferへ戻しません。
 
 ## Cost Savings Example (ROI)
 
@@ -57,7 +74,7 @@ npm install @alberteinshutoin/lazy-image
 
 | 環境 | 概要 |
 |---|---|
-| ランタイム | platform optional dependencies が自動インストール |
+| ランタイム | Node.js 22+。platform optional dependencies が自動インストール |
 | パッケージサイズ | プラットフォーム別で 6〜9MB 前後 |
 | 自前ビルド | `npm run build` |
 
@@ -77,12 +94,16 @@ const meta = inspectFile('input.jpg');
 ## Documentation
 
 英語版の構成と同じです。`docs/`, `examples/`, `spec/` を順に確認してください。
+選択的テストCIの判定方法、安全側の全件フォールバック、ローカル再現手順は
+[docs/SELECTIVE_TESTING.md](./docs/SELECTIVE_TESTING.md) を参照してください。
 
 ## Features (summary)
 
 - JPEG/PNG/WebP/AVIF エンコード
 - ICC / EXIF / GPS オフロード
 - フォーマット別最適化・メトリクス
+- レスポンシブ画像セット / srcset 生成ヘルパー
+- LQIPプレースホルダ / blurDataURL生成
 - Image Firewall / Rust メモリ安全
 
 ## Development

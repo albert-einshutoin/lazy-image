@@ -31,7 +31,7 @@ mod tests {
     // pointer for success-path tests. This keeps coverage on the `dimensions` API
     // without requiring a real Node.js runtime in cargo test.
     fn dummy_env() -> Env {
-        unsafe { Env::from_raw(std::ptr::null_mut()) }
+        Env::from_raw(std::ptr::null_mut())
     }
 
     #[test]

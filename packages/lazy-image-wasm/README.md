@@ -41,7 +41,11 @@ const result = await optimizer.optimizeUpload(new Uint8Array(await request.array
 
 `examples/edge.mjs` (shipped in this package) is a small runtime-safe pattern:
 it caches one optimizer per isolate, reads `@jsquash` Wasm bindings from
-`env.JSQUASH_*` keys, and maps `LazyImageWasmError` input errors to HTTP 400.
+`env.JSQUASH_*` keys, and maps caller-correctable `LazyImageWasmError` values
+to HTTP 400. Wasm errors use the native package categories
+(`UserError`, `CodecError`, `ResourceLimit`, `InternalBug`); see
+[`docs/WASM_PACKAGE_API.md`](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/WASM_PACKAGE_API.md#errors) for the
+cross-package code table.
 
 Copy the file into your Worker project and change its relative imports to the
 package specifiers (`@alberteinshutoin/lazy-image-wasm/edge` and

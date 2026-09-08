@@ -73,6 +73,22 @@ On Windows, memory-mapped files **cannot be deleted** while mapped. Keep the `Im
 
 ## Security
 
+### Transactional public-upload compilation
+
+The native-only `compileImage()` API keeps the public artifact set private
+until every plan item, placeholder, hash, dimension, byte budget, and metadata
+invariant has passed. It uses a random sibling staging directory, executes the
+immutable `compileArtifactPlan()` sequentially through `ImageEngine.clone()`,
+writes `manifest.json` last, then renames the directory into place. Existing
+files, directories, and symlinks are never overwritten. Abort or any failure
+before the rename removes the current staging directory; the returned manifest
+is assembled before the rename so no filesystem work follows a successful
+commit.
+
+The output parent is an application-owned trust boundary. Node.js does not
+offer a portable no-replace directory rename, so the application must prevent
+another process from replacing that parent during compilation.
+
 For vulnerability reporting and supported versions, see [SECURITY.md](../SECURITY.md).
 
 ### Rust memory safety
@@ -82,7 +98,8 @@ For vulnerability reporting and supported versions, see [SECURITY.md](../SECURIT
 
 ### Decompression bomb protection
 
-- Max dimension 32768×32768 by default.
+- Always-on decode limits: 32,768 pixels per side and 100 MP total, even when
+  Image Firewall sanitization is not enabled.
 - Progressive decode aborts on invalid data.
 - Allocation bounded by the Rust runtime.
 
@@ -110,12 +127,17 @@ Input sanitization for untrusted images (decompression bombs, slowloris-style in
 
 | Limit       | Strict   | Lenient  | No firewall   |
 |------------|----------|----------|----------------|
-| Max pixels | 40 MP    | 75 MP    | 1 GP           |
+| Max pixels | 40 MP    | 75 MP    | 100 MP         |
 | Max bytes  | 32 MB    | 48 MB    | Unlimited      |
 | Timeout¹   | 5 s      | 30 s     | Unlimited      |
 | ICC        | Blocked  | 512 KB   | Allowed        |
 
 ¹ **Best-effort, inter-stage.** Timeout is checked between decode → process → encode stages, not during them. A single slow codec call (e.g. large AVIF encode) can exceed the limit. For hard wall-clock guarantees wrap the call in an external watchdog (`setTimeout` / `AbortController`).
+
+The no-firewall column removes the policy-specific input-byte and timeout
+limits; it does not disable the always-on 100 MP total-pixel limit or the
+32,768-pixel per-side decode limit. `.limits({ maxPixels: 0 })` disables only
+the additional custom policy limit, not these global decode safety limits.
 
 Override with `.limits({ maxPixels, maxBytes, timeoutMs })`. Violations throw with clear messages and recovery hints.
 

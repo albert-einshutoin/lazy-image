@@ -15,6 +15,7 @@ The following foundations are already in place on `main`:
 - **Benchmark and regression tooling**: benchmark docs, regression workflow, zero-copy measurement
 - **Fuzzing in CI**: nightly and PR-targeted fuzz workflows with multiple targets
 - **Release-size tuning**: release LTO, strip, and size-oriented profile tuning
+- **Wasm upload-preflight MVP**: public browser/Edge policy package with JPEG/WebP output, structured errors, and byte-budget search
 
 ## Current Priorities
 
@@ -55,8 +56,8 @@ The following foundations are already in place on `main`:
 
 ### Long-term
 
-- WebAssembly / worker-oriented packaging where the architecture fits
-- Browser upload-preflight package with byte-budget search, metadata stripping, and Web Worker guidance if the benchmark evidence supports it
+- Broader browser/Edge runtime validation and worker deployment guidance
+- Wasm upload-preflight benchmark evidence for bundle cost, latency, byte-budget behavior, and metadata stripping
 - Native Web Streams style APIs if and when true streaming execution becomes viable
 
 ---
@@ -89,6 +90,7 @@ To maintain focus and stability, the following features are explicitly **out of 
 - **ベンチマーク運用**: benchmark docs、regression workflow、zero-copy 計測
 - **CI fuzzing**: 複数ターゲットを持つ PR / nightly fuzz workflow
 - **リリースサイズ最適化**: release LTO、strip、サイズ指向の profile tuning
+- **Wasm upload-preflight MVP**: JPEG/WebP 出力、構造化エラー、byte-budget search を持つ browser/Edge 向け policy package を公開済み
 
 ---
 
@@ -131,8 +133,8 @@ To maintain focus and stability, the following features are explicitly **out of 
 
 ### 長期
 
-- 適合する形での WebAssembly / worker 向け展開
-- benchmark evidence が揃った場合の byte-budget search / metadata strip / Web Worker guidance 付き browser upload-preflight package
+- browser / Edge runtime 検証と worker deployment guidance の拡充
+- bundle cost、latency、byte-budget behavior、metadata strip に関する Wasm benchmark evidence
 - 実行モデルが整った場合の native Web Streams 風 API
 
 ---

@@ -650,7 +650,7 @@ mod tests {
             .expect("dimensions beyond limit should fail");
         assert!(err
             .to_string()
-            .contains(&format!("exceed MAX_DIMENSION {}", MAX_DIMENSION)));
+            .contains(&format!("exceed MAX_DIMENSION {MAX_DIMENSION}")));
     }
 
     #[test]

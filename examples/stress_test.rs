@@ -36,6 +36,6 @@ fn main() {
 
 fn run_or_fail(label: &str, iteration: usize, data: &[u8]) {
     if let Err(err) = run_stress_iteration(data) {
-        panic!("{} stress iteration {} failed: {}", label, iteration, err);
+        panic!("{label} stress iteration {iteration} failed: {err}");
     }
 }

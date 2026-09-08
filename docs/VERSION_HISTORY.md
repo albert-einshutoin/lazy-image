@@ -2,6 +2,11 @@
 
 | Version | Features |
 |---------|----------|
+| v1.0.0 | Node.js 22+ runtime floor, unified native/Wasm error contract, public-upload firewall policy, authoritative upload preflight traits, event-loop-safe `fromPathAsync()`, native target-byte file output, and the stable Wasm error-taxonomy release. |
+| v0.16.0 | Wasm upload-preflight MVP, benchmark/strategy documentation, reliability hardening, guarded release policy, and Wasm package publishing. |
+| v0.15.0 | Engine/module refactoring, package metadata cleanup, and maintained public API compatibility. |
+| v0.14.0 | TypeScript/examples/governance improvements and internal modularization. |
+| v0.13.0 | Unified `encode()` / `encodeToFile()` APIs, native target-byte search, ESM support, expanded metadata output, and serverless adoption guidance. |
 | v0.12.0 | npm package contract fixes (docs/spec included in tarball), pack verification, public TypeScript API tightening, CI permission minimization. |
 | v0.11.0 | Optional AVIF feature flag, expanded benchmark suite (AVIF/memory/cold-start + regression checks), firewall/decode hardening, error clone context fix, and API cleanup (deprecated aliases removed). |
 | v0.10.2 | Release 0.10.2 (version bump / パッケージ更新). |

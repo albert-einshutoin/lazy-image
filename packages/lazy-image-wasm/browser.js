@@ -167,11 +167,11 @@ async function decodeImage(bytes, inputFormat) {
     if (inputFormat === 'webp') return await webpDecode(buffer);
   } catch (error) {
     if (error instanceof LazyImageWasmError) throw error;
-    throwWasmError('E102', `Failed to decode ${inputFormat} input: ${error.message}`, {
+    throwWasmError('E131', `Failed to decode ${inputFormat} input: ${error.message}`, {
       recoveryHint: 'Check that the input image is not corrupt.',
     });
   }
-  throwWasmError('E103', `Unsupported input format: ${inputFormat}`);
+  throwWasmError('E111', `Unsupported input format: ${inputFormat}`);
 }
 
 async function encodeWithPolicy(imageData, options, now, totalStart) {
@@ -226,7 +226,7 @@ async function encodeWithPolicy(imageData, options, now, totalStart) {
   const selected = bestUnderBudget ?? smallest;
   const budgetMet = selected.bytesOut <= options.targetBytes;
   if (!budgetMet && options.qualityFloorPolicy === 'strict') {
-    throwWasmError('E201', `Unable to meet targetBytes=${options.targetBytes} within quality floor.`, {
+    throwWasmError('E502', `Unable to meet targetBytes=${options.targetBytes} within quality floor.`, {
       recoveryHint: 'Increase targetBytes, reduce max dimensions, or use qualityFloorPolicy: "best-effort".',
     });
   }
@@ -257,7 +257,7 @@ async function encodeAtQuality(imageData, format, quality) {
     }
   } catch (error) {
     if (error instanceof LazyImageWasmError) throw error;
-    throwWasmError('E303', `Failed to encode ${format} output: ${error.message}`);
+    throwWasmError('E300', `Failed to encode ${format} output: ${error.message}`);
   }
-  throwWasmError('E301', `Unsupported output format: ${format}`);
+  throwWasmError('E400', `Unsupported output format: ${format}`);
 }

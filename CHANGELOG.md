@@ -9,6 +9,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-09-05
+
+### Added
+- Added `toResponsiveSet()` and `toFilesResponsive()` for generating
+  deduplicated responsive variants and ready-to-use `srcset` values.
+- Added `toPlaceholder()` for WebP, JPEG, and PNG LQIP data URLs with bounded
+  dimensions, aspect-ratio preservation, and encoded byte counts.
+- Added TypeScript types, integration coverage, API examples, and README
+  guidance for responsive output and UI placeholders.
+
+### Fixed
+- Extreme-aspect-ratio resize and extract operations now clamp a derived
+  short edge to one pixel instead of failing with zero dimensions.
+
+## [1.1.0] - 2026-09-02
+
+### Added
+- Deterministic `compileArtifactPlan()` policy compilation for responsive
+  artifacts, byte budgets, placeholders, fingerprints, and cache keys.
+- Transactional native `compileImage()` for deterministic public-upload
+  artifacts, optional placeholder data URLs, verified hashes, and atomic
+  directory publication. Existing output directories are never overwritten.
+
+---
+
+## [1.0.1] - 2026-08-27
+
+### Changed
+- Updated development-only `js-yaml` and `sharp` dependencies to versions
+  without the advisories reported after v1.0.0.
+- Simplified the README around installation, common tasks, supported platforms,
+  and the canonical public APIs.
+
+### Fixed
+- Synchronized the v1.x documentation with the published Wasm MVP and removed
+  stale references to planned or unavailable package entrypoints.
+- Clarified that deprecated output conveniences remain available throughout
+  v1.x, and removed stale documentation for metrics aliases removed before v1.
+
+---
+
+## [1.0.0] - 2026-08-22
+
+### Added
+- **Public upload firewall policy**: `sanitize({ policy: 'public-upload' })`
+  combines the strict 32 MiB / 40 MP / 5-second limits with validated ICC
+  preservation up to 512 KiB, while forcing EXIF/GPS/XMP removal regardless of
+  `keepMetadata()` call order. Metrics now report `iccOutcome`.
+- **Authoritative upload preflight traits**: `inspect()` and `inspectFile()` now
+  report `hasAlpha`, `isAnimated`, and optional EXIF `orientation` for
+  JPEG/PNG/WebP without decoding pixels. Unknown or malformed traits fail
+  through the typed error contract instead of being treated as safe defaults.
+- **Event-loop-safe file input**: `ImageEngine.fromPathAsync()` moves file open,
+  read, and mmap setup off the Node.js main thread while preserving the same
+  locking, memory limits, and typed errors as `fromPath()`.
+
+### Changed
+- **BREAKING (Node.js runtime)**: dropped EOL Node.js 18 and 20. The native and
+  Wasm packages now require Node.js 22 or newer, with CI coverage on Node.js 22
+  and 24. Upgrade your runtime to Node.js 22 or 24 before updating lazy-image.
+- **BREAKING (Wasm error contract)**: aligned
+  `@alberteinshutoin/lazy-image-wasm` with the native error taxonomy. Categories
+  are now `UserError`, `CodecError`, `ResourceLimit`, and `InternalBug`.
+  Remapped codes: `E101→E400`, `E102→E131`, `E103→E111`, `E104→E123`,
+  `E105→E122`, fit-related `E202→E203/E204`, `E201→E502`, abort
+  `E204→E500`, timeout `E205→E123`, `E301/E302→E400`, encode
+  `E303→E300`, unavailable Blob `E303→E501`, and validation `E402→E400`.
+
+### Fixed
+- **Preset output isolation**: self-contained preset output methods no longer
+  mutate the source pipeline or affect later outputs from the same engine.
+
+### Performance
+- **Native target-byte file output**: `toFileTargetBytes()` keeps the selected
+  encoded candidate in Rust and writes it atomically without copying the full
+  result through a V8 `Buffer`.
+
+### Security
+- Removed an unused vulnerable EXIF dependency and its affected transitive
+  packages without changing the existing metadata implementation.
+
+---
+
 ## [0.16.0] - 2026-06-06
 
 ### Added
@@ -535,7 +618,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.16.0...v1.0.0
 [0.16.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/albert-einshutoin/lazy-image/compare/v0.13.0...v0.14.0

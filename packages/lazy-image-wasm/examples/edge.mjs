@@ -68,7 +68,11 @@ export async function handleOptimizeRequest(request, env = {}) {
     });
   } catch (error) {
     if (error instanceof LazyImageWasmError) {
-      const isCallerError = error.category === 'Input' || error.category === 'Config';
+      // E111/E131 are CodecError in the shared native taxonomy, but at this
+      // HTTP boundary they still describe caller-supplied input. Keep encoder
+      // CodecErrors such as E300 as server failures.
+      const isCallerError =
+        error.category === 'UserError' || error.code === 'E111' || error.code === 'E131';
       return new Response(`[${error.code}] ${error.message}`, {
         status: isCallerError ? 400 : 500,
       });

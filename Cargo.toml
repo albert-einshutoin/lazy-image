@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "0.16.0"
+version = "1.2.0"
 edition = "2021"
 description = "Web image optimization engine for Node.js with secure defaults and smaller browser-facing JPEG outputs, powered by Rust + mozjpeg"
 license = "MIT"
@@ -39,9 +39,6 @@ image = { version = "0.25", default-features = false, features = [
 ] }
 # EXIF parsing (Orientation tag extraction for auto-orient)
 exif = { package = "kamadak-exif", version = "0.6.1" }
-# EXIF read/write with tag-level access (MIT/Apache-2.0, pure Rust)
-# Used for Orientation reset and GPS stripping - exceeds Sharp's metadata handling
-little_exif = "0.6"
 # PNG optimization (disable default features to avoid clap/zopfli bloat)
 oxipng = { version = "10.1", default-features = false, features = ["parallel"] }
 
@@ -78,7 +75,7 @@ flate2 = "1.1"
 tempfile = "3.27"
 
 # Parallel processing for batch operations
-rayon = "1.8"
+rayon = "1.12"
 
 # Lightweight static bit flags for operation contracts
 bitflags = "2.13"
@@ -104,7 +101,7 @@ tikv-jemallocator = { version = "0.7", optional = true, features = ["disable_ini
 
 [dev-dependencies]
 criterion = "0.8"
-proptest = "1.10"
+proptest = "1.11"
 semver = "1"
 
 [[bench]]
@@ -168,8 +165,6 @@ opt-level = "z"
 [profile.release.package.flate2]
 opt-level = "z"
 [profile.release.package.miniz_oxide]
-opt-level = "z"
-[profile.release.package.little_exif]
 opt-level = "z"
 [profile.release.package.kamadak-exif]
 opt-level = "z"

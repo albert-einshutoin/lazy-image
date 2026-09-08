@@ -109,11 +109,16 @@ function createExifData() {
   tiff.push(0x00, 0x00, 0x00, 0x00);
   
   // GPS IFD
+  const gpsEntriesCount = 2;
   const gpsEntries = [
     // GPS Latitude Ref (0x0001) = "N"
     createIfdEntry(0x0001, 2, 2, 0x004E), // 'N\0'
     // GPS Latitude (0x0002) - simplified, just use offset
-    createIfdEntry(0x0002, 5, 3, gpsIfdOffset + 50), // Will point to rational data
+    // The rational payload starts after the 2-byte count, two 12-byte entries,
+    // and the 4-byte next-IFD pointer. Keeping this structural calculation here
+    // prevents a malformed pointer from making standards-compliant EXIF readers
+    // reject the otherwise valid Orientation field.
+    createIfdEntry(0x0002, 5, 3, gpsIfdOffset + 2 + (gpsEntriesCount * 12) + 4),
   ];
   
   // Number of GPS IFD entries

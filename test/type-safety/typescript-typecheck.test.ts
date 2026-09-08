@@ -4,12 +4,25 @@
  */
 import * as path from 'path';
 import {
+    ArtifactPlan,
+    ArtifactSourceFacts,
+    ArtifactCompilationError,
     BatchProgressEvent,
+    CompileImageOptions,
+    compileArtifactPlan,
+    compileImage,
     ImageEngine,
+    ImageArtifactManifest,
     ImageMetadata,
     OutputFormat,
+    PlaceholderOptions,
+    PlaceholderResult,
+    PublicUploadPolicy,
     PresetName,
     PresetResult,
+    ResponsiveFilesOutput,
+    ResponsiveSetOptions,
+    ResponsiveVariant,
     ResizeFit,
     processBatchChunked,
 } from '../../index';
@@ -17,6 +30,40 @@ import { createStreamingPipeline } from '../../streaming/pipeline';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
+
+    const artifactSource: ArtifactSourceFacts = {
+        sha256: 'a'.repeat(64),
+        bytes: 1024,
+        format: 'jpeg',
+        width: 1280,
+        height: 720,
+        hasAlpha: false,
+        isAnimated: false,
+        orientationKnown: true,
+        orientation: null,
+    };
+    const publicUploadPolicy: PublicUploadPolicy = {
+        preset: 'publicUpload',
+        widths: [320, 640],
+        formats: ['webp'],
+        placeholder: true,
+    };
+    const artifactPlan = null as ArtifactPlan | null;
+    const compiledArtifactPlan: ArtifactPlan = compileArtifactPlan(
+        artifactSource,
+        publicUploadPolicy,
+        'b'.repeat(64),
+    );
+    console.log(`Artifact policy: ${artifactSource.format} ${publicUploadPolicy.widths?.length} ${artifactPlan} ${compiledArtifactPlan.cacheKey}`);
+
+    const compileOptions: CompileImageOptions = {
+        inputPath: imagePath,
+        outputDir: path.resolve(__dirname, '../../.tmp/type-safety-artifacts'),
+        policy: publicUploadPolicy,
+    };
+    const compiledManifest: Promise<ImageArtifactManifest> = compileImage(compileOptions);
+    const compilationError: ArtifactCompilationError | null = null;
+    console.log(`Transactional compiler: ${compiledManifest} ${compilationError}`);
     
     // Type-safe OutputFormat usage
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];
@@ -27,7 +74,9 @@ async function testTypeSafety() {
         console.log(`Testing format: ${format}`);
         
         // These are type-safe and do not cause compile errors
-        const engine = ImageEngine.fromPath(imagePath);
+    const engine = ImageEngine.fromPath(imagePath);
+    const asyncEngine: ImageEngine = await ImageEngine.fromPathAsync(imagePath);
+    await asyncEngine.toBuffer('jpeg', 80);
         const fitMode = fitModes[index % fitModes.length];
         const result = await engine.resize(400, 300, fitMode).toBuffer(format, 80);
         console.log(`✅ ${format}: ${result.length} bytes`);
@@ -37,6 +86,22 @@ async function testTypeSafety() {
     const coverFit: ResizeFit = 'cover';
     await ImageEngine.fromPath(imagePath).resize(300, 300, coverFit).toBuffer('jpeg', 75);
     await ImageEngine.fromPath(imagePath).resize({ width: 320, fit: coverFit }).toBuffer('jpeg', 75);
+
+    const responsiveOptions: ResponsiveSetOptions = {
+        widths: [320, 640],
+        format: 'webp',
+        quality: 80,
+    };
+    const responsiveVariants: ResponsiveVariant[] = await ImageEngine.fromPath(imagePath)
+        .toResponsiveSet(responsiveOptions);
+    const responsiveFiles: ResponsiveFilesOutput = await ImageEngine.fromPath(imagePath)
+        .toFilesResponsive(path.resolve(__dirname, '../../.tmp/image-{width}.webp'), responsiveOptions, '/images/image-{width}.webp');
+    console.log(`Responsive outputs: ${responsiveVariants.length} ${responsiveFiles.files.length}`);
+
+    const placeholderOptions: PlaceholderOptions = { size: 16, format: 'webp', quality: 20 };
+    const placeholder: PlaceholderResult = await ImageEngine.fromPath(imagePath)
+        .toPlaceholder(placeholderOptions);
+    console.log(`Placeholder: ${placeholder.width}x${placeholder.height} ${placeholder.bytes}`);
 
     // Uppercase format is also accepted
     await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);
@@ -67,6 +132,10 @@ async function testTypeSafety() {
     // Metadata inspection is also type-safe
     const metadata: ImageMetadata = await import('../../index').then(m => m.inspectFile(imagePath));
     console.log(`Image: ${metadata.width}x${metadata.height}, format: ${metadata.format}`);
+    const alpha: boolean = metadata.hasAlpha;
+    const animated: boolean = metadata.isAnimated;
+    const orientation: number | undefined = metadata.orientation;
+    console.log(`Traits: alpha=${alpha}, animated=${animated}, orientation=${orientation}`);
     
     // Batch processing is also type-safe
     const batchEngine = ImageEngine.fromPath(imagePath).resize(200, 200);

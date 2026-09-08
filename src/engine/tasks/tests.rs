@@ -9,7 +9,7 @@ use super::super::firewall::FirewallConfig;
 use super::context::TaskContext;
 use super::encode::{EncodeTargetBytesTask, EncodeTask};
 use super::processing::{encode_prepared, prepare_for_encode, EncodeContext};
-use crate::engine::io::Source;
+use crate::engine::io::{IccSourceState, Source};
 use crate::error::LazyImageError;
 use crate::ops::{Operation, OutputFormat, Quality, ResizeFit};
 use image::{DynamicImage, GenericImageView, ImageBuffer, ImageFormat, Rgba};
@@ -39,7 +39,7 @@ fn make_ctx_with_decoded(format: OutputFormat) -> TaskContext {
         }],
         format,
         icc_profile: None,
-        icc_present: false,
+        icc_state: IccSourceState::Absent,
         exif_data: None,
         auto_orient: true,
         metadata_policy: MetadataPolicy::default_policy(),
@@ -71,7 +71,7 @@ fn decode_internal_errors_when_source_missing() {
             ops: vec![],
             format: OutputFormat::Png,
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: true,
             metadata_policy: MetadataPolicy::default_policy(),
@@ -129,7 +129,7 @@ fn firewall_limits_are_enforced_on_decode() {
             ops: vec![],
             format: OutputFormat::Png,
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: true,
             metadata_policy: MetadataPolicy::default_policy(),
@@ -154,7 +154,7 @@ fn auto_orient_flag_disables_orientation_lookup() {
             ops: vec![],
             format: OutputFormat::Png,
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: false,
             metadata_policy: MetadataPolicy::default_policy(),
@@ -238,7 +238,7 @@ fn target_bytes_search_finds_best_quality_under_budget() {
                 fast_mode: false,
             },
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: false,
             metadata_policy: MetadataPolicy::strip_all(),
@@ -258,7 +258,7 @@ fn target_bytes_search_finds_best_quality_under_budget() {
                 fast_mode: false,
             },
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: false,
             metadata_policy: MetadataPolicy::strip_all(),
@@ -284,7 +284,7 @@ fn target_bytes_search_finds_best_quality_under_budget() {
                 fast_mode: false,
             },
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: false,
             metadata_policy: MetadataPolicy::strip_all(),
@@ -318,7 +318,7 @@ fn target_bytes_strict_policy_fails_when_budget_unmet() {
                 fast_mode: false,
             },
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: false,
             metadata_policy: MetadataPolicy::strip_all(),
@@ -353,7 +353,7 @@ fn prepare_for_encode_reuses_decoded_arc_when_ops_empty() {
         None,
         Some(&original),
         &[],
-        false,
+        IccSourceState::Absent,
         false,
         &FirewallConfig::disabled(),
         &OutputFormat::Jpeg {
@@ -388,7 +388,7 @@ fn prepare_for_encode_applies_ops_once_when_ops_nonempty() {
             height: Some(16),
             fit: crate::ops::ResizeFit::Inside,
         }],
-        false,
+        IccSourceState::Absent,
         false,
         &FirewallConfig::disabled(),
         &OutputFormat::Jpeg {
@@ -419,7 +419,7 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
         None,
         Some(&Arc::new(dyn_img)),
         &[],
-        false,
+        IccSourceState::Absent,
         false,
         &FirewallConfig::disabled(),
         &OutputFormat::Jpeg {
@@ -444,7 +444,7 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
             ops: &[],
             format: &format,
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: false,
             policy: &policy,
@@ -491,7 +491,7 @@ fn target_bytes_search_metrics_include_decode_ops_and_encode_timings() {
                 fast_mode: false,
             },
             icc_profile: None,
-            icc_present: false,
+            icc_state: IccSourceState::Absent,
             exif_data: None,
             auto_orient: false,
             metadata_policy: MetadataPolicy::strip_all(),

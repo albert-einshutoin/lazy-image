@@ -31,6 +31,10 @@ env:
   FUZZ_SANITIZER: address
   FUZZ_TOOLCHAIN: nightly-2026-03-25
 
+concurrency:
+  group: fuzz-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   fuzz:
     name: Fuzz ${{ matrix.target }}
@@ -56,6 +60,11 @@ jobs:
           - exif_parse
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 22
 
       - name: Install Rust nightly
         uses: dtolnay/rust-toolchain@5b842231ba77f5c045dba54ac5560fed2db780e2 # nightly
@@ -185,7 +194,7 @@ jobs:
 
       - name: Create issue on crash
         if: steps.check_crashes.outputs.has_crashes == 'true' && github.event_name != 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');

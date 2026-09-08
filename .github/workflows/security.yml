@@ -4,15 +4,28 @@ on:
   push:
     branches:
       - main
+      - 'release/**'
+    tags:
+      - 'v*'
   pull_request:
   schedule:
     - cron: '0 0 * * 0'  # 毎週日曜0時
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   audit:
     name: Cargo Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       
@@ -25,41 +38,18 @@ jobs:
         run: cargo install cargo-audit --locked
       
       - name: Run security audit
-        run: >
-          cargo audit --deny unmaintained --deny unsound
-          --ignore RUSTSEC-2024-0436
-          --ignore RUSTSEC-2026-0097
-          --ignore RUSTSEC-2026-0105
-        # Ignore RUSTSEC-2024-0436 (paste unmaintained) - indirect dependency via rav1e, not a security risk
-        # Ignore RUSTSEC-2026-0097 (rand unsound custom logger path) - indirect via rav1e/proptest; lazy-image does not use rand::rng() logging hooks
-        # Ignore RUSTSEC-2026-0105 (core2 unmaintained) - indirect via image -> ravif -> rav1e; no patched upstream path is available yet
-        # cargo-audit cannot ignore yanked crates by advisory ID, so yanked warnings remain non-fatal until core2 leaves the upstream tree
+        run: node scripts/cargo-audit-policy.js
       
       - name: Create issue on failure
         if: failure() && github.event_name == 'schedule'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            const title = '🚨 Security vulnerability detected in dependencies';
-            const body = `Cargo audit found vulnerabilities. Check the [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.`;
-            
-            // 既存のIssueがないか確認
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: 'security',
-              state: 'open'
-            });
-            
-            if (issues.data.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['security', 'priority:high']
-              });
-            }
+            const { upsertSecurityAuditIssue } = require(
+              `${process.env.GITHUB_WORKSPACE}/scripts/security-audit-notification.js`
+            );
+            const result = await upsertSecurityAuditIssue({ github, context });
+            core.info(`Security audit notification: ${result.action} issue #${result.issueNumber}`);
 
   npm-audit:
     name: NPM Audit
@@ -70,11 +60,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       
       - name: Install dependencies
         run: npm ci
       
-      - name: Run npm audit
-        run: npm audit --audit-level=high
+      - name: Audit published runtime dependencies
+        timeout-minutes: 20
+        run: node scripts/npm-audit-policy.js --omit=dev --audit-level=high
+
+      # Development-only codec oracles process repository-owned fixtures and
+      # are not shipped to consumers. Critical advisories still fail here;
+      # high runtime advisories remain blocking in the published graph above.
+      - name: Audit development dependencies for critical issues
+        timeout-minutes: 20
+        run: node scripts/npm-audit-policy.js --audit-level=critical
