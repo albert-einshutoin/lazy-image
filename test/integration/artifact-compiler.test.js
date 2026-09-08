@@ -5,7 +5,7 @@ const fsp = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 
-const { ImageEngine, compileImage } = require('../../index');
+const { ImageEngine, compileImage, inspectFile } = require('../../index');
 const { compilerFingerprint } = require('../../lib/artifact-compiler');
 const { resolveFixture } = require('../helpers/paths');
 
@@ -100,6 +100,43 @@ async function writeUnknownOrientationFixture(format, outputPath) {
   data[tagOffset + 8] = 9;
   data[tagOffset + 9] = 0;
   await fsp.writeFile(outputPath, data);
+}
+
+async function writeEmptyOrientationFixture(outputPath) {
+  const jpeg = await fsp.readFile(INPUT);
+  const tiff = Buffer.from('49492a0008000000000000000000', 'hex');
+  const exif = Buffer.concat([Buffer.from('Exif\0\0'), tiff]);
+  const segment = Buffer.alloc(4 + exif.length);
+  segment[0] = 0xff;
+  segment[1] = 0xe1;
+  segment.writeUInt16BE(exif.length + 2, 2);
+  exif.copy(segment, 4);
+  await fsp.writeFile(outputPath, Buffer.concat([jpeg.subarray(0, 2), segment, jpeg.subarray(2)]));
+}
+
+async function writePostScanExifFixture(outputPath) {
+  const jpeg = await fsp.readFile(INPUT);
+  const oriented = await fsp.readFile(resolveFixture('test_with_exif.jpg'));
+  const markerOffset = oriented.indexOf(Buffer.from([0xff, 0xe1]));
+  assert.notEqual(markerOffset, -1, 'oriented fixture should contain an EXIF segment');
+  const segmentLength = oriented.readUInt16BE(markerOffset + 2) + 2;
+  const segment = oriented.subarray(markerOffset, markerOffset + segmentLength);
+  await fsp.writeFile(outputPath, Buffer.concat([
+    jpeg.subarray(0, jpeg.length - 2),
+    Buffer.alloc(64 * 1024),
+    segment,
+    jpeg.subarray(jpeg.length - 2),
+  ]));
+}
+
+async function writeLateExifFixture(outputPath) {
+  const jpeg = await fsp.readFile(resolveFixture('test_with_exif.jpg'));
+  const malformedSegment = Buffer.from('ffe1000a4578696600000000', 'hex');
+  await fsp.writeFile(outputPath, Buffer.concat([
+    jpeg.subarray(0, jpeg.length - 2),
+    malformedSegment,
+    jpeg.subarray(jpeg.length - 2),
+  ]));
 }
 
 function makeIccProfile(shared) {
@@ -542,6 +579,63 @@ async function main() {
       );
     });
   }
+
+  await withTempParent(async (parent) => {
+    const inputPath = path.join(parent, 'missing-orientation.jpg');
+    await writeEmptyOrientationFixture(inputPath);
+    const metadata = inspectFile(inputPath);
+    assert.equal(metadata.orientation, undefined);
+    assert.equal(metadata.orientationKnown, true);
+    const manifest = await compileImage({
+      inputPath,
+      outputDir: path.join(parent, 'orientation-absent-output'),
+      policy: { widths: [320], formats: ['webp'], placeholder: false },
+    });
+    assert.equal(manifest.source.orientation, null);
+    assert.equal(manifest.artifacts[0].width, 320);
+  });
+
+  await withTempParent(async (parent) => {
+    const inputPath = path.join(parent, 'post-scan-orientation.jpg');
+    const outputDir = path.join(parent, 'post-scan-orientation-output');
+    await writePostScanExifFixture(inputPath);
+    assert.equal(inspectFile(inputPath).orientationKnown, false);
+    await assertRejected(
+      () => compileImage({
+        inputPath,
+        outputDir,
+        policy: { widths: [320], formats: ['webp'], placeholder: false },
+      }),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
+  await withTempParent(async (parent) => {
+    const inputPath = path.join(parent, 'late-malformed-exif.jpg');
+    const outputDir = path.join(parent, 'late-malformed-exif-output');
+    await writeLateExifFixture(inputPath);
+    const metadata = inspectFile(inputPath);
+    assert.equal(metadata.orientationKnown, true);
+    assert.equal(metadata.orientation, 6);
+    await assertRejected(
+      () => compileImage({
+        inputPath,
+        outputDir,
+        policy: { widths: [320], formats: ['webp'], placeholder: false },
+      }),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
 
   await withTempParent(async (parent) => {
     const inputPath = path.join(parent, 'mutable-input.jpg');
