@@ -25,7 +25,10 @@ pub use exif::{exif_has_gps, extract_exif_raw, has_exif};
 // `exif_embed`'s public fns are reached via the module path
 // (`crate::engine::io::exif_embed::...`) from `encoder.rs` and `processing.rs`;
 // no flat re-export is needed here.
-pub use icc::{extract_icc_profile, extract_icc_profile_lossy};
+pub use icc::{
+    classify_icc_profile, classify_public_upload_icc, extract_icc_profile,
+    extract_icc_profile_lossy, IccSourceState,
+};
 // `IccExtractionResult` only appears in the signature of `extract_icc_profile`,
 // `MmapGuard` and `MemoryGuard` only inside `Source` variants. They're still
 // part of the public surface (downstream Rust consumers may name them), so

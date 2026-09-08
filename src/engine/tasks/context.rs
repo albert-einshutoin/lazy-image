@@ -12,6 +12,7 @@ use super::processing::{process_and_encode_from_parts, EncodeContext};
 use crate::engine::decoder::{
     check_dimensions, decode_image, detect_format, ensure_dimensions_safe,
 };
+use crate::engine::io::IccSourceState;
 #[allow(unused_imports)]
 use crate::engine::io::Source;
 #[allow(unused_imports)]
@@ -78,8 +79,7 @@ pub struct TaskContext {
     pub ops: Vec<Operation>,
     pub format: OutputFormat,
     pub icc_profile: Option<Arc<Vec<u8>>>,
-    /// Whether the input originally had an ICC profile (even if stripped)
-    pub icc_present: bool,
+    pub icc_state: IccSourceState,
     /// Raw EXIF data extracted from source image (for preservation)
     pub exif_data: Option<Arc<Vec<u8>>>,
     pub auto_orient: bool,
@@ -163,7 +163,7 @@ impl TaskContext {
             ops: &self.ops,
             format: &self.format,
             icc_profile: self.icc_profile.as_ref(),
-            icc_present: self.icc_present,
+            icc_state: self.icc_state,
             exif_data: self.exif_data.as_ref(),
             auto_orient: self.auto_orient,
             policy: &self.metadata_policy,

@@ -18,7 +18,7 @@ These may appear in README, marketing, and migration guides **without qualificat
 
 | Claim | Location | Source Scenario | Notes |
 |-------|----------|----------------|-------|
-| "17-20% smaller JPEG outputs than sharp" | README.md, PERFORMANCE.md | PNG -> JPEG no-resize -17.0%; PNG -> JPEG resize 800px -20.0% | JPEG-specific and limited to the two simple measured cases; do not generalize to AVIF/WebP or multi-operation JPEG pipelines |
+| "17-20% smaller JPEG outputs than sharp" | README.md, PERFORMANCE.md | PNG -> JPEG no-resize -17.0%; PNG -> JPEG resize 800px -20.0% | Same encoder quality setting; JPEG-specific and limited to the two measured cases. The resize case passes the documented source-reference quality floor; do not imply exact perceptual matching. |
 | "18% file size reduction" | ROI_CALCULATOR.md (example) | JPEG-oriented worked example | Labeled as example, not a guarantee |
 | Binary size savings (5-9 MB vs 15-21 MB) | PERFORMANCE.md | Measured `.node` binary sizes | Platform-specific, factual |
 
@@ -38,7 +38,7 @@ These **must always include the codec, input format, and scenario** when quoted:
 ## Quoting Rules
 
 1. **Always qualify codec and workload.** Never say "lazy-image is faster than sharp" without specifying the format and scenario.
-2. **"17-20% smaller JPEG" is the safe summary claim.** It applies only to the two simple canonical PNG -> JPEG scenarios currently measured: no-resize conversion and resize-to-800px.
+2. **"17-20% smaller JPEG" is a qualified summary claim.** It applies only at the same encoder quality setting in the two canonical PNG -> JPEG scenarios. The resize result must retain its source-reference SSIM/PSNR context; it is not an exact perceptual-quality-match claim.
 3. **Speed claims are workload-specific.** Current JPEG resize was faster, JPEG no-resize was slightly slower, and AVIF/WebP favored sharp in the measured scenarios. Always cite the specific scenario.
 4. **Do not mix resize and no-resize numbers.** Results differ significantly when resize is involved.
 5. **Cite the test environment.** TRUE_BENCHMARKS.md specifies the machine, Node version, and library versions used.
@@ -57,7 +57,7 @@ These rules prevent drift between documents:
 
 ### Automated (CI)
 
-`npm run test:bench:verify` and benchmark smoke checks ensure the benchmark scripts still execute. Numeric public-claim drift is currently governed by this document and manual upstream-first updates; broader baseline automation is tracked separately.
+`npm run test:bench:compare` gates every required codec against a resized source reference and writes both quality axes plus an explicit status/reason to `sharp-comparison-quality.json`. It finishes all cases before returning a non-zero status for required `unsupported`, `benchmark-failure`, `quality-regression`, or `skipped` results. Size/time baseline automation remains tracked separately.
 
 ### Local Verification
 
@@ -116,4 +116,4 @@ When TRUE_BENCHMARKS.md is updated, also check:
 
 The `*Last updated:*` footer at the bottom of TRUE_BENCHMARKS.md records the lazy-image and sharp versions used. When either dependency updates significantly, re-run benchmarks and update all downstream claims.
 
-Current: lazy-image v0.15.0, Node.js v24.2.0, sharp v0.34.5 (benchmarked 2026-05-29)
+Current: lazy-image v0.16.0, Node.js v24.2.0, sharp v0.34.5 (benchmarked 2026-07-17)

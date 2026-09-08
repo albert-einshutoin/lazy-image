@@ -53,12 +53,13 @@ pub(crate) static GLOBAL_THREAD_POOL: OnceLock<std::result::Result<Arc<ThreadPoo
     OnceLock::new();
 
 #[cfg(all(test, feature = "napi"))]
-pub(crate) static GLOBAL_THREAD_POOL: OnceLock<
-    RwLock<Option<std::result::Result<Arc<ThreadPool>, String>>>,
-> = OnceLock::new();
+type TestThreadPoolState = RwLock<Option<std::result::Result<Arc<ThreadPool>, String>>>;
 
 #[cfg(all(test, feature = "napi"))]
-fn pool_cell() -> &'static RwLock<Option<std::result::Result<Arc<ThreadPool>, String>>> {
+pub(crate) static GLOBAL_THREAD_POOL: OnceLock<TestThreadPoolState> = OnceLock::new();
+
+#[cfg(all(test, feature = "napi"))]
+fn pool_cell() -> &'static TestThreadPoolState {
     GLOBAL_THREAD_POOL.get_or_init(|| RwLock::new(None))
 }
 

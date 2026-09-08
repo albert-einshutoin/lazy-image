@@ -1,18 +1,18 @@
 # Wasm Package And Policy API
 
 This document defines the package shape and shared policy contract for the
-Wasm/browser/Edge track. The initial package lives under
-`packages/lazy-image-wasm`; it is not yet a public npm release. The native Node
-package remains the production package until the Wasm package is benchmarked in
-real browser and Edge runtimes.
+Wasm/browser/Edge track. The v1.0.0 MVP is published as
+`@alberteinshutoin/lazy-image-wasm` and lives under `packages/lazy-image-wasm`.
+The native Node package remains the recommended production path until the Wasm
+package is benchmarked in real browser and Edge runtimes.
 
 ## Package Shape
 
-Planned package name:
+Package name:
 
 - `@alberteinshutoin/lazy-image-wasm`
 
-Planned entrypoints:
+Published entrypoints:
 
 | Entrypoint | Runtime | Purpose |
 |---|---|---|
@@ -40,11 +40,16 @@ fetched or embedded.
 
 ```typescript
 import { createUploadOptimizer } from '@alberteinshutoin/lazy-image-wasm/browser';
+import type { CreateUploadOptimizerOptions } from '@alberteinshutoin/lazy-image-wasm/shared';
 
-const optimizer = await createUploadOptimizer({
-  wasmUrl: new URL('./lazy_image_wasm_bg.wasm', import.meta.url),
-});
+declare const wasmModules: NonNullable<CreateUploadOptimizerOptions['wasmModules']>;
+
+const optimizer = await createUploadOptimizer({ wasmModules });
 ```
+
+Each value is a `WebAssembly.Module`, `ArrayBuffer`, or `Uint8Array` resolved by
+the target bundler or runtime. See the shipped Edge example for deployment
+binding names and isolate-level optimizer caching.
 
 The package may use `WebAssembly.instantiateStreaming()` when available, but it
 must provide a fallback for runtimes that return the wrong MIME type for Wasm
@@ -57,7 +62,7 @@ core can replace that adapter without changing the public policy shape.
 
 ## Public API
 
-The first public API should be high-level and policy-oriented:
+The public API is high-level and policy-oriented:
 
 ```typescript
 import { optimizeUpload } from '@alberteinshutoin/lazy-image-wasm/browser';
@@ -193,16 +198,30 @@ result, unless the runtime can report them cheaply and accurately.
 
 ## Errors
 
-The Wasm package should keep the same broad error taxonomy as the native
-package:
+The Wasm package uses the native package as the source of truth for error
+codes and categories. A shared code always has the same meaning in both
+packages. The `E5xx` range is reserved for failures that exist only at a Wasm
+runtime boundary.
 
-| Range | Category | Wasm examples |
-|---|---|---|
-| `E1xx` | Input | unsupported input type, corrupt image, unsupported input format |
-| `E2xx` | Processing | invalid resize, byte-budget search failure in strict mode |
-| `E3xx` | Output | unsupported output format, encode failure |
-| `E4xx` | Config | invalid profile, invalid policy, invalid limits |
-| `E9xx` | Internal | Wasm initialization failure, unexpected codec panic boundary |
+| Code | Meaning | Category | Previous Wasm code |
+|---|---|---|---|
+| `E111` | Unsupported input image format | `CodecError` | `E103` |
+| `E122` | Input exceeds the pixel limit | `ResourceLimit` | `E105` |
+| `E123` | Input-byte or timeout policy violation | `ResourceLimit` | `E104` / `E205` |
+| `E131` | Codec failed to decode the input | `CodecError` | `E102` |
+| `E203` | Cover resize is missing a required dimension | `UserError` | `E202` |
+| `E204` | Unsupported resize fit | `UserError` | `E202` |
+| `E300` | Codec failed to encode the output | `CodecError` | `E303` |
+| `E400` | Invalid input type, option, output format, or output kind | `UserError` | `E101` / `E301` / `E302` / `E402` |
+| `E401` | Invalid Wasm profile | `UserError` | `E401` |
+| `E500` | Operation aborted through `AbortSignal` | `UserError` | `E204` |
+| `E501` | Requested output kind is unavailable in the runtime | `ResourceLimit` | `E303` |
+| `E502` | Strict target-byte budget cannot be met above the quality floor | `ResourceLimit` | `E201` |
+| `E901` | Codec returned an invalid buffer type | `InternalBug` | `E901` |
+
+`UserError` and `ResourceLimit` are recoverable by default. `CodecError` and
+`InternalBug` are not. Callers should branch on both `code` and `category`
+instead of deriving a category from the numeric range.
 
 Native filesystem errors such as file-not-found, mmap failure, and file-write
 failure must not appear in the browser/Edge API.
@@ -210,7 +229,7 @@ failure must not appear in the browser/Edge API.
 ```typescript
 interface LazyImageWasmError extends Error {
   code: string;
-  category: 'Input' | 'Processing' | 'Output' | 'Config' | 'Internal';
+  category: 'UserError' | 'CodecError' | 'ResourceLimit' | 'InternalBug';
   recoverable: boolean;
   recoveryHint?: string;
 }
@@ -235,7 +254,7 @@ If a future Wasm API needs batch behavior, it should be a browser/Edge-specific
 helper built around repeated `optimizeUpload()` calls and explicit caller-side
 concurrency.
 
-## First Release Scope
+## v1.0.0 Scope
 
 In scope:
 
@@ -259,9 +278,8 @@ Out of scope:
 - drawing, compositing, filters, animation, TIFF, PDF, SVG, RAW
 - filesystem or Node-only APIs
 
-## Acceptance For Implementation Work
+## Compatibility Guardrails
 
-Implementation-heavy Wasm issues should not start until this contract is either
-accepted as-is or updated by a dedicated design PR. After implementation begins,
-changes to the public policy shape should be treated as API design changes, not
-incidental benchmark or build-system work.
+The package is public as of v1.0.0. Changes to its policy shape, error taxonomy,
+entrypoints, or default behavior follow the same SemVer policy as the native
+package and must not be introduced as incidental benchmark or build-system work.

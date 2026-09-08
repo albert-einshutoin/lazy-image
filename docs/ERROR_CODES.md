@@ -13,6 +13,10 @@ lazy-image uses a 4-tier error taxonomy to enable proper error handling in JavaS
 | **ResourceLimit** | Memory/time/dimension limits | Sometimes | Dimension exceeds limit, file I/O errors (disk full, memory pressure) |
 | **InternalBug** | Library bugs (should not happen) | No | Internal panic, unexpected state |
 
+Native codes use `E1xx` through `E4xx` and `E9xx`. `E5xx` is reserved for
+Wasm-only runtime boundary failures. When native and Wasm expose the same
+code, the meaning and category must be identical.
+
 ## Panic Policy
 
 All codec entry points (decode/encode/ICC embedding) execute inside a unified
@@ -377,6 +381,14 @@ An I/O error occurred while writing the output file.
 - Check disk space
 - Verify write permissions for output directory
 - Ensure output path is valid
+
+`compileImage()` reports the same native `E300`/`E301` codes through an
+`ArtifactCompilationError` with a `phase` (`preflight`, `planning`,
+`processing`, `verification`, `commit`, or `cleanup`) and, when applicable, an
+`artifactId`. A strict target-byte miss remains `E300`; staging, manifest, and
+directory-commit failures remain `E301`. Aborts use the standard `AbortError`
+and never publish a final directory. The public message omits private paths;
+the original native error is available as `cause`.
 
 ---
 

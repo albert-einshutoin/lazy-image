@@ -27,14 +27,14 @@ All benchmarks use images from `test/fixtures/*` directory:
 
 | Item | Version/Spec |
 |------|--------------|
-| **lazy-image** | v0.15.0 |
+| **lazy-image** | v0.16.0 |
 | **Node.js** | v24.2.0 |
 | **sharp** | 0.34.5 |
 | **Test Images** | `test/fixtures/*` (test_4.5MB_5000x5000.png: 4.5MB, 5000×5000, test_100KB_*, etc.) |
 | **Output Size** | No-resize conversion and 800px width resize scenarios |
 | **Quality** | JPEG: 80, WebP: 80, AVIF: 60 |
 | **Platform** | macOS 26.3, Apple M4 (arm64) |
-| **Test Date** | 2026-05-29 |
+| **Test Date** | 2026-07-17 |
 
 **How to reproduce:**
 ```bash
@@ -55,8 +55,8 @@ In the current benchmarked PNG → AVIF scenarios below, sharp is faster and pro
 
 | Scenario | Format | lazy-image | sharp | Outcome |
 | :--- | :--- | :--- | :--- | :--- |
-| **Speed (No Resize)** | **AVIF** | 12,668ms | **4,729ms** | lazy-image 0.37x speed ratio (sharp/lazy) |
-| **Speed (Resize 800px)** | **AVIF** | 442ms | **179ms** | lazy-image 0.40x speed ratio (sharp/lazy) |
+| **Speed (No Resize)** | **AVIF** | 13,440ms | **5,849ms** | lazy-image 0.44x speed ratio (sharp/lazy) |
+| **Speed (Resize 800px)** | **AVIF** | 483ms | **168ms** | lazy-image 0.35x speed ratio (sharp/lazy) |
 | **File Size (No Resize)** | **AVIF** | 1,718,430 bytes | **1,290,501 bytes** | **+33.2%** |
 | **File Size (Resize 800px)** | **AVIF** | 28,678 bytes | **22,227 bytes** | **+29.0%** |
 
@@ -111,8 +111,8 @@ lazy-image produces significantly smaller JPEG files than sharp, thanks to mozjp
 | :--- | :--- | :--- | :--- | :--- |
 | **File Size (No Resize)** | **JPEG** | **1,224,894 bytes** 📉 | 1,475,223 bytes | **-17.0%** ✅ |
 | **File Size (Resize 800px)** | **JPEG** | **31,518 bytes** 📉 | 39,416 bytes | **-20.0%** ✅ |
-| **Speed (No Resize)** | JPEG | 700ms | **660ms** | 0.94x speed ratio (sharp/lazy) |
-| **Speed (Resize 800px)** | JPEG | **70ms** | 79ms | **1.13x speed ratio (sharp/lazy)** ⚡ |
+| **Speed (No Resize)** | JPEG | **712ms** | 765ms | **1.07x speed ratio (sharp/lazy)** ⚡ |
+| **Speed (Resize 800px)** | JPEG | 114ms | **78ms** | 0.68x speed ratio (sharp/lazy) |
 
 ### Technical Explanation: mozjpeg Optimization
 
@@ -164,6 +164,18 @@ lazy-image uses **mozjpeg** (Mozilla's JPEG encoder) with aggressive web optimiz
 - **Comparable or slightly longer processing times** compared to sharp (depending on scenario)
 - **Intentional trade-off**: Bandwidth savings often outweigh processing time in web applications
 
+### Source-reference quality condition
+
+The resize-to-800px comparison uses a lossless resized PNG as the canonical quality reference. The encoder-to-encoder axis is reported separately. This prevents two similarly degraded outputs from satisfying the quality gate merely because they resemble each other.
+
+| Format / setting | lazy-image vs source | sharp vs source | lazy-image gate floor | Size difference |
+|---|---|---|---|---:|
+| JPEG q80 | SSIM 0.9942 / PSNR 37.07 dB | SSIM 0.9955 / PSNR 37.65 dB | SSIM 0.9935 / PSNR 36.5 dB | **-20.0%** |
+| WebP q80 | SSIM 0.9914 / PSNR 37.08 dB | SSIM 0.9910 / PSNR 37.12 dB | SSIM 0.9905 / PSNR 36.5 dB | +9.3% |
+| AVIF q60 | SSIM 0.9950 / PSNR 39.40 dB | SSIM 0.9942 / PSNR 41.62 dB | SSIM 0.9940 / PSNR 38.5 dB | +29.0% |
+
+The 17-20% JPEG statement is therefore a same-quality-setting result for the two named PNG → JPEG scenarios. It is not a claim of exact perceptual-quality matching; the resize case must also retain the source-reference measurements above and pass the documented regression floor.
+
 ### Use Cases
 
 - **Bandwidth-sensitive applications**: Web apps, mobile apps, CDN optimization
@@ -194,9 +206,9 @@ When converting formats without resizing, current results are codec-specific. Co
 
 | Conversion | lazy-image | sharp | Speed | File Size |
 |------------|------------|-------|-------|-----------|
-| **PNG → AVIF** | 12,668ms | 4,729ms | 0.37x speed ratio | +33.2% |
-| **PNG → JPEG** | 700ms | 660ms | 0.94x speed ratio | **-17.0%** ✅ |
-| **PNG → WebP** | 4,323ms | 909ms | 0.21x speed ratio | +2.4% |
+| **PNG → AVIF** | 13,440ms | 5,849ms | 0.44x speed ratio | +33.2% |
+| **PNG → JPEG** | 712ms | 765ms | 1.07x speed ratio | **-17.0%** ✅ |
+| **PNG → WebP** | 4,379ms | 964ms | 0.22x speed ratio | +2.4% |
 
 > *Pure format conversion without pixel manipulation. 4.5MB PNG (5000×5000) input from `test/fixtures/test_4.5MB_5000x5000.png`.*
 
@@ -208,10 +220,10 @@ When converting formats without resizing, current results are codec-specific. Co
 
 | Scenario | lazy-image | sharp | Speed | File Size |
 |----------|------------|-------|-------|-----------|
-| **PNG → JPEG resize 800px** | 70ms / 31,518 bytes | 79ms / 39,416 bytes | 1.13x speed ratio | **-20.0%** ✅ |
-| **PNG → WebP resize 800px** | 166ms / 32,448 bytes | 90ms / 29,686 bytes | 0.54x speed ratio | +9.3% |
-| **PNG → AVIF resize 800px** | 442ms / 28,678 bytes | 179ms / 22,227 bytes | 0.40x speed ratio | +29.0% |
-| **Resize + rotate + grayscale → JPEG** | 68ms / 27,129 bytes | 112ms / 24,650 bytes | 1.65x speed ratio | +10.1% |
+| **PNG → JPEG resize 800px** | 114ms / 31,518 bytes | 78ms / 39,416 bytes | 0.68x speed ratio | **-20.0%** ✅ |
+| **PNG → WebP resize 800px** | 190ms / 32,448 bytes | 82ms / 29,686 bytes | 0.43x speed ratio | +9.3% |
+| **PNG → AVIF resize 800px** | 483ms / 28,678 bytes | 168ms / 22,227 bytes | 0.35x speed ratio | +29.0% |
+| **Resize + rotate + grayscale → JPEG** | 76ms / 27,129 bytes | 117ms / 24,650 bytes | 1.54x speed ratio | +10.1% |
 
 ### Copy and Allocation Scope
 
@@ -253,7 +265,8 @@ All benchmarks use images from `test/fixtures/*` directory:
 1. **Comparison**: Compare lazy-image vs sharp with identical format, quality, and resize parameters.
 2. **Scenario separation**: Keep no-resize conversion, resize, memory, and cold-start results separate.
 3. **Iteration counts**: Use each benchmark script's own warm-up and iteration settings; some scripts are representative single-run checks while extended matrix benchmarks average multiple runs.
-4. **Validation**: Track file size, wall-clock timing, and quality metrics where the script reports them. Public claims should cite only the measured scenario.
+4. **Validation**: Gate each required codec against the resized source reference. Encoder-to-encoder similarity remains a separate informational axis.
+5. **Failure semantics**: `pass`, `skipped`, `unsupported`, `benchmark-failure`, and `quality-regression` are recorded separately in the JSON artifact; any non-pass required case makes the command fail after all cases finish.
 
 ### Reproducing Benchmarks
 
@@ -326,4 +339,4 @@ Choose sharp when:
 
 ---
 
-*Last updated: 2026-05-29, based on lazy-image v0.15.0, Node.js v24.2.0, and sharp v0.34.5. Re-run `npm run test:bench`, `node --expose-gc test/benchmarks/convert-only.bench.js`, and `npm run test:bench:extended` when encoder dependencies or public claims change.*
+*Last updated: 2026-07-17, based on lazy-image v0.16.0, Node.js v24.2.0, and sharp v0.34.5. Re-run `npm run test:bench`, `node --expose-gc test/benchmarks/convert-only.bench.js`, and `npm run test:bench:extended` when encoder dependencies or public claims change.*
