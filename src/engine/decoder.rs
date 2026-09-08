@@ -565,7 +565,7 @@ fn orientation_from_exif(exif: exif::Exif) -> OrientationInspection {
 }
 
 #[cfg(any(feature = "napi", feature = "fuzzing", test))]
-fn orientation_from_jpeg_header(data: &[u8]) -> OrientationInspection {
+fn orientation_from_jpeg_header(data: &[u8], source_complete: bool) -> OrientationInspection {
     const EXIF_ID: &[u8] = b"Exif\0\0";
 
     if data.len() < 2 || data[..2] != [0xff, 0xd8] {
@@ -573,6 +573,17 @@ fn orientation_from_jpeg_header(data: &[u8]) -> OrientationInspection {
     }
 
     let mut position = 2;
+    let mut orientation = None;
+    let mut saw_exif = false;
+    let finish = |orientation: Option<u16>, complete: bool, saw_exif: bool| {
+        if let Some(orientation) = orientation {
+            OrientationInspection::Value(orientation)
+        } else if complete || source_complete || saw_exif {
+            OrientationInspection::Absent
+        } else {
+            OrientationInspection::Unknown
+        }
+    };
     while position + 1 < data.len() {
         if data[position] != 0xff {
             return OrientationInspection::Unknown;
@@ -586,10 +597,10 @@ fn orientation_from_jpeg_header(data: &[u8]) -> OrientationInspection {
         let marker = data[position];
         position += 1;
         if marker == 0xda {
-            return OrientationInspection::Unknown;
+            return finish(orientation, false, saw_exif);
         }
         if marker == 0xd9 {
-            return OrientationInspection::Absent;
+            return finish(orientation, true, saw_exif);
         }
         if marker == 0x01 || (0xd0..=0xd7).contains(&marker) {
             continue;
@@ -604,16 +615,30 @@ fn orientation_from_jpeg_header(data: &[u8]) -> OrientationInspection {
         let payload_start = position + 2;
         let payload_end = payload_start + length - 2;
         if marker == 0xe1 && data[payload_start..payload_end].starts_with(EXIF_ID) {
-            return match exif::Reader::new()
+            saw_exif = true;
+            let inspection = match exif::Reader::new()
                 .read_raw(data[payload_start + EXIF_ID.len()..payload_end].to_vec())
             {
                 Ok(exif) => orientation_from_exif(exif),
-                Err(_) => OrientationInspection::Unknown,
+                Err(_) => return OrientationInspection::Unknown,
+            };
+            match inspection {
+                OrientationInspection::Absent => {}
+                OrientationInspection::Value(value) => {
+                    if let Some(previous) = orientation {
+                        if previous != value {
+                            return OrientationInspection::Unknown;
+                        }
+                    } else {
+                        orientation = Some(value);
+                    }
+                }
+                OrientationInspection::Unknown => return OrientationInspection::Unknown,
             };
         }
         position = payload_end;
     }
-    OrientationInspection::Unknown
+    finish(orientation, false, saw_exif)
 }
 
 /// Inspect EXIF Orientation from a seekable container without decoding pixels.
@@ -650,8 +675,10 @@ pub(crate) fn inspect_exif_orientation_bounded_from_reader<R: BufRead + Seek>(
         return OrientationInspection::Unknown;
     }
     if bounded.starts_with(&[0xff, 0xd8]) {
-        if source_len > MAX_ORIENTATION_SCAN_BYTES {
-            return orientation_from_jpeg_header(&bounded);
+        let orientation =
+            orientation_from_jpeg_header(&bounded, source_len <= MAX_ORIENTATION_SCAN_BYTES);
+        if source_len > MAX_ORIENTATION_SCAN_BYTES || orientation != OrientationInspection::Absent {
+            return orientation;
         }
     }
     let exif = match exif::Reader::new().read_from_container(&mut Cursor::new(bounded)) {
@@ -702,6 +729,51 @@ mod tests {
         assert_eq!(
             inspect_exif_orientation_bounded_from_reader(&mut reader),
             OrientationInspection::Value(6)
+        );
+    }
+
+    #[test]
+    fn bounded_orientation_reader_scans_duplicate_exif_segments() {
+        let jpeg = include_bytes!("../../test/fixtures/test_with_exif.jpg");
+        let tiff_without_orientation = [
+            0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+        let mut empty_segment = vec![0xff, 0xe1];
+        empty_segment
+            .extend_from_slice(&((tiff_without_orientation.len() + 8) as u16).to_be_bytes());
+        empty_segment.extend_from_slice(b"Exif\0\0");
+        empty_segment.extend_from_slice(&tiff_without_orientation);
+
+        let mut duplicate = Vec::with_capacity(jpeg.len() + empty_segment.len());
+        duplicate.extend_from_slice(&jpeg[..2]);
+        duplicate.extend_from_slice(&empty_segment);
+        duplicate.extend_from_slice(&jpeg[2..]);
+        let mut reader = std::io::BufReader::new(std::io::Cursor::new(duplicate));
+        assert_eq!(
+            inspect_exif_orientation_bounded_from_reader(&mut reader),
+            OrientationInspection::Value(6)
+        );
+
+        let exif_offset = jpeg
+            .windows(2)
+            .position(|window| window == [0xff, 0xe1])
+            .expect("fixture must contain an EXIF segment");
+        let exif_length =
+            u16::from_be_bytes([jpeg[exif_offset + 2], jpeg[exif_offset + 3]]) as usize;
+        let mut conflicting_segment = jpeg[exif_offset..exif_offset + exif_length + 2].to_vec();
+        let orientation_value = conflicting_segment
+            .windows(4)
+            .position(|window| window == [0x06, 0x00, 0x00, 0x00])
+            .expect("fixture must contain Orientation 6");
+        conflicting_segment[orientation_value] = 0x01;
+        let mut conflicting = Vec::with_capacity(jpeg.len() + conflicting_segment.len());
+        conflicting.extend_from_slice(&jpeg[..2]);
+        conflicting.extend_from_slice(&conflicting_segment);
+        conflicting.extend_from_slice(&jpeg[2..]);
+        let mut reader = std::io::BufReader::new(std::io::Cursor::new(conflicting));
+        assert_eq!(
+            inspect_exif_orientation_bounded_from_reader(&mut reader),
+            OrientationInspection::Unknown
         );
     }
 

@@ -416,7 +416,10 @@ export interface ImageMetadata {
   hasAlpha: boolean
   /** Whether the container declares animation frames. */
   isAnimated: boolean
-  /** EXIF Orientation 1-8, or undefined when absent. */
+  /**
+   * EXIF Orientation 1-8, or undefined when absent or inspection is unknown.
+   * Check `orientationKnown` before using the value.
+   */
   orientation?: number
   /** Whether EXIF inspection confirmed the Orientation value is present or absent. */
   orientationKnown: boolean
