@@ -21,13 +21,14 @@ pub(crate) fn create_test_image_rgba(width: u32, height: u32) -> DynamicImage {
 
 /// Minimal valid ICC profile used by several encoder tests.
 pub(crate) fn minimal_icc_profile() -> Vec<u8> {
-    let mut icc = vec![0u8; 128];
-    icc[0..4].copy_from_slice(&128u32.to_be_bytes());
+    let mut icc = vec![0u8; 132];
+    icc[0..4].copy_from_slice(&132u32.to_be_bytes());
     icc[4..8].copy_from_slice(b"ADBE");
     icc[8] = 2;
     icc[12..16].copy_from_slice(b"mntr");
     icc[16..20].copy_from_slice(b"RGB ");
     icc[20..24].copy_from_slice(b"XYZ ");
+    icc[36..40].copy_from_slice(b"acsp");
     icc
 }
 
@@ -37,13 +38,14 @@ mod tests {
 
     #[test]
     fn minimal_icc_profile_matches_encoder_fixture() {
-        let mut expected = vec![0u8; 128];
-        expected[0..4].copy_from_slice(&128u32.to_be_bytes()); // 128 bytes
+        let mut expected = vec![0u8; 132];
+        expected[0..4].copy_from_slice(&132u32.to_be_bytes());
         expected[4..8].copy_from_slice(b"ADBE");
         expected[8] = 2;
         expected[12..16].copy_from_slice(b"mntr");
         expected[16..20].copy_from_slice(b"RGB ");
         expected[20..24].copy_from_slice(b"XYZ ");
+        expected[36..40].copy_from_slice(b"acsp");
 
         assert_eq!(minimal_icc_profile(), expected);
     }

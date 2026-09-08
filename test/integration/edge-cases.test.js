@@ -411,7 +411,7 @@ async function runTests() {
         assert(result.data, 'should have data');
         assert(result.metrics, 'should have metrics');
         
-        assert.strictEqual(result.metrics.version, '1.0.0', 'version should be set');
+        assert.strictEqual(result.metrics.version, '1.1.0', 'version should be set');
 
         // Productized fields
         assert(typeof result.metrics.decodeMs === 'number', 'decodeMs should be number');
