@@ -129,6 +129,16 @@ async function writePostScanExifFixture(outputPath) {
   ]));
 }
 
+async function writeLateExifFixture(outputPath) {
+  const jpeg = await fsp.readFile(resolveFixture('test_with_exif.jpg'));
+  const malformedSegment = Buffer.from('ffe1000a4578696600000000', 'hex');
+  await fsp.writeFile(outputPath, Buffer.concat([
+    jpeg.subarray(0, jpeg.length - 2),
+    malformedSegment,
+    jpeg.subarray(jpeg.length - 2),
+  ]));
+}
+
 function makeIccProfile(shared) {
   const profile = Buffer.alloc(shared ? 164 : 132);
   profile.writeUInt32BE(profile.length, 0);
@@ -590,6 +600,28 @@ async function main() {
     const outputDir = path.join(parent, 'post-scan-orientation-output');
     await writePostScanExifFixture(inputPath);
     assert.equal(inspectFile(inputPath).orientationKnown, false);
+    await assertRejected(
+      () => compileImage({
+        inputPath,
+        outputDir,
+        policy: { widths: [320], formats: ['webp'], placeholder: false },
+      }),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
+  });
+
+  await withTempParent(async (parent) => {
+    const inputPath = path.join(parent, 'late-malformed-exif.jpg');
+    const outputDir = path.join(parent, 'late-malformed-exif-output');
+    await writeLateExifFixture(inputPath);
+    const metadata = inspectFile(inputPath);
+    assert.equal(metadata.orientationKnown, true);
+    assert.equal(metadata.orientation, 6);
     await assertRejected(
       () => compileImage({
         inputPath,
