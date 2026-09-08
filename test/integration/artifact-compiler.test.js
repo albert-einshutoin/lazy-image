@@ -114,6 +114,21 @@ async function writeEmptyOrientationFixture(outputPath) {
   await fsp.writeFile(outputPath, Buffer.concat([jpeg.subarray(0, 2), segment, jpeg.subarray(2)]));
 }
 
+async function writePostScanExifFixture(outputPath) {
+  const jpeg = await fsp.readFile(INPUT);
+  const oriented = await fsp.readFile(resolveFixture('test_with_exif.jpg'));
+  const markerOffset = oriented.indexOf(Buffer.from([0xff, 0xe1]));
+  assert.notEqual(markerOffset, -1, 'oriented fixture should contain an EXIF segment');
+  const segmentLength = oriented.readUInt16BE(markerOffset + 2) + 2;
+  const segment = oriented.subarray(markerOffset, markerOffset + segmentLength);
+  await fsp.writeFile(outputPath, Buffer.concat([
+    jpeg.subarray(0, jpeg.length - 2),
+    Buffer.alloc(64 * 1024),
+    segment,
+    jpeg.subarray(jpeg.length - 2),
+  ]));
+}
+
 function makeIccProfile(shared) {
   const profile = Buffer.alloc(shared ? 164 : 132);
   profile.writeUInt32BE(profile.length, 0);
@@ -568,6 +583,26 @@ async function main() {
     });
     assert.equal(manifest.source.orientation, null);
     assert.equal(manifest.artifacts[0].width, 320);
+  });
+
+  await withTempParent(async (parent) => {
+    const inputPath = path.join(parent, 'post-scan-orientation.jpg');
+    const outputDir = path.join(parent, 'post-scan-orientation-output');
+    await writePostScanExifFixture(inputPath);
+    assert.equal(inspectFile(inputPath).orientationKnown, false);
+    await assertRejected(
+      () => compileImage({
+        inputPath,
+        outputDir,
+        policy: { widths: [320], formats: ['webp'], placeholder: false },
+      }),
+      (error) => {
+        assert.equal(error.name, 'ArtifactCompilationError');
+        assert.equal(error.phase, 'preflight');
+        assert.equal(error.errorCode, 'E130');
+      },
+    );
+    assert.equal(await fsp.stat(outputDir).catch(() => null), null);
   });
 
   await withTempParent(async (parent) => {

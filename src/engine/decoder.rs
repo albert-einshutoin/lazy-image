@@ -585,7 +585,10 @@ fn orientation_from_jpeg_header(data: &[u8]) -> OrientationInspection {
         }
         let marker = data[position];
         position += 1;
-        if marker == 0xda || marker == 0xd9 {
+        if marker == 0xda {
+            return OrientationInspection::Unknown;
+        }
+        if marker == 0xd9 {
             return OrientationInspection::Absent;
         }
         if marker == 0x01 || (0xd0..=0xd7).contains(&marker) {
@@ -623,7 +626,22 @@ fn orientation_from_jpeg_header(data: &[u8]) -> OrientationInspection {
 pub(crate) fn inspect_exif_orientation_bounded_from_reader<R: BufRead + Seek>(
     reader: &mut R,
 ) -> OrientationInspection {
-    let mut limited = match LimitedSeekReader::new(reader, MAX_ORIENTATION_SCAN_BYTES) {
+    let start = match reader.stream_position() {
+        Ok(start) => start,
+        Err(_) => return OrientationInspection::Unknown,
+    };
+    let source_len = match reader.seek(SeekFrom::End(0)) {
+        Ok(end) => match end.checked_sub(start) {
+            Some(length) => length,
+            None => return OrientationInspection::Unknown,
+        },
+        Err(_) => return OrientationInspection::Unknown,
+    };
+    if reader.seek(SeekFrom::Start(start)).is_err() {
+        return OrientationInspection::Unknown;
+    }
+    let scan_limit = source_len.min(MAX_ORIENTATION_SCAN_BYTES);
+    let mut limited = match LimitedSeekReader::new(reader, scan_limit) {
         Ok(reader) => reader,
         Err(_) => return OrientationInspection::Unknown,
     };
@@ -632,11 +650,16 @@ pub(crate) fn inspect_exif_orientation_bounded_from_reader<R: BufRead + Seek>(
         return OrientationInspection::Unknown;
     }
     if bounded.starts_with(&[0xff, 0xd8]) {
-        return orientation_from_jpeg_header(&bounded);
+        if source_len > MAX_ORIENTATION_SCAN_BYTES {
+            return orientation_from_jpeg_header(&bounded);
+        }
     }
     let exif = match exif::Reader::new().read_from_container(&mut Cursor::new(bounded)) {
         Ok(exif) => exif,
-        Err(exif::Error::NotFound(_)) => return OrientationInspection::Absent,
+        Err(exif::Error::NotFound(_)) if source_len <= MAX_ORIENTATION_SCAN_BYTES => {
+            return OrientationInspection::Absent;
+        }
+        Err(_) if source_len > MAX_ORIENTATION_SCAN_BYTES => return OrientationInspection::Unknown,
         Err(_) => return OrientationInspection::Unknown,
     };
     orientation_from_exif(exif)
@@ -704,6 +727,25 @@ mod tests {
         invalid[orientation_value] = 9;
         let mut reader = std::io::BufReader::new(std::io::Cursor::new(invalid));
 
+        assert_eq!(
+            inspect_exif_orientation_bounded_from_reader(&mut reader),
+            OrientationInspection::Unknown
+        );
+    }
+
+    #[test]
+    fn bounded_orientation_reader_does_not_treat_budget_eof_as_absent() {
+        let mut png = b"\x89PNG\r\n\x1a\n".to_vec();
+        let padding_length = MAX_ORIENTATION_SCAN_BYTES as usize - png.len() - 12;
+        png.extend_from_slice(&(padding_length as u32).to_be_bytes());
+        png.extend_from_slice(b"tEXt");
+        png.extend(std::iter::repeat_n(0u8, padding_length));
+        png.extend_from_slice(&[0; 4]);
+        png.extend_from_slice(&[0, 0, 0, 0]);
+        png.extend_from_slice(b"eXIf");
+        png.extend_from_slice(&[0; 4]);
+
+        let mut reader = std::io::BufReader::new(std::io::Cursor::new(png));
         assert_eq!(
             inspect_exif_orientation_bounded_from_reader(&mut reader),
             OrientationInspection::Unknown

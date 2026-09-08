@@ -275,7 +275,7 @@ mod tests {
         let orientation = inspect_exif_orientation_bounded_from_reader(&mut orientation_reader);
 
         assert_eq!((metadata.width, metadata.height), (32, 32));
-        assert_eq!(orientation, OrientationInspection::Absent);
+        assert_eq!(orientation, OrientationInspection::Unknown);
         assert!(
             metadata_bytes_read.load(Ordering::Relaxed) < 64 * 1024,
             "JPEG trait inspection must stop after bounded header reads"
