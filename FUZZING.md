@@ -19,7 +19,7 @@ adversarial inputs never trigger panics or memory-safety bugs.
 | `decode_from_buffer` | Tests lazy-image's decoders with arbitrary bytes | `decode_jpeg_mozjpeg`, `decode_with_image_crate`, `inspect_header_from_bytes` |
 | `encode_to_format` | Tests encoding to all supported formats | `encode_jpeg`, `encode_png`, `encode_webp`, `encode_avif` |
 | `pipeline_ops` | Tests image operations pipeline | `apply_ops` (resize, crop, rotate, flip, brightness, contrast) |
-| `inspect_header` | Critical attack surface – header-only metadata parsing | `inspect_header_from_bytes` |
+| `inspect_header` | Critical attack surface – format-specific dimensions, alpha, animation, and EXIF orientation parsing | `inspect_header_from_bytes` |
 | `icc_profile` | Tests ICC profile extraction from various containers | `extract_icc_profile` (JPEG, PNG, WebP, AVIF) |
 | `firewall_bypass` | Tests Image Firewall bounds checking with arbitrary configs | `FirewallConfig::enforce_pixels`, `FirewallConfig::enforce_source_len` |
 | `batch_concurrent` | Tests concurrent encoding via rayon thread pool | `encode_png` with parallel workers |
@@ -48,6 +48,12 @@ Notes:
 - `cargo fuzz` automatically builds the `lazy-image-fuzz` crate located in `fuzz/`.
 - The harness links against the `lazy-image` library with the `fuzzing` feature
   to expose internal helpers without pulling in N-API bindings.
+- Successful JPEG/PNG/WebP inspection must produce definite alpha and animation
+  states. Malformed or unsupported inputs must return typed errors without a
+  panic; third-party header decoders remain inside the engine panic policy.
+- EXIF Orientation scanning is capped at 64 KiB for both buffer and path APIs;
+  missing metadata must not make inspection consume arbitrary payload bytes or
+  permit seeks outside that virtual stream.
 
 ### AddressSanitizer
 

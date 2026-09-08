@@ -2,8 +2,8 @@
 
 Full API reference for lazy-image. For a quick start, see [README.md](../README.md#-basic-usage).
 
-This page documents the native Node.js package. The planned browser/Edge Wasm
-API is intentionally narrower and is documented separately in
+This page documents the native Node.js package. The published browser/Edge Wasm
+MVP is intentionally narrower and is documented separately in
 [WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
 
 ## Constructors
@@ -35,9 +35,8 @@ const bytes = await engine.resize(800).toFile('output.jpg', 'jpeg', 80);
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without color space conversion. |
-| `.toColorspace(space)` | ⚠️ **DEPRECATED** - Use `.normalizePixelFormat()` instead. |
 | `.preset(name)` | ⚠️ **DEPRECATED** - Applies a preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) by mutating the pipeline and returning a separate `PresetResult`. Prefer `encode({ preset: name })`, `.toBufferWithPreset(name)`, or `.toFileWithPreset(path, name)` for self-contained preset output. |
-| `.sanitize({ policy?, ... })` | Image Firewall: apply strict/lenient limits. See [ARCHITECTURE.md](./ARCHITECTURE.md#image-firewall-mode-strict--lenient). |
+| `.sanitize({ policy? })` | Image Firewall: apply `strict`, `lenient`, or `public-upload`. The public-upload policy keeps strict resource limits, preserves only validated ICC up to 512 KiB, and always strips EXIF/GPS/XMP. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md). |
 | `.limits({ maxPixels?, maxBytes?, timeoutMs? })` | Override firewall limits. |
 
 For preset-based output, prefer the self-contained APIs above the deprecated `.preset(name)` command/query mix:
@@ -71,16 +70,119 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `processBatchChunked(inputs, outDir, { format, quality?, fastMode?, concurrency?, chunkSize?, onProgress?, signal? })` | Top-level batch helper that splits inputs into native `processBatch()` chunks. Reports progress after each chunk and checks `AbortSignal` before starting the next chunk. |
 | `.clone()` | Clone the engine for multi-output (e.g. same pipeline to JPEG + WebP + AVIF). |
 
+### Responsive output helpers
+
+Use the responsive helpers when a caller needs a small set of variants without
+writing its own `clone()` loop. The input engine is not consumed, and any
+queued operations (for example `grayscale()` or `crop()`) are inherited by
+every variant.
+
+```javascript
+const variants = await ImageEngine.fromPath('hero.jpg').toResponsiveSet({
+  widths: [320, 768, 1280],
+  format: 'webp',
+  quality: 80,
+});
+
+const output = await ImageEngine.fromPath('hero.jpg').toFilesResponsive(
+  'dist/hero-{width}.webp',
+  { widths: [320, 768, 1280], format: 'webp' },
+);
+console.log(output.srcset);
+```
+
+`widths` must contain positive integers; duplicate values are removed while
+preserving input order. `toFilesResponsive()` requires a `{width}` placeholder
+and returns the generated paths plus a ready-to-use `srcset` string. When the
+output pattern is an absolute filesystem path, pass a third `srcsetPattern`
+argument (for example, `/images/hero-{width}.webp`) so private filesystem
+paths are never exposed to browsers. Each
+variant is decoded and encoded independently, so CPU and memory scale with the
+number of requested widths. Widths larger than the source image are enlarged;
+there is no `withoutEnlargement` option in this initial helper. For a
+privacy-safe artifact set with deterministic library-owned names, use
+`compileImage()` instead.
+
+### Placeholder output
+
+`toPlaceholder()` creates a small data URL for UI placeholders such as
+Next.js `blurDataURL`. The long edge defaults to 16 pixels and must be between
+4 and 64 pixels; the source aspect ratio is preserved.
+
+```javascript
+const { dataUrl, width, height, bytes } = await ImageEngine
+  .fromPath('hero.jpg')
+  .toPlaceholder({ format: 'webp', size: 16, quality: 20 });
+
+// <Image src="/hero.jpg" placeholder="blur" blurDataURL={dataUrl} ... />
+```
+
+Supported formats are WebP, JPEG, and PNG. PNG is lossless, so `quality` is
+ignored and is not passed to the native encoder. The source engine is not
+consumed, and the returned `bytes` count is measured before base64 conversion.
+For the privacy-safe placeholder inside a deterministic artifact set, use
+`compileImage()` instead.
+
+### Transactional public-upload compilation
+
+`compileImage()` is the high-level native Node.js entrypoint for one untrusted
+local image. It consumes the deterministic `compileArtifactPlan()` contract,
+writes plan-owned artifacts and an optional 16px WebP placeholder into a
+private sibling staging directory, verifies hashes/metadata, and publishes by
+one directory rename. Existing output directories are rejected; failures and
+abort signals remove the unpublished staging set.
+
+```javascript
+const { compileImage } = require('@alberteinshutoin/lazy-image');
+
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/upload.bin',
+  outputDir: '/srv/public/images/version-1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+The input is content-sniffed (the filename is not trusted), artifact filenames
+are library-owned, and full artifact bytes never cross into a V8 `Buffer`.
+`manifest.json` is deterministic for the same source, policy, and compiler
+identity. The output parent must be trusted and on the same filesystem as the
+staging directory; portable Node.js has no cross-platform no-replace directory
+rename primitive, so another process must not replace that parent concurrently.
+
 ## Utilities
 
 | Method | Description |
 |--------|-------------|
-| `inspect(buffer)` | Get metadata from Buffer without decoding pixels |
-| `inspectFile(path)` | **Recommended**: Get metadata from file without loading into memory |
+| `inspect(buffer)` | Inspect JPEG/PNG/WebP header traits without decoding pixels |
+| `inspectFile(path)` | **Recommended**: Inspect the same traits from a path without copying encoded bytes into the Node.js heap |
 | `.dimensions()` | Get `{ width, height }` (requires decode) |
 | `.hasIccProfile()` | Returns ICC profile size in bytes, or null if none |
 | `resolveEncodeProfile(format, profile, quality?)` | Resolve profile into concrete `{ format, quality, fastMode }` options. |
+| `compilerIdentity()` | Return the stable native codec/build identity used by artifact fingerprints. |
 | `createStreamingPipeline({ format, quality, ops, onMetrics? })` | Disk-backed bounded-memory pipeline. Not a true chunk-by-chunk transform stream. Optional `onMetrics` callback receives `ProcessingMetrics` after file output completes. |
+
+### Upload preflight contract
+
+`inspect()` and `inspectFile()` use format-specific JPEG, PNG, and WebP header
+readers. They never decode pixel buffers. On every successful call:
+
+- `hasAlpha` is authoritative: `false` means the supported container was
+  confirmed opaque, not that an unknown state was coerced to false.
+- `isAnimated` is authoritative: APNG and animated WebP return `true`; JPEG is
+  always static.
+- `orientation` is the EXIF Orientation value `1` through `8`, or `undefined`
+  when the tag is absent, invalid, cannot be parsed, or is not found within the
+  64 KiB preflight scan budget.
+- `width` and `height` are the encoded dimensions. They are not swapped for
+  Orientation values such as `6` or `8`.
+
+Malformed supported headers reject with the typed decode error `E131`.
+Unsupported containers reject with `E111`; callers must not invent safe trait
+values after either failure. `inspectFile()` uses filesystem readers for header
+and EXIF inspection, so encoded image bytes do not cross the V8 boundary as a
+`Buffer`. Successful preflight proves these container traits, not that every
+entropy-coded payload or animation frame will decode; upload pipelines must
+still decode and re-encode before publishing an artifact.
 
 ---
 
@@ -134,7 +236,10 @@ See [QUALITY_EFFORT_SPEED_MAPPING.md](./QUALITY_EFFORT_SPEED_MAPPING.md) for cro
 interface ImageMetadata {
   width: number;
   height: number;
-  format: string | null;
+  format?: InputFormat;
+  hasAlpha: boolean;
+  isAnimated: boolean;
+  orientation?: number;
 }
 
 interface Dimensions {
@@ -192,20 +297,9 @@ interface ProcessingMetrics {
   formatIn?: string | null;
   formatOut: string;
   iccPreserved: boolean;
+  iccOutcome: 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported';
   metadataStripped: boolean;
   policyViolations: string[];
-  /** @deprecated use decodeMs */
-  decodeTime: number;
-  /** @deprecated use opsMs */
-  processTime: number;
-  /** @deprecated use encodeMs */
-  encodeTime: number;
-  /** @deprecated use peakRss */
-  memoryPeak: number;
-  /** @deprecated use bytesIn */
-  inputSize: number;
-  /** @deprecated use bytesOut */
-  outputSize: number;
 }
 
 interface OutputWithMetrics {
@@ -226,6 +320,7 @@ interface TargetBytesOptions {
   maxQuality?: number;
   fastMode?: boolean;
   qualityFloorPolicy?: 'best-effort' | 'strict';
+  strict?: boolean;
 }
 
 interface BufferTargetBytesResult {
@@ -283,7 +378,8 @@ interface BatchOutputWithMetrics {
 
 Metrics payloads are versioned. See [metrics-api.md](./metrics-api.md) and [metrics-schema.json](./metrics-schema.json).
 
-**Deprecation**: Legacy metric field names (`decodeTime`, `processTime`, etc.) will be removed in v2.0.0. Use `decodeMs`, `opsMs`, `peakRss`, `bytesIn`, `bytesOut`.
+Only the canonical fields above are part of the v1.x contract. Legacy metric
+aliases removed before v1 are not returned.
 
 ---
 

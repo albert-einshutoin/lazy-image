@@ -3,7 +3,7 @@
 This document defines how to evaluate the browser/Edge upload-preflight track.
 It complements the native sharp comparison benchmarks; it does not replace
 `TRUE_BENCHMARKS.md` as the source for public native performance claims.
-The planned package and policy API is defined in
+The published package and policy API is defined in
 [WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
 The initial implementation package lives in `packages/lazy-image-wasm`; this
 benchmark remains the comparison artifact generator rather than a replacement
@@ -49,7 +49,7 @@ The report schema includes:
 - memory information where the runtime exposes useful data
 
 The native `@alberteinshutoin/lazy-image` row is a Node reference. It gives a
-quality, byte-budget, and latency baseline for the future Wasm package, but it
+quality, byte-budget, and latency baseline for the Wasm package, but it
 is not a browser runtime result.
 
 ## Competitor Baselines
@@ -74,7 +74,8 @@ bundle claims require a bundled entrypoint and `browserBundleGzipBytes`.
 
 Safe public claims:
 
-- "lazy-image is evaluating a browser/Edge upload-preflight Wasm track."
+- "lazy-image provides a browser/Edge upload-preflight Wasm MVP; production
+  suitability remains runtime- and workload-specific."
 - "The Wasm benchmark harness records browser bundle size when a runtime adapter
   provides it, plus load latency, first encode latency, byte-budget hit rate,
   quality, metadata behavior, and memory where available."

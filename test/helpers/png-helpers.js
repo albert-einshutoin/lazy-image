@@ -64,4 +64,75 @@ function createGrayscalePng(width, height) {
     return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
 }
 
-module.exports = { buildCrc32Table, crc32, pngChunk, createGrayscalePng };
+function createRgbaPng(width, height, rgba = [255, 0, 0, 128]) {
+    const signature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+    const ihdr = Buffer.alloc(13);
+    ihdr.writeUInt32BE(width, 0);
+    ihdr.writeUInt32BE(height, 4);
+    ihdr[8] = 8;
+    ihdr[9] = 6; // RGBA
+    const pixel = Buffer.from(rgba);
+    if (pixel.length !== 4) {
+        throw new RangeError('rgba must contain exactly four channel values');
+    }
+    const raw = Buffer.alloc((width * 4 + 1) * height);
+    for (let y = 0; y < height; y++) {
+        const row = y * (width * 4 + 1);
+        raw[row] = 0;
+        for (let x = 0; x < width; x++) {
+            pixel.copy(raw, row + 1 + x * 4);
+        }
+    }
+    return Buffer.concat([
+        signature,
+        pngChunk('IHDR', ihdr),
+        pngChunk('IDAT', zlib.deflateSync(raw)),
+        pngChunk('IEND', Buffer.alloc(0)),
+    ]);
+}
+
+function createApng(width = 2, height = 2) {
+    const png = createRgbaPng(width, height);
+    const afterIhdr = 8 + 12 + 13;
+    const animationControl = Buffer.alloc(8);
+    animationControl.writeUInt32BE(1, 0); // one animation frame
+    animationControl.writeUInt32BE(0, 4); // loop forever
+    return Buffer.concat([
+        png.subarray(0, afterIhdr),
+        pngChunk('acTL', animationControl),
+        png.subarray(afterIhdr),
+    ]);
+}
+
+function createIndexedTransparentPng(width = 2, height = 2) {
+    const signature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+    const ihdr = Buffer.alloc(13);
+    ihdr.writeUInt32BE(width, 0);
+    ihdr.writeUInt32BE(height, 4);
+    ihdr[8] = 8;
+    ihdr[9] = 3; // indexed color
+
+    const raw = Buffer.alloc((width + 1) * height);
+    for (let y = 0; y < height; y++) {
+        raw[y * (width + 1)] = 0; // filter type 0; all pixels use palette index 0
+    }
+
+    return Buffer.concat([
+        signature,
+        pngChunk('IHDR', ihdr),
+        pngChunk('PLTE', Buffer.from([255, 0, 0])),
+        pngChunk('tRNS', Buffer.from([0])), // palette index 0 is fully transparent
+        pngChunk('IDAT', zlib.deflateSync(raw)),
+        pngChunk('IEND', Buffer.alloc(0)),
+    ]);
+}
+
+module.exports = {
+    buildCrc32Table,
+    crc32,
+    pngChunk,
+    createGrayscalePng,
+    createRgbaPng,
+    createApng,
+    createIndexedTransparentPng,
+};
