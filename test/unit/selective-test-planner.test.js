@@ -8,6 +8,21 @@ const { countMatchingRustTests } = require('../../ci/lib/test-targets');
 const { loadConfig } = require('../../ci/lib/config');
 const { getAdapter } = require('../../ci/lib/adapters');
 
+const fullCiWorkflow = fs.readFileSync(
+  path.join(__dirname, '../../.github/workflows/CI.yml'),
+  'utf8',
+);
+assert.match(
+  fullCiWorkflow,
+  /npm run test:ci-planner:rust-targets/,
+  'main/release/scheduled CI must validate configured Rust selectors',
+);
+assert.match(
+  fullCiWorkflow,
+  /npm run test:wasm:package/,
+  'main/release/scheduled CI must execute Wasm workspace tests',
+);
+
 const fixtureConfig = {
   fullTestRules: [
     { pattern: 'Cargo.lock', reason: 'dependency lock file changed' },

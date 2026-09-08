@@ -188,7 +188,7 @@ impl ImageEngine {
         Ok(this)
     }
 
-    /// Enable Image Firewall mode with built-in policies (strict or lenient).
+    /// Enable Image Firewall mode with a built-in policy.
     /// Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).
     /// Lenient mode keeps generous limits but still guards against decompression bombs.
     #[napi]
@@ -205,6 +205,7 @@ impl ImageEngine {
         let policy = match lowered.as_str() {
             "strict" => FirewallPolicy::Strict,
             "lenient" => FirewallPolicy::Lenient,
+            "public-upload" => FirewallPolicy::PublicUpload,
             _ => {
                 return Err(napi_err(
                     &env,
@@ -214,11 +215,9 @@ impl ImageEngine {
         };
 
         self.firewall = FirewallConfig::apply_policy(policy);
-        if self.firewall.reject_metadata {
-            self.metadata_policy.apply_firewall(true);
-            // No need to clear the OnceLock fields: output methods already
-            // check metadata_policy and skip metadata when firewall is active.
-        }
+        self.metadata_policy.apply_firewall(policy);
+        // No need to clear the OnceLock fields: output methods apply the policy
+        // again when creating their immutable task snapshot.
 
         if let Some(decoded) = &self.decoded {
             self.firewall
@@ -264,32 +263,59 @@ impl ImageEngine {
         this: Reference<ImageEngine>,
         options: FirewallLimitOptions,
     ) -> Result<Reference<ImageEngine>> {
+        let public_upload = self.firewall.policy == FirewallPolicy::PublicUpload;
+        let max_pixels = validation::sanitize_limit("maxPixels", options.max_pixels)
+            .map_err(|e| napi_err(&env, e))?;
+        let max_bytes = validation::sanitize_limit("maxBytes", options.max_bytes)
+            .map_err(|e| napi_err(&env, e))?;
+        let timeout_ms = validation::sanitize_limit("timeoutMs", options.timeout_ms)
+            .map_err(|e| napi_err(&env, e))?;
+
+        if public_upload {
+            for (name, update, current) in [
+                ("maxPixels", &max_pixels, self.firewall.max_pixels),
+                ("maxBytes", &max_bytes, self.firewall.max_bytes),
+                ("timeoutMs", &timeout_ms, self.firewall.timeout_ms),
+            ] {
+                let invalid = match update {
+                    validation::LimitUpdate::Disable => {
+                        Some(("0".to_string(), "public-upload limits cannot be disabled"))
+                    }
+                    validation::LimitUpdate::Set(value) if Some(*value) > current => Some((
+                        value.to_string(),
+                        "public-upload limits can only be tightened",
+                    )),
+                    _ => None,
+                };
+                if let Some((value, reason)) = invalid {
+                    return Err(napi_err(
+                        &env,
+                        LazyImageError::invalid_argument(name, value, reason),
+                    ));
+                }
+            }
+        }
+
         if !self.firewall.enabled || matches!(self.firewall.policy, FirewallPolicy::Disabled) {
             self.firewall = FirewallConfig::custom();
-        } else {
+        } else if !public_upload {
             self.firewall.enabled = true;
             self.firewall.policy = FirewallPolicy::Custom;
         }
 
-        match validation::sanitize_limit("maxPixels", options.max_pixels)
-            .map_err(|e| napi_err(&env, e))?
-        {
+        match max_pixels {
             validation::LimitUpdate::Unchanged => {}
             validation::LimitUpdate::Disable => self.firewall.max_pixels = None,
             validation::LimitUpdate::Set(value) => self.firewall.max_pixels = Some(value),
         }
 
-        match validation::sanitize_limit("maxBytes", options.max_bytes)
-            .map_err(|e| napi_err(&env, e))?
-        {
+        match max_bytes {
             validation::LimitUpdate::Unchanged => {}
             validation::LimitUpdate::Disable => self.firewall.max_bytes = None,
             validation::LimitUpdate::Set(value) => self.firewall.max_bytes = Some(value),
         }
 
-        match validation::sanitize_limit("timeoutMs", options.timeout_ms)
-            .map_err(|e| napi_err(&env, e))?
-        {
+        match timeout_ms {
             validation::LimitUpdate::Unchanged => {}
             validation::LimitUpdate::Disable => self.firewall.timeout_ms = None,
             validation::LimitUpdate::Set(value) => self.firewall.timeout_ms = Some(value),
