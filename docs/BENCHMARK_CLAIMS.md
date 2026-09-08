@@ -6,6 +6,10 @@ This document maps every public performance claim to its canonical source, class
 
 **[TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md)** is the single source of truth for all public performance claims.
 
+The cited values are a historical baseline recorded on 2026-07-17 with
+lazy-image v0.16.0, Node.js v24.2.0, sharp v0.34.5, and macOS 26.3 on an
+Apple M4 (arm64); they are not current v1.2.0 measurements.
+
 All numbers in README.md, PERFORMANCE.md, MIGRATION_FROM_SHARP.md, and ROI_CALCULATOR.md must be traceable to a specific scenario in TRUE_BENCHMARKS.md.
 
 **Why a single source?** Multiple docs quoting independently-measured numbers inevitably diverge. By requiring every public claim to trace back to TRUE_BENCHMARKS.md, updates flow in one direction and inconsistencies surface as missing cross-references rather than contradictory numbers.
@@ -30,8 +34,8 @@ These **must always include the codec, input format, and scenario** when quoted:
 |-------|----------|----------------|----------------------|
 | "17.0% smaller JPEG output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> JPEG (no resize, 5000×5000) | Must cite format + input size |
 | "20.0% smaller JPEG output" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> JPEG (resize 800px, 5000×5000 input) | Must cite format + resize context |
-| "AVIF is slower and larger in current canonical PNG -> AVIF benchmarks" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> AVIF no-resize and resize 800px | Must cite exact scenario; do not turn into a universal AVIF claim |
-| "WebP is slower and similar/larger in current canonical PNG -> WebP benchmarks" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> WebP no-resize and resize 800px | Must cite exact scenario; do not turn into a universal WebP claim |
+| "AVIF is slower and larger in recorded canonical PNG -> AVIF benchmarks" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> AVIF no-resize and resize 800px | Must cite exact scenario; do not turn into a universal AVIF claim |
+| "WebP is slower and similar/larger in recorded canonical PNG -> WebP benchmarks" | PERFORMANCE.md, TRUE_BENCHMARKS.md | PNG -> WebP no-resize and resize 800px | Must cite exact scenario; do not turn into a universal WebP claim |
 
 **Rule of thumb:** If removing the scenario context would mislead a reader into thinking the claim is universal, it is workload-specific.
 
@@ -39,7 +43,7 @@ These **must always include the codec, input format, and scenario** when quoted:
 
 1. **Always qualify codec and workload.** Never say "lazy-image is faster than sharp" without specifying the format and scenario.
 2. **"17-20% smaller JPEG" is a qualified summary claim.** It applies only at the same encoder quality setting in the two canonical PNG -> JPEG scenarios. The resize result must retain its source-reference SSIM/PSNR context; it is not an exact perceptual-quality-match claim.
-3. **Speed claims are workload-specific.** Current JPEG resize was faster, JPEG no-resize was slightly slower, and AVIF/WebP favored sharp in the measured scenarios. Always cite the specific scenario.
+3. **Speed claims are workload-specific.** In the recorded baseline, JPEG no-resize was slightly faster for lazy-image (712ms vs 765ms), while JPEG resize 800px was faster for sharp (114ms vs 78ms); AVIF/WebP favored sharp in their listed scenarios. Do not turn these timings into codec-wide or general speed claims.
 4. **Do not mix resize and no-resize numbers.** Results differ significantly when resize is involved.
 5. **Cite the test environment.** TRUE_BENCHMARKS.md specifies the machine, Node version, and library versions used.
 
@@ -116,4 +120,4 @@ When TRUE_BENCHMARKS.md is updated, also check:
 
 The `*Last updated:*` footer at the bottom of TRUE_BENCHMARKS.md records the lazy-image and sharp versions used. When either dependency updates significantly, re-run benchmarks and update all downstream claims.
 
-Current: lazy-image v0.16.0, Node.js v24.2.0, sharp v0.34.5 (benchmarked 2026-07-17)
+Historical baseline: lazy-image v0.16.0, Node.js v24.2.0, sharp v0.34.5, macOS 26.3 / Apple M4 (arm64) (benchmarked 2026-07-17; not current v1.2.0)

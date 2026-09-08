@@ -25,7 +25,7 @@ console.log(`Wrote ${bytesWritten} bytes`);
 
 **差分が出る主要点**
 
-- JPEG サイズは同じ encoder quality 設定の canonical な PNG→JPEG 2ケースで 17-20% 小さい。resize ケースは source-reference 品質下限を通過しますが、完全な知覚品質一致を意味しません
+- JPEG サイズは、[過去baseline](./docs/TRUE_BENCHMARKS.md)（2026-07-17、macOS 26.3 / Apple M4 (arm64)、Node.js v24.2.0、lazy-image v0.16.0、sharp v0.34.5）のcanonicalなPNG→JPEG 2ケースで、同じencoder quality設定では17-20%小さい。resizeケースはsource-reference品質下限を通過しますが、完全な知覚品質一致を意味しません
 - 256MB を超える大きな入力は Rust 側バッファへ全量読み込まず、メモリ安全な mmap 経路で処理します。`fromPath()` を使う際は、同時に対象ファイルの変更・切り詰め・削除を避け、破損や `SIGBUS` / `SIGSEGV` を防いでください。
 - `fromPath()` は256MB以下のsourceを呼び出しthreadで同期readします。HTTP/serverless経路では `await ImageEngine.fromPathAsync(path)` を使い、source setupをNode.js event loop外へ移してください。
 - メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
