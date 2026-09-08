@@ -4,12 +4,25 @@
  */
 import * as path from 'path';
 import {
+    ArtifactPlan,
+    ArtifactSourceFacts,
+    ArtifactCompilationError,
     BatchProgressEvent,
+    CompileImageOptions,
+    compileArtifactPlan,
+    compileImage,
     ImageEngine,
+    ImageArtifactManifest,
     ImageMetadata,
     OutputFormat,
+    PlaceholderOptions,
+    PlaceholderResult,
+    PublicUploadPolicy,
     PresetName,
     PresetResult,
+    ResponsiveFilesOutput,
+    ResponsiveSetOptions,
+    ResponsiveVariant,
     ResizeFit,
     processBatchChunked,
 } from '../../index';
@@ -17,6 +30,40 @@ import { createStreamingPipeline } from '../../streaming/pipeline';
 
 async function testTypeSafety() {
     const imagePath = path.resolve(__dirname, '../fixtures/test_input.jpg');
+
+    const artifactSource: ArtifactSourceFacts = {
+        sha256: 'a'.repeat(64),
+        bytes: 1024,
+        format: 'jpeg',
+        width: 1280,
+        height: 720,
+        hasAlpha: false,
+        isAnimated: false,
+        orientationKnown: true,
+        orientation: null,
+    };
+    const publicUploadPolicy: PublicUploadPolicy = {
+        preset: 'publicUpload',
+        widths: [320, 640],
+        formats: ['webp'],
+        placeholder: true,
+    };
+    const artifactPlan = null as ArtifactPlan | null;
+    const compiledArtifactPlan: ArtifactPlan = compileArtifactPlan(
+        artifactSource,
+        publicUploadPolicy,
+        'b'.repeat(64),
+    );
+    console.log(`Artifact policy: ${artifactSource.format} ${publicUploadPolicy.widths?.length} ${artifactPlan} ${compiledArtifactPlan.cacheKey}`);
+
+    const compileOptions: CompileImageOptions = {
+        inputPath: imagePath,
+        outputDir: path.resolve(__dirname, '../../.tmp/type-safety-artifacts'),
+        policy: publicUploadPolicy,
+    };
+    const compiledManifest: Promise<ImageArtifactManifest> = compileImage(compileOptions);
+    const compilationError: ArtifactCompilationError | null = null;
+    console.log(`Transactional compiler: ${compiledManifest} ${compilationError}`);
     
     // Type-safe OutputFormat usage
     const validFormats: OutputFormat[] = ['jpeg', 'jpg', 'png', 'webp', 'avif'];
@@ -39,6 +86,22 @@ async function testTypeSafety() {
     const coverFit: ResizeFit = 'cover';
     await ImageEngine.fromPath(imagePath).resize(300, 300, coverFit).toBuffer('jpeg', 75);
     await ImageEngine.fromPath(imagePath).resize({ width: 320, fit: coverFit }).toBuffer('jpeg', 75);
+
+    const responsiveOptions: ResponsiveSetOptions = {
+        widths: [320, 640],
+        format: 'webp',
+        quality: 80,
+    };
+    const responsiveVariants: ResponsiveVariant[] = await ImageEngine.fromPath(imagePath)
+        .toResponsiveSet(responsiveOptions);
+    const responsiveFiles: ResponsiveFilesOutput = await ImageEngine.fromPath(imagePath)
+        .toFilesResponsive(path.resolve(__dirname, '../../.tmp/image-{width}.webp'), responsiveOptions, '/images/image-{width}.webp');
+    console.log(`Responsive outputs: ${responsiveVariants.length} ${responsiveFiles.files.length}`);
+
+    const placeholderOptions: PlaceholderOptions = { size: 16, format: 'webp', quality: 20 };
+    const placeholder: PlaceholderResult = await ImageEngine.fromPath(imagePath)
+        .toPlaceholder(placeholderOptions);
+    console.log(`Placeholder: ${placeholder.width}x${placeholder.height} ${placeholder.bytes}`);
 
     // Uppercase format is also accepted
     await ImageEngine.fromPath(imagePath).toBuffer('JPEG', 80);

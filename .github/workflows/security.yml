@@ -60,17 +60,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       
       - name: Install dependencies
         run: npm ci
       
       - name: Audit published runtime dependencies
-        run: npm audit --omit=dev --audit-level=high
+        timeout-minutes: 20
+        run: node scripts/npm-audit-policy.js --omit=dev --audit-level=high
 
       # Development-only codec oracles process repository-owned fixtures and
       # are not shipped to consumers. Critical advisories still fail here;
       # high runtime advisories remain blocking in the published graph above.
       - name: Audit development dependencies for critical issues
-        run: npm audit --audit-level=critical
+        timeout-minutes: 20
+        run: node scripts/npm-audit-policy.js --audit-level=critical

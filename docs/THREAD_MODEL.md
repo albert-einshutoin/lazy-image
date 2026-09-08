@@ -34,6 +34,7 @@ lazy-image uses two thread pools:
 | `toBufferWithMetrics()` | libuv | Single image with metrics |
 | `toFile()` | libuv | Single image to file |
 | `processBatch()` | **rayon** | Parallel batch processing |
+| `compileImage()` | libuv + Rust async tasks | Plan-order sequential artifacts; concurrency is fixed at 1 in v1 |
 
 ## Concurrency Control
 
@@ -77,6 +78,11 @@ const results = await engine.processBatch(files, outDir, {
 - `1-1024`: Use specified number of workers (manual control)
 
 ## Memory Considerations
+
+`compileImage()` hashes source and delivery files with bounded streaming reads.
+Each artifact remains file-to-file; only the small placeholder is read into a
+bounded Node.js buffer for its data URL. Target-byte search may perform several
+native encodes, and AVIF can dominate total execution time.
 
 ### Per-Image Memory
 
