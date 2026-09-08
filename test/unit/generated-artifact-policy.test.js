@@ -26,7 +26,7 @@ assert.equal(
   packageJson.scripts['check:generated-artifacts'],
   'git diff --exit-code -- index.js index.d.ts',
 )
-assert.match(workflow, /node-version: 20/)
+assert.match(workflow, /node-version: 22/)
 assert.match(
   workflow,
   /Verify committed NAPI artifacts are reproducible[\s\S]*npm run check:generated-artifacts/,

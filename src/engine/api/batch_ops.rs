@@ -174,7 +174,7 @@ impl ImageEngine {
             .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
         let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
+        policy.apply_firewall(self.firewall.policy);
         Ok(AsyncTask::new(BatchTask {
             inputs,
             output_dir,
@@ -182,7 +182,8 @@ impl ImageEngine {
             format: output_format,
             concurrency,
             metadata_policy: policy,
-            auto_orient: self.auto_orient,
+            auto_orient: self.auto_orient
+                || self.firewall.policy == crate::engine::firewall::FirewallPolicy::PublicUpload,
             firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,
@@ -238,7 +239,7 @@ impl ImageEngine {
             .map_err(|e| napi_err(&env, e))?;
         let ops = self.ops.clone();
         let mut policy = self.metadata_policy;
-        policy.apply_firewall(self.firewall.reject_metadata);
+        policy.apply_firewall(self.firewall.policy);
 
         Ok(AsyncTask::new(BatchWithMetricsTask {
             inputs,
@@ -247,7 +248,8 @@ impl ImageEngine {
             format: output_format,
             concurrency,
             metadata_policy: policy,
-            auto_orient: self.auto_orient,
+            auto_orient: self.auto_orient
+                || self.firewall.policy == crate::engine::firewall::FirewallPolicy::PublicUpload,
             firewall: self.firewall,
             #[cfg(feature = "napi")]
             last_error: None,

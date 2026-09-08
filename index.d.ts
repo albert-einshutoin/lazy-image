@@ -178,7 +178,7 @@ export declare class ImageEngine {
    */
   keepMetadata(options?: KeepMetadataOptions | undefined | null): ImageEngine
   /**
-   * Enable Image Firewall mode with built-in policies (strict or lenient).
+   * Enable Image Firewall mode with a built-in policy.
    * Strict mode enforces aggressive limits and rejects dangerous metadata (best for zero-trust inputs).
    * Lenient mode keeps generous limits but still guards against decompression bombs.
    */
@@ -274,6 +274,9 @@ export interface BatchResultWithMetrics {
   autoConcurrency?: boolean
   metrics?: ProcessingMetrics
 }
+
+/** Return the stable native codec/build identity used by artifact fingerprints. */
+export declare function compilerIdentity(): string
 
 export interface Dimensions {
   width: number
@@ -413,8 +416,13 @@ export interface ImageMetadata {
   hasAlpha: boolean
   /** Whether the container declares animation frames. */
   isAnimated: boolean
-  /** EXIF Orientation 1-8, or undefined when absent or invalid. */
+  /**
+   * EXIF Orientation 1-8, or undefined when absent or inspection is unknown.
+   * Check `orientationKnown` before using the value.
+   */
   orientation?: number
+  /** Whether EXIF inspection confirmed the Orientation value is present or absent. */
+  orientationKnown: boolean
 }
 
 /**
@@ -505,6 +513,8 @@ export interface ProcessingMetrics {
   formatOut: CanonicalOutputFormat
   /** True when ICC profile was present and preserved */
   iccPreserved: boolean
+  /** ICC handling result: absent, preserved, unsafe-stripped, policy-stripped, or unsupported */
+  iccOutcome: IccOutcome
   /** True when metadata was stripped (either by default or policy) */
   metadataStripped: boolean
   /** Non-fatal policy rejections (e.g., strict policy forcing metadata strip) */
@@ -567,8 +577,224 @@ export type OutputFormat = CaseInsensitive<CanonicalOutputFormat>
 export type TargetBytesFormat = CaseInsensitive<'jpeg' | 'jpg' | 'webp' | 'avif'>
 export type PresetName = CaseInsensitive<CanonicalPresetName>
 export type ResizeFit = 'inside' | 'cover' | 'fill'
-export type FirewallPolicy = 'strict' | 'lenient'
+export type FirewallPolicy = 'strict' | 'lenient' | 'public-upload'
+export type IccOutcome = 'absent' | 'preserved' | 'unsafe-stripped' | 'policy-stripped' | 'unsupported'
 export type EncodeProfile = 'size-first' | 'balanced' | 'speed-first'
+export type ArtifactFormat = 'jpeg' | 'webp' | 'avif'
+
+export interface ArtifactByteBudget {
+  readonly width: number
+  readonly format: ArtifactFormat
+  readonly maxBytes: number
+}
+
+export interface PublicUploadPolicy {
+  readonly preset?: 'publicUpload'
+  readonly widths?: readonly number[]
+  readonly formats?: readonly ArtifactFormat[]
+  readonly budgets?: readonly ArtifactByteBudget[]
+  readonly placeholder?: boolean
+}
+
+export interface ArtifactSourceFacts {
+  readonly sha256: string
+  readonly bytes: number
+  readonly format: 'jpeg' | 'jpg' | 'png' | 'webp'
+  readonly width: number
+  readonly height: number
+  readonly hasAlpha: boolean
+  readonly isAnimated: boolean
+  readonly orientationKnown: true
+  readonly orientation: number | null
+}
+
+export interface ArtifactPlanSource {
+  readonly sha256: string
+  readonly bytes: number
+  readonly detectedFormat: 'jpeg' | 'png' | 'webp'
+  readonly encodedWidth: number
+  readonly encodedHeight: number
+  readonly displayWidth: number
+  readonly displayHeight: number
+  readonly hasAlpha: boolean
+  readonly isAnimated: false
+  readonly orientationKnown: true
+  readonly orientation: number | null
+  readonly orientationApplied: boolean
+}
+
+export interface ArtifactPlanPolicy {
+  readonly preset: 'publicUpload'
+  readonly widths: readonly number[]
+  readonly formats: readonly ArtifactFormat[]
+  readonly budgets: readonly ArtifactByteBudget[]
+  readonly placeholder: boolean
+}
+
+export interface ArtifactPlanItem {
+  readonly id: string
+  readonly path: string
+  readonly format: ArtifactFormat
+  readonly width: number
+  readonly quality: number
+  readonly targetBytes?: number
+}
+
+export interface ArtifactPlan {
+  readonly schemaVersion: 1
+  readonly compilerFingerprint: string
+  readonly policyFingerprint: string
+  readonly cacheKey: string
+  readonly source: ArtifactPlanSource
+  readonly policy: ArtifactPlanPolicy
+  readonly artifacts: readonly ArtifactPlanItem[]
+  readonly delivery: {
+    readonly srcsets: readonly { readonly format: ArtifactFormat; readonly value: string }[]
+  }
+  readonly placeholder: {
+    readonly id: 'placeholder'
+    readonly path: 'placeholder.webp'
+    readonly format: 'webp'
+    readonly width: 16
+    readonly quality: 20
+  } | null
+}
+
+export declare function compileArtifactPlan(
+  source: ArtifactSourceFacts,
+  policy: PublicUploadPolicy | undefined,
+  compilerFingerprint: string,
+): ArtifactPlan
+
+export interface CompileImageOptions {
+  readonly inputPath: string
+  readonly outputDir: string
+  readonly policy: PublicUploadPolicy
+  readonly signal?: AbortSignal
+}
+
+export interface ImageArtifactManifest {
+  readonly schemaVersion: 1
+  readonly compiler: {
+    readonly name: '@alberteinshutoin/lazy-image'
+    readonly version: string
+    readonly platform: string
+    readonly arch: string
+    readonly fingerprint: string
+  }
+  readonly policy: {
+    readonly preset: 'publicUpload'
+    readonly fingerprint: string
+    readonly widths: readonly number[]
+    readonly formats: readonly ArtifactFormat[]
+    readonly placeholder: boolean
+  }
+  readonly source: {
+    readonly sha256: string
+    readonly bytes: number
+    readonly detectedFormat: 'jpeg' | 'png' | 'webp'
+    readonly encodedWidth: number
+    readonly encodedHeight: number
+    readonly displayWidth: number
+    readonly displayHeight: number
+    readonly hasAlpha: boolean
+    readonly orientation: number | null
+    readonly orientationApplied: boolean
+  }
+  readonly metadata: {
+    readonly mode: 'privacySafe'
+    readonly exif: 'stripped'
+    readonly gps: 'stripped'
+    readonly xmp: 'stripped'
+    readonly comments: 'stripped'
+    readonly unknownAncillary: 'stripped'
+    readonly artifactIccPolicy: 'preserve-if-safe'
+    readonly placeholderIccPolicy: 'strip'
+  }
+  readonly artifacts: readonly {
+    readonly id: string
+    readonly path: string
+    readonly format: ArtifactFormat
+    readonly width: number
+    readonly height: number
+    readonly bytes: number
+    readonly quality: number
+    readonly targetBytes?: number
+    readonly iccOutcome: IccOutcome
+    readonly sha256: string
+  }[]
+  readonly delivery: {
+    readonly srcsets: readonly { readonly format: ArtifactFormat; readonly value: string }[]
+  }
+  readonly placeholder?: {
+    readonly path: 'placeholder.webp'
+    readonly dataUrl: string
+    readonly format: 'webp'
+    readonly width: number
+    readonly height: number
+    readonly bytes: number
+    readonly iccOutcome: 'stripped-for-placeholder'
+    readonly sha256: string
+  }
+  readonly cacheKey: string
+}
+
+export interface ArtifactCompilationError extends Error {
+  readonly phase: 'preflight' | 'planning' | 'processing' | 'verification' | 'commit' | 'cleanup'
+  readonly artifactId?: string
+  readonly errorCode?: string
+  readonly category?: ErrorCategory
+  readonly errorCategory?: ErrorCategory
+  readonly code?: string
+  readonly recoveryHint?: string
+  readonly cause?: unknown
+  readonly cleanupError?: unknown
+}
+
+export declare function compileImage(options: CompileImageOptions): Promise<ImageArtifactManifest>
+
+export interface ResponsiveVariant {
+  readonly width: number
+  readonly data: Buffer
+  readonly bytes: number
+}
+
+export interface ResponsiveSetOptions {
+  widths: number[]
+  format: OutputFormat
+  quality?: number
+  fastMode?: boolean
+}
+
+export interface ResponsiveFileResult {
+  readonly width: number
+  readonly path: string
+  readonly bytesWritten: number
+}
+
+export interface ResponsiveFilesOutput {
+  files: ResponsiveFileResult[]
+  srcset: string
+}
+
+export interface PlaceholderOptions {
+  /** Longest edge in pixels. Defaults to 16 and must be between 4 and 64. */
+  size?: number
+  /** Output format. Defaults to WebP. */
+  format?: 'webp' | 'jpeg' | 'png'
+  /** Quality for lossy formats. Defaults to 20; ignored for PNG. */
+  quality?: number
+}
+
+export interface PlaceholderResult {
+  /** A data URL suitable for an image src or blurDataURL. */
+  dataUrl: string
+  /** Actual encoded dimensions after preserving the source aspect ratio. */
+  width: number
+  height: number
+  /** Encoded bytes before base64 conversion. */
+  bytes: number
+}
 
 export interface ResolvedEncodeProfile {
   format: CanonicalOutputFormat
@@ -582,6 +808,9 @@ export interface ImageEngine {
   toFileProfile(path: string, format: OutputFormat, profile?: EncodeProfile, quality?: number | undefined | null): Promise<number>
   toBufferTargetBytes(format: TargetBytesFormat, options: TargetBytesOptions): Promise<BufferTargetBytesResult>
   toFileTargetBytes(path: string, format: TargetBytesFormat, options: TargetBytesOptions): Promise<FileTargetBytesResult>
+  toResponsiveSet(options: ResponsiveSetOptions): Promise<ResponsiveVariant[]>
+  toFilesResponsive(pattern: string, options: ResponsiveSetOptions, srcsetPattern?: string): Promise<ResponsiveFilesOutput>
+  toPlaceholder(options?: PlaceholderOptions): Promise<PlaceholderResult>
   // Note: encode() / encodeToFile() are declared on the ImageEngine class
   // (see patchIndexDts patches that retype them to EncodeOptionsInput) and
   // are deliberately NOT re-declared here to avoid duplicate signatures.
@@ -660,6 +889,8 @@ export interface TargetBytesOptions {
   fastMode?: boolean
   /** Behaviour when budget cannot be met: 'best-effort' (default) or 'strict' */
   qualityFloorPolicy?: 'best-effort' | 'strict'
+  /** Fail when the target cannot be met (alias for qualityFloorPolicy: 'strict') */
+  strict?: boolean
 }
 
 export interface BufferTargetBytesResult {

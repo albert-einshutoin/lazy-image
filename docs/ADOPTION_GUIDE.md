@@ -40,6 +40,22 @@ Runnable companion: [`examples/upload-sanitize-server.mjs`](../examples/upload-s
 shows a dependency-free raw upload endpoint with header inspection, Image
 Firewall limits, and error-category to HTTP status mapping.
 
+For the complete public artifact transaction, use `compileImage()` instead of
+manually wiring several output calls:
+
+```javascript
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/upload.bin',
+  outputDir: '/srv/public/images/v1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+It rejects an existing output directory, writes only library-owned names,
+verifies the generated files and privacy metadata, and publishes only after a
+single directory rename. The output parent must be trusted and remain on the
+same filesystem during the call.
+
 ### 3. Build-time static asset optimization
 
 Use batch processing or cloning when the same source needs multiple outputs.
@@ -210,8 +226,13 @@ Same pattern as Lambda. Use `/tmp` for scratch files. For Cloud Run, set `--memo
 
 These environments run in V8 isolates and **do not support the native NAPI binary** that lazy-image ships. The published `@alberteinshutoin/lazy-image` package requires a Node.js runtime (Vercel Node Functions, Netlify Node Functions, AWS Lambda, Cloud Run, etc.).
 
-For Edge / Workers, process images in a background Node-runtime function and serve the results from a CDN. Wasm support for V8-isolate runtimes is tracked under [#645](https://github.com/albert-einshutoin/lazy-image/issues/645).
-The current product direction is documented in [WASM_STRATEGY.md](./WASM_STRATEGY.md), with benchmark expectations in [WASM_BENCHMARKING.md](./WASM_BENCHMARKING.md).
+For Edge / Workers, the published `@alberteinshutoin/lazy-image-wasm` MVP provides
+an upload-preflight path. Treat production suitability as runtime-specific and
+validate bundle cost, codec loading, and latency for the target deployment.
+Broader runtime evidence and ergonomics are tracked under
+[#645](https://github.com/albert-einshutoin/lazy-image/issues/645). The current
+product direction is documented in [WASM_STRATEGY.md](./WASM_STRATEGY.md), with
+benchmark expectations in [WASM_BENCHMARKING.md](./WASM_BENCHMARKING.md).
 
 ### Cold start optimization
 
