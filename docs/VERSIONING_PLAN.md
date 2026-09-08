@@ -1,6 +1,6 @@
 # 📋 Versioning Plan & Priorities
 
-> **Current package version**: v1.2.0 (release preparation)
+> **Current package version**: v1.2.0
 > **Working baseline**: `main`
 
 このドキュメントは、古い issue 番号ベースの固定計画ではなく、`main` の現状に合った優先順位を簡潔に示します。
