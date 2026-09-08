@@ -541,7 +541,6 @@ impl<R: Seek> Seek for LimitedSeekReader<R> {
     }
 }
 
-#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum OrientationInspection {
     Absent,
@@ -549,7 +548,6 @@ pub(crate) enum OrientationInspection {
     Unknown,
 }
 
-#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 fn orientation_from_exif(exif: exif::Exif) -> OrientationInspection {
     let Some(field) = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY) else {
         return OrientationInspection::Absent;
@@ -564,7 +562,6 @@ fn orientation_from_exif(exif: exif::Exif) -> OrientationInspection {
     }
 }
 
-#[cfg(any(feature = "napi", feature = "fuzzing", test))]
 fn orientation_from_jpeg_header(data: &[u8], source_complete: bool) -> OrientationInspection {
     const EXIF_ID: &[u8] = b"Exif\0\0";
 
@@ -575,10 +572,12 @@ fn orientation_from_jpeg_header(data: &[u8], source_complete: bool) -> Orientati
     let mut position = 2;
     let mut orientation = None;
     let mut saw_exif = false;
-    let finish = |orientation: Option<u16>, complete: bool, saw_exif: bool| {
-        if let Some(orientation) = orientation {
+    let finish = |orientation: Option<u16>, header_complete: bool, absence_confirmed: bool| {
+        if !header_complete && !source_complete {
+            OrientationInspection::Unknown
+        } else if let Some(orientation) = orientation {
             OrientationInspection::Value(orientation)
-        } else if complete || source_complete || saw_exif {
+        } else if source_complete || absence_confirmed {
             OrientationInspection::Absent
         } else {
             OrientationInspection::Unknown
@@ -597,10 +596,10 @@ fn orientation_from_jpeg_header(data: &[u8], source_complete: bool) -> Orientati
         let marker = data[position];
         position += 1;
         if marker == 0xda {
-            return finish(orientation, false, saw_exif);
+            return finish(orientation, true, saw_exif);
         }
         if marker == 0xd9 {
-            return finish(orientation, true, saw_exif);
+            return finish(orientation, true, true);
         }
         if marker == 0x01 || (0xd0..=0xd7).contains(&marker) {
             continue;
@@ -638,7 +637,7 @@ fn orientation_from_jpeg_header(data: &[u8], source_complete: bool) -> Orientati
         }
         position = payload_end;
     }
-    finish(orientation, false, saw_exif)
+    finish(orientation, false, false)
 }
 
 /// Inspect EXIF Orientation from a seekable container without decoding pixels.
@@ -677,9 +676,7 @@ pub(crate) fn inspect_exif_orientation_bounded_from_reader<R: BufRead + Seek>(
     if bounded.starts_with(&[0xff, 0xd8]) {
         let orientation =
             orientation_from_jpeg_header(&bounded, source_len <= MAX_ORIENTATION_SCAN_BYTES);
-        if source_len > MAX_ORIENTATION_SCAN_BYTES || orientation != OrientationInspection::Absent {
-            return orientation;
-        }
+        return orientation;
     }
     let exif = match exif::Reader::new().read_from_container(&mut Cursor::new(bounded)) {
         Ok(exif) => exif,
@@ -698,6 +695,12 @@ pub(crate) fn inspect_exif_orientation_bounded_from_reader<R: BufRead + Seek>(
 /// checks already run before this call, and preserving auto-orientation for
 /// valid EXIF after large APP/ICC/XMP segments is part of the existing API.
 pub fn detect_exif_orientation(bytes: &[u8]) -> Option<u16> {
+    if bytes.starts_with(&[0xff, 0xd8]) {
+        return match orientation_from_jpeg_header(bytes, true) {
+            OrientationInspection::Value(orientation) => Some(orientation),
+            OrientationInspection::Absent | OrientationInspection::Unknown => None,
+        };
+    }
     let mut cursor = Cursor::new(bytes);
     let exif = exif::Reader::new().read_from_container(&mut cursor).ok()?;
     let field = exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?;
@@ -748,11 +751,12 @@ mod tests {
         duplicate.extend_from_slice(&jpeg[..2]);
         duplicate.extend_from_slice(&empty_segment);
         duplicate.extend_from_slice(&jpeg[2..]);
-        let mut reader = std::io::BufReader::new(std::io::Cursor::new(duplicate));
+        let mut reader = std::io::BufReader::new(std::io::Cursor::new(duplicate.as_slice()));
         assert_eq!(
             inspect_exif_orientation_bounded_from_reader(&mut reader),
             OrientationInspection::Value(6)
         );
+        assert_eq!(detect_exif_orientation(&duplicate), Some(6));
 
         let exif_offset = jpeg
             .windows(2)
@@ -770,11 +774,12 @@ mod tests {
         conflicting.extend_from_slice(&jpeg[..2]);
         conflicting.extend_from_slice(&conflicting_segment);
         conflicting.extend_from_slice(&jpeg[2..]);
-        let mut reader = std::io::BufReader::new(std::io::Cursor::new(conflicting));
+        let mut reader = std::io::BufReader::new(std::io::Cursor::new(conflicting.as_slice()));
         assert_eq!(
             inspect_exif_orientation_bounded_from_reader(&mut reader),
             OrientationInspection::Unknown
         );
+        assert_eq!(detect_exif_orientation(&conflicting), None);
     }
 
     #[test]
