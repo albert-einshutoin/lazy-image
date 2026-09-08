@@ -18,6 +18,32 @@ The responsive and placeholder helpers are additive Node.js APIs. They reuse
 the existing lazy pipeline and do not change the native ABI or the
 privacy-safe `compileImage()` contract.
 
+### v1.3.0 planned scope (#703)
+
+v1.3.0 is a backward-compatible release focused on closing the remaining
+artifact-compiler evidence gap. The following compiler hardening is already on
+`main` and is part of the release baseline:
+
+- #827: transparent AVIF artifact verification
+- #828: bounded-buffer JPEG container verification
+- #829: distinction between absent and unparseable EXIF Orientation
+
+The remaining release gates are:
+
+- #830: align the benchmark explanation with the canonical historical numbers
+- #769: record real-image, perceptual-quality, budget, memory, and E2E compiler
+  evidence, including the #827/#828/#829 regression cases
+
+#696 (the thin `compileImage()` CLI) stays outside v1.3.0 until #769 is
+complete. It adds a public filesystem entrypoint and needs its own API,
+packaging, and security review; bundling it now would make the release scope
+larger without closing the evidence gate.
+
+v1.3.0 is release-ready only after #830 and #769 are resolved, the resulting
+claims are synchronized, and the published native/Wasm package smoke evidence
+is recorded. Merged implementation and published-package evidence remain
+separate release claims.
+
 ### P1
 
 - 長時間稼働と NAPI 境界を含むリーク検知の強化
@@ -49,10 +75,9 @@ privacy-safe `compileImage()` contract.
 - `toBufferWithMetrics()` などの既存 output convenience API は v1.x では
   維持し、削除は v2.0.0 でのみ検討する。v1 より前に削除済みの metrics
   aliases は v1.x の公開契約に含めない。
-- #703（artifact compiler）はv1.2.0で#697/#698の完了を追跡する。#696（CLI）と
-  #769（実画像 benchmark evidence）は後続リリースで扱い、v1.2.0のblockerには
-  しない。
+- #703（artifact compiler）はv1.3.0で#827/#828/#829の完了を含め、#830と#769を
+  release gateとして追跡する。#696（CLI）は#769後の後続リリースで扱う。
 - #645（Wasm runtime expansion）と#88（Web Streams）はv2.0以降の計画であり、
-  v1.2.0には含めない。
+  v1.3.0にも含めない。
 
 詳細な中長期方針は [ROADMAP.md](./ROADMAP.md) を参照してください。

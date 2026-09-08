@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+> Target: v1.3.0. The release baseline includes #827, #828, and #829; #830
+> and #769 remain release gates. The #696 CLI is deferred until the evidence
+> gate is complete. See [VERSIONING_PLAN.md](docs/VERSIONING_PLAN.md).
+
+### Fixed
+- Hardened `compileImage()` verification for transparent AVIF artifacts.
+- Distinguished absent EXIF Orientation from unparseable or over-budget input
+  during upload preflight while retaining fail-closed behavior.
+
+### Performance
+- Replaced byte-at-a-time JPEG container verification I/O with bounded-buffer
+  reads while preserving complete scan validation and cleanup guarantees.
+
 ---
 
 ## [1.2.0] - 2026-09-05
