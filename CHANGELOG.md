@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> Target: v1.3.0. The release baseline includes #827, #828, and #829; #830
-> and #769 remain release gates. The #696 CLI is deferred until the evidence
-> gate is complete. See [VERSIONING_PLAN.md](docs/VERSIONING_PLAN.md).
+> Target: v1.3.0. The release baseline includes #827, #828, #829, and the
+> already-aligned benchmark claims in #830; #769 remains the release gate. The
+> #696 CLI is deferred until the evidence gate is complete. See
+> [VERSIONING_PLAN.md](docs/VERSIONING_PLAN.md).
 
 ### Fixed
 - Hardened `compileImage()` verification for transparent AVIF artifacts.
