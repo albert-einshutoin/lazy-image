@@ -162,7 +162,7 @@ impl EncodeTargetBytesTask {
             base_ctx.source,
             base_ctx.decoded,
             base_ctx.ops,
-            base_ctx.icc_present,
+            base_ctx.icc_state,
             base_ctx.auto_orient,
             base_ctx.firewall,
             base_ctx.format,

@@ -61,6 +61,14 @@ pub use encoder::QualitySettings;
 pub use firewall::FirewallConfig;
 pub use io::Source;
 
+// Crate-internal coordination points shared with header inspection. Re-export
+// only the functions needed by the sibling module so the engine's internal
+// module tree does not become part of the public API.
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub(crate) use common::run_with_panic_policy;
+#[cfg(any(feature = "napi", feature = "fuzzing", test))]
+pub(crate) use decoder::{inspect_exif_orientation_bounded_from_reader, OrientationInspection};
+
 // -----------------------------------------------------------------------------
 // Internal items exposed to integration tests and fuzz targets
 // -----------------------------------------------------------------------------
@@ -123,6 +131,7 @@ pub use stress::run_stress_iteration;
 mod tests {
     use crate::engine::api::MetadataPolicy;
     use crate::engine::firewall::FirewallConfig;
+    use crate::engine::io::IccSourceState;
     use crate::engine::tasks::{EncodeTask, TaskContext};
     use crate::engine::test_support::create_test_image;
     use crate::error::LazyImageError;
@@ -156,7 +165,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -182,7 +191,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -206,7 +215,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -237,7 +246,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),
@@ -264,7 +273,7 @@ mod tests {
                     ops: vec![],
                     format: OutputFormat::Png,
                     icc_profile: None,
-                    icc_present: false,
+                    icc_state: IccSourceState::Absent,
                     exif_data: None,
                     auto_orient: true,
                     metadata_policy: MetadataPolicy::default_policy(),

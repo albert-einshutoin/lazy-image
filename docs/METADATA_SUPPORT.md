@@ -19,6 +19,18 @@ await ImageEngine.fromPath('input.jpg')
   .toFile('output.jpg', 'jpeg', 85);
 ```
 
+For untrusted public uploads, use `sanitize({ policy: 'public-upload' })`.
+It keeps the strict 32 MiB / 40 MP / cooperative 5-second resource limits,
+preserves only structurally valid ICC profiles up to 512 KiB, and forces all
+EXIF (including GPS), XMP, comments, and unknown ancillary metadata out of the
+re-encoded output. Calling `keepMetadata()` before or after cannot weaken this
+policy; `.limits()` may only tighten its fixed resource limits.
+
+`compileImage()` applies the same privacy-safe policy to every delivery
+artifact, records the existing `IccOutcome` value in the manifest, and uses a
+separate strip-all metadata policy for the 16px placeholder. The placeholder
+is the only artifact read into a bounded Node.js buffer (to build its data URL).
+
 ## Feature Matrix
 
 | Metadata type | Default | Opt-in API | Current status |
@@ -45,7 +57,24 @@ await ImageEngine.fromPath('input.jpg')
 - EXIF Orientation is reset to `1` after auto-orient for JPEG, PNG, and WebP outputs to avoid downstream double rotation.
 - GPS data inside EXIF is stripped by default for JPEG, PNG, and WebP outputs. Use `keepMetadata({ exif: true, stripGps: false })` only when location metadata must be retained.
 - `sanitize({ policy: 'strict' })` can override metadata preservation and strip metadata for safety.
+- `sanitize({ policy: 'public-upload' })` forces ICC-only output metadata. Malformed ICC is reported as `unsafe-stripped`; oversized ICC is rejected by the firewall.
 - For workflows that depend on exact metadata retention, validate behavior in integration tests against your target output format.
+
+## Inspection is separate from preservation
+
+`inspect()` and `inspectFile()` expose EXIF Orientation as a preflight fact;
+they do not preserve metadata or transform dimensions. The returned
+`orientation` is `1` through `8` when a valid primary-image tag is present and
+found within the 64 KiB preflight scan budget, and `undefined` otherwise. The
+budget prevents an EXIF-free container from forcing inspection to consume the
+encoded image payload. `width` and `height` remain the encoded dimensions.
+
+The same successful preflight also returns authoritative `hasAlpha` and
+`isAnimated` booleans for JPEG, PNG, and WebP. A malformed or unsupported
+container fails through the typed error contract instead of turning an unknown
+trait into `false`. Output metadata stripping, GPS policy, ICC preservation,
+and auto-orient behavior remain controlled by the processing APIs described
+above.
 
 ## Recommended Usage
 

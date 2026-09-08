@@ -110,7 +110,15 @@ test('only the Cargo audit job receives issue write access and calls the tested 
     .readFileSync(path.join(__dirname, '../../.github/workflows/security.yml'), 'utf8')
     .replace(/\r\n/g, '\n')
 
-  assert.match(workflow, /permissions:\n  contents: read\n\njobs:/)
+  const topLevelPermissions = workflow.indexOf('permissions:\n  contents: read\n')
+  const jobs = workflow.indexOf('\njobs:\n')
+  assert.ok(topLevelPermissions >= 0, 'top-level contents:read permission must exist')
+  assert.ok(jobs > topLevelPermissions, 'jobs must follow top-level permissions')
+  assert.doesNotMatch(
+    workflow.slice(topLevelPermissions, jobs),
+    /issues: write/,
+    'workflow-level permissions must not grant issue writes',
+  )
   assert.match(
     workflow,
     /audit:\n    name: Cargo Audit\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      issues: write/,

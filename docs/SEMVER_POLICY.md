@@ -6,7 +6,7 @@ This document defines how **lazy-image** uses Semantic Versioning (SemVer) and h
 - JavaScript/TypeScript API (`@alberteinshutoin/lazy-image`, including `ImageEngine`, `createStreamingPipeline`, and exported types)
 - N-API binary interface (prebuilt platform packages)
 - Documented behaviors in `README.md`, `README.ja.md`, and `spec/` (resize rules, metadata defaults, limits, error taxonomy)
-- Supported Node.js versions (currently `>=18`)
+- Supported Node.js versions (currently `>=22`)
 
 Rust crate internals are not a public surface; they may change without notice as long as the JS API remains stable.
 

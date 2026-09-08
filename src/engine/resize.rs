@@ -48,20 +48,24 @@ pub fn calc_resize_dimensions(
             if orig_ratio > target_ratio {
                 // Original image is wider → fit to width
                 let ratio = w as f64 / orig_w as f64;
-                (w, (orig_h as f64 * ratio).round() as u32)
+                let resized_h = (orig_h as f64 * ratio).round() as u32;
+                (w, resized_h.max(1))
             } else {
                 // Original image is taller → fit to height
                 let ratio = h as f64 / orig_h as f64;
-                ((orig_w as f64 * ratio).round() as u32, h)
+                let resized_w = (orig_w as f64 * ratio).round() as u32;
+                (resized_w.max(1), h)
             }
         }
         (Some(w), None) => {
             let ratio = w as f64 / orig_w as f64;
-            (w, (orig_h as f64 * ratio).round() as u32)
+            let resized_h = (orig_h as f64 * ratio).round() as u32;
+            (w, resized_h.max(1))
         }
         (None, Some(h)) => {
             let ratio = h as f64 / orig_h as f64;
-            ((orig_w as f64 * ratio).round() as u32, h)
+            let resized_w = (orig_w as f64 * ratio).round() as u32;
+            (resized_w.max(1), h)
         }
         (None, None) => (orig_w, orig_h),
     }
@@ -485,6 +489,12 @@ mod tests {
         fn test_both_dimensions_same_aspect_ratio() {
             let (w, h) = calc_resize_dimensions(1000, 500, Some(800), Some(400));
             assert_eq!((w, h), (800, 400));
+        }
+
+        #[test]
+        fn test_extreme_aspect_ratio_keeps_short_edge_at_one_pixel() {
+            assert_eq!(calc_resize_dimensions(1000, 1, Some(16), Some(16)), (16, 1));
+            assert_eq!(calc_resize_dimensions(1, 1000, Some(16), Some(16)), (1, 16));
         }
     }
 
