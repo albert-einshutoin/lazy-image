@@ -21,7 +21,7 @@ This document explains how to participate in the project.
 
 ### Required Tools
 
-- **Node.js**: >= 18
+- **Node.js**: >= 22
 - **Rust**: stable (latest recommended)
 - **Cargo**: included with Rust
 - **npm**: included with Node.js
@@ -268,7 +268,7 @@ lazy-image へのコントリビューションに興味を持っていただき
 
 ### 必要なツール
 
-- **Node.js**: >= 18
+- **Node.js**: >= 22
 - **Rust**: stable (最新推奨)
 - **Cargo**: Rustに付属
 - **npm**: Node.jsに付属

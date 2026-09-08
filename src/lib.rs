@@ -61,8 +61,11 @@ pub struct ImageMetadata {
     pub has_alpha: bool,
     /// Whether the container declares animation frames.
     pub is_animated: bool,
-    /// EXIF Orientation 1-8, or undefined when absent or invalid.
+    /// EXIF Orientation 1-8, or undefined when absent or inspection is unknown.
+    /// Check `orientationKnown` before using the value.
     pub orientation: Option<u16>,
+    /// Whether EXIF inspection confirmed the Orientation value is present or absent.
+    pub orientation_known: bool,
 }
 
 #[cfg(feature = "napi")]
@@ -75,6 +78,7 @@ impl From<InspectMetadata> for ImageMetadata {
             has_alpha: value.has_alpha,
             is_animated: value.is_animated,
             orientation: value.orientation,
+            orientation_known: value.orientation_known,
         }
     }
 }
@@ -127,6 +131,24 @@ pub fn version() -> String {
 }
 
 #[cfg(feature = "napi")]
+/// Return the stable native codec/build identity used by artifact fingerprints.
+#[napi(js_name = "compilerIdentity")]
+pub fn compiler_identity() -> String {
+    let avif = if cfg!(feature = "avif") {
+        "avif"
+    } else {
+        "no-avif"
+    };
+    format!(
+        "lazy-image-native:{};config={};target={};profile={};feature={avif}",
+        env!("CARGO_PKG_VERSION"),
+        env!("LAZY_IMAGE_COMPILER_CONFIG"),
+        env!("LAZY_IMAGE_COMPILER_TARGET"),
+        env!("LAZY_IMAGE_COMPILER_PROFILE"),
+    )
+}
+
+#[cfg(feature = "napi")]
 const BASE_FORMATS: &[&str] = &["jpeg", "jpg", "png", "webp"];
 
 #[cfg(feature = "napi")]
@@ -150,7 +172,7 @@ pub fn supported_output_formats() -> Vec<String> {
 }
 
 /// Metrics payload version. Keep in sync with docs/metrics-schema.json
-pub const PROCESSING_METRICS_VERSION: &str = "1.0.0";
+pub const PROCESSING_METRICS_VERSION: &str = "1.1.0";
 
 /// Processing metrics for performance monitoring
 #[derive(Debug)]
@@ -189,6 +211,8 @@ pub struct ProcessingMetrics {
     pub format_out: String,
     /// True when ICC profile was present and preserved
     pub icc_preserved: bool,
+    /// ICC handling result: absent, preserved, unsafe-stripped, policy-stripped, or unsupported
+    pub icc_outcome: String,
     /// True when metadata was stripped (either by default or policy)
     pub metadata_stripped: bool,
     /// Non-fatal policy rejections (e.g., strict policy forcing metadata strip)
@@ -212,6 +236,7 @@ impl Default for ProcessingMetrics {
             format_in: None,
             format_out: String::new(),
             icc_preserved: false,
+            icc_outcome: "absent".to_string(),
             metadata_stripped: true,
             policy_violations: Vec::new(),
         }
@@ -362,7 +387,7 @@ mod tests {
 
     #[test]
     fn test_processing_metrics_version_constant() {
-        assert_eq!(PROCESSING_METRICS_VERSION, "1.0.0");
+        assert_eq!(PROCESSING_METRICS_VERSION, "1.1.0");
     }
 
     #[test]

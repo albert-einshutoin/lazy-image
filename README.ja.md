@@ -46,6 +46,22 @@ console.log(`Wrote ${bytesWritten} bytes`);
 - 静的サイト生成バッチ: `processBatch()` / `clone()`
 - 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
 
+未信頼のローカル画像から公開用成果物一式を安全に作る場合は、
+transactional compilerを使います。全artifact、placeholder、manifestを
+private stagingで検証してから一度だけ公開ディレクトリへcommitします。
+
+```javascript
+const { compileImage } = require('@alberteinshutoin/lazy-image');
+
+const manifest = await compileImage({
+  inputPath: '/srv/uploads/image.bin',
+  outputDir: '/srv/public/images/v1',
+  policy: { widths: [320, 640], formats: ['webp'], placeholder: true },
+});
+```
+
+既存の出力ディレクトリは上書きせず、artifact全体をNode.jsのBufferへ戻しません。
+
 ## Cost Savings Example (ROI)
 
 README（英語版）と同じ想定計算を参照します。月間配信量とエンコーディング回数次第で節約は拡大します。
@@ -58,7 +74,7 @@ npm install @alberteinshutoin/lazy-image
 
 | 環境 | 概要 |
 |---|---|
-| ランタイム | platform optional dependencies が自動インストール |
+| ランタイム | Node.js 22+。platform optional dependencies が自動インストール |
 | パッケージサイズ | プラットフォーム別で 6〜9MB 前後 |
 | 自前ビルド | `npm run build` |
 
@@ -86,6 +102,8 @@ const meta = inspectFile('input.jpg');
 - JPEG/PNG/WebP/AVIF エンコード
 - ICC / EXIF / GPS オフロード
 - フォーマット別最適化・メトリクス
+- レスポンシブ画像セット / srcset 生成ヘルパー
+- LQIPプレースホルダ / blurDataURL生成
 - Image Firewall / Rust メモリ安全
 
 ## Development

@@ -138,3 +138,22 @@ test('target-bytes options reject values above the native u32 contract', async (
     /u32 limit \(4294967295\)/,
   )
 })
+
+test('target-bytes strict rejects malformed values before native output', async () => {
+  let called = false
+  const engine = {
+    toBufferTargetBytesNative: async () => { called = true },
+    toFileTargetBytesNative: async () => { called = true },
+  }
+  for (const strict of [null, 'true', 1]) {
+    await assert.rejects(
+      runTargetBytesSearch(engine, 'jpeg', { targetBytes: 1000, strict }),
+      (error) => error.errorCode === 'E400' && error.category === 0,
+    )
+    await assert.rejects(
+      runTargetBytesFileSearch(engine, '/tmp/output.jpg', 'jpeg', { targetBytes: 1000, strict }),
+      (error) => error.errorCode === 'E400' && error.category === 0,
+    )
+  }
+  assert.equal(called, false)
+})
