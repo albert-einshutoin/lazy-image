@@ -2,6 +2,11 @@
 
 This document is the **canonical benchmark source** for public performance claims in lazy-image documentation.
 
+The values below are a historical baseline recorded on 2026-07-17 with
+lazy-image v0.16.0, Node.js v24.2.0, sharp v0.34.5, and macOS 26.3 on an
+Apple M4 (arm64). They remain the canonical reference for these documented
+claims, but are not current v1.2.0 measurements.
+
 Use this file when citing benchmark numbers in:
 
 - `README.md`
@@ -13,7 +18,7 @@ Do not mix numbers from different workloads without clearly labeling the scenari
 This document provides comprehensive benchmark documentation showing the actual performance characteristics of lazy-image, with a focus on:
 
 - **JPEG file size advantages** in benchmarked web-delivery scenarios
-- **AVIF/WebP trade-offs** where current sharp results are often faster or smaller
+- **AVIF/WebP trade-offs** where sharp was often faster or smaller in the recorded baseline
 - **Copy and memory semantics** that distinguish V8-heap avoidance from codec working buffers
 
 ## Test Environment
@@ -47,9 +52,11 @@ npm run test:bench:extended
 
 ---
 
-## AVIF Current Trade-offs
+## AVIF Trade-offs in the Historical Baseline
 
-In the current benchmarked PNG → AVIF scenarios below, sharp is faster and produces smaller AVIF output. Do not quote AVIF as a blanket speed or size win for lazy-image.
+In the recorded PNG → AVIF scenarios below, sharp was faster and produced
+smaller AVIF output. Do not quote AVIF as a blanket speed or size win for
+lazy-image.
 
 ### Performance Results
 
@@ -103,7 +110,8 @@ const avifBuffer = await ImageEngine.fromPath('test/fixtures/test_4.5MB_5000x500
 
 ## JPEG File Size Advantages (mozjpeg Optimization)
 
-lazy-image produces significantly smaller JPEG files than sharp, thanks to mozjpeg's advanced optimization techniques.
+In this historical baseline, lazy-image produced significantly smaller JPEG
+files than sharp, thanks to mozjpeg's advanced optimization techniques.
 
 ### Performance Results
 
@@ -193,7 +201,7 @@ const jpegBuffer = await ImageEngine.fromPath('test/fixtures/test_4.5MB_5000x500
   .resize(800, null)
   .toBuffer('jpeg', 80); // Quality 80, mozjpeg optimization
 
-// Result in simple canonical JPEG benchmarks: 17-20% smaller than sharp at the same quality setting
+// Result in the historical canonical JPEG baseline: 17-20% smaller than sharp at the same quality setting
 ```
 
 ---
@@ -202,7 +210,9 @@ const jpegBuffer = await ImageEngine.fromPath('test/fixtures/test_4.5MB_5000x500
 
 ### Format Conversion Efficiency (No Resize)
 
-When converting formats without resizing, current results are codec-specific. CoW avoids unnecessary pipeline materialization, but encoders still allocate codec working buffers.
+When converting formats without resizing, the recorded results are
+codec-specific. CoW avoids unnecessary pipeline materialization, but encoders
+still allocate codec working buffers.
 
 | Conversion | lazy-image | sharp | Speed | File Size |
 |------------|------------|-------|-------|-----------|
@@ -242,12 +252,15 @@ See [ZERO_COPY.md](./ZERO_COPY.md) for the precise scope and validation method.
 
 ```
 JPEG: 17-20% smaller files in simple PNG -> JPEG no-resize and resize-800px scenarios
-AVIF: current PNG -> AVIF benchmarks are slower and larger than sharp
-WebP: current PNG -> WebP benchmarks are slower and similar/larger than sharp
+AVIF: recorded PNG -> AVIF benchmarks were slower and larger than sharp
+WebP: recorded PNG -> WebP benchmarks were slower and similar/larger than sharp
 Memory: fromPath avoids V8-heap input copies; codec working buffers still exist
 ```
 
-**Summary**: lazy-image's current public size advantage is strongest for **JPEG compression efficiency** in the benchmarked delivery-oriented scenarios. AVIF and WebP must be treated as workload-specific trade-offs, not blanket wins over sharp.
+**Summary**: The documented baseline's size advantage is strongest for **JPEG
+compression efficiency** in the benchmarked delivery-oriented scenarios.
+AVIF and WebP must be treated as workload-specific trade-offs, not blanket
+wins over sharp.
 
 ---
 
@@ -299,8 +312,8 @@ For ongoing CI/threshold operation rules, see [docs/BENCHMARK_OPERATIONS.md](./B
 
 ### Performance Trade-offs
 
-- **JPEG encoding speed**: lazy-image prioritizes compression ratio and produced 17-20% smaller JPEG outputs in the two simple current benchmarked PNG -> JPEG scenarios. Speed was comparable in these runs and should be remeasured on target hardware.
-- **AVIF/WebP encoding speed and size**: current PNG -> AVIF and PNG -> WebP benchmarks favor sharp for speed, and often for output size.
+- **JPEG encoding speed**: lazy-image prioritizes compression ratio and produced 17-20% smaller JPEG outputs in the two simple historical baseline PNG -> JPEG scenarios. The no-resize run was slightly faster for lazy-image (712ms vs 765ms); the resize-800px run was faster for sharp (114ms vs 78ms). These are workload-specific baseline timings, not a general speed claim.
+- **AVIF/WebP encoding speed and size**: the recorded PNG -> AVIF and PNG -> WebP benchmarks favored sharp for speed, and often for output size.
 - **Real-time processing**: For strict latency requirements (<100ms), benchmark the target codec and image mix before choosing lazy-image.
 
 ### Test Environment Variations
@@ -320,7 +333,7 @@ These benchmarks are for reference only and should be validated in your specific
 
 lazy-image provides significant advantages in:
 
-1. **JPEG file size**: 17-20% smaller files through mozjpeg optimization in the two simple canonical PNG -> JPEG scenarios
+1. **JPEG file size**: 17-20% smaller files through mozjpeg optimization in the two simple historical baseline PNG -> JPEG scenarios
 2. **Memory efficiency**: `fromPath()` avoids V8-heap input copies and keeps decoded pixels in Rust memory
 3. **Operational safety**: metadata stripping, Image Firewall, structured errors, and panic guards
 4. **Build-time optimization**: Ideal for static site generation and CI/CD pipelines
@@ -334,9 +347,9 @@ Choose lazy-image when:
 Choose sharp when:
 - Real-time processing with strict latency requirements (<100ms)
 - Maximum throughput is needed (high-volume processing)
-- AVIF/WebP speed or size is the primary decision criterion in the current benchmarked scenarios
+- AVIF/WebP speed or size is the primary decision criterion in the recorded benchmark scenarios
 - Complex operations are needed (advanced filters, color space conversions)
 
 ---
 
-*Last updated: 2026-07-17, based on lazy-image v0.16.0, Node.js v24.2.0, and sharp v0.34.5. Re-run `npm run test:bench`, `node --expose-gc test/benchmarks/convert-only.bench.js`, and `npm run test:bench:extended` when encoder dependencies or public claims change.*
+*Historical baseline recorded 2026-07-17 on macOS 26.3 / Apple M4 (arm64), based on lazy-image v0.16.0, Node.js v24.2.0, and sharp v0.34.5. Re-run the benchmarks when encoder dependencies or public claims change.*
