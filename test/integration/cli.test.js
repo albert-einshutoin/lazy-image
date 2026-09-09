@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { spawnSync } = require('node:child_process');
+const { spawnSync, fork, execFileSync } = require('node:child_process');
 const fsp = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
@@ -92,6 +92,76 @@ async function main() {
     assert.equal(existing.stdout, '');
     assert.match(existing.stderr, /E301/);
     assert.deepEqual(await fsp.readdir(existingOutput), []);
+
+    for (const [name, input, policy, code] of [
+      ['budget', INPUT, { widths: [320], formats: ['webp'], budgets: [{ width: 320, format: 'webp', maxBytes: 1 }] }, 'E300'],
+      ['bad-input', invalidJsonPath, { widths: [320], formats: ['webp'] }, null],
+    ]) {
+      const output = path.join(parent, name);
+      await fsp.writeFile(policyPath, JSON.stringify(policy));
+      const result = runCli(['compile', input, '--out-dir', output, '--policy', policyPath]);
+      assert.equal(result.status, 1, result.stderr);
+      assert.equal(result.stdout, '');
+      assert.ok(result.stderr.length > 0);
+      if (code) assert.ok(result.stderr.includes(code), result.stderr);
+      assert.equal(await fsp.stat(output).catch(() => null), null);
+      assert.deepEqual((await fsp.readdir(parent)).filter(name => name.includes('staging')), []);
+    }
+
+    await fsp.writeFile(policyPath, JSON.stringify({ widths: [320], formats: ['webp'] }));
+    for (const signal of ['SIGINT', 'SIGTERM']) {
+      const output = path.join(parent, signal);
+      const child = fork(CLI, ['compile', INPUT, '--out-dir', output, '--policy', policyPath], {
+        execArgv: ['--require', path.join(__dirname, '../helpers/cli-signal.cjs')],
+        silent: true,
+      });
+      let stdout = '';
+      let stderr = '';
+      let ready = false;
+      child.stdout.on('data', chunk => { stdout += chunk; });
+      child.stderr.on('data', chunk => { stderr += chunk; });
+      child.on('message', message => {
+        if (message !== 'staged') return;
+        ready = true;
+        // Windows kill() forcibly terminates; deliver the same process event via IPC there.
+        if (process.platform === 'win32') child.send(signal);
+        else child.kill(signal);
+      });
+      const timer = setTimeout(() => child.kill('SIGKILL'), 30_000);
+      try {
+        const result = await new Promise((resolve, reject) => {
+          child.once('error', reject);
+          child.once('close', (code, signal) => resolve({ code, signal }));
+        });
+        assert.ok(ready, stderr);
+        assert.deepEqual(result, { code: 1, signal: null }, stderr);
+        assert.equal(stdout, '');
+        assert.match(stderr, /ABORT_ERR/);
+        assert.equal(await fsp.stat(output).catch(() => null), null);
+        assert.deepEqual((await fsp.readdir(parent)).filter(name => name.includes('staging')), []);
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    const npm = process.env.npm_execpath;
+    assert.ok(npm, 'Run through npm run test:cli so the npm CLI path is explicit.');
+    const runNpm = (args, cwd) => execFileSync(process.execPath, [npm, ...args], { cwd, encoding: 'utf8' });
+    const [packed] = JSON.parse(runNpm(['pack', '--json', '--pack-destination', parent], ROOT_DIR));
+    const installDir = path.join(parent, 'installed');
+    await fsp.mkdir(installDir);
+    runNpm(['install', '--ignore-scripts', '--omit=optional', '--no-audit', '--no-fund', path.join(parent, packed.filename)], installDir);
+    // Exercise the packed JS against this revision's native build, never a registry binary.
+    const binding = Object.keys(require.cache).find(file => file.startsWith(ROOT_DIR + path.sep) && file.endsWith('.node'));
+    assert.ok(binding, 'Build the current checkout before the packed CLI smoke test.');
+    const packedResult = spawnSync(process.execPath, [npm, 'exec', '--offline', '--', 'lazy-image',
+      'compile', INPUT, '--out-dir', path.join(parent, 'packed-output'), '--policy', policyPath], {
+      cwd: installDir, encoding: 'utf8', timeout: 120_000,
+      env: { ...process.env, NAPI_RS_NATIVE_LIBRARY_PATH: binding },
+    });
+    assert.equal(packedResult.status, 0, packedResult.stderr);
+    assert.equal(packedResult.stderr, '');
+    assert.deepEqual(JSON.parse(packedResult.stdout), JSON.parse(await fsp.readFile(path.join(parent, 'packed-output/manifest.json'), 'utf8')));
   } finally {
     await fsp.rm(parent, { recursive: true, force: true });
   }
