@@ -18,8 +18,8 @@ async function main() {
       await fs.writeFile(inputPath, format === 'png' ? png : await ImageEngine.from(png).toBuffer('webp', 80, false));
       const outputDir = path.join(parent, `output-${format}-${alpha}-${icc}`);
       const manifest = await compileImage({ inputPath, outputDir,
-        policy: { widths: [32], formats: icc ? ['avif'] : ['webp', 'avif'], placeholder: false } });
-      assert.equal(manifest.artifacts.length, icc ? 1 : 2);
+        policy: { widths: [32], formats: ['webp', 'avif'], placeholder: false } });
+      assert.equal(manifest.artifacts.length, 2);
       for (const artifact of manifest.artifacts) {
         const { data, info } = await sharp(path.join(outputDir, artifact.path)).raw().toBuffer({ resolveWithObject: true })
           .catch((error) => { throw new Error(`${format}/${alpha}/${icc}/${artifact.format}: ${error.message}`); });
