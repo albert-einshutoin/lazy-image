@@ -56,6 +56,23 @@ verifies the generated files and privacy metadata, and publishes only after a
 single directory rename. The output parent must be trusted and remain on the
 same filesystem during the call.
 
+For a script-free entrypoint, use the packaged CLI with the same compiler policy:
+
+```json
+{"widths":[320,640],"formats":["webp"],"placeholder":true}
+```
+
+```bash
+npx @alberteinshutoin/lazy-image compile upload.bin \
+  --out-dir public/images/v1 \
+  --policy policy.json
+```
+
+Successful stdout is the manifest JSON only. Diagnostics are written to stderr;
+exit 0 is success, exit 2 is invalid CLI arguments or policy JSON, and exit 1 is
+a compiler failure. Existing output directories and failed compilations remain
+unpublished.
+
 ### 3. Build-time static asset optimization
 
 Use batch processing or cloning when the same source needs multiple outputs.

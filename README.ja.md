@@ -62,6 +62,24 @@ const manifest = await compileImage({
 
 既存の出力ディレクトリは上書きせず、artifact全体をNode.jsのBufferへ戻しません。
 
+### CLIでartifactを生成
+
+policy JSONを用意し、1つの入力画像を未存在の出力ディレクトリへ生成します。
+
+```json
+{"widths":[320,640],"formats":["webp"],"placeholder":true}
+```
+
+```bash
+npx @alberteinshutoin/lazy-image compile input.jpg \
+  --out-dir public/images/v1 \
+  --policy policy.json
+```
+
+成功時のstdoutはmanifest JSONだけです。診断はstderrへ出力し、exit 0は成功、
+exit 2はCLI引数またはpolicy JSONの不正、exit 1はcompiler実行失敗を表します。
+既存の出力ディレクトリや失敗した処理の成果物は公開されません。
+
 ## Cost Savings Example (ROI)
 
 README（英語版）と同じ想定計算を参照します。月間配信量とエンコーディング回数次第で節約は拡大します。

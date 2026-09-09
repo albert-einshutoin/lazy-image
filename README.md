@@ -86,6 +86,25 @@ const manifest = await compileImage({
 Existing output directories are rejected and full artifact bytes are never
 returned as Node.js buffers.
 
+### CLI artifact compilation
+
+Create a policy JSON file, then compile one input into a new output directory:
+
+```json
+{"widths":[320,640],"formats":["webp"],"placeholder":true}
+```
+
+```bash
+npx @alberteinshutoin/lazy-image compile input.jpg \
+  --out-dir public/images/v1 \
+  --policy policy.json
+```
+
+On success, stdout contains only the generated manifest JSON. Diagnostics go to
+stderr; exit 0 means success, exit 2 means invalid CLI arguments or policy JSON,
+and exit 1 means compiler failure. Existing output directories and failed
+compilations are not published.
+
 ## Inspect without decoding
 
 ```javascript
