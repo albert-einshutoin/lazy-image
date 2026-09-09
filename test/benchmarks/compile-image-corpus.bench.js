@@ -16,6 +16,7 @@ const {
 const { resolveRoot, resolveTemp } = require('../helpers/paths');
 
 const MAX_VERIFICATION_READ_BYTES = 64 * 1024;
+const MIN_VERIFICATION_ARTIFACT_BYTES = MAX_VERIFICATION_READ_BYTES + 1;
 const MANIFEST_PATH = process.env.BENCHMARK_CORPUS_MANIFEST
   || resolveRoot('test/benchmarks/corpus/manifest.json');
 const OUTPUT_PATH = process.env.BENCHMARK_OUTPUT_JSON
@@ -143,20 +144,26 @@ function evaluateBudgets(policy, manifest) {
 
 function jpegVerificationEvidence(entry, manifest, reads) {
   if (entry.expectations.jpegVerificationIo !== true) return null;
-  const jpegArtifact = manifest?.artifacts?.find((artifact) => artifact.format === 'jpeg');
+  const jpegArtifact = manifest?.artifacts?.find((artifact) => (
+    artifact.format === 'jpeg' && artifact.bytes >= MIN_VERIFICATION_ARTIFACT_BYTES
+  ));
   const outputFile = jpegArtifact?.path || null;
   const outputReads = outputFile
     ? reads.filter((read) => path.basename(read.filePath) === outputFile)
     : [];
   const lengths = outputReads.map((read) => read.requestedBytes);
   const bounded = Boolean(
-    outputFile
+    jpegArtifact
+    && jpegArtifact.bytes >= MIN_VERIFICATION_ARTIFACT_BYTES
+    && outputFile
     && lengths.length > 0
     && lengths.every((length) => Number.isSafeInteger(length) && length > 0 && length <= MAX_VERIFICATION_READ_BYTES),
   );
   return {
     applicable: true,
     outputFile,
+    artifactBytes: jpegArtifact?.bytes ?? null,
+    minimumArtifactBytes: MIN_VERIFICATION_ARTIFACT_BYTES,
     readCount: lengths.length,
     maxRequestedBytes: lengths.length > 0 ? Math.max(...lengths) : null,
     boundedBufferBytes: MAX_VERIFICATION_READ_BYTES,
@@ -210,13 +217,44 @@ async function verifyPublished({ entry, outputDir, manifest, reads }) {
   }
   if (entry.expectations.outputAlpha === true) {
     const avif = manifest.artifacts.find((artifact) => artifact.format === 'avif');
-    const alphaFile = avif && outputPath(outputDir, avif.path);
-    const metadata = alphaFile ? await sharp(alphaFile).metadata() : null;
+    if (!avif) throw new Error('transparent AVIF artifact is missing');
+    const alphaFile = outputPath(outputDir, avif.path);
+    const metadata = await sharp(alphaFile).metadata();
+    const expected = await sharp(entry.absolutePath)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const actual = await sharp(alphaFile)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    if (expected.info.width !== actual.info.width || expected.info.height !== actual.info.height) {
+      throw new Error('transparent AVIF dimensions changed before alpha comparison');
+    }
+    let alphaMismatchCount = 0;
+    let maxAlphaDelta = 0;
+    const expectedAlphaValues = new Set();
+    const actualAlphaValues = new Set();
+    for (let offset = 3; offset < expected.data.length; offset += 4) {
+      const expectedAlpha = expected.data[offset];
+      const actualAlpha = actual.data[offset];
+      expectedAlphaValues.add(expectedAlpha);
+      actualAlphaValues.add(actualAlpha);
+      const delta = Math.abs(expectedAlpha - actualAlpha);
+      maxAlphaDelta = Math.max(maxAlphaDelta, delta);
+      if (delta !== 0) alphaMismatchCount += 1;
+    }
     checks.transparentAvif = {
-      file: avif?.path || null,
+      file: avif.path,
       hasAlpha: Boolean(metadata?.hasAlpha),
+      expectedAlphaValues: [...expectedAlphaValues].sort((left, right) => left - right),
+      actualAlphaValues: [...actualAlphaValues].sort((left, right) => left - right),
+      alphaMismatchCount,
+      maxAlphaDelta,
     };
-    if (!checks.transparentAvif.hasAlpha) throw new Error('transparent AVIF output did not retain alpha');
+    if (!checks.transparentAvif.hasAlpha || alphaMismatchCount !== 0) {
+      throw new Error('transparent AVIF output did not preserve input alpha values');
+    }
   }
 
   const jpegIo = jpegVerificationEvidence(entry, manifest, reads);

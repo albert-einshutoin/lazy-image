@@ -24,8 +24,8 @@
       },
       "policy": {
         "preset": "publicUpload",
-        "widths": [320],
-        "formats": ["jpeg", "webp", "avif"],
+        "widths": [320, 1057],
+        "formats": ["jpeg"],
         "budgets": [
           {
             "width": 320,
