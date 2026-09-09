@@ -57,9 +57,9 @@ const output = await ImageEngine.from(input)
 ```
 
 ## Performance Comparison (when to switch)
-- JPEG: in the canonical `PNG -> JPEG` benchmarks, lazy-image produces **17.0% smaller** output for no-resize conversion and **20.0% smaller** output for resize-to-800px. Encoding speed depends on workload and settings.
-- AVIF: in the current canonical `PNG -> AVIF` benchmarks, sharp is faster and produces smaller output. Use lazy-image AVIF when you need its output path, metadata behavior, and safety defaults; benchmark before switching for size/speed.
-- WebP: use if you want the safer defaults and metadata stripping, but expect sharp to remain faster in many throughput-sensitive workloads.
+- JPEG: in the historical canonical `PNG -> JPEG` baseline recorded in [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md), lazy-image produced **17.0% smaller** output for no-resize conversion and **20.0% smaller** output for resize-to-800px at the same encoder quality setting. This is not a current v1.2.0 measurement or an exact perceptual-quality-match claim; encoding speed depends on workload and settings.
+- AVIF: in the recorded canonical `PNG -> AVIF` baseline, sharp was faster and produced smaller output. Use lazy-image AVIF when you need its output path, metadata behavior, and safety defaults; benchmark before switching for size/speed.
+- WebP: in the recorded canonical scenarios, sharp was faster; benchmark the target workload rather than assuming a universal speed advantage.
 - Latency-sensitive or filter-heavy workloads still favor sharp; build-time optimization and batch processing favor lazy-image.
 
 ## FAQ
