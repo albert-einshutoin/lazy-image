@@ -46,7 +46,7 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
 - **Heavy persistent servers** — Plenty of RAM and CPU.
 - **Throughput-critical** — Thousands of JPEG/WebP resizes per second.
-- **AVIF/WebP speed or size is decisive** — Current canonical AVIF/WebP benchmarks favor sharp for speed, and often for output size.
+- **AVIF/WebP speed or size is decisive** — The recorded historical canonical AVIF/WebP baseline favored sharp for speed, and often for output size.
 
 ## Philosophy
 
