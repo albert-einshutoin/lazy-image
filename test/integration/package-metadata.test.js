@@ -150,6 +150,10 @@ function test(name, fn) {
     assert.match(ciWorkflow, /engines:\s*\{\s*node: '>= 22'/);
   });
 
+  test('CLI is published through the package bin contract', () => {
+    assert.equal(packageJson.bin?.['lazy-image'], './bin/lazy-image.js');
+  });
+
   console.log(`\n✅ package metadata checks completed: ${passed} passed, ${failed} failed`);
   if (failed > 0) {
     process.exit(1);
