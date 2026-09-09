@@ -6,6 +6,11 @@ lazy-image is optimized for **JPEG output size and memory safety** rather than r
 
 The canonical benchmark dataset for public performance claims is [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
+> **Historical baseline, not a current v1.2.0 measurement:** The values below
+> were recorded on 2026-07-17 with lazy-image v0.16.0, Node.js v24.2.0,
+> sharp v0.34.5, and macOS 26.3 on an Apple M4 (arm64). Timings are specific
+> to these scenarios and should be remeasured for the target workload.
+
 All summary claims in README and migration docs should be derived from that document's exact scenarios rather than mixing numbers from different workloads.
 
 For the full inventory of public claims and quoting rules, see [BENCHMARK_CLAIMS.md](./BENCHMARK_CLAIMS.md).
@@ -15,14 +20,15 @@ For the full inventory of public claims and quoting rules, see [BENCHMARK_CLAIMS
 | Scenario | Metric | lazy-image | sharp | Interpretation |
 |---------|--------|------------|-------|----------------|
 | PNG → JPEG (no resize, 5000×5000) | Output size | **1,224,894 bytes** | 1,475,223 bytes | lazy-image output is **17.0% smaller** |
+| PNG → JPEG (no resize, 5000×5000) | Encode time | **712ms** | 765ms | lazy-image was **1.07x faster** in this run |
 | PNG → JPEG (resize 800px, 5000×5000 input) | Output size | **31,518 bytes** | 39,416 bytes | lazy-image output is **20.0% smaller** |
 | PNG → JPEG (resize 800px, 5000×5000 input) | Encode time | 114ms | **78ms** | sharp was faster in this run |
 | PNG → AVIF (no resize, 5000×5000) | Encode time | 13,440ms | **5,849ms** | sharp is faster for this workload |
 | PNG → AVIF (no resize, 5000×5000) | Output size | 1,718,430 bytes | **1,290,501 bytes** | sharp output is smaller for this workload |
 | PNG → WebP (no resize, 5000×5000) | Encode time | 4,379ms | **964ms** | sharp is much faster for this workload |
+| JPEG/WebP real-time resize workloads | Latency | scenario-dependent | scenario-dependent | no general speed winner; benchmark the target codec and image mix |
 
 The JPEG size comparison uses the same encoder quality setting. In the resize case, lazy-image measured SSIM 0.9942 / PSNR 37.07 dB against the resized source reference versus sharp at 0.9955 / 37.65 dB; this is not an exact perceptual-quality-match claim.
-| JPEG/WebP real-time resize workloads | Latency | varies by codec and settings | often faster | use sharp if sub-100ms latency is the main priority |
 
 Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
@@ -40,7 +46,7 @@ Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
 
 - **Heavy persistent servers** — Plenty of RAM and CPU.
 - **Throughput-critical** — Thousands of JPEG/WebP resizes per second.
-- **AVIF/WebP speed or size is decisive** — Current canonical AVIF/WebP benchmarks favor sharp for speed, and often for output size.
+- **AVIF/WebP speed or size is decisive** — The recorded historical canonical AVIF/WebP baseline favored sharp for speed, and often for output size.
 
 ## Philosophy
 
