@@ -96,7 +96,8 @@
     "test:bench:compile-image": "node test/benchmarks/compile-image-corpus.bench.js",
     "test:bench:jpegli": "node test/benchmarks/jpegli-bakeoff.bench.js",
     "test:bench:avif-backends": "node test/benchmarks/avif-backend-bakeoff.bench.js",
-    "check:generated-artifacts": "git diff --exit-code -- index.js index.d.ts"
+    "check:generated-artifacts": "git diff --exit-code -- index.js index.d.ts",
+    "test:bench:quality-matched": "node test/benchmarks/quality-matched.bench.js"
   },
   "devDependencies": {
     "@napi-rs/cli": "3.7.2",

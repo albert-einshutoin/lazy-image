@@ -90,3 +90,42 @@ Regression means "current metric value is higher than baseline by more than thre
 - Homebrew's libavif bottle may not include every encoder backend needed for publishable evidence. Confirm `avifenc --version` lists `rav1e`, `aom`, and `svt`, or build libavif tools from source with all three system codecs enabled.
 - `AVIF_BACKEND_ALLOW_MISSING=1 npm run test:bench:avif-backends` is only for smoke-checking script wiring in environments without `avifenc`. `--allow-missing-backends` is only for partial local experiments. Do not use skip-mode or partial-backend output as benchmark evidence.
 - Cross-platform impact for this harness is limited to benchmark operation: lazy-image runtime and package contents are unchanged, and `avifenc` is an operator-provided CLI. Any future backend switch proposal must attach macOS, Linux, and Windows build/package-size impact because that would introduce a production build dependency instead of an optional benchmark tool.
+
+## Source-reference constrained quality comparison (#769)
+
+Run `npm run test:bench:quality-matched` after `npm run build`. The JSON is
+`artifacts/benchmark/quality-matched.json` (override with `BENCHMARK_OUTPUT_JSON`).
+It verifies the existing corpus manifest/license/checksums before encoding all
+three fixtures as JPEG, WebP and AVIF with lazy-image and sharp. The artifact
+records the Git revision, dirty flag, runner hash, sharp codec versions, reference
+hashes, every candidate's bytes/hash/SSIM/PSNR/encode time, and sampled process RSS.
+
+Both encoders receive identical, auto-oriented PNG pixels, resized to at most
+320px wide and composited on white. Each format uses sharp q80 (AVIF q60) as a
+common SSIM floor and byte cap. Both engines search the same recorded quality
+grid, independently selecting the smallest output meeting the SSIM floor and
+the highest SSIM output within the byte cap. A missing candidate is `null`, not
+a relaxed target. The grid is exhaustive only at its listed values; no global
+optimality or monotonicity is assumed. These are constrained comparisons, not
+exact equality of bytes or human-perceived quality. Exact-pixel PSNR is serialized
+as the string `Infinity` rather than silently becoming JSON `null`.
+
+This is the comparison-runner portion of #769, not completion of its acceptance
+criteria. The three regression fixtures do not cover multiple real photos, UI,
+illustrations, metadata and hostile inputs per category. White compositing does
+not validate preserved alpha. Continue to run `npm run test:bench:compile-image`
+for compiler acceptance, strict budgets and published artifact verification.
+The codec comparison does not count as a successful compiler output. RSS includes
+quality measurement and all previous cases; encode times are single sequential
+samples and must not be used for speed or per-codec memory claims. Broader licensed
+corpus collection, repeated/isolated timing distributions and scheduled artifact
+storage remain open. No README competitiveness claim changes based on this run.
+
+Local exploratory run on base `b793e60` (macOS arm64, Node 24.2.0): all nine
+fixture/format comparisons completed. On the JPEG photo reference, lazy-image
+missed the SSIM floor throughout the grid; WebP met it at 12,536 bytes versus
+sharp's 12,638, while AVIF needed 11,962 versus 10,324. The EXIF-absence fixture
+has the same normalized pixels and repeats those results: these are not two
+independent photos. The composited 32px alpha fixture missed the byte cap for
+JPEG and AVIF. These are local exploratory results, not a release baseline;
+consult the generated JSON for exact targets, candidates and environment.
