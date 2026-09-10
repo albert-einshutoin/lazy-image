@@ -10,6 +10,8 @@ const sharp = require('sharp');
 const { compileImage } = require('../../index');
 const {
   readCorpusManifest,
+  distribution,
+  isolatedCase,
   sha256,
   verifyCorpusManifest,
 } = require('../helpers/benchmark-corpus');
@@ -18,7 +20,7 @@ const { resolveRoot, resolveTemp } = require('../helpers/paths');
 const MAX_VERIFICATION_READ_BYTES = 64 * 1024;
 const MIN_VERIFICATION_ARTIFACT_BYTES = MAX_VERIFICATION_READ_BYTES + 1;
 const MANIFEST_PATH = process.env.BENCHMARK_CORPUS_MANIFEST
-  || resolveRoot('test/benchmarks/corpus/manifest.json');
+  || resolveRoot('test/benchmarks/corpus/release-manifest.json');
 const OUTPUT_PATH = process.env.BENCHMARK_OUTPUT_JSON
   || resolveRoot('artifacts/benchmark/compile-image-corpus.json');
 
@@ -33,6 +35,7 @@ function errorSummary(error) {
     code: error?.code ?? null,
     errorCode: error?.errorCode ?? null,
     phase: error?.phase ?? null,
+    cause: error?.cause?.message ?? null,
     category: error?.category ?? error?.errorCategory ?? null,
   };
 }
@@ -172,6 +175,9 @@ function jpegVerificationEvidence(entry, manifest, reads) {
 }
 
 async function verifyPublished({ entry, outputDir, manifest, reads }) {
+  const sourceMetadata = await sharp(entry.absolutePath).metadata();
+  if (entry.expectations.exif && !sourceMetadata.exif) throw new Error('fixture is missing expected EXIF');
+  if (entry.expectations.icc && !sourceMetadata.icc) throw new Error('fixture is missing expected ICC');
   const manifestFile = readRegularFile(path.join(outputDir, 'manifest.json'), 'published manifest');
   const publishedManifest = JSON.parse(manifestFile.data.toString('utf8'));
   assert.deepEqual(publishedManifest, manifest, 'published manifest must match compileImage result');
@@ -194,6 +200,11 @@ async function verifyPublished({ entry, outputDir, manifest, reads }) {
 
   for (const file of files) {
     const artifactFile = readRegularFile(outputPath(outputDir, file.path), file.path);
+    const decodedMetadata = await sharp(artifactFile.data).metadata();
+    if (decodedMetadata.exif || decodedMetadata.xmp) throw new Error('published output retained private metadata');
+    if (entry.expectations.icc && (!decodedMetadata.icc || !decodedMetadata.icc.equals(sourceMetadata.icc))) {
+      throw new Error('published output did not preserve expected ICC');
+    }
     if (artifactFile.data.length !== file.bytes || sha256(artifactFile.data) !== file.sha256) {
       throw new Error(`published artifact digest does not match manifest: ${file.path}`);
     }
@@ -211,6 +222,9 @@ async function verifyPublished({ entry, outputDir, manifest, reads }) {
 
   if (entry.expectations.inputFormat && manifest.source.detectedFormat !== entry.expectations.inputFormat) {
     throw new Error(`input format mismatch: expected ${entry.expectations.inputFormat}`);
+  }
+  if (Number.isInteger(entry.expectations.orientation) && manifest.source.orientation !== entry.expectations.orientation) {
+    throw new Error('source orientation mismatch');
   }
   if (entry.expectations.orientation === 'absent' && manifest.source.orientation !== null) {
     throw new Error('EXIF Orientation-absent fixture did not remain orientation-absent');
@@ -251,8 +265,9 @@ async function verifyPublished({ entry, outputDir, manifest, reads }) {
       actualAlphaValues: [...actualAlphaValues].sort((left, right) => left - right),
       alphaMismatchCount,
       maxAlphaDelta,
+      allowedMaxAlphaDelta: entry.expectations.maxAlphaDelta ?? 0,
     };
-    if (!checks.transparentAvif.hasAlpha || alphaMismatchCount !== 0) {
+    if (!checks.transparentAvif.hasAlpha || maxAlphaDelta > (entry.expectations.maxAlphaDelta ?? 0)) {
       throw new Error('transparent AVIF output did not preserve input alpha values');
     }
   }
@@ -313,11 +328,19 @@ async function runCase(entry, index, runRoot) {
     result.phaseCoverage.observedThrough = measured.error.phase || null;
     result.failure = errorSummary(measured.error);
     if (reads.length > 0) result.readAudit = { readCount: reads.length };
+    if (entry.expectations.expectedError && measured.error.errorCode === entry.expectations.expectedError
+      && measured.error.phase === entry.expectations.expectedPhase
+      && (!entry.expectations.expectedCause || measured.error.cause?.message.includes(entry.expectations.expectedCause))
+      && !fs.existsSync(outputDir)) {
+      result.status = 'expected-rejection';
+      result.checks = { rejectedWithoutPublication: true };
+    }
   } else {
     const manifest = measured.value;
     result.phaseCoverage.observedThrough = 'publish';
     try {
       const verified = await verifyPublished({ entry, outputDir, manifest, reads });
+      if (entry.expectations.expectedError) throw new Error('hostile input unexpectedly accepted');
       result.status = 'pass';
       result.accepted = true;
       result.strictBudget = verified.budget;
@@ -340,7 +363,8 @@ async function runCase(entry, index, runRoot) {
 
 function buildArtifact(verifiedCorpus, manifestPath, results) {
   const accepted = results.filter((result) => result.accepted).length;
-  const budgetResults = results.filter((result) => result.strictBudget?.applicable === true);
+  const supported = results.filter(result => !result.expectations.expectedError);
+  const budgetResults = supported.filter((result) => result.strictBudget?.applicable === true);
   const budgetMet = budgetResults.filter((result) => result.strictBudget.met).length;
   const peakRssBytes = results.reduce((peak, result) => Math.max(peak, result.timing?.peakRssBytes || 0), 0);
   return {
@@ -349,6 +373,8 @@ function buildArtifact(verifiedCorpus, manifestPath, results) {
     generatedAt: new Date().toISOString(),
     environment: {
       packageVersion: require('../../package.json').version,
+      revision: require('node:child_process').execFileSync('git', ['rev-parse','HEAD'], {cwd:resolveRoot(),encoding:'utf8'}).trim(),
+      manifestSha256: sha256(fs.readFileSync(manifestPath)),
       node: process.version,
       platform: process.platform,
       arch: process.arch,
@@ -366,6 +392,7 @@ function buildArtifact(verifiedCorpus, manifestPath, results) {
       manifestSha256: sha256(fs.readFileSync(manifestPath)),
       name: verifiedCorpus.name,
       license: verifiedCorpus.license,
+      additionalLicenses: verifiedCorpus.additionalLicenses,
       entries: verifiedCorpus.entries.map((entry) => ({
         id: entry.id,
         path: entry.path,
@@ -381,7 +408,11 @@ function buildArtifact(verifiedCorpus, manifestPath, results) {
     summary: {
       cases: results.length,
       accepted,
-      acceptanceRate: accepted / Math.max(results.length, 1),
+      supportedCases: supported.length,
+      acceptanceRate: accepted / Math.max(supported.length, 1),
+      expectedRejections: results.filter(r=>r.status === 'expected-rejection').length,
+      passed: results.filter(r=>r.status === 'pass' || r.status === 'expected-rejection').length,
+      e2eMs: distribution(supported.flatMap(r=>r.trials.map(t=>t.timing.e2eMs))),
       strictBudget: {
         cases: budgetResults.length,
         met: budgetMet,
@@ -405,7 +436,11 @@ async function runBenchmark() {
   try {
     for (const [index, entry] of verifiedCorpus.entries.entries()) {
       console.log(`▶ ${entry.id}`);
-      results.push(await runCase(entry, index, runRoot));
+      const trials = [0,1,2].map(trial => isolatedCase(__filename, [index, trial, runRoot]));
+      const result = trials.find(r=>r.status !== 'pass' && r.status !== 'expected-rejection') || trials[0];
+      results.push({ ...result, trials,
+        e2eMs: distribution(trials.map(r=>r.timing.e2eMs)),
+        timing: { ...result.timing, peakRssBytes: Math.max(...trials.map(r=>r.timing.peakRssBytes)) } });
     }
   } finally {
     fs.rmSync(runRoot, { recursive: true, force: true });
@@ -416,14 +451,18 @@ async function runBenchmark() {
   fs.writeFileSync(OUTPUT_PATH, `${JSON.stringify(artifact, null, 2)}\n`);
   console.log(`JSON artifact: ${OUTPUT_PATH}`);
   console.log(`Accepted: ${artifact.summary.accepted}/${artifact.summary.cases}`);
-  if (artifact.summary.accepted !== artifact.summary.cases) {
+  if (artifact.summary.passed !== artifact.summary.cases) {
     throw new Error('compile-image corpus benchmark failed after all cases completed');
   }
   return artifact;
 }
 
 if (require.main === module) {
-  runBenchmark().catch((error) => {
+  const operation = process.argv[2] === '--worker'
+    ? runCase(verifyCorpusManifest(readCorpusManifest(MANIFEST_PATH)).entries[Number(process.argv[3])],
+      `${process.argv[3]}-${process.argv[4]}`, process.argv[5]).then(value=>process.stdout.write(JSON.stringify(value)))
+    : runBenchmark();
+  operation.catch((error) => {
     console.error(error.message);
     process.exitCode = 1;
   });

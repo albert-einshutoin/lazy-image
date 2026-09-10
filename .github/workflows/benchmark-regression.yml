@@ -66,6 +66,9 @@ jobs:
           mkdir -p artifacts/benchmark
           npm run test:bench:compare
 
+      - name: Record compiler and constrained-quality release evidence
+        run: npm run test:bench:release
+
       - name: Run extended benchmark suite (#405)
         run: |
           npm run test:bench:extended | tee artifacts/benchmark/extended.log

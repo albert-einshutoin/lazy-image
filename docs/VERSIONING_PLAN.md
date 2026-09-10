@@ -20,31 +20,49 @@ privacy-safe `compileImage()` contract.
 
 ### v1.3.0 planned scope (#703)
 
-v1.3.0 is a backward-compatible release focused on closing the remaining
-artifact-compiler evidence gap. The following compiler hardening is already on
-`main` and is part of the release baseline:
+v1.3.0 is a backward-compatible release of the hardened artifact compiler and
+its thin CLI entrypoint. As of 2026-09-10, the following work is merged:
 
-- #827: transparent AVIF artifact verification
-- #828: bounded-buffer JPEG container verification
-- #829: distinction between absent and unparseable EXIF Orientation
+- #827 / PR #831: transparent AVIF artifact verification
+- #828 / PR #832: bounded-buffer JPEG container verification
+- #829 / PR #836: distinction between absent and unparseable EXIF Orientation
+- #838 / PR #840: decodable transparent WebP output with ICC
+- #830 / PR #839: performance explanations aligned with historical benchmarks
+- #696 / PR #843: `lazy-image compile` CLI, documentation, cancellation tests,
+  and installed-tarball smoke coverage
+- #769 / PR #841 and #846: a three-case compiler corpus runner and portable
+  license/checksum validation; this is partial evidence, not completion of #769
 
-The remaining release gates are:
+#### Final candidate verification
 
-- #830: align benchmark explanations with the canonical historical numbers
-  and measurement context
-- #769: record real-image, perceptual-quality, budget, memory, and E2E compiler
-  evidence, including the #827/#828/#829 regression cases
+The preparation PR expands the corpus to 15 cases and adds isolated repeated
+compiler/quality measurements plus scheduled artifact retention
+(`npm run test:bench:release`). Final hosted evidence is required before marking
+#769 complete. See [BENCHMARK_OPERATIONS.md](./BENCHMARK_OPERATIONS.md).
 
-#696 (the thin `compileImage()` CLI) stays outside v1.3.0 until #769 is
-complete. It adds a public filesystem entrypoint and needs its own API,
-packaging, and security review; bundling it now would make the release scope
-larger without closing the evidence gate.
+1. Verify #769 on the exact candidate with `npm run test:bench:release` and
+   retain its hosted JSON/Markdown evidence. All supported inputs and strict
+   compiler budgets must pass; expected hostile rejections are separate.
+2. The preparation PR synchronizes Node/Wasm/Rust versions, lockfiles, generated
+   loader and changelog to 1.3.0. Require build, full tests, security checks and
+   `release:check` for that exact candidate.
+3. Verify packed release artifacts and the CLI with locally supplied candidate
+   platform packages. The existing CLI smoke uses
+   `NAPI_RS_NATIVE_LIBRARY_PATH`; it does not prove registry platform-package
+   downloads. Record the tested platforms and any remaining coverage gaps.
 
-v1.3.0 is release-ready after #830 and #769 are resolved, the resulting claims
-are synchronized, and pre-publication pack/install smoke checks pass for the
-release artifacts. After publication, verify the published native/platform and
-Wasm packages and record their smoke evidence as post-release verification
-according to [RELEASE.md](./RELEASE.md).
+#### Publication conditions
+
+The npm publishing token was renewed on 2026-09-11 JST (GitHub secret update
+verified). Publication is authorized after the remaining release gates pass.
+The planned release date is 2026-09-11; preparing that changelog entry does not
+mean npm publication has completed.
+
+Before authorized publication, verify package
+ownership/credential readiness, follow [RELEASE.md](./RELEASE.md), and then
+verify published native/platform, Wasm, and CLI installation without local
+native-library overrides. Post-publication smoke is separate from the
+pre-publication release gate.
 
 ### P1
 
@@ -77,8 +95,8 @@ according to [RELEASE.md](./RELEASE.md).
 - `toBufferWithMetrics()` などの既存 output convenience API は v1.x では
   維持し、削除は v2.0.0 でのみ検討する。v1 より前に削除済みの metrics
   aliases は v1.x の公開契約に含めない。
-- #703（artifact compiler）はv1.3.0で#827/#828/#829の完了を含め、#830と#769を
-  release gateとして追跡する。#696（CLI）は#769後の後続リリースで扱う。
+- #703（artifact compiler）はv1.3.0で#827/#828/#829の完了を含め、#830と#696の完了を追跡する。#769の比較証跡と公開前検証は引き続き
+  release gateとし、候補の最終検証後に公開可否を判断する。
 - #645（Wasm runtime expansion）と#88（Web Streams）はv2.0以降の計画であり、
   v1.3.0にも含めない。
 

@@ -7,12 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> Target: v1.3.0. The release baseline includes #827, #828, and #829;
-> #830 and #769 remain release gates. The
-> #696 CLI is deferred until the evidence gate is complete. See
-> [VERSIONING_PLAN.md](docs/VERSIONING_PLAN.md).
+## [1.3.0] - 2026-09-11
+
+### Added
+- Added the `lazy-image compile` CLI for JSON policies, verified artifact sets,
+  manifest JSON output, and cancellation through the existing compiler API.
+- Added a small compiler regression corpus with license/checksum validation and
+  machine-readable E2E, budget, and sampled memory evidence. Broad real-image
+  evidence now includes licensed photos and labelled synthetic workload categories.
+- Added source-reference SSIM-floor and strict-byte-cap comparisons against
+  sharp for JPEG, WebP, and AVIF, with three isolated measurement trials,
+  category coverage and scheduled JSON artifact retention. Results preserve unmet
+  targets and do not establish broad perceptual-quality claims.
+
+### Changed
+- Aligned JPEG performance explanations with the canonical historical benchmark
+  scenarios; these are not new measurements of the release candidate.
 
 ### Fixed
+- Corrected ICC chunk placement and the ICC flag in transparent WebP outputs so
+  standard decoders can read public-upload artifacts.
 - Hardened `compileImage()` verification for transparent AVIF artifacts.
 - Distinguished absent EXIF Orientation from unparseable or over-budget input
   during upload preflight while retaining fail-closed behavior.
@@ -632,7 +646,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.0...v1.0.1
