@@ -91,41 +91,51 @@ Regression means "current metric value is higher than baseline by more than thre
 - `AVIF_BACKEND_ALLOW_MISSING=1 npm run test:bench:avif-backends` is only for smoke-checking script wiring in environments without `avifenc`. `--allow-missing-backends` is only for partial local experiments. Do not use skip-mode or partial-backend output as benchmark evidence.
 - Cross-platform impact for this harness is limited to benchmark operation: lazy-image runtime and package contents are unchanged, and `avifenc` is an operator-provided CLI. Any future backend switch proposal must attach macOS, Linux, and Windows build/package-size impact because that would introduce a production build dependency instead of an optional benchmark tool.
 
-## Source-reference constrained quality comparison (#769)
+## Release compiler and constrained-quality evidence (#769)
 
-Run `npm run test:bench:quality-matched` after `npm run build`. The JSON is
-`artifacts/benchmark/quality-matched.json` (override with `BENCHMARK_OUTPUT_JSON`).
-It verifies the existing corpus manifest/license/checksums before encoding all
-three fixtures as JPEG, WebP and AVIF with lazy-image and sharp. The artifact
-records the Git revision, dirty flag, runner hash, sharp codec versions, reference
-hashes, every candidate's bytes/hash/SSIM/PSNR/encode time, and sampled process RSS.
+Run `npm run test:bench:release` after `npm run build`. It runs the existing
+compiler and quality runners and validates their combined evidence. The scheduled
+Benchmark Regression workflow runs this command and retains `artifacts/benchmark`
+with `if: always()`. The outputs are `compile-image-corpus.json`,
+`quality-matched.json`, `release-evidence.json`, and `release-evidence.md`.
 
-Both encoders receive identical, auto-oriented PNG pixels, resized to at most
-320px wide and composited on white. Each format uses sharp q80 (AVIF q60) as a
-common SSIM floor and byte cap. Both engines search the same recorded quality
-grid, independently selecting the smallest output meeting the SSIM floor and
-the highest SSIM output within the byte cap. A missing candidate is `null`, not
-a relaxed target. The grid is exhaustive only at its listed values; no global
-optimality or monotonicity is assumed. These are constrained comparisons, not
-exact equality of bytes or human-perceived quality. Exact-pixel PSNR is serialized
-as the string `Infinity` rather than silently becoming JSON `null`.
+The checksum-verified `test/benchmarks/corpus/release-manifest.json` contains 15
+cases: two CC0 photographs (coffee and Chelsea, from scikit-image), two synthetic
+UI workloads, two illustrations, two semi-transparent PNG/WebP boundaries, two
+ICC/EXIF orientation/GPS cases, two oversized PNGs, and the three original
+#827/#828/#829 regression fixtures. Source URLs, authors, license texts/checksums,
+image checksums and policies are recorded. Synthetic inputs are labelled as such;
+this small corpus does not represent every camera or Web workload. Regeneration
+uses `node test/benchmarks/corpus/generate.js`; generated text rasterization may
+vary with installed fonts, so verify and review resulting checksum changes.
 
-This is the comparison-runner portion of #769, not completion of its acceptance
-criteria. The three regression fixtures do not cover multiple real photos, UI,
-illustrations, metadata and hostile inputs per category. White compositing does
-not validate preserved alpha. Continue to run `npm run test:bench:compile-image`
-for compiler acceptance, strict budgets and published artifact verification.
-The codec comparison does not count as a successful compiler output. RSS includes
-quality measurement and all previous cases; encode times are single sequential
-samples and must not be used for speed or per-codec memory claims. Broader licensed
-corpus collection, repeated/isolated timing distributions and scheduled artifact
-storage remain open. No README competitiveness claim changes based on this run.
+Compiler evidence measures three fresh-process trials per input through resolved
+publication, then checks published manifests, hashes and private metadata removal.
+Normal-input acceptance and strict budgets must both reach 100%; the two hostile
+inputs must fail with their specified phase/code and no published directory. The
+width-limit case is rejected by planning's source-dimension guard; the pixel-limit
+case is rejected by preflight. Expected rejection is never counted as acceptance.
+Original transparent-AVIF regression pixels remain exact. New alpha-boundary cases
+record the actual maximum alpha delta and require at most 8/255: the current AVIF
+encoder uses lossy alpha quality, so these tests do not promise lossless alpha.
 
-Local exploratory run on base `b793e60` (macOS arm64, Node 24.2.0): all nine
-fixture/format comparisons completed. On the JPEG photo reference, lazy-image
-missed the SSIM floor throughout the grid; WebP met it at 12,536 bytes versus
-sharp's 12,638, while AVIF needed 11,962 versus 10,324. The EXIF-absence fixture
-has the same normalized pixels and repeats those results: these are not two
-independent photos. The composited 32px alpha fixture missed the byte cap for
-JPEG and AVIF. These are local exploratory results, not a release baseline;
-consult the generated JSON for exact targets, candidates and environment.
+Quality evidence independently evaluates all 13 supported inputs as JPEG/WebP/AVIF
+using a shared auto-oriented PNG reference, resized to at most 320px and composited
+on white. It chooses the smallest candidate meeting a common sharp-anchored SSIM
+floor, and highest SSIM within the anchor's strict byte cap. Anchors are q80
+(JPEG/WebP) and q60 (AVIF), not a claim that equal q means equal perception. Every
+candidate in the recorded grid is encoded three times in a process isolated per
+input/format/engine. JSON retains candidate hashes, raw SSIM, PSNR, timing samples,
+nearest-rank p50/p90/worst, RSS, unmet targets, and source/version information.
+SSIM range validation allows 1e-12 floating-point roundoff without changing the
+measurement or relaxing selection targets; exact PSNR uses the string `Infinity`.
+
+RSS is a 10ms sampled process peak including reference preparation and quality
+measurement, not exact encoder-only allocation. Three trials expose variation but
+are insufficient for universal speed rankings. Quality comparison composites
+alpha; compiler evidence separately checks alpha preservation. A finite grid does
+not guarantee globally optimal output. Neither SSIM nor these limited workloads
+prove human perceptual equivalence or a blanket advantage over sharp. Existing
+README claim checks remain `npm run test:bench`; this suite does not rewrite the
+historical benchmark baseline. Consult all per-case results, including unmet and
+larger outputs, in the retained release-evidence report.

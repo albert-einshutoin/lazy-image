@@ -33,34 +33,32 @@ its thin CLI entrypoint. As of 2026-09-10, the following work is merged:
 - #769 / PR #841 and #846: a three-case compiler corpus runner and portable
   license/checksum validation; this is partial evidence, not completion of #769
 
-#### Remaining work, without npm publishing credentials
+#### Final candidate verification
 
-The preparation PR also adds a source-reference comparison runner for the same
-three fixtures (`npm run test:bench:quality-matched`). It records constrained
-SSIM/byte matches and unmet targets; broader coverage and scheduled artifact
-storage remain pending. See [BENCHMARK_OPERATIONS.md](./BENCHMARK_OPERATIONS.md).
+The preparation PR expands the corpus to 15 cases and adds isolated repeated
+compiler/quality measurements plus scheduled artifact retention
+(`npm run test:bench:release`). Final hosted evidence is required before marking
+#769 complete. See [BENCHMARK_OPERATIONS.md](./BENCHMARK_OPERATIONS.md).
 
-1. Complete #769: expand the licensed real-image categories, record
-   quality-matched and byte-matched JPEG/WebP/AVIF comparisons, E2E time,
-   memory, budget results, and the workloads where lazy-image does not win.
-   Preserve machine-readable evidence and align public claims with the results.
-2. Prepare the release version/lockfiles/generated metadata and changelog in a
-   dedicated change once the evidence gate is complete. Run build, full tests,
-   security checks and `release:check` for that exact candidate.
+1. Verify #769 on the exact candidate with `npm run test:bench:release` and
+   retain its hosted JSON/Markdown evidence. All supported inputs and strict
+   compiler budgets must pass; expected hostile rejections are separate.
+2. The preparation PR synchronizes Node/Wasm/Rust versions, lockfiles, generated
+   loader and changelog to 1.3.0. Require build, full tests, security checks and
+   `release:check` for that exact candidate.
 3. Verify packed release artifacts and the CLI with locally supplied candidate
    platform packages. The existing CLI smoke uses
    `NAPI_RS_NATIVE_LIBRARY_PATH`; it does not prove registry platform-package
    downloads. Record the tested platforms and any remaining coverage gaps.
 
-#### Publication hold
+#### Publication conditions
 
-The npm publishing token has not yet been renewed. This does not block the
-local work above, but publishing remains blocked even if those checks pass.
-Do not create the release tag, publish npm packages, or create a GitHub Release
-as part of this preparation. Record the release date only when publication is
-actually scheduled.
+The npm publishing token was renewed on 2026-09-11 JST (GitHub secret update
+verified). Publication is authorized after the remaining release gates pass.
+The planned release date is 2026-09-11; preparing that changelog entry does not
+mean npm publication has completed.
 
-After token renewal and explicit publication authorization, verify package
+Before authorized publication, verify package
 ownership/credential readiness, follow [RELEASE.md](./RELEASE.md), and then
 verify published native/platform, Wasm, and CLI installation without local
 native-library overrides. Post-publication smoke is separate from the
@@ -98,7 +96,7 @@ pre-publication release gate.
   維持し、削除は v2.0.0 でのみ検討する。v1 より前に削除済みの metrics
   aliases は v1.x の公開契約に含めない。
 - #703（artifact compiler）はv1.3.0で#827/#828/#829の完了を含め、#830と#696の完了を追跡する。#769の比較証跡と公開前検証は引き続き
-  release gateとし、npmトークン更新後に公開可否を判断する。
+  release gateとし、候補の最終検証後に公開可否を判断する。
 - #645（Wasm runtime expansion）と#88（Web Streams）はv2.0以降の計画であり、
   v1.3.0にも含めない。
 

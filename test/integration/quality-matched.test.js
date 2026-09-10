@@ -19,3 +19,10 @@ assert.throws(() => selectMatches([{ bytes: 1, ssim: NaN }], 0.9, 100), /candida
 assert.throws(() => selectMatches(candidates, NaN, 100), /target/);
 assert.throws(() => selectMatches(candidates, 0.9, 0), /target/);
 console.log('quality-matched selection checks passed');
+const { distribution } = require('../helpers/benchmark-corpus');
+assert.deepEqual(distribution([9,1,3]), {samples:[9,1,3],p50:3,p90:9,worst:9});
+assert.throws(()=>distribution([NaN]), /measurement/);
+assert.throws(()=>distribution([]), /measurement/);
+// ssim.js can overshoot 1 by one ULP for an exact match; keep the raw measurement.
+assert.equal(selectMatches([{bytes:1,ssim:1+Number.EPSILON}],1,1).qualityMatched.ssim,1+Number.EPSILON);
+assert.throws(()=>selectMatches([{bytes:1,ssim:1.001}],1,1),/candidate/);

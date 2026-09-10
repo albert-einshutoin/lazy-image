@@ -5,7 +5,7 @@ const sharp = require('sharp');
 const { resolveRoot } = require('./paths');
 
 const CORPUS_MANIFEST_SCHEMA_VERSION = 1;
-const MANIFEST_KEYS = new Set(['schemaVersion', 'name', 'license', 'entries']);
+const MANIFEST_KEYS = new Set(['schemaVersion', 'name', 'license', 'additionalLicenses', 'entries']);
 const LICENSE_KEYS = new Set(['spdx', 'path', 'sha256']);
 const ENTRY_KEYS = new Set([
   'id', 'path', 'bytes', 'sha256', 'license', 'category', 'source', 'expectations', 'policy',
@@ -65,17 +65,8 @@ function readCorpusManifest(manifestPath = resolveRoot('test/benchmarks/corpus/m
   }
 }
 
-function verifyCorpusManifest(manifest, root = resolveRoot()) {
-  requireRecord(manifest, 'benchmark corpus manifest');
-  rejectUnknownKeys(manifest, MANIFEST_KEYS, 'manifest');
-  if (manifest.schemaVersion !== CORPUS_MANIFEST_SCHEMA_VERSION) {
-    throw new Error(`unsupported benchmark corpus manifest schema: ${manifest.schemaVersion}`);
-  }
-  if (typeof manifest.name !== 'string' || manifest.name.length === 0) {
-    throw new Error('benchmark corpus manifest.name is required');
-  }
-
-  const license = requireRecord(manifest.license, 'manifest.license');
+function verifyLicense(license, root) {
+  requireRecord(license, 'manifest.license');
   rejectUnknownKeys(license, LICENSE_KEYS, 'license');
   if (typeof license.spdx !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9.+-]*$/.test(license.spdx)) {
     throw new Error('manifest.license.spdx must be an SPDX identifier');
@@ -89,6 +80,24 @@ function verifyCorpusManifest(manifest, root = resolveRoot()) {
     throw new Error('manifest license checksum does not match the referenced license file');
   }
 
+  return { ...license, bytes: licenseFile.data.length };
+}
+
+function verifyCorpusManifest(manifest, root = resolveRoot()) {
+  requireRecord(manifest, 'benchmark corpus manifest');
+  rejectUnknownKeys(manifest, MANIFEST_KEYS, 'manifest');
+  if (manifest.schemaVersion !== CORPUS_MANIFEST_SCHEMA_VERSION) {
+    throw new Error(`unsupported benchmark corpus manifest schema: ${manifest.schemaVersion}`);
+  }
+  if (typeof manifest.name !== 'string' || manifest.name.length === 0) {
+    throw new Error('benchmark corpus manifest.name is required');
+  }
+
+  if (manifest.additionalLicenses !== undefined && !Array.isArray(manifest.additionalLicenses)) throw new Error('additionalLicenses must be an array');
+  const licenses = [manifest.license, ...(manifest.additionalLicenses || [])].map(license => verifyLicense(license, root));
+  if (new Set(licenses.map(l => l.spdx)).size !== licenses.length) throw new Error('duplicate license');
+  const license = licenses[0];
+
   if (!Array.isArray(manifest.entries) || manifest.entries.length === 0) {
     throw new Error('benchmark corpus manifest.entries must not be empty');
   }
@@ -101,7 +110,7 @@ function verifyCorpusManifest(manifest, root = resolveRoot()) {
       throw new Error(`manifest.entries[${index}].id must be unique and slug-like`);
     }
     ids.add(entry.id);
-    if (entry.license !== license.spdx) throw new Error(`manifest.entries[${index}] license does not match manifest license`);
+    if (!licenses.some(license => entry.license === license.spdx)) throw new Error(`manifest.entries[${index}] license does not match manifest license`);
     if (typeof entry.category !== 'string' || entry.category.length === 0) {
       throw new Error(`manifest.entries[${index}].category is required`);
     }
@@ -130,7 +139,8 @@ function verifyCorpusManifest(manifest, root = resolveRoot()) {
   return {
     schemaVersion: manifest.schemaVersion,
     name: manifest.name,
-    license: { ...license, bytes: licenseFile.data.length },
+    license,
+    additionalLicenses: licenses.slice(1),
     entries,
   };
 }
@@ -246,3 +256,20 @@ module.exports = {
   sha256,
   verifyCorpusManifest,
 };
+
+// Nearest-rank quantiles retain the worst observation for small release samples.
+function distribution(values) {
+  if (!values.length || values.some(v => !Number.isFinite(v) || v < 0)) throw new Error('invalid measurement samples');
+  const sorted = [...values].sort((a,b)=>a-b);
+  return { samples: values, p50: sorted[Math.ceil(sorted.length*0.5)-1],
+    p90: sorted[Math.ceil(sorted.length*0.9)-1], worst: sorted.at(-1) };
+}
+
+function isolatedCase(script, args) {
+  const { execFileSync } = require('node:child_process');
+  return JSON.parse(execFileSync(process.execPath, [script, '--worker', ...args.map(String)], {
+    cwd: resolveRoot(), encoding: 'utf8', timeout: 600000, maxBuffer: 16 * 1024 * 1024,
+  }));
+}
+module.exports.distribution = distribution;
+module.exports.isolatedCase = isolatedCase;

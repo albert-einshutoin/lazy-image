@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Web image optimization engine for Node.js with Image Firewall-backed secure upload defaults and smaller JPEG outputs in canonical PNG → JPEG benchmarks, powered by Rust + mozjpeg",
   "main": "index.js",
   "bin": {
@@ -97,7 +97,8 @@
     "test:bench:jpegli": "node test/benchmarks/jpegli-bakeoff.bench.js",
     "test:bench:avif-backends": "node test/benchmarks/avif-backend-bakeoff.bench.js",
     "check:generated-artifacts": "git diff --exit-code -- index.js index.d.ts",
-    "test:bench:quality-matched": "node test/benchmarks/quality-matched.bench.js"
+    "test:bench:quality-matched": "node test/benchmarks/quality-matched.bench.js",
+    "test:bench:release": "npm run test:bench:compile-image && npm run test:bench:quality-matched && node test/benchmarks/release-evidence.js"
   },
   "devDependencies": {
     "@napi-rs/cli": "3.7.2",
@@ -119,12 +120,12 @@
     ]
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "1.2.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "1.2.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.2.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.2.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.2.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.2.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "1.3.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "1.3.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.3.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.3.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.3.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.3.0"
   },
   "engines": {
     "node": ">= 22"

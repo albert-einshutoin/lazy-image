@@ -7,20 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> Target: v1.3.0. Compiler hardening and the CLI are merged; completion of
-> #769 and release-artifact verification remain release gates. Publication is
-> on hold pending npm token renewal and explicit authorization. See
-> [VERSIONING_PLAN.md](docs/VERSIONING_PLAN.md).
+## [1.3.0] - 2026-09-11
 
 ### Added
 - Added the `lazy-image compile` CLI for JSON policies, verified artifact sets,
   manifest JSON output, and cancellation through the existing compiler API.
 - Added a small compiler regression corpus with license/checksum validation and
   machine-readable E2E, budget, and sampled memory evidence. Broad real-image
-  perceptual-quality comparisons remain pending under #769.
+  evidence now includes licensed photos and labelled synthetic workload categories.
 - Added source-reference SSIM-floor and strict-byte-cap comparisons against
-  sharp for JPEG, WebP, and AVIF on the three regression fixtures. Results
-  preserve unmet targets and do not establish broad perceptual-quality claims.
+  sharp for JPEG, WebP, and AVIF, with three isolated measurement trials,
+  category coverage and scheduled JSON artifact retention. Results preserve unmet
+  targets and do not establish broad perceptual-quality claims.
 
 ### Changed
 - Aligned JPEG performance explanations with the canonical historical benchmark
@@ -648,7 +646,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.0...v1.0.1
