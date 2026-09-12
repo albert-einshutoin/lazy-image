@@ -56,9 +56,12 @@ JSON, `1` compiler failure. Use a new output directory for each compilation.
 The compiler checks files in private staging, then commits the directory locally.
 The parent must be trusted and must not be replaced concurrently; staging and
 output must share a filesystem. Source-snapshot cleanup completes before commit.
-A failed compilation does not publish the set; unpublished staging cleanup errors
-are retained in diagnostics. Keep the phase/code when reporting failures and
-inspect cleanup errors. Do not delete an existing destination simply to retry.
+A failed compilation does not publish the set. In the JavaScript API, an additional
+cleanup failure is attached to the rejected error as `error.cleanupError`; inspect
+it along with the primary phase/code. The CLI prints only the primary failure and
+does not print the attached cleanup error. CLI stderr alone therefore cannot
+confirm that unpublished staging was removed. Do not delete an existing
+destination simply to retry.
 
 Your application owns authentication, upload admission, job scheduling, storage
 transfer and delivery. Upload the verified files through your existing storage

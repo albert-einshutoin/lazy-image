@@ -118,7 +118,7 @@ npx @alberteinshutoin/lazy-image compile input.jpg \
 On success, stdout contains only the generated manifest JSON. Diagnostics go to
 stderr; exit 0 means success, exit 2 means invalid CLI arguments or policy JSON,
 and exit 1 means compiler failure. Failed compilations do not publish the set;
-see [failure handling](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ADOPTION_GUIDE.md#start-with-a-public-artifact-set) for cleanup diagnostics.
+see [failure handling](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ADOPTION_GUIDE.md#start-with-a-public-artifact-set) for API cleanup diagnostics and CLI limitations.
 
 ### Inspect without decoding
 

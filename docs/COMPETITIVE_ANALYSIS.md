@@ -36,7 +36,8 @@ Cloudinary / Cloudflare の提供価値には配信・運用が含まれるた�
 | Wasm / Edge | 補助経路 | [Wasm API](./WASM_PACKAGE_API.md) は狭い upload preflight 用。Node compiler の互換実装や Edge 配信サービスとは説明しない |
 
 compiler は source snapshot の cleanup を公開前に完了し、その後 manifest と画像一式を確定する。
-失敗した処理は公開せず、未公開 staging の cleanup 失敗は診断に残る。呼出側はその診断を確認し、
+失敗した処理は公開しない。APIでは追加の cleanup 失敗を `error.cleanupError` に保持するが、CLIはそれを表示しない。
+CLIのstderrだけでは未公開 staging の削除完了を確認できない。API呼出側は付随エラーも確認し、
 既存出力を消して再実行するような暗黙の上書きを避ける。今回、処理の実装は変更していない。
 
 ## 文書構成への示唆

@@ -148,8 +148,9 @@ are library-owned, and full artifact bytes never cross into a V8 `Buffer`.
 identity. The output parent must be trusted and on the same filesystem as the
 staging directory; portable Node.js has no cross-platform no-replace directory
 rename primitive, so another process must not replace that parent concurrently.
-Source-snapshot cleanup completes before publication. If unpublished staging
-cleanup fails, the error retains cleanup diagnostics; see
+Source-snapshot cleanup completes before publication. An additional cleanup
+failure is attached to the API rejection as `error.cleanupError`. The CLI does not
+print this attached error; see
 [adoption failure handling](./ADOPTION_GUIDE.md#start-with-a-public-artifact-set).
 
 ### Compiler policy

@@ -53,7 +53,8 @@ const manifest = await compileImage({
 
 出力先は未存在のディレクトリです。親ディレクトリは信頼でき、並行して置換されず、
 staging と同じ filesystem 上にある必要があります。失敗した処理の成果物は公開しません。
-未公開 staging の cleanup エラーは診断に残ります。
+APIでは追加のcleanup失敗を `error.cleanupError` で確認できます。CLIはこの付随エラーを表示しないため、
+stderrだけでは未公開 staging の削除完了を確認できません。
 
 ### CLI
 
