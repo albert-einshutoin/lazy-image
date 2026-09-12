@@ -1,54 +1,43 @@
-# Compatibility Matrix (lazy-image vs sharp)
+# Compatibility and limits
 
-## Positioning
+The native Node package and the Wasm preflight package have different APIs.
+For product fit, see [product direction](./PROJECT_PHILOSOPHY.md).
 
-lazy-image is an **opinionated web image optimization engine**. It is **not** a
-drop-in replacement for sharp. The API is intentionally smaller and focuses on:
+## Runtime
 
-- Smaller JPEG files in canonical benchmarks
-- Predictable, safe behavior (strict limits and error taxonomy)
-- Low memory usage for server workloads
+The native package requires Node.js 22 or newer and provides platform packages for:
 
-If you need broad image editing features or a sharp-compatible API, use sharp.
+- macOS arm64 and x64
+- Linux x64 GNU/musl and arm64 GNU
+- Windows x64
 
-## Runtime Support
+Match the deployment OS, architecture and libc. V8 isolates do not load native
+N-API binaries. The [Wasm package](./WASM_PACKAGE_API.md) has a narrower browser/Edge
+preflight contract; its Node tooling requires Node.js 22 or newer.
 
-The native and Wasm packages require Node.js 22 or newer. CI covers Node.js 22
-and 24; Node.js 18 and 20 are unsupported because they are end-of-life.
+## Formats and operations
 
-## Supported Formats
+| Surface | Input | Output |
+|---|---|---|
+| `ImageEngine` | JPEG, PNG, WebP | JPEG, PNG, WebP, AVIF |
+| `compileImage()` / CLI | Static JPEG, PNG, WebP within compiler limits | JPEG, WebP, AVIF; optional WebP placeholder |
+| Wasm preflight | See [Wasm API](./WASM_PACKAGE_API.md) | JPEG / WebP under its own policy |
 
-- **Input**: jpeg/jpg, png, webp
-- **Output**: jpeg/jpg, png, webp, avif (optional at build time via Cargo feature `avif`)
+AVIF output depends on the native build's `avif` feature. Query
+`supportedInputFormats()` and `supportedOutputFormats()` for the loaded engine.
+Compiler policy is narrower than the general engine: see [policy limits](./API.md#compiler-policy).
 
-You can query at runtime with `supportedInputFormats()` and
-`supportedOutputFormats()`.
+The native engine supports resize, crop, 90°/180°/270° rotation, flips, grayscale,
+brightness and contrast. It does not provide compositing, rich filters, SVG/TIFF
+input or animated-image editing. 16-bit inputs are converted to 8-bit.
 
-## Feature Matrix
+## Behavioral boundaries
 
-| Capability | lazy-image | sharp |
-| :--- | :--- | :--- |
-| Drop-in API compatibility | ❌ | ✅ |
-| Resize / crop / rotate / flip | ✅ | ✅ |
-| Grayscale / brightness / contrast | ✅ | ✅ |
-| Compositing / overlays | ❌ | ✅ |
-| Rich filters (blur/sharpen/tint/etc) | ❌ | ✅ |
-| Animated images (GIF/WebP) | ❌ | ✅ |
-| Streaming pipeline | Disk-backed bounded-memory pipeline (`createStreamingPipeline()`), not true streaming transforms | ✅ |
-| Metadata | ICC + EXIF (GPS auto-strip, XMP unsupported) | ✅ (EXIF/XMP/etc) |
-| AVIF encoding | ✅ (supported; benchmark size/speed per workload) | ✅ |
-
-## Non-goals
-
-- Full sharp API parity
-- High-level image editing workflows
-- Animation support
-
-## When to Choose lazy-image
-
-- You want **smaller JPEG files** and are OK with a smaller API surface.
-- You care about **JPEG size optimization**, metadata safety, and bounded-memory file-path processing.
-- You want clear error taxonomy and strict limits for user uploads.
-- You are fine with a disk-backed bounded-memory pipeline instead of true chunk transform streaming.
-
-For exact metadata behavior, see [METADATA_SUPPORT.md](./METADATA_SUPPORT.md).
+- Metadata is stripped by default; ICC/EXIF preservation is opt-in and format-dependent.
+  GPS is stripped even when EXIF is retained unless explicitly allowed. See [metadata](./METADATA_SUPPORT.md).
+- `fromPathAsync()` is the server entrypoint; `fromPath()` performs synchronous setup.
+  Both use native memory. See [file I/O](./ZERO_COPY.md).
+- The streaming helper stages to disk; it is not incremental decode/encode.
+- General responsive helpers and batch outputs are not a transactional artifact set.
+- lazy-image is not a drop-in sharp API. Check [migration differences](./MIGRATION_FROM_SHARP.md)
+  before translating a pipeline; equal quality numbers do not imply equal output quality.

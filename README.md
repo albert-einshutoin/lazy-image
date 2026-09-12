@@ -2,9 +2,10 @@
 
 <img width="192" height="192" alt="lazy-image" src="https://github.com/user-attachments/assets/239496c7-ad7f-4649-b130-8ed0a65481f7" />
 
-Image optimization for Node.js, powered by Rust. lazy-image prioritizes smaller
-web images, bounded memory, and safe defaults over encoding speed or a broad
-editing API.
+Build verified web-image artifacts in your Node.js upload or build pipeline.
+lazy-image combines policy-driven responsive output, metadata checks and a
+manifest, then commits the verified set to a local directory. Powered by Rust,
+it also provides a lazy API for individual image optimization.
 
 [![npm version](https://badge.fury.io/js/@alberteinshutoin%2Flazy-image.svg)](https://www.npmjs.com/package/@alberteinshutoin/lazy-image)
 [![Node.js CI](https://github.com/albert-einshutoin/lazy-image/actions/workflows/CI.yml/badge.svg)](https://github.com/albert-einshutoin/lazy-image/actions/workflows/CI.yml)
@@ -13,7 +14,19 @@ editing API.
 Node.js 22+ · prebuilt for macOS arm64/x64, Linux x64 GNU/musl and arm64 GNU,
 and Windows x64 · JPEG/PNG/WebP input · JPEG/PNG/WebP/AVIF output
 
-[日本語](./README.ja.md) · [API](./docs/API.md) · [Examples](./examples/) · [Performance](./docs/PERFORMANCE.md)
+[日本語](./README.ja.md) · [Documentation](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/README.md) · [API](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/API.md) · [Examples](https://github.com/albert-einshutoin/lazy-image/tree/main/examples/) · [Performance](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/PERFORMANCE.md)
+
+## Choose your workflow
+
+| You need | Start with |
+|---|---|
+| A verified public image set from one local upload | [`compileImage()` or CLI](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ADOPTION_GUIDE.md#start-with-a-public-artifact-set) |
+| One optimized file or Buffer | [Quick start](#quick-start) and [`ImageEngine`](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/API.md) |
+| Browser/Edge upload preflight | [Separate Wasm package](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/WASM_PACKAGE_API.md) |
+| Product fit and alternatives | [Product direction](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/PROJECT_PHILOSOPHY.md) · [Competitor analysis](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/COMPETITIVE_ANALYSIS.md) |
+
+You own upload admission, job execution, storage and delivery. The compiler's
+commit is a local filesystem operation; it does not upload to a CDN or object store.
 
 ## Install
 
@@ -45,7 +58,7 @@ const { ImageEngine } = require('@alberteinshutoin/lazy-image');
 
 ## Common tasks
 
-## Buffer to WebP
+### Buffer to WebP
 
 ```javascript
 import { readFile } from 'node:fs/promises';
@@ -57,7 +70,7 @@ const output = await ImageEngine.from(input)
   .toBuffer('webp', 80);
 ```
 
-## Sanitize an upload
+### Sanitize an upload
 
 ```javascript
 const output = await ImageEngine.from(uploadBuffer)
@@ -84,7 +97,9 @@ const manifest = await compileImage({
 ```
 
 Existing output directories are rejected and full artifact bytes are never
-returned as Node.js buffers.
+returned as Node.js buffers. The output parent must be trusted, without concurrent
+replacement, and staging must share its filesystem. See the
+[compiler contract](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/API.md#transactional-public-upload-compilation).
 
 ### CLI artifact compilation
 
@@ -102,10 +117,10 @@ npx @alberteinshutoin/lazy-image compile input.jpg \
 
 On success, stdout contains only the generated manifest JSON. Diagnostics go to
 stderr; exit 0 means success, exit 2 means invalid CLI arguments or policy JSON,
-and exit 1 means compiler failure. Existing output directories and failed
-compilations are not published.
+and exit 1 means compiler failure. Failed compilations do not publish the set;
+see [failure handling](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ADOPTION_GUIDE.md#start-with-a-public-artifact-set) for API cleanup diagnostics and CLI limitations.
 
-## Inspect without decoding
+### Inspect without decoding
 
 ```javascript
 import { inspectFile } from '@alberteinshutoin/lazy-image';
@@ -135,16 +150,18 @@ await .toPlaceholder({ size?, format?, quality? })
 
 Operations are queued and evaluated once when an output method runs. Use
 `clone()` when producing multiple variants from one source. See the
-[full API reference](./docs/API.md) for batch processing, presets, metrics,
+[full API reference](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/API.md) for batch processing, presets, metrics,
 streaming, metadata controls, responsive output helpers, and error codes.
 
 ## When to use it
 
-Choose lazy-image when output size, predictable memory use, or upload safety is
-more important than raw throughput. Choose sharp or ImageMagick when you need
-maximum speed, drawing, compositing, animation, SVG, TIFF, or a drop-in sharp
-API. See the [benchmark methodology](./docs/PERFORMANCE.md) before comparing
-codecs or quality settings.
+Choose lazy-image when you want policy-driven artifacts and a manifest in an
+existing upload/build job, or its file-oriented optimization API. Metadata
+stripping and resource limits are important defaults, not exclusive advantages.
+Use sharp for broader editing/format needs; consider an HTTP image server or
+managed image service when on-demand transformation and delivery are the main job.
+See the [competitor analysis](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/COMPETITIVE_ANALYSIS.md) for the distinctions
+and [performance evidence](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/PERFORMANCE.md) for scoped codec comparisons.
 
 ## Safety and limits
 
@@ -155,8 +172,8 @@ codecs or quality settings.
 - 16-bit images are converted to 8-bit.
 - Animated GIF/APNG, drawing, and heavy filters are out of scope.
 
-Details: [metadata](./docs/METADATA_SUPPORT.md) · [file I/O](./docs/ZERO_COPY.md) ·
-[thread model](./docs/THREAD_MODEL.md) · [errors](./docs/ERROR_CODES.md)
+Details: [metadata](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/METADATA_SUPPORT.md) · [file I/O](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ZERO_COPY.md) ·
+[thread model](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/THREAD_MODEL.md) · [errors](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ERROR_CODES.md)
 
 ## Browser and Edge
 
@@ -166,7 +183,7 @@ Use the separate Wasm package for browser and V8-isolate upload preflight:
 npm install @alberteinshutoin/lazy-image-wasm
 ```
 
-See the [Wasm package guide](./docs/WASM_PACKAGE_API.md). Validate bundle size
+See the [Wasm package guide](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/WASM_PACKAGE_API.md). Validate bundle size
 and latency in the target runtime before production use.
 
 ## Development
@@ -177,7 +194,7 @@ npm run build
 npm test
 ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for build requirements and workflow.
+See [contributor documentation](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/DEVELOPMENT.md) for build requirements, contracts and verification.
 
 ## License
 

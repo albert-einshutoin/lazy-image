@@ -1,36 +1,28 @@
-# Quality Value Semantics (JPEG / WebP / AVIF / PNG)
+# Choosing quality
 
-This document clarifies what a `quality` number means for each encoder and how to pick values consistently.
+Quality controls encoder settings, not a universal perceptual score. The same
+number does not promise equal quality, size or latency across formats or libraries.
 
-## TL;DR
-- The same 1–100 number maps to shared bands (High / Balanced / Fast / Fastest) across formats (see `docs/QUALITY_EFFORT_SPEED_MAPPING.md`).
-- Default qualities are tuned per format: **JPEG 85**, **WebP 80**, **AVIF 60**. PNG ignores `quality`.
-- Values must be in the range 1–100. Passing `undefined` uses the format default.
+| Output | Default quality | Meaning |
+|---|---|---|
+| JPEG | 85 | Lossy encoding; increasing quality generally preserves more detail |
+| WebP | 80 | Lossy quality and related encoder settings |
+| AVIF | 60 | Quantization and speed settings depend on the quality band |
+| PNG | Ignored | Lossless output; omit quality to make the intent clear |
 
-## Format Semantics
-| Format | Uses `quality`? | Encoder knobs affected | Default | Notes |
-| --- | --- | --- | --- | --- |
-| JPEG (mozjpeg) | Yes | Quantization tables; smoothing; chroma subsampling | 85 | Higher = fewer artifacts, larger files. `fast_mode` controls speed profile, not quality. |
-| WebP (libwebp) | Yes | Quantization factor + filter strength/sharpness + SNS | 80 | `method` is fixed (4) for sharp parity; quality still drives quantizer and filtering. |
-| AVIF (libavif) | Yes | Quantizer + speed trade-off (via shared bands) | 60 | Lower numbers can still look good; encoder speed set by band (6–9). |
-| PNG | No (ignored) | Lossless; uses fixed compression level | n/a | `quality` is accepted for API compatibility but has no effect. |
+When provided, quality must be an integer from 1 through 100. `undefined` selects
+the format default. These are `ImageEngine` defaults; presets and the compiler
+have their own documented options. See [API](./API.md).
 
-## Cross-format quality guidance
-Use these ranges when you want similar subjective quality across formats:
+## Select a value
 
-| Intent | JPEG | WebP | AVIF | Notes |
-| --- | --- | --- | --- | --- |
-| High detail | 90–95 | 85–90 | 70–80 | Preserve fine textures; larger files. |
-| Default/general | 82–88 | 78–82 | 60–70 | Matches project defaults. |
-| Fast delivery | 70–80 | 68–75 | 50–60 | Prioritize throughput and size. |
-| Lowest latency | 50–65 | 50–65 | 35–55 | Use when speed trumps fidelity. |
+Start with the format default, inspect representative photos, UI graphics and
+transparent inputs, then measure size and time. Check fine detail, gradients,
+alpha and color behavior. A fixed quality band does not make size or latency
+deterministic. Use [performance evidence](./PERFORMANCE.md) for comparison scope.
 
-## API expectations
-- `quality` range: **1–100**. Values outside the range are rejected.
-- If you need deterministic size/latency, prefer sticking to the shared bands rather than arbitrary single numbers.
-- For PNG outputs, omit the quality argument to signal intent clearly (it is ignored either way).
+If a delivery size is mandatory, use a target-byte output and check `budgetMet`,
+or declare a compiler artifact budget that must pass before publication. Meeting
+a byte cap alone does not guarantee acceptable visual quality.
 
-## When to adjust per format
-- JPEG: Raise quality for gradient-heavy photos to avoid banding; consider `fast_mode: true` if latency-critical.
-- WebP: Slightly lower quality can still hold detail; filtering is already tuned for web defaults.
-- AVIF: Increasing quality increases encode time sharply; consider raising only when targeting hero images.
+For implementation details, see [encoder parameter mapping](./QUALITY_EFFORT_SPEED_MAPPING.md).

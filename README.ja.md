@@ -1,57 +1,48 @@
-# lazy-image 🦀 (日本語サマリー)
+# lazy-image
 
-英語版 README.md が正本です。詳細は必ず [README.md](./README.md) を優先してください。
+Node.js のアップロード処理やビルド工程で、公開用の画像一式を生成・検証するライブラリです。
+policy から複数サイズの画像、任意の placeholder、manifest を作り、検証後にローカルへ確定します。
+単画像の変換・最適化には `ImageEngine` を使えます。
 
-## Quick Start (5 lines)
+[English](./README.md) · [ドキュメント一覧](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/README.md)
 
-```javascript
-const { ImageEngine } = require('@alberteinshutoin/lazy-image');
+## 用途を選ぶ
 
-const bytesWritten = await ImageEngine.fromPath('input.png')
-  .resize(800)
-  .toFile('output.jpg', 'jpeg', 80);
+| 目的 | 入口 |
+|---|---|
+| 公開用画像一式と manifest を作る | [導入ガイド](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ADOPTION_GUIDE.md) |
+| 単画像を最適化する | 下のクイックスタート |
+| 採用判断・他製品との違いを知る | [競合比較](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/COMPETITIVE_ANALYSIS.md) |
 
-console.log(`Wrote ${bytesWritten} bytes`);
+認証、アップロード受付、ジョブ管理、ストレージ転送、URL 配信はアプリケーションが担当します。
+
+## インストール
+
+Node.js 22+。対応環境では native binary を自動インストールします。
+
+```bash
+npm install @alberteinshutoin/lazy-image
 ```
 
-## Choose lazy-image if / Choose sharp if
+## クイックスタート
 
-| **lazy-image を選ぶ場合** | **sharp を選ぶ場合** |
-|---|---|
-| CDN / 画像配信最適化の帯域節約を優先 | 最大スループットや API 網羅が必要 |
-| serverless・メモリ制約環境で運用 | 描画・合成・高度な画像編集 API が必要 |
-| 既定で安全側寄りの処理を優先 | 既存 sharp エコシステムとの完全互換が必要 |
-| JPEG サイズ最適化を重視 | GIF / SVG / TIFF などが前提で必要 |
-
-**差分が出る主要点**
-
-- JPEG サイズは、[過去baseline](./docs/TRUE_BENCHMARKS.md)（2026-07-17、macOS 26.3 / Apple M4 (arm64)、Node.js v24.2.0、lazy-image v0.16.0、sharp v0.34.5）のcanonicalなPNG→JPEG 2ケースで、同じencoder quality設定では17-20%小さい。resizeケースはsource-reference品質下限を通過しますが、完全な知覚品質一致を意味しません
-- 256MB を超える大きな入力は Rust 側バッファへ全量読み込まず、メモリ安全な mmap 経路で処理します。`fromPath()` を使う際は、同時に対象ファイルの変更・切り詰め・削除を避け、破損や `SIGBUS` / `SIGSEGV` を防いでください。
-- `fromPath()` は256MB以下のsourceを呼び出しthreadで同期readします。HTTP/serverless経路では `await ImageEngine.fromPathAsync(path)` を使い、source setupをNode.js event loop外へ移してください。
-- メタデータは既定で安全寄り（GPS は既定で除去、`keepMetadata()` で制御）
-- API は drop-in 置換ではない（互換が必要なら sharp）
-
-**プロジェクト方針**
-- 目的は smaller web payload + bounded memory + 安全デフォルト
-- 「速い」「常に軽量」は断定しない。ワークロード別検証が必要
-
-## Architecture Overview
-
-`lazy-image` は Rust コア + Node.js バインディングで、入力・変換・エンコードを lazy 実行します。詳細は [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) を参照してください。
-
-## Recommended Paths
-
-- 画像配信最適化: `await fromPathAsync() -> resize()/crop() -> toFile()`
-- アップロード検証: `await fromPathAsync() -> sanitize({ policy: 'strict' }) -> toFile()/toBuffer()`
-- 静的サイト生成バッチ: `processBatch()` / `clone()`
-- 編集後の最終最適化: sharp/ImageMagick の後段に lazy-image を通す
-
-未信頼のローカル画像から公開用成果物一式を安全に作る場合は、
-transactional compilerを使います。全artifact、placeholder、manifestを
-private stagingで検証してから一度だけ公開ディレクトリへcommitします。
+`.mjs` ファイルで実行する例です。
 
 ```javascript
-const { compileImage } = require('@alberteinshutoin/lazy-image');
+import { ImageEngine } from '@alberteinshutoin/lazy-image';
+
+const image = await ImageEngine.fromPathAsync('input.png');
+await image.resize({ width: 800, fit: 'inside' }).toFile('output.jpg', 'jpeg', 80);
+```
+
+CommonJS の `require()` にも対応します。サーバーでは `fromPathAsync()` を使います。
+
+## よく使う処理
+
+### 公開用画像一式を作る
+
+```javascript
+import { compileImage } from '@alberteinshutoin/lazy-image';
 
 const manifest = await compileImage({
   inputPath: '/srv/uploads/image.bin',
@@ -60,11 +51,14 @@ const manifest = await compileImage({
 });
 ```
 
-既存の出力ディレクトリは上書きせず、artifact全体をNode.jsのBufferへ戻しません。
+出力先は未存在のディレクトリです。親ディレクトリは信頼でき、並行して置換されず、
+staging と同じ filesystem 上にある必要があります。失敗した処理の成果物は公開しません。
+APIでは追加のcleanup失敗を `error.cleanupError` で確認できます。CLIはこの付随エラーを表示しないため、
+stderrだけでは未公開 staging の削除完了を確認できません。
 
-### CLIでartifactを生成
+### CLI
 
-policy JSONを用意し、1つの入力画像を未存在の出力ディレクトリへ生成します。
+`policy.json` を作ります。
 
 ```json
 {"widths":[320,640],"formats":["webp"],"placeholder":true}
@@ -72,69 +66,46 @@ policy JSONを用意し、1つの入力画像を未存在の出力ディレク�
 
 ```bash
 npx @alberteinshutoin/lazy-image compile input.jpg \
-  --out-dir public/images/v1 \
-  --policy policy.json
+  --out-dir public/images/v1 --policy policy.json
 ```
 
-成功時のstdoutはmanifest JSONだけです。診断はstderrへ出力し、exit 0は成功、
-exit 2はCLI引数またはpolicy JSONの不正、exit 1はcompiler実行失敗を表します。
-既存の出力ディレクトリや失敗した処理の成果物は公開されません。
+成功時の stdout は manifest JSON、診断は stderr。終了コードは 0 が成功、
+2 が引数・policy JSON の不正、1 が compiler 実行失敗です。
 
-## Cost Savings Example (ROI)
+## 主なAPI
 
-README（英語版）と同じ想定計算を参照します。月間配信量とエンコーディング回数次第で節約は拡大します。
+`ImageEngine` は resize、crop、rotate、flip、grayscale、sanitize と各出力メソッドを提供します。
+複数出力には clone、responsive helpers、batch API も利用できます。
+一般の出力ヘルパーは compiler の一括検証・確定とは異なります。
+[APIリファレンス](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/API.md)で契約を確認してください。
 
-## Installation
+## 選び方
 
-```bash
-npm install @alberteinshutoin/lazy-image
-```
+公開前の生成・検証をまとめたい upload/build 処理が主対象です。幅広い編集や形式が必要なら sharp など、
+HTTP変換・保存・配信の運用が主目的なら imgproxy やマネージドサービスとの役割を比較します。
+[製品方針](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/PROJECT_PHILOSOPHY.md)を参照してください。
 
-| 環境 | 概要 |
-|---|---|
-| ランタイム | Node.js 22+。platform optional dependencies が自動インストール |
-| パッケージサイズ | プラットフォーム別で 6〜9MB 前後 |
-| 自前ビルド | `npm run build` |
+メタデータ除去、Rust、複数サイズ生成だけを独自性とはしません。過去の JPEG サイズ改善は記録された条件に限られ、
+現在の全面的な速度・容量優位を意味しません。[性能の読み方](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/PERFORMANCE.md)に根拠をまとめています。
 
-## Basic Usage
+## 安全性と制約
 
-```javascript
-await ImageEngine.fromPath('photo.jpg')
-  .resize({ width: 800, fit: 'inside' })
-  .toFile('thumb.jpg', 'jpeg', 85);
-```
+- 入力は JPEG/PNG/WebP、エンジン出力は JPEG/PNG/WebP/AVIF。compiler の出力は JPEG/WebP/AVIF。
+- メタデータは既定で除去。`public-upload` は EXIF/GPS/XMP を除去し、検証済み ICC のみ保持します。
+- 入力の V8 コピーを避けても native memory は必要です。大きな mmap 入力は処理中に変更・切り詰め・削除しないでください。
+- 回転は90°/180°/270°。16-bit 入力は8-bitへ変換し、アニメーション編集・描画は対象外です。
 
-```javascript
-const { inspectFile } = require('@alberteinshutoin/lazy-image');
-const meta = inspectFile('input.jpg');
-```
+[互換性と制限](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/COMPATIBILITY.md) · [metadata契約](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/METADATA_SUPPORT.md)
 
-## Documentation
+## Browser / Edge
 
-英語版の構成と同じです。`docs/`, `examples/`, `spec/` を順に確認してください。
-選択的テストCIの判定方法、安全側の全件フォールバック、ローカル再現手順は
-[docs/SELECTIVE_TESTING.md](./docs/SELECTIVE_TESTING.md) を参照してください。
+[別の Wasm パッケージ](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/WASM_PACKAGE_API.md)は upload preflight 用です。
+Node compiler と同じAPIではありません。対象ランタイムで bundle size と latency を確認してください。
 
-## Features (summary)
+## 開発
 
-- JPEG/PNG/WebP/AVIF エンコード
-- ICC / EXIF / GPS オフロード
-- フォーマット別最適化・メトリクス
-- レスポンシブ画像セット / srcset 生成ヘルパー
-- LQIPプレースホルダ / blurDataURL生成
-- Image Firewall / Rust メモリ安全
+[開発者向けドキュメント](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/DEVELOPMENT.md)に build、検証、内部仕様、リリース手順があります。
 
-## Development
+## ライセンス
 
-```bash
-npm install && npm run build
-npm test
-```
-
-## License
-
-MIT
-
-## Credits
-
-[mozjpeg](https://github.com/mozilla/mozjpeg) · [libwebp](https://chromium.googlesource.com/webm/libwebp) · [libavif](https://github.com/AOMediaCodec/libavif) · [fast_image_resize](https://github.com/Cykooz/fast_image_resize) · [img-parts](https://github.com/paolobarbolini/img-parts) · [napi-rs](https://napi.rs/)
+MIT。使用ライブラリは [英語版 README](./README.md#license) を参照してください。

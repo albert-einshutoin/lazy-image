@@ -1,3 +1,6 @@
+> Historical evidence. Retains its original date and scope; not current release guidance.
+> See the [performance guide](../PERFORMANCE.md) and [contributor index](../DEVELOPMENT.md).
+
 # sharp 比較パフォーマンス徹底調査 (2026-02-17)
 
 ## 1. 実施体制 (GitHub Flow + worktree)

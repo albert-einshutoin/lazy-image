@@ -1,3 +1,6 @@
+> Historical evidence. Retains its original date and scope; not current release guidance.
+> See the [performance guide](../PERFORMANCE.md) and [contributor index](../DEVELOPMENT.md).
+
 # Benchmark Results Log
 
 This file stores reproducible benchmark snapshots for new benchmark suites.

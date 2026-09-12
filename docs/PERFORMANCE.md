@@ -1,105 +1,48 @@
-# Performance & When to Use
+# Evaluating performance
 
-lazy-image is optimized for **JPEG output size and memory safety** rather than raw throughput. This guide helps you choose between lazy-image and sharp and use lazy-image effectively.
+Choose a representative workload before comparing engines. lazy-image's product
+focus is [verified artifact preparation](./PROJECT_PHILOSOPHY.md); this page does
+not establish a universal speed, quality, size or memory advantage.
 
-## Canonical Benchmark Source
+## What evidence exists
 
-The canonical benchmark dataset for public performance claims is [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
+| Evidence | What it establishes | What it does not establish |
+|---|---|---|
+| [Canonical historical baseline](./TRUE_BENCHMARKS.md) | Recorded codec/resize results on its named machine and versions | Performance of the current package or every input |
+| [Compiler and quality runners](./BENCHMARK_OPERATIONS.md#release-compiler-and-constrained-quality-evidence-769) | How to reproduce E2E acceptance, budget and constrained-quality measurements | A successful run merely because the scripts exist |
+| [Historical snapshots](./history/BENCHMARK_RESULTS.md) | Earlier operation, memory and cold-start observations | Fresh release evidence |
+| [Wasm measurements](./WASM_BENCHMARKING.md) | Browser/Edge preflight methodology | Native compiler performance or full API parity |
 
-> **Historical baseline, not a current v1.2.0 measurement:** The values below
-> were recorded on 2026-07-17 with lazy-image v0.16.0, Node.js v24.2.0,
-> sharp v0.34.5, and macOS 26.3 on an Apple M4 (arm64). Timings are specific
-> to these scenarios and should be remeasured for the target workload.
+The 2026-07-17 baseline used lazy-image 0.16.0 and sharp 0.34.5 on Node.js 24.2.0,
+macOS 26.3 / Apple M4. Its two simple PNG-to-JPEG scenarios produced smaller
+lazy-image files at the same numeric quality setting; they were not exact
+perceptual-quality matches. WebP and AVIF favored sharp in the recorded timing
+scenarios. Read the original tables for dimensions, operations and quality context.
+No new measurements accompany this documentation cleanup.
 
-All summary claims in README and migration docs should be derived from that document's exact scenarios rather than mixing numbers from different workloads.
+## Compare your workload
 
-For the full inventory of public claims and quoting rules, see [BENCHMARK_CLAIMS.md](./BENCHMARK_CLAIMS.md).
+1. Fix the input corpus, source/license hashes, versions, platform, orientation,
+   resize geometry, transparency and metadata requirements.
+2. Record actual encoder options. A default-setting comparison is not a comparison
+   against every tuned configuration. Equal numeric quality is not equal perception.
+3. Compare size at a documented quality constraint, and quality at a byte cap.
+   Retain failed and unmet cases rather than counting only successful matches.
+4. Separate codec measurements from the complete compiler job, including staging,
+   verification and local publication. Record timing variation and memory scope.
+5. Assess total compute, temporary storage and delivery cost with your own usage.
+   A smaller image or binary alone does not prove lower total cost or cold-start latency.
 
-## Benchmark Summary (Canonical Scenarios)
+Use the existing [benchmark commands and artifact procedure](./BENCHMARK_OPERATIONS.md).
+Public claims must follow [BENCHMARK_CLAIMS](./BENCHMARK_CLAIMS.md).
 
-| Scenario | Metric | lazy-image | sharp | Interpretation |
-|---------|--------|------------|-------|----------------|
-| PNG → JPEG (no resize, 5000×5000) | Output size | **1,224,894 bytes** | 1,475,223 bytes | lazy-image output is **17.0% smaller** |
-| PNG → JPEG (no resize, 5000×5000) | Encode time | **712ms** | 765ms | lazy-image was **1.07x faster** in this run |
-| PNG → JPEG (resize 800px, 5000×5000 input) | Output size | **31,518 bytes** | 39,416 bytes | lazy-image output is **20.0% smaller** |
-| PNG → JPEG (resize 800px, 5000×5000 input) | Encode time | 114ms | **78ms** | sharp was faster in this run |
-| PNG → AVIF (no resize, 5000×5000) | Encode time | 13,440ms | **5,849ms** | sharp is faster for this workload |
-| PNG → AVIF (no resize, 5000×5000) | Output size | 1,718,430 bytes | **1,290,501 bytes** | sharp output is smaller for this workload |
-| PNG → WebP (no resize, 5000×5000) | Encode time | 4,379ms | **964ms** | sharp is much faster for this workload |
-| JPEG/WebP real-time resize workloads | Latency | scenario-dependent | scenario-dependent | no general speed winner; benchmark the target codec and image mix |
+## Interpret memory correctly
 
-The JPEG size comparison uses the same encoder quality setting. In the resize case, lazy-image measured SSIM 0.9942 / PSNR 37.07 dB against the resized source reference versus sharp at 0.9955 / 37.65 dB; this is not an exact perceptual-quality-match claim.
+`fromPathAsync()` and file output avoid full source/output Node Buffers, but Rust
+buffers, decoded pixels and codecs still consume memory. Bound concurrency and
+measure representative inputs in the actual deployment environment.
 
-Full data: [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).
-
----
-
-## When to Use lazy-image
-
-- **Node-runtime serverless (AWS Lambda, Google Cloud Run, Vercel Node Functions, Google Cloud Functions)** — Avoid OOM and smaller cold-start footprint. V8-isolate runtimes such as Cloudflare Workers and Vercel Edge are **not supported** by the native NAPI build (tracked under [#645](https://github.com/albert-einshutoin/lazy-image/issues/645) for future Wasm support).
-- **Bandwidth-sensitive JPEG delivery** — Smaller JPEG saves CDN and transfer costs in the two simple canonical PNG → JPEG benchmarks; multi-operation pipelines need their own measurement.
-- **AVIF output support** — Use when you need lazy-image's AVIF output path, ICC handling, and safety defaults; benchmark target AVIF workloads before assuming size or speed wins.
-- **Memory-constrained** — 512MB containers; `fromPath()` bypasses the V8 heap (read-into-memory ≤ 256 MB, mmap with advisory locks > 256 MB).
-- **Safety-first** — Rust memory safety; built-in decompression limits and Image Firewall.
-
-## When to Use sharp
-
-- **Heavy persistent servers** — Plenty of RAM and CPU.
-- **Throughput-critical** — Thousands of JPEG/WebP resizes per second.
-- **AVIF/WebP speed or size is decisive** — The recorded historical canonical AVIF/WebP baseline favored sharp for speed, and often for output size.
-
-## Philosophy
-
-lazy-image trades raw throughput for **JPEG compression efficiency**, **stable memory**, and **safe defaults**. Treat benchmark wins as **codec- and workload-specific**, not universal throughput claims.
-
----
-
-## Performance Notes
-
-### Memory efficiency
-
-- **Prefer file-to-file**: `fromPath(...).toFile(...)` avoids loading the image into the Node.js heap.
-- **Avoid**: `fs.readFileSync('huge.jpg')` then `ImageEngine.from(buffer)` — the whole file sits in V8.
-
-```javascript
-// ✅ Good: no heap usage for input
-await ImageEngine.fromPath('huge.png').resize(800).toFile('out.jpg', 'jpeg', 80);
-
-// ❌ Bad: entire file in V8 heap
-const buf = fs.readFileSync('huge.png');
-await ImageEngine.from(buf).resize(800).toBuffer('jpeg', 80);
-```
-
-### Use cases where lazy-image fits
-
-- Build-time optimization (SSG, CI/CD)
-- Batch thumbnails / media pipelines
-- CDN / mobile backends
-- AVIF and WebP encoding when feature support and safety defaults matter; benchmark when speed/size is critical
-- Color-accurate workflows (ICC preservation)
-
-### When sharp may be better
-
-- Real-time processing with strict latency (&lt;100ms).
-
----
-
-## Serverless
-
-### Binary size
-
-| Platform | lazy-image | sharp (total) | Savings |
-|----------|------------|--------------|---------|
-| macOS ARM64 | **~5.7 MB** | ~17 MB | ~66% |
-| Linux x64 | **~9.1 MB** | ~21 MB | ~57% |
-| Windows x64 | **~9.1 MB** | ~15 MB | ~39% |
-
-### Zero config
-
-- No `LD_LIBRARY_PATH` or system libvips.
-- Single static binary (mozjpeg, libwebp; AVIF via `avif` feature).
-- Main npm package ~29 KB tarball / ~107 KB unpacked + one platform binary (run `npm pack --dry-run --json` for the current numbers).
-
-**Ideal for Node-runtime serverless**: AWS Lambda, Google Cloud Functions, Google Cloud Run, Vercel Node Functions.
-
-**Not supported**: V8-isolate runtimes such as Cloudflare Workers and Vercel Edge. The published native NAPI module requires a Node.js runtime; Wasm support is tracked under [#645](https://github.com/albert-einshutoin/lazy-image/issues/645).
+`ProcessingMetrics.peakRss` can be the process lifetime high-water mark, not one
+image's allocation. The release runner's sampled process RSS has a different scope.
+See [metrics boundaries](./metrics-api.md#measurement-boundaries),
+[file I/O](./ZERO_COPY.md) and [thread model](./THREAD_MODEL.md).

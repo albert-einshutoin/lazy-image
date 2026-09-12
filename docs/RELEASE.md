@@ -4,8 +4,8 @@ This document describes how to cut a release of `@alberteinshutoin/lazy-image` w
 
 Related docs:
 - [SEMVER_POLICY.md](SEMVER_POLICY.md) — versioning rules and breaking change criteria
-- [VERSIONING_PLAN.md](VERSIONING_PLAN.md) — current priorities and release policy
-- [VERSION_HISTORY.md](VERSION_HISTORY.md) — historical version notes
+- [ROADMAP.md](ROADMAP.md) — product priorities
+- [CHANGELOG.md](../CHANGELOG.md) — versioned changes
 
 ---
 

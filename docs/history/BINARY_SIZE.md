@@ -1,3 +1,6 @@
+> Historical evidence. Retains its original date and scope; not current release guidance.
+> See the [performance guide](../PERFORMANCE.md) and [contributor index](../DEVELOPMENT.md).
+
 # Binary Size Comparison (Issue #373)
 
 This document tracks release binary size impact of the optional `avif` feature.
