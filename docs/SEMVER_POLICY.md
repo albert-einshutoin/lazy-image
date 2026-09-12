@@ -33,7 +33,7 @@ Even while on 0.x, we treat MINOR as additive and avoid breaking changes without
 
 If `CHANGELOG.md` contains a `BREAKING` marker or a non-empty `Removed` section
 for the release being cut, the release version must be a major boundary
-(`x.0.0`). During current 0.x development, that means the next release must be
+(`x.0.0`). For historical 0.x releases, that meant the next release had to be
 `1.0.0` unless maintainers explicitly reclassify the entry as a bug-fix
 clarification under `Fixed`.
 
@@ -78,3 +78,9 @@ Each PR that changes user-visible behavior must update `CHANGELOG.md` accordingl
 - Release notes on GitHub
 - README/spec updates when behavior changes
 - For high-impact removals, add a short note in `docs/` alongside the relevant feature (e.g., `docs/OPERATIONS.md`)
+
+## Existing v1 APIs
+
+Existing output convenience APIs such as `toBufferWithMetrics()` remain supported
+within v1.x; removal requires a major release. Metrics aliases removed before v1
+are not part of this contract.

@@ -1,6 +1,6 @@
 # API Reference
 
-Full API reference for lazy-image. For a quick start, see [README.md](../README.md#-basic-usage).
+Full API reference for lazy-image. For a quick start, see [README.md](../README.md#quick-start).
 
 This page documents the native Node.js package. The published browser/Edge Wasm
 MVP is intentionally narrower and is documented separately in
@@ -130,7 +130,7 @@ local image. It consumes the deterministic `compileArtifactPlan()` contract,
 writes plan-owned artifacts and an optional 16px WebP placeholder into a
 private sibling staging directory, verifies hashes/metadata, and publishes by
 one directory rename. Existing output directories are rejected; failures and
-abort signals remove the unpublished staging set.
+abort signals trigger cleanup of the unpublished staging set.
 
 ```javascript
 const { compileImage } = require('@alberteinshutoin/lazy-image');
@@ -148,6 +148,34 @@ are library-owned, and full artifact bytes never cross into a V8 `Buffer`.
 identity. The output parent must be trusted and on the same filesystem as the
 staging directory; portable Node.js has no cross-platform no-replace directory
 rename primitive, so another process must not replace that parent concurrently.
+Source-snapshot cleanup completes before publication. If unpublished staging
+cleanup fails, the error retains cleanup diagnostics; see
+[adoption failure handling](./ADOPTION_GUIDE.md#start-with-a-public-artifact-set).
+
+### Compiler policy
+
+`policy` is a plain object. Unknown keys are rejected. This is narrower than
+`ImageEngine` output options; PNG output and arbitrary encoder quality are not
+compiler policy fields.
+
+| Field | Default | Contract |
+|---|---|---|
+| `preset` | `'publicUpload'` | Only supported preset |
+| `widths` | `[320, 640, 1280]` | Up to 8 unique widths, integers 16–8192; normalized in ascending order |
+| `formats` | `['webp']` | JPEG, WebP, AVIF; JPEG is rejected for alpha inputs |
+| `placeholder` | `true` | Include a 16px-wide WebP placeholder using strip-all metadata |
+| `budgets` | `[]` | Entries `{ width, format, maxBytes }`, targeting an artifact in the normalized plan; maxBytes is 1–32 MiB |
+
+Requested widths above the display width are omitted. If all are above it, the
+source display width is used, provided it is at least 16px. A budget pointing at
+a width removed by normalization is invalid. Inputs must be static JPEG/PNG/WebP
+within 32 MiB, 40 million pixels and the dimension guard; malformed or unsupported
+inputs fail rather than producing an assumed-safe artifact.
+
+A requested byte budget must be met for publication. This differs from standalone
+target-byte APIs that return `budgetMet` for the caller to check. Budget compliance
+is not a perceptual-quality guarantee. The compiler uses JPEG 85, WebP 80 and AVIF
+60 defaults; see [adoption](./ADOPTION_GUIDE.md) for API/CLI usage.
 
 ## Utilities
 
@@ -226,7 +254,7 @@ callback error and continues processing the next chunk.
 | **WebP** | 80 | 70-90 |
 | **AVIF** | 60 | 50-80 |
 
-See [QUALITY_EFFORT_SPEED_MAPPING.md](./QUALITY_EFFORT_SPEED_MAPPING.md) for cross-format equivalence.
+See [QUALITY_EFFORT_SPEED_MAPPING.md](./QUALITY_EFFORT_SPEED_MAPPING.md) for encoder parameter mapping; equal numeric quality is not perceptual equivalence.
 
 ---
 
