@@ -26,7 +26,8 @@ const reportPath = process.env.SMOKE_REPORT_PATH;
 const report = {
   status: 'FAIL',
   startedAt: new Date().toISOString(),
-  checkoutRevision: process.env.GITHUB_SHA || null,
+  checkoutRevision: process.env.SMOKE_SCRIPT_REVISION || null,
+  eventRevision: process.env.GITHUB_SHA || null,
   scriptRevision: process.env.SMOKE_SCRIPT_REVISION || null,
   package: `${NAME}@${VERSION}`,
   registry: REGISTRY,
