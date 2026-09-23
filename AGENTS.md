@@ -12,5 +12,6 @@ Use the existing package scripts and GitHub workflows; do not duplicate their im
 | Complete hosted validation | `.github/workflows/CI.yml`, `full_validation: true` on manual runs |
 | Scheduled benchmark evidence and artifact retention | `.github/workflows/benchmark-regression.yml` |
 | Security | `.github/workflows/security.yml` |
+| Published npm native smoke | `.github/workflows/registry-native-smoke.yml` (PR matrix), `node scripts/registry-native-smoke.cjs` with `SMOKE_EXPECTED_PLATFORM` and optional `SMOKE_REPORT_PATH` |
 
 Review changes and run targeted checks before complete validation. Release evidence must retain failed/unmet outcomes, source/license hashes, and exact measurement scope. Expected hostile-input rejection is separate from valid-input acceptance. Unknown or unsafe impact analysis requires full validation; scheduled/main/release validation must not be reduced to a PR subset.

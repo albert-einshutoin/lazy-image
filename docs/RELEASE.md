@@ -6,6 +6,7 @@ Related docs:
 - [SEMVER_POLICY.md](SEMVER_POLICY.md) — versioning rules and breaking change criteria
 - [ROADMAP.md](ROADMAP.md) — product priorities
 - [CHANGELOG.md](../CHANGELOG.md) — versioned changes
+- [v1.3.0 verification](history/V1.3.0_VERIFICATION.md) — publication evidence and remaining registry smoke coverage (2026-09-23)
 
 ---
 
@@ -217,6 +218,14 @@ node -e "const li = require('@alberteinshutoin/lazy-image'); console.log(Object.
 npm install @alberteinshutoin/lazy-image-wasm@X.Y.Z
 node --input-type=module -e "import { VERSION } from '@alberteinshutoin/lazy-image-wasm/shared'; console.log(VERSION)"
 ```
+
+The commands above confirm installation and exports only. For v1.3.0, run
+[Published npm native smoke](../.github/workflows/registry-native-smoke.yml)
+on a PR containing the verification script. It installs the registry package in
+a fresh directory on each target runtime, executes `compileImage()` and the
+installed CLI, and checks the generated image bytes, metadata and manifest.
+Keep the workflow's per-platform JSON reports and logs with the PR; record
+failed or unavailable environments separately from passing environments.
 
 ---
 
