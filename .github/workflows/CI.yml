@@ -64,15 +64,6 @@ jobs:
             platform: linux-arm64-gnu
             build: npm run build -- --target aarch64-unknown-linux-gnu
           
-          # Linux (musl)
-          - host: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            platform: linux-x64-musl
-            build: |
-              sudo apt-get update
-              sudo apt-get install -y musl-tools
-              npm run build -- --target x86_64-unknown-linux-musl
-
     name: Build - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
 
@@ -132,6 +123,40 @@ jobs:
         with:
           name: bindings-${{ matrix.settings.target }}
           path: "lazy-image.${{ matrix.settings.platform }}.node"
+          if-no-files-found: error
+
+  build-musl:
+    name: Build - x86_64-unknown-linux-musl (Alpine)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Build and load in native musl container
+        shell: bash
+        run: |
+          docker run --rm --platform linux/amd64 \
+            -v "$GITHUB_WORKSPACE:/source" -w /source node:22-alpine3.23 \
+            sh -ec '
+              apk add --no-cache rustup build-base cmake nasm clang perl python3 pkgconf
+              rustup-init -y --no-modify-path --profile minimal \
+                --default-host x86_64-unknown-linux-musl --default-toolchain 1.88.0
+              export PATH=/root/.cargo/bin:$PATH
+              test "$(node -p process.platform)" = linux
+              test "$(node -p process.arch)" = x64
+              test -e /lib/ld-musl-x86_64.so.1
+              uname -m
+              rustc -vV
+              npm ci
+              rm -f -- ./*.node
+              npm run build -- --target x86_64-unknown-linux-musl
+              test "$(find . -maxdepth 1 -name "*.node" | wc -l)" -eq 1
+              test -f lazy-image.linux-x64-musl.node
+              node -e "require(\"./lazy-image.linux-x64-musl.node\")"
+            '
+      - name: Upload artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: bindings-x86_64-unknown-linux-musl
+          path: lazy-image.linux-x64-musl.node
           if-no-files-found: error
 
   test-rust:
@@ -567,7 +592,7 @@ jobs:
   candidate-pack:
     name: Stage release candidate tarballs
     runs-on: ubuntu-24.04
-    needs: build
+    needs: [build, build-musl]
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
