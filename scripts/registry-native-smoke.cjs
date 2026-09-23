@@ -9,7 +9,8 @@ const { createRequire } = require('node:module');
 
 const REGISTRY = 'https://registry.npmjs.org/';
 const NAME = '@alberteinshutoin/lazy-image';
-const VERSION = '1.3.0';
+const VERSION = process.env.SMOKE_VERSION;
+const candidateDir = process.env.SMOKE_CANDIDATE_DIR;
 const FIXTURE = 'test/fixtures/test_100KB_1057x1057.jpg';
 const FIXTURE_SHA256 = '6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90';
 const POLICY = { widths: [320, 640], formats: ['webp'], placeholder: false };
@@ -32,6 +33,7 @@ const report = {
   package: `${NAME}@${VERSION}`,
   registry: REGISTRY,
   expectedPlatform: expected,
+  source: candidateDir ? 'candidate-tarball' : 'published-registry',
   runtime: { platform: process.platform, arch: process.arch, osRelease: os.release(), osVersion: os.version(), node: process.version, libc: null },
   host: { runner: process.env.SMOKE_HOST_RUNNER || null, os: process.env.SMOKE_HOST_OS || null, arch: process.env.SMOKE_HOST_ARCH || null },
   fixture: { path: FIXTURE, sha256: FIXTURE_SHA256 },
@@ -80,6 +82,8 @@ function assertArtifactSet(manifest, outputDir, inspect) {
 }
 
 async function main() {
+  assert.match(VERSION || '', /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/,
+    'SMOKE_VERSION must specify the tested version');
   assert.ok(PLATFORMS[expected], `unsupported expected platform: ${expected}`);
   assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH, undefined);
   assert.equal(process.env.NODE_PATH, undefined);
@@ -104,23 +108,48 @@ async function main() {
   const inputPath = path.join(temp, 'input.jpg');
   fs.copyFileSync(path.join(checkout, FIXTURE), inputPath);
   assert.equal(sha256(fs.readFileSync(inputPath)), FIXTURE_SHA256);
-  run(npm, ['install', '--save-exact', `${NAME}@${VERSION}`, `--registry=${REGISTRY}`, '--no-audit', '--no-fund'], temp);
+  let candidate;
+  if (candidateDir) {
+    candidate = JSON.parse(fs.readFileSync(path.join(candidateDir, 'manifest.json'), 'utf8'));
+    assert.equal(candidate.version, VERSION);
+    if (process.env.GITHUB_SHA) assert.equal(candidate.revision, process.env.GITHUB_SHA);
+    const selected = [NAME, `${NAME}-${packageSuffix}`].map(name => {
+      const item = candidate.packages.find(entry => entry.name === name);
+      assert.ok(item, `candidate package missing: ${name}`);
+      const tarball = path.join(candidateDir, item.tarball);
+      assert.equal(sha256(fs.readFileSync(tarball)), item.tarballSha256);
+      return tarball;
+    });
+    run(npm, ['install', '--save-exact', '--omit=optional', ...selected, `--registry=${REGISTRY}`, '--no-audit', '--no-fund'], temp);
+    report.candidate = { revision: candidate.revision, tarballs: selected };
+  } else {
+    run(npm, ['install', '--save-exact', `${NAME}@${VERSION}`, `--registry=${REGISTRY}`, '--no-audit', '--no-fund'], temp);
+  }
 
   const root = path.join(temp, 'node_modules', '@alberteinshutoin');
   const mainDir = path.join(root, 'lazy-image');
   const platformDir = path.join(root, `lazy-image-${packageSuffix}`);
+  report.licenseSha256 = sha256(fs.readFileSync(path.join(mainDir, 'LICENSE')));
+  if (candidate) assert.equal(report.licenseSha256, candidate.licenseSha256);
   const lock = JSON.parse(fs.readFileSync(path.join(temp, 'package-lock.json'), 'utf8'));
   report.resolved = {};
   for (const [name, dir] of [[NAME, mainDir], [`${NAME}-${packageSuffix}`, platformDir]]) {
     const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
     const entry = lock.packages[`node_modules/${name}`];
-    const metadata = JSON.parse(run(npm, ['view', `${name}@${VERSION}`, 'dist', '--json', `--registry=${REGISTRY}`], temp));
     assert.equal(pkg.name, name);
     assert.equal(pkg.version, VERSION);
     assert.equal(entry.version, VERSION);
-    assert.equal(entry.integrity, metadata.integrity);
-    assert.equal(entry.resolved, metadata.tarball);
-    assert.ok(metadata.tarball.startsWith(REGISTRY));
+    if (candidate) {
+      const item = candidate.packages.find(record => record.name === name);
+      const tarball = path.join(candidateDir, item.tarball);
+      assert.equal(entry.integrity, `sha512-${createHash('sha512').update(fs.readFileSync(tarball)).digest('base64')}`);
+      if (item.binary) assert.equal(sha256(fs.readFileSync(path.join(dir, item.binary))), item.binarySha256);
+    } else {
+      const metadata = JSON.parse(run(npm, ['view', `${name}@${VERSION}`, 'dist', '--json', `--registry=${REGISTRY}`], temp));
+      assert.equal(entry.integrity, metadata.integrity);
+      assert.equal(entry.resolved, metadata.tarball);
+      assert.ok(metadata.tarball.startsWith(REGISTRY));
+    }
     report.resolved[name] = { version: pkg.version, tarball: entry.resolved, integrity: entry.integrity };
   }
 

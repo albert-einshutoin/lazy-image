@@ -169,12 +169,7 @@ git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin vX.Y.Z
 ```
 
-Pushing the `vX.Y.Z` tag triggers the publish job in [CI.yml](../.github/workflows/CI.yml). The job:
-1. Downloads the prebuilt `.node` artifacts for all supported platforms.
-2. Publishes each platform package (`@alberteinshutoin/lazy-image-{platform}`).
-3. Publishes the Wasm workspace package (`@alberteinshutoin/lazy-image-wasm`).
-4. Publishes the main package.
-5. Creates a GitHub Release with generated notes.
+Before tagging, run [CI.yml](../.github/workflows/CI.yml) manually on the release commit with `dry_run=true` and retain the candidate reports. Tag CI rebuilds the same revision, verifies exactly one correctly named binary per target, inspects its CPU and Linux libc dependencies, and packs the main and six platform tarballs. Each candidate tarball is installed in an empty directory on all six supported platforms with Node.js 22 and 24. The publish job starts only after **all 12 candidate API/CLI/artifact smoke jobs and full CI pass**. It publishes the exact candidate platform and main tarballs recorded by SHA-256 in `release-candidate/manifest.json`, plus the Wasm workspace package, then creates the GitHub Release. If a candidate job fails or cannot run, the publish job is skipped; fix the cause and use a new reviewed revision before tagging.
 
 ---
 
@@ -219,13 +214,17 @@ npm install @alberteinshutoin/lazy-image-wasm@X.Y.Z
 node --input-type=module -e "import { VERSION } from '@alberteinshutoin/lazy-image-wasm/shared'; console.log(VERSION)"
 ```
 
-The commands above confirm installation and exports only. For v1.3.0, run
-[Published npm native smoke](../.github/workflows/registry-native-smoke.yml)
-on a PR containing the verification script. It installs the registry package in
-a fresh directory on each target runtime, executes `compileImage()` and the
-installed CLI, and checks the generated image bytes, metadata and manifest.
-Keep the workflow's per-platform JSON reports and logs with the PR; record
-failed or unavailable environments separately from passing environments.
+The commands above confirm installation and exports only. After publication,
+run [Published npm native smoke](../.github/workflows/registry-native-smoke.yml)
+manually with the **exact published version** (for example,
+`gh workflow run registry-native-smoke.yml -f version=1.3.1 --ref main`).
+It installs from the public registry in an empty directory on each target
+runtime and checks the loaded binding, `compileImage()`, installed CLI,
+image bytes, metadata, hashes, and manifest. Preserve its 12 JSON reports
+and logs separately from the candidate reports. Do not treat candidate PASS
+or registry package existence as post-publication smoke PASS. The immutable
+v1.3.0 failures remain documented in
+[v1.3.0 verification](history/V1.3.0_VERIFICATION.md).
 
 ---
 
