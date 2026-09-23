@@ -171,6 +171,8 @@ git push origin vX.Y.Z
 
 Before tagging, run [CI.yml](../.github/workflows/CI.yml) manually on the release commit with `dry_run=true` and retain the candidate reports. Tag CI rebuilds the same revision, verifies exactly one correctly named binary per target, inspects its CPU and Linux libc dependencies, and packs the main and six platform tarballs. Each candidate tarball is installed in an empty directory on all six supported platforms with Node.js 22 and 24. The publish job starts only after **all 12 candidate API/CLI/artifact smoke jobs and full CI pass**. It publishes the exact candidate platform and main tarballs recorded by SHA-256 in `release-candidate/manifest.json`, plus the Wasm workspace package, then creates the GitHub Release. If a candidate job fails or cannot run, the publish job is skipped; fix the cause and use a new reviewed revision before tagging.
 
+The `linux-x64-musl` binding is built and loaded inside an Alpine x64 container with a fixed musl Rust toolchain. The Ubuntu x64 host does not cross-link this package: a target-labelled binary built there retained glibc dependencies in the [v1.3.1 dry-run rejection](https://github.com/albert-einshutoin/lazy-image/actions/runs/35891772404). Check the candidate manifest's `inspection.needed` and the Alpine smoke artifact before tagging; the name or ELF CPU alone cannot prove musl compatibility.
+
 ---
 
 ### Phase 4 — Cleanup
@@ -225,6 +227,8 @@ and logs separately from the candidate reports. Do not treat candidate PASS
 or registry package existence as post-publication smoke PASS. The immutable
 v1.3.0 failures remain documented in
 [v1.3.0 verification](history/V1.3.0_VERIFICATION.md).
+The separate candidate and published-registry results for the corrected patch
+are in [v1.3.1 verification](history/V1.3.1_VERIFICATION.md).
 
 ---
 
