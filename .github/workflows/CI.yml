@@ -37,38 +37,37 @@ jobs:
       matrix:
         settings:
           # macOS
-          - host: macos-latest
+          - host: macos-15-intel
             target: x86_64-apple-darwin
+            platform: darwin-x64
             build: npm run build -- --target x86_64-apple-darwin
           - host: macos-latest
             target: aarch64-apple-darwin
+            platform: darwin-arm64
             build: npm run build -- --target aarch64-apple-darwin
           
           # Windows
           - host: windows-latest
             target: x86_64-pc-windows-msvc
+            platform: win32-x64-msvc
             build: npm run build -- --target x86_64-pc-windows-msvc
           
           # Linux (glibc)
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            platform: linux-x64-gnu
             build: npm run build -- --target x86_64-unknown-linux-gnu
 
           # Linux (glibc, ARM64)
-          - host: ubuntu-latest
+          - host: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
-            build: |
-              sudo apt-get update
-              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu lld
-              export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
-              export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
-              export AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar
-              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
-              npm run build -- --target aarch64-unknown-linux-gnu
+            platform: linux-arm64-gnu
+            build: npm run build -- --target aarch64-unknown-linux-gnu
           
           # Linux (musl)
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
+            platform: linux-x64-musl
             build: |
               sudo apt-get update
               sudo apt-get install -y musl-tools
@@ -105,8 +104,17 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: ${{ matrix.settings.build }}
+        run: |
+          rm -f -- ./*.node
+          ${{ matrix.settings.build }}
         shell: bash
+
+      - name: Require exactly the target binary
+        shell: bash
+        run: |
+          files=( ./*.node )
+          test "${#files[@]}" -eq 1
+          test "${files[0]}" = "./lazy-image.${{ matrix.settings.platform }}.node"
 
       # Node 22 on Linux x64 is the canonical generator environment for the
       # committed NAPI loader and declarations. Other matrix entries verify
@@ -123,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: "*.node"
+          path: "lazy-image.${{ matrix.settings.platform }}.node"
           if-no-files-found: error
 
   test-rust:
@@ -556,14 +564,133 @@ jobs:
           path: artifacts/reliability/napi-boundary-stress.*
           if-no-files-found: ignore
 
+  candidate-pack:
+    name: Stage release candidate tarballs
+    runs-on: ubuntu-24.04
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 22
+      - name: Download only native bindings from this run
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: bindings-*
+          path: artifacts
+      - name: Verify binary identity and pack release candidate
+        run: node scripts/stage-release-artifacts.cjs artifacts candidate
+      - name: Upload exact release candidate
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: release-candidate
+          path: candidate/
+          if-no-files-found: error
+
+  candidate-smoke:
+    name: Candidate ${{ matrix.platform }} / Node ${{ matrix.node }}
+    needs: candidate-pack
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: darwin-arm64, runner: macos-14, node: '22' }
+          - { platform: darwin-arm64, runner: macos-14, node: '24' }
+          - { platform: darwin-x64, runner: macos-15-intel, node: '22' }
+          - { platform: darwin-x64, runner: macos-15-intel, node: '24' }
+          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '22' }
+          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '24' }
+          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '22' }
+          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '24' }
+          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '22' }
+          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '24' }
+          - { platform: win32-x64-msvc, runner: windows-2022, node: '22' }
+          - { platform: win32-x64-msvc, runner: windows-2022, node: '24' }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      SMOKE_SCRIPT_REVISION: ${{ github.sha }}
+      SMOKE_HOST_RUNNER: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: release-candidate
+          path: candidate
+      - name: Read candidate version
+        shell: bash
+        run: echo "SMOKE_VERSION=$(node -p "require('./candidate/manifest.json').version")" >> "$GITHUB_ENV"
+      - name: Setup Node.js
+        if: matrix.platform != 'linux-x64-musl'
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Smoke candidate on native runner
+        if: matrix.platform != 'linux-x64-musl'
+        shell: bash
+        env:
+          SMOKE_EXPECTED_PLATFORM: ${{ matrix.platform }}
+          SMOKE_CANDIDATE_DIR: ${{ github.workspace }}/candidate
+          SMOKE_REPORT_PATH: ${{ runner.temp }}/lazy-image-candidate-smoke.json
+          SMOKE_HOST_OS: ${{ runner.os }}
+          SMOKE_HOST_ARCH: ${{ runner.arch }}
+        run: |
+          set -o pipefail
+          touch "$RUNNER_TEMP/lazy-image-smoke-started"
+          node scripts/registry-native-smoke.cjs 2>&1 | tee "$RUNNER_TEMP/lazy-image-candidate-smoke.log"
+      - name: Smoke candidate in Alpine musl container
+        if: matrix.platform == 'linux-x64-musl'
+        shell: bash
+        env:
+          SMOKE_HOST_OS: ${{ runner.os }}
+          SMOKE_HOST_ARCH: ${{ runner.arch }}
+        run: |
+          set -o pipefail
+          docker run --rm --platform linux/amd64 \
+            -v "$GITHUB_WORKSPACE:/source:ro" -v "$RUNNER_TEMP:/result" \
+            -e SMOKE_EXPECTED_PLATFORM=linux-x64-musl \
+            -e SMOKE_CANDIDATE_DIR=/source/candidate \
+            -e SMOKE_REPORT_PATH=/result/lazy-image-candidate-smoke.json \
+            -e SMOKE_VERSION -e SMOKE_SCRIPT_REVISION -e SMOKE_HOST_RUNNER -e SMOKE_HOST_OS -e SMOKE_HOST_ARCH -e GITHUB_SHA \
+            "node:${{ matrix.node }}-alpine" \
+            sh -c 'touch /result/lazy-image-smoke-started; node /source/scripts/registry-native-smoke.cjs' \
+            2>&1 | tee "$RUNNER_TEMP/lazy-image-candidate-smoke.log"
+      - name: Preserve setup failure as a result
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$RUNNER_TEMP/lazy-image-candidate-smoke.json" ]; then
+            if [ -f "$RUNNER_TEMP/lazy-image-smoke-started" ]; then
+              state=FAIL
+              reason='Smoke process failed before writing its report; inspect job log'
+            else
+              state=BLOCKED
+              reason='Runner setup or container startup failed before smoke execution; inspect job log'
+            fi
+            printf '{"status":"%s","expectedPlatform":"%s","nodeMajor":"%s","scriptRevision":"%s","reason":"%s"}\n' \
+              "$state" '${{ matrix.platform }}' '${{ matrix.node }}' '${{ github.sha }}' "$reason" \
+              > "$RUNNER_TEMP/lazy-image-candidate-smoke.json"
+            printf '%s\n' "$reason" >> "$RUNNER_TEMP/lazy-image-candidate-smoke.log"
+          fi
+      - name: Preserve report and execution log
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: candidate-smoke-${{ matrix.platform }}-node${{ matrix.node }}
+          path: |
+            ${{ runner.temp }}/lazy-image-candidate-smoke.json
+            ${{ runner.temp }}/lazy-image-candidate-smoke.log
+          if-no-files-found: error
+
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write  # Required for OIDC authentication
+      id-token: write
     needs:
-      - build
+      - candidate-smoke
       - rust-quality
       - package-contract
       - test-rust
@@ -573,281 +700,30 @@ jobs:
       - supply-chain
       - coverage
       - leak-detection
-    # Publishing requires a release tag. Manual runs may exercise packaging only
-    # when both full validation is disabled and dry-run is explicitly enabled.
-    if: (github.event_name != 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && !inputs.full_validation && inputs.dry_run)
-
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
           scope: '@alberteinshutoin'
           cache: npm
-      
-      # Note: OIDC authentication only works during npm publish
-      # npm whoami will not work with OIDC - this is expected behavior
-      # See: https://docs.npmjs.com/trusted-publishers#limitations-and-future-improvements
-
       - name: Install dependencies
         run: npm ci
-
       - name: Verify release tag matches package version
-        if: startsWith(github.ref, 'refs/tags/v')
         run: node scripts/check-release-policy.js "$(node -p "require('./package.json').version")" "$GITHUB_REF_NAME"
-
-      - name: Download all artifacts
+      - name: Download verified release candidate
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          path: artifacts
-
-      - name: Prepare artifacts for napi prepublish
-        run: |
-          # napi prepublish expects .node files in npm/{platform}/ directories
-          # Create npm directory structure and copy .node files to correct locations
-          mkdir -p npm
-          
-          # Map Rust target triple to npm platform names
-          # napi prepublish uses npm platform names, not Rust target triples
-          declare -A platform_map=(
-            ["x86_64-apple-darwin"]="darwin-x64"
-            ["aarch64-apple-darwin"]="darwin-arm64"
-            ["x86_64-pc-windows-msvc"]="win32-x64-msvc"
-            ["x86_64-unknown-linux-gnu"]="linux-x64-gnu"
-            ["aarch64-unknown-linux-gnu"]="linux-arm64-gnu"
-            ["x86_64-unknown-linux-musl"]="linux-x64-musl"
-          )
-          
-          # Process each artifact directory
-          for artifact_dir in artifacts/*/; do
-            if [ ! -d "$artifact_dir" ]; then
-              continue
-            fi
-            
-            artifact_name=$(basename "$artifact_dir")
-            echo "Processing artifact: $artifact_name"
-            
-            # Extract Rust target from artifact name (bindings-{target})
-            rust_target="${artifact_name#bindings-}"
-            
-            # Get npm platform name
-            platform="${platform_map[$rust_target]}"
-            
-            if [ -z "$platform" ]; then
-              echo "⚠️  Unknown platform mapping for: $rust_target"
-              continue
-            fi
-            
-            # Find .node file in artifact directory
-            node_file=$(find "$artifact_dir" -name "*.node" -type f | head -1)
-            
-            if [ -z "$node_file" ]; then
-              echo "❌ No .node file found in $artifact_dir"
-              continue
-            fi
-            
-            # Create platform directory and copy .node file with correct name
-            mkdir -p "npm/$platform"
-            # napi prepublish expects: npm/{platform}/lazy-image.{platform}.node
-            target_name="lazy-image.${platform}.node"
-            cp "$node_file" "npm/$platform/$target_name"
-            echo "✅ Copied $node_file -> npm/$platform/$target_name"
-          done
-          
-          # Verify all required platforms are present
-          echo ""
-          echo "=== Platform directories created ==="
-          find npm -type d -maxdepth 1 | sort
-          echo ""
-          echo "=== Node files ==="
-          find npm -name "*.node" | sort
-          echo ""
-          
-          # Check if all required platforms are present
-          # Note: Must match package.json optionalDependencies
-          # See: https://github.com/albert-einshutoin/lazy-image/issues/333
-          required_platforms=("darwin-x64" "darwin-arm64" "win32-x64-msvc" "linux-x64-gnu" "linux-arm64-gnu" "linux-x64-musl")
-          missing=0
-          for platform in "${required_platforms[@]}"; do
-            if [ ! -f "npm/$platform/lazy-image.$platform.node" ]; then
-              echo "❌ Missing: npm/$platform/lazy-image.$platform.node"
-              missing=$((missing + 1))
-            else
-              echo "✅ Found: npm/$platform/lazy-image.$platform.node"
-            fi
-          done
-          
-          if [ $missing -gt 0 ]; then
-            echo "ERROR: Missing $missing platform(s). Cannot proceed with napi prepublish."
-            exit 1
-          fi
-          
-          echo "✅ All required platforms are present"
-          
-          # Create skeleton package.json for each platform
-          # napi prepublish needs these to generate the final package.json
-          echo ""
-          echo "=== Creating skeleton package.json for each platform ==="
-          VERSION=$(node -p "require('./package.json').version")
-          for platform in "${required_platforms[@]}"; do
-            pkg_name="@alberteinshutoin/lazy-image-${platform}"
-            os_part=$(echo "$platform" | cut -d'-' -f1)
-            cpu_part=$(echo "$platform" | cut -d'-' -f2)
-            node -e "
-              const fs = require('fs');
-              const pkg = {
-                name: '$pkg_name',
-                version: '$VERSION',
-                description: 'Web image optimization engine for Node.js - smaller files than sharp, powered by Rust + mozjpeg',
-                main: 'lazy-image.${platform}.node',
-                os: ['$os_part'],
-                cpu: ['$cpu_part'],
-                files: ['lazy-image.${platform}.node'],
-                license: 'MIT',
-                publishConfig: {
-                  access: 'public'
-                },
-                repository: {
-                  type: 'git',
-                  url: 'https://github.com/albert-einshutoin/lazy-image.git'
-                },
-                engines: {
-                  node: '>= 22'
-                }
-              };
-              fs.writeFileSync('npm/$platform/package.json', JSON.stringify(pkg, null, 2));
-            "
-            echo "✅ Created npm/$platform/package.json"
-          done
-
-      - name: Finalize npm packages
-        run: |
-          # Verify structure
-          echo "=== Verifying structure ==="
-          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-arm64-gnu linux-x64-musl; do
-            if [ -f "npm/$platform/lazy-image.$platform.node" ] && [ -f "npm/$platform/package.json" ]; then
-              echo "✅ npm/$platform/ - both .node and package.json exist"
-            else
-              echo "❌ npm/$platform/ - missing files"
-              exit 1
-            fi
-          done
-          
-          # Verify package.json contents
-          echo ""
-          echo "=== Verifying package.json contents ==="
-          for platform in darwin-x64 darwin-arm64 win32-x64-msvc linux-x64-gnu linux-arm64-gnu linux-x64-musl; do
-            echo "Package: $platform"
-            node -e "const pkg = require('./npm/$platform/package.json'); if (pkg.engines?.node !== '>= 22') process.exit(1); console.log(pkg.name, pkg.version, pkg.main, pkg.engines.node)"
-            echo ""
-          done
-          
-          # List generated packages
-          echo "=== Generated packages ==="
-          ls -la npm/ || true
-          echo ""
-          echo "=== Package directories ==="
-          find npm -type d -maxdepth 1 || true
-          echo ""
-          echo "=== Package contents ==="
-          for pkg_dir in npm/*/; do
-            if [ -d "$pkg_dir" ]; then
-              pkg_name=$(basename "$pkg_dir")
-              echo "Package: $pkg_name"
-              ls -la "$pkg_dir"
-              echo ""
-            fi
-          done
-
-      - name: Publish platform packages
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
-        run: |
-          set +e  # Don't exit on error, we want to try all packages
-          published=0
-          failed=0
-          failed_packages=()
-          
-          for pkg in npm/*; do
-            if [ -d "$pkg" ]; then
-              pkg_name=$(basename "$pkg")
-              echo ""
-              echo "=========================================="
-              echo "Publishing $pkg_name..."
-              echo "=========================================="
-              cd "$pkg"
-              
-              # Verify package.json exists and has publishConfig
-              if [ ! -f "package.json" ]; then
-                echo "❌ package.json not found in $pkg_name"
-                failed=$((failed + 1))
-                failed_packages+=("$pkg_name")
-                cd ../..
-                continue
-              fi
-              
-              # Check if publishConfig is set
-              if ! grep -q '"publishConfig"' package.json; then
-                echo "⚠️  Warning: publishConfig not found in package.json"
-              fi
-
-              full_pkg_name=$(node -p "require('./package.json').name")
-              pkg_version=$(node -p "require('./package.json').version")
-              if npm view "$full_pkg_name@$pkg_version" version >/dev/null 2>&1; then
-                echo "✅ $full_pkg_name@$pkg_version already exists; skipping publish."
-                cd ../..
-                continue
-              fi
-              
-              # Try to publish with provenance (works with OIDC or NPM_TOKEN)
-              if npm publish --access public --provenance 2>&1; then
-                echo "✅ Successfully published $pkg_name"
-                published=$((published + 1))
-              else
-                publish_error=$?
-                echo "❌ Failed to publish $pkg_name (exit code: $publish_error)"
-                echo ""
-                echo "Common causes:"
-                echo "1. For new packages: NPM_TOKEN secret is required for initial publish"
-                echo "2. For existing packages: Trusted Publisher must be configured in npm"
-                echo "3. Package already exists with same version (check npm registry)"
-                echo "4. Invalid package.json"
-                echo ""
-                failed=$((failed + 1))
-                failed_packages+=("$pkg_name")
-              fi
-              cd ../..
-            fi
-          done
-          
-          echo ""
-          echo "=========================================="
-          echo "Publish Summary"
-          echo "=========================================="
-          echo "Published: $published"
-          echo "Failed: $failed"
-          if [ ${#failed_packages[@]} -gt 0 ]; then
-            echo "Failed packages: ${failed_packages[*]}"
-          fi
-          
-          if [ $failed -gt 0 ]; then
-            echo ""
-            echo "❌ Some packages failed to publish"
-            echo ""
-            echo "Troubleshooting steps:"
-            echo "1. For NEW packages: Set NPM_TOKEN secret in GitHub repository settings"
-            echo "2. For existing packages: Configure Trusted Publisher in npm"
-            echo "3. Check if you have access to @alberteinshutoin scope"
-            echo "4. Try publishing manually: cd npm/<platform> && npm publish --access public"
-            exit 1
-          fi
+          name: release-candidate
+          path: candidate
+      - name: Publish candidate platform tarballs
+        run: node scripts/publish-release-candidate.cjs candidate platform
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Wasm package
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
           pkg_name="@alberteinshutoin/lazy-image-wasm"
           pkg_version="$(node -p "require('./packages/lazy-image-wasm/package.json').version")"
@@ -865,40 +741,23 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish main package
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
-        run: |
-          pkg_name="$(node -p "require('./package.json').name")"
-          pkg_version="$(node -p "require('./package.json').version")"
-          if npm view "$pkg_name@$pkg_version" version >/dev/null 2>&1; then
-            echo "$pkg_name@$pkg_version already exists; skipping publish."
-            exit 0
-          fi
-
-          # Remove .node files from main package (they're in platform packages now)
-          rm -f -- ./*.node
-          # Restore original package.json if napi prepublish modified it
-          git checkout package.json || true
-          # Publish without running prepublishOnly (we already ran napi prepublish manually)
-          npm publish --access public --provenance --ignore-scripts
+      - name: Publish verified main tarball
+        run: node scripts/publish-release-candidate.cjs candidate main
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Dry run summary
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
-        run: |
-          echo "dry_run=true: skipped npm publish and GitHub Release creation/update."
-
       - name: Create or Update GitHub Release
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && (github.event_name != 'workflow_dispatch' || !inputs.dry_run) }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="$(node -p "require('./package.json').version")"
+          awk -v version="$VERSION" 'index($0, "## [" version "]") == 1 { capture=1; next } capture && index($0, "## [") == 1 { exit } capture { print }' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+          test -s "$RUNNER_TEMP/release-notes.md"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists. Updating flags..."
-            gh release edit "$TAG" --draft=false --prerelease=false
+            gh release edit "$TAG" --draft=false --prerelease=false --notes-file "$RUNNER_TEMP/release-notes.md"
           else
             echo "Creating release $TAG..."
-            gh release create "$TAG" --generate-notes
+            gh release create "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
           fi

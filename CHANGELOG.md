@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-24
+
+### Fixed
+- Corrected native package builds for macOS x64, Linux arm64 GNU, and Linux x64 musl. The v1.3.0 packages for these platforms contain an incompatible binary; affected users should update to 1.3.1.
+- Release packaging now rejects binaries with the wrong CPU or Linux libc dependencies and requires API/CLI smoke tests of all six platform candidates on Node.js 22 and 24 before publishing those exact tarballs.
+
 ## [1.3.0] - 2026-09-11
 
 ### Added
