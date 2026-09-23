@@ -21,6 +21,9 @@ function sha256(file) { return createHash('sha256').update(fs.readFileSync(file)
 function command(executable, args, cwd) {
   return execFileSync(executable, args, { cwd, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }).trim();
 }
+function tarEntry(tarball, member) {
+  return execFileSync('tar', ['-xOzf', tarball, member], { maxBuffer: 64 * 1024 * 1024 });
+}
 function inspect(file, target, pattern) {
   const description = command('file', ['-b', file]);
   assert.match(description, pattern, `${target}: wrong binary CPU or format: ${description}`);
@@ -76,9 +79,9 @@ function main() {
     }, null, 2)}\n`);
     const [packed] = JSON.parse(command('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', output], platformDir));
     const tarball = path.join(output, packed.filename);
-    assert.equal(sha256(source), createHash('sha256').update(execFileSync('tar', ['-xOzf', tarball,
-      `package/${binaryName}`])).digest('hex'), `${platform}: tarball binary differs from verified artifact`);
-    const packedPackage = JSON.parse(execFileSync('tar', ['-xOzf', tarball, 'package/package.json']));
+    assert.equal(sha256(source), createHash('sha256').update(tarEntry(tarball,
+      `package/${binaryName}`)).digest('hex'), `${platform}: tarball binary differs from verified artifact`);
+    const packedPackage = JSON.parse(tarEntry(tarball, 'package/package.json'));
     assert.equal(packedPackage.name, name);
     assert.equal(packedPackage.version, pkg.version);
     assert.deepEqual(packedPackage.os, [platform.split('-')[0]]);
@@ -89,13 +92,13 @@ function main() {
       tarball: packed.filename, tarballSha256: sha256(tarball), inspection });
   }
   const [packed] = JSON.parse(command('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', output], root));
-  const packedMain = JSON.parse(execFileSync('tar', ['-xOzf', path.join(output, packed.filename), 'package/package.json']));
+  const packedMain = JSON.parse(tarEntry(path.join(output, packed.filename), 'package/package.json'));
   assert.equal(packedMain.name, pkg.name);
   assert.equal(packedMain.version, pkg.version);
   assert.deepEqual(packedMain.optionalDependencies, pkg.optionalDependencies);
   const licenseSha256 = sha256(path.join(root, 'LICENSE'));
-  assert.equal(licenseSha256, createHash('sha256').update(execFileSync('tar', ['-xOzf',
-    path.join(output, packed.filename), 'package/LICENSE'])).digest('hex'),
+  assert.equal(licenseSha256, createHash('sha256').update(tarEntry(
+    path.join(output, packed.filename), 'package/LICENSE')).digest('hex'),
     'main tarball license differs from source');
   packages.push({ name: pkg.name, tarball: packed.filename,
     tarballSha256: sha256(path.join(output, packed.filename)) });
@@ -108,4 +111,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { inspect };
+module.exports = { inspect, tarEntry };

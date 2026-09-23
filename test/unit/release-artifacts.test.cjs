@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
+const { createHash } = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -37,3 +38,15 @@ if (process.platform !== 'win32') {
 }
 
 console.log('release artifact guard rejects missing, multiple, and invalid binary artifacts');
+
+const payload = Buffer.alloc(2 * 1024 * 1024, 0x6a);
+const packageDir = path.join(temp, 'package');
+fs.mkdirSync(packageDir);
+fs.writeFileSync(path.join(packageDir, 'large.node'), payload);
+const archive = path.join(temp, 'large.tgz');
+result = spawnSync('tar', ['-czf', archive, '-C', temp, 'package'], { encoding: 'utf8' });
+assert.equal(result.status, 0);
+const extracted = require('../../scripts/stage-release-artifacts.cjs').tarEntry(archive, 'package/large.node');
+assert.equal(createHash('sha256').update(extracted).digest('hex'),
+  createHash('sha256').update(payload).digest('hex'));
+console.log('release artifact guard verifies binaries larger than the default child-process buffer');
