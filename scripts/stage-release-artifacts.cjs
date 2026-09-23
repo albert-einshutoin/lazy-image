@@ -93,11 +93,16 @@ function main() {
   assert.equal(packedMain.name, pkg.name);
   assert.equal(packedMain.version, pkg.version);
   assert.deepEqual(packedMain.optionalDependencies, pkg.optionalDependencies);
+  const licenseSha256 = sha256(path.join(root, 'LICENSE'));
+  assert.equal(licenseSha256, createHash('sha256').update(execFileSync('tar', ['-xOzf',
+    path.join(output, packed.filename), 'package/LICENSE'])).digest('hex'),
+    'main tarball license differs from source');
   packages.push({ name: pkg.name, tarball: packed.filename,
     tarballSha256: sha256(path.join(output, packed.filename)) });
   fs.writeFileSync(path.join(output, 'manifest.json'), `${JSON.stringify({
     revision: process.env.GITHUB_SHA || command('git', ['rev-parse', 'HEAD'], root),
-    version: pkg.version, packages,
+    sourceTree: command('git', ['rev-parse', 'HEAD^{tree}'], root),
+    licenseSha256, version: pkg.version, packages,
   }, null, 2)}\n`);
   console.log(`Staged ${packages.length} candidate tarballs for ${pkg.version} in ${output}`);
 }

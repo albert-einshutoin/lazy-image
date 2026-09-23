@@ -82,7 +82,8 @@ function assertArtifactSet(manifest, outputDir, inspect) {
 }
 
 async function main() {
-  assert.match(VERSION || '', /^\d+\.\d+\.\d+$/, 'SMOKE_VERSION must specify the tested version');
+  assert.match(VERSION || '', /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/,
+    'SMOKE_VERSION must specify the tested version');
   assert.ok(PLATFORMS[expected], `unsupported expected platform: ${expected}`);
   assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH, undefined);
   assert.equal(process.env.NODE_PATH, undefined);
@@ -128,6 +129,8 @@ async function main() {
   const root = path.join(temp, 'node_modules', '@alberteinshutoin');
   const mainDir = path.join(root, 'lazy-image');
   const platformDir = path.join(root, `lazy-image-${packageSuffix}`);
+  report.licenseSha256 = sha256(fs.readFileSync(path.join(mainDir, 'LICENSE')));
+  if (candidate) assert.equal(report.licenseSha256, candidate.licenseSha256);
   const lock = JSON.parse(fs.readFileSync(path.join(temp, 'package-lock.json'), 'utf8'));
   report.resolved = {};
   for (const [name, dir] of [[NAME, mainDir], [`${NAME}-${packageSuffix}`, platformDir]]) {
