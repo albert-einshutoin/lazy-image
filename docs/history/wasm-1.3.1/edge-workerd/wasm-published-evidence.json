@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-24T15:09:28.216Z",
-  "sourceSha": "6fc2c117e5b2345914ab7deeb2f31df2a23af0b7",
+  "generatedAt": "2026-09-24T15:26:46.514Z",
+  "sourceSha": "9ad3ef2fab4aec3708ac1be9519961fba8ffbd4d",
   "publishedVersion": "1.3.1",
   "sourceDirty": false,
-  "sourceFilesSha256": "e4100711a14262cabdc15a108a8d1460ee204a2ce8fff1072d8f2cd040131131",
+  "sourceFilesSha256": "259ad68905cb7528d40b6a12e9b27d0f4476ca8401ba3aec81df28f460a748f1",
   "command": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.3.1",
   "node": "v24.2.0",
   "npm": "11.3.0",
@@ -14,41 +14,110 @@
     "@alberteinshutoin/lazy-image-wasm": {
       "version": "1.3.1",
       "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.3.1.tgz",
-      "integrity": "sha512-80yry+i323threLO1+cl4BkxBIknDBWPgRiQ08Jt3Z98cUfJNZV5WKKCrsfwpcd8fCKC7EhuaDkXrLAxXsxcOw=="
+      "integrity": "sha512-80yry+i323threLO1+cl4BkxBIknDBWPgRiQ08Jt3Z98cUfJNZV5WKKCrsfwpcd8fCKC7EhuaDkXrLAxXsxcOw==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "358f947c1ec3311c79a5a053795d76f3c5e63f0fb254c0a40dbc3766dfd2b4a9",
+      "licenseFiles": {}
     },
     "@jsquash/jpeg": {
       "version": "1.6.0",
       "resolved": "https://registry.npmjs.org/@jsquash/jpeg/-/jpeg-1.6.0.tgz",
-      "integrity": "sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA=="
+      "integrity": "sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "7b1e0578e6c3361393a8dc3873454e6b93fdc309911bad33bd911a70092ec783",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "8213556ea36ce3a0f2883db06238463e2452fdad68e3d2e2e4ace2189477a37e"
+      }
     },
     "@jsquash/png": {
       "version": "3.1.1",
       "resolved": "https://registry.npmjs.org/@jsquash/png/-/png-3.1.1.tgz",
-      "integrity": "sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw=="
+      "integrity": "sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "e269127ef77d75435adafb428cc685f47471a8599f226e27d0646c5e147c3e69",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
     },
     "@jsquash/resize": {
       "version": "2.1.1",
       "resolved": "https://registry.npmjs.org/@jsquash/resize/-/resize-2.1.1.tgz",
-      "integrity": "sha512-0R5UL1ZLHUT+carjVikcE1QfA+kfNQ2YamYyGVRmhfh4zttU5EY3bQBGxPIPtY2xIAw1P4Kgyxm2xrceRw1r2w=="
+      "integrity": "sha512-0R5UL1ZLHUT+carjVikcE1QfA+kfNQ2YamYyGVRmhfh4zttU5EY3bQBGxPIPtY2xIAw1P4Kgyxm2xrceRw1r2w==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "798a7649340c80cb84f6ddb05bd8395f614370b07d12c66e1245453202b1fdee",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "lib/hqx/LICENSE.codec.md": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+        "lib/magic-kernel/LICENSE.codec.md": "21e492c2fb8be34abe00c1b5c4b15139e061ddfaa236adc4c0d4ff70ccd329b2",
+        "lib/resize/LICENSE.codec.md": "373fec335329f8e4c9c8839871606e6ed5bfaa513a4dea2ebee4b7a418853320"
+      }
     },
     "@jsquash/webp": {
       "version": "1.5.0",
       "resolved": "https://registry.npmjs.org/@jsquash/webp/-/webp-1.5.0.tgz",
-      "integrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw=="
+      "integrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "bfd9f9b7ec0d51421623e92185b3b994d6430068de323dacaa1a29b8a1c9c83c",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
     },
     "esbuild": {
       "version": "0.25.10",
       "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.10.tgz",
-      "integrity": "sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ=="
+      "integrity": "sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "93f88a93cd72f8b547d44ba4a02f6f70048fb7a6f923d0b4f0b39f28fea53de6",
+      "licenseFiles": {
+        "LICENSE.md": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+      }
     },
     "workerd": {
       "version": "1.20260924.1",
       "resolved": "https://registry.npmjs.org/workerd/-/workerd-1.20260924.1.tgz",
-      "integrity": "sha512-uafggYbSNnGaO1Xoa6xX9mNIOU6Pu0EtKD6bg/FTLOztZsOpXTFtAUWKptk4SumYqBwuXZtO1/Gxv3P07QX6uA=="
+      "integrity": "sha512-uafggYbSNnGaO1Xoa6xX9mNIOU6Pu0EtKD6bg/FTLOztZsOpXTFtAUWKptk4SumYqBwuXZtO1/Gxv3P07QX6uA==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "fa8bbf1950ef48f0afe358c5f152f681ab1d9822391651c384df9440b7718664",
+      "licenseFiles": {}
+    },
+    "@esbuild/darwin-arm64": {
+      "version": "0.25.10",
+      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.10.tgz",
+      "integrity": "sha512-JC74bdXcQEpW9KkV326WpZZjLguSZ3DfS8wrrvPMHgQOIEIG/sPXEN/V8IssoJhbefLRcRqw6RQH2NnpdprtMA==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "bf885024ed6b260184de72030345417b5551f99f416f8732691216da55e038bb",
+      "licenseFiles": {}
+    },
+    "@cloudflare/workerd-darwin-arm64": {
+      "version": "1.20260924.1",
+      "resolved": "https://registry.npmjs.org/@cloudflare/workerd-darwin-arm64/-/workerd-darwin-arm64-1.20260924.1.tgz",
+      "integrity": "sha512-SKpCvVOyFxMmBMdNzBbxPw+cdTTQtLcXyTJGynZ4QYb8Bqqiru08vI+xpuOq+83RDjq5IkRowYayMdeaFQEHwg==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "f9594be9ff3c173b9343afc6d9e5217d8385d6391b6179a6b1380239409e7e99",
+      "licenseFiles": {}
     }
   },
-  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
-  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG",
+  "toolchainBinaries": {
+    "esbuild": {
+      "package": "@esbuild/darwin-arm64",
+      "sha256": "921b19d2a6e983de6aa861582476e4f983c8509cb40c462e572ce64ca1bcb5be"
+    },
+    "workerd": {
+      "package": "@cloudflare/workerd-darwin-arm64",
+      "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c"
+    }
+  },
+  "licenseSources": {
+    "workerd": {
+      "url": "https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    }
+  },
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo",
   "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
   "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
   "fixtures": [
@@ -130,27 +199,27 @@
     "runtime": "local workerd",
     "compatibilityDate": "2026-09-24",
     "compatibilityFlags": [],
-    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
+    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
     "results": [
       {
         "id": "jpeg-webp",
         "status": "PASS",
         "launchCommand": [
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/node_modules/.bin/workerd",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/node_modules/.bin/workerd",
           "serve",
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/edge-config.capnp",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/edge-config.capnp",
           "config"
         ],
         "imageDataType": "function",
-        "coldFromBeforeRuntimeMs": 3602.729541,
-        "startupToReadyMs": 28.590165999999954,
-        "firstRequestMs": 3573.5605,
+        "coldFromBeforeRuntimeMs": 3779.6850829999994,
+        "startupToReadyMs": 29.967375000000175,
+        "firstRequestMs": 3749.1658339999994,
         "warmMs": [
-          2581.0992079999996,
-          2563.1534169999995
+          2746.1733750000003,
+          2986.0946669999994
         ],
-        "warmMedianMs": 2572.1263124999996,
-        "isolateId": "f5b1683e-69c5-4720-a653-73762a35b631",
+        "warmMedianMs": 2866.134021,
+        "isolateId": "9c6f9881-cf4b-4a59-a3e3-456d597d96b2",
         "optimizerCreations": 1,
         "clock": {
           "status": "unavailable",
@@ -171,11 +240,11 @@
           "budgetMet": true,
           "targetBytes": 500000,
           "instantiateMs": 4,
-          "decodeMs": 266,
-          "opsMs": 1556,
-          "encodeMs": 1743,
-          "totalMs": 3565,
-          "firstEncodeMs": 281,
+          "decodeMs": 281,
+          "opsMs": 1619,
+          "encodeMs": 1841,
+          "totalMs": 3741,
+          "firstEncodeMs": 294,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -202,28 +271,25 @@
         "id": "png-jpeg",
         "status": "PASS",
         "launchCommand": [
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/node_modules/.bin/workerd",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/node_modules/.bin/workerd",
           "serve",
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/edge-config.capnp",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/edge-config.capnp",
           "config"
         ],
         "imageDataType": "function",
-        "coldFromBeforeRuntimeMs": 3029.7351670000007,
-        "startupToReadyMs": 29.54858400000012,
-        "firstRequestMs": 2999.446333,
+        "coldFromBeforeRuntimeMs": 9833.924709,
+        "startupToReadyMs": 30.83087499999965,
+        "firstRequestMs": 9798.410417000001,
         "warmMs": [
-          2078.9254170000004,
-          2017.853708999999
+          2698.3695000000007,
+          2595.116249999999
         ],
-        "warmMedianMs": 2048.3895629999997,
-        "isolateId": "45eb1819-7f2d-46d2-8492-0d00e67b2a17",
+        "warmMedianMs": 2646.742875,
+        "isolateId": "2427203b-be2f-47d5-83f3-fc20d5336d11",
         "optimizerCreations": 1,
         "clock": {
-          "performanceBefore": 1790262586197,
-          "performanceAfter": 1790262586200,
-          "dateBefore": 1790262586197,
-          "dateAfter": 1790262586200,
-          "value": 1999999000000
+          "status": "unavailable",
+          "reason": "diagnostic request failed after image processing: fetch failed; cause: read ECONNRESET; workerd exit: null"
         },
         "metrics": {
           "version": "1.3.1",
@@ -239,12 +305,12 @@
           "qualityUsed": 88,
           "budgetMet": true,
           "targetBytes": 450000,
-          "instantiateMs": 4,
-          "decodeMs": 261,
-          "opsMs": 1544,
-          "encodeMs": 1185,
-          "totalMs": 2991,
-          "firstEncodeMs": 160,
+          "instantiateMs": 9,
+          "decodeMs": 458,
+          "opsMs": 5288,
+          "encodeMs": 4036,
+          "totalMs": 9783,
+          "firstEncodeMs": 489,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -271,27 +337,27 @@
         "id": "metadata-budget",
         "status": "PASS",
         "launchCommand": [
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/node_modules/.bin/workerd",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/node_modules/.bin/workerd",
           "serve",
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/edge-config.capnp",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/edge-config.capnp",
           "config"
         ],
         "imageDataType": "function",
-        "coldFromBeforeRuntimeMs": 93.32658399999855,
-        "startupToReadyMs": 30.191917000000103,
-        "firstRequestMs": 62.7679169999974,
+        "coldFromBeforeRuntimeMs": 130.16237499999988,
+        "startupToReadyMs": 30.006375000000844,
+        "firstRequestMs": 99.59312499999942,
         "warmMs": [
-          39.14033399999971,
-          37.90116699999999
+          49.54254099999889,
+          52.82500000000073
         ],
-        "warmMedianMs": 38.52075049999985,
-        "isolateId": "8e7c65b8-348f-4c6b-bd25-4e78ebffc221",
+        "warmMedianMs": 51.18377049999981,
+        "isolateId": "69f71154-cb98-4c15-8d07-8f8d740c24d6",
         "optimizerCreations": 1,
         "clock": {
-          "performanceBefore": 1790262586413,
-          "performanceAfter": 1790262586416,
-          "dateBefore": 1790262586413,
-          "dateAfter": 1790262586416,
+          "performanceBefore": 1790263636890,
+          "performanceAfter": 1790263636893,
+          "dateBefore": 1790263636890,
+          "dateAfter": 1790263636893,
           "value": 1999999000000
         },
         "metrics": {
@@ -308,12 +374,12 @@
           "qualityUsed": 86,
           "budgetMet": true,
           "targetBytes": 30000,
-          "instantiateMs": 3,
-          "decodeMs": 5,
-          "opsMs": 12,
-          "encodeMs": 40,
-          "totalMs": 57,
-          "firstEncodeMs": 11,
+          "instantiateMs": 5,
+          "decodeMs": 6,
+          "opsMs": 24,
+          "encodeMs": 61,
+          "totalMs": 91,
+          "firstEncodeMs": 19,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -337,7 +403,7 @@
           "bestEffort": {
             "bytesOut": 3078,
             "budgetMet": false,
-            "wallMs": 10.45508300000074,
+            "wallMs": 15.299999999999272,
             "output": {
               "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
               "bytes": 3078,
@@ -355,7 +421,7 @@
           "strict": {
             "expectedRejection": true,
             "code": "E502",
-            "wallMs": 10.268041999999696
+            "wallMs": 18.172750000001543
           }
         },
         "workerdStderr": ""
@@ -365,27 +431,27 @@
       "id": "probe-jpeg-webp",
       "status": "PASS",
       "launchCommand": [
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/node_modules/.bin/workerd",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/node_modules/.bin/workerd",
         "serve",
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/edge-config.capnp",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/edge-config.capnp",
         "config"
       ],
       "imageDataType": "function",
-      "coldFromBeforeRuntimeMs": 223.44108299999994,
-      "startupToReadyMs": 36.94633299999987,
-      "firstRequestMs": 186.14920800000004,
+      "coldFromBeforeRuntimeMs": 235.32124999999996,
+      "startupToReadyMs": 33.90062500000022,
+      "firstRequestMs": 201.15887500000008,
       "warmMs": [
-        113.31154100000003,
-        115.80350000000021
+        119.61808400000064,
+        118.51974999999948
       ],
-      "warmMedianMs": 114.55752050000012,
-      "isolateId": "e19af3bd-2ec3-4fff-8f78-2a81fbfac7e8",
+      "warmMedianMs": 119.06891700000006,
+      "isolateId": "c2060529-a091-467c-abfe-7a504a9871ee",
       "optimizerCreations": 1,
       "clock": {
-        "performanceBefore": 1790262570259,
-        "performanceAfter": 1790262570262,
-        "dateBefore": 1790262570259,
-        "dateAfter": 1790262570262,
+        "performanceBefore": 1790263611857,
+        "performanceAfter": 1790263611861,
+        "dateBefore": 1790263611858,
+        "dateAfter": 1790263611861,
         "value": 1999999000000
       },
       "metrics": {
@@ -402,12 +468,12 @@
         "qualityUsed": 86,
         "budgetMet": true,
         "targetBytes": 50000,
-        "instantiateMs": 4,
-        "decodeMs": 15,
-        "opsMs": 75,
-        "encodeMs": 89,
-        "totalMs": 179,
-        "firstEncodeMs": 20,
+        "instantiateMs": 5,
+        "decodeMs": 17,
+        "opsMs": 78,
+        "encodeMs": 98,
+        "totalMs": 193,
+        "firstEncodeMs": 22,
         "metadataStripped": true,
         "policyViolations": [],
         "memory": {
@@ -578,7 +644,7 @@
     },
     "deploymentRawBytes": 1239663,
     "deploymentGzipBytes": 405819,
-    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-FFkrfG/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
+    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-uRP5Yo/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
     "probeInput": {
       "path": "test/fixtures/test_100KB_1057x1057.jpg",
       "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",

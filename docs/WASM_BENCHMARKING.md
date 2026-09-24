@@ -17,7 +17,10 @@ version, esbuild 0.25.10, and workerd from
 `https://registry.npmjs.org/` into a new OS temporary directory. It executes
 the installed package in Node, bundles that same install for Chrome and local
 workerd, and runs all three required runtimes. It exits nonzero if any required
-runtime fails or cannot be prepared.
+runtime fails or cannot be prepared. The Edge run also fetches the
+version-pinned workerd LICENSE from Cloudflare's GitHub repository because the
+npm toolchain packages omit that file; it records its hash and the installed
+workerd/esbuild executable hashes.
 The npm script's default version is the checkout's `package.json` version;
 pass `--version` for a publication record so the target is explicit.
 

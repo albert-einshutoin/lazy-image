@@ -1,4 +1,4 @@
 Error: Published Wasm evidence BLOCKED: workerd executable unavailable: /definitely/missing/workerd; see /Users/shutoide/.codex/worktrees/2841/lazy-image/artifacts/benchmark/wasm-published-evidence.json
-    at collectPublishedWasmEvidence (file:///Users/shutoide/.codex/worktrees/2841/lazy-image/test/benchmarks/wasm-published-evidence.mjs:394:41)
+    at collectPublishedWasmEvidence (file:///Users/shutoide/.codex/worktrees/2841/lazy-image/test/benchmarks/wasm-published-evidence.mjs:452:41)
     at async run (/Users/shutoide/.codex/worktrees/2841/lazy-image/test/benchmarks/wasm-upload-comparison.bench.js:450:20)
 exit=1

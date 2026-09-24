@@ -1,20 +1,20 @@
 # Wasm Upload Benchmark Summary
 
-Generated: 2026-09-24T15:09:46.577Z
+Generated: 2026-09-24T15:27:17.114Z
 
-Published package: 1.3.1; measuring code revision: 6fc2c117e5b2345914ab7deeb2f31df2a23af0b7.
+Published package: 1.3.1; measuring code revision: 9ad3ef2fab4aec3708ac1be9519961fba8ffbd4d.
 Command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.3.1`. Node/browser/Edge details and output hashes: `artifacts/benchmark/wasm-published-evidence.json`.
 Edge results are local workerd observations; production cold-start and CPU billing are unmeasured. Optional competitor rows are not performance results.
 Rows marked `unavailable` document optional competitor baselines that are not installed or cannot execute in the current Node-local harness.
 
 | Scenario | Runtime | Package | Type | Status | Browser assets raw | Browser assets gzip | Edge assets raw | Edge assets gzip | Ready | First request | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| large-photo-upload-webp | edge-isolate | @alberteinshutoin/lazy-image-wasm@1.3.1 | published-package | ok | n/a | n/a | 1.2 MB | 396.3 KB | 28.6 | 3573.6 | n/a | 4.0 | 281.0 | 3565.0 | 3602.7 | 2572.1 | 321.0 KB | yes | 86 | n/a | n/a | n/a | n/a | Published npm; inspected output cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec; full conditions in wasm-published-evidence.json |
+| large-photo-upload-webp | edge-isolate | @alberteinshutoin/lazy-image-wasm@1.3.1 | published-package | ok | n/a | n/a | 1.2 MB | 396.3 KB | 30.0 | 3749.2 | n/a | 4.0 | 294.0 | 3741.0 | 3779.7 | 2866.1 | 321.0 KB | yes | 86 | n/a | n/a | n/a | n/a | Published npm; inspected output cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec; full conditions in wasm-published-evidence.json |
 | large-photo-upload-webp | edge-isolate | jSquash | wasm-codec | not-run | n/a | n/a | n/a | n/a | n/a | n/a | 537.5 KB | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | jSquash is installed, but this first harness records npm package-directory size only; add a browser bundle adapter before making bundle or performance claims. |
 | large-photo-upload-webp | edge-isolate | Squoosh | wasm-codec | unavailable | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | Optional Squoosh package is not installed in this workspace. |
 | large-photo-upload-webp | edge-isolate | browser-image-compression | browser-compressor | unavailable | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | browser-image-compression requires browser File/Canvas/Worker APIs and is not installed here. |
 | large-photo-upload-webp | edge-isolate | Compressor.js | browser-compressor | unavailable | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | Compressor.js requires DOM Canvas APIs and is not installed here. |
-| large-png-upload-jpeg | edge-isolate | @alberteinshutoin/lazy-image-wasm@1.3.1 | published-package | ok | n/a | n/a | 1.2 MB | 396.3 KB | 29.5 | 2999.4 | n/a | 4.0 | 160.0 | 2991.0 | 3029.7 | 2048.4 | 420.0 KB | yes | 88 | n/a | n/a | n/a | n/a | Published npm; inspected output 301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a; full conditions in wasm-published-evidence.json |
+| large-png-upload-jpeg | edge-isolate | @alberteinshutoin/lazy-image-wasm@1.3.1 | published-package | ok | n/a | n/a | 1.2 MB | 396.3 KB | 30.8 | 9798.4 | n/a | 9.0 | 489.0 | 9783.0 | 9833.9 | 2646.7 | 420.0 KB | yes | 88 | n/a | n/a | n/a | n/a | Published npm; inspected output 301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a; full conditions in wasm-published-evidence.json |
 | large-png-upload-jpeg | edge-isolate | jSquash | wasm-codec | not-run | n/a | n/a | n/a | n/a | n/a | n/a | 537.5 KB | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | jSquash is installed, but this first harness records npm package-directory size only; add a browser bundle adapter before making bundle or performance claims. |
 | large-png-upload-jpeg | edge-isolate | Squoosh | wasm-codec | unavailable | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | Optional Squoosh package is not installed in this workspace. |
 | large-png-upload-jpeg | edge-isolate | browser-image-compression | browser-compressor | unavailable | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | browser-image-compression requires browser File/Canvas/Worker APIs and is not installed here. |
