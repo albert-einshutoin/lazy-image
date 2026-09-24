@@ -20,7 +20,9 @@ workerd, and runs all three required runtimes. It exits nonzero if any required
 runtime fails or cannot be prepared. The run records bundled LICENSE hashes and
 fetches a version-pinned canonical source when a package omits its license
 file. It also records installed workerd/esbuild executable hashes and checks
-the workerd binary actually launched against the installed package.
+the workerd binary actually launched against the installed package. Unset
+`ESBUILD_BINARY_PATH`; an external esbuild override is rejected before
+installation, so both bundling paths use the hashed installed binary.
 The npm script's default version is the checkout's `package.json` version;
 pass `--version` for a publication record so the target is explicit.
 

@@ -412,6 +412,10 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     nodeResults: null, nodeTotals: null, browserResults: null, edgeResults: null, edgeTotals: null,
     verdict: 'FAIL' };
   try {
+    // Both browser and Edge bundling must use the hashed esbuild from this install.
+    if (process.env.ESBUILD_BINARY_PATH !== undefined) {
+      throw new Error('external esbuild override is unsupported: unset ESBUILD_BINARY_PATH');
+    }
     const packageInfo = await installPublished(version, directory, runtime);
     context.packages = packageInfo.packages;
     context.toolchainBinaries = packageInfo.toolchainBinaries;

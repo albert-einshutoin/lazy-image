@@ -46,4 +46,4 @@ node test/benchmarks/wasm-edge-failure-check.mjs 1.3.1
 
 追加chunkはない。表は全5 moduleを静的に注入する**この構成の配布ファイルサイズ**であり、ブラウザHTTP転送bodyやpackage directory全体のサイズではない。選んだ処理に必要な配布量を示す。通常の暗黙Wasmロード、Cloudflare本番cold-start、課金CPU、他のEdge runtime、性能の合否閾値や競合優位は検証していない。
 
-[負例ログ](./wasm-1.3.1/edge-workerd/fail-closed.log)ではworkerd実行ファイル欠落をBLOCKED、公開npmとhashが異なる実行ファイルの指定・Wasm module欠落・不正画像による処理失敗をFAILとして記録した。[公開runnerの非zero例](./wasm-1.3.1/edge-workerd/missing-workerd-cli.log)も保存した。必須ケースを実行できない状態や失敗をPASSにはしない。今回の公開v1.3.1は選定したlocal workerd構成の受入条件を満たすため、PRのレビュー・必須チェック・merge後に#678をcloseできる。#703はv1.x trackerとして継続する。
+[負例ログ](./wasm-1.3.1/edge-workerd/fail-closed.log)ではworkerd実行ファイル欠落をBLOCKED、公開npmとhashが異なる実行ファイルの指定・Wasm module欠落・不正画像による処理失敗をFAILとして記録した。外部esbuild差替えは公開測定の入口で拒否し、[CLI非zeroログ](./wasm-1.3.1/edge-workerd/esbuild-override-cli.log)とFAIL JSONを確認した。[公開runnerのworkerd欠落非zero例](./wasm-1.3.1/edge-workerd/missing-workerd-cli.log)も保存した。必須ケースを実行できない状態や失敗をPASSにはしない。今回の公開v1.3.1は選定したlocal workerd構成の受入条件を満たすため、PRのレビュー・必須チェック・merge後に#678をcloseできる。#703はv1.x trackerとして継続する。

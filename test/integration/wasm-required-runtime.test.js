@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { RUNTIME_FILTERS } = require('../benchmarks/wasm-upload-comparison.bench');
 
 async function main() {
@@ -11,6 +13,21 @@ async function main() {
     collectPublishedWasmEvidence({ version: '', runtime: 'node' }),
     /explicit --version is required/
   );
+  const originalOverride = process.env.ESBUILD_BINARY_PATH;
+  try {
+    process.env.ESBUILD_BINARY_PATH = '/definitely/not/the/installed/esbuild';
+    await assert.rejects(
+      collectPublishedWasmEvidence({ version: '1.3.1', runtime: 'edge' }),
+      /external esbuild override is unsupported: unset ESBUILD_BINARY_PATH/
+    );
+    const report = JSON.parse(fs.readFileSync(path.resolve(__dirname,
+      '../../artifacts/benchmark/wasm-published-evidence.json')));
+    assert.equal(report.verdict, 'FAIL');
+    assert.match(report.error.message, /ESBUILD_BINARY_PATH/);
+  } finally {
+    if (originalOverride === undefined) delete process.env.ESBUILD_BINARY_PATH;
+    else process.env.ESBUILD_BINARY_PATH = originalOverride;
+  }
   console.log('required Wasm runtime and version are fail-closed');
 }
 
