@@ -8,7 +8,7 @@
 
 ### PR #853の集計訂正（画像処理の再実測ではない）
 
-画像処理は2026-09-24 11:55:31 UTC、測定コード`ed873ffb729b0a6bb2214ceedcc2338d66b34809`、公開npm v1.3.1で実行した。元の集計は11:56:04 UTCの[訂正前JSON](./wasm-1.3.1/wasm-upload-summary-original.json)として保持した。2026-09-24 12:51:37 UTCに集計コード`8a05f3d88ae3f6fca1d359e797206a253e797c04`で、[同じraw evidence](./wasm-1.3.1/wasm-published-evidence.json)（SHA-256 `8c8640f0a63f64c5f6528ec134be2f9eb64dee41bd20b0d939073ee1a469fd17`）からJSON/Markdownを再生成した。訂正前JSONのSHA-256は`da56f42e8b6f19735798e52d78e6fa96953d115c5fb99b2173bd89240503fdff`。訂正後のcommitで画像処理や時間計測を実行したという意味ではない。再生成コマンドは次のとおり。
+画像処理は2026-09-24 11:55:31 UTC、測定コード`ed873ffb729b0a6bb2214ceedcc2338d66b34809`、公開npm v1.3.1で実行した。元の集計は11:56:04 UTCの[訂正前JSON](./wasm-1.3.1/wasm-upload-summary-original.json)として保持した。2026-09-24 12:57:11 UTCに集計コード`9368c7ad1322cc027697cc772e82815f1f4f5c6f`で、[同じraw evidence](./wasm-1.3.1/wasm-published-evidence.json)（SHA-256 `8c8640f0a63f64c5f6528ec134be2f9eb64dee41bd20b0d939073ee1a469fd17`）からJSON/Markdownを再生成した。訂正前JSONのSHA-256は`da56f42e8b6f19735798e52d78e6fa96953d115c5fb99b2173bd89240503fdff`。訂正後のcommitで画像処理や時間計測を実行したという意味ではない。再生成コマンドは次のとおり。
 
 ```bash
 node test/benchmarks/wasm-upload-comparison.bench.js --reaggregate docs/history/wasm-1.3.1/wasm-published-evidence.json --previous-summary docs/history/wasm-1.3.1/wasm-upload-summary-original.json
