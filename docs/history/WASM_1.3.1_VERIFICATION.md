@@ -47,3 +47,5 @@ Nodeのケース初回値はoptimizer作成後の`optimizeUpload`呼び出し時
 測定コード・文書への検証は公開npm動作結果と区別する。構文チェック、必須runtime/versionのfail-closed統合テスト、公開version不存在・Chrome不在の負例を確認。意図的失敗runはPASS証拠に混ぜず、上記は最後の成功runだけを保存した。レビュー指摘（version既定、dirty source識別、setup FAIL保存、temporary install cleanup、テスト導線）を修正済み。PRのhosted check結果はPRで確認する。
 
 **残課題:** #678のEdge isolate。次は公開1.3.1をlocal workerd等の実isolateで実際に画像処理し、Wasm解決・入力/出力・budget/metadata・初回処理と配信量を同等の形式で記録する。local emulator値を本番cold-startと混同しない。#703もv1.x trackerとして継続する。
+
+この段落は2026-09-24のNode/Chrome測定時点の状態。後続の公開1.3.1の[local workerd実測](./WASM_1.3.1_EDGE_VERIFICATION.md)は別日時・別測定コードSHAの証拠として保存する。
