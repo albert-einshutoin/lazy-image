@@ -411,7 +411,9 @@ function publishedRow(scenario, runtime, evidence) {
     psnr: null,
     metadataStripped: null,
     memory: { rssDeltaBytes: null, note: 'Wasm/browser peak memory unavailable.' },
-    notes: `Published npm; inspected output ${result.output.sha256}; full conditions in wasm-published-evidence.json`,
+    loadMode: runtime === 'browser-worker' ? evidence.browserResults?.loadMode ?? null : null,
+    notes: `Published npm${runtime === 'browser-worker' && evidence.browserResults?.loadMode
+      ? `; ${evidence.browserResults.loadMode}` : ''}; inspected output ${result.output.sha256}; full conditions in wasm-published-evidence.json`,
   };
 }
 
@@ -452,6 +454,8 @@ async function run(runtimeFilter) {
     runtime: runtimeFilter,
     chromePath: getArg('--chrome', process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'),
     workerdPath: getArg('--workerd', null),
+    browserLoad: getArg('--browser-load', 'injected'),
+    withholdWasm: getArg('--withhold-wasm', null),
   });
 
   const rows = [];
@@ -513,6 +517,7 @@ function writeReports({ runtimeFilter, rows, evidence }) {
     sourceSha: evidence.sourceSha,
     publishedVersion: evidence.publishedVersion,
     edgeMeasured: evidence.edgeResults?.status === 'PASS',
+    browserLoadMode: evidence.browserLoadMode,
     runtimeFilter,
     artifactPaths: {
       json: path.relative(resolveRoot(), JSON_OUTPUT),
@@ -633,6 +638,7 @@ function renderMarkdownReport(report) {
     '',
     `Published package: ${report.publishedVersion}; measuring code revision: ${report.sourceSha}.`,
     `Command: \`${report.command}\`. ${runtimeScope} details and output hashes: \`${report.artifactPaths.publishedEvidence}\`.`,
+    ...(report.browserLoadMode ? [`Browser load mode: ${report.browserLoadMode}.`] : []),
     ...(report.aggregation ? [`Aggregation corrected: ${report.aggregation.generatedAt}; code revision: ${report.aggregation.codeSha}.`,
       report.aggregation.command
         ? `Reaggregate: \`${report.aggregation.command}\`. Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`
