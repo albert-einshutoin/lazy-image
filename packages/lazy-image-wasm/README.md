@@ -71,8 +71,9 @@ Your deployment must provide the codec Wasm as bindings named
 - Supported formats stay limited to `jpeg` and `webp` output, and input is currently
   `jpeg` / `png` / `webp`.
 - No filesystem, native filesystem APIs, or Node built-ins are available.
-- `@jsquash/*` codec Wasm blobs are loaded from your deployment/runtime and must be
-  provided via `wasmModules`.
+- In a browser module Worker, the published codecs can resolve deployed Wasm
+  files themselves as described below. Edge isolates in the verified workerd
+  setup use `wasmModules` with static `WebAssembly.Module` imports.
 - If you use `output: 'blob'` in runtimes that do not expose `Blob`, the API returns
   an error and you should request `arrayBuffer` or `uint8Array` instead.
 
@@ -87,11 +88,58 @@ Bundle considerations:
 
 ## Worker
 
+The published v1.3.1 package can use the codecs' normal Wasm loader in a
+Chrome module Worker. Install the package and a bundler, then put the Worker
+bundle and the **unchanged** published codec Wasm files at the same URL level.
+The codec loader resolves Wasm with `new URL(..., import.meta.url)`; the tested
+esbuild ESM bundle emits those URLs relative to `worker.js`.
+
+```bash
+npm install @alberteinshutoin/lazy-image-wasm@1.3.1
+npm install --save-dev esbuild@0.25.10
+./node_modules/.bin/esbuild worker.mjs --bundle --format=esm --platform=browser --target=es2022 --outfile=dist/worker.js
+find node_modules/@jsquash/{jpeg,png,resize,webp} -name '*.wasm' -exec cp {} dist/ \;
+```
+
+`worker.mjs`:
+
 ```js
 import { createUploadWorkerHandler } from '@alberteinshutoin/lazy-image-wasm/worker';
 
 self.addEventListener('message', createUploadWorkerHandler());
 ```
+
+Put the page in `dist/index.html` and serve `dist/` as the HTTP document root
+(for example, `python3 -m http.server 8080 --directory dist`). Then
+`dist/worker.js` is available at `/worker.js` and the copied Wasm files at
+`/<name>.wasm`. Call the Worker from that page:
+
+```js
+const file = document.querySelector('input[type=file]').files[0];
+const worker = new Worker('/worker.js', { type: 'module' });
+worker.onmessage = ({ data }) => {
+  if (!data.ok) throw new Error(`${data.error.code}: ${data.error.message}`);
+  const output = new Blob([data.result.data], { type: 'image/webp' });
+  // Use or upload output.
+};
+worker.postMessage({ id: 1, input: await file.arrayBuffer(), options: {
+  format: 'webp', maxWidth: 1600, maxHeight: 1600, targetBytes: 500_000,
+  output: 'arrayBuffer',
+} });
+```
+
+Serve the generated JS as JavaScript and `.wasm` as `application/wasm` over
+HTTP(S). In the tested Chrome 153.0.8010.53 setup, the JPEG→WebP path fetched
+`mozjpeg_dec.wasm`, `squoosh_resize_bg.wasm`, and **`webp_enc_simd.wasm`**;
+PNG→JPEG additionally fetched `squoosh_png_bg.wasm` and `mozjpeg_enc.wasm`.
+The copy command places all nine published codec Wasm files, allowing other
+supported paths and codec variants to resolve. Missing required Wasm fails
+image processing. The reproducible HTTP server, exact asset hashes, and output
+checks are in [the browser verification record](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
+
+`wasmModules` remains available for explicit injection when a runtime needs
+static module bindings, as in the Edge example above. The previously tested
+Chrome injection setup is a separate loading mode.
 
 The MVP supports JPEG, PNG, and WebP input; JPEG and WebP output; metadata
 stripping by default; best-effort and strict target-byte policies; and metrics

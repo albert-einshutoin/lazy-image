@@ -13,6 +13,14 @@ async function main() {
     collectPublishedWasmEvidence({ version: '', runtime: 'node' }),
     /explicit --version is required/
   );
+  await assert.rejects(
+    collectPublishedWasmEvidence({ version: '1.3.1', runtime: 'browser', browserLoad: 'unknown' }),
+    /unsupported browser load mode/
+  );
+  await assert.rejects(
+    collectPublishedWasmEvidence({ version: '1.3.1', runtime: 'browser', withholdWasm: 'mozjpeg_dec.wasm' }),
+    /--withhold-wasm requires a default-load browser run/
+  );
   const originalOverride = process.env.ESBUILD_BINARY_PATH;
   try {
     process.env.ESBUILD_BINARY_PATH = '/definitely/not/the/installed/esbuild';

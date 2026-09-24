@@ -128,6 +128,37 @@ async function main() {
   const savedEdgeSummary = JSON.parse(fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.json')));
   assert.equal(renderMarkdownReport(savedEdgeSummary),
     fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.md'), 'utf8'));
+  const defaultDir = path.join(snapshot, 'browser-default');
+  const defaultEvidence = JSON.parse(fs.readFileSync(path.join(defaultDir, 'wasm-published-evidence.json')));
+  const defaultBrowser = defaultEvidence.browserResults;
+  assert.equal(defaultEvidence.verdict, 'PASS');
+  assert.equal(defaultEvidence.sourceDirty, false);
+  assert.equal(defaultEvidence.publishedVersion, '1.3.1');
+  assert.equal(defaultEvidence.browserLoadMode, 'default');
+  assert(defaultBrowser.setup.every((entry) => Object.keys(entry.assetBytes).length === 0));
+  assert(defaultBrowser.requestedWasm.some((asset) => asset.url === '/webp_enc_simd.wasm'));
+  assert.deepEqual(defaultBrowser.requiredAssets,
+    [...new Set(defaultBrowser.requests.filter((request) => request.status === 200 &&
+      /\.(?:js|wasm)$/.test(request.url)).map((request) => request.url))]);
+  for (const result of [defaultBrowser.probe, ...defaultBrowser.results]) {
+    const bytes = fs.readFileSync(path.join(defaultDir, path.basename(result.output.artifact)));
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), result.output.sha256);
+    assert.equal(bytes.length, result.output.bytes);
+  }
+  assert.deepEqual(defaultBrowser.totals, { imageConversionsPassed: 4, imageConversionsAttempted: 4,
+    budgetMet: 3, budgetAttempts: 4, expectedStrictRejections: 1, strictAttempts: 1 });
+  const defaultSummary = JSON.parse(fs.readFileSync(path.join(defaultDir, 'wasm-upload-summary.json')));
+  assert.equal(defaultSummary.browserLoadMode, 'default');
+  assert(defaultSummary.rows.filter((row) => row.baselineType === 'published-package')
+    .every((row) => row.runtime === 'browser-worker' && row.loadMode.includes('default loader') &&
+      row.browserBundleBytes === defaultBrowser.deploymentRawBytes && row.metadataStripped === null));
+  assert.equal(renderMarkdownReport(defaultSummary),
+    fs.readFileSync(path.join(defaultDir, 'wasm-upload-summary.md'), 'utf8'));
+  const missingWasm = JSON.parse(fs.readFileSync(path.join(defaultDir, 'missing-wasm-evidence.json')));
+  assert.equal(missingWasm.verdict, 'FAIL');
+  assert(missingWasm.browserResults.requests.some((request) =>
+    request.url === '/mozjpeg_dec.wasm' && request.status === 404));
+  assert.equal(missingWasm.browserResults.cases[0].cold.error.code, 'E131');
   console.log('Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS');
 }
 

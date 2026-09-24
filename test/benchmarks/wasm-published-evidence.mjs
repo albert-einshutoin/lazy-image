@@ -245,13 +245,14 @@ async function runNode(packageInfo, directory, cases) {
   return results;
 }
 
-async function bundleBrowser(directory, packageDir) {
+async function bundleBrowser(directory, packageDir, browserLoad) {
   const browserDir = path.join(directory, 'browser');
   await fs.mkdir(path.join(browserDir, 'assets'), { recursive: true });
   const { build } = await import(pathToFileURL(path.join(directory, 'node_modules/esbuild/lib/main.js')).href);
   const workerPath = path.join(browserDir, 'worker.js');
   const isolatedEntry = path.join(directory, 'worker-entry.mjs');
-  await fs.copyFile(path.join(sourceDir, 'wasm-browser-worker.mjs'), isolatedEntry);
+  await fs.copyFile(path.join(sourceDir, browserLoad === 'default'
+    ? 'wasm-browser-worker-default.mjs' : 'wasm-browser-worker.mjs'), isolatedEntry);
   const buildResult = await build({ entryPoints: [isolatedEntry], outfile: workerPath,
     bundle: true, format: 'esm', platform: 'browser', target: 'es2022',
     metafile: true, logLevel: 'warning' });
@@ -263,10 +264,33 @@ async function bundleBrowser(directory, packageDir) {
     'workspace module entered browser bundle');
   await fs.copyFile(path.join(sourceDir, 'wasm-browser-main.mjs'), path.join(browserDir, 'main.js'));
   const assets = {};
-  for (const [name, [codec, relative]] of Object.entries(codecFiles)) {
-    const target = path.join(browserDir, 'assets', name);
-    await fs.copyFile(path.join(directory, 'node_modules', codec, relative), target);
-    assets[`/assets/${name}`] = target;
+  const assetSources = {};
+  const copyAsset = async (codec, relative, url) => {
+    assert(!assets[url], `duplicate browser Wasm URL: ${url}`);
+    const source = path.join(directory, 'node_modules', codec, relative);
+    const target = path.join(browserDir, url.slice(1));
+    await fs.copyFile(source, target);
+    assets[url] = target;
+    assetSources[url] = { package: codec, path: relative, sha256: sha256(await fs.readFile(source)) };
+  };
+  if (browserLoad === 'default') {
+    for (const codec of ['@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', '@jsquash/webp']) {
+      const packageRoot = path.join(directory, 'node_modules', codec);
+      const visit = async (current) => {
+        for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+          const file = path.join(current, entry.name);
+          if (entry.isDirectory()) await visit(file);
+          else if (entry.isFile() && entry.name.endsWith('.wasm')) {
+            await copyAsset(codec, path.relative(packageRoot, file), `/${entry.name}`);
+          }
+        }
+      };
+      await visit(packageRoot);
+    }
+  } else {
+    for (const [name, [codec, relative]] of Object.entries(codecFiles)) {
+      await copyAsset(codec, relative, `/assets/${name}`);
+    }
   }
   const directoryBytes = async (dir) => {
     let total = 0;
@@ -283,13 +307,21 @@ async function bundleBrowser(directory, packageDir) {
     const bytes = await fs.readFile(file);
     delivery[url] = { rawBytes: bytes.length, gzipBytes: zlib.gzipSync(bytes).length, sha256: sha256(bytes) };
   }
-  return { browserDir, assets, delivery, packageDirectoryBytes,
+  for (const [url, source] of Object.entries(assetSources)) {
+    assert.equal(delivery[url].sha256, source.sha256, `copied Wasm changed: ${url}`);
+  }
+  return { browserDir, assets, assetSources, delivery, packageDirectoryBytes,
+    bundleInputs: bundleInputs.map((input) => path.resolve(root, input)),
     bundlePackageInputs: bundleInputs.filter((input) => input.includes('node_modules/@alberteinshutoin/lazy-image-wasm/'))
       .map((input) => path.resolve(root, input)) };
 }
 
-async function runBrowser(directory, cases, bundle, chromePath) {
+async function runBrowser(directory, cases, bundle, chromePath, { browserLoad, withholdWasm }) {
   const chromeVersion = command(chromePath, ['--version'], directory);
+  if (withholdWasm) {
+    assert(browserLoad === 'default' && /^[\w-]+\.wasm$/.test(withholdWasm) &&
+      bundle.assets[`/${withholdWasm}`], `invalid --withhold-wasm: ${withholdWasm}`);
+  }
   const requests = [];
   let receiveReport;
   const reportPromise = new Promise((resolve) => { receiveReport = resolve; });
@@ -297,7 +329,8 @@ async function runBrowser(directory, cases, bundle, chromePath) {
   const inputs = Object.fromEntries(cases.map((item) => [item.id, item.input]));
   const server = createServer(async (request, response) => {
     try {
-      const url = new URL(request.url, 'http://localhost').pathname;
+      const absoluteUrl = new URL(request.url, `http://${request.headers.host}`);
+      const url = absoluteUrl.pathname;
       if (url === '/report' && request.method === 'POST') {
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
@@ -313,17 +346,30 @@ async function runBrowser(directory, cases, bundle, chromePath) {
       else {
         const file = url.startsWith('/input/') ? inputs[url.slice('/input/'.length)] :
           url === '/main.js' || url === '/worker.js' ? path.join(bundle.browserDir, url.slice(1)) : bundle.assets[url];
-        if (!file) { response.writeHead(404); response.end(); return; }
+        if (!file || url === `/${withholdWasm}`) {
+          requests.push({ url, absoluteUrl: absoluteUrl.href, status: 404,
+            contentType: 'text/plain', reason: url === `/${withholdWasm}` ? 'withheld Wasm' : 'not found' });
+          response.writeHead(404, { 'content-type': 'text/plain', 'cache-control': 'no-store' });
+          response.end('missing');
+          return;
+        }
         body = await fs.readFile(file);
-        type = url.endsWith('.wasm') ? 'application/wasm' : url.endsWith('.js') ? 'text/javascript' : 'image/jpeg';
+        type = url.endsWith('.wasm') ? 'application/wasm' : url.endsWith('.js') ? 'text/javascript' :
+          url.endsWith('.png') || url === '/input/png-jpeg' ? 'image/png' : 'image/jpeg';
       }
       const gzip = /\bgzip\b/.test(request.headers['accept-encoding'] ?? '');
       const transmitted = gzip ? zlib.gzipSync(body) : body;
       response.writeHead(200, { 'content-type': type, 'cache-control': 'no-store',
         ...(gzip ? { 'content-encoding': 'gzip' } : {}), 'content-length': transmitted.length });
       response.end(transmitted);
-      requests.push({ url, rawBytes: body.length, transferredBodyBytes: transmitted.length, gzip });
-    } catch (error) { response.writeHead(500); response.end(error.stack); receiveReport({ error: { message: error.message } }); }
+      requests.push({ url, absoluteUrl: absoluteUrl.href, status: 200, contentType: type,
+        contentEncoding: gzip ? 'gzip' : null, rawBytes: body.length,
+        transferredBodyBytes: transmitted.length, sha256: sha256(body) });
+    } catch (error) {
+      requests.push({ url: request.url, status: 500, reason: error.message });
+      response.writeHead(500); response.end(error.stack);
+      receiveReport({ error: { message: error.message } });
+    }
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
@@ -337,9 +383,10 @@ async function runBrowser(directory, cases, bundle, chromePath) {
     chrome.on('error', (error) => reject(new Error(`Chrome failed to start: ${error.message}`)));
     chrome.on('exit', (code) => reject(new Error(`Chrome exited before reporting (code ${code}): ${stderr}`)));
   });
+  let browserReport;
   try {
     let timeout;
-    const browserReport = await Promise.race([reportPromise, chromeFailure,
+    browserReport = await Promise.race([reportPromise, chromeFailure,
       new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error(`Chrome report timeout: ${stderr}`)), 300000); })])
       .finally(() => clearTimeout(timeout));
     assert(!browserReport.error, browserReport.error?.stack ?? browserReport.error?.message);
@@ -352,7 +399,7 @@ async function runBrowser(directory, cases, bundle, chromePath) {
       assert(entry.warm.every((run) => run.ok));
       const outputBytes = Buffer.from(entry.cold.result.data);
       const output = await validateOutput(outputBytes, entry.cold.result, item,
-        path.join(outputDir, `wasm-browser-${item.id}.${item.options.format === 'jpeg' ? 'jpg' : 'webp'}`));
+        path.join(outputDir, `wasm-browser-${browserLoad === 'default' ? 'default-' : ''}${item.id}.${item.options.format === 'jpeg' ? 'jpg' : 'webp'}`));
       let budget = null;
       if (item.budgetCases) {
         assert(entry.bestEffort.ok);
@@ -361,7 +408,8 @@ async function runBrowser(directory, cases, bundle, chromePath) {
         assert.equal(entry.strict.error?.code, 'E502');
         assert.equal(entry.strict.error?.category, 'ResourceLimit');
         const bestEffortOutput = await validateOutput(Buffer.from(entry.bestEffort.result.data),
-          entry.bestEffort.result, item, path.join(outputDir, `wasm-browser-${item.id}-best-effort.jpg`));
+          entry.bestEffort.result, item, path.join(outputDir,
+            `wasm-browser-${browserLoad === 'default' ? 'default-' : ''}${item.id}-best-effort.jpg`));
         budget = { bestEffort: { bytesOut: entry.bestEffort.result.bytesOut, budgetMet: false,
           wallMs: entry.bestEffort.wallMs, output: bestEffortOutput },
           strict: { expectedRejection: true, code: 'E502', wallMs: entry.strict.wallMs } };
@@ -372,9 +420,17 @@ async function runBrowser(directory, cases, bundle, chromePath) {
     }
     assert.equal(browserReport.setup.length, cases.length);
     assert(browserReport.setup.every((entry) => entry.workerScope === 'DedicatedWorkerGlobalScope' &&
-      entry.hasNativeImageData && entry.hasWebAssembly && Object.keys(entry.assetBytes).length === 5));
+      entry.hasNativeImageData && entry.hasWebAssembly &&
+      Object.keys(entry.assetBytes).length === (browserLoad === 'default' ? 0 : 5)));
     return { chromeVersion, browserVersion: browserReport.browserVersion, userAgent: browserReport.userAgent,
       setup: browserReport.setup, requests, results, stderr: stderr.trim() };
+  } catch (error) {
+    error.partialBrowserResults = { chromeVersion, requests,
+      cases: browserReport?.cases?.map((entry) => ({ id: entry.id,
+        cold: { ok: entry.cold.ok, error: entry.cold.error },
+        warm: entry.warm.map((run) => ({ ok: run.ok, error: run.error })) })) ?? [],
+      setup: browserReport?.setup ?? [], reportError: browserReport?.error ?? null, stderr: stderr.trim() };
+    throw error;
   } finally {
     chrome.kill();
     await Promise.all([
@@ -384,15 +440,20 @@ async function runBrowser(directory, cases, bundle, chromePath) {
   }
 }
 
-export async function collectPublishedWasmEvidence({ version, runtime, chromePath, workerdPath }) {
+export async function collectPublishedWasmEvidence({ version, runtime, chromePath, workerdPath,
+  browserLoad = 'injected', withholdWasm = null }) {
   assert(/^\d+\.\d+\.\d+$/.test(version), 'explicit --version is required');
   assert(['node', 'browser', 'edge', 'all'].includes(runtime), `required runtime ${runtime} is not implemented`);
+  assert(['injected', 'default'].includes(browserLoad), `unsupported browser load mode: ${browserLoad}`);
+  assert(!withholdWasm || (browserLoad === 'default' && ['browser', 'all'].includes(runtime)),
+    '--withhold-wasm requires a default-load browser run');
   await fs.mkdir(outputDir, { recursive: true });
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'lazy-image-wasm-evidence-'));
   const sourceSha = command('git', ['rev-parse', 'HEAD'], root);
   const sourceFiles = ['test/benchmarks/wasm-upload-comparison.bench.js',
     'test/benchmarks/wasm-published-evidence.mjs', 'test/benchmarks/wasm-browser-worker.mjs',
-    'test/benchmarks/wasm-browser-main.mjs', 'test/benchmarks/wasm-edge-workerd.mjs',
+    'test/benchmarks/wasm-browser-main.mjs', 'test/benchmarks/wasm-browser-worker-default.mjs',
+    'test/benchmarks/wasm-edge-workerd.mjs',
     'test/benchmarks/wasm-edge-worker.mjs'];
   const sourceHash = createHash('sha256');
   for (const file of sourceFiles) {
@@ -403,13 +464,14 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
   const sourceDirty = Boolean(command('git', ['status', '--porcelain', '--', ...sourceFiles], root));
   const context = { generatedAt: new Date().toISOString(), sourceSha, publishedVersion: version,
     sourceDirty, sourceFilesSha256,
-    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
+    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${['browser', 'all'].includes(runtime) ? ` --browser-load ${browserLoad}` : ''}${withholdWasm ? ` --withhold-wasm ${withholdWasm}` : ''}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
     node: process.version, npm: command('npm', ['--version'], root), os: process.platform,
     arch: process.arch, registry, packages: null, toolchainBinaries: null, importPath: null,
     isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim',
     runtimeClassification: 'Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof',
     fixtures: null,
-    nodeResults: null, nodeTotals: null, browserResults: null, edgeResults: null, edgeTotals: null,
+    nodeResults: null, nodeTotals: null, browserLoadMode: ['browser', 'all'].includes(runtime) ? browserLoad : null,
+    browserResults: null, edgeResults: null, edgeTotals: null,
     verdict: 'FAIL' };
   try {
     // Both browser and Edge bundling must use the hashed esbuild from this install.
@@ -430,24 +492,49 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
       context.nodeTotals = summarize(context.nodeResults);
     }
     if (runtime === 'browser' || runtime === 'all') {
-      const bundle = await bundleBrowser(directory, packageInfo.packageDir);
-      const browser = await runBrowser(directory, cases, bundle, chromePath);
-      const used = ['/main.js', '/worker.js', ...Object.keys(bundle.assets)];
+      const browserCases = browserLoad === 'default' ? [{
+        id: 'probe-jpeg-webp', input: path.join(root, 'test/fixtures/test_100KB_1057x1057.jpg'),
+        options: { format: 'webp', maxWidth: 320, maxHeight: 320, targetBytes: 50000,
+          minQuality: 45, maxQuality: 86, qualityFloorPolicy: 'best-effort', output: 'arrayBuffer' },
+      }, ...cases] : cases;
+      if (browserLoad === 'default') {
+        const probeBytes = await fs.readFile(browserCases[0].input);
+        context.browserProbeInput = { path: path.relative(root, browserCases[0].input),
+          sha256: sha256(probeBytes), options: browserCases[0].options };
+      }
+      const bundle = await bundleBrowser(directory, packageInfo.packageDir, browserLoad);
+      const browser = await runBrowser(directory, browserCases, bundle, chromePath,
+        { browserLoad, withholdWasm });
+      const used = [...new Set(browser.requests.filter((request) => request.status === 200 &&
+        (request.url.endsWith('.js') || request.url.endsWith('.wasm'))).map((request) => request.url))];
+      assert(used.includes('/main.js') && used.includes('/worker.js'));
+      const requestedWasm = used.filter((url) => url.endsWith('.wasm')).map((url) => ({
+        url, source: bundle.assetSources[url], delivery: bundle.delivery[url] }));
+      assert(requestedWasm.length > 0 && requestedWasm.every((asset) => asset.source && asset.delivery),
+        'published codec Wasm requests did not match copied package assets');
+      const results = browser.results.filter((entry) => entry.id !== 'probe-jpeg-webp');
+      const probe = browser.results.find((entry) => entry.id === 'probe-jpeg-webp') ?? null;
       const deploymentRawBytes = used.reduce((sum, name) => sum + bundle.delivery[name].rawBytes, 0);
       const deploymentGzipBytes = used.reduce((sum, name) => sum + bundle.delivery[name].gzipBytes, 0);
-      const totalRunTransferredBodyBytes = browser.requests.filter((request) => used.includes(request.url))
+      const totalRunTransferredBodyBytes = browser.requests.filter((request) => request.status === 200 &&
+        used.includes(request.url))
         .reduce((sum, request) => sum + request.transferredBodyBytes, 0);
-      const firstInputAfter = browser.requests.findIndex((request) => request.url === '/input/png-jpeg');
+      const firstInputAfter = browser.requests.findIndex((request) =>
+        request.url === (browserLoad === 'default' ? '/input/jpeg-webp' : '/input/png-jpeg'));
+      assert(firstInputAfter > 0, 'first-case transfer boundary unavailable');
       const firstCaseTransferredBodyBytes = browser.requests.slice(0, firstInputAfter)
-        .filter((request) => used.includes(request.url))
+        .filter((request) => request.status === 200 && used.includes(request.url))
         .reduce((sum, request) => sum + request.transferredBodyBytes, 0);
-      context.browserResults = { ...browser, totals: summarize(browser.results),
+      context.browserResults = { ...browser, results, probe, totals: summarize(results),
         delivery: bundle.delivery, packageDirectoryBytes: bundle.packageDirectoryBytes,
-        bundlePackageInputs: bundle.bundlePackageInputs,
+        bundlePackageInputs: bundle.bundlePackageInputs, bundleInputs: bundle.bundleInputs,
+        copiedWasmSources: bundle.assetSources, requestedWasm, copiedAssets: Object.keys(bundle.assets),
         requiredAssets: used, additionalChunks: [], deploymentRawBytes, deploymentGzipBytes,
         firstCaseTransferredBodyBytes, totalRunTransferredBodyBytes,
         cache: 'fresh Chrome profile, HTTP Cache-Control: no-store; each case uses a new Worker, warm samples reuse it',
-        bundleTool: 'esbuild 0.25.10', loadMode: 'explicit wasmModules injection from Worker HTTP fetch' };
+        bundleTool: 'esbuild 0.25.10', loadMode: browserLoad === 'default'
+          ? 'published Worker helper and codec default loader; no wasmModules'
+          : 'explicit wasmModules injection from Worker HTTP fetch' };
     }
     if (runtime === 'edge' || runtime === 'all') {
       const { runEdgeWorkerd } = await import('./wasm-edge-workerd.mjs');
@@ -458,6 +545,7 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     context.verdict = 'PASS';
   } catch (error) {
     if (error.partialEdgeResults) context.edgeResults = error.partialEdgeResults;
+    if (error.partialBrowserResults) context.browserResults = error.partialBrowserResults;
     context.verdict = error.verdict ?? 'FAIL';
     context.error = { message: error.message, stack: error.stack };
   }

@@ -7,6 +7,8 @@ reference; it is not browser evidence. The v1.3.1 Node/Chrome snapshot and its
 limits are in [WASM_1.3.1_VERIFICATION.md](./history/WASM_1.3.1_VERIFICATION.md);
 the separate local workerd measurement is in
 [WASM_1.3.1_EDGE_VERIFICATION.md](./history/WASM_1.3.1_EDGE_VERIFICATION.md).
+Chrome's published v1.3.1 **default codec loading** is a separate run in
+[WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md](./history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
 
 ## Reproduce
 
@@ -39,6 +41,23 @@ node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.
 node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --version 1.3.1
 node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.3.1
 ```
+
+The browser command above preserves the original five-asset **explicit
+injection** mode. To run the published `/worker` helper with **no
+`wasmModules`**, including an unmodified copy of each installed codec Wasm,
+use:
+
+```bash
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --withhold-wasm mozjpeg_dec.wasm
+```
+
+The second command is an intentional negative check: it must exit nonzero,
+save a FAIL `wasm-published-evidence.json`, and record the missing Wasm URL,
+HTTP 404, and Worker error. Save that JSON and log before the positive run
+overwrites `artifacts/benchmark/`. For a combined Node/browser/Edge run,
+`--runtime all --browser-load default` selects default loading only for Chrome;
+Node and Edge retain their separately documented module-injection paths.
 
 `all` means Node + Chrome Worker + local workerd; selecting only `node` or
 `browser` does not verify Edge. The Edge adapter executes the published
@@ -113,7 +132,12 @@ it is not a browser or Edge result. The browser uses native `ImageData` in a
 real `DedicatedWorkerGlobalScope`. A page sends an `ArrayBuffer` to the Worker
 and receives the output bytes. The Worker fetches five codec Wasm files over
 HTTP and passes them through the public `wasmModules` option. This is explicit
-injection, not ordinary implicit asset resolution. All JS and Wasm responses
+injection. With `--browser-load default`, the published `/worker` helper gets
+no `wasmModules`: the codec loader resolves Wasm relative to the ESM Worker
+bundle. The runner copies the published Wasm unchanged beside `worker.js`,
+serves it as `application/wasm`, and records requested URLs, status, MIME,
+hashes, and codec variant. A small probe runs first in a fresh Worker with no
+earlier codec initialization. All JS and Wasm responses
 have `Cache-Control: no-store`; each case creates a new Worker, and its two
 warm samples reuse that same Worker. The input is fetched before the measured
 Worker-start interval. `coldFromBeforeWorkerMs` spans Worker creation through
@@ -122,17 +146,22 @@ their median. These are small-sample observations, not performance thresholds.
 
 Internal `totalMs` starts inside `optimizeUpload`, after optimizer creation.
 `firstEncodeMs` is the first encode attempt in the budget search, not the
-whole encode/search cost. `instantiateMs` times `initializeCodecs` only; the
-Worker's `assetFetchMs` separately times the five HTTP fetches. Codec startup
+whole encode/search cost. `instantiateMs` times `initializeCodecs` only. The
+explicit-injection Worker's `assetFetchMs` times its five HTTP fetches. In
+default loading, fetch and initialization happen inside image processing and
+are not isolated by this metric. Codec startup
 and browser peak memory cannot be isolated reliably with this helper, so no
 memory or standalone initialization claim is made.
 
-The delivery table lists entry JS, Worker JS, no additional chunks, and all
-five Wasm files that the chosen explicit-injection setup fetches. `rawBytes`
+The original delivery table lists entry JS, Worker JS, no additional chunks,
+and the five Wasm files fetched by explicit injection. Default-mode delivery
+includes only JS and Wasm URLs actually requested with HTTP 200; `copiedAssets`
+separately lists all Wasm files placed for other paths or variants. `rawBytes`
 and `gzipBytes` are file sizes. `firstCaseTransferredBodyBytes` is the actual
 compressed response-body total for those assets in the first case; it excludes
 HTTP headers and the input image. `totalRunTransferredBodyBytes` includes
-repeat Worker loads across all three cases. `packageDirectoryBytes` is the
+repeat Worker loads across selected cases, including the default-mode probe.
+`packageDirectoryBytes` is the
 installed package folder size and is not a browser transfer estimate. Browser
 delivery bytes belong only to `browser-worker` rows; `node-wasm` reports them
 as not applicable even when all runtimes are selected. The Edge asset columns
