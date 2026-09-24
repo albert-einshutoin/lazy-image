@@ -58,8 +58,9 @@ async function main() {
     const line = markdown.split('\n').find((item) => item.startsWith(`| ${row.scenario} | ${row.runtime} |`));
     assert(line, `missing markdown row: ${row.runtime}/${row.scenario}`);
     const cells = line.split('|').slice(1, -1).map((item) => item.trim());
-    assert.equal(cells[17], 'n/a');
-    assert.equal(cells[5], row.runtime === 'browser-worker' ? '398.0 KB' : 'n/a');
+    assert.equal(cells[18], 'n/a');
+    assert.equal(cells[5], row.runtime === 'browser-worker' ? '1.2 MB' : 'n/a');
+    assert.equal(cells[6], row.runtime === 'browser-worker' ? '398.0 KB' : 'n/a');
   }
   assert(markdown.includes('| node-wasm | true | true | true | true | false | false | false | true |'));
   assert(markdown.includes('| browser-worker | true | true | true | true | false | false | false | true |'));

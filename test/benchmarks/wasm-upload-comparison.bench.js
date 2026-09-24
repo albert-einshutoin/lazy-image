@@ -613,8 +613,8 @@ function renderMarkdownReport(report) {
     'Edge isolate remains unmeasured. Optional competitor rows are not performance results.',
     'Rows marked `unavailable` document optional competitor baselines that are not installed or cannot execute in the current Node-local harness.',
     '',
-    '| Scenario | Runtime | Package | Type | Status | Browser assets gzip | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |',
-    '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---|---:|---|',
+    '| Scenario | Runtime | Package | Type | Status | Browser assets raw | Browser assets gzip | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |',
+    '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---|---:|---|',
   ];
 
   for (const row of report.rows) {
@@ -624,6 +624,7 @@ function renderMarkdownReport(report) {
       row.package,
       row.baselineType,
       row.status,
+      formatBytes(row.browserBundleBytes),
       formatBytes(row.browserBundleGzipBytes),
       formatBytes(row.packageDirectoryGzipBytes),
       formatMs(row.instantiateMs),
