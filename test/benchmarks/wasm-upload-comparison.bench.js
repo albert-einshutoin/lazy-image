@@ -606,7 +606,8 @@ function reaggregate(evidencePath, previousSummaryPath) {
     artifactPaths: { ...previous.artifactPaths,
       publishedEvidence: path.relative(resolveRoot(), evidencePath) },
     edgeMeasured: runtimes.includes('edge-isolate'),
-    metadataVerification: metadataVerification(evidence, runtimes),
+    metadataVerification: metadataVerification(evidence, runtimes,
+      path.relative(resolveRoot(), evidencePath)),
     aggregation: {
       generatedAt: new Date().toISOString(),
       codeSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: resolveRoot(), encoding: 'utf8' }).trim(),
@@ -620,16 +621,22 @@ function reaggregate(evidencePath, previousSummaryPath) {
 }
 
 function renderMarkdownReport(report) {
-  const edgeMeasured = report.edgeMeasured === true;
+  const measuredRuntimes = new Set(report.rows.filter((row) => row.baselineType === 'published-package')
+    .map((row) => row.runtime));
+  const edgeMeasured = measuredRuntimes.has('edge-isolate');
+  const runtimeScope = [['browser-worker', 'Browser'], ['node-wasm', 'Node'], ['edge-isolate', 'Edge']]
+    .filter(([runtime]) => measuredRuntimes.has(runtime)).map(([, label]) => label).join('/');
   const lines = [
     '# Wasm Upload Benchmark Summary',
     '',
     `Generated: ${report.generatedAt}`,
     '',
     `Published package: ${report.publishedVersion}; measuring code revision: ${report.sourceSha}.`,
-    `Command: \`${report.command}\`. ${edgeMeasured ? 'Node/browser/Edge' : 'Browser/Node'} details and output hashes: \`${report.artifactPaths.publishedEvidence}\`.`,
+    `Command: \`${report.command}\`. ${runtimeScope} details and output hashes: \`${report.artifactPaths.publishedEvidence}\`.`,
     ...(report.aggregation ? [`Aggregation corrected: ${report.aggregation.generatedAt}; code revision: ${report.aggregation.codeSha}.`,
-      `Reaggregate: \`${report.aggregation.command}\`. Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`] : []),
+      report.aggregation.command
+        ? `Reaggregate: \`${report.aggregation.command}\`. Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`
+        : `Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`] : []),
     edgeMeasured
       ? 'Edge results are local workerd observations; production cold-start and CPU billing are unmeasured. Optional competitor rows are not performance results.'
       : 'Edge isolate remains unmeasured. Optional competitor rows are not performance results.',

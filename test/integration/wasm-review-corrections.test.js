@@ -95,6 +95,7 @@ async function main() {
     const corrected = JSON.parse(fs.readFileSync(path.join(root, 'artifacts/benchmark/wasm-upload-summary.json')));
     assert.equal(corrected.rows.filter((row) => row.baselineType === 'published-package').length, 6);
     assert.equal(corrected.edgeMeasured, true);
+    assert.equal(corrected.metadataVerification.rawEvidence, corrected.artifactPaths.publishedEvidence);
     assert.equal(renderMarkdownReport(corrected),
       fs.readFileSync(path.join(root, 'artifacts/benchmark/wasm-upload-summary.md'), 'utf8'));
     fs.writeFileSync(previous, JSON.stringify({ ...savedSummary, rows: edgeRows.slice(1), edgeMeasured: true }));
@@ -104,6 +105,11 @@ async function main() {
   }
   const edgeMarkdown = renderMarkdownReport({ ...report, edgeMeasured: true,
     metadataVerification: edgeMetadata, rows: edgeRows });
+  assert.match(edgeMarkdown, /Browser\/Node\/Edge details and output hashes/);
+  const edgeOnlyMarkdown = renderMarkdownReport({ ...report, edgeMeasured: true,
+    metadataVerification: edgeMetadata, rows: edgeRows.filter((row) => row.runtime === 'edge-isolate') });
+  assert.match(edgeOnlyMarkdown, /Edge details and output hashes/);
+  assert.doesNotMatch(edgeOnlyMarkdown, /(?:Browser|Node)\/.*Edge details/);
   for (const row of edgeRows) {
     const line = edgeMarkdown.split('\n').find((item) => item.startsWith(`| ${row.scenario} | ${row.runtime} |`));
     const cells = line.split('|').slice(1, -1).map((item) => item.trim());
@@ -119,6 +125,9 @@ async function main() {
   assert.equal(savedEdge.toolchainBinaries.workerd.sha256,
     '354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c');
   assert(savedEdge.packages['@cloudflare/workerd-darwin-arm64']?.integrity);
+  const savedEdgeSummary = JSON.parse(fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.json')));
+  assert.equal(renderMarkdownReport(savedEdgeSummary),
+    fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.md'), 'utf8'));
   console.log('Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS');
 }
 
