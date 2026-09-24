@@ -4,7 +4,17 @@
 
 再実行コマンドはリポジトリのrootで`npm run test:bench:wasm -- --version 1.3.1`。実測はmacOS 27.0 arm64、Node v24.2.0、npm 11.3.0、Google Chrome 153.0.8010.53（headless=new）、esbuild 0.25.10。公開registry `https://registry.npmjs.org/`からOS一時ディレクトリへ通常installし、`browser.js`の実import先とbundleの入力がそのインストール先にあることをassertした。一時ディレクトリはrun後に削除する。取得元・全codecのversion/integrity・実import先は[詳細JSON](./wasm-1.3.1/wasm-published-evidence.json)を参照。本体tarball integrityは`sha512-80yry+i323threLO1+cl4BkxBIknDBWPgRiQ08Jt3Z98cUfJNZV5WKKCrsfwpcd8fCKC7EhuaDkXrLAxXsxcOw==`。
 
-[実行ログ](./wasm-1.3.1/wasm-published-run.log)・[集計JSON](./wasm-1.3.1/wasm-upload-summary.json)・[保存画像と元入力](./wasm-1.3.1/)を同一runから保存した。集計表はこの文書にも載せ、再実行時には`artifacts/benchmark/wasm-upload-summary.md`へ生成する。各入力のSHA-256、policy（寸法、品質範囲、byte-budget、best-effort/strict）、各生成画像のSHA-256と実bytesは詳細JSONにある。JPEG→WebPとPNG→JPEGは既存の5000×5000 fixtureを使用。metadataケースの元画像`metadata-1.jpg`は[release corpus manifest](../../test/benchmarks/corpus/release-manifest.json)記載のプロジェクト生成MIT fixture（SHA-256 `ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d`）で、EXIF/GPS/ICCを保ちXMPを追加した[検証入力](./wasm-1.3.1/wasm-metadata-input.jpg)のSHA-256は`29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70`。処理前にEXIF、GPS tag、XMP、ICCの存在を確認した。
+[実行ログ](./wasm-1.3.1/wasm-published-run.log)・[raw evidence](./wasm-1.3.1/wasm-published-evidence.json)・[保存画像と元入力](./wasm-1.3.1/)は元のrunで保存した。[訂正済み集計JSON](./wasm-1.3.1/wasm-upload-summary.json)・[Markdown](./wasm-1.3.1/wasm-upload-summary.md)は、そのraw evidenceから後述のとおり再生成した。各入力のSHA-256、policy（寸法、品質範囲、byte-budget、best-effort/strict）、各生成画像のSHA-256と実bytesはraw evidenceにある。JPEG→WebPとPNG→JPEGは既存の5000×5000 fixtureを使用。metadataケースの元画像`metadata-1.jpg`は[release corpus manifest](../../test/benchmarks/corpus/release-manifest.json)記載のプロジェクト生成MIT fixture（SHA-256 `ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d`）で、EXIF/GPS/ICCを保ちXMPを追加した[検証入力](./wasm-1.3.1/wasm-metadata-input.jpg)のSHA-256は`29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70`。
+
+### PR #853の集計訂正（画像処理の再実測ではない）
+
+画像処理は2026-09-24 11:55:31 UTC、測定コード`ed873ffb729b0a6bb2214ceedcc2338d66b34809`、公開npm v1.3.1で実行した。元の集計は11:56:04 UTCの[訂正前JSON](./wasm-1.3.1/wasm-upload-summary-original.json)として保持した。2026-09-24 12:51:37 UTCに集計コード`8a05f3d88ae3f6fca1d359e797206a253e797c04`で、[同じraw evidence](./wasm-1.3.1/wasm-published-evidence.json)（SHA-256 `8c8640f0a63f64c5f6528ec134be2f9eb64dee41bd20b0d939073ee1a469fd17`）からJSON/Markdownを再生成した。訂正前JSONのSHA-256は`da56f42e8b6f19735798e52d78e6fa96953d115c5fb99b2173bd89240503fdff`。訂正後のcommitで画像処理や時間計測を実行したという意味ではない。再生成コマンドは次のとおり。
+
+```bash
+node test/benchmarks/wasm-upload-comparison.bench.js --reaggregate docs/history/wasm-1.3.1/wasm-published-evidence.json --previous-summary docs/history/wasm-1.3.1/wasm-upload-summary-original.json
+```
+
+Node-Wasm行のbrowser配信量を`null`にし、Chrome Worker行だけraw 1,245,431 B／gzip 407,545 Bとした。通常2シナリオの入力にはEXIF/GPS/XMP/ICCが無いため、native・Node-Wasm・Chrome Workerの`metadataStripped`を`null`に訂正した。metadata除去の根拠は別入力の`metadata-budget`ケースにのみ紐づけ、集計JSONの`metadataVerification`とMarkdownからraw evidenceへ辿れる。保存済み入力をsharpで独立に再解析し、EXIF・GPS tag・XMP・ICCの存在と記録済みSHAを突合した。Node／Chromeの保存出力はEXIF・XMP・ICCが無く、EXIF内のGPSも無い。修正後の検証コードはICCが無い入力を原因付きで拒否し、ICCだけを欠く画像による負例でも確認した。
 
 | 実行場所とケース | ケース初回 ms | 同一optimizer/Workerのwarm中央値 ms | 出力 | budget | 結果 |
 |---|---:|---:|---:|---|---|

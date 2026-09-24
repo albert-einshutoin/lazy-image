@@ -55,11 +55,27 @@ identify the measured package and codecs. The installed `browser.js` import
 path and esbuild metafile package inputs must point inside the temporary npm
 install, never the workspace.
 
+To reproduce a **summary correction without rerunning image processing**, use
+the saved raw evidence and the saved pre-correction summary:
+
+```bash
+node test/benchmarks/wasm-upload-comparison.bench.js --reaggregate docs/history/wasm-1.3.1/wasm-published-evidence.json --previous-summary docs/history/wasm-1.3.1/wasm-upload-summary-original.json
+```
+
+This writes corrected JSON and Markdown under `artifacts/benchmark/`. The
+original `generatedAt`/`sourceSha` identify the measured run; `aggregation`
+records the later aggregation time, code commit, and both input hashes. The
+saved correction is in [wasm-upload-summary.json](./history/wasm-1.3.1/wasm-upload-summary.json)
+and [wasm-upload-summary.md](./history/wasm-1.3.1/wasm-upload-summary.md).
+
 ## Scope of each number
 
 The cases are JPEG→WebP and PNG→JPEG with resize and reachable byte budgets,
-plus an EXIF/GPS/XMP-bearing JPEG for metadata and the 10-byte impossible
-budget. The input must first be confirmed to contain those tags. The output
+plus an EXIF/GPS/XMP/ICC-bearing JPEG for metadata and the 10-byte impossible
+budget. The dedicated input must first be confirmed to contain all four items.
+The normal two inputs contain none of them, so their summary rows report
+`metadataStripped: null`; the separate `metadataVerification` section maps
+the dedicated input's present items to absent output items. The output
 must be decoded and inspected; `metrics.metadataStripped` only reflects the
 requested option. An impossible `best-effort` result is a valid image but a
 **budget miss**. `strict` must reject with `E502` and is counted separately
@@ -91,7 +107,9 @@ and `gzipBytes` are file sizes. `firstCaseTransferredBodyBytes` is the actual
 compressed response-body total for those assets in the first case; it excludes
 HTTP headers and the input image. `totalRunTransferredBodyBytes` includes
 repeat Worker loads across all three cases. `packageDirectoryBytes` is the
-installed package folder size and is not a browser transfer estimate.
+installed package folder size and is not a browser transfer estimate. Browser
+delivery bytes belong only to `browser-worker` rows; `node-wasm` reports them
+as not applicable even when both runtimes are selected.
 
 Optional jSquash, Squoosh, browser-image-compression, and Compressor.js rows
 remain diagnostics only. Do not claim a competitive win, bundle superiority,
