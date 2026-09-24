@@ -14,7 +14,7 @@ const JSON_OUTPUT = path.join(OUTPUT_DIR, 'wasm-upload-summary.json');
 const MARKDOWN_OUTPUT = path.join(OUTPUT_DIR, 'wasm-upload-summary.md');
 
 const RUNTIME_FILTERS = new Map([
-  ['all', ['node-wasm', 'browser-worker']],
+  ['all', ['node-wasm', 'browser-worker', 'edge-isolate']],
   ['node', ['node-wasm']],
   ['browser', ['browser-worker']],
   ['edge', ['edge-isolate']],
@@ -371,9 +371,9 @@ function makeOptionalBaselineRow({ scenario, runtime, baselineType, packageName,
 
 function publishedRow(scenario, runtime, evidence) {
   const evidenceId = scenario.id === 'large-photo-upload-webp' ? 'jpeg-webp' : 'png-jpeg';
-  const result = runtime === 'node-wasm'
-    ? evidence.nodeResults?.find((entry) => entry.id === evidenceId)
-    : evidence.browserResults?.results.find((entry) => entry.id === evidenceId);
+  const results = runtime === 'node-wasm' ? evidence.nodeResults
+    : runtime === 'browser-worker' ? evidence.browserResults?.results : evidence.edgeResults?.results;
+  const result = results?.find((entry) => entry.id === evidenceId);
   if (!result) throw new Error(`Missing published evidence: ${runtime}/${evidenceId}`);
   const fixture = evidence.fixtures.find((item) => item.id === evidenceId);
   if (!fixture) throw new Error(`Missing published fixture: ${evidenceId}`);
@@ -392,13 +392,17 @@ function publishedRow(scenario, runtime, evidence) {
     maxHeight: scenario.maxHeight,
     browserBundleBytes: runtime === 'browser-worker' ? evidence.browserResults.deploymentRawBytes : null,
     browserBundleGzipBytes: runtime === 'browser-worker' ? evidence.browserResults.deploymentGzipBytes : null,
+    edgeBundleBytes: runtime === 'edge-isolate' ? evidence.edgeResults.deploymentRawBytes : null,
+    edgeBundleGzipBytes: runtime === 'edge-isolate' ? evidence.edgeResults.deploymentGzipBytes : null,
     packageDirectoryBytes: runtime === 'browser-worker' ? evidence.browserResults.packageDirectoryBytes : null,
     packageDirectoryGzipBytes: null,
     instantiateMs: result.metrics.instantiateMs,
     firstEncodeMs: result.metrics.firstEncodeMs,
     encodeMs: result.metrics.encodeMs,
     totalMs: result.metrics.totalMs,
-    firstVisibleMs: result.coldFromBeforeWorkerMs ?? null,
+    firstVisibleMs: result.coldFromBeforeWorkerMs ?? result.coldFromBeforeRuntimeMs ?? null,
+    firstRequestMs: result.firstRequestMs ?? null,
+    startupToReadyMs: result.startupToReadyMs ?? null,
     warmMedianMs: result.warmMedianMs,
     bytesOut: result.output.bytes,
     targetHit: result.metrics.budgetMet,
@@ -411,16 +415,16 @@ function publishedRow(scenario, runtime, evidence) {
   };
 }
 
-function metadataVerification(evidence, runtimes) {
+function metadataVerification(evidence, runtimes, rawEvidence = 'docs/history/wasm-1.3.1/wasm-published-evidence.json') {
   const fixture = evidence.fixtures.find((item) => item.id === 'metadata-budget');
   if (!fixture?.inputMetadata || ['exif', 'gpsTag', 'xmp', 'icc'].some((key) => fixture.inputMetadata[key] !== true)) {
     throw new Error('Metadata evidence input must contain EXIF, GPS, XMP, and ICC');
   }
   const results = {};
   for (const runtime of runtimes) {
-    const result = runtime === 'node-wasm'
-      ? evidence.nodeResults?.find((entry) => entry.id === 'metadata-budget')
-      : evidence.browserResults?.results.find((entry) => entry.id === 'metadata-budget');
+    const runtimeResults = runtime === 'node-wasm' ? evidence.nodeResults
+      : runtime === 'browser-worker' ? evidence.browserResults?.results : evidence.edgeResults?.results;
+    const result = runtimeResults?.find((entry) => entry.id === 'metadata-budget');
     if (!result) throw new Error(`Missing metadata evidence: ${runtime}`);
     const output = result.output.metadata;
     if (output.exif !== false || output.xmp !== false || output.icc !== false) {
@@ -430,8 +434,7 @@ function metadataVerification(evidence, runtimes) {
       removed: { exif: true, gpsTag: true, xmp: true, icc: true } };
   }
   return { scenario: 'metadata-budget', inputSha256: fixture.inputSha256,
-    inputMetadata: fixture.inputMetadata, results,
-    rawEvidence: 'docs/history/wasm-1.3.1/wasm-published-evidence.json' };
+    inputMetadata: fixture.inputMetadata, results, rawEvidence };
 }
 
 async function run(runtimeFilter) {
@@ -448,20 +451,23 @@ async function run(runtimeFilter) {
     version: getArg('--version', process.env.WASM_BENCH_VERSION || require('../../package.json').version),
     runtime: runtimeFilter,
     chromePath: getArg('--chrome', process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'),
+    workerdPath: getArg('--workerd', null),
   });
 
   const rows = [];
   for (const scenario of SCENARIOS) {
     console.log(`Scenario: ${scenario.label}`);
-    try {
-      rows.push(await runNativeReference(scenario));
-    } catch (error) {
-      rows.push({ scenario: scenario.id, scenarioLabel: scenario.label, runtime: 'node-native',
-        package: '@alberteinshutoin/lazy-image', baselineType: 'native-reference',
-        status: 'unavailable', notes: `Optional local native reference: ${error.message}` });
+    if (runtimeFilter !== 'edge') {
+      try {
+        rows.push(await runNativeReference(scenario));
+      } catch (error) {
+        rows.push({ scenario: scenario.id, scenarioLabel: scenario.label, runtime: 'node-native',
+          package: '@alberteinshutoin/lazy-image', baselineType: 'native-reference',
+          status: 'unavailable', notes: `Optional local native reference: ${error.message}` });
+      }
     }
 
-    for (const runtime of runtimes.filter((item) => item !== 'edge-isolate')) {
+    for (const runtime of runtimes) {
       rows.push(publishedRow(scenario, runtime, evidence));
     }
 
@@ -506,6 +512,7 @@ function writeReports({ runtimeFilter, rows, evidence }) {
     command: evidence.command,
     sourceSha: evidence.sourceSha,
     publishedVersion: evidence.publishedVersion,
+    edgeMeasured: evidence.edgeResults?.status === 'PASS',
     runtimeFilter,
     artifactPaths: {
       json: path.relative(resolveRoot(), JSON_OUTPUT),
@@ -515,6 +522,8 @@ function writeReports({ runtimeFilter, rows, evidence }) {
     metrics: [
       'browserBundleBytes',
       'browserBundleGzipBytes',
+      'edgeBundleBytes',
+      'edgeBundleGzipBytes',
       'packageDirectoryBytes',
       'packageDirectoryGzipBytes',
       'instantiateMs',
@@ -522,6 +531,8 @@ function writeReports({ runtimeFilter, rows, evidence }) {
       'encodeMs',
       'totalMs',
       'firstVisibleMs',
+      'firstRequestMs',
+      'startupToReadyMs',
       'warmMedianMs',
       'bytesOut',
       'targetHit',
@@ -541,7 +552,8 @@ function writeReports({ runtimeFilter, rows, evidence }) {
       targetBytes: scenario.targetBytes,
       qualityRange: [scenario.minQuality, scenario.maxQuality],
     })),
-    metadataVerification: metadataVerification(evidence, RUNTIME_FILTERS.get(runtimeFilter)),
+    metadataVerification: metadataVerification(evidence, RUNTIME_FILTERS.get(runtimeFilter),
+      'artifacts/benchmark/wasm-published-evidence.json'),
     rows,
   };
   writeReportFiles(jsonReport);
@@ -587,7 +599,8 @@ function reaggregate(evidencePath, previousSummaryPath) {
   const report = { ...previous,
     artifactPaths: { ...previous.artifactPaths,
       publishedEvidence: path.relative(resolveRoot(), evidencePath) },
-    metadataVerification: metadataVerification(evidence, RUNTIME_FILTERS.get(previous.runtimeFilter)),
+    metadataVerification: metadataVerification(evidence,
+      [...new Set(rows.filter((row) => row.baselineType === 'published-package').map((row) => row.runtime))]),
     aggregation: {
       generatedAt: new Date().toISOString(),
       codeSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: resolveRoot(), encoding: 'utf8' }).trim(),
@@ -601,20 +614,27 @@ function reaggregate(evidencePath, previousSummaryPath) {
 }
 
 function renderMarkdownReport(report) {
+  const edgeMeasured = report.edgeMeasured === true;
   const lines = [
     '# Wasm Upload Benchmark Summary',
     '',
     `Generated: ${report.generatedAt}`,
     '',
     `Published package: ${report.publishedVersion}; measuring code revision: ${report.sourceSha}.`,
-    `Command: \`${report.command}\`. Browser/Node details and output hashes: \`${report.artifactPaths.publishedEvidence}\`.`,
+    `Command: \`${report.command}\`. ${edgeMeasured ? 'Node/browser/Edge' : 'Browser/Node'} details and output hashes: \`${report.artifactPaths.publishedEvidence}\`.`,
     ...(report.aggregation ? [`Aggregation corrected: ${report.aggregation.generatedAt}; code revision: ${report.aggregation.codeSha}.`,
       `Reaggregate: \`${report.aggregation.command}\`. Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`] : []),
-    'Edge isolate remains unmeasured. Optional competitor rows are not performance results.',
+    edgeMeasured
+      ? 'Edge results are local workerd observations; production cold-start and CPU billing are unmeasured. Optional competitor rows are not performance results.'
+      : 'Edge isolate remains unmeasured. Optional competitor rows are not performance results.',
     'Rows marked `unavailable` document optional competitor baselines that are not installed or cannot execute in the current Node-local harness.',
     '',
-    '| Scenario | Runtime | Package | Type | Status | Browser assets raw | Browser assets gzip | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |',
-    '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---|---:|---|',
+    edgeMeasured
+      ? '| Scenario | Runtime | Package | Type | Status | Browser assets raw | Browser assets gzip | Edge assets raw | Edge assets gzip | Ready | First request | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |'
+      : '| Scenario | Runtime | Package | Type | Status | Browser assets raw | Browser assets gzip | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |',
+    edgeMeasured
+      ? `|${Array(25).fill('---').join('|')}|`
+      : '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---|---:|---|',
   ];
 
   for (const row of report.rows) {
@@ -626,6 +646,8 @@ function renderMarkdownReport(report) {
       row.status,
       formatBytes(row.browserBundleBytes),
       formatBytes(row.browserBundleGzipBytes),
+      ...(edgeMeasured ? [formatBytes(row.edgeBundleBytes), formatBytes(row.edgeBundleGzipBytes),
+        formatMs(row.startupToReadyMs), formatMs(row.firstRequestMs)] : []),
       formatBytes(row.packageDirectoryGzipBytes),
       formatMs(row.instantiateMs),
       formatMs(row.firstEncodeMs),
@@ -683,4 +705,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { publishedRow, metadataVerification, renderMarkdownReport, reaggregate, SCENARIOS };
+module.exports = { publishedRow, metadataVerification, renderMarkdownReport, reaggregate, SCENARIOS, RUNTIME_FILTERS };

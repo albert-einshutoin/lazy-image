@@ -69,6 +69,31 @@ async function main() {
     row.baselineType === 'published-package').every((row) => row.metadataStripped === null));
   assert.deepEqual(savedSummary.metadataVerification, metadata);
   assert.equal(renderMarkdownReport(savedSummary), fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8'));
+
+  const edgeEvidence = { ...evidence, edgeResults: { deploymentRawBytes: 777000,
+    deploymentGzipBytes: 222000, results: evidence.nodeResults.map((entry) =>
+      ({ ...entry, coldFromBeforeRuntimeMs: 100, firstRequestMs: 90, startupToReadyMs: 10 })) } };
+  const edgeRows = SCENARIOS.flatMap((scenario) => ['node-wasm', 'browser-worker', 'edge-isolate']
+    .map((runtime) => publishedRow(scenario, runtime, edgeEvidence)));
+  for (const row of edgeRows) {
+    assert.equal(row.browserBundleBytes === null, row.runtime !== 'browser-worker');
+    assert.equal(row.edgeBundleBytes === null, row.runtime !== 'edge-isolate');
+    if (row.runtime === 'edge-isolate') {
+      assert.equal(row.edgeBundleBytes, 777000);
+      assert.equal(row.edgeBundleGzipBytes, 222000);
+    }
+  }
+  const edgeMetadata = metadataVerification(edgeEvidence, ['node-wasm', 'browser-worker', 'edge-isolate']);
+  assert(edgeMetadata.results['edge-isolate']);
+  const edgeMarkdown = renderMarkdownReport({ ...report, edgeMeasured: true,
+    metadataVerification: edgeMetadata, rows: edgeRows });
+  for (const row of edgeRows) {
+    const line = edgeMarkdown.split('\n').find((item) => item.startsWith(`| ${row.scenario} | ${row.runtime} |`));
+    const cells = line.split('|').slice(1, -1).map((item) => item.trim());
+    assert.equal(cells.length, 25);
+    assert.equal(cells[5] === 'n/a', row.runtime !== 'browser-worker');
+    assert.equal(cells[7] === 'n/a', row.runtime !== 'edge-isolate');
+  }
   console.log('Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS');
 }
 
