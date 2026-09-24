@@ -13,6 +13,8 @@ node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.
 node test/benchmarks/wasm-edge-failure-check.mjs 1.3.1
 ```
 
+保存済みsummaryの対象runtime表示は、2026-09-24 15:51:40 UTCに集計コード`a468a517cdcb0e956b30383a07c2d06f6106b29e`でEdge単独へ訂正した。JSONの`aggregation`は元のraw evidence SHA-256 `898d47d1d29cf1b49433a36f040c9a73b091f1e0489659688632c26db287ad13`と訂正前summaryのhashを記録する。元の画像処理は15:38:50 UTC・測定コード`aa99d7e`のままで、画像や時間値を再測定していない。再実行コマンドは上記の公開npm Edge runである。
+
 測定コードは公開packageの`/edge`入口を一時install内からesbuildでbundleし、workerd設定のstatic Wasm module importで得た**実`WebAssembly.Module`** 5件を公開`wasmModules`へ渡した。NodeのImageData/DOM shimもcodec差し替えも追加していない。`/health`は5件の型、isolate ID、optimizer作成回数0を確認し、画像処理を先行させない。各ケースは新規workerdプロセスとisolateで最初の画像を処理し、その後同じisolate ID・optimizer作成回数1のまま2回warm実行した。公開版の`metrics.runtime`だけではなく、実workerd起動、HTTP応答、bundleの公開`edge.js`入力をEdge実行の証拠とした。
 
 入力は#853と同じ5000×5000 JPEG・PNGおよびmetadata専用JPEG。fixtureのSHA-256、変換policy、品質範囲、byte-budgetは[raw evidenceのfixtures](./wasm-1.3.1/edge-workerd/wasm-published-evidence.json)にある。metadata元画像`metadata-1.jpg`は[release corpus manifest](../../test/benchmarks/corpus/release-manifest.json)記載のプロジェクト生成MIT fixture（SHA-256 `ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d`）。EXIF/GPS/ICCを保持しXMPを追加した[実入力](./wasm-1.3.1/edge-workerd/wasm-metadata-input.jpg)はSHA-256 `29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70`で、4項目の存在を画像構造から先に確認した。

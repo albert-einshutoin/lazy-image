@@ -3,7 +3,9 @@
 Generated: 2026-09-24T15:39:09.323Z
 
 Published package: 1.3.1; measuring code revision: aa99d7ebb46ff8e16d613f3bb0e3c498c1fa508f.
-Command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.3.1`. Node/browser/Edge details and output hashes: `artifacts/benchmark/wasm-published-evidence.json`.
+Command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.3.1`. Edge details and output hashes: `artifacts/benchmark/wasm-published-evidence.json`.
+Aggregation corrected: 2026-09-24T15:51:40.085Z; code revision: a468a517cdcb0e956b30383a07c2d06f6106b29e.
+Raw evidence SHA-256: 898d47d1d29cf1b49433a36f040c9a73b091f1e0489659688632c26db287ad13.
 Edge results are local workerd observations; production cold-start and CPU billing are unmeasured. Optional competitor rows are not performance results.
 Rows marked `unavailable` document optional competitor baselines that are not installed or cannot execute in the current Node-local harness.
 
