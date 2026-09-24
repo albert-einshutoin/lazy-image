@@ -213,6 +213,13 @@ export async function runEdgeWorkerd({ directory, packageInfo, cases, codecFiles
   try {
     const binary = workerdPath ?? path.join(directory, 'node_modules/.bin/workerd');
     try { await fs.access(binary); } catch { throw blocked(`workerd executable unavailable: ${binary}`); }
+    const binarySha256 = sha256(await fs.readFile(binary));
+    const expectedSha256 = packageInfo.toolchainBinaries?.workerd?.sha256;
+    if (!expectedSha256 || binarySha256 !== expectedSha256) {
+      throw new Error(`workerd executable differs from installed registry package: ${binary}`);
+    }
+    report.executedWorkerdBinary = { path: await fs.realpath(binary), sha256: binarySha256,
+      package: packageInfo.toolchainBinaries.workerd.package };
     const version = spawnSync(binary, ['--version'], { encoding: 'utf8' });
     if (version.error || version.status !== 0) throw blocked(`workerd --version failed: ${version.error?.message ?? version.stderr}`);
     report.workerdVersion = version.stdout.trim();

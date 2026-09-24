@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -24,7 +25,12 @@ try {
     `@alberteinshutoin/lazy-image-wasm@${version}`, 'esbuild@0.25.10', 'workerd@1.20260924.1'],
   { cwd: directory, encoding: 'utf8' });
   assert.equal(install.status, 0, install.stderr);
-  const packageInfo = { packageDir: path.join(directory, 'node_modules/@alberteinshutoin/lazy-image-wasm') };
+  const installedWorkerd = path.join(directory, 'node_modules/workerd/bin/workerd');
+  const packageInfo = { packageDir: path.join(directory, 'node_modules/@alberteinshutoin/lazy-image-wasm'),
+    toolchainBinaries: { workerd: { package: 'workerd',
+      sha256: createHash('sha256').update(await fs.readFile(installedWorkerd)).digest('hex') } } };
+  const wrongWorkerd = path.join(directory, 'wrong-workerd');
+  await fs.writeFile(wrongWorkerd, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
   const badImage = path.join(directory, 'bad-image.jpg');
   await fs.writeFile(badImage, 'not a jpeg');
   const validateOutput = async (bytes, result, item, outputPath) => {
@@ -39,6 +45,8 @@ try {
   const checks = [
     { name: 'runtime-unavailable', expected: 'BLOCKED',
       options: { workerdPath: '/definitely/missing/workerd', codecFiles, cases: [] } },
+    { name: 'runtime-override-mismatch', expected: 'FAIL',
+      options: { workerdPath: wrongWorkerd, codecFiles, cases: [] } },
     { name: 'wasm-module-missing', expected: 'FAIL',
       options: { codecFiles: Object.fromEntries(Object.entries(codecFiles)
         .filter(([name]) => name !== 'webp_enc.wasm')), cases: [] } },

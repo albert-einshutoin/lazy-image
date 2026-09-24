@@ -588,19 +588,25 @@ function reaggregate(evidencePath, previousSummaryPath) {
     }
     if (row.baselineType !== 'published-package') return row;
     const scenario = SCENARIOS.find((item) => item.id === row.scenario);
-    if (!scenario || !['node-wasm', 'browser-worker'].includes(row.runtime)) {
+    if (!scenario || !['node-wasm', 'browser-worker', 'edge-isolate'].includes(row.runtime)) {
       throw new Error(`Unexpected published summary row: ${row.runtime}/${row.scenario}`);
     }
     return publishedRow(scenario, row.runtime, evidence);
   });
-  if (rows.filter((row) => row.baselineType === 'published-package').length !== 4) {
-    throw new Error('Previous summary does not contain all four published rows');
+  const publishedRows = rows.filter((row) => row.baselineType === 'published-package');
+  const runtimes = [...new Set(publishedRows.map((row) => row.runtime))];
+  if (!['node-wasm', 'browser-worker'].every((runtime) => runtimes.includes(runtime)) ||
+      runtimes.length !== (runtimes.includes('edge-isolate') ? 3 : 2) ||
+      publishedRows.length !== SCENARIOS.length * runtimes.length ||
+      SCENARIOS.some((scenario) => runtimes.some((runtime) =>
+        publishedRows.filter((row) => row.scenario === scenario.id && row.runtime === runtime).length !== 1))) {
+    throw new Error('Previous summary does not contain exactly one published row per scenario/runtime');
   }
   const report = { ...previous,
     artifactPaths: { ...previous.artifactPaths,
       publishedEvidence: path.relative(resolveRoot(), evidencePath) },
-    metadataVerification: metadataVerification(evidence,
-      [...new Set(rows.filter((row) => row.baselineType === 'published-package').map((row) => row.runtime))]),
+    edgeMeasured: runtimes.includes('edge-isolate'),
+    metadataVerification: metadataVerification(evidence, runtimes),
     aggregation: {
       generatedAt: new Date().toISOString(),
       codeSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: resolveRoot(), encoding: 'utf8' }).trim(),

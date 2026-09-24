@@ -64,6 +64,14 @@ async function packageLicenseHashes(directory) {
   return hashes;
 }
 
+async function pinnedLicense(url, expectedHash) {
+  const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  assert(response.ok, `version-pinned license unavailable: ${url} HTTP ${response.status}`);
+  const hash = sha256(Buffer.from(await response.arrayBuffer()));
+  if (expectedHash) assert.equal(hash, expectedHash, `version-pinned license changed: ${url}`);
+  return { url, sha256: hash };
+}
+
 async function installPublished(version, directory, runtime) {
   await fs.writeFile(path.join(directory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   const requested = [`${packageName}@${version}`, 'esbuild@0.25.10'];
@@ -103,24 +111,32 @@ async function installPublished(version, directory, runtime) {
   const toolchainBinaries = { esbuild: { package: esbuildBinaryPackage,
     sha256: await binaryHash(esbuildBinaryPackage, 'esbuild') } };
   assert.equal(toolchainBinaries.esbuild.sha256, await binaryHash('esbuild', 'esbuild'));
-  let licenseSources = null;
   if (workerdBinaryPackage) {
     toolchainBinaries.workerd = { package: workerdBinaryPackage,
       sha256: await binaryHash(workerdBinaryPackage, 'workerd') };
     assert.equal(toolchainBinaries.workerd.sha256, await binaryHash('workerd', 'workerd'));
-    // npm's workerd binary packages declare Apache-2.0 but omit the license file.
-    const url = 'https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE';
-    const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    assert(response.ok, `version-pinned workerd license unavailable: HTTP ${response.status}`);
-    licenseSources = { workerd: { url, sha256: sha256(Buffer.from(await response.arrayBuffer())) } };
-    assert.equal(licenseSources.workerd.sha256,
-      '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594',
-      'version-pinned workerd license changed');
+  }
+  const sourceLicense = await pinnedLicense(
+    `https://raw.githubusercontent.com/albert-einshutoin/lazy-image/v${version}/LICENSE`,
+    version === '1.3.1' ? 'ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539' : null);
+  const workerdLicense = workerdBinaryPackage ? await pinnedLicense(
+    'https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE',
+    '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594') : null;
+  const licenseFallbacks = {
+    [packageName]: sourceLicense,
+    [esbuildBinaryPackage]: { package: 'esbuild', file: 'LICENSE.md',
+      sha256: packages.esbuild.licenseFiles['LICENSE.md'] },
+    ...(workerdBinaryPackage ? { workerd: workerdLicense, [workerdBinaryPackage]: workerdLicense } : {}),
+  };
+  for (const [name, entry] of Object.entries(packages)) {
+    if (Object.keys(entry.licenseFiles).length) continue;
+    entry.licenseSource = licenseFallbacks[name];
+    assert(entry.licenseSource?.sha256, `canonical license source missing: ${name}`);
   }
   const packageDir = path.join(directory, 'node_modules', packageName);
   const browserImport = await fs.realpath(path.join(packageDir, 'browser.js'));
   assert(browserImport.startsWith((await fs.realpath(directory)) + path.sep));
-  return { packages, packageDir, browserImport, toolchainBinaries, licenseSources };
+  return { packages, packageDir, browserImport, toolchainBinaries };
 }
 
 async function prepareCases(directory) {
@@ -389,8 +405,7 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     sourceDirty, sourceFilesSha256,
     command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
     node: process.version, npm: command('npm', ['--version'], root), os: process.platform,
-    arch: process.arch, registry, packages: null, toolchainBinaries: null,
-    licenseSources: null, importPath: null,
+    arch: process.arch, registry, packages: null, toolchainBinaries: null, importPath: null,
     isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim',
     runtimeClassification: 'Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof',
     fixtures: null,
@@ -400,7 +415,6 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     const packageInfo = await installPublished(version, directory, runtime);
     context.packages = packageInfo.packages;
     context.toolchainBinaries = packageInfo.toolchainBinaries;
-    context.licenseSources = packageInfo.licenseSources;
     context.importPath = packageInfo.browserImport;
     const cases = await prepareCases(directory);
     context.fixtures = cases.map(({ id, input, inputBytes, inputSha256, inputMetadata, options, metadataCase }) =>

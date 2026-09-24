@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const { createHash } = require('node:crypto');
 const path = require('node:path');
 const sharp = require('sharp');
-const { publishedRow, metadataVerification, renderMarkdownReport, SCENARIOS } = require('../benchmarks/wasm-upload-comparison.bench');
+const { publishedRow, metadataVerification, renderMarkdownReport, reaggregate, SCENARIOS } = require('../benchmarks/wasm-upload-comparison.bench');
 
 async function main() {
   const root = path.resolve(__dirname, '../..');
@@ -85,6 +85,23 @@ async function main() {
   }
   const edgeMetadata = metadataVerification(edgeEvidence, ['node-wasm', 'browser-worker', 'edge-isolate']);
   assert(edgeMetadata.results['edge-isolate']);
+  const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'lazy-image-reaggregate-'));
+  try {
+    const raw = path.join(tmp, 'raw.json');
+    const previous = path.join(tmp, 'previous.json');
+    fs.writeFileSync(raw, JSON.stringify(edgeEvidence));
+    fs.writeFileSync(previous, JSON.stringify({ ...savedSummary, rows: edgeRows, edgeMeasured: true }));
+    reaggregate(raw, previous);
+    const corrected = JSON.parse(fs.readFileSync(path.join(root, 'artifacts/benchmark/wasm-upload-summary.json')));
+    assert.equal(corrected.rows.filter((row) => row.baselineType === 'published-package').length, 6);
+    assert.equal(corrected.edgeMeasured, true);
+    assert.equal(renderMarkdownReport(corrected),
+      fs.readFileSync(path.join(root, 'artifacts/benchmark/wasm-upload-summary.md'), 'utf8'));
+    fs.writeFileSync(previous, JSON.stringify({ ...savedSummary, rows: edgeRows.slice(1), edgeMeasured: true }));
+    assert.throws(() => reaggregate(raw, previous), /exactly one published row per scenario\/runtime/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
   const edgeMarkdown = renderMarkdownReport({ ...report, edgeMeasured: true,
     metadataVerification: edgeMetadata, rows: edgeRows });
   for (const row of edgeRows) {
@@ -97,7 +114,7 @@ async function main() {
   const savedEdge = JSON.parse(fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-published-evidence.json')));
   assert.equal(savedEdge.packages.esbuild.licenseFiles['LICENSE.md'],
     'b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681');
-  assert.equal(savedEdge.licenseSources.workerd.sha256,
+  assert.equal(savedEdge.packages.workerd.licenseSource.sha256,
     '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594');
   assert.equal(savedEdge.toolchainBinaries.workerd.sha256,
     '354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c');
