@@ -17,10 +17,10 @@ version, esbuild 0.25.10, and workerd from
 `https://registry.npmjs.org/` into a new OS temporary directory. It executes
 the installed package in Node, bundles that same install for Chrome and local
 workerd, and runs all three required runtimes. It exits nonzero if any required
-runtime fails or cannot be prepared. The Edge run also fetches the
-version-pinned workerd LICENSE from Cloudflare's GitHub repository because the
-npm toolchain packages omit that file; it records its hash and the installed
-workerd/esbuild executable hashes.
+runtime fails or cannot be prepared. The run records bundled LICENSE hashes and
+fetches a version-pinned canonical source when a package omits its license
+file. It also records installed workerd/esbuild executable hashes and checks
+the workerd binary actually launched against the installed package.
 The npm script's default version is the checkout's `package.json` version;
 pass `--version` for a publication record so the target is explicit.
 
@@ -42,7 +42,8 @@ node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.
 `browser` does not verify Edge. The Edge adapter executes the published
 `/edge` entrypoint inside workerd and requires no Chrome. Pass
 `--workerd /absolute/path/to/workerd` only when overriding the executable
-installed in the isolated directory. A missing workerd executable is BLOCKED;
+installed in the isolated directory with byte-identical executable. A missing
+workerd executable is BLOCKED; a hash mismatch is FAIL;
 an isolate startup/module/image failure is FAIL. The focused negative checks
 are reproducible with:
 
@@ -84,6 +85,10 @@ original `generatedAt`/`sourceSha` identify the measured run; `aggregation`
 records the later aggregation time, code commit, and both input hashes. The
 saved correction is in [wasm-upload-summary.json](./history/wasm-1.3.1/wasm-upload-summary.json)
 and [wasm-upload-summary.md](./history/wasm-1.3.1/wasm-upload-summary.md).
+An `all` summary with Edge results can likewise be reaggregated when its
+matching raw evidence is supplied; the older Node/Chrome-only four-row
+snapshot remains supported, while current all-runtime evidence requires six
+published rows.
 
 ## Scope of each number
 

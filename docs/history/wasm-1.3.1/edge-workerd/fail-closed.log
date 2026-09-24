@@ -1,3 +1,4 @@
 {"name":"runtime-unavailable","verdict":"BLOCKED","reason":"workerd executable unavailable: /definitely/missing/workerd","failedCases":[]}
-{"name":"wasm-module-missing","verdict":"FAIL","reason":"workerd launch failed: /var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-edge-negative-OGjkiH/edge-config.capnp:13:45-60: Couldn't read file for embed: webp_enc.wasm\n","failedCases":[]}
+{"name":"runtime-override-mismatch","verdict":"FAIL","reason":"workerd executable differs from installed registry package: /var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-edge-negative-vAopt4/wrong-workerd","failedCases":[]}
+{"name":"wasm-module-missing","verdict":"FAIL","reason":"workerd launch failed: /var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-edge-negative-vAopt4/edge-config.capnp:13:45-60: Couldn't read file for embed: webp_enc.wasm\n","failedCases":[]}
 {"name":"image-processing-failure","verdict":"FAIL","reason":"invalid-jpeg: E111","failedCases":[{"id":"invalid-jpeg","status":"FAIL","reason":"invalid-jpeg: E111"}]}
