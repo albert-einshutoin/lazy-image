@@ -109,7 +109,10 @@ import { createUploadWorkerHandler } from '@alberteinshutoin/lazy-image-wasm/wor
 self.addEventListener('message', createUploadWorkerHandler());
 ```
 
-Call it from a page served at the same origin as `dist/worker.js`:
+Put the page in `dist/index.html` and serve `dist/` as the HTTP document root
+(for example, `python3 -m http.server 8080 --directory dist`). Then
+`dist/worker.js` is available at `/worker.js` and the copied Wasm files at
+`/<name>.wasm`. Call the Worker from that page:
 
 ```js
 const file = document.querySelector('input[type=file]').files[0];
