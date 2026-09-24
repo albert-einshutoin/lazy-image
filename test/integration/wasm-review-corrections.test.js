@@ -94,6 +94,14 @@ async function main() {
     assert.equal(cells[5] === 'n/a', row.runtime !== 'browser-worker');
     assert.equal(cells[7] === 'n/a', row.runtime !== 'edge-isolate');
   }
+  const savedEdge = JSON.parse(fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-published-evidence.json')));
+  assert.equal(savedEdge.packages.esbuild.licenseFiles['LICENSE.md'],
+    'b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681');
+  assert.equal(savedEdge.licenseSources.workerd.sha256,
+    '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594');
+  assert.equal(savedEdge.toolchainBinaries.workerd.sha256,
+    '354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c');
+  assert(savedEdge.packages['@cloudflare/workerd-darwin-arm64']?.integrity);
   console.log('Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS');
 }
 

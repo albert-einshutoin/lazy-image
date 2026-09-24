@@ -48,6 +48,22 @@ function command(file, args, cwd) {
   return result.stdout.trim();
 }
 
+async function packageLicenseHashes(directory) {
+  const hashes = {};
+  async function visit(current, depth) {
+    if (depth > 5) return;
+    for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isDirectory()) await visit(file, depth + 1);
+      else if (entry.isFile() && /^LICEN[CS]E(?:\.|$)/i.test(entry.name)) {
+        hashes[path.relative(directory, file)] = sha256(await fs.readFile(file));
+      }
+    }
+  }
+  await visit(directory, 0);
+  return hashes;
+}
+
 async function installPublished(version, directory, runtime) {
   await fs.writeFile(path.join(directory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   const requested = [`${packageName}@${version}`, 'esbuild@0.25.10'];
@@ -56,16 +72,55 @@ async function installPublished(version, directory, runtime) {
   const lock = JSON.parse(await fs.readFile(path.join(directory, 'package-lock.json'), 'utf8'));
   const names = [packageName, '@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', '@jsquash/webp',
     'esbuild', ...(runtime === 'edge' || runtime === 'all' ? ['workerd'] : [])];
-  const packages = Object.fromEntries(names.map((name) => {
+  const installedOptional = async (prefix) => {
+    const candidates = Object.keys(lock.packages).filter((key) => key.startsWith(`node_modules/${prefix}`));
+    const present = [];
+    for (const key of candidates) {
+      try { await fs.access(path.join(directory, key)); present.push(key.slice('node_modules/'.length)); }
+      catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
+    assert.equal(present.length, 1, `expected one installed ${prefix} binary package`);
+    return present[0];
+  };
+  const esbuildBinaryPackage = await installedOptional('@esbuild/');
+  const workerdBinaryPackage = runtime === 'edge' || runtime === 'all'
+    ? await installedOptional('@cloudflare/workerd-') : null;
+  names.push(esbuildBinaryPackage);
+  if (workerdBinaryPackage) names.push(workerdBinaryPackage);
+  const packages = Object.fromEntries(await Promise.all(names.map(async (name) => {
     const entry = lock.packages[`node_modules/${name}`];
     assert(entry?.resolved?.startsWith(registry) && entry.integrity, `registry provenance missing: ${name}`);
-    return [name, { version: entry.version, resolved: entry.resolved, integrity: entry.integrity }];
-  }));
+    const packageDirectory = path.join(directory, 'node_modules', name);
+    const manifestBytes = await fs.readFile(path.join(packageDirectory, 'package.json'));
+    const manifest = JSON.parse(manifestBytes);
+    return [name, { version: entry.version, resolved: entry.resolved, integrity: entry.integrity,
+      licenseDeclared: manifest.license ?? null, packageJsonSha256: sha256(manifestBytes),
+      licenseFiles: await packageLicenseHashes(packageDirectory) }];
+  })));
   assert.equal(packages[packageName].version, version);
+  const binaryHash = async (packageName, executable) =>
+    sha256(await fs.readFile(path.join(directory, 'node_modules', packageName, 'bin', executable)));
+  const toolchainBinaries = { esbuild: { package: esbuildBinaryPackage,
+    sha256: await binaryHash(esbuildBinaryPackage, 'esbuild') } };
+  assert.equal(toolchainBinaries.esbuild.sha256, await binaryHash('esbuild', 'esbuild'));
+  let licenseSources = null;
+  if (workerdBinaryPackage) {
+    toolchainBinaries.workerd = { package: workerdBinaryPackage,
+      sha256: await binaryHash(workerdBinaryPackage, 'workerd') };
+    assert.equal(toolchainBinaries.workerd.sha256, await binaryHash('workerd', 'workerd'));
+    // npm's workerd binary packages declare Apache-2.0 but omit the license file.
+    const url = 'https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE';
+    const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    assert(response.ok, `version-pinned workerd license unavailable: HTTP ${response.status}`);
+    licenseSources = { workerd: { url, sha256: sha256(Buffer.from(await response.arrayBuffer())) } };
+    assert.equal(licenseSources.workerd.sha256,
+      '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594',
+      'version-pinned workerd license changed');
+  }
   const packageDir = path.join(directory, 'node_modules', packageName);
   const browserImport = await fs.realpath(path.join(packageDir, 'browser.js'));
   assert(browserImport.startsWith((await fs.realpath(directory)) + path.sep));
-  return { packages, packageDir, browserImport };
+  return { packages, packageDir, browserImport, toolchainBinaries, licenseSources };
 }
 
 async function prepareCases(directory) {
@@ -334,7 +389,8 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     sourceDirty, sourceFilesSha256,
     command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
     node: process.version, npm: command('npm', ['--version'], root), os: process.platform,
-    arch: process.arch, registry, packages: null, importPath: null,
+    arch: process.arch, registry, packages: null, toolchainBinaries: null,
+    licenseSources: null, importPath: null,
     isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim',
     runtimeClassification: 'Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof',
     fixtures: null,
@@ -343,6 +399,8 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
   try {
     const packageInfo = await installPublished(version, directory, runtime);
     context.packages = packageInfo.packages;
+    context.toolchainBinaries = packageInfo.toolchainBinaries;
+    context.licenseSources = packageInfo.licenseSources;
     context.importPath = packageInfo.browserImport;
     const cases = await prepareCases(directory);
     context.fixtures = cases.map(({ id, input, inputBytes, inputSha256, inputMetadata, options, metadataCase }) =>
