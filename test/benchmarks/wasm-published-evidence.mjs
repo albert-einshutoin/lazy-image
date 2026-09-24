@@ -48,25 +48,99 @@ function command(file, args, cwd) {
   return result.stdout.trim();
 }
 
-async function installPublished(version, directory) {
+async function packageLicenseHashes(directory) {
+  const hashes = {};
+  async function visit(current, depth) {
+    if (depth > 5) return;
+    for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isDirectory()) await visit(file, depth + 1);
+      else if (entry.isFile() && /^LICEN[CS]E(?:\.|$)/i.test(entry.name)) {
+        hashes[path.relative(directory, file)] = sha256(await fs.readFile(file));
+      }
+    }
+  }
+  await visit(directory, 0);
+  return hashes;
+}
+
+async function pinnedLicense(url, expectedHash) {
+  const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  assert(response.ok, `version-pinned license unavailable: ${url} HTTP ${response.status}`);
+  const hash = sha256(Buffer.from(await response.arrayBuffer()));
+  if (expectedHash) assert.equal(hash, expectedHash, `version-pinned license changed: ${url}`);
+  return { url, sha256: hash };
+}
+
+async function installPublished(version, directory, runtime) {
   await fs.writeFile(path.join(directory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
-  command('npm', ['install', '--registry', registry, '--save-exact', `${packageName}@${version}`, 'esbuild@0.25.10'], directory);
+  const requested = [`${packageName}@${version}`, 'esbuild@0.25.10'];
+  if (runtime === 'edge' || runtime === 'all') requested.push('workerd@1.20260924.1');
+  command('npm', ['install', '--registry', registry, '--save-exact', ...requested], directory);
   const lock = JSON.parse(await fs.readFile(path.join(directory, 'package-lock.json'), 'utf8'));
-  const names = [packageName, '@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', '@jsquash/webp'];
-  const packages = Object.fromEntries(names.map((name) => {
+  const names = [packageName, '@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', '@jsquash/webp',
+    'esbuild', ...(runtime === 'edge' || runtime === 'all' ? ['workerd'] : [])];
+  const installedOptional = async (prefix) => {
+    const candidates = Object.keys(lock.packages).filter((key) => key.startsWith(`node_modules/${prefix}`));
+    const present = [];
+    for (const key of candidates) {
+      try { await fs.access(path.join(directory, key)); present.push(key.slice('node_modules/'.length)); }
+      catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
+    assert.equal(present.length, 1, `expected one installed ${prefix} binary package`);
+    return present[0];
+  };
+  const esbuildBinaryPackage = await installedOptional('@esbuild/');
+  const workerdBinaryPackage = runtime === 'edge' || runtime === 'all'
+    ? await installedOptional('@cloudflare/workerd-') : null;
+  names.push(esbuildBinaryPackage);
+  if (workerdBinaryPackage) names.push(workerdBinaryPackage);
+  const packages = Object.fromEntries(await Promise.all(names.map(async (name) => {
     const entry = lock.packages[`node_modules/${name}`];
     assert(entry?.resolved?.startsWith(registry) && entry.integrity, `registry provenance missing: ${name}`);
-    return [name, { version: entry.version, resolved: entry.resolved, integrity: entry.integrity }];
-  }));
+    const packageDirectory = path.join(directory, 'node_modules', name);
+    const manifestBytes = await fs.readFile(path.join(packageDirectory, 'package.json'));
+    const manifest = JSON.parse(manifestBytes);
+    return [name, { version: entry.version, resolved: entry.resolved, integrity: entry.integrity,
+      licenseDeclared: manifest.license ?? null, packageJsonSha256: sha256(manifestBytes),
+      licenseFiles: await packageLicenseHashes(packageDirectory) }];
+  })));
   assert.equal(packages[packageName].version, version);
+  const binaryHash = async (packageName, executable) =>
+    sha256(await fs.readFile(path.join(directory, 'node_modules', packageName, 'bin', executable)));
+  const toolchainBinaries = { esbuild: { package: esbuildBinaryPackage,
+    sha256: await binaryHash(esbuildBinaryPackage, 'esbuild') } };
+  assert.equal(toolchainBinaries.esbuild.sha256, await binaryHash('esbuild', 'esbuild'));
+  if (workerdBinaryPackage) {
+    toolchainBinaries.workerd = { package: workerdBinaryPackage,
+      sha256: await binaryHash(workerdBinaryPackage, 'workerd') };
+    assert.equal(toolchainBinaries.workerd.sha256, await binaryHash('workerd', 'workerd'));
+  }
+  const sourceLicense = await pinnedLicense(
+    `https://raw.githubusercontent.com/albert-einshutoin/lazy-image/v${version}/LICENSE`,
+    version === '1.3.1' ? 'ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539' : null);
+  const workerdLicense = workerdBinaryPackage ? await pinnedLicense(
+    'https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE',
+    '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594') : null;
+  const licenseFallbacks = {
+    [packageName]: sourceLicense,
+    [esbuildBinaryPackage]: { package: 'esbuild', file: 'LICENSE.md',
+      sha256: packages.esbuild.licenseFiles['LICENSE.md'] },
+    ...(workerdBinaryPackage ? { workerd: workerdLicense, [workerdBinaryPackage]: workerdLicense } : {}),
+  };
+  for (const [name, entry] of Object.entries(packages)) {
+    if (Object.keys(entry.licenseFiles).length) continue;
+    entry.licenseSource = licenseFallbacks[name];
+    assert(entry.licenseSource?.sha256, `canonical license source missing: ${name}`);
+  }
   const packageDir = path.join(directory, 'node_modules', packageName);
   const browserImport = await fs.realpath(path.join(packageDir, 'browser.js'));
   assert(browserImport.startsWith((await fs.realpath(directory)) + path.sep));
-  return { packages, packageDir, browserImport };
+  return { packages, packageDir, browserImport, toolchainBinaries };
 }
 
 async function prepareCases(directory) {
-  const metadataInput = path.join(directory, 'metadata-exif-gps-xmp.jpg');
+  const metadataInput = path.join(directory, 'metadata-exif-gps-xmp-icc.jpg');
   const xmp = '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about=""/></rdf:RDF></x:xmpmeta>';
   await sharp(path.join(root, 'test/benchmarks/corpus/images/metadata-1.jpg'))
     .keepMetadata().withXmp(xmp).jpeg().toFile(metadataInput);
@@ -310,15 +384,16 @@ async function runBrowser(directory, cases, bundle, chromePath) {
   }
 }
 
-export async function collectPublishedWasmEvidence({ version, runtime, chromePath }) {
+export async function collectPublishedWasmEvidence({ version, runtime, chromePath, workerdPath }) {
   assert(/^\d+\.\d+\.\d+$/.test(version), 'explicit --version is required');
-  assert(['node', 'browser', 'all'].includes(runtime), `required runtime ${runtime} is not implemented`);
+  assert(['node', 'browser', 'edge', 'all'].includes(runtime), `required runtime ${runtime} is not implemented`);
   await fs.mkdir(outputDir, { recursive: true });
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'lazy-image-wasm-evidence-'));
   const sourceSha = command('git', ['rev-parse', 'HEAD'], root);
   const sourceFiles = ['test/benchmarks/wasm-upload-comparison.bench.js',
     'test/benchmarks/wasm-published-evidence.mjs', 'test/benchmarks/wasm-browser-worker.mjs',
-    'test/benchmarks/wasm-browser-main.mjs'];
+    'test/benchmarks/wasm-browser-main.mjs', 'test/benchmarks/wasm-edge-workerd.mjs',
+    'test/benchmarks/wasm-edge-worker.mjs'];
   const sourceHash = createHash('sha256');
   for (const file of sourceFiles) {
     sourceHash.update(file);
@@ -328,16 +403,22 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
   const sourceDirty = Boolean(command('git', ['status', '--porcelain', '--', ...sourceFiles], root));
   const context = { generatedAt: new Date().toISOString(), sourceSha, publishedVersion: version,
     sourceDirty, sourceFilesSha256,
-    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}`,
+    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
     node: process.version, npm: command('npm', ['--version'], root), os: process.platform,
-    arch: process.arch, registry, packages: null, importPath: null,
-    isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData',
-    runtimeClassification: 'Node process or Chrome DedicatedWorkerGlobalScope; metrics.runtime is not runtime proof',
+    arch: process.arch, registry, packages: null, toolchainBinaries: null, importPath: null,
+    isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim',
+    runtimeClassification: 'Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof',
     fixtures: null,
-    nodeResults: null, nodeTotals: null, browserResults: null, verdict: 'FAIL' };
+    nodeResults: null, nodeTotals: null, browserResults: null, edgeResults: null, edgeTotals: null,
+    verdict: 'FAIL' };
   try {
-    const packageInfo = await installPublished(version, directory);
+    // Both browser and Edge bundling must use the hashed esbuild from this install.
+    if (process.env.ESBUILD_BINARY_PATH !== undefined) {
+      throw new Error('external esbuild override is unsupported: unset ESBUILD_BINARY_PATH');
+    }
+    const packageInfo = await installPublished(version, directory, runtime);
     context.packages = packageInfo.packages;
+    context.toolchainBinaries = packageInfo.toolchainBinaries;
     context.importPath = packageInfo.browserImport;
     const cases = await prepareCases(directory);
     context.fixtures = cases.map(({ id, input, inputBytes, inputSha256, inputMetadata, options, metadataCase }) =>
@@ -368,8 +449,16 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
         cache: 'fresh Chrome profile, HTTP Cache-Control: no-store; each case uses a new Worker, warm samples reuse it',
         bundleTool: 'esbuild 0.25.10', loadMode: 'explicit wasmModules injection from Worker HTTP fetch' };
     }
+    if (runtime === 'edge' || runtime === 'all') {
+      const { runEdgeWorkerd } = await import('./wasm-edge-workerd.mjs');
+      context.edgeResults = await runEdgeWorkerd({ directory, packageInfo, cases, codecFiles,
+        outputDir, validateOutput, workerdPath });
+      context.edgeTotals = summarize(context.edgeResults.results);
+    }
     context.verdict = 'PASS';
   } catch (error) {
+    if (error.partialEdgeResults) context.edgeResults = error.partialEdgeResults;
+    context.verdict = error.verdict ?? 'FAIL';
     context.error = { message: error.message, stack: error.stack };
   }
   const reportPath = path.join(outputDir, 'wasm-published-evidence.json');
@@ -378,6 +467,6 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
   } finally {
     await fs.rm(directory, { recursive: true, force: true });
   }
-  if (context.verdict !== 'PASS') throw new Error(`Published Wasm evidence FAIL: ${context.error.message}; see ${reportPath}`);
+  if (context.verdict !== 'PASS') throw new Error(`Published Wasm evidence ${context.verdict}: ${context.error.message}; see ${reportPath}`);
   return context;
 }

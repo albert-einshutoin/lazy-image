@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const { createHash } = require('node:crypto');
 const path = require('node:path');
 const sharp = require('sharp');
-const { publishedRow, metadataVerification, renderMarkdownReport, SCENARIOS } = require('../benchmarks/wasm-upload-comparison.bench');
+const { publishedRow, metadataVerification, renderMarkdownReport, reaggregate, SCENARIOS } = require('../benchmarks/wasm-upload-comparison.bench');
 
 async function main() {
   const root = path.resolve(__dirname, '../..');
@@ -69,6 +69,65 @@ async function main() {
     row.baselineType === 'published-package').every((row) => row.metadataStripped === null));
   assert.deepEqual(savedSummary.metadataVerification, metadata);
   assert.equal(renderMarkdownReport(savedSummary), fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8'));
+
+  const edgeEvidence = { ...evidence, edgeResults: { deploymentRawBytes: 777000,
+    deploymentGzipBytes: 222000, results: evidence.nodeResults.map((entry) =>
+      ({ ...entry, coldFromBeforeRuntimeMs: 100, firstRequestMs: 90, startupToReadyMs: 10 })) } };
+  const edgeRows = SCENARIOS.flatMap((scenario) => ['node-wasm', 'browser-worker', 'edge-isolate']
+    .map((runtime) => publishedRow(scenario, runtime, edgeEvidence)));
+  for (const row of edgeRows) {
+    assert.equal(row.browserBundleBytes === null, row.runtime !== 'browser-worker');
+    assert.equal(row.edgeBundleBytes === null, row.runtime !== 'edge-isolate');
+    if (row.runtime === 'edge-isolate') {
+      assert.equal(row.edgeBundleBytes, 777000);
+      assert.equal(row.edgeBundleGzipBytes, 222000);
+    }
+  }
+  const edgeMetadata = metadataVerification(edgeEvidence, ['node-wasm', 'browser-worker', 'edge-isolate']);
+  assert(edgeMetadata.results['edge-isolate']);
+  const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'lazy-image-reaggregate-'));
+  try {
+    const raw = path.join(tmp, 'raw.json');
+    const previous = path.join(tmp, 'previous.json');
+    fs.writeFileSync(raw, JSON.stringify(edgeEvidence));
+    fs.writeFileSync(previous, JSON.stringify({ ...savedSummary, rows: edgeRows, edgeMeasured: true }));
+    reaggregate(raw, previous);
+    const corrected = JSON.parse(fs.readFileSync(path.join(root, 'artifacts/benchmark/wasm-upload-summary.json')));
+    assert.equal(corrected.rows.filter((row) => row.baselineType === 'published-package').length, 6);
+    assert.equal(corrected.edgeMeasured, true);
+    assert.equal(corrected.metadataVerification.rawEvidence, corrected.artifactPaths.publishedEvidence);
+    assert.equal(renderMarkdownReport(corrected),
+      fs.readFileSync(path.join(root, 'artifacts/benchmark/wasm-upload-summary.md'), 'utf8'));
+    fs.writeFileSync(previous, JSON.stringify({ ...savedSummary, rows: edgeRows.slice(1), edgeMeasured: true }));
+    assert.throws(() => reaggregate(raw, previous), /exactly one published row per scenario\/runtime/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+  const edgeMarkdown = renderMarkdownReport({ ...report, edgeMeasured: true,
+    metadataVerification: edgeMetadata, rows: edgeRows });
+  assert.match(edgeMarkdown, /Browser\/Node\/Edge details and output hashes/);
+  const edgeOnlyMarkdown = renderMarkdownReport({ ...report, edgeMeasured: true,
+    metadataVerification: edgeMetadata, rows: edgeRows.filter((row) => row.runtime === 'edge-isolate') });
+  assert.match(edgeOnlyMarkdown, /Edge details and output hashes/);
+  assert.doesNotMatch(edgeOnlyMarkdown, /(?:Browser|Node)\/.*Edge details/);
+  for (const row of edgeRows) {
+    const line = edgeMarkdown.split('\n').find((item) => item.startsWith(`| ${row.scenario} | ${row.runtime} |`));
+    const cells = line.split('|').slice(1, -1).map((item) => item.trim());
+    assert.equal(cells.length, 25);
+    assert.equal(cells[5] === 'n/a', row.runtime !== 'browser-worker');
+    assert.equal(cells[7] === 'n/a', row.runtime !== 'edge-isolate');
+  }
+  const savedEdge = JSON.parse(fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-published-evidence.json')));
+  assert.equal(savedEdge.packages.esbuild.licenseFiles['LICENSE.md'],
+    'b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681');
+  assert.equal(savedEdge.packages.workerd.licenseSource.sha256,
+    '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594');
+  assert.equal(savedEdge.toolchainBinaries.workerd.sha256,
+    '354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c');
+  assert(savedEdge.packages['@cloudflare/workerd-darwin-arm64']?.integrity);
+  const savedEdgeSummary = JSON.parse(fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.json')));
+  assert.equal(renderMarkdownReport(savedEdgeSummary),
+    fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.md'), 'utf8'));
   console.log('Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS');
 }
 
