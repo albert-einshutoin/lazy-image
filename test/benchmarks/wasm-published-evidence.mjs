@@ -22,6 +22,10 @@ const codecFiles = {
   'webp_enc.wasm': ['@jsquash/webp', 'codec/enc/webp_enc.wasm'],
 };
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
+export function assertMetadataInput(metadata) {
+  const missing = ['exif', 'gpsTag', 'xmp', 'icc'].filter((key) => !metadata[key]);
+  assert.equal(missing.length, 0, `metadata fixture missing required input: ${missing.join(', ')}`);
+}
 const median = (numbers) => {
   const sorted = [...numbers].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
@@ -85,7 +89,7 @@ async function prepareCases(directory) {
     const meta = await sharp(bytes).metadata();
     item.inputMetadata = { exif: Boolean(meta.exif), gpsTag: Boolean(meta.exif?.includes(Buffer.from([0x25, 0x88]))),
       xmp: Boolean(meta.xmp), icc: Boolean(meta.icc) };
-    if (item.metadataCase) assert(item.inputMetadata.exif && item.inputMetadata.gpsTag && item.inputMetadata.xmp);
+    if (item.metadataCase) assertMetadataInput(item.inputMetadata);
   }
   return cases;
 }

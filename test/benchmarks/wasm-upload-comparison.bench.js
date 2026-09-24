@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { createHash } = require('crypto');
+const { execFileSync } = require('child_process');
 const { performance } = require('perf_hooks');
 
 const sharp = require('sharp');
@@ -274,8 +276,9 @@ async function runNativeReference(scenario) {
   const totalMs = performance.now() - totalStart;
   const rssAfter = process.memoryUsage().rss;
 
-  const [referenceBuffer, metadata] = await Promise.all([
+  const [referenceBuffer, inputMetadata, outputMetadata] = await Promise.all([
     buildReferenceBuffer(scenario),
+    inspectMetadata(fs.readFileSync(scenario.inputPath)),
     inspectMetadata(result.data),
   ]);
   const quality = await calculateQualityMetrics(result.data, referenceBuffer);
@@ -306,7 +309,7 @@ async function runNativeReference(scenario) {
     quality: result.quality,
     ssim: quality.ssim,
     psnr: quality.psnr,
-    metadataStripped: metadata.stripped,
+    metadataStripped: inputMetadata.hasMetadata ? outputMetadata.stripped : null,
     memory: {
       rssBeforeBytes: rssBefore,
       rssAfterBytes: rssAfter,
@@ -366,6 +369,71 @@ function makeOptionalBaselineRow({ scenario, runtime, baselineType, packageName,
   };
 }
 
+function publishedRow(scenario, runtime, evidence) {
+  const evidenceId = scenario.id === 'large-photo-upload-webp' ? 'jpeg-webp' : 'png-jpeg';
+  const result = runtime === 'node-wasm'
+    ? evidence.nodeResults?.find((entry) => entry.id === evidenceId)
+    : evidence.browserResults?.results.find((entry) => entry.id === evidenceId);
+  if (!result) throw new Error(`Missing published evidence: ${runtime}/${evidenceId}`);
+  const fixture = evidence.fixtures.find((item) => item.id === evidenceId);
+  if (!fixture) throw new Error(`Missing published fixture: ${evidenceId}`);
+  return {
+    scenario: scenario.id,
+    scenarioLabel: scenario.label,
+    runtime,
+    package: '@alberteinshutoin/lazy-image-wasm@' + evidence.publishedVersion,
+    baselineType: 'published-package',
+    status: 'ok',
+    inputBytes: fixture.inputBytes,
+    inputKind: scenario.inputKind,
+    outputFormat: scenario.outputFormat,
+    targetBytes: scenario.targetBytes,
+    maxWidth: scenario.maxWidth,
+    maxHeight: scenario.maxHeight,
+    browserBundleBytes: runtime === 'browser-worker' ? evidence.browserResults.deploymentRawBytes : null,
+    browserBundleGzipBytes: runtime === 'browser-worker' ? evidence.browserResults.deploymentGzipBytes : null,
+    packageDirectoryBytes: runtime === 'browser-worker' ? evidence.browserResults.packageDirectoryBytes : null,
+    packageDirectoryGzipBytes: null,
+    instantiateMs: result.metrics.instantiateMs,
+    firstEncodeMs: result.metrics.firstEncodeMs,
+    encodeMs: result.metrics.encodeMs,
+    totalMs: result.metrics.totalMs,
+    firstVisibleMs: result.coldFromBeforeWorkerMs ?? null,
+    warmMedianMs: result.warmMedianMs,
+    bytesOut: result.output.bytes,
+    targetHit: result.metrics.budgetMet,
+    quality: result.metrics.qualityUsed,
+    ssim: null,
+    psnr: null,
+    metadataStripped: null,
+    memory: { rssDeltaBytes: null, note: 'Wasm/browser peak memory unavailable.' },
+    notes: `Published npm; inspected output ${result.output.sha256}; full conditions in wasm-published-evidence.json`,
+  };
+}
+
+function metadataVerification(evidence, runtimes) {
+  const fixture = evidence.fixtures.find((item) => item.id === 'metadata-budget');
+  if (!fixture?.inputMetadata || ['exif', 'gpsTag', 'xmp', 'icc'].some((key) => fixture.inputMetadata[key] !== true)) {
+    throw new Error('Metadata evidence input must contain EXIF, GPS, XMP, and ICC');
+  }
+  const results = {};
+  for (const runtime of runtimes) {
+    const result = runtime === 'node-wasm'
+      ? evidence.nodeResults?.find((entry) => entry.id === 'metadata-budget')
+      : evidence.browserResults?.results.find((entry) => entry.id === 'metadata-budget');
+    if (!result) throw new Error(`Missing metadata evidence: ${runtime}`);
+    const output = result.output.metadata;
+    if (output.exif !== false || output.xmp !== false || output.icc !== false) {
+      throw new Error(`Metadata output retained a required field: ${runtime}`);
+    }
+    results[runtime] = { outputMetadata: output, outputSha256: result.output.sha256,
+      removed: { exif: true, gpsTag: true, xmp: true, icc: true } };
+  }
+  return { scenario: 'metadata-budget', inputSha256: fixture.inputSha256,
+    inputMetadata: fixture.inputMetadata, results,
+    rawEvidence: 'docs/history/wasm-1.3.1/wasm-published-evidence.json' };
+}
+
 async function run(runtimeFilter) {
   const runtimes = RUNTIME_FILTERS.get(runtimeFilter);
   if (!runtimes) {
@@ -393,44 +461,8 @@ async function run(runtimeFilter) {
         status: 'unavailable', notes: `Optional local native reference: ${error.message}` });
     }
 
-    const evidenceId = scenario.id === 'large-photo-upload-webp' ? 'jpeg-webp' : 'png-jpeg';
-    for (const [runtime, result] of [
-      ['node-wasm', evidence.nodeResults?.find((entry) => entry.id === evidenceId)],
-      ['browser-worker', evidence.browserResults?.results.find((entry) => entry.id === evidenceId)],
-    ]) {
-      if (!result) continue;
-      rows.push({
-        scenario: scenario.id,
-        scenarioLabel: scenario.label,
-        runtime,
-        package: '@alberteinshutoin/lazy-image-wasm@' + evidence.publishedVersion,
-        baselineType: 'published-package',
-        status: 'ok',
-        inputBytes: evidence.fixtures.find((item) => item.id === evidenceId).inputBytes,
-        inputKind: scenario.inputKind,
-        outputFormat: scenario.outputFormat,
-        targetBytes: scenario.targetBytes,
-        maxWidth: scenario.maxWidth,
-        maxHeight: scenario.maxHeight,
-        browserBundleBytes: evidence.browserResults?.deploymentRawBytes ?? null,
-        browserBundleGzipBytes: evidence.browserResults?.deploymentGzipBytes ?? null,
-        packageDirectoryBytes: evidence.browserResults?.packageDirectoryBytes ?? null,
-        packageDirectoryGzipBytes: null,
-        instantiateMs: result.metrics.instantiateMs,
-        firstEncodeMs: result.metrics.firstEncodeMs,
-        encodeMs: result.metrics.encodeMs,
-        totalMs: result.metrics.totalMs,
-        firstVisibleMs: result.coldFromBeforeWorkerMs ?? null,
-        warmMedianMs: result.warmMedianMs,
-        bytesOut: result.output.bytes,
-        targetHit: result.metrics.budgetMet,
-        quality: result.metrics.qualityUsed,
-        ssim: null,
-        psnr: null,
-        metadataStripped: !Object.values(result.output.metadata).some(Boolean),
-        memory: { rssDeltaBytes: null, note: 'Wasm/browser peak memory unavailable.' },
-        notes: `Published npm; inspected output ${result.output.sha256}; full conditions in wasm-published-evidence.json`,
-      });
+    for (const runtime of runtimes.filter((item) => item !== 'edge-isolate')) {
+      rows.push(publishedRow(scenario, runtime, evidence));
     }
 
     for (const runtime of runtimes) {
@@ -509,11 +541,63 @@ function writeReports({ runtimeFilter, rows, evidence }) {
       targetBytes: scenario.targetBytes,
       qualityRange: [scenario.minQuality, scenario.maxQuality],
     })),
+    metadataVerification: metadataVerification(evidence, RUNTIME_FILTERS.get(runtimeFilter)),
     rows,
   };
+  writeReportFiles(jsonReport);
+}
 
+function writeReportFiles(jsonReport) {
   fs.writeFileSync(JSON_OUTPUT, `${JSON.stringify(jsonReport, null, 2)}\n`);
   fs.writeFileSync(MARKDOWN_OUTPUT, renderMarkdownReport(jsonReport));
+}
+
+function reaggregate(evidencePath, previousSummaryPath) {
+  if (!evidencePath || !previousSummaryPath) {
+    throw new Error('--reaggregate and --previous-summary are both required');
+  }
+  ensureOutputDir();
+  const evidenceBytes = fs.readFileSync(evidencePath);
+  const previousBytes = fs.readFileSync(previousSummaryPath);
+  const evidence = JSON.parse(evidenceBytes);
+  const previous = JSON.parse(previousBytes);
+  if (evidence.verdict !== 'PASS' || evidence.sourceSha !== previous.sourceSha ||
+      evidence.publishedVersion !== previous.publishedVersion || previous.runtimeFilter !== 'all') {
+    throw new Error('Raw evidence and previous all-runtime summary do not match');
+  }
+  const rows = previous.rows.map((row) => {
+    if (row.baselineType === 'native-reference') {
+      const scenarioId = row.scenario === 'large-photo-upload-webp' ? 'jpeg-webp' : 'png-jpeg';
+      const fixture = evidence.fixtures.find((item) => item.id === scenarioId);
+      if (!fixture || Object.values(fixture.inputMetadata).some(Boolean)) {
+        throw new Error(`Cannot correct native metadata claim without metadata-free input: ${row.scenario}`);
+      }
+      return { ...row, metadataStripped: null };
+    }
+    if (row.baselineType !== 'published-package') return row;
+    const scenario = SCENARIOS.find((item) => item.id === row.scenario);
+    if (!scenario || !['node-wasm', 'browser-worker'].includes(row.runtime)) {
+      throw new Error(`Unexpected published summary row: ${row.runtime}/${row.scenario}`);
+    }
+    return publishedRow(scenario, row.runtime, evidence);
+  });
+  if (rows.filter((row) => row.baselineType === 'published-package').length !== 4) {
+    throw new Error('Previous summary does not contain all four published rows');
+  }
+  const report = { ...previous,
+    artifactPaths: { ...previous.artifactPaths,
+      publishedEvidence: path.relative(resolveRoot(), evidencePath) },
+    metadataVerification: metadataVerification(evidence, RUNTIME_FILTERS.get(previous.runtimeFilter)),
+    aggregation: {
+      generatedAt: new Date().toISOString(),
+      codeSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: resolveRoot(), encoding: 'utf8' }).trim(),
+      command: `node test/benchmarks/wasm-upload-comparison.bench.js --reaggregate ${path.relative(resolveRoot(), evidencePath)} --previous-summary ${path.relative(resolveRoot(), previousSummaryPath)}`,
+      rawEvidenceSha256: createHash('sha256').update(evidenceBytes).digest('hex'),
+      previousSummarySha256: createHash('sha256').update(previousBytes).digest('hex'),
+    },
+    rows };
+  writeReportFiles(report);
+  printSummary(rows);
 }
 
 function renderMarkdownReport(report) {
@@ -524,6 +608,8 @@ function renderMarkdownReport(report) {
     '',
     `Published package: ${report.publishedVersion}; measuring code revision: ${report.sourceSha}.`,
     `Command: \`${report.command}\`. Browser/Node details and output hashes: \`${report.artifactPaths.publishedEvidence}\`.`,
+    ...(report.aggregation ? [`Aggregation corrected: ${report.aggregation.generatedAt}; code revision: ${report.aggregation.codeSha}.`,
+      `Reaggregate: \`${report.aggregation.command}\`. Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`] : []),
     'Edge isolate remains unmeasured. Optional competitor rows are not performance results.',
     'Rows marked `unavailable` document optional competitor baselines that are not installed or cannot execute in the current Node-local harness.',
     '',
@@ -557,7 +643,15 @@ function renderMarkdownReport(report) {
     lines.push(`| ${cells.join(' | ')} |`);
   }
 
-  lines.push('');
+  lines.push('', 'Metadata-only case (`metadata-budget`; separate input from the two upload scenarios):',
+    `Raw evidence: \`${report.metadataVerification.rawEvidence}\`; input SHA-256: ${report.metadataVerification.inputSha256}.`,
+    '| Runtime | Input EXIF | Input GPS | Input XMP | Input ICC | Output EXIF | Output XMP | Output ICC | Removed | Output SHA-256 |',
+    '|---|---|---|---|---|---|---|---|---|---|');
+  for (const [runtime, result] of Object.entries(report.metadataVerification.results)) {
+    const input = report.metadataVerification.inputMetadata;
+    const output = result.outputMetadata;
+    lines.push(`| ${runtime} | ${input.exif} | ${input.gpsTag} | ${input.xmp} | ${input.icc} | ${output.exif} | ${output.xmp} | ${output.icc} | ${Object.values(result.removed).every(Boolean)} | ${result.outputSha256} |`);
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -578,7 +672,14 @@ function printSummary(rows) {
   console.log(`Optional baselines: ${unavailable} unavailable, ${notRun} installed but not run`);
 }
 
-run(getArg('--runtime', 'all')).catch((err) => {
-  console.error(err.stack || err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  const task = getArg('--reaggregate', null)
+    ? Promise.resolve().then(() => reaggregate(getArg('--reaggregate'), getArg('--previous-summary')))
+    : run(getArg('--runtime', 'all'));
+  task.catch((err) => {
+    console.error(err.stack || err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { publishedRow, metadataVerification, renderMarkdownReport, reaggregate, SCENARIOS };
