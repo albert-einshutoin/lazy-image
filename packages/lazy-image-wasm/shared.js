@@ -24,6 +24,7 @@ const ERROR_CODE_CATEGORIES = Object.freeze({
   E500: ERROR_CATEGORIES.UserError,
   E501: ERROR_CATEGORIES.ResourceLimit,
   E502: ERROR_CATEGORIES.ResourceLimit,
+  E503: ERROR_CATEGORIES.CodecError,
   E901: ERROR_CATEGORIES.InternalBug,
 });
 

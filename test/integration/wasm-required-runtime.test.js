@@ -21,6 +21,15 @@ async function main() {
     collectPublishedWasmEvidence({ version: '1.3.1', runtime: 'browser', withholdWasm: 'mozjpeg_dec.wasm' }),
     /--withhold-wasm requires a default-load browser run/
   );
+  await assert.rejects(
+    collectPublishedWasmEvidence({ version: '1.3.1', runtime: 'node', corruptJpeg: true }),
+    /--corrupt-jpeg requires a default-load browser run/
+  );
+  await assert.rejects(
+    collectPublishedWasmEvidence({ version: '1.3.1', runtime: 'browser',
+      browserLoad: 'default', candidateTarball: path.join(__dirname, 'candidate.tgz') }),
+    /candidate tarball must be outside checkout/
+  );
   const originalOverride = process.env.ESBUILD_BINARY_PATH;
   try {
     process.env.ESBUILD_BINARY_PATH = '/definitely/not/the/installed/esbuild';

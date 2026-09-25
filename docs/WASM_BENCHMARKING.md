@@ -59,6 +59,36 @@ overwrites `artifacts/benchmark/`. For a combined Node/browser/Edge run,
 `--runtime all --browser-load default` selects default loading only for Chrome;
 Node and Edge retain their separately documented module-injection paths.
 
+To validate an **unpublished repair candidate**, pack the current Wasm
+workspace outside the checkout, then use the same isolated install, ESM
+bundle, and real Chrome Worker path. The candidate command saves raw evidence
+and images without generating published-package summary rows. Each command
+overwrites `artifacts/benchmark/wasm-published-evidence.json`, so copy it and
+the console log after each run. The missing-asset and corrupt-input commands
+are expected to exit nonzero and leave a `FAIL` image-processing verdict.
+`diagnosticValidation.status: PASS` separately confirms the expected Worker
+error and corresponding Wasm HTTP request; an unexpected failure records
+`diagnosticValidation.status: FAIL`. `--corrupt-jpeg` uses a fixed six-byte malformed JPEG header and a
+fresh Worker; no prior codec initialization is reused.
+
+```bash
+candidate_dir=$(mktemp -d)
+candidate_file=$(npm pack --workspace @alberteinshutoin/lazy-image-wasm --pack-destination "$candidate_dir" --silent)
+candidate_tarball="$candidate_dir/$candidate_file"
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball"
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --withhold-wasm mozjpeg_dec.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --withhold-wasm squoosh_resize_bg.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --withhold-wasm webp_enc_simd.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --corrupt-jpeg
+```
+
+Candidate raw evidence records its tarball SHA-256, local `file:` install
+integrity, candidate/source commit and dirty state, plus the published codec
+registry provenance. The runner's own source commit/dirty state is separate.
+For failures, `browserResults.requests` is the test HTTP server's observation
+of URL/status; `browserResults.cases[].cold.error` is what the public Worker
+returned. The package itself cannot read the codec loader's HTTP status.
+
 `all` means Node + Chrome Worker + local workerd; selecting only `node` or
 `browser` does not verify Edge. The Edge adapter executes the published
 `/edge` entrypoint inside workerd and requires no Chrome. Pass
@@ -89,8 +119,9 @@ Generated artifacts are in `artifacts/benchmark/`:
 a durable review; the snapshot above does so. The report's `sourceSha` is the
 HEAD revision, while `sourceDirty` and `sourceFilesSha256` identify edited code
 when a development run precedes commit. The temporary install is removed when
-the run ends. `publishedVersion`, `resolved`, and `integrity`
-identify the measured package and codecs. The installed `browser.js` or
+the run ends. `publishedVersion` identifies registry runs; `candidateVersion`
+and `packageSource.sha256` identify candidate tarball runs. Each package's
+`resolved` and `integrity` record its actual install source. The installed `browser.js` or
 `edge.js` import path and esbuild metafile package inputs must point inside
 the temporary npm install, never the workspace.
 

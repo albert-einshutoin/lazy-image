@@ -217,11 +217,23 @@ runtime boundary.
 | `E500` | Operation aborted through `AbortSignal` | `UserError` | `E204` |
 | `E501` | Requested output kind is unavailable in the runtime | `ResourceLimit` | `E303` |
 | `E502` | Strict target-byte budget cannot be met above the quality floor | `ResourceLimit` | `E201` |
+| `E503` | Resize codec failed | `CodecError` | — |
 | `E901` | Codec returned an invalid buffer type | `InternalBug` | `E901` |
 
 `UserError` and `ResourceLimit` are recoverable by default. `CodecError` and
 `InternalBug` are not. Callers should branch on both `code` and `category`
 instead of deriving a category from the numeric range.
+
+For `E131` (decode), `E503` (resize), and `E300` (encode), `message` identifies the codec stage
+and retains the available underlying exception text. That stage can include
+codec Wasm loading/initialization or image processing; the exception alone
+does not prove which one failed. `recoveryHint` points browser Worker users to
+the codec `.wasm` beside the bundled `worker.js`, DevTools Network's request
+URL/status, and the response body. If delivery is valid, inspect input
+corruption or codec processing instead. The package does not observe the
+codec's HTTP response directly, so it does not report a URL/status or assert
+that an asset is missing. The Worker forwards these existing fields; no new
+error property is required.
 
 Native filesystem errors such as file-not-found, mmap failure, and file-write
 failure must not appear in the browser/Edge API.
