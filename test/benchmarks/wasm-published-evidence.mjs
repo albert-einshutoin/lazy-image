@@ -488,7 +488,8 @@ async function runBrowser(directory, cases, bundle, chromePath, { browserLoad, w
 }
 
 export async function collectPublishedWasmEvidence({ version, runtime, chromePath, workerdPath,
-  browserLoad = 'injected', withholdWasm = null, candidateTarball = null, corruptJpeg = false }) {
+  browserLoad = 'injected', withholdWasm = null, candidateTarball = null, corruptJpeg = false,
+  edgeDiagnostic = null }) {
   assert(/^\d+\.\d+\.\d+$/.test(version), 'explicit --version is required');
   assert(['node', 'browser', 'edge', 'all'].includes(runtime), `required runtime ${runtime} is not implemented`);
   assert(['injected', 'default'].includes(browserLoad), `unsupported browser load mode: ${browserLoad}`);
@@ -496,6 +497,9 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     '--withhold-wasm requires a default-load browser run');
   assert(!corruptJpeg || (browserLoad === 'default' && runtime === 'browser' && !withholdWasm),
     '--corrupt-jpeg requires a default-load browser run without withheld Wasm');
+  assert(!edgeDiagnostic || (runtime === 'edge' &&
+    ['corrupt-jpeg', 'decoder-init', 'resize-init', 'encoder-init'].includes(edgeDiagnostic)),
+  '--edge-diagnostic requires edge and a supported diagnostic case');
   if (candidateTarball) {
     candidateTarball = path.resolve(candidateTarball);
     assert(!candidateTarball.startsWith(root + path.sep), 'candidate tarball must be outside checkout');
@@ -524,7 +528,7 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
   const context = { generatedAt: new Date().toISOString(), sourceSha,
     ...(candidateTarball ? { candidateVersion: version } : { publishedVersion: version }),
     sourceDirty, sourceFilesSha256, packageSource,
-    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${['browser', 'all'].includes(runtime) ? ` --browser-load ${browserLoad}` : ''}${candidateTarball ? ` --candidate-tarball ${candidateTarball}` : ''}${withholdWasm ? ` --withhold-wasm ${withholdWasm}` : ''}${corruptJpeg ? ' --corrupt-jpeg' : ''}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
+    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${['browser', 'all'].includes(runtime) ? ` --browser-load ${browserLoad}` : ''}${candidateTarball ? ` --candidate-tarball ${candidateTarball}` : ''}${withholdWasm ? ` --withhold-wasm ${withholdWasm}` : ''}${corruptJpeg ? ' --corrupt-jpeg' : ''}${edgeDiagnostic ? ` --edge-diagnostic ${edgeDiagnostic}` : ''}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
     node: process.version, npm: null, os: process.platform,
     osVersion: process.platform === 'darwin' ? command('/usr/bin/sw_vers', ['-productVersion'], root) : os.version(),
     osRelease: os.release(), arch: process.arch, registry, packages: null, toolchainBinaries: null, importPath: null,
@@ -533,7 +537,7 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     fixtures: null,
     nodeResults: null, nodeTotals: null, browserLoadMode: ['browser', 'all'].includes(runtime) ? browserLoad : null,
     browserResults: null, edgeResults: null, edgeTotals: null,
-    diagnosticValidation: withholdWasm || corruptJpeg ? { status: 'NOT_RUN' } : null,
+    diagnosticValidation: withholdWasm || corruptJpeg || edgeDiagnostic ? { status: 'NOT_RUN' } : null,
     verdict: 'FAIL' };
   try {
     // Both browser and Edge bundling must use the hashed esbuild from this install.
@@ -625,12 +629,13 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     if (runtime === 'edge' || runtime === 'all') {
       const { runEdgeWorkerd } = await import('./wasm-edge-workerd.mjs');
       context.edgeResults = await runEdgeWorkerd({ directory, packageInfo, cases, codecFiles,
-        outputDir, validateOutput, workerdPath });
-      context.edgeTotals = summarize(context.edgeResults.results);
+        outputDir, validateOutput, workerdPath, diagnosticCase: edgeDiagnostic });
+      if (edgeDiagnostic) context.diagnosticValidation = context.edgeResults.diagnosticValidation;
+      else context.edgeTotals = summarize(context.edgeResults.results);
     }
-    context.verdict = context.browserResults?.expectedFailure ? 'FAIL' : 'PASS';
-    if (context.browserResults?.expectedFailure) {
-      context.error = { message: 'Intentional image-processing FAIL; expected diagnostic validated', stack: null };
+    context.verdict = context.browserResults?.expectedFailure || edgeDiagnostic ? 'FAIL' : 'PASS';
+    if (context.browserResults?.expectedFailure || edgeDiagnostic) {
+      context.error = { message: `Intentional image-processing FAIL; diagnostic ${context.diagnosticValidation?.status ?? 'NOT_RUN'}`, stack: null };
     }
   } catch (error) {
     if (error.partialEdgeResults) context.edgeResults = error.partialEdgeResults;

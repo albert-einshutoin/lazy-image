@@ -26,6 +26,14 @@ async function main() {
     /--corrupt-jpeg requires a default-load browser run/
   );
   await assert.rejects(
+    collectPublishedWasmEvidence({ version: '1.4.0', runtime: 'browser', edgeDiagnostic: 'decoder-init' }),
+    /--edge-diagnostic requires edge/
+  );
+  await assert.rejects(
+    collectPublishedWasmEvidence({ version: '1.4.0', runtime: 'edge', edgeDiagnostic: 'unknown' }),
+    /--edge-diagnostic requires edge/
+  );
+  await assert.rejects(
     collectPublishedWasmEvidence({ version: '1.3.1', runtime: 'browser',
       browserLoad: 'default', candidateTarball: path.join(__dirname, 'candidate.tgz') }),
     /candidate tarball must be outside checkout/

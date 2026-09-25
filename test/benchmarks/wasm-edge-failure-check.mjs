@@ -65,7 +65,13 @@ try {
     } catch (error) { caught = error; }
     assert(caught?.partialEdgeResults, `${check.name}: false PASS or missing failure evidence`);
     assert.equal(caught.partialEdgeResults.status, check.expected, caught.message);
+    if (check.name === 'wasm-module-missing') {
+      assert.equal(caught.partialEdgeResults.failureStage, 'isolate-launch');
+      assert.equal(caught.partialEdgeResults.apiReached, false);
+    }
     console.log(JSON.stringify({ name: check.name, verdict: check.expected, reason: caught.message,
+      failureStage: caught.partialEdgeResults.failureStage,
+      apiReached: caught.partialEdgeResults.apiReached,
       failedCases: caught.partialEdgeResults.results.filter((entry) => entry.status === 'FAIL') }));
   }
 } finally {
