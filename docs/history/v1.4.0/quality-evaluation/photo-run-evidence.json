@@ -1,10 +1,11 @@
 {
-  "generatedAt": "2026-09-25T19:02:43.487Z",
-  "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+  "generatedAt": "2026-09-25T19:06:27.257Z",
+  "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
   "imageGenerationSourceHashes": {
-    "test/benchmarks/wasm-quality-photo-run.mjs": "41f1eb9836073d9b0abf77ee44f40393ee380e7b97cde68d82786d5cbc9547fc",
-    "test/benchmarks/wasm-quality-browser-main.mjs": "9d2d86b75adea0a292bdf3e18e43864f1fe5af1dacbf06701e3a1487d2d566a7",
-    "test/benchmarks/wasm-browser-worker-default.mjs": "337887451025b07bd8e4c655d156b1661d61b88daba7293d178136a64fa358f8"
+    "test/benchmarks/wasm-quality-photo-run.mjs": "e41f517c027c8b7c164fe42c3b2fa843528a66bf7a1a8f28cbffa987a4fbb0c2",
+    "test/benchmarks/wasm-quality-browser-main.mjs": "7ee82c0d44b4557f9d394924f0b375ce07d23e7724edaaeec1ad388325e74c30",
+    "test/benchmarks/wasm-browser-worker-default.mjs": "337887451025b07bd8e4c655d156b1661d61b88daba7293d178136a64fa358f8",
+    "test/benchmarks/wasm-quality-metrics.mjs": "504c7c0ff24cd5e5a4b3866d2769f7281a079ba7f012e6cc477ad8df04c78367"
   },
   "sourceDirty": false,
   "command": "node test/benchmarks/wasm-quality-photo-run.mjs",
@@ -93,34 +94,34 @@
     }
   },
   "assets": {
-    "workerBundleSha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5",
+    "workerBundleSha256": "6b80c38fde212e214ec8ef524356c78c2b550c5680d359b8d1c0397cb6683171",
     "bundleInputs": [
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/utils.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/codec/dec/mozjpeg_dec.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/meta.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/decode.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/codec/enc/mozjpeg_enc.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/encode.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/png/codec/pkg/squoosh_png.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/png/decode.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/util.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/lib/resize/pkg/squoosh_resize.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/lib/hqx/pkg/squooshhqx.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/lib/magic-kernel/pkg/jsquash_magic_kernel.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/meta.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/index.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/codec/dec/webp_dec.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/utils.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/decode.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/meta.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/wasm-feature-detect/dist/esm/index.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/codec/enc/webp_enc_simd.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/codec/enc/webp_enc.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/encode.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@alberteinshutoin/lazy-image-wasm/worker.js",
-      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/worker-entry.mjs"
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/jpeg/utils.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/jpeg/codec/dec/mozjpeg_dec.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/jpeg/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/jpeg/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/jpeg/codec/enc/mozjpeg_enc.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/jpeg/encode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/png/codec/pkg/squoosh_png.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/png/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/resize/util.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/resize/lib/resize/pkg/squoosh_resize.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/resize/lib/hqx/pkg/squooshhqx.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/resize/lib/magic-kernel/pkg/jsquash_magic_kernel.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/resize/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/resize/index.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/webp/codec/dec/webp_dec.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/webp/utils.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/webp/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/webp/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/wasm-feature-detect/dist/esm/index.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/webp/codec/enc/webp_enc_simd.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/webp/codec/enc/webp_enc.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@jsquash/webp/encode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/node_modules/@alberteinshutoin/lazy-image-wasm/worker.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-zRoZTo/worker-entry.mjs"
     ],
     "copiedWasmSources": {
       "/mozjpeg_dec.wasm": {
@@ -184,8 +185,8 @@
       "status": 200,
       "contentType": "text/javascript",
       "contentEncoding": "gzip",
-      "bytes": 3412,
-      "sha256": "9d2d86b75adea0a292bdf3e18e43864f1fe5af1dacbf06701e3a1487d2d566a7"
+      "bytes": 3542,
+      "sha256": "7ee82c0d44b4557f9d394924f0b375ce07d23e7724edaaeec1ad388325e74c30"
     },
     {
       "url": "/input/coffee",
@@ -205,7 +206,7 @@
       "contentType": "text/javascript",
       "contentEncoding": "gzip",
       "bytes": 328411,
-      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+      "sha256": "6b80c38fde212e214ec8ef524356c78c2b550c5680d359b8d1c0397cb6683171"
     },
     {
       "url": "/squoosh_png_bg.wasm",
@@ -237,7 +238,7 @@
       "contentType": "text/javascript",
       "contentEncoding": "gzip",
       "bytes": 328411,
-      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+      "sha256": "6b80c38fde212e214ec8ef524356c78c2b550c5680d359b8d1c0397cb6683171"
     },
     {
       "url": "/squoosh_png_bg.wasm",
@@ -277,7 +278,7 @@
       "contentType": "text/javascript",
       "contentEncoding": "gzip",
       "bytes": 328411,
-      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+      "sha256": "6b80c38fde212e214ec8ef524356c78c2b550c5680d359b8d1c0397cb6683171"
     },
     {
       "url": "/squoosh_png_bg.wasm",
@@ -309,7 +310,7 @@
       "contentType": "text/javascript",
       "contentEncoding": "gzip",
       "bytes": 328411,
-      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+      "sha256": "6b80c38fde212e214ec8ef524356c78c2b550c5680d359b8d1c0397cb6683171"
     },
     {
       "url": "/squoosh_png_bg.wasm",
@@ -353,6 +354,8 @@
         "qualityFloorPolicy": "best-effort",
         "output": "arrayBuffer"
       },
+      "startedAt": "2026-09-25T19:06:29.433Z",
+      "completedAt": "2026-09-25T19:06:29.598Z",
       "ok": true,
       "error": null,
       "result": {
@@ -373,12 +376,12 @@
           "heightOut": 213,
           "qualityUsed": 85,
           "budgetMet": true,
-          "instantiateMs": 0.10000002384185791,
-          "decodeMs": 38.599999994039536,
-          "opsMs": 51.400000005960464,
-          "encodeMs": 37.900000005960464,
-          "totalMs": 128,
-          "firstEncodeMs": 37.80000001192093,
+          "instantiateMs": 0,
+          "decodeMs": 39.19999998807907,
+          "opsMs": 49,
+          "encodeMs": 33.30000001192093,
+          "totalMs": 121.7000000178814,
+          "firstEncodeMs": 33.30000001192093,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -412,6 +415,8 @@
         "output": "arrayBuffer",
         "targetBytes": 15453
       },
+      "startedAt": "2026-09-25T19:06:29.598Z",
+      "completedAt": "2026-09-25T19:06:29.676Z",
       "ok": true,
       "error": null,
       "result": {
@@ -434,11 +439,11 @@
           "qualityUsed": 79,
           "budgetMet": true,
           "targetBytes": 15453,
-          "instantiateMs": 0.10000002384185791,
-          "decodeMs": 5.0999999940395355,
-          "opsMs": 10,
-          "encodeMs": 63.900000005960464,
-          "totalMs": 79,
+          "instantiateMs": 0,
+          "decodeMs": 5.4000000059604645,
+          "opsMs": 10.5,
+          "encodeMs": 61.19999998807907,
+          "totalMs": 77.19999998807907,
           "firstEncodeMs": 9.599999994039536,
           "metadataStripped": true,
           "policyViolations": [],
@@ -473,6 +478,8 @@
         "output": "arrayBuffer",
         "targetBytes": 9658
       },
+      "startedAt": "2026-09-25T19:06:29.676Z",
+      "completedAt": "2026-09-25T19:06:29.739Z",
       "ok": true,
       "error": null,
       "result": {
@@ -495,12 +502,12 @@
           "qualityUsed": 64,
           "budgetMet": true,
           "targetBytes": 9658,
-          "instantiateMs": 0.10000002384185791,
-          "decodeMs": 5.199999988079071,
-          "opsMs": 9.300000011920929,
-          "encodeMs": 48,
+          "instantiateMs": 0,
+          "decodeMs": 5.300000011920929,
+          "opsMs": 9.900000005960464,
+          "encodeMs": 47.19999998807907,
           "totalMs": 62.5,
-          "firstEncodeMs": 8.5,
+          "firstEncodeMs": 8.299999982118607,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -533,6 +540,8 @@
         "qualityFloorPolicy": "best-effort",
         "output": "arrayBuffer"
       },
+      "startedAt": "2026-09-25T19:06:29.739Z",
+      "completedAt": "2026-09-25T19:06:29.842Z",
       "ok": true,
       "error": null,
       "result": {
@@ -554,11 +563,11 @@
           "qualityUsed": 85,
           "budgetMet": true,
           "instantiateMs": 0,
-          "decodeMs": 18.799999982118607,
-          "opsMs": 27,
-          "encodeMs": 25.5,
-          "totalMs": 71.40000000596046,
-          "firstEncodeMs": 25.400000005960464,
+          "decodeMs": 17.599999994039536,
+          "opsMs": 42.69999998807907,
+          "encodeMs": 31.700000017881393,
+          "totalMs": 92.2000000178814,
+          "firstEncodeMs": 31.700000017881393,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -592,6 +601,8 @@
         "output": "arrayBuffer",
         "targetBytes": 13606
       },
+      "startedAt": "2026-09-25T19:06:29.842Z",
+      "completedAt": "2026-09-25T19:06:29.899Z",
       "ok": true,
       "error": null,
       "result": {
@@ -615,11 +626,11 @@
           "budgetMet": true,
           "targetBytes": 13606,
           "instantiateMs": 0,
-          "decodeMs": 4.800000011920929,
-          "opsMs": 9.599999994039536,
-          "encodeMs": 36.5,
-          "totalMs": 50.900000005960464,
-          "firstEncodeMs": 6.5999999940395355,
+          "decodeMs": 5.4000000059604645,
+          "opsMs": 10.299999982118607,
+          "encodeMs": 40.20000001788139,
+          "totalMs": 55.900000005960464,
+          "firstEncodeMs": 8.099999994039536,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -653,6 +664,8 @@
         "output": "arrayBuffer",
         "targetBytes": 8504
       },
+      "startedAt": "2026-09-25T19:06:29.899Z",
+      "completedAt": "2026-09-25T19:06:29.943Z",
       "ok": true,
       "error": null,
       "result": {
@@ -676,11 +689,11 @@
           "budgetMet": true,
           "targetBytes": 8504,
           "instantiateMs": 0,
-          "decodeMs": 4.9000000059604645,
-          "opsMs": 9.099999994039536,
-          "encodeMs": 26.599999994039536,
-          "totalMs": 40.599999994039536,
-          "firstEncodeMs": 5.5999999940395355,
+          "decodeMs": 5.199999988079071,
+          "opsMs": 9.699999988079071,
+          "encodeMs": 29.200000017881393,
+          "totalMs": 44.099999994039536,
+          "firstEncodeMs": 6,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -713,6 +726,8 @@
         "qualityFloorPolicy": "best-effort",
         "output": "arrayBuffer"
       },
+      "startedAt": "2026-09-25T19:06:29.949Z",
+      "completedAt": "2026-09-25T19:06:30.024Z",
       "ok": true,
       "error": null,
       "result": {
@@ -733,12 +748,12 @@
           "heightOut": 213,
           "qualityUsed": 85,
           "budgetMet": true,
-          "instantiateMs": 0,
-          "decodeMs": 14.099999994039536,
-          "opsMs": 21.299999982118607,
-          "encodeMs": 24.5,
-          "totalMs": 60.099999994039536,
-          "firstEncodeMs": 24.299999982118607,
+          "instantiateMs": 0.09999999403953552,
+          "decodeMs": 15.900000005960464,
+          "opsMs": 21.5,
+          "encodeMs": 25.799999982118607,
+          "totalMs": 63.29999998211861,
+          "firstEncodeMs": 25.69999998807907,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -772,6 +787,8 @@
         "output": "arrayBuffer",
         "targetBytes": 11290
       },
+      "startedAt": "2026-09-25T19:06:30.025Z",
+      "completedAt": "2026-09-25T19:06:30.088Z",
       "ok": true,
       "error": null,
       "result": {
@@ -794,12 +811,12 @@
           "qualityUsed": 79,
           "budgetMet": true,
           "targetBytes": 11290,
-          "instantiateMs": 0,
-          "decodeMs": 3,
-          "opsMs": 8.900000005960464,
-          "encodeMs": 47.69999998807907,
-          "totalMs": 59.599999994039536,
-          "firstEncodeMs": 6.9000000059604645,
+          "instantiateMs": 0.09999999403953552,
+          "decodeMs": 3.4000000059604645,
+          "opsMs": 10.099999994039536,
+          "encodeMs": 49.400000005960464,
+          "totalMs": 62.900000005960464,
+          "firstEncodeMs": 7.100000023841858,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -833,6 +850,8 @@
         "output": "arrayBuffer",
         "targetBytes": 7056
       },
+      "startedAt": "2026-09-25T19:06:30.088Z",
+      "completedAt": "2026-09-25T19:06:30.132Z",
       "ok": true,
       "error": null,
       "result": {
@@ -855,12 +874,12 @@
           "qualityUsed": 62,
           "budgetMet": true,
           "targetBytes": 7056,
-          "instantiateMs": 0,
-          "decodeMs": 3.0999999940395355,
-          "opsMs": 8.599999994039536,
-          "encodeMs": 31.80000001192093,
-          "totalMs": 43.5,
-          "firstEncodeMs": 6.700000017881393,
+          "instantiateMs": 0.09999999403953552,
+          "decodeMs": 2.7999999821186066,
+          "opsMs": 8.800000011920929,
+          "encodeMs": 32.5,
+          "totalMs": 44.099999994039536,
+          "firstEncodeMs": 6.800000011920929,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -893,6 +912,8 @@
         "qualityFloorPolicy": "best-effort",
         "output": "arrayBuffer"
       },
+      "startedAt": "2026-09-25T19:06:30.132Z",
+      "completedAt": "2026-09-25T19:06:30.204Z",
       "ok": true,
       "error": null,
       "result": {
@@ -913,12 +934,12 @@
           "heightOut": 213,
           "qualityUsed": 85,
           "budgetMet": true,
-          "instantiateMs": 0.09999999403953552,
-          "decodeMs": 13.900000005960464,
-          "opsMs": 20.80000001192093,
-          "encodeMs": 24.799999982118607,
-          "totalMs": 59.599999994039536,
-          "firstEncodeMs": 24.69999998807907,
+          "instantiateMs": 0,
+          "decodeMs": 14.700000017881393,
+          "opsMs": 21.799999982118607,
+          "encodeMs": 23.80000001192093,
+          "totalMs": 60.30000001192093,
+          "firstEncodeMs": 23.80000001192093,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -952,6 +973,8 @@
         "output": "arrayBuffer",
         "targetBytes": 9840
       },
+      "startedAt": "2026-09-25T19:06:30.204Z",
+      "completedAt": "2026-09-25T19:06:30.252Z",
       "ok": true,
       "error": null,
       "result": {
@@ -974,12 +997,12 @@
           "qualityUsed": 79,
           "budgetMet": true,
           "targetBytes": 9840,
-          "instantiateMs": 0.09999999403953552,
-          "decodeMs": 3.0999999940395355,
-          "opsMs": 9.5,
-          "encodeMs": 35.400000005960464,
-          "totalMs": 48,
-          "firstEncodeMs": 6.5999999940395355,
+          "instantiateMs": 0,
+          "decodeMs": 3,
+          "opsMs": 9.199999988079071,
+          "encodeMs": 36.099999994039536,
+          "totalMs": 48.29999998211861,
+          "firstEncodeMs": 6.9000000059604645,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -1013,6 +1036,8 @@
         "output": "arrayBuffer",
         "targetBytes": 6150
       },
+      "startedAt": "2026-09-25T19:06:30.252Z",
+      "completedAt": "2026-09-25T19:06:30.290Z",
       "ok": true,
       "error": null,
       "result": {
@@ -1035,11 +1060,11 @@
           "qualityUsed": 55,
           "budgetMet": true,
           "targetBytes": 6150,
-          "instantiateMs": 0.09999999403953552,
-          "decodeMs": 2.800000011920929,
-          "opsMs": 8.599999994039536,
-          "encodeMs": 26.400000005960464,
-          "totalMs": 37.80000001192093,
+          "instantiateMs": 0,
+          "decodeMs": 2.9000000059604645,
+          "opsMs": 8.699999988079071,
+          "encodeMs": 25.80000001192093,
+          "totalMs": 37.400000005960464,
           "firstEncodeMs": 5.4000000059604645,
           "metadataStripped": true,
           "policyViolations": [],
@@ -1059,6 +1084,7 @@
     }
   ],
   "verdict": "PASS",
+  "receivedAt": "2026-09-25T19:06:30.295Z",
   "setup": [
     {
       "inputId": "coffee",

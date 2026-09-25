@@ -1,8 +1,8 @@
 {
-  "analyzedAt": "2026-09-25T19:05:18.161Z",
-  "analysisCodeSha": "0d40f068200e758591405c9f50be3a1a78723a1e",
+  "analyzedAt": "2026-09-25T19:06:34.357Z",
+  "analysisCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
   "analysisSourceHashes": {
-    "test/benchmarks/wasm-quality-analyze.mjs": "e1126e6519366be69c488b97b0b50ccf6e2905a61aa111739f6136470606b789",
+    "test/benchmarks/wasm-quality-analyze.mjs": "b650b1ee672ac4d97956815f08cacdc09c1a5cc424892237f026ad1841b4fbf1",
     "test/benchmarks/wasm-quality-metrics.mjs": "504c7c0ff24cd5e5a4b3866d2769f7281a079ba7f012e6cc477ad8df04c78367"
   },
   "command": "node test/benchmarks/wasm-quality-analyze.mjs",
@@ -895,9 +895,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:29.433Z",
+        "caseCompletedAt": "2026-09-25T19:06:29.598Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -987,9 +989,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:29.598Z",
+        "caseCompletedAt": "2026-09-25T19:06:29.676Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1085,9 +1089,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:29.676Z",
+        "caseCompletedAt": "2026-09-25T19:06:29.739Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1183,9 +1189,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:29.739Z",
+        "caseCompletedAt": "2026-09-25T19:06:29.842Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1275,9 +1283,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:29.842Z",
+        "caseCompletedAt": "2026-09-25T19:06:29.899Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1373,9 +1383,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:29.899Z",
+        "caseCompletedAt": "2026-09-25T19:06:29.943Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1471,9 +1483,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:29.949Z",
+        "caseCompletedAt": "2026-09-25T19:06:30.024Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1563,9 +1577,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:30.025Z",
+        "caseCompletedAt": "2026-09-25T19:06:30.088Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1661,9 +1677,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:30.088Z",
+        "caseCompletedAt": "2026-09-25T19:06:30.132Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1759,9 +1777,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:30.132Z",
+        "caseCompletedAt": "2026-09-25T19:06:30.204Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1851,9 +1871,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:30.204Z",
+        "caseCompletedAt": "2026-09-25T19:06:30.252Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1949,9 +1971,11 @@
       "license": "CC0-1.0",
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "5a0015e084dff66108ecdf5520bbce3a1ca1819748ac954e8d1b1cd048fa5c6d",
-        "generatedAt": "2026-09-25T19:02:43.487Z",
-        "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
+        "generatedAt": "2026-09-25T19:06:27.257Z",
+        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+        "caseStartedAt": "2026-09-25T19:06:30.252Z",
+        "caseCompletedAt": "2026-09-25T19:06:30.290Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
