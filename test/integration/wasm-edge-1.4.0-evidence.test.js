@@ -48,6 +48,10 @@ async function main() {
     gpsTag: Boolean(inputMetadata.exif?.includes(Buffer.from([0x25, 0x88]))),
     xmp: Boolean(inputMetadata.xmp), icc: Boolean(inputMetadata.icc) },
   { exif: true, gpsTag: true, xmp: true, icc: true });
+  const stripped = fs.readFileSync(path.join(snapshot, 'wasm-edge-metadata-budget.jpg'));
+  const strippedMetadata = await sharp(stripped).metadata();
+  assert.deepEqual({ exif: Boolean(strippedMetadata.exif), xmp: Boolean(strippedMetadata.xmp),
+    icc: Boolean(strippedMetadata.icc) }, { exif: false, xmp: false, icc: false });
   const budget = positive.edgeResults.results.find((item) => item.id === 'metadata-budget').budget;
   const bestEffort = fs.readFileSync(path.join(snapshot, path.basename(budget.bestEffort.output.artifact)));
   assert.equal(hash(bestEffort), budget.bestEffort.output.sha256);

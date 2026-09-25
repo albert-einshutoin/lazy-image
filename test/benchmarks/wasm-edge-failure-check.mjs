@@ -50,6 +50,9 @@ try {
     { name: 'wasm-module-missing', expected: 'FAIL',
       options: { codecFiles: Object.fromEntries(Object.entries(codecFiles)
         .filter(([name]) => name !== 'webp_enc.wasm')), cases: [] } },
+    { name: 'decoder-module-mismatch', expected: 'FAIL',
+      options: { codecFiles: { ...codecFiles,
+        'mozjpeg_dec.wasm': ['@jsquash/png', 'codec/pkg/squoosh_png_bg.wasm'] }, cases: [] } },
     { name: 'image-processing-failure', expected: 'FAIL',
       options: { codecFiles, cases: [{ id: 'invalid-jpeg', input: badImage,
         options: { format: 'webp', maxWidth: 320, maxHeight: 320, targetBytes: 50000,
@@ -68,6 +71,11 @@ try {
     if (check.name === 'wasm-module-missing') {
       assert.equal(caught.partialEdgeResults.failureStage, 'isolate-launch');
       assert.equal(caught.partialEdgeResults.apiReached, false);
+    }
+    if (check.name === 'decoder-module-mismatch') {
+      assert.equal(caught.partialEdgeResults.failureStage, 'image-processing');
+      assert.equal(caught.partialEdgeResults.apiReached, true);
+      assert.match(caught.message, /probe-jpeg-webp: E131/);
     }
     console.log(JSON.stringify({ name: check.name, verdict: check.expected, reason: caught.message,
       failureStage: caught.partialEdgeResults.failureStage,

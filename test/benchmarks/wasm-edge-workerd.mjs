@@ -248,9 +248,11 @@ async function runDiagnosticCase(directory, workerdPath, id, outputDir, delivery
 
 async function runCase(directory, workerdPath, item, outputDir, validateOutput) {
   const server = await startWorkerd(directory, workerdPath);
+  let apiReached = false;
   try {
     const input = await fs.readFile(item.input);
     const first = await requestImage(server, input, item.options);
+    apiReached = first.status === 'PASS' || Boolean(first.error?.phase && first.error.phase !== 'request-options');
     if (first.status !== 'PASS') throw new Error(`${item.id}: ${first.error?.code ?? first.error?.message}`);
     const coldFromBeforeRuntimeMs = performance.now() - server.startedAt;
     const extension = item.options.format === 'jpeg' ? 'jpg' : 'webp';
@@ -291,6 +293,9 @@ async function runCase(directory, workerdPath, item, outputDir, validateOutput) 
       warmMedianMs: median(warm.map((entry) => entry.wallMs)),
       isolateId: server.health.isolateId, optimizerCreations: 1, clock, metrics: first.result.metrics,
       output, budget, workerdStderr: server.getStderr() };
+  } catch (error) {
+    if (apiReached) error.apiReached = true;
+    throw error;
   } finally {
     await stopWorkerd(server);
   }
@@ -353,6 +358,7 @@ export async function runEdgeWorkerd({ directory, packageInfo, cases, codecFiles
     return report;
   } catch (error) {
     report.status = error.verdict ?? 'FAIL';
+    report.apiReached = error.apiReached ?? report.apiReached;
     report.failureStage = error.failureStage ?? report.failureStage;
     report.error = { message: error.message, stack: error.stack };
     error.partialEdgeResults = report;
