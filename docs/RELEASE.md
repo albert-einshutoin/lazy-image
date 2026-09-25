@@ -7,6 +7,7 @@ Related docs:
 - [ROADMAP.md](ROADMAP.md) — product priorities
 - [CHANGELOG.md](../CHANGELOG.md) — versioned changes
 - [v1.3.0 verification](history/V1.3.0_VERIFICATION.md) — publication evidence and remaining registry smoke coverage (2026-09-23)
+- [v1.4.0 verification](history/V1.4.0_VERIFICATION.md) — release candidate, registry contents, published native and Chrome Worker results
 
 ---
 
@@ -220,7 +221,7 @@ node --input-type=module -e "import { VERSION } from '@alberteinshutoin/lazy-ima
 The commands above confirm installation and exports only. After publication,
 run [Published npm native smoke](../.github/workflows/registry-native-smoke.yml)
 manually with the **exact published version** (for example,
-`gh workflow run registry-native-smoke.yml -f version=1.3.1 --ref main`).
+`gh workflow run registry-native-smoke.yml -f version=1.4.0 --ref main`).
 It installs from the public registry in an empty directory on each target
 runtime and checks the loaded binding, `compileImage()`, installed CLI,
 image bytes, metadata, hashes, and manifest. Preserve its 12 JSON reports
@@ -230,6 +231,12 @@ v1.3.0 failures remain documented in
 [v1.3.0 verification](history/V1.3.0_VERIFICATION.md).
 The separate candidate and published-registry results for the corrected patch
 are in [v1.3.1 verification](history/V1.3.1_VERIFICATION.md).
+The [v1.4.0 verification record](history/V1.4.0_VERIFICATION.md) separately
+preserves the exact tag candidate, published native 12-runtime matrix across
+six platforms, and
+published Wasm Chrome default-load positive/negative evidence. To verify Wasm
+image processing rather than just package exports, use the version-pinned
+Chrome commands in that record.
 
 ---
 

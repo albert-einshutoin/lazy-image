@@ -9,6 +9,11 @@ the separate local workerd measurement is in
 [WASM_1.3.1_EDGE_VERIFICATION.md](./history/WASM_1.3.1_EDGE_VERIFICATION.md).
 Chrome's published v1.3.1 **default codec loading** is a separate run in
 [WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md](./history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
+The published v1.4.0 Chrome default-load image and diagnostic rerun, with
+candidate and registry provenance kept separate, is in
+[V1.4.0_VERIFICATION.md](./history/V1.4.0_VERIFICATION.md). The v1.3.1
+commands below reproduce the original snapshot; use the version-pinned
+v1.4.0 commands in that record for the current release.
 
 ## Reproduce
 
