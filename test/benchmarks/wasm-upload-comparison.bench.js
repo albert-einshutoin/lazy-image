@@ -459,6 +459,7 @@ async function run(runtimeFilter) {
     candidateTarball: getArg('--candidate-tarball', null),
     corruptJpeg: process.argv.includes('--corrupt-jpeg'),
     edgeDiagnostic: getArg('--edge-diagnostic', null),
+    nodeDiagnostic: getArg('--node-diagnostic', null),
   });
   if (evidence.packageSource.kind === 'candidate-tarball') {
     console.log(`Candidate browser evidence saved to artifacts/benchmark/wasm-published-evidence.json`);

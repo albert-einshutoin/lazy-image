@@ -144,9 +144,14 @@ async function installPublished(version, directory, runtime, candidateTarball) {
     assert(entry.licenseSource?.sha256, `canonical license source missing: ${name}`);
   }
   const packageDir = path.join(directory, 'node_modules', packageName);
-  const browserImport = await fs.realpath(path.join(packageDir, 'browser.js'));
+  const packageManifest = JSON.parse(await fs.readFile(path.join(packageDir, 'package.json')));
+  assert.equal(packageManifest.exports?.['./browser']?.import, './browser.js',
+    'installed /browser export no longer points to browser.js');
+  const browserImport = await fs.realpath(path.join(packageDir, packageManifest.exports['./browser'].import));
   assert(browserImport.startsWith((await fs.realpath(directory)) + path.sep));
-  return { packages, packageDir, browserImport, toolchainBinaries };
+  const { VERSION } = await import(pathToFileURL(path.join(packageDir, 'shared.js')).href);
+  assert.equal(VERSION, version, 'installed package VERSION mismatch');
+  return { packages, packageDir, browserImport, browserExport: './browser', VERSION, toolchainBinaries };
 }
 
 async function prepareCases(directory) {
@@ -196,25 +201,103 @@ async function validateOutput(bytes, result, item, outputPath) {
     width: meta.width, height: meta.height, metadata, artifact: path.relative(root, outputPath) };
 }
 
-async function runNode(packageInfo, directory, cases) {
+function apiErrorFields(error) {
+  return Object.fromEntries(['code', 'category', 'recoverable', 'message', 'recoveryHint']
+    .filter((key) => error?.[key] !== undefined).map((key) => [key, error[key]]));
+}
+
+function validateNodeDiagnostic(diagnosticCase, diagnostic) {
+  const expected = diagnosticCase === 'corrupt-jpeg'
+    ? { code: 'E131', stage: 'image-processing', message: /jpeg decoder/ }
+    : { code: 'E503', stage: 'optimizer-initialization', message: /resize.*initialization/ };
+  const error = diagnostic.apiError;
+  const valid = diagnostic.failureStage === expected.stage && error.code === expected.code &&
+    error.category === 'CodecError' && error.recoverable === false &&
+    expected.message.test(error.message ?? '') && typeof error.recoveryHint === 'string' &&
+    error.recoveryHint.length > 0;
+  return { status: valid ? 'PASS' : 'FAIL', expectedCode: expected.code,
+    expectedStage: expected.stage, reason: valid ? null : 'unexpected API error or failure stage' };
+}
+
+export async function runNode(packageInfo, directory, cases,
+  { diagnosticCase = null, onStage = () => {}, artifactDirectory = outputDir } = {}) {
   // jSquash needs ImageData in Node; this does not emulate a browser or Edge isolate.
   if (typeof globalThis.ImageData !== 'function') {
     globalThis.ImageData = class ImageData {
       constructor(data, width, height) { this.data = data; this.width = width; this.height = height; }
     };
   }
+  onStage('package-import');
   const { createUploadOptimizer } = await import(pathToFileURL(packageInfo.browserImport).href);
+  onStage('package-imported');
   const modules = {};
+  const moduleAssignments = [];
+  onStage('wasm-file-read');
   for (const [name, [codec, relative]] of Object.entries(codecFiles)) {
     const key = { 'mozjpeg_dec.wasm': 'jpegDecode', 'mozjpeg_enc.wasm': 'jpegEncode',
       'squoosh_png_bg.wasm': 'pngDecode', 'squoosh_resize_bg.wasm': 'resize', 'webp_enc.wasm': 'webpEncode' }[name];
     modules[key] = await fs.readFile(path.join(directory, 'node_modules', codec, relative));
+    moduleAssignments.push({ key, package: codec, path: relative, source: name,
+      sha256: sha256(modules[key]) });
   }
+  if (diagnosticCase === 'resize-init') {
+    modules.resize = new Uint8Array([0]);
+    const resize = moduleAssignments.find((entry) => entry.key === 'resize');
+    resize.originalSha256 = resize.sha256;
+    resize.source = 'explicit-invalid-bytes';
+    resize.bytesHex = '00';
+    resize.sha256 = sha256(modules.resize);
+  }
+  const diagnosticInput = diagnosticCase === 'corrupt-jpeg'
+    ? { id: 'corrupt-jpeg', bytes: Buffer.from([0xff, 0xd8, 0xff, 0, 0, 0]),
+      source: 'generated malformed JPEG header', options: { format: 'webp', output: 'arrayBuffer' } }
+    : diagnosticCase === 'resize-init'
+      ? { id: 'resize-init',
+        bytes: await fs.readFile(path.join(root, 'test/fixtures/test_100KB_1057x1057.jpg')),
+        source: 'test/fixtures/test_100KB_1057x1057.jpg',
+        options: { format: 'webp', maxWidth: 320, maxHeight: 320,
+          targetBytes: 50000, minQuality: 45, maxQuality: 86,
+          qualityFloorPolicy: 'best-effort', output: 'arrayBuffer' } }
+      : null;
+  if (diagnosticInput) {
+    await fs.writeFile(path.join(artifactDirectory, `wasm-node-${diagnosticInput.id}-input.jpg`),
+      diagnosticInput.bytes);
+  }
+  const failure = (error, failureStage, optimizerCreationMs) => {
+    const diagnostic = { id: diagnosticCase, imageProcessingOutcome: 'FAIL', failureStage,
+      apiError: apiErrorFields(error), input: { source: diagnosticInput.source,
+        sha256: sha256(diagnosticInput.bytes), bytes: diagnosticInput.bytes.length,
+        options: diagnosticInput.options } };
+    return { results: null, moduleAssignments, optimizerCreationMs, diagnostic,
+      diagnosticValidation: validateNodeDiagnostic(diagnosticCase, diagnostic) };
+  };
+  onStage('optimizer-initialization');
   const creationStart = performance.now();
-  const optimizer = await createUploadOptimizer({ wasmModules: modules, defaultOutput: 'arrayBuffer' });
+  let optimizer;
+  try {
+    optimizer = await createUploadOptimizer({ wasmModules: modules, defaultOutput: 'arrayBuffer' });
+  } catch (error) {
+    if (diagnosticInput) return failure(error, 'optimizer-initialization', performance.now() - creationStart);
+    throw error;
+  }
   const optimizerCreationMs = performance.now() - creationStart;
+  if (diagnosticInput) {
+    onStage('image-processing');
+    try {
+      await optimizer.optimizeUpload(diagnosticInput.bytes, diagnosticInput.options);
+      const diagnostic = { id: diagnosticCase, imageProcessingOutcome: 'PASS', failureStage: null,
+        apiError: null, input: { source: diagnosticInput.source,
+          sha256: sha256(diagnosticInput.bytes), bytes: diagnosticInput.bytes.length,
+          options: diagnosticInput.options } };
+      return { results: null, moduleAssignments, optimizerCreationMs, diagnostic,
+        diagnosticValidation: { status: 'FAIL', reason: 'diagnostic input unexpectedly succeeded' } };
+    } catch (error) {
+      return failure(error, 'image-processing', optimizerCreationMs);
+    }
+  }
   const results = [];
   for (const item of cases) {
+    onStage('image-processing');
     const input = await fs.readFile(item.input);
     const run = async (options) => {
       const start = performance.now();
@@ -223,7 +306,7 @@ async function runNode(packageInfo, directory, cases) {
         return { status: 'PASS', wallMs: performance.now() - start, result };
       } catch (error) {
         return { status: 'FAIL', wallMs: performance.now() - start,
-          error: { code: error.code, category: error.category, message: error.message } };
+          error: apiErrorFields(error) };
       }
     };
     const first = await run(item.options);
@@ -252,7 +335,9 @@ async function runNode(packageInfo, directory, cases) {
       warmMs: warm.map((entry) => entry.wallMs), warmMedianMs: median(warm.map((entry) => entry.wallMs)),
       metrics: first.result.metrics, output, budget });
   }
-  return results;
+  onStage('completed');
+  return { results, moduleAssignments, optimizerCreationMs, diagnostic: null,
+    diagnosticValidation: null };
 }
 
 async function bundleBrowser(directory, packageDir, browserLoad) {
@@ -489,7 +574,7 @@ async function runBrowser(directory, cases, bundle, chromePath, { browserLoad, w
 
 export async function collectPublishedWasmEvidence({ version, runtime, chromePath, workerdPath,
   browserLoad = 'injected', withholdWasm = null, candidateTarball = null, corruptJpeg = false,
-  edgeDiagnostic = null }) {
+  edgeDiagnostic = null, nodeDiagnostic = null }) {
   assert(/^\d+\.\d+\.\d+$/.test(version), 'explicit --version is required');
   assert(['node', 'browser', 'edge', 'all'].includes(runtime), `required runtime ${runtime} is not implemented`);
   assert(['injected', 'default'].includes(browserLoad), `unsupported browser load mode: ${browserLoad}`);
@@ -500,6 +585,9 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
   assert(!edgeDiagnostic || (runtime === 'edge' &&
     ['corrupt-jpeg', 'decoder-init', 'resize-init', 'encoder-init'].includes(edgeDiagnostic)),
   '--edge-diagnostic requires edge and a supported diagnostic case');
+  assert(!nodeDiagnostic || (runtime === 'node' &&
+    ['corrupt-jpeg', 'resize-init'].includes(nodeDiagnostic)),
+  '--node-diagnostic requires node and a supported diagnostic case');
   if (candidateTarball) {
     candidateTarball = path.resolve(candidateTarball);
     assert(!candidateTarball.startsWith(root + path.sep), 'candidate tarball must be outside checkout');
@@ -528,16 +616,25 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
   const context = { generatedAt: new Date().toISOString(), sourceSha,
     ...(candidateTarball ? { candidateVersion: version } : { publishedVersion: version }),
     sourceDirty, sourceFilesSha256, packageSource,
-    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${['browser', 'all'].includes(runtime) ? ` --browser-load ${browserLoad}` : ''}${candidateTarball ? ` --candidate-tarball ${candidateTarball}` : ''}${withholdWasm ? ` --withhold-wasm ${withholdWasm}` : ''}${corruptJpeg ? ' --corrupt-jpeg' : ''}${edgeDiagnostic ? ` --edge-diagnostic ${edgeDiagnostic}` : ''}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
+    command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${['browser', 'all'].includes(runtime) ? ` --browser-load ${browserLoad}` : ''}${candidateTarball ? ` --candidate-tarball ${candidateTarball}` : ''}${withholdWasm ? ` --withhold-wasm ${withholdWasm}` : ''}${corruptJpeg ? ' --corrupt-jpeg' : ''}${edgeDiagnostic ? ` --edge-diagnostic ${edgeDiagnostic}` : ''}${nodeDiagnostic ? ` --node-diagnostic ${nodeDiagnostic}` : ''}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
     node: process.version, npm: null, os: process.platform,
     osVersion: process.platform === 'darwin' ? command('/usr/bin/sw_vers', ['-productVersion'], root) : os.version(),
     osRelease: os.release(), arch: process.arch, registry, packages: null, toolchainBinaries: null, importPath: null,
     isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim',
     runtimeClassification: 'Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof',
+    nodeExecution: runtime === 'node' || runtime === 'all'
+      ? { label: 'Node上のWasm実行／ImageData shim・Wasm bytes明示注入',
+        processId: process.pid, importMethod: 'file URL of installed /browser export browser.js',
+        moduleMethod: 'five published codec Wasm byte buffers passed through wasmModules' }
+      : null,
     fixtures: null,
-    nodeResults: null, nodeTotals: null, browserLoadMode: ['browser', 'all'].includes(runtime) ? browserLoad : null,
+    nodeResults: null, nodeTotals: null, nodeModuleAssignments: null, nodeOptimizerCreationMs: null,
+    nodeDiagnostic: null, nodeStage: runtime === 'node' || runtime === 'all'
+      ? 'package-installation' : null,
+    browserLoadMode: ['browser', 'all'].includes(runtime) ? browserLoad : null,
     browserResults: null, edgeResults: null, edgeTotals: null,
-    diagnosticValidation: withholdWasm || corruptJpeg || edgeDiagnostic ? { status: 'NOT_RUN' } : null,
+    diagnosticValidation: withholdWasm || corruptJpeg || edgeDiagnostic || nodeDiagnostic
+      ? { status: 'NOT_RUN' } : null,
     verdict: 'FAIL' };
   try {
     // Both browser and Edge bundling must use the hashed esbuild from this install.
@@ -546,6 +643,7 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     }
     context.npm = command('npm', ['--version'], root);
     const packageInfo = await installPublished(version, directory, runtime, candidateTarball);
+    if (runtime === 'node' || runtime === 'all') context.nodeStage = 'package-acquired';
     if (candidateTarball) {
       for (const file of ['package.json', 'browser.js', 'worker.js', 'shared.js', 'edge.js', 'README.md']) {
         assert.equal(sha256(await fs.readFile(path.join(packageInfo.packageDir, file))),
@@ -556,14 +654,22 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     context.packages = packageInfo.packages;
     context.toolchainBinaries = packageInfo.toolchainBinaries;
     context.importPath = packageInfo.browserImport;
+    context.browserExport = packageInfo.browserExport;
+    context.VERSION = packageInfo.VERSION;
     const cases = await prepareCases(directory);
     context.fixtures = cases.map(({ id, input, inputBytes, inputSha256, inputMetadata, options, metadataCase }) =>
       ({ id, input: metadataCase ? 'artifacts/benchmark/wasm-metadata-input.jpg' : path.relative(root, input),
         generatedFrom: metadataCase ? 'test/benchmarks/corpus/images/metadata-1.jpg + keepMetadata() + withXmp()' : null,
         inputBytes, inputSha256, inputMetadata, options }));
     if (runtime === 'node' || runtime === 'all') {
-      context.nodeResults = await runNode(packageInfo, directory, cases);
-      context.nodeTotals = summarize(context.nodeResults);
+      const node = await runNode(packageInfo, directory, cases,
+        { diagnosticCase: nodeDiagnostic, onStage: (stage) => { context.nodeStage = stage; } });
+      context.nodeResults = node.results;
+      context.nodeModuleAssignments = node.moduleAssignments;
+      context.nodeOptimizerCreationMs = node.optimizerCreationMs;
+      context.nodeDiagnostic = node.diagnostic;
+      if (nodeDiagnostic) context.diagnosticValidation = node.diagnosticValidation;
+      else context.nodeTotals = summarize(node.results);
     }
     if (runtime === 'browser' || runtime === 'all') {
       let browserCases = browserLoad === 'default' ? [{
@@ -633,8 +739,8 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
       if (edgeDiagnostic) context.diagnosticValidation = context.edgeResults.diagnosticValidation;
       else context.edgeTotals = summarize(context.edgeResults.results);
     }
-    context.verdict = context.browserResults?.expectedFailure || edgeDiagnostic ? 'FAIL' : 'PASS';
-    if (context.browserResults?.expectedFailure || edgeDiagnostic) {
+    context.verdict = context.browserResults?.expectedFailure || edgeDiagnostic || nodeDiagnostic ? 'FAIL' : 'PASS';
+    if (context.browserResults?.expectedFailure || edgeDiagnostic || nodeDiagnostic) {
       context.error = { message: `Intentional image-processing FAIL; diagnostic ${context.diagnosticValidation?.status ?? 'NOT_RUN'}`, stack: null };
     }
   } catch (error) {
