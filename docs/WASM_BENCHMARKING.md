@@ -14,6 +14,13 @@ candidate and registry provenance kept separate, is in
 [V1.4.0_VERIFICATION.md](./history/V1.4.0_VERIFICATION.md). The v1.3.1
 commands below reproduce the original snapshot; use the version-pinned
 v1.4.0 commands in that record for the current release.
+The later published v1.4.0 local workerd rerun, including API initialization
+diagnostics and pre-isolate failure evidence, is in
+[WASM_1.4.0_EDGE_VERIFICATION.md](./history/WASM_1.4.0_EDGE_VERIFICATION.md).
+Its `--edge-diagnostic` commands keep intentional image-processing failures
+as nonzero exits and validate the expected API errors separately. Each command
+overwrites the raw evidence path, so save its JSON, log, and images before the
+next run.
 
 ## Reproduce
 

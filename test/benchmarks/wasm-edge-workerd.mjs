@@ -17,6 +17,16 @@ const moduleKeys = {
   'squoosh_resize_bg.wasm': 'resize',
   'webp_enc.wasm': 'webpEncode',
 };
+const diagnosticCases = {
+  'corrupt-jpeg': { code: 'E131', phase: 'image-processing', stage: 'jpeg decoder',
+    moduleOverride: null },
+  'decoder-init': { code: 'E131', phase: 'optimizer-initialization', stage: 'jpeg decoder',
+    moduleOverride: { target: 'jpegDecode', source: 'dynamic-wasm-bytes', bytesHex: '0061736d01000000' } },
+  'resize-init': { code: 'E503', phase: 'optimizer-initialization', stage: 'resize',
+    moduleOverride: { target: 'resize', source: 'jpegDecode' } },
+  'encoder-init': { code: 'E300', phase: 'optimizer-initialization', stage: 'webp encoder',
+    moduleOverride: { target: 'webpEncode', source: 'jpegDecode' } },
+};
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const median = (values) => {
   const sorted = [...values].sort((a, b) => a - b);
@@ -120,6 +130,7 @@ async function startWorkerd(directory, workerdPath) {
       getStderr: () => stderr.trim() };
   } catch (error) {
     child.kill();
+    error.failureStage = 'isolate-launch';
     throw error;
   }
 }
@@ -136,12 +147,13 @@ async function stopWorkerd(server) {
   if (server.child.exitCode === null) server.child.kill('SIGKILL');
 }
 
-async function requestImage(server, input, options) {
+async function requestImage(server, input, options, diagnosticCase = null) {
   const startedAt = performance.now();
   let response;
   try {
     response = await fetch(`${server.base}/process`, { method: 'POST',
-      headers: { 'x-lazy-options': JSON.stringify(options) }, body: input,
+      headers: { 'x-lazy-options': JSON.stringify(options),
+        ...(diagnosticCase ? { 'x-lazy-edge-diagnostic': diagnosticCase } : {}) }, body: input,
       signal: AbortSignal.timeout(30000) });
   } catch (error) {
     throw new Error(`workerd image request failed: ${error.message}; stderr: ${server.getStderr()}; exit: ${server.child.exitCode}`);
@@ -159,12 +171,95 @@ async function requestImage(server, input, options) {
   return { status: 'PASS', wallMs, bytes, result };
 }
 
+export function validateEdgeDiagnostic(id, observed) {
+  const expected = diagnosticCases[id];
+  if (!expected) return { status: 'FAIL', reason: `unknown diagnostic case: ${id}` };
+  if (observed.status !== 'FAIL' || observed.httpStatus !== 500 || !observed.error) {
+    return { status: 'FAIL', reason: `expected measurement Worker HTTP 500 with API error; got ${observed.status} / ${observed.httpStatus}` };
+  }
+  const error = observed.error;
+  for (const [key, value] of Object.entries({ code: expected.code, category: 'CodecError',
+    recoverable: false, phase: expected.phase, optimizerCreations: 1 })) {
+    if (error[key] !== value) return { status: 'FAIL', reason: `${key}: expected ${value}, got ${error[key]}` };
+  }
+  if (JSON.stringify(error.moduleOverride) !== JSON.stringify(expected.moduleOverride)) {
+    return { status: 'FAIL', reason: 'measurement Worker used the wrong module assignment' };
+  }
+  if (typeof error.message !== 'string' || !error.message.includes(expected.stage) ||
+      (expected.phase === 'optimizer-initialization' && !error.message.includes('codec initialization failed')) ||
+      (expected.phase === 'image-processing' && !error.message.includes('image decoding')) ||
+      !error.message.split(': ').slice(1).join(': ').trim() ||
+      error.message.endsWith('cause unavailable')) {
+    return { status: 'FAIL', reason: `API error did not identify the ${expected.stage} ${expected.phase} stage` };
+  }
+  if (typeof error.recoveryHint !== 'string' || !error.recoveryHint.includes('.wasm') ||
+      !error.recoveryHint.includes('DevTools Network') ||
+      !error.recoveryHint.includes(expected.moduleOverride ? 'wasmModules' : 'input image')) {
+    return { status: 'FAIL', reason: 'API recoveryHint omitted the codec, delivery, or input check' };
+  }
+  return { status: 'PASS', expectedCode: expected.code, observedPhase: error.phase };
+}
+
+async function runDiagnosticCase(directory, workerdPath, id, outputDir, delivery) {
+  const expected = diagnosticCases[id];
+  assert(expected, `unsupported Edge diagnostic case: ${id}`);
+  const server = await startWorkerd(directory, workerdPath);
+  try {
+    const input = id === 'corrupt-jpeg'
+      ? Buffer.from([0xff, 0xd8, 0xff, 0, 0, 0])
+      : await fs.readFile(path.resolve(sourceDir, '../fixtures/test_100KB_1057x1057.jpg'));
+    if (id === 'corrupt-jpeg') {
+      assert(input[0] === 0xff && input[1] === 0xd8 && input[2] === 0xff);
+      await fs.writeFile(path.join(outputDir, 'wasm-edge-corrupt-jpeg-input.jpg'), input);
+    }
+    const options = { format: 'webp', maxWidth: 320, maxHeight: 320, targetBytes: 50000,
+      minQuality: 45, maxQuality: 86, qualityFloorPolicy: 'best-effort', output: 'arrayBuffer' };
+    const observed = await requestImage(server, input, options, id);
+    const validation = validateEdgeDiagnostic(id, observed);
+    if (observed.error?.isolateId !== server.health.isolateId) {
+      validation.status = 'FAIL';
+      validation.reason = 'error came from a different isolate';
+    }
+    const fileForKey = Object.fromEntries(Object.entries(moduleKeys).map(([file, key]) => [key, file]));
+    const moduleAssignments = Object.entries(fileForKey).map(([key, file]) => {
+      const dynamicBytes = key === expected.moduleOverride?.target && expected.moduleOverride.bytesHex
+        ? Buffer.from(expected.moduleOverride.bytesHex, 'hex') : null;
+      const effectiveFile = key === expected.moduleOverride?.target && !dynamicBytes
+        ? fileForKey[expected.moduleOverride.source] : file;
+      return { key, staticImport: file,
+        effectiveSource: dynamicBytes ? 'generated valid minimal Wasm bytes; dynamic compilation in workerd' : effectiveFile,
+        sha256: dynamicBytes ? sha256(dynamicBytes) : delivery[effectiveFile].sha256,
+        ...(dynamicBytes ? { bytesHex: expected.moduleOverride.bytesHex } : {}) };
+    });
+    return { id, imageProcessingOutcome: observed.status, diagnosticValidation: validation,
+      wrapperHttpStatus: observed.httpStatus, apiReached: Boolean(observed.error?.phase &&
+        observed.error.phase !== 'request-options'), apiError: observed.error ?? null,
+      failureStage: observed.error?.phase ?? 'unknown', input: {
+        source: id === 'corrupt-jpeg' ? 'generated malformed JPEG header' :
+          'test/fixtures/test_100KB_1057x1057.jpg', sha256: sha256(input), bytes: input.length },
+      options, moduleAssignments, changedAssignment: expected.moduleOverride,
+      launchCommand: server.command, workerdStderr: server.getStderr(),
+      isolateId: server.health.isolateId, health: server.health,
+      requestWallMs: observed.wallMs };
+  } finally {
+    await stopWorkerd(server);
+  }
+}
+
 async function runCase(directory, workerdPath, item, outputDir, validateOutput) {
   const server = await startWorkerd(directory, workerdPath);
+  let apiReached = false;
   try {
     const input = await fs.readFile(item.input);
     const first = await requestImage(server, input, item.options);
-    if (first.status !== 'PASS') throw new Error(`${item.id}: ${first.error?.code ?? first.error?.message}`);
+    apiReached = first.status === 'PASS' || Boolean(first.error?.phase && first.error.phase !== 'request-options');
+    if (first.status !== 'PASS') {
+      const error = new Error(`${item.id}: ${first.error?.code ?? first.error?.message}`);
+      error.failedCase = { id: item.id, status: 'FAIL', apiError: first.error,
+        wrapperHttpStatus: first.httpStatus, firstRequestMs: first.wallMs,
+        isolateId: server.health.isolateId };
+      throw error;
+    }
     const coldFromBeforeRuntimeMs = performance.now() - server.startedAt;
     const extension = item.options.format === 'jpeg' ? 'jpg' : 'webp';
     const output = await validateOutput(first.bytes, first.result, item,
@@ -184,9 +279,12 @@ async function runCase(directory, workerdPath, item, outputDir, validateOutput) 
       assert.equal(strict.status, 'FAIL');
       assert.equal(strict.error.code, 'E502');
       assert.equal(strict.error.category, 'ResourceLimit');
+      assert.equal(strict.error.recoverable, true);
+      assert.equal(typeof strict.error.recoveryHint, 'string');
       budget = { bestEffort: { bytesOut: bestEffort.bytes.length, budgetMet: false,
         wallMs: bestEffort.wallMs, output: bestEffortOutput },
-        strict: { expectedRejection: true, code: strict.error.code, wallMs: strict.wallMs } };
+        strict: { expectedRejection: true, code: strict.error.code, error: strict.error,
+          wrapperHttpStatus: strict.httpStatus, wallMs: strict.wallMs } };
     }
     let clock;
     try {
@@ -201,16 +299,21 @@ async function runCase(directory, workerdPath, item, outputDir, validateOutput) 
       warmMedianMs: median(warm.map((entry) => entry.wallMs)),
       isolateId: server.health.isolateId, optimizerCreations: 1, clock, metrics: first.result.metrics,
       output, budget, workerdStderr: server.getStderr() };
+  } catch (error) {
+    if (apiReached) error.apiReached = true;
+    throw error;
   } finally {
     await stopWorkerd(server);
   }
 }
 
 export async function runEdgeWorkerd({ directory, packageInfo, cases, codecFiles, outputDir,
-  validateOutput, workerdPath }) {
+  validateOutput, workerdPath, diagnosticCase = null }) {
   const report = { status: 'FAIL', runtime: 'local workerd', compatibilityDate,
-    compatibilityFlags: [], workerdCommand: null, results: [], probe: null };
+    compatibilityFlags: [], workerdCommand: null, results: [], probe: null,
+    apiReached: false, failureStage: 'runtime-resolution' };
   try {
+    if (diagnosticCase) assert(diagnosticCases[diagnosticCase], `unsupported Edge diagnostic case: ${diagnosticCase}`);
     const binary = workerdPath ?? path.join(directory, 'node_modules/.bin/workerd');
     try { await fs.access(binary); } catch { throw blocked(`workerd executable unavailable: ${binary}`); }
     const binarySha256 = sha256(await fs.readFile(binary));
@@ -226,28 +329,44 @@ export async function runEdgeWorkerd({ directory, packageInfo, cases, codecFiles
     report.workerdPackageVersion = JSON.parse(await fs.readFile(path.join(directory, 'node_modules/workerd/package.json'))).version;
     report.esbuildVersion = JSON.parse(await fs.readFile(path.join(directory, 'node_modules/esbuild/package.json'))).version;
     report.workerdCommand = `${binary} serve <isolated-install>/edge-config.capnp config`;
+    report.failureStage = 'bundle-and-static-module-staging';
     const bundle = await buildEdge(directory, codecFiles, packageInfo);
     Object.assign(report, bundle);
+    report.failureStage = 'isolate-launch';
+    if (diagnosticCase) {
+      report.diagnostic = await runDiagnosticCase(directory, binary, diagnosticCase, outputDir, bundle.delivery);
+      report.apiReached = report.diagnostic.apiReached;
+      report.failureStage = report.diagnostic.failureStage;
+      report.diagnosticValidation = report.diagnostic.diagnosticValidation;
+      report.status = 'FAIL'; // Intentional image-processing failure remains a nonzero CLI result.
+      return report;
+    }
     const probe = { id: 'probe-jpeg-webp', input: path.resolve(sourceDir, '../fixtures/test_100KB_1057x1057.jpg'),
       options: { format: 'webp', maxWidth: 320, maxHeight: 320, targetBytes: 50000,
         minQuality: 45, maxQuality: 86, qualityFloorPolicy: 'best-effort', output: 'arrayBuffer' } };
     report.probeInput = { path: path.relative(path.resolve(sourceDir, '../..'), probe.input),
       sha256: sha256(await fs.readFile(probe.input)), options: probe.options };
+    report.failureStage = 'image-processing';
     report.probe = await runCase(directory, binary, probe, outputDir, validateOutput);
+    report.apiReached = true;
     for (const item of cases) {
       try {
         report.results.push(await runCase(directory, binary, item, outputDir, validateOutput));
       } catch (error) {
-        report.results.push({ id: item.id, status: 'FAIL', reason: error.message });
+        report.results.push(error.failedCase ?? { id: item.id, status: 'FAIL', reason: error.message });
         throw error;
       }
     }
     report.coldCondition = 'new workerd process per case; health check does not create optimizer; two warm requests reuse isolate and optimizer';
     report.loadMode = 'static workerd WebAssembly.Module imports passed to published /edge wasmModules';
     report.status = 'PASS';
+    report.failureStage = null;
     return report;
   } catch (error) {
     report.status = error.verdict ?? 'FAIL';
+    if (error.failedCase && !report.probe) report.probe = error.failedCase;
+    report.apiReached = error.apiReached ?? report.apiReached;
+    report.failureStage = error.failureStage ?? report.failureStage;
     report.error = { message: error.message, stack: error.stack };
     error.partialEdgeResults = report;
     throw error;
