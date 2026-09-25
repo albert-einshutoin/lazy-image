@@ -1,0 +1,1126 @@
+{
+  "generatedAt": "2026-09-25T19:02:43.487Z",
+  "imageGenerationCodeSha": "7170524af778ed1d237ce9def4e86720a7e03807",
+  "imageGenerationSourceHashes": {
+    "test/benchmarks/wasm-quality-photo-run.mjs": "41f1eb9836073d9b0abf77ee44f40393ee380e7b97cde68d82786d5cbc9547fc",
+    "test/benchmarks/wasm-quality-browser-main.mjs": "9d2d86b75adea0a292bdf3e18e43864f1fe5af1dacbf06701e3a1487d2d566a7",
+    "test/benchmarks/wasm-browser-worker-default.mjs": "337887451025b07bd8e4c655d156b1661d61b88daba7293d178136a64fa358f8"
+  },
+  "sourceDirty": false,
+  "command": "node test/benchmarks/wasm-quality-photo-run.mjs",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.2.0",
+    "npm": "11.3.0",
+    "osVersion": "27.0",
+    "chrome": "Google Chrome 153.0.8010.53",
+    "runtime": "Chrome DedicatedWorkerGlobalScope, same-origin HTTP, Cache-Control: no-store",
+    "worker": "published /worker; no wasmModules",
+    "bundler": "esbuild 0.25.10",
+    "browserVersion": "153.0.8010.53",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+  },
+  "package": {
+    "registry": "https://registry.npmjs.org/",
+    "tarballIntegrity": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
+    "registryIntegrity": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
+    "packageJsonSha256": "e0c2a979459a02845ee30049186fda69bba8d2001609dcb61fd4ac8bcedeb275",
+    "workerSha256": "5515069ef856042fb80c9714a3049db9a686647152ba184b1d3648f35299d0b7",
+    "browserSha256": "cb49e120559b829b8ba0e44eb5261ca1e8749db797518006ba32ca9bd11c8946",
+    "sharedSha256": "cc97d974227bdec75c170f87aab3ef4787958f2c18ab1ba463cdcd96eaa8172d",
+    "installedPackages": {
+      "@alberteinshutoin/lazy-image-wasm": {
+        "version": "1.4.0",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.4.0.tgz",
+        "integrity": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew=="
+      },
+      "@jsquash/jpeg": {
+        "version": "1.6.0",
+        "resolved": "https://registry.npmjs.org/@jsquash/jpeg/-/jpeg-1.6.0.tgz",
+        "integrity": "sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA=="
+      },
+      "@jsquash/png": {
+        "version": "3.1.1",
+        "resolved": "https://registry.npmjs.org/@jsquash/png/-/png-3.1.1.tgz",
+        "integrity": "sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw=="
+      },
+      "@jsquash/resize": {
+        "version": "2.1.1",
+        "resolved": "https://registry.npmjs.org/@jsquash/resize/-/resize-2.1.1.tgz",
+        "integrity": "sha512-0R5UL1ZLHUT+carjVikcE1QfA+kfNQ2YamYyGVRmhfh4zttU5EY3bQBGxPIPtY2xIAw1P4Kgyxm2xrceRw1r2w=="
+      },
+      "@jsquash/webp": {
+        "version": "1.5.0",
+        "resolved": "https://registry.npmjs.org/@jsquash/webp/-/webp-1.5.0.tgz",
+        "integrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw=="
+      },
+      "esbuild": {
+        "version": "0.25.10",
+        "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.10.tgz",
+        "integrity": "sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ=="
+      }
+    }
+  },
+  "inputs": {
+    "coffee": {
+      "path": "test/benchmarks/corpus/images/coffee.png",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "category": "photo",
+      "license": "CC0-1.0",
+      "source": {
+        "kind": "photograph",
+        "author": "Rachel Michetti",
+        "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+        "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+        "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+      }
+    },
+    "chelsea": {
+      "path": "test/benchmarks/corpus/images/chelsea.png",
+      "bytes": 240512,
+      "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+      "category": "photo",
+      "license": "CC0-1.0",
+      "source": {
+        "kind": "photograph",
+        "author": "Stefan van der Walt",
+        "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/chelsea.png",
+        "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+        "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+      }
+    }
+  },
+  "assets": {
+    "workerBundleSha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5",
+    "bundleInputs": [
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/utils.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/codec/dec/mozjpeg_dec.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/codec/enc/mozjpeg_enc.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/jpeg/encode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/png/codec/pkg/squoosh_png.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/png/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/util.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/lib/resize/pkg/squoosh_resize.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/lib/hqx/pkg/squooshhqx.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/lib/magic-kernel/pkg/jsquash_magic_kernel.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/resize/index.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/codec/dec/webp_dec.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/utils.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/wasm-feature-detect/dist/esm/index.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/codec/enc/webp_enc_simd.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/codec/enc/webp_enc.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@jsquash/webp/encode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/node_modules/@alberteinshutoin/lazy-image-wasm/worker.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-quality-vC2suN/worker-entry.mjs"
+    ],
+    "copiedWasmSources": {
+      "/mozjpeg_dec.wasm": {
+        "package": "@jsquash/jpeg",
+        "relativePath": "codec/dec/mozjpeg_dec.wasm",
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      "/mozjpeg_enc.wasm": {
+        "package": "@jsquash/jpeg",
+        "relativePath": "codec/enc/mozjpeg_enc.wasm",
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      },
+      "/squoosh_png_bg.wasm": {
+        "package": "@jsquash/png",
+        "relativePath": "codec/pkg/squoosh_png_bg.wasm",
+        "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+      },
+      "/squooshhqx_bg.wasm": {
+        "package": "@jsquash/resize",
+        "relativePath": "lib/hqx/pkg/squooshhqx_bg.wasm",
+        "sha256": "812617712f0444b09ee61d72f9b2dab6cdd7fed3e9c74cc57e4dd6c80f4a4c80"
+      },
+      "/jsquash_magic_kernel_bg.wasm": {
+        "package": "@jsquash/resize",
+        "relativePath": "lib/magic-kernel/pkg/jsquash_magic_kernel_bg.wasm",
+        "sha256": "f3d1b2e550d4de73abc2a1ed9c89adde4b0eed80009e730b4c3a0ae415f8122d"
+      },
+      "/squoosh_resize_bg.wasm": {
+        "package": "@jsquash/resize",
+        "relativePath": "lib/resize/pkg/squoosh_resize_bg.wasm",
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      "/webp_dec.wasm": {
+        "package": "@jsquash/webp",
+        "relativePath": "codec/dec/webp_dec.wasm",
+        "sha256": "30fb52fa2a80166d25ba7debf902218904ba1f05ccce9f959f722beff9e2f344"
+      },
+      "/webp_enc.wasm": {
+        "package": "@jsquash/webp",
+        "relativePath": "codec/enc/webp_enc.wasm",
+        "sha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7"
+      },
+      "/webp_enc_simd.wasm": {
+        "package": "@jsquash/webp",
+        "relativePath": "codec/enc/webp_enc_simd.wasm",
+        "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+      }
+    }
+  },
+  "requests": [
+    {
+      "url": "/",
+      "status": 200,
+      "contentType": "text/html",
+      "contentEncoding": "gzip",
+      "bytes": 91,
+      "sha256": "f87e7a487ab8126ab82d15284a8a53316f5fb73cc64d7eaea1a91ffea0d0907c"
+    },
+    {
+      "url": "/main.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "contentEncoding": "gzip",
+      "bytes": 3412,
+      "sha256": "9d2d86b75adea0a292bdf3e18e43864f1fe5af1dacbf06701e3a1487d2d566a7"
+    },
+    {
+      "url": "/input/coffee",
+      "status": 200,
+      "contentType": "image/png",
+      "contentEncoding": "gzip",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    {
+      "url": "/favicon.ico",
+      "status": 404
+    },
+    {
+      "url": "/worker.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "contentEncoding": "gzip",
+      "bytes": 328411,
+      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+    },
+    {
+      "url": "/squoosh_png_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 181088,
+      "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+    },
+    {
+      "url": "/squoosh_resize_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 34545,
+      "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+    },
+    {
+      "url": "/mozjpeg_enc.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 251524,
+      "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+    },
+    {
+      "url": "/worker.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "contentEncoding": "gzip",
+      "bytes": 328411,
+      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+    },
+    {
+      "url": "/squoosh_png_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 181088,
+      "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+    },
+    {
+      "url": "/squoosh_resize_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 34545,
+      "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+    },
+    {
+      "url": "/webp_enc_simd.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 345584,
+      "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+    },
+    {
+      "url": "/input/chelsea",
+      "status": 200,
+      "contentType": "image/png",
+      "contentEncoding": "gzip",
+      "bytes": 240512,
+      "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb"
+    },
+    {
+      "url": "/worker.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "contentEncoding": "gzip",
+      "bytes": 328411,
+      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+    },
+    {
+      "url": "/squoosh_png_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 181088,
+      "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+    },
+    {
+      "url": "/squoosh_resize_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 34545,
+      "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+    },
+    {
+      "url": "/mozjpeg_enc.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 251524,
+      "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+    },
+    {
+      "url": "/worker.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "contentEncoding": "gzip",
+      "bytes": 328411,
+      "sha256": "7b686b1257bb4f691a553e695863c64f378a9533fbe1c86f80756fb64cde36b5"
+    },
+    {
+      "url": "/squoosh_png_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 181088,
+      "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+    },
+    {
+      "url": "/squoosh_resize_bg.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 34545,
+      "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+    },
+    {
+      "url": "/webp_enc_simd.wasm",
+      "status": 200,
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "bytes": 345584,
+      "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+    }
+  ],
+  "cases": [
+    {
+      "inputId": "coffee",
+      "format": "jpeg",
+      "condition": "none",
+      "targetBytes": null,
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "jpeg",
+        "qualityUsed": 85,
+        "bytesOut": 19317,
+        "budgetMet": true,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 466706,
+          "bytesOut": 19317,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 600,
+          "heightIn": 400,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 85,
+          "budgetMet": true,
+          "instantiateMs": 0.10000002384185791,
+          "decodeMs": 38.599999994039536,
+          "opsMs": 51.400000005960464,
+          "encodeMs": 37.900000005960464,
+          "totalMs": 128,
+          "firstEncodeMs": 37.80000001192093,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "coffee-jpeg-none.jpg",
+        "sha256": "9b714410b1c7f1043a2760823c935b072502970e7ea3576ac92fc2dd8eef88f4",
+        "bytes": 19317,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      }
+    },
+    {
+      "inputId": "coffee",
+      "format": "jpeg",
+      "condition": "80%",
+      "targetBytes": 15453,
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 15453
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "jpeg",
+        "qualityUsed": 79,
+        "bytesOut": 13466,
+        "budgetMet": true,
+        "targetBytes": 15453,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 466706,
+          "bytesOut": 13466,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 600,
+          "heightIn": 400,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 79,
+          "budgetMet": true,
+          "targetBytes": 15453,
+          "instantiateMs": 0.10000002384185791,
+          "decodeMs": 5.0999999940395355,
+          "opsMs": 10,
+          "encodeMs": 63.900000005960464,
+          "totalMs": 79,
+          "firstEncodeMs": 9.599999994039536,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "coffee-jpeg-80.jpg",
+        "sha256": "dc31ceeafca0e3e50fdb6b9b81117d66bafa596bdc2753cb536563eaeb836010",
+        "bytes": 13466,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      }
+    },
+    {
+      "inputId": "coffee",
+      "format": "jpeg",
+      "condition": "50%",
+      "targetBytes": 9658,
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 9658
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "jpeg",
+        "qualityUsed": 64,
+        "bytesOut": 9506,
+        "budgetMet": true,
+        "targetBytes": 9658,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 466706,
+          "bytesOut": 9506,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 600,
+          "heightIn": 400,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 64,
+          "budgetMet": true,
+          "targetBytes": 9658,
+          "instantiateMs": 0.10000002384185791,
+          "decodeMs": 5.199999988079071,
+          "opsMs": 9.300000011920929,
+          "encodeMs": 48,
+          "totalMs": 62.5,
+          "firstEncodeMs": 8.5,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "coffee-jpeg-50.jpg",
+        "sha256": "4edcfc418041dd9045faf4d6d08bfb63d27702c95c948933c6f386c03ca46562",
+        "bytes": 9506,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      }
+    },
+    {
+      "inputId": "coffee",
+      "format": "webp",
+      "condition": "none",
+      "targetBytes": null,
+      "options": {
+        "format": "webp",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "webp",
+        "qualityUsed": 85,
+        "bytesOut": 17008,
+        "budgetMet": true,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 466706,
+          "bytesOut": 17008,
+          "formatIn": "png",
+          "formatOut": "webp",
+          "widthIn": 600,
+          "heightIn": 400,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 85,
+          "budgetMet": true,
+          "instantiateMs": 0,
+          "decodeMs": 18.799999982118607,
+          "opsMs": 27,
+          "encodeMs": 25.5,
+          "totalMs": 71.40000000596046,
+          "firstEncodeMs": 25.400000005960464,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "coffee-webp-none.webp",
+        "sha256": "80ba14f5c7cc573c5ecfd8cfc18da60276f3694cf180151fd08e42e0a8ce4ec8",
+        "bytes": 17008,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      }
+    },
+    {
+      "inputId": "coffee",
+      "format": "webp",
+      "condition": "80%",
+      "targetBytes": 13606,
+      "options": {
+        "format": "webp",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 13606
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "webp",
+        "qualityUsed": 79,
+        "bytesOut": 13380,
+        "budgetMet": true,
+        "targetBytes": 13606,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 466706,
+          "bytesOut": 13380,
+          "formatIn": "png",
+          "formatOut": "webp",
+          "widthIn": 600,
+          "heightIn": 400,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 79,
+          "budgetMet": true,
+          "targetBytes": 13606,
+          "instantiateMs": 0,
+          "decodeMs": 4.800000011920929,
+          "opsMs": 9.599999994039536,
+          "encodeMs": 36.5,
+          "totalMs": 50.900000005960464,
+          "firstEncodeMs": 6.5999999940395355,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "coffee-webp-80.webp",
+        "sha256": "bdfdd7bba3b1f79c6ca62707d07131bdce3fca149a2dc06d0b4f068cdbcf5d02",
+        "bytes": 13380,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      }
+    },
+    {
+      "inputId": "coffee",
+      "format": "webp",
+      "condition": "50%",
+      "targetBytes": 8504,
+      "options": {
+        "format": "webp",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 8504
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "webp",
+        "qualityUsed": 51,
+        "bytesOut": 8492,
+        "budgetMet": true,
+        "targetBytes": 8504,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 466706,
+          "bytesOut": 8492,
+          "formatIn": "png",
+          "formatOut": "webp",
+          "widthIn": 600,
+          "heightIn": 400,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 51,
+          "budgetMet": true,
+          "targetBytes": 8504,
+          "instantiateMs": 0,
+          "decodeMs": 4.9000000059604645,
+          "opsMs": 9.099999994039536,
+          "encodeMs": 26.599999994039536,
+          "totalMs": 40.599999994039536,
+          "firstEncodeMs": 5.5999999940395355,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "coffee-webp-50.webp",
+        "sha256": "a97830eae877cebda727b6b5389dc522f1e885cb4b357764e12e2dd49292d3e1",
+        "bytes": 8492,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      }
+    },
+    {
+      "inputId": "chelsea",
+      "format": "jpeg",
+      "condition": "none",
+      "targetBytes": null,
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "jpeg",
+        "qualityUsed": 85,
+        "bytesOut": 14113,
+        "budgetMet": true,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 240512,
+          "bytesOut": 14113,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 451,
+          "heightIn": 300,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 85,
+          "budgetMet": true,
+          "instantiateMs": 0,
+          "decodeMs": 14.099999994039536,
+          "opsMs": 21.299999982118607,
+          "encodeMs": 24.5,
+          "totalMs": 60.099999994039536,
+          "firstEncodeMs": 24.299999982118607,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "chelsea-jpeg-none.jpg",
+        "sha256": "3fee0d83b592c6dfd2152c6aafa31b5ac8dcef98c0b16eeab315872f9bd3fb29",
+        "bytes": 14113,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      }
+    },
+    {
+      "inputId": "chelsea",
+      "format": "jpeg",
+      "condition": "80%",
+      "targetBytes": 11290,
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 11290
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "jpeg",
+        "qualityUsed": 79,
+        "bytesOut": 10260,
+        "budgetMet": true,
+        "targetBytes": 11290,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 240512,
+          "bytesOut": 10260,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 451,
+          "heightIn": 300,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 79,
+          "budgetMet": true,
+          "targetBytes": 11290,
+          "instantiateMs": 0,
+          "decodeMs": 3,
+          "opsMs": 8.900000005960464,
+          "encodeMs": 47.69999998807907,
+          "totalMs": 59.599999994039536,
+          "firstEncodeMs": 6.9000000059604645,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "chelsea-jpeg-80.jpg",
+        "sha256": "31aaea3ae34bbd6478f21677e85e4cd7a2422d34d0d10e83b26e4fa24dd46e70",
+        "bytes": 10260,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      }
+    },
+    {
+      "inputId": "chelsea",
+      "format": "jpeg",
+      "condition": "50%",
+      "targetBytes": 7056,
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 7056
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "jpeg",
+        "qualityUsed": 62,
+        "bytesOut": 7016,
+        "budgetMet": true,
+        "targetBytes": 7056,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 240512,
+          "bytesOut": 7016,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 451,
+          "heightIn": 300,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 62,
+          "budgetMet": true,
+          "targetBytes": 7056,
+          "instantiateMs": 0,
+          "decodeMs": 3.0999999940395355,
+          "opsMs": 8.599999994039536,
+          "encodeMs": 31.80000001192093,
+          "totalMs": 43.5,
+          "firstEncodeMs": 6.700000017881393,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "chelsea-jpeg-50.jpg",
+        "sha256": "9670c7b19c80884b5780629ef118df4224b9c087268c3cf6894f47c82fc1559f",
+        "bytes": 7016,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      }
+    },
+    {
+      "inputId": "chelsea",
+      "format": "webp",
+      "condition": "none",
+      "targetBytes": null,
+      "options": {
+        "format": "webp",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "webp",
+        "qualityUsed": 85,
+        "bytesOut": 12300,
+        "budgetMet": true,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 240512,
+          "bytesOut": 12300,
+          "formatIn": "png",
+          "formatOut": "webp",
+          "widthIn": 451,
+          "heightIn": 300,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 85,
+          "budgetMet": true,
+          "instantiateMs": 0.09999999403953552,
+          "decodeMs": 13.900000005960464,
+          "opsMs": 20.80000001192093,
+          "encodeMs": 24.799999982118607,
+          "totalMs": 59.599999994039536,
+          "firstEncodeMs": 24.69999998807907,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "chelsea-webp-none.webp",
+        "sha256": "3dca111d0e3e69f734406b53020a09db5b05c799d63be6b8c0c5e0599a0a1223",
+        "bytes": 12300,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      }
+    },
+    {
+      "inputId": "chelsea",
+      "format": "webp",
+      "condition": "80%",
+      "targetBytes": 9840,
+      "options": {
+        "format": "webp",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 9840
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "webp",
+        "qualityUsed": 79,
+        "bytesOut": 9626,
+        "budgetMet": true,
+        "targetBytes": 9840,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 240512,
+          "bytesOut": 9626,
+          "formatIn": "png",
+          "formatOut": "webp",
+          "widthIn": 451,
+          "heightIn": 300,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 79,
+          "budgetMet": true,
+          "targetBytes": 9840,
+          "instantiateMs": 0.09999999403953552,
+          "decodeMs": 3.0999999940395355,
+          "opsMs": 9.5,
+          "encodeMs": 35.400000005960464,
+          "totalMs": 48,
+          "firstEncodeMs": 6.5999999940395355,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "chelsea-webp-80.webp",
+        "sha256": "8664e295bfe4da1c38def8d2fdd430b9f2bdf8d2e4f6c11c8899f0df630b73b4",
+        "bytes": 9626,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      }
+    },
+    {
+      "inputId": "chelsea",
+      "format": "webp",
+      "condition": "50%",
+      "targetBytes": 6150,
+      "options": {
+        "format": "webp",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "fit": "inside",
+        "profile": "upload-safe",
+        "minQuality": 45,
+        "maxQuality": 85,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer",
+        "targetBytes": 6150
+      },
+      "ok": true,
+      "error": null,
+      "result": {
+        "format": "webp",
+        "qualityUsed": 55,
+        "bytesOut": 6148,
+        "budgetMet": true,
+        "targetBytes": 6150,
+        "metrics": {
+          "version": "1.4.0",
+          "runtime": "browser-worker",
+          "bytesIn": 240512,
+          "bytesOut": 6148,
+          "formatIn": "png",
+          "formatOut": "webp",
+          "widthIn": 451,
+          "heightIn": 300,
+          "widthOut": 320,
+          "heightOut": 213,
+          "qualityUsed": 55,
+          "budgetMet": true,
+          "targetBytes": 6150,
+          "instantiateMs": 0.09999999403953552,
+          "decodeMs": 2.800000011920929,
+          "opsMs": 8.599999994039536,
+          "encodeMs": 26.400000005960464,
+          "totalMs": 37.80000001192093,
+          "firstEncodeMs": 5.4000000059604645,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        }
+      },
+      "output": {
+        "file": "chelsea-webp-50.webp",
+        "sha256": "f89f54da328903a10d78853ff41de95382c584076836798cd98fc4f89b87f9e0",
+        "bytes": 6148,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      }
+    }
+  ],
+  "verdict": "PASS",
+  "setup": [
+    {
+      "inputId": "coffee",
+      "format": "jpeg",
+      "type": "setup",
+      "workerScope": "DedicatedWorkerGlobalScope",
+      "hasNativeImageData": true,
+      "hasWebAssembly": true,
+      "assetBytes": {}
+    },
+    {
+      "inputId": "coffee",
+      "format": "webp",
+      "type": "setup",
+      "workerScope": "DedicatedWorkerGlobalScope",
+      "hasNativeImageData": true,
+      "hasWebAssembly": true,
+      "assetBytes": {}
+    },
+    {
+      "inputId": "chelsea",
+      "format": "jpeg",
+      "type": "setup",
+      "workerScope": "DedicatedWorkerGlobalScope",
+      "hasNativeImageData": true,
+      "hasWebAssembly": true,
+      "assetBytes": {}
+    },
+    {
+      "inputId": "chelsea",
+      "format": "webp",
+      "type": "setup",
+      "workerScope": "DedicatedWorkerGlobalScope",
+      "hasNativeImageData": true,
+      "hasWebAssembly": true,
+      "assetBytes": {}
+    }
+  ],
+  "requestedWasm": [
+    {
+      "url": "/squoosh_png_bg.wasm",
+      "package": "@jsquash/png",
+      "relativePath": "codec/pkg/squoosh_png_bg.wasm",
+      "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+    },
+    {
+      "url": "/squoosh_resize_bg.wasm",
+      "package": "@jsquash/resize",
+      "relativePath": "lib/resize/pkg/squoosh_resize_bg.wasm",
+      "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+    },
+    {
+      "url": "/mozjpeg_enc.wasm",
+      "package": "@jsquash/jpeg",
+      "relativePath": "codec/enc/mozjpeg_enc.wasm",
+      "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+    },
+    {
+      "url": "/webp_enc_simd.wasm",
+      "package": "@jsquash/webp",
+      "relativePath": "codec/enc/webp_enc_simd.wasm",
+      "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+    }
+  ]
+}
