@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Web image optimization engine for Node.js with Image Firewall-backed secure upload defaults and smaller JPEG outputs in canonical PNG \u2192 JPEG benchmarks, powered by Rust + mozjpeg",
   "main": "index.js",
   "bin": {
@@ -121,12 +121,12 @@
     ]
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "1.3.1",
-    "@alberteinshutoin/lazy-image-darwin-x64": "1.3.1",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.3.1",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.3.1",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.3.1",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.3.1"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "1.4.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "1.4.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.4.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.4.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.4.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.4.0"
   },
   "engines": {
     "node": ">= 22"

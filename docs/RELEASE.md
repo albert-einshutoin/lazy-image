@@ -77,6 +77,7 @@ The files below need to move from the current version to the new one. Skipping a
 | `package-lock.json` | Root `version`, root `packages[""]` block, workspace package entry, and the six `@alberteinshutoin/lazy-image-*` optional dependency entries for the new version. Before publish, npm may keep the platform package lock entries as optional placeholders because the new packages are not in the registry yet. | `npm install --package-lock-only --ignore-scripts` |
 | `Cargo.toml` | `[package].version` | Manual edit |
 | `Cargo.lock` | `lazy-image` entry | `cargo update -p lazy-image` |
+| `fuzz/Cargo.lock` | `lazy-image` entry used by fuzz checks | `cargo update -p lazy-image --manifest-path fuzz/Cargo.toml` |
 | `index.js` | Generated native loader version checks | `npm run build` |
 | `CHANGELOG.md` | Add new `[X.Y.Z]` section under `[Unreleased]` | Manual edit |
 
