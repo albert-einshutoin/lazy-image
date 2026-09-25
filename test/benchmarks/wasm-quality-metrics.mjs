@@ -54,12 +54,15 @@ export async function pixelMetadata(bytes) {
 
 export async function makeReference(inputBytes, { width, height }) {
   const input = await pixelMetadata(inputBytes);
-  const bytes = await sharp(inputBytes).autoOrient().toColourspace('srgb')
+  // Materialize oriented sRGB first so ICC conversion precedes resizing in the reference.
+  const orientedSrgb = await sharp(inputBytes).autoOrient().toColourspace('srgb')
+    .png({ compressionLevel: 9 }).toBuffer();
+  const bytes = await sharp(orientedSrgb)
     .resize({ width, height, fit: 'inside', kernel: 'lanczos3',
       withoutEnlargement: true, fastShrinkOnLoad: false })
     .png({ compressionLevel: 9 }).toBuffer();
   const reference = await pixelMetadata(bytes);
-  return { bytes, input, reference };
+  return { bytes, input, reference, orientedSrgbSha256: sha256(orientedSrgb) };
 }
 
 export async function score(referenceBytes, outputBytes) {

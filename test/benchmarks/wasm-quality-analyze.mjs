@@ -41,6 +41,7 @@ async function reference(id, inputFile, expectedHash, dimensions, references) {
     bytes: inputBytes.length, ...generated.input },
     reference: { path: relative(file), sha256: sha256(generated.bytes),
       bytes: generated.bytes.length, ...generated.reference },
+    preResizeOrientedSrgbSha256: generated.orientedSrgbSha256,
     policyDimensions: dimensions,
     referenceTool: { sharp: sharp.versions.sharp, libvips: sharp.versions.vips,
       jpeg: sharp.versions.mozjpeg, png: sharp.versions.png, webp: sharp.versions.webp,

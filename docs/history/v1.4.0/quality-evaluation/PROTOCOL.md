@@ -26,9 +26,10 @@
 
 元入力を sharp 0.35.0 / libvips 8.18.3 でデコードする。EXIF Orientationを
 `autoOrient()` で適用し、ICCがあれば入力プロファイルからsRGBへ変換し、
-なければ入力をsRGBと解釈する。その後 `toColourspace('srgb')`、
-`resize({width, height, fit:'inside', kernel:'lanczos3', withoutEnlargement:true,
-fastShrinkOnLoad:false})`、メタデータを付けないPNGへ出力する。
+なければ入力をsRGBと解釈する。`toColourspace('srgb')` の結果を
+メタデータなしのPNGとして一度materializeし、そのSHA-256を記録する。
+この中間画像を `resize({width, height, fit:'inside', kernel:'lanczos3',
+withoutEnlargement:true, fastShrinkOnLoad:false})` し、メタデータなしのPNGへ出力する。
 保存済み入力には元policyの最大寸法、写真には320×320を使う。
 PNGは非可逆再符号化せず参照として保存し、入力・参照のSHA-256、
 EXIF/ICC/alpha、寸法を記録する。alphaが実画素に存在する組は
