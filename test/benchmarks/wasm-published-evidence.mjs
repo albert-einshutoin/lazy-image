@@ -622,6 +622,11 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     osRelease: os.release(), arch: process.arch, registry, packages: null, toolchainBinaries: null, importPath: null,
     isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim',
     runtimeClassification: 'Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof',
+    nodeExecution: runtime === 'node' || runtime === 'all'
+      ? { label: 'Node上のWasm実行／ImageData shim・Wasm bytes明示注入',
+        processId: process.pid, importMethod: 'file URL of installed /browser export browser.js',
+        moduleMethod: 'five published codec Wasm byte buffers passed through wasmModules' }
+      : null,
     fixtures: null,
     nodeResults: null, nodeTotals: null, nodeModuleAssignments: null, nodeOptimizerCreationMs: null,
     nodeDiagnostic: null, nodeStage: runtime === 'node' || runtime === 'all'
