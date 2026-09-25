@@ -88,14 +88,14 @@ Bundle considerations:
 
 ## Worker
 
-The published v1.3.1 package can use the codecs' normal Wasm loader in a
+The package can use the codecs' normal Wasm loader in a
 Chrome module Worker. Install the package and a bundler, then put the Worker
 bundle and the **unchanged** published codec Wasm files at the same URL level.
 The codec loader resolves Wasm with `new URL(..., import.meta.url)`; the tested
 esbuild ESM bundle emits those URLs relative to `worker.js`.
 
 ```bash
-npm install @alberteinshutoin/lazy-image-wasm@1.3.1
+npm install @alberteinshutoin/lazy-image-wasm@1.4.0
 npm install --save-dev esbuild@0.25.10
 ./node_modules/.bin/esbuild worker.mjs --bundle --format=esm --platform=browser --target=es2022 --outfile=dist/worker.js
 find node_modules/@jsquash/{jpeg,png,resize,webp} -name '*.wasm' -exec cp {} dist/ \;
@@ -138,7 +138,7 @@ PNG→JPEG additionally fetched `squoosh_png_bg.wasm` and `mozjpeg_enc.wasm`.
 The copy command places all nine published codec Wasm files, allowing other
 supported paths and codec variants to resolve. Missing required Wasm fails
 image processing. The reproducible HTTP server, exact asset hashes, and output
-checks are in [the browser verification record](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
+checks for v1.3.1 are in [the browser verification record](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
 
 If the Worker returns `E131` for JPEG decoding, inspect its `message` and
 `recoveryHint` before changing the image. In the setup above, confirm

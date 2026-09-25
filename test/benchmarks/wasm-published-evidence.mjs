@@ -120,9 +120,15 @@ async function installPublished(version, directory, runtime, candidateTarball) {
       sha256: await binaryHash(workerdBinaryPackage, 'workerd') };
     assert.equal(toolchainBinaries.workerd.sha256, await binaryHash('workerd', 'workerd'));
   }
-  const sourceLicense = await pinnedLicense(
-    `https://raw.githubusercontent.com/albert-einshutoin/lazy-image/v${version}/LICENSE`,
-    version === '1.3.1' ? 'ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539' : null);
+  if (candidateTarball) {
+    assert.equal(command('git', ['status', '--porcelain', '--', 'LICENSE'], root), '',
+      'candidate source LICENSE differs from recorded commit');
+  }
+  const sourceLicense = candidateTarball
+    ? { path: path.join(root, 'LICENSE'), sourceCommit: command('git', ['rev-parse', 'HEAD'], root),
+      sha256: sha256(await fs.readFile(path.join(root, 'LICENSE'))) }
+    : await pinnedLicense(`https://raw.githubusercontent.com/albert-einshutoin/lazy-image/v${version}/LICENSE`,
+      version === '1.3.1' ? 'ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539' : null);
   const workerdLicense = workerdBinaryPackage ? await pinnedLicense(
     'https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE',
     '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594') : null;
@@ -519,7 +525,7 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     ...(candidateTarball ? { candidateVersion: version } : { publishedVersion: version }),
     sourceDirty, sourceFilesSha256, packageSource,
     command: `node test/benchmarks/wasm-upload-comparison.bench.js --runtime ${runtime} --version ${version}${['browser', 'all'].includes(runtime) ? ` --browser-load ${browserLoad}` : ''}${candidateTarball ? ` --candidate-tarball ${candidateTarball}` : ''}${withholdWasm ? ` --withhold-wasm ${withholdWasm}` : ''}${corruptJpeg ? ' --corrupt-jpeg' : ''}${workerdPath ? ` --workerd ${workerdPath}` : ''}`,
-    node: process.version, npm: command('npm', ['--version'], root), os: process.platform,
+    node: process.version, npm: null, os: process.platform,
     osVersion: process.platform === 'darwin' ? command('/usr/bin/sw_vers', ['-productVersion'], root) : os.version(),
     osRelease: os.release(), arch: process.arch, registry, packages: null, toolchainBinaries: null, importPath: null,
     isolatedInstall: directory, shim: 'Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim',
@@ -534,6 +540,7 @@ export async function collectPublishedWasmEvidence({ version, runtime, chromePat
     if (process.env.ESBUILD_BINARY_PATH !== undefined) {
       throw new Error('external esbuild override is unsupported: unset ESBUILD_BINARY_PATH');
     }
+    context.npm = command('npm', ['--version'], root);
     const packageInfo = await installPublished(version, directory, runtime, candidateTarball);
     if (candidateTarball) {
       for (const file of ['package.json', 'browser.js', 'worker.js', 'shared.js', 'edge.js', 'README.md']) {

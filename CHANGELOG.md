@@ -7,12 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-25
+
+Upgrade both packages with `npm install @alberteinshutoin/lazy-image@1.4.0 @alberteinshutoin/lazy-image-wasm@1.4.0` to receive the updated Worker diagnostics. The native platform packages use the same version.
+
+### Added
+- Wasm resize codec failures now have `E503` (`CodecError`,
+  `recoverable: false`). This adds a structured code where the underlying
+  resize exception was previously returned without one.
+
 ### Fixed
-- Wasm Worker codec failures now guide callers to check the selected `.wasm`
-  asset and DevTools Network before attributing E131 to a corrupt input.
-  Decode/encode diagnostics keep their existing error codes, categories, and
-  recoverability. Resize codec failures now use `E503` (`CodecError`), and
-  the Worker safely returns an error for unknown throw values.
+- Decode `E131` and encode `E300` retain their existing `code`, `category`,
+  and `recoverable` values while guiding callers to distinguish Wasm delivery
+  from image or codec processing failures. Check the selected `.wasm` beside
+  `worker.js`, then its request URL, HTTP status, and response in DevTools
+  Network. The API does not observe or report the codec fetch URL/status itself.
+- Explicit `wasmModules` compilation and initialization failures now return
+  the code and diagnostic for the affected decode, resize, or encode codec.
+- The Worker now returns a cloneable diagnostic even when the original throw
+  value has no usable message or cannot itself be cloned.
 
 ## [1.3.1] - 2026-09-24
 
@@ -659,7 +672,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.1...v1.4.0
+[1.3.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...v1.1.0
