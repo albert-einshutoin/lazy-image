@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Wasm Worker codec failures now guide callers to check the selected `.wasm`
+  asset and DevTools Network before attributing E131 to a corrupt input.
+  Decode/encode diagnostics keep their existing error codes, categories, and
+  recoverability. Resize codec failures now use `E503` (`CodecError`), and
+  the Worker safely returns an error for unknown throw values.
+
 ## [1.3.1] - 2026-09-24
 
 ### Fixed

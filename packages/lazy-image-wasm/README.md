@@ -118,7 +118,10 @@ Put the page in `dist/index.html` and serve `dist/` as the HTTP document root
 const file = document.querySelector('input[type=file]').files[0];
 const worker = new Worker('/worker.js', { type: 'module' });
 worker.onmessage = ({ data }) => {
-  if (!data.ok) throw new Error(`${data.error.code}: ${data.error.message}`);
+  if (!data.ok) {
+    console.error(data.error.code, data.error.message, data.error.recoveryHint);
+    return;
+  }
   const output = new Blob([data.result.data], { type: 'image/webp' });
   // Use or upload output.
 };
@@ -136,6 +139,19 @@ The copy command places all nine published codec Wasm files, allowing other
 supported paths and codec variants to resolve. Missing required Wasm fails
 image processing. The reproducible HTTP server, exact asset hashes, and output
 checks are in [the browser verification record](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
+
+If the Worker returns `E131` for JPEG decoding, inspect its `message` and
+`recoveryHint` before changing the image. In the setup above, confirm
+`dist/mozjpeg_dec.wasm` exists, then use Chrome DevTools **Network** to check
+the `.wasm` request URL and HTTP status. The response must contain Wasm bytes,
+not a 404 page or HTML. If Wasm delivery is correct, check the JPEG for
+corruption or a codec processing failure. `E503` during resizing follows the
+same check for `squoosh_resize_bg.wasm`. `E300` during WebP encoding follows
+the same check for the variant actually requested (`webp_enc_simd.wasm` in the
+verified Chrome setup). The error does **not** claim an HTTP status or URL it
+cannot observe; Network provides that evidence. The Worker returns the same
+`code`, `category`, `recoverable`, `message`, and `recoveryHint` as the direct
+API.
 
 `wasmModules` remains available for explicit injection when a runtime needs
 static module bindings, as in the Edge example above. The previously tested

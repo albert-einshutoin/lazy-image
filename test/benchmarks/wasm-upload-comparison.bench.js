@@ -456,7 +456,13 @@ async function run(runtimeFilter) {
     workerdPath: getArg('--workerd', null),
     browserLoad: getArg('--browser-load', 'injected'),
     withholdWasm: getArg('--withhold-wasm', null),
+    candidateTarball: getArg('--candidate-tarball', null),
+    corruptJpeg: process.argv.includes('--corrupt-jpeg'),
   });
+  if (evidence.packageSource.kind === 'candidate-tarball') {
+    console.log(`Candidate browser evidence saved to artifacts/benchmark/wasm-published-evidence.json`);
+    return;
+  }
 
   const rows = [];
   for (const scenario of SCENARIOS) {
