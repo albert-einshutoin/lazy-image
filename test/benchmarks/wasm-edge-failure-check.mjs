@@ -76,11 +76,18 @@ try {
       assert.equal(caught.partialEdgeResults.failureStage, 'image-processing');
       assert.equal(caught.partialEdgeResults.apiReached, true);
       assert.match(caught.message, /probe-jpeg-webp: E131/);
+      assert.equal(caught.partialEdgeResults.probe?.status, 'FAIL');
+      assert.equal(caught.partialEdgeResults.probe?.apiError?.code, 'E131');
+      assert.equal(caught.partialEdgeResults.probe?.apiError?.category, 'CodecError');
+      assert.equal(caught.partialEdgeResults.probe?.apiError?.recoverable, false);
+      assert.match(caught.partialEdgeResults.probe?.apiError?.recoveryHint, /DevTools Network/);
+      assert.equal(caught.partialEdgeResults.probe?.wrapperHttpStatus, 500);
     }
     console.log(JSON.stringify({ name: check.name, verdict: check.expected, reason: caught.message,
       failureStage: caught.partialEdgeResults.failureStage,
       apiReached: caught.partialEdgeResults.apiReached,
-      failedCases: caught.partialEdgeResults.results.filter((entry) => entry.status === 'FAIL') }));
+      failedCases: [caught.partialEdgeResults.probe, ...caught.partialEdgeResults.results]
+        .filter((entry) => entry?.status === 'FAIL') }));
   }
 } finally {
   await fs.rm(directory, { recursive: true, force: true });

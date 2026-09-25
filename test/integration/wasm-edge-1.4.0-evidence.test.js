@@ -85,13 +85,20 @@ async function main() {
     assert(!isolateIds.has(diagnostic.isolateId), `${name} reused an isolate`);
     isolateIds.add(diagnostic.isolateId);
   }
-  const failClosed = fs.readFileSync(path.join(snapshot, 'fail-closed.log'), 'utf8')
-    .split('\n').find((line) => line.includes('"name":"wasm-module-missing"'));
-  assert(failClosed, 'missing static Wasm startup failure was not saved');
-  const missing = JSON.parse(failClosed);
+  const failClosed = fs.readFileSync(path.join(snapshot, 'fail-closed.log'), 'utf8').trim()
+    .split('\n').map((line) => JSON.parse(line));
+  const missing = failClosed.find((entry) => entry.name === 'wasm-module-missing');
+  assert(missing, 'missing static Wasm startup failure was not saved');
   assert.equal(missing.verdict, 'FAIL');
   assert.equal(missing.failureStage, 'isolate-launch');
   assert.equal(missing.apiReached, false);
+  const mismatched = failClosed.find((entry) => entry.name === 'decoder-module-mismatch');
+  assert.equal(mismatched.apiReached, true);
+  assert.equal(mismatched.failedCases[0].apiError.code, 'E131');
+  assert.equal(mismatched.failedCases[0].apiError.category, 'CodecError');
+  assert.equal(mismatched.failedCases[0].apiError.recoverable, false);
+  assert.match(mismatched.failedCases[0].apiError.recoveryHint, /DevTools Network/);
+  assert.equal(mismatched.failedCases[0].wrapperHttpStatus, 500);
   console.log('published 1.4.0 Edge outputs, API diagnostics, and startup failure evidence PASS');
 }
 
