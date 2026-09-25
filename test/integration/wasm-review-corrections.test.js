@@ -68,7 +68,8 @@ async function main() {
   assert(savedSummary.rows.filter((row) => row.baselineType === 'native-reference' ||
     row.baselineType === 'published-package').every((row) => row.metadataStripped === null));
   assert.deepEqual(savedSummary.metadataVerification, metadata);
-  assert.equal(renderMarkdownReport(savedSummary), fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8'));
+  assert.equal(renderMarkdownReport(savedSummary),
+    fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8').replace(/\r\n/g, '\n'));
 
   const edgeEvidence = { ...evidence, edgeResults: { deploymentRawBytes: 777000,
     deploymentGzipBytes: 222000, results: evidence.nodeResults.map((entry) =>
