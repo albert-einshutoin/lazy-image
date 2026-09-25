@@ -31,10 +31,12 @@ async function main() {
           });
         }
         return { async optimizeUpload() {
-          throw Object.assign(new Error('jpeg decoder failed during image decoding'), {
+          const error = Object.assign(new Error('jpeg decoder failed during image decoding'), {
             code: 'E131', category: 'CodecError', recoverable: false,
             recoveryHint: 'Check the input image after confirming Wasm delivery.'
           });
+          if (globalThis.__lazyImageNodeOmitRecoverable) delete error.recoverable;
+          throw error;
         } };
       }
     `);
@@ -70,8 +72,14 @@ async function main() {
           createHash('sha256').update(bytes).digest('hex'));
       }
     }
+    globalThis.__lazyImageNodeOmitRecoverable = true;
+    const missing = await runNode(packageInfo, directory, cases,
+      { diagnosticCase: 'corrupt-jpeg', artifactDirectory: directory });
+    assert.equal(Object.hasOwn(missing.diagnostic.apiError, 'recoverable'), false);
+    assert.equal(missing.diagnosticValidation.status, 'FAIL');
     console.log('Node diagnostic collector preserves initialization and decode API errors');
   } finally {
+    delete globalThis.__lazyImageNodeOmitRecoverable;
     await fs.rm(directory, { recursive: true, force: true });
   }
 }

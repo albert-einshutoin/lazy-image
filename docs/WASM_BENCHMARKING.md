@@ -21,6 +21,22 @@ Its `--edge-diagnostic` commands keep intentional image-processing failures
 as nonzero exits and validate the expected API errors separately. Each command
 overwrites the raw evidence path, so save its JSON, log, and images before the
 next run.
+The published v1.4.0 Node rerun is in
+[WASM_1.4.0_NODE_VERIFICATION.md](./history/WASM_1.4.0_NODE_VERIFICATION.md).
+It runs the installed `/browser` implementation in a **Node process** using
+the `ImageData` shim and five explicitly injected published codec Wasm byte
+buffers. Its positive run and two fresh-process API diagnostics use:
+
+```bash
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.4.0
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.4.0 --node-diagnostic corrupt-jpeg
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.4.0 --node-diagnostic resize-init
+```
+
+The negative commands intentionally exit nonzero and preserve the API's
+`code`, `category`, `recoverable`, `message`, and `recoveryHint` in raw evidence.
+Only `diagnosticValidation.status: PASS` confirms the expected failure; the
+record gives the commands that save each overwritten run separately.
 
 ## Reproduce
 
