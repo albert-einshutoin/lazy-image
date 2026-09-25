@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-25T10:47:10.808Z",
-  "sourceSha": "66aa6ff8a50759fa494838d2ad8a32a7ef97fa14",
+  "generatedAt": "2026-09-25T10:56:15.406Z",
+  "sourceSha": "9c22cf3cdeeb7aa515b59107a2834e2c14495323",
   "publishedVersion": "1.4.0",
   "sourceDirty": false,
-  "sourceFilesSha256": "f00002caa2a013195f960455e9f1e4cffa73c2507d358a3ecc1174c9193c778e",
+  "sourceFilesSha256": "a5ff76cdd2586f1cbff6b7717e0583dff570853ea4eaeabe71a9217d93fc46f5",
   "packageSource": {
     "kind": "published-registry",
     "registry": "https://registry.npmjs.org/"
@@ -133,8 +133,8 @@
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c"
     }
   },
-  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
-  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x",
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji",
   "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
   "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
   "fixtures": [
@@ -217,31 +217,31 @@
     "runtime": "local workerd",
     "compatibilityDate": "2026-09-24",
     "compatibilityFlags": [],
-    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
+    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
     "results": [
       {
         "id": "jpeg-webp",
         "status": "PASS",
         "launchCommand": [
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/.bin/workerd",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/.bin/workerd",
           "serve",
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/edge-config.capnp",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/edge-config.capnp",
           "config"
         ],
         "imageDataType": "function",
-        "coldFromBeforeRuntimeMs": 3711.84625,
-        "startupToReadyMs": 29.71912499999962,
-        "firstRequestMs": 3681.4057920000005,
+        "coldFromBeforeRuntimeMs": 3705.500125,
+        "startupToReadyMs": 29.406541999999718,
+        "firstRequestMs": 3675.5564579999996,
         "warmMs": [
-          2628.2734579999997,
-          2572.9222499999996
+          2672.5188340000004,
+          2566.5696669999998
         ],
-        "warmMedianMs": 2600.5978539999996,
-        "isolateId": "c71b0c57-5b06-47ba-91ab-3e487aa5c56e",
+        "warmMedianMs": 2619.5442505,
+        "isolateId": "4ead077d-e2ef-4800-bc1c-d51d1046659f",
         "optimizerCreations": 1,
         "clock": {
           "status": "unavailable",
-          "reason": "diagnostic request failed after image processing: fetch failed; cause: read ECONNRESET; workerd exit: null"
+          "reason": "diagnostic request failed after image processing: fetch failed; cause: other side closed; workerd exit: null"
         },
         "metrics": {
           "version": "1.4.0",
@@ -258,11 +258,11 @@
           "budgetMet": true,
           "targetBytes": 500000,
           "instantiateMs": 4,
-          "decodeMs": 272,
-          "opsMs": 1630,
-          "encodeMs": 1770,
-          "totalMs": 3672,
-          "firstEncodeMs": 282,
+          "decodeMs": 303,
+          "opsMs": 1600,
+          "encodeMs": 1764,
+          "totalMs": 3667,
+          "firstEncodeMs": 285,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -289,27 +289,27 @@
         "id": "png-jpeg",
         "status": "PASS",
         "launchCommand": [
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/.bin/workerd",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/.bin/workerd",
           "serve",
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/edge-config.capnp",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/edge-config.capnp",
           "config"
         ],
         "imageDataType": "function",
-        "coldFromBeforeRuntimeMs": 3114.3899579999998,
-        "startupToReadyMs": 30.08904099999927,
-        "firstRequestMs": 3083.5776250000017,
+        "coldFromBeforeRuntimeMs": 3101.5523330000015,
+        "startupToReadyMs": 30.45637500000157,
+        "firstRequestMs": 3070.2812090000007,
         "warmMs": [
-          2027.1965410000012,
-          2007.977041000002
+          1999.3806669999994,
+          1991.4657499999994
         ],
-        "warmMedianMs": 2017.5867910000015,
-        "isolateId": "b69b12a2-3f0a-4608-a85e-52d74cb68f45",
+        "warmMedianMs": 1995.4232084999994,
+        "isolateId": "fbfde358-1548-45b5-a2c9-cbf1e72ed76c",
         "optimizerCreations": 1,
         "clock": {
-          "performanceBefore": 1790333249653,
-          "performanceAfter": 1790333249655,
-          "dateBefore": 1790333249653,
-          "dateAfter": 1790333249655,
+          "performanceBefore": 1790333794265,
+          "performanceAfter": 1790333794268,
+          "dateBefore": 1790333794265,
+          "dateAfter": 1790333794268,
           "value": 1999999000000
         },
         "metrics": {
@@ -327,11 +327,11 @@
           "budgetMet": true,
           "targetBytes": 450000,
           "instantiateMs": 4,
-          "decodeMs": 272,
-          "opsMs": 1552,
-          "encodeMs": 1251,
-          "totalMs": 3075,
-          "firstEncodeMs": 160,
+          "decodeMs": 277,
+          "opsMs": 1589,
+          "encodeMs": 1195,
+          "totalMs": 3062,
+          "firstEncodeMs": 162,
           "metadataStripped": true,
           "policyViolations": [],
           "memory": {
@@ -358,27 +358,27 @@
         "id": "metadata-budget",
         "status": "PASS",
         "launchCommand": [
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/.bin/workerd",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/.bin/workerd",
           "serve",
-          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/edge-config.capnp",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/edge-config.capnp",
           "config"
         ],
         "imageDataType": "function",
-        "coldFromBeforeRuntimeMs": 97.18820899999992,
-        "startupToReadyMs": 30.1462500000016,
-        "firstRequestMs": 66.66787499999919,
+        "coldFromBeforeRuntimeMs": 92.65629099999933,
+        "startupToReadyMs": 28.666708000000654,
+        "firstRequestMs": 63.628458000002865,
         "warmMs": [
-          42.00395799999751,
-          41.89362500000061
+          39.7579160000023,
+          38.636500000000524
         ],
-        "warmMedianMs": 41.94879149999906,
-        "isolateId": "00f77797-427b-4f97-861f-f3fc57d21fa6",
+        "warmMedianMs": 39.19720800000141,
+        "isolateId": "7c284203-e68d-4f04-aedd-399e7dba5fdd",
         "optimizerCreations": 1,
         "clock": {
-          "performanceBefore": 1790333249885,
-          "performanceAfter": 1790333249887,
-          "dateBefore": 1790333249885,
-          "dateAfter": 1790333249887,
+          "performanceBefore": 1790333794485,
+          "performanceAfter": 1790333794487,
+          "dateBefore": 1790333794485,
+          "dateAfter": 1790333794487,
           "value": 1999999000000
         },
         "metrics": {
@@ -396,10 +396,10 @@
           "budgetMet": true,
           "targetBytes": 30000,
           "instantiateMs": 4,
-          "decodeMs": 4,
+          "decodeMs": 5,
           "opsMs": 13,
-          "encodeMs": 44,
-          "totalMs": 61,
+          "encodeMs": 40,
+          "totalMs": 58,
           "firstEncodeMs": 12,
           "metadataStripped": true,
           "policyViolations": [],
@@ -424,7 +424,7 @@
           "bestEffort": {
             "bytesOut": 3078,
             "budgetMet": false,
-            "wallMs": 11.747166999997717,
+            "wallMs": 10.824249999997846,
             "output": {
               "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
               "bytes": 3078,
@@ -450,11 +450,11 @@
               "recoveryHint": "Increase targetBytes, reduce max dimensions, or use qualityFloorPolicy: \"best-effort\".",
               "phase": "image-processing",
               "moduleOverride": null,
-              "isolateId": "00f77797-427b-4f97-861f-f3fc57d21fa6",
+              "isolateId": "7c284203-e68d-4f04-aedd-399e7dba5fdd",
               "optimizerCreations": 1
             },
             "wrapperHttpStatus": 422,
-            "wallMs": 12.542457999999897
+            "wallMs": 10.62341600000218
           }
         },
         "workerdStderr": ""
@@ -464,27 +464,27 @@
       "id": "probe-jpeg-webp",
       "status": "PASS",
       "launchCommand": [
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/.bin/workerd",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/.bin/workerd",
         "serve",
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/edge-config.capnp",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/edge-config.capnp",
         "config"
       ],
       "imageDataType": "function",
-      "coldFromBeforeRuntimeMs": 223.8834999999999,
-      "startupToReadyMs": 32.56812499999978,
-      "firstRequestMs": 191.00170799999978,
+      "coldFromBeforeRuntimeMs": 224.46887500000003,
+      "startupToReadyMs": 32.181583000000046,
+      "firstRequestMs": 191.99370899999985,
       "warmMs": [
-        115.56666700000005,
-        113.70804199999975
+        113.67770800000017,
+        114.08687499999996
       ],
-      "warmMedianMs": 114.6373544999999,
-      "isolateId": "88fbc585-bf45-466e-9d2d-83dd4dd8522a",
+      "warmMedianMs": 113.88229150000006,
+      "isolateId": "787fdcf3-0567-4d76-99b9-aafa7e0db5a7",
       "optimizerCreations": 1,
       "clock": {
-        "performanceBefore": 1790333233528,
-        "performanceAfter": 1790333233531,
-        "dateBefore": 1790333233528,
-        "dateAfter": 1790333233531,
+        "performanceBefore": 1790333778158,
+        "performanceAfter": 1790333778161,
+        "dateBefore": 1790333778158,
+        "dateAfter": 1790333778161,
         "value": 1999999000000
       },
       "metrics": {
@@ -502,11 +502,11 @@
         "budgetMet": true,
         "targetBytes": 50000,
         "instantiateMs": 4,
-        "decodeMs": 17,
+        "decodeMs": 15,
         "opsMs": 75,
-        "encodeMs": 91,
-        "totalMs": 183,
-        "firstEncodeMs": 21,
+        "encodeMs": 94,
+        "totalMs": 185,
+        "firstEncodeMs": 22,
         "metadataStripped": true,
         "policyViolations": [],
         "memory": {
@@ -532,7 +532,7 @@
     "apiReached": true,
     "failureStage": null,
     "executedWorkerdBinary": {
-      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/workerd/bin/workerd",
+      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/workerd/bin/workerd",
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c",
       "package": "@cloudflare/workerd-darwin-arm64"
     },
@@ -684,7 +684,7 @@
     },
     "deploymentRawBytes": 1243104,
     "deploymentGzipBytes": 406832,
-    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-BVLW0x/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
+    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-gjMKji/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
     "probeInput": {
       "path": "test/fixtures/test_100KB_1057x1057.jpg",
       "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-25T10:47:32.447Z",
-  "sourceSha": "66aa6ff8a50759fa494838d2ad8a32a7ef97fa14",
+  "generatedAt": "2026-09-25T10:56:37.030Z",
+  "sourceSha": "9c22cf3cdeeb7aa515b59107a2834e2c14495323",
   "publishedVersion": "1.4.0",
   "sourceDirty": false,
-  "sourceFilesSha256": "f00002caa2a013195f960455e9f1e4cffa73c2507d358a3ecc1174c9193c778e",
+  "sourceFilesSha256": "a5ff76cdd2586f1cbff6b7717e0583dff570853ea4eaeabe71a9217d93fc46f5",
   "packageSource": {
     "kind": "published-registry",
     "registry": "https://registry.npmjs.org/"
@@ -133,8 +133,8 @@
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c"
     }
   },
-  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-v6sG1c/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
-  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-v6sG1c",
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-4KET5L/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-4KET5L",
   "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
   "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
   "fixtures": [
@@ -217,13 +217,13 @@
     "runtime": "local workerd",
     "compatibilityDate": "2026-09-24",
     "compatibilityFlags": [],
-    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-v6sG1c/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
+    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-4KET5L/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
     "results": [],
     "probe": null,
     "apiReached": true,
     "failureStage": "optimizer-initialization",
     "executedWorkerdBinary": {
-      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-v6sG1c/node_modules/workerd/bin/workerd",
+      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-4KET5L/node_modules/workerd/bin/workerd",
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c",
       "package": "@cloudflare/workerd-darwin-arm64"
     },
@@ -375,7 +375,7 @@
     },
     "deploymentRawBytes": 1243104,
     "deploymentGzipBytes": 406832,
-    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-v6sG1c/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
+    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-4KET5L/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
     "diagnostic": {
       "id": "decoder-init",
       "imageProcessingOutcome": "FAIL",
@@ -398,7 +398,7 @@
           "source": "dynamic-wasm-bytes",
           "bytesHex": "0061736d01000000"
         },
-        "isolateId": "b64c6cfa-8abf-4ed6-9893-9f73d5dda257",
+        "isolateId": "0a8f787d-378e-492d-b1be-ffc3e8dafd74",
         "optimizerCreations": 1
       },
       "failureStage": "optimizer-initialization",
@@ -456,15 +456,15 @@
         "bytesHex": "0061736d01000000"
       },
       "launchCommand": [
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-v6sG1c/node_modules/.bin/workerd",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-4KET5L/node_modules/.bin/workerd",
         "serve",
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-v6sG1c/edge-config.capnp",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-4KET5L/edge-config.capnp",
         "config"
       ],
       "workerdStderr": "",
-      "isolateId": "b64c6cfa-8abf-4ed6-9893-9f73d5dda257",
+      "isolateId": "0a8f787d-378e-492d-b1be-ffc3e8dafd74",
       "health": {
-        "isolateId": "b64c6cfa-8abf-4ed6-9893-9f73d5dda257",
+        "isolateId": "0a8f787d-378e-492d-b1be-ffc3e8dafd74",
         "optimizerCreations": 0,
         "imageDataType": "function",
         "wasmModules": {
@@ -475,7 +475,7 @@
           "webpEncode": true
         }
       },
-      "requestWallMs": 5.941125000000056
+      "requestWallMs": 5.905915999999934
     },
     "diagnosticValidation": {
       "status": "PASS",

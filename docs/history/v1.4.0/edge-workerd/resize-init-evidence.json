@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-25T10:47:34.408Z",
-  "sourceSha": "66aa6ff8a50759fa494838d2ad8a32a7ef97fa14",
+  "generatedAt": "2026-09-25T10:56:39.102Z",
+  "sourceSha": "9c22cf3cdeeb7aa515b59107a2834e2c14495323",
   "publishedVersion": "1.4.0",
   "sourceDirty": false,
-  "sourceFilesSha256": "f00002caa2a013195f960455e9f1e4cffa73c2507d358a3ecc1174c9193c778e",
+  "sourceFilesSha256": "a5ff76cdd2586f1cbff6b7717e0583dff570853ea4eaeabe71a9217d93fc46f5",
   "packageSource": {
     "kind": "published-registry",
     "registry": "https://registry.npmjs.org/"
@@ -133,8 +133,8 @@
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c"
     }
   },
-  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-yoSyWw/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
-  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-yoSyWw",
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-mAD2yk/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-mAD2yk",
   "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
   "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
   "fixtures": [
@@ -217,13 +217,13 @@
     "runtime": "local workerd",
     "compatibilityDate": "2026-09-24",
     "compatibilityFlags": [],
-    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-yoSyWw/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
+    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-mAD2yk/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
     "results": [],
     "probe": null,
     "apiReached": true,
     "failureStage": "optimizer-initialization",
     "executedWorkerdBinary": {
-      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-yoSyWw/node_modules/workerd/bin/workerd",
+      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-mAD2yk/node_modules/workerd/bin/workerd",
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c",
       "package": "@cloudflare/workerd-darwin-arm64"
     },
@@ -375,7 +375,7 @@
     },
     "deploymentRawBytes": 1243104,
     "deploymentGzipBytes": 406832,
-    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-yoSyWw/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
+    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-mAD2yk/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
     "diagnostic": {
       "id": "resize-init",
       "imageProcessingOutcome": "FAIL",
@@ -397,7 +397,7 @@
           "target": "resize",
           "source": "jpegDecode"
         },
-        "isolateId": "630a2a58-66c3-40d6-98b6-f9c6b0e7bd1a",
+        "isolateId": "20b323dc-ed5b-4cea-988f-9b2da9797150",
         "optimizerCreations": 1
       },
       "failureStage": "optimizer-initialization",
@@ -453,15 +453,15 @@
         "source": "jpegDecode"
       },
       "launchCommand": [
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-yoSyWw/node_modules/.bin/workerd",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-mAD2yk/node_modules/.bin/workerd",
         "serve",
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-yoSyWw/edge-config.capnp",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-mAD2yk/edge-config.capnp",
         "config"
       ],
       "workerdStderr": "",
-      "isolateId": "630a2a58-66c3-40d6-98b6-f9c6b0e7bd1a",
+      "isolateId": "20b323dc-ed5b-4cea-988f-9b2da9797150",
       "health": {
-        "isolateId": "630a2a58-66c3-40d6-98b6-f9c6b0e7bd1a",
+        "isolateId": "20b323dc-ed5b-4cea-988f-9b2da9797150",
         "optimizerCreations": 0,
         "imageDataType": "function",
         "wasmModules": {
@@ -472,7 +472,7 @@
           "webpEncode": true
         }
       },
-      "requestWallMs": 6.956957999999986
+      "requestWallMs": 8.991292000000158
     },
     "diagnosticValidation": {
       "status": "PASS",
