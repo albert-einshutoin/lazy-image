@@ -234,7 +234,7 @@ async function visuals(cases) {
     '<title>Wasm v1.4.0 品質比較</title>',
     '<style>body{font:16px system-ui;max-width:1100px;margin:auto;padding:20px}section{border-top:1px solid #aaa;padding:20px 0}.pair{display:flex;gap:20px;flex-wrap:wrap}.pair figure{margin:0;width:48%;min-width:300px}.pair img{max-width:100%;height:auto}.crop img{width:288px;height:288px;image-rendering:pixelated}figcaption{font-weight:600}small{display:block}</style>',
     '<h1>公開Wasm v1.4.0 固定参照との比較</h1>',
-    '<p>左は元入力から作ったlossless resize参照、右は公開Wasm出力。cropは両側同一座標・同一倍率（96 px→288 px、256 px→256 px）。目視資料であり主観評価実験ではない。</p>'];
+    '<p>左は元入力から作ったlossless resize参照、右は公開Wasm出力。各組のcropは両側同一座標で切り出し、どちらも表示幅288 pxとした。目視資料であり主観評価実験ではない。</p>'];
   for (const row of cases) {
     if (!row.output || row.quality.status !== 'measured') continue;
     const refCrop = cropFiles.find((item) => item.caseId === row.id && item.role === 'reference');
@@ -258,7 +258,7 @@ function metric(item, digits) {
 function render(report) {
   const lines = ['# 公開Wasm v1.4.0 品質評価', '',
     `解析日時: ${report.analyzedAt} / 解析コード: \`${report.analysisCodeSha}\`.`,
-    `方法: [固定手順](PROTOCOL.md)。raw: [写真の公開npm実行](photo-run-evidence.json)、[ケース別JSON](quality-results.json)、[並列画像・同座標crop](visual-comparison.html)。`,
+    `方法: [固定手順](PROTOCOL.md)。raw: [写真の公開npm実行](photo-run-evidence.json)、[ケース別JSON](quality-results.json)、[並列画像・同座標crop](visual-comparison.html)、[目視所見](OBSERVATIONS.md)。`,
     '', '測定完了と画質の十分性は別判定。品質の合格閾値は設定していない。SSIM/PSNRは処理全体の出力と固定lossless参照との差。',
     '', '## 保存済み出力（3 runtimeで同一bytes、採点は4標本）', '',
     '| ケース | target / bytes | budget | quality | SSIM | PSNR dB |',
