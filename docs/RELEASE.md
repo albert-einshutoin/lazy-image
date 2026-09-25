@@ -112,7 +112,7 @@ node scripts/check-release-policy.js 0.16.0
 #### Commit and push
 
 ```bash
-git add package.json packages/lazy-image-wasm/package.json packages/lazy-image-wasm/shared.js package-lock.json Cargo.toml Cargo.lock index.js CHANGELOG.md
+git add package.json packages/lazy-image-wasm/package.json packages/lazy-image-wasm/shared.js package-lock.json Cargo.toml Cargo.lock fuzz/Cargo.lock index.js CHANGELOG.md
 git commit -m "chore(release): prepare X.Y.Z"
 git push -u origin release/X.Y.Z
 ```
