@@ -11,9 +11,9 @@ Chrome's published v1.3.1 **default codec loading** is a separate run in
 [WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md](./history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
 The published v1.4.0 Chrome default-load image and diagnostic rerun, with
 candidate and registry provenance kept separate, is in
-[V1.4.0_VERIFICATION.md](./history/V1.4.0_VERIFICATION.md). The v1.3.1
-commands below reproduce the original snapshot; use the version-pinned
-v1.4.0 commands in that record for the current release.
+[V1.4.0_VERIFICATION.md](./history/V1.4.0_VERIFICATION.md). The version-pinned
+v1.3.1 registry commands below reproduce the original snapshot; use the
+version-pinned v1.4.0 commands in that record for the current release.
 The later published v1.4.0 local workerd rerun, including API initialization
 diagnostics and pre-isolate failure evidence, is in
 [WASM_1.4.0_EDGE_VERIFICATION.md](./history/WASM_1.4.0_EDGE_VERIFICATION.md).
@@ -37,6 +37,12 @@ The negative commands intentionally exit nonzero and preserve the API's
 `code`, `category`, `recoverable`, `message`, and `recoveryHint` in raw evidence.
 Only `diagnosticValidation.status: PASS` confirms the expected failure; the
 record gives the commands that save each overwritten run separately.
+The published v1.4.0 Node, Chrome Worker, and local workerd runs establish
+operation only in their recorded configurations. [#645](https://github.com/albert-einshutoin/lazy-image/issues/645)
+maps their measurements to the [benchmark gate](./WASM_STRATEGY.md#benchmark-gate):
+Wasm SSIM/PSNR is still unmeasured, and browser/Edge peak memory is unavailable
+in these runs. This limits public performance claims, not the published
+package's verified image-processing behavior.
 
 ## Reproduce
 
@@ -98,16 +104,21 @@ are expected to exit nonzero and leave a `FAIL` image-processing verdict.
 error and corresponding Wasm HTTP request; an unexpected failure records
 `diagnosticValidation.status: FAIL`. `--corrupt-jpeg` uses a fixed six-byte malformed JPEG header and a
 fresh Worker; no prior codec initialization is reused.
+Read the candidate version from the workspace manifest so `--version` matches
+the package just packed. The earlier v1.3.1 candidate and its exact revision
+remain a separate historical record in
+[WASM_ASSET_DIAGNOSTICS_CANDIDATE.md](./history/WASM_ASSET_DIAGNOSTICS_CANDIDATE.md).
 
 ```bash
 candidate_dir=$(mktemp -d)
+candidate_version=$(node -p "require('./packages/lazy-image-wasm/package.json').version")
 candidate_file=$(npm pack --workspace @alberteinshutoin/lazy-image-wasm --pack-destination "$candidate_dir" --silent)
 candidate_tarball="$candidate_dir/$candidate_file"
-node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball"
-node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --withhold-wasm mozjpeg_dec.wasm
-node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --withhold-wasm squoosh_resize_bg.wasm
-node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --withhold-wasm webp_enc_simd.wasm
-node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --candidate-tarball "$candidate_tarball" --corrupt-jpeg
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball"
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --withhold-wasm mozjpeg_dec.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --withhold-wasm squoosh_resize_bg.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --withhold-wasm webp_enc_simd.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --corrupt-jpeg
 ```
 
 Candidate raw evidence records its tarball SHA-256, local `file:` install
