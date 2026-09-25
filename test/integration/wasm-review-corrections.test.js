@@ -4,6 +4,7 @@ const { createHash } = require('node:crypto');
 const path = require('node:path');
 const sharp = require('sharp');
 const { publishedRow, metadataVerification, renderMarkdownReport, reaggregate, SCENARIOS } = require('../benchmarks/wasm-upload-comparison.bench');
+const readMarkdownFixture = (file) => fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
 
 async function main() {
   const root = path.resolve(__dirname, '../..');
@@ -69,7 +70,7 @@ async function main() {
     row.baselineType === 'published-package').every((row) => row.metadataStripped === null));
   assert.deepEqual(savedSummary.metadataVerification, metadata);
   assert.equal(renderMarkdownReport(savedSummary),
-    fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8').replace(/\r\n/g, '\n'));
+    readMarkdownFixture(path.join(snapshot, 'wasm-upload-summary.md')));
 
   const edgeEvidence = { ...evidence, edgeResults: { deploymentRawBytes: 777000,
     deploymentGzipBytes: 222000, results: evidence.nodeResults.map((entry) =>
@@ -128,7 +129,7 @@ async function main() {
   assert(savedEdge.packages['@cloudflare/workerd-darwin-arm64']?.integrity);
   const savedEdgeSummary = JSON.parse(fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.json')));
   assert.equal(renderMarkdownReport(savedEdgeSummary),
-    fs.readFileSync(path.join(snapshot, 'edge-workerd/wasm-upload-summary.md'), 'utf8'));
+    readMarkdownFixture(path.join(snapshot, 'edge-workerd/wasm-upload-summary.md')));
   const defaultDir = path.join(snapshot, 'browser-default');
   const defaultEvidence = JSON.parse(fs.readFileSync(path.join(defaultDir, 'wasm-published-evidence.json')));
   const defaultBrowser = defaultEvidence.browserResults;
@@ -154,7 +155,7 @@ async function main() {
     .every((row) => row.runtime === 'browser-worker' && row.loadMode.includes('default loader') &&
       row.browserBundleBytes === defaultBrowser.deploymentRawBytes && row.metadataStripped === null));
   assert.equal(renderMarkdownReport(defaultSummary),
-    fs.readFileSync(path.join(defaultDir, 'wasm-upload-summary.md'), 'utf8'));
+    readMarkdownFixture(path.join(defaultDir, 'wasm-upload-summary.md')));
   const missingWasm = JSON.parse(fs.readFileSync(path.join(defaultDir, 'missing-wasm-evidence.json')));
   assert.equal(missingWasm.verdict, 'FAIL');
   assert(missingWasm.browserResults.requests.some((request) =>
