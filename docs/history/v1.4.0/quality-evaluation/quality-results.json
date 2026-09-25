@@ -1,8 +1,8 @@
 {
-  "analyzedAt": "2026-09-25T19:06:34.357Z",
-  "analysisCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
+  "analyzedAt": "2026-09-25T19:24:20.261Z",
+  "analysisCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
   "analysisSourceHashes": {
-    "test/benchmarks/wasm-quality-analyze.mjs": "b650b1ee672ac4d97956815f08cacdc09c1a5cc424892237f026ad1841b4fbf1",
+    "test/benchmarks/wasm-quality-analyze.mjs": "f7888704c6d5367266b814c56bb60632d4418ad1e4861e28b5d842f7121ea798",
     "test/benchmarks/wasm-quality-metrics.mjs": "504c7c0ff24cd5e5a4b3866d2769f7281a079ba7f012e6cc477ad8df04c78367"
   },
   "command": "node test/benchmarks/wasm-quality-analyze.mjs",
@@ -893,13 +893,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:29.433Z",
-        "caseCompletedAt": "2026-09-25T19:06:29.598Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:06.926Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.093Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -987,13 +993,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:29.598Z",
-        "caseCompletedAt": "2026-09-25T19:06:29.676Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.094Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.179Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1087,13 +1099,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:29.676Z",
-        "caseCompletedAt": "2026-09-25T19:06:29.739Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.179Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.249Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1187,13 +1205,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:29.739Z",
-        "caseCompletedAt": "2026-09-25T19:06:29.842Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.249Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.339Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1281,13 +1305,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:29.842Z",
-        "caseCompletedAt": "2026-09-25T19:06:29.899Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.340Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.401Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1381,13 +1411,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:29.899Z",
-        "caseCompletedAt": "2026-09-25T19:06:29.943Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.401Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.448Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1481,13 +1517,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:29.949Z",
-        "caseCompletedAt": "2026-09-25T19:06:30.024Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.454Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.535Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1575,13 +1617,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:30.025Z",
-        "caseCompletedAt": "2026-09-25T19:06:30.088Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.535Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.604Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1675,13 +1723,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:30.088Z",
-        "caseCompletedAt": "2026-09-25T19:06:30.132Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.604Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.654Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1775,13 +1829,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:30.132Z",
-        "caseCompletedAt": "2026-09-25T19:06:30.204Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.654Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.736Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1869,13 +1929,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:30.204Z",
-        "caseCompletedAt": "2026-09-25T19:06:30.252Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.736Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.791Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {
@@ -1969,13 +2035,19 @@
         "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
       },
       "license": "CC0-1.0",
+      "licenseEvidence": {
+        "spdx": "CC0-1.0",
+        "path": "test/benchmarks/corpus/CC0-1.0.txt",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      },
       "imageGeneration": {
         "rawEvidence": "docs/history/v1.4.0/quality-evaluation/photo-run-evidence.json",
-        "rawEvidenceSha256": "d91ce2a0dd6a6eeeb4dbd519fc77a233ec9ce9bd614116333199769f1c23e4c1",
-        "generatedAt": "2026-09-25T19:06:27.257Z",
-        "imageGenerationCodeSha": "f294941c009d8cbe770fd912ff244943a45c50f0",
-        "caseStartedAt": "2026-09-25T19:06:30.252Z",
-        "caseCompletedAt": "2026-09-25T19:06:30.290Z",
+        "rawEvidenceSha256": "266813a3348f3aeab6bd093e5952a996ab3c1656ddc28d54e2071feaaed3a00b",
+        "generatedAt": "2026-09-25T19:24:04.175Z",
+        "imageGenerationCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+        "caseStartedAt": "2026-09-25T19:24:07.791Z",
+        "caseCompletedAt": "2026-09-25T19:24:07.835Z",
         "runtime": "Chrome Worker default load",
         "installedPackage": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
         "policy": {

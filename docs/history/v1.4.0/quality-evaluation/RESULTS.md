@@ -1,6 +1,6 @@
 # 公開Wasm v1.4.0 品質評価
 
-解析日時: 2026-09-25T19:06:34.357Z / 解析コード: `f294941c009d8cbe770fd912ff244943a45c50f0`.
+解析日時: 2026-09-25T19:24:20.261Z / 解析コード: `15623e001ba0d7b01a448cc9793e968749f4fa88`.
 方法: [固定手順](PROTOCOL.md)。raw: [写真の公開npm実行](photo-run-evidence.json)、[ケース別JSON](quality-results.json)、[並列画像・同座標crop](visual-comparison.html)、[目視所見](OBSERVATIONS.md)。
 
 測定完了と画質の十分性は別判定。品質の合格閾値は設定していない。SSIM/PSNRは処理全体の出力と固定lossless参照との差。
