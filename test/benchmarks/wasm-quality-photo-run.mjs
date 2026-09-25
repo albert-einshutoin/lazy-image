@@ -17,7 +17,8 @@ const expectedIntegrity = 'sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvB
 const chromePath = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const sourceFiles = ['test/benchmarks/wasm-quality-photo-run.mjs',
   'test/benchmarks/wasm-quality-browser-main.mjs',
-  'test/benchmarks/wasm-browser-worker-default.mjs'];
+  'test/benchmarks/wasm-browser-worker-default.mjs',
+  'test/benchmarks/wasm-quality-metrics.mjs'];
 
 function command(file, args, cwd) {
   const run = spawnSync(file, args, { cwd, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
@@ -160,6 +161,7 @@ async function run() {
     ]).finally(() => clearTimeout(timer));
     assert(!browser.error, browser.error?.stack || browser.error?.message);
     assert.equal(browser.cases.length, 12);
+    evidence.receivedAt = new Date().toISOString();
     assert.equal(browser.setup.length, 4);
     assert(browser.setup.every((item) => item.workerScope === 'DedicatedWorkerGlobalScope' &&
       item.hasNativeImageData && item.hasWebAssembly && Object.keys(item.assetBytes).length === 0));
@@ -168,6 +170,8 @@ async function run() {
     evidence.setup = browser.setup;
     await fs.mkdir(target, { recursive: true });
     for (const item of browser.cases) {
+      if (item.startedAt) assert(Date.parse(item.startedAt) <= Date.parse(item.completedAt));
+      else assert.equal(item.ok, false);
       const { output, ...row } = item;
       if (item.ok) {
         const bytes = Buffer.from(output);

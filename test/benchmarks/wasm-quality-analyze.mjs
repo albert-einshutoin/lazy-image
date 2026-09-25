@@ -193,6 +193,7 @@ async function photoCases(references) {
       license: references[item.inputId].license,
       imageGeneration: { rawEvidence: relative(file), rawEvidenceSha256: rawHash,
         generatedAt: run.generatedAt, imageGenerationCodeSha: run.imageGenerationCodeSha,
+        caseStartedAt: item.startedAt, caseCompletedAt: item.completedAt,
         runtime: 'Chrome Worker default load', installedPackage: run.package.tarballIntegrity,
         policy: item.options },
       input: references[item.inputId].input, reference: references[item.inputId].reference,

@@ -33,15 +33,17 @@ try {
       async function run(condition, targetBytes) {
         const options = targetBytes === null ? common : { ...common, targetBytes };
         const callId = ++id;
+        const startedAt = new Date().toISOString();
         let timer;
         const response = await Promise.race([
           new Promise((resolve) => { pending.set(callId, resolve);
             worker.postMessage({ id: callId, input, options }); }),
           new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${inputId}/${format}/${condition} timeout`)), 180000); }),
         ]).finally(() => clearTimeout(timer));
+        const completedAt = new Date().toISOString();
         const result = response.ok ? { ...response.result, data: undefined } : null;
         const output = response.ok ? Array.from(new Uint8Array(response.result.data)) : null;
-        report.cases.push({ inputId, format, condition, targetBytes, options,
+        report.cases.push({ inputId, format, condition, targetBytes, options, startedAt, completedAt,
           ok: response.ok, error: response.error ?? null, result, output });
         return response;
       }
