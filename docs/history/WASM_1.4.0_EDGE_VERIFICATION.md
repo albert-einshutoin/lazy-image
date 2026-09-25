@@ -54,6 +54,11 @@ node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.
 node test/benchmarks/wasm-edge-failure-check.mjs 1.4.0
 ```
 
-保存済み証拠テストは、測定後のraw evidenceと画像を含む記録commitで実行する。測定commitには今回の新しい保存証拠がまだ無く、両revisionを混同しない。
+保存済み証拠テストは、測定後のraw evidenceと画像を収録した記録commit `6bc54530950c5f8578ef506e7dfa5a4607b43de6`で実行する。測定commitには今回の新しい保存証拠がまだ無く、両revisionを混同しない。
+
+```bash
+git checkout 6bc54530950c5f8578ef506e7dfa5a4607b43de6
+node test/integration/wasm-edge-1.4.0-evidence.test.js
+```
 
 今回の確認範囲は上記1種類のlocal workerd、静的Module明示注入、代表fixture/policyである。他のEdge runtime、Cloudflare本番の性能、Edgeの暗黙Wasmロードは未検証。公開v1.4.0の診断が返ることと、正しいmodule配置時の画像処理を確認したため、この選定構成の再検証は完了とする。#678はv1.3.1の受入条件でCLOSEDのまま、#703はv1.xトラッカーとしてOPENを維持する。
