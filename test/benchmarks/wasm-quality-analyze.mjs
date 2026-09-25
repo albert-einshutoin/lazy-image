@@ -139,6 +139,12 @@ async function photoCases(references) {
   assert.equal(run.cases.length, 12);
   const rawHash = await shaFile(file);
   const manifest = JSON.parse(await fs.readFile(path.join(root, 'test/benchmarks/corpus/release-manifest.json'), 'utf8'));
+  const licenses = manifest.additionalLicenses.filter((item) => item.spdx === 'CC0-1.0');
+  assert.equal(licenses.length, 1);
+  const license = licenses[0];
+  const licenseBytes = await readChecked(path.join(root, license.path), license.sha256);
+  assert.deepEqual(run.licenseEvidence, { spdx: license.spdx, path: license.path,
+    sha256: license.sha256, bytes: licenseBytes.length });
   const refBytes = {};
   for (const id of ['coffee', 'chelsea']) {
     const entry = manifest.entries.find((item) => item.id === id);
@@ -190,7 +196,7 @@ async function photoCases(references) {
     }
     cases.push({ id: `${item.inputId}-${item.format}-${item.condition}`, inputId: item.inputId,
       category: 'photo', source: references[item.inputId].source,
-      license: references[item.inputId].license,
+      license: references[item.inputId].license, licenseEvidence: run.licenseEvidence,
       imageGeneration: { rawEvidence: relative(file), rawEvidenceSha256: rawHash,
         generatedAt: run.generatedAt, imageGenerationCodeSha: run.imageGenerationCodeSha,
         caseStartedAt: item.startedAt, caseCompletedAt: item.completedAt,

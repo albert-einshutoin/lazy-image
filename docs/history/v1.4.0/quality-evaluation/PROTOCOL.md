@@ -12,6 +12,8 @@
   `positive-evidence.json` と実ファイルの両方で確認する。同一bytesなら採点は共有し、
   runtime別の元記録と生成日時・コードSHAを結果に残す。
 - 追加写真は `release-manifest.json` の CC0 `coffee` と `chelsea` の2件のみ。
+  同manifestの `additionalLicenses` にあるCC0原文をhash検証し、path・hashを
+  公開npm実行記録とケース別結果に保存する。
   公開 npm `@alberteinshutoin/lazy-image-wasm@1.4.0` をcheckout外に通常installし、
   `/worker` をChrome Dedicated Workerで `wasmModules` なしで実行する。
   出力は JPEG、WebP、resizeは `maxWidth/maxHeight: 320/320, fit: inside`。

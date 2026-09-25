@@ -37,6 +37,10 @@ async function run() {
     assert.equal(bytes.length, entry.bytes);
     return [id, { file, entry, bytes }];
   })));
+  const licenses = manifest.additionalLicenses.filter((item) => item.spdx === 'CC0-1.0');
+  assert.equal(licenses.length, 1);
+  const license = licenses[0];
+  const licenseBytes = await readChecked(path.join(root, license.path), license.sha256);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'lazy-image-wasm-quality-'));
   const codeSha = command('git', ['rev-parse', 'HEAD'], root);
   const codeDirty = Boolean(command('git', ['status', '--porcelain', '--', ...sourceFiles], root));
@@ -52,7 +56,10 @@ async function run() {
       chrome: command(chromePath, ['--version'], root),
       runtime: 'Chrome DedicatedWorkerGlobalScope, same-origin HTTP, Cache-Control: no-store',
       worker: 'published /worker; no wasmModules', bundler: 'esbuild 0.25.10' },
-    package: null, inputs: null, assets: null, requests: [], cases: [], verdict: 'FAIL' };
+    package: null, inputs: null,
+    licenseEvidence: { spdx: license.spdx, path: license.path, sha256: license.sha256,
+      bytes: licenseBytes.length },
+    assets: null, requests: [], cases: [], verdict: 'FAIL' };
   let server;
   let chrome;
   try {
