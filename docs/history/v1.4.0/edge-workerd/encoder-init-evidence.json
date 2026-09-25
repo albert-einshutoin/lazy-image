@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-25T10:39:20.332Z",
-  "sourceSha": "a7c2487519b9fba448e4893d3f7834528db08951",
+  "generatedAt": "2026-09-25T10:47:36.414Z",
+  "sourceSha": "66aa6ff8a50759fa494838d2ad8a32a7ef97fa14",
   "publishedVersion": "1.4.0",
   "sourceDirty": false,
-  "sourceFilesSha256": "7ac7026e9d0fbed6e1d3d71ae6fc07b4f7f2fafa81719a4cc5a3e9bb4ad55d30",
+  "sourceFilesSha256": "f00002caa2a013195f960455e9f1e4cffa73c2507d358a3ecc1174c9193c778e",
   "packageSource": {
     "kind": "published-registry",
     "registry": "https://registry.npmjs.org/"
@@ -133,8 +133,8 @@
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c"
     }
   },
-  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-2vvC24/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
-  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-2vvC24",
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-MwDbPi/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-MwDbPi",
   "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
   "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
   "fixtures": [
@@ -217,13 +217,13 @@
     "runtime": "local workerd",
     "compatibilityDate": "2026-09-24",
     "compatibilityFlags": [],
-    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-2vvC24/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
+    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-MwDbPi/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
     "results": [],
     "probe": null,
     "apiReached": true,
     "failureStage": "optimizer-initialization",
     "executedWorkerdBinary": {
-      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-2vvC24/node_modules/workerd/bin/workerd",
+      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-MwDbPi/node_modules/workerd/bin/workerd",
       "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c",
       "package": "@cloudflare/workerd-darwin-arm64"
     },
@@ -375,7 +375,7 @@
     },
     "deploymentRawBytes": 1243104,
     "deploymentGzipBytes": 406832,
-    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-2vvC24/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
+    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-MwDbPi/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
     "diagnostic": {
       "id": "encoder-init",
       "imageProcessingOutcome": "FAIL",
@@ -397,7 +397,7 @@
           "target": "webpEncode",
           "source": "jpegDecode"
         },
-        "isolateId": "8597ee23-4380-45be-b876-43246ebd9679",
+        "isolateId": "6c0564d0-9af8-4fd9-9f16-be7691d58a76",
         "optimizerCreations": 1
       },
       "failureStage": "optimizer-initialization",
@@ -453,15 +453,15 @@
         "source": "jpegDecode"
       },
       "launchCommand": [
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-2vvC24/node_modules/.bin/workerd",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-MwDbPi/node_modules/.bin/workerd",
         "serve",
-        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-2vvC24/edge-config.capnp",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-MwDbPi/edge-config.capnp",
         "config"
       ],
       "workerdStderr": "Module.instantiateWasm callback failed with error: LinkError: WebAssembly.Instance(): Import #23 \"a\" \"x\": function import requires a callable\nAborted(both async and sync fetching of the wasm failed)\nfailed to asynchronously prepare wasm: RuntimeError: Aborted(both async and sync fetching of the wasm failed). Build with -sASSERTIONS for more info.\nAborted(RuntimeError: Aborted(both async and sync fetching of the wasm failed). Build with -sASSERTIONS for more info.)",
-      "isolateId": "8597ee23-4380-45be-b876-43246ebd9679",
+      "isolateId": "6c0564d0-9af8-4fd9-9f16-be7691d58a76",
       "health": {
-        "isolateId": "8597ee23-4380-45be-b876-43246ebd9679",
+        "isolateId": "6c0564d0-9af8-4fd9-9f16-be7691d58a76",
         "optimizerCreations": 0,
         "imageDataType": "function",
         "wasmModules": {
@@ -472,7 +472,7 @@
           "webpEncode": true
         }
       },
-      "requestWallMs": 5.846125000000029
+      "requestWallMs": 5.533541999999898
     },
     "diagnosticValidation": {
       "status": "PASS",
