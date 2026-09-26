@@ -39,7 +39,7 @@ async function main() {
   const summary = JSON.parse(fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.json')));
   const { renderMarkdownReport } = require('../benchmarks/wasm-upload-comparison.bench');
   assert.equal(renderMarkdownReport(summary),
-    fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8'));
+    fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8').replace(/\r\n/g, '\n'));
   assert.equal(summary.metadataVerification.rawEvidence, summary.artifactPaths.publishedEvidence);
   const rows = summary.rows.filter((row) => row.baselineType === 'published-package');
   assert.equal(rows.length, 2);

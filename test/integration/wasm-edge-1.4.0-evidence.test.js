@@ -24,7 +24,7 @@ async function main() {
   const summary = JSON.parse(fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.json')));
   const { renderMarkdownReport } = require('../benchmarks/wasm-upload-comparison.bench');
   assert.equal(renderMarkdownReport(summary),
-    fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8'));
+    fs.readFileSync(path.join(snapshot, 'wasm-upload-summary.md'), 'utf8').replace(/\r\n/g, '\n'));
   assert(summary.rows.filter((row) => row.baselineType === 'published-package').every((row) =>
     row.runtime === 'edge-isolate' && row.browserBundleBytes === null &&
     row.edgeBundleBytes === positive.edgeResults.deploymentRawBytes && row.metadataStripped === null));
