@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-09-26
+
+Update with `npm install @alberteinshutoin/lazy-image@1.4.1 @alberteinshutoin/lazy-image-wasm@1.4.1`. The six native platform packages are selected as optional dependencies of the main package.
+
+The release verifies native candidates on six platforms with Node.js 22 and 24, including ordinary release-binding Worker load/exit and `ImageEngine` method chaining in full CI. The post-publication checks cover normal npm installs on those 12 runtimes and a Chrome Worker default-load check for Wasm. The v1.4.1 verification record identifies actual results and limits.
+
+### Changed
+- Updated the native binding runtime and generation dependencies to `napi` 3.12.2 and `napi-derive` 3.6.3, including backend 6.1.2 and `convert_case` 0.11.0. These incorporate upstream fixes; no prior-version crash was reproduced in lazy-image.
+- Updated development-only `sharp` to 0.35.4 and `js-yaml` to 4.3.2. The sharp comparison evidence is recorded separately from release validation; no prior-version vulnerability was reproduced in lazy-image.
+
+### Fixed
+- Repaired the Windows CI check for saved Wasm Markdown line endings.
+
 ## [1.4.0] - 2026-09-25
 
 Upgrade both packages with `npm install @alberteinshutoin/lazy-image@1.4.0 @alberteinshutoin/lazy-image-wasm@1.4.0` to receive the updated Worker diagnostics. The native platform packages use the same version.
@@ -672,7 +685,8 @@ Upgrade both packages with `npm install @alberteinshutoin/lazy-image@1.4.0 @albe
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...v1.3.0

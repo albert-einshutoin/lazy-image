@@ -95,7 +95,7 @@ The codec loader resolves Wasm with `new URL(..., import.meta.url)`; the tested
 esbuild ESM bundle emits those URLs relative to `worker.js`.
 
 ```bash
-npm install @alberteinshutoin/lazy-image-wasm@1.4.0
+npm install @alberteinshutoin/lazy-image-wasm@1.4.1
 npm install --save-dev esbuild@0.25.10
 ./node_modules/.bin/esbuild worker.mjs --bundle --format=esm --platform=browser --target=es2022 --outfile=dist/worker.js
 find node_modules/@jsquash/{jpeg,png,resize,webp} -name '*.wasm' -exec cp {} dist/ \;
