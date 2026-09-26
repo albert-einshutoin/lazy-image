@@ -1,0 +1,129 @@
+{
+  "checkedAt": "2026-09-26T15:45:46.757258+00:00",
+  "tagRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "tagCandidateManifestSha256": "3bb2f6d11ade2c1828198ccc17f020e208b19335f15e99a3f21e348aa891aeab",
+  "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+  "rows": [
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-x64",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-x64/-/lazy-image-darwin-x64-1.4.1.tgz",
+      "integrity": "sha512-eOnW3wleo6Ek98YCjiCFvD5uqVndjU5HcuUM5FBDAmjJWmdjPSGvdpkenwAQaDHDC0zkMZ8YeSHP/7OnTD3KaQ==",
+      "sha256": "ff9fad5e93a662ab4a8790bc9c7807e6336de61ff8fc2eaba06b482e13097ca7",
+      "tagCandidateSha256": "ff9fad5e93a662ab4a8790bc9c7807e6336de61ff8fc2eaba06b482e13097ca7",
+      "integrityMatches": true,
+      "tagCandidateMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-arm64",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-arm64/-/lazy-image-darwin-arm64-1.4.1.tgz",
+      "integrity": "sha512-Kw6DlO5Tz8NA1HqXDtOJ2sSViVEorzZTtmr4UH2B2LyaxYNUoxa5+h0rOjszf97/DvA0It8zFMZjuJARrZs/Ug==",
+      "sha256": "f93b424d0f64aa182652f0483b9c6dd2b134883e54728ee090eee5d5e065d777",
+      "tagCandidateSha256": "f93b424d0f64aa182652f0483b9c6dd2b134883e54728ee090eee5d5e065d777",
+      "integrityMatches": true,
+      "tagCandidateMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-win32-x64-msvc",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-win32-x64-msvc/-/lazy-image-win32-x64-msvc-1.4.1.tgz",
+      "integrity": "sha512-mr3GYA55Ske3a4QcWFXL3kwMamx8DOXS70TDUv3kH0g4bcXGP2aC2zMT5lCMYokeweYMxg4hD3b3tmziYlbBvg==",
+      "sha256": "bcf9f310e9a5d740f21cb7f1fc68b8bc2f53b91b4ae05a1710c3f656979793bd",
+      "tagCandidateSha256": "bcf9f310e9a5d740f21cb7f1fc68b8bc2f53b91b4ae05a1710c3f656979793bd",
+      "integrityMatches": true,
+      "tagCandidateMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-gnu",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-gnu/-/lazy-image-linux-x64-gnu-1.4.1.tgz",
+      "integrity": "sha512-Jb1B59gs+XIkUsqvkwealadt9cX7pbPo3wrwPJfXBydBvQ4no9aVePfuJcOtUvSm9wn+CLcA947QFjXY/Djz1A==",
+      "sha256": "c5a84293244a1ae7330b0e8acd43c9cf8e61895ec745a0e19faad1a623664e36",
+      "tagCandidateSha256": "c5a84293244a1ae7330b0e8acd43c9cf8e61895ec745a0e19faad1a623664e36",
+      "integrityMatches": true,
+      "tagCandidateMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-arm64-gnu",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-arm64-gnu/-/lazy-image-linux-arm64-gnu-1.4.1.tgz",
+      "integrity": "sha512-lgD2wnrN/lAZQ+cY9Zj5V+LVX7HW1B/HFg+iRhm0s+6INuNJY0pF1PM8tzX/dO9ULYNf88KekUQ/NwIMTkT1gA==",
+      "sha256": "20a25a7a3b69b38d62ebc12df7810f2d3a87867d258d95e0eb868ab64f64a424",
+      "tagCandidateSha256": "20a25a7a3b69b38d62ebc12df7810f2d3a87867d258d95e0eb868ab64f64a424",
+      "integrityMatches": true,
+      "tagCandidateMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-musl",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-musl/-/lazy-image-linux-x64-musl-1.4.1.tgz",
+      "integrity": "sha512-Vhifes3/y/B4ySHsLwE+DE29YN3mKKnWc9f8E9eckXe85rrepuxu5/uKHI4Um9J6a53nHdHyfhkLdQAeguu0NQ==",
+      "sha256": "1d471ffdec2307ca4ead87ac3dc213d2b93d7b2336450d7fc3822b9acca0c7a1",
+      "tagCandidateSha256": "1d471ffdec2307ca4ead87ac3dc213d2b93d7b2336450d7fc3822b9acca0c7a1",
+      "integrityMatches": true,
+      "tagCandidateMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.4.1.tgz",
+      "integrity": "sha512-T7g4MRgf/+C5EJNVH5McJrat9TSbVU9q5UHngUgANdj5gUx0VC46htJuQ6N1yidpG/bYsyIvlcv3wRXhPG8p3g==",
+      "sha256": "d1d58364b2d1fb84bbc57e8436d62e13bbd84c25cc521ca26248004f28f6805a",
+      "tagCandidateSha256": "d1d58364b2d1fb84bbc57e8436d62e13bbd84c25cc521ca26248004f28f6805a",
+      "integrityMatches": true,
+      "tagCandidateMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-wasm",
+      "version": "1.4.1",
+      "latest": "1.4.1",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.4.1.tgz",
+      "integrity": "sha512-HOQteokY2kEkLgmRwmvq7t4VeCJn3aVgNRpsr+UjuK2WYnqBRE4jIN+m3bDYWs5pux+1LTkAa5N/1+N63jnmKw==",
+      "sha256": "6e5f2fb1c14476778f9ad8a3d7bee6fdded387789746a5344b9a84b480f75819",
+      "tagCandidateSha256": null,
+      "integrityMatches": true,
+      "tagCandidateMatches": null,
+      "wasmCandidateSha256": "3935c588acf905a715c1257dc047b5e863667f9c21cf6b02c1498ac696661f61",
+      "contentMatchesCandidate": true,
+      "files": {
+        "browser.js": "cb49e120559b829b8ba0e44eb5261ca1e8749db797518006ba32ca9bd11c8946",
+        "edge.js": "5c4af68e588c208f4c947e975691e2c1f2e92d623d70481651a5320563867fb1",
+        "shared.js": "8226e837e67a41fd0b972ef705feda59d60db2c7a0d516bd6f91ad7426b3bde5",
+        "worker.js": "5515069ef856042fb80c9714a3049db9a686647152ba184b1d3648f35299d0b7",
+        "package.json": "5d731e0a1692c4a5bb0dd479bb23ff70da9083fb304ad7992dd44eee300a4b30",
+        "README.md": "b55eb3c1e7456ff92a8f31f7fa6a85b363e28e46193236710c9fd9e782261f01",
+        "examples/edge.mjs": "41e39aad172a26bc4cb473a40c3810850748ab8d1a8b682a2d3c4dfd21779456",
+        "examples/worker.mjs": "3d1a7479c25e6ae360bd83178d3b54cf3457ec327dbdb7e0ab6ad3acaac6b396",
+        "browser.d.ts": "2e26469167121f175d29313ae05b36c3c870bbc8d085d714528def901c9812d2",
+        "edge.d.ts": "2e26469167121f175d29313ae05b36c3c870bbc8d085d714528def901c9812d2",
+        "shared.d.ts": "fa3986143fde4b4c67e721c68c2c7b5a62aa876fcddfb2ce95ac76d906e9ce69",
+        "worker.d.ts": "71cd143f93cc22727bd2564af611f1e5b397578164a44fcb6a5c1d435d9c8a3d"
+      },
+      "vs140": {
+        "added": [],
+        "removed": [],
+        "changed": [
+          "README.md",
+          "package.json",
+          "shared.js"
+        ]
+      }
+    }
+  ]
+}

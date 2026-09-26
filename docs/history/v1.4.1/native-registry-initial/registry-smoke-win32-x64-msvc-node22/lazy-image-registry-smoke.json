@@ -1,0 +1,46 @@
+{
+  "status": "FAIL",
+  "startedAt": "2026-09-26T15:42:41.276Z",
+  "checkoutRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "eventRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "scriptRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "package": "@alberteinshutoin/lazy-image@1.4.1",
+  "registry": "https://registry.npmjs.org/",
+  "expectedPlatform": "win32-x64-msvc",
+  "source": "published-registry",
+  "runtime": {
+    "platform": "win32",
+    "arch": "x64",
+    "osRelease": "10.0.20348",
+    "osVersion": "Windows Server 2022 Datacenter",
+    "node": "v22.23.2",
+    "libc": "not applicable",
+    "npm": "10.9.8"
+  },
+  "host": {
+    "runner": "windows-2022",
+    "os": "Windows",
+    "arch": "X64"
+  },
+  "fixture": {
+    "path": "test/fixtures/test_100KB_1057x1057.jpg",
+    "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90"
+  },
+  "policy": {
+    "widths": [
+      320,
+      640
+    ],
+    "formats": [
+      "webp"
+    ],
+    "placeholder": false
+  },
+  "commands": [
+    "npm.cmd --version",
+    "npm.cmd install --save-exact @alberteinshutoin/lazy-image@1.4.1 --registry=https://registry.npmjs.org/ --no-audit --no-fund"
+  ],
+  "installDirectory": "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\lazy-image-registry-smoke-RwZxle",
+  "reason": "Error: npm.cmd exited 1: npm error code ETARGET\nnpm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.\nnpm error notarget In most cases you or one of your dependencies are requesting\nnpm error notarget a package version that doesn't exist.\nnpm error A complete log of this run can be found in: C:\\npm\\cache\\_logs\\2026-09-26T15_42_42_058Z-debug-0.log\n\n    at run (D:\\a\\lazy-image\\lazy-image\\scripts\\registry-native-smoke.cjs:56:11)\n    at main (D:\\a\\lazy-image\\lazy-image\\scripts\\registry-native-smoke.cjs:126:5)\n    at Object.<anonymous> (D:\\a\\lazy-image\\lazy-image\\scripts\\registry-native-smoke.cjs:185:1)\n    at Module._compile (node:internal/modules/cjs/loader:1781:14)\n    at Object..js (node:internal/modules/cjs/loader:1913:10)\n    at Module.load (node:internal/modules/cjs/loader:1505:32)\n    at Function._load (node:internal/modules/cjs/loader:1309:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49",
+  "finishedAt": "2026-09-26T15:42:46.042Z"
+}
