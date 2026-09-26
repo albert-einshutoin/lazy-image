@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createUploadOptimizer } from '../browser.js';
 import { createUploadOptimizer as createEdgeUploadOptimizer } from '../edge.js';
+import { createUploadWorkerHandler } from '../worker.js';
 import edgeExampleHandler from '../examples/edge.mjs';
 import {
   categoryForCode,
@@ -94,6 +95,7 @@ await test('uses the native error category vocabulary and code semantics', async
     E500: ['UserError', true],
     E501: ['ResourceLimit', true],
     E502: ['ResourceLimit', true],
+    E503: ['CodecError', false],
     E901: ['InternalBug', false],
   };
 
@@ -257,6 +259,50 @@ await test('unsupported input format fails with native E111 semantics', async ()
       error.category === 'CodecError' &&
       error.recoverable === false
   );
+});
+
+await test('decode diagnosis leaves Wasm delivery and input corruption as separate checks', async () => {
+  await assert.rejects(
+    () => optimizer.optimizeUpload(new Uint8Array([0xff, 0xd8, 0xff, 0, 0, 0]), {
+      format: 'jpeg', output: 'arrayBuffer',
+    }),
+    (error) => error instanceof LazyImageWasmError && error.code === 'E131' &&
+      error.category === 'CodecError' && error.recoverable === false &&
+      error.message.includes('jpeg decoder') &&
+      error.recoveryHint.includes('mozjpeg_dec.wasm') &&
+      error.recoveryHint.includes('DevTools Network') &&
+      error.recoveryHint.includes('input')
+  );
+});
+
+await test('explicit Wasm compilation failure identifies its codec without inventing HTTP facts', async () => {
+  for (const [key, code, asset] of [
+    ['jpegDecode', 'E131', 'mozjpeg_dec.wasm'],
+    ['resize', 'E503', 'squoosh_resize_bg.wasm'],
+    ['webpEncode', 'E300', 'webp_enc_simd.wasm'],
+  ]) {
+    await assert.rejects(
+      () => createUploadOptimizer({ wasmModules: { [key]: new Uint8Array([0]) } }),
+      (error) => error instanceof LazyImageWasmError && error.code === code &&
+        error.category === 'CodecError' && error.recoverable === false &&
+        error.message.includes('initialization') && error.recoveryHint.includes(asset) &&
+        !error.message.includes('HTTP 404')
+    );
+  }
+});
+
+await test('Worker sends a cloneable diagnosis for unknown throw values', async () => {
+  const handler = createUploadWorkerHandler({ wasmModules });
+  for (const thrown of [undefined, { name: 'Unknown', message: { uncloneable() {} }, code: { bad: true } }]) {
+    let response;
+    await handler({ data: { id: 17, input: { async arrayBuffer() { throw thrown; } },
+      options: { format: 'jpeg', output: 'arrayBuffer' } },
+    target: { postMessage(value) { response = structuredClone(value); } } });
+    assert.equal(response.id, 17);
+    assert.equal(response.ok, false);
+    assert.equal(typeof response.error.message, 'string');
+    assert.equal(response.error.code, undefined);
+  }
 });
 
 await test('edge entrypoint defaults to ArrayBuffer output', async () => {

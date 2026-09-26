@@ -1,104 +1,259 @@
-# Wasm Upload Benchmarking
+# Published Wasm upload measurement
 
-This document defines how to evaluate the browser/Edge upload-preflight track.
-It complements the native sharp comparison benchmarks; it does not replace
-`TRUE_BENCHMARKS.md` as the source for public native performance claims.
-The published package and policy API is defined in
-[WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md).
-The initial implementation package lives in `packages/lazy-image-wasm`; this
-benchmark remains the comparison artifact generator rather than a replacement
-for browser-runner validation.
-
-## Commands
+This benchmark measures the **published npm package**, not the Wasm source in
+the checkout. The API and `wasmModules` contract are in
+[WASM_PACKAGE_API.md](./WASM_PACKAGE_API.md). The native row is a separate Node
+reference; it is not browser evidence. The v1.3.1 Node/Chrome snapshot and its
+limits are in [WASM_1.3.1_VERIFICATION.md](./history/WASM_1.3.1_VERIFICATION.md);
+the separate local workerd measurement is in
+[WASM_1.3.1_EDGE_VERIFICATION.md](./history/WASM_1.3.1_EDGE_VERIFICATION.md).
+Chrome's published v1.3.1 **default codec loading** is a separate run in
+[WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md](./history/WASM_1.3.1_BROWSER_DEFAULT_VERIFICATION.md).
+The published v1.4.0 Chrome default-load image and diagnostic rerun, with
+candidate and registry provenance kept separate, is in
+[V1.4.0_VERIFICATION.md](./history/V1.4.0_VERIFICATION.md). The version-pinned
+v1.3.1 registry commands below reproduce the original snapshot; use the
+version-pinned v1.4.0 commands in that record for the current release.
+The later published v1.4.0 local workerd rerun, including API initialization
+diagnostics and pre-isolate failure evidence, is in
+[WASM_1.4.0_EDGE_VERIFICATION.md](./history/WASM_1.4.0_EDGE_VERIFICATION.md).
+Its `--edge-diagnostic` commands keep intentional image-processing failures
+as nonzero exits and validate the expected API errors separately. Each command
+overwrites the raw evidence path, so save its JSON, log, and images before the
+next run.
+The published v1.4.0 Node rerun is in
+[WASM_1.4.0_NODE_VERIFICATION.md](./history/WASM_1.4.0_NODE_VERIFICATION.md).
+It runs the installed `/browser` implementation in a **Node process** using
+the `ImageData` shim and five explicitly injected published codec Wasm byte
+buffers. Its positive run and two fresh-process API diagnostics use:
 
 ```bash
-npm run test:bench:wasm
-npm run bench:wasm:browser
-npm run bench:wasm:edge
-npm run bench:wasm:report
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.4.0
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.4.0 --node-diagnostic corrupt-jpeg
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.4.0 --node-diagnostic resize-init
 ```
 
-The commands write stable artifacts to:
+The negative commands intentionally exit nonzero and preserve the API's
+`code`, `category`, `recoverable`, `message`, and `recoveryHint` in raw evidence.
+Only `diagnosticValidation.status: PASS` confirms the expected failure; the
+record gives the commands that save each overwritten run separately.
+The published v1.4.0 Node, Chrome Worker, and local workerd runs establish
+operation only in their recorded configurations. [#645](https://github.com/albert-einshutoin/lazy-image/issues/645)
+maps their measurements to the [benchmark gate](./WASM_STRATEGY.md#benchmark-gate):
+Wasm SSIM/PSNR is still unmeasured, and browser/Edge peak memory is unavailable
+in these runs. This limits public performance claims, not the published
+package's verified image-processing behavior.
 
-- `artifacts/benchmark/wasm-upload-summary.json`
-- `artifacts/benchmark/wasm-upload-summary.md`
+## Reproduce
 
-`artifacts/` is ignored by git, so benchmark snapshots should be copied into a
-dedicated documentation update only when the numbers are intended to become
-public evidence.
+Use Node.js 22 or 24, npm, a native binding for the checkout's platform (for
+the optional native reference row), Google Chrome, and a host supported by
+`workerd@1.20260924.1`. The following command installs the exact published
+version, esbuild 0.25.10, and workerd from
+`https://registry.npmjs.org/` into a new OS temporary directory. It executes
+the installed package in Node, bundles that same install for Chrome and local
+workerd, and runs all three required runtimes. It exits nonzero if any required
+runtime fails or cannot be prepared. The run records bundled LICENSE hashes and
+fetches a version-pinned canonical source when a package omits its license
+file. It also records installed workerd/esbuild executable hashes and checks
+the workerd binary actually launched against the installed package. Unset
+`ESBUILD_BINARY_PATH`; an external esbuild override is rejected before
+installation, so both bundling paths use the hashed installed binary.
+The npm script's default version is the checkout's `package.json` version;
+pass `--version` for a publication record so the target is explicit.
 
-## What The Harness Measures
+```bash
+npm run test:bench:wasm -- --version 1.3.1
+```
 
-The first harness covers representative upload-preflight scenarios:
+On systems where Chrome is elsewhere, pass
+`--chrome /absolute/path/to/chrome` after the version. To measure only one
+runtime, use:
 
-- large photo-style JPEG input resized to WebP under a byte budget
-- large PNG input resized to JPEG under a byte budget
+```bash
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime node --version 1.3.1
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --version 1.3.1
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.3.1
+```
 
-The report schema includes:
+The browser command above preserves the original five-asset **explicit
+injection** mode. To run the published `/worker` helper with **no
+`wasmModules`**, including an unmodified copy of each installed codec Wasm,
+use:
 
-- browser bundle size and gzip transfer size when a real browser bundle artifact is available
-- npm package-directory size and gzip size as a local diagnostic for installed optional baselines
-- instantiate or module-load time
-- first encode latency
-- encode time and total wall time
-- output bytes
-- target-byte hit rate
-- chosen quality
-- SSIM and PSNR against a resized source reference
-- metadata stripping behavior
-- memory information where the runtime exposes useful data
+```bash
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version 1.3.1 --withhold-wasm mozjpeg_dec.wasm
+```
 
-The native `@alberteinshutoin/lazy-image` row is a Node reference. It gives a
-quality, byte-budget, and latency baseline for the Wasm package, but it
-is not a browser runtime result.
+The second command is an intentional negative check: it must exit nonzero,
+save a FAIL `wasm-published-evidence.json`, and record the missing Wasm URL,
+HTTP 404, and Worker error. Save that JSON and log before the positive run
+overwrites `artifacts/benchmark/`. For a combined Node/browser/Edge run,
+`--runtime all --browser-load default` selects default loading only for Chrome;
+Node and Edge retain their separately documented module-injection paths.
 
-## Competitor Baselines
+To validate an **unpublished repair candidate**, pack the current Wasm
+workspace outside the checkout, then use the same isolated install, ESM
+bundle, and real Chrome Worker path. The candidate command saves raw evidence
+and images without generating published-package summary rows. Each command
+overwrites `artifacts/benchmark/wasm-published-evidence.json`, so copy it and
+the console log after each run. The missing-asset and corrupt-input commands
+are expected to exit nonzero and leave a `FAIL` image-processing verdict.
+`diagnosticValidation.status: PASS` separately confirms the expected Worker
+error and corresponding Wasm HTTP request; an unexpected failure records
+`diagnosticValidation.status: FAIL`. `--corrupt-jpeg` uses a fixed six-byte malformed JPEG header and a
+fresh Worker; no prior codec initialization is reused.
+Read the candidate version from the workspace manifest so `--version` matches
+the package just packed. The earlier v1.3.1 candidate and its exact revision
+remain a separate historical record in
+[WASM_ASSET_DIAGNOSTICS_CANDIDATE.md](./history/WASM_ASSET_DIAGNOSTICS_CANDIDATE.md).
 
-The harness includes rows for the browser/Edge competitors that matter for this
-strategy:
+```bash
+candidate_dir=$(mktemp -d)
+candidate_version=$(node -p "require('./packages/lazy-image-wasm/package.json').version")
+candidate_file=$(npm pack --workspace @alberteinshutoin/lazy-image-wasm --pack-destination "$candidate_dir" --silent)
+candidate_tarball="$candidate_dir/$candidate_file"
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball"
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --withhold-wasm mozjpeg_dec.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --withhold-wasm squoosh_resize_bg.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --withhold-wasm webp_enc_simd.wasm
+node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --browser-load default --version "$candidate_version" --candidate-tarball "$candidate_tarball" --corrupt-jpeg
+```
 
-- Wasm codec packages: jSquash and Squoosh
-- browser compressor packages: browser-image-compression and Compressor.js
+Candidate raw evidence records its tarball SHA-256, local `file:` install
+integrity, candidate/source commit and dirty state, plus the published codec
+registry provenance. The runner's own source commit/dirty state is separate.
+For failures, `browserResults.requests` is the test HTTP server's observation
+of URL/status; `browserResults.cases[].cold.error` is what the public Worker
+returned. The package itself cannot read the codec loader's HTTP status.
 
-If those optional packages are not installed, the row is reported as
-`unavailable` with the missing package names. If a package is installed but no
-runtime adapter exists yet, the row is reported as `not-run` and can still
-contribute package-directory size diagnostics.
+`all` means Node + Chrome Worker + local workerd; selecting only `node` or
+`browser` does not verify Edge. The Edge adapter executes the published
+`/edge` entrypoint inside workerd and requires no Chrome. Pass
+`--workerd /absolute/path/to/workerd` only when overriding the executable
+installed in the isolated directory with byte-identical executable. A missing
+workerd executable is BLOCKED; a hash mismatch is FAIL;
+an isolate startup/module/image failure is FAIL. The focused negative checks
+are reproducible with:
 
-Do not publish performance comparisons against unavailable or `not-run` rows.
-Those rows are evidence of benchmark coverage, not evidence of runtime wins.
-Do not use package-directory gzip size as browser bundle evidence; browser
-bundle claims require a bundled entrypoint and `browserBundleGzipBytes`.
+```bash
+node test/benchmarks/wasm-edge-failure-check.mjs 1.3.1
+```
 
-## Public-Safe Claims
+Generated artifacts are in `artifacts/benchmark/`:
 
-Safe public claims:
+- `wasm-published-evidence.json`: source commit, exact versions, registry URLs
+  and integrities, import/bundle provenance, fixture hashes and policies,
+  per-run metrics, output checksums, browser HTTP asset requests when selected,
+  and verdict.
+- `wasm-upload-summary.json` and `.md`: native reference, published `node-wasm`,
+  `browser-worker`, `edge-isolate` (only for selected runtimes), and clearly
+  marked optional competitor rows.
+- `wasm-node-*`, `wasm-browser-*`, and `wasm-edge-*`: actual first-run outputs, including the
+  unmet best-effort output. They are independently decoded with sharp and
+  checked for format, dimensions, bytes, budget result, and metadata.
 
-- "lazy-image provides a browser/Edge upload-preflight Wasm MVP; production
-  suitability remains runtime- and workload-specific."
-- "The Wasm benchmark harness records browser bundle size when a runtime adapter
-  provides it, plus load latency, first encode latency, byte-budget hit rate,
-  quality, metadata behavior, and memory where available."
-- "The native package remains the recommended production path for Node.js,
-  serverless Node functions, and batch pipelines."
+`artifacts/` is gitignored. Save the JSON, console log, and images together for
+a durable review; the snapshot above does so. The report's `sourceSha` is the
+HEAD revision, while `sourceDirty` and `sourceFilesSha256` identify edited code
+when a development run precedes commit. The temporary install is removed when
+the run ends. `publishedVersion` identifies registry runs; `candidateVersion`
+and `packageSource.sha256` identify candidate tarball runs. Each package's
+`resolved` and `integrity` record its actual install source. The installed `browser.js` or
+`edge.js` import path and esbuild metafile package inputs must point inside
+the temporary npm install, never the workspace.
 
-Workload-specific claims that require fresh benchmark artifacts:
+To reproduce a **summary correction without rerunning image processing**, use
+the saved raw evidence and the saved pre-correction summary:
 
-- smaller output than a browser compressor
-- faster first encode than a Wasm codec package
-- smaller gzip browser bundle than another browser package
-- better byte-budget hit rate than a competitor
-- acceptable Edge-isolate cold-start behavior
+```bash
+node test/benchmarks/wasm-upload-comparison.bench.js --reaggregate docs/history/wasm-1.3.1/wasm-published-evidence.json --previous-summary docs/history/wasm-1.3.1/wasm-upload-summary-original.json
+```
 
-Do not turn a single browser upload result into a blanket claim about all image
-processing, all codecs, or all runtimes.
+This writes corrected JSON and Markdown under `artifacts/benchmark/`. The
+original `generatedAt`/`sourceSha` identify the measured run; `aggregation`
+records the later aggregation time, code commit, and both input hashes. The
+saved correction is in [wasm-upload-summary.json](./history/wasm-1.3.1/wasm-upload-summary.json)
+and [wasm-upload-summary.md](./history/wasm-1.3.1/wasm-upload-summary.md).
+An `all` summary with Edge results can likewise be reaggregated when its
+matching raw evidence is supplied; the older Node/Chrome-only four-row
+snapshot remains supported, while current all-runtime evidence requires six
+published rows.
 
-## When To Refresh
+## Scope of each number
 
-Refresh the Wasm upload report when:
+The cases are JPEG→WebP and PNG→JPEG with resize and reachable byte budgets,
+plus an EXIF/GPS/XMP/ICC-bearing JPEG for metadata and the 10-byte impossible
+budget. The dedicated input must first be confirmed to contain all four items.
+The normal two inputs contain none of them, so their summary rows report
+`metadataStripped: null`; the separate `metadataVerification` section maps
+the dedicated input's present items to absent output items. The output
+must be decoded and inspected; `metrics.metadataStripped` only reflects the
+requested option. An impossible `best-effort` result is a valid image but a
+**budget miss**. `strict` must reject with `E502` and is counted separately
+from image-conversion success. A missing workerd executable is BLOCKED; an
+isolate that starts but fails a required case is FAIL. Both exit nonzero. Other
+missing required runtimes also exit nonzero, while optional competitor
+packages may be `unavailable` or `not-run` with reasons.
 
-- a Wasm/browser package is added or changed
-- codec defaults, byte-budget search, or resize behavior changes
-- optional competitor packages are added or upgraded
-- release docs mention browser/Edge or upload-preflight performance
-- public comparison claims are being updated
+The Node measurement uses an `ImageData` shim and explicit codec Wasm bytes;
+it is not a browser or Edge result. The browser uses native `ImageData` in a
+real `DedicatedWorkerGlobalScope`. A page sends an `ArrayBuffer` to the Worker
+and receives the output bytes. The Worker fetches five codec Wasm files over
+HTTP and passes them through the public `wasmModules` option. This is explicit
+injection. With `--browser-load default`, the published `/worker` helper gets
+no `wasmModules`: the codec loader resolves Wasm relative to the ESM Worker
+bundle. The runner copies the published Wasm unchanged beside `worker.js`,
+serves it as `application/wasm`, and records requested URLs, status, MIME,
+hashes, and codec variant. A small probe runs first in a fresh Worker with no
+earlier codec initialization. All JS and Wasm responses
+have `Cache-Control: no-store`; each case creates a new Worker, and its two
+warm samples reuse that same Worker. The input is fetched before the measured
+Worker-start interval. `coldFromBeforeWorkerMs` spans Worker creation through
+the first returned image. `warmMs` records two calls and `warmMedianMs` is
+their median. These are small-sample observations, not performance thresholds.
+
+Internal `totalMs` starts inside `optimizeUpload`, after optimizer creation.
+`firstEncodeMs` is the first encode attempt in the budget search, not the
+whole encode/search cost. `instantiateMs` times `initializeCodecs` only. The
+explicit-injection Worker's `assetFetchMs` times its five HTTP fetches. In
+default loading, fetch and initialization happen inside image processing and
+are not isolated by this metric. Codec startup
+and browser peak memory cannot be isolated reliably with this helper, so no
+memory or standalone initialization claim is made.
+
+The original delivery table lists entry JS, Worker JS, no additional chunks,
+and the five Wasm files fetched by explicit injection. Default-mode delivery
+includes only JS and Wasm URLs actually requested with HTTP 200; `copiedAssets`
+separately lists all Wasm files placed for other paths or variants. `rawBytes`
+and `gzipBytes` are file sizes. `firstCaseTransferredBodyBytes` is the actual
+compressed response-body total for those assets in the first case; it excludes
+HTTP headers and the input image. `totalRunTransferredBodyBytes` includes
+repeat Worker loads across selected cases, including the default-mode probe.
+`packageDirectoryBytes` is the
+installed package folder size and is not a browser transfer estimate. Browser
+delivery bytes belong only to `browser-worker` rows; `node-wasm` reports them
+as not applicable even when all runtimes are selected. The Edge asset columns
+belong only to `edge-isolate` rows.
+
+The local Edge adapter starts a fresh workerd process for the small probe and
+each case. Its `/health` endpoint verifies five real
+`WebAssembly.Module` imports and does not create an optimizer or process an
+image. The first image request creates one optimizer; two warm requests reuse
+that same isolate and optimizer. Node's `performance.now()` measures from
+process start to receipt of the first image, the first request round trip, and
+two warm round trips. The Edge `/clock` diagnostic runs only afterward;
+workerd's local `performance.now()` advanced during the CPU loop in measured
+cases, but any failed diagnostic is recorded as unavailable. Internal API
+metrics have a different scope and do not replace caller timing. The adapter
+does not install an ImageData/DOM shim or replace codecs; it bundles the
+published `/edge` package and passes workerd's statically imported Wasm
+modules through `wasmModules`. The listed JS and five Wasm files are static
+deployment raw/gzip sizes, not HTTP transfer bytes. No production cold-start,
+billed CPU, peak-memory, or all-Edge-runtime claim follows from local workerd.
+
+Optional jSquash, Squoosh, browser-image-compression, and Compressor.js rows
+remain diagnostics only. Do not claim a competitive win, bundle superiority,
+or Edge cold-start behavior from their missing adapters. Native production
+claims remain governed by [TRUE_BENCHMARKS.md](./TRUE_BENCHMARKS.md).

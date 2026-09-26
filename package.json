@@ -1,8 +1,11 @@
 {
   "name": "@alberteinshutoin/lazy-image",
-  "version": "1.2.0",
-  "description": "Web image optimization engine for Node.js with Image Firewall-backed secure upload defaults and smaller JPEG outputs in canonical PNG → JPEG benchmarks, powered by Rust + mozjpeg",
+  "version": "1.4.0",
+  "description": "Web image optimization engine for Node.js with Image Firewall-backed secure upload defaults and smaller JPEG outputs in canonical PNG \u2192 JPEG benchmarks, powered by Rust + mozjpeg",
   "main": "index.js",
+  "bin": {
+    "lazy-image": "./bin/lazy-image.js"
+  },
   "exports": {
     ".": {
       "types": "./index.d.ts",
@@ -46,9 +49,11 @@
     "packages/lazy-image-wasm"
   ],
   "scripts": {
-    "build": "node scripts/postbuild-fixup.js --prepare && napi build --platform --release && node scripts/postbuild-fixup.js",
+    "test:cli": "node test/integration/cli.test.js",
+    "build": "node scripts/build-native.cjs",
     "test": "npm run test:js && npm run test:ci-planner:rust-targets && npm run test:rust && npm run test:wasm:package",
-    "test:js": "npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
+    "test:js": "npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:release-artifacts && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
+    "test:release-artifacts": "node test/unit/release-artifacts.test.cjs",
     "test:ci-planner": "node test/unit/selective-test-planner.test.js",
     "test:ci-planner:rust-targets": "node test/unit/selective-rust-targets.test.js",
     "ci:plan-tests": "node ci/plan-tests.js",
@@ -89,14 +94,17 @@
     "prepublishOnly": "napi pre-publish --skip-optional-publish",
     "test:cow-debug": "CI_COW_DEBUG=1 LAZY_IMAGE_DEBUG_COW=1 cargo test --no-default-features --features cow-debug -- test_cow_debug && node test/unit/cow_debug.test.js",
     "test:bench:quality-dual-axis": "node test/benchmarks/quality-dual-axis.bench.js",
+    "test:bench:compile-image": "node test/benchmarks/compile-image-corpus.bench.js",
     "test:bench:jpegli": "node test/benchmarks/jpegli-bakeoff.bench.js",
     "test:bench:avif-backends": "node test/benchmarks/avif-backend-bakeoff.bench.js",
-    "check:generated-artifacts": "git diff --exit-code -- index.js index.d.ts"
+    "check:generated-artifacts": "git diff --exit-code -- index.js index.d.ts",
+    "test:bench:quality-matched": "node test/benchmarks/quality-matched.bench.js",
+    "test:bench:release": "npm run test:bench:compile-image && npm run test:bench:quality-matched && node test/benchmarks/release-evidence.js"
   },
   "devDependencies": {
     "@napi-rs/cli": "3.7.2",
     "@types/node": "^25.9.3",
-    "sharp": "^0.35.0",
+    "sharp": "^0.35.4",
     "ssim.js": "^3.5.0",
     "typescript": "^5.6.3"
   },
@@ -113,17 +121,18 @@
     ]
   },
   "optionalDependencies": {
-    "@alberteinshutoin/lazy-image-darwin-arm64": "1.2.0",
-    "@alberteinshutoin/lazy-image-darwin-x64": "1.2.0",
-    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.2.0",
-    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.2.0",
-    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.2.0",
-    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.2.0"
+    "@alberteinshutoin/lazy-image-darwin-arm64": "1.4.0",
+    "@alberteinshutoin/lazy-image-darwin-x64": "1.4.0",
+    "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.4.0",
+    "@alberteinshutoin/lazy-image-linux-x64-musl": "1.4.0",
+    "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.4.0",
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.4.0"
   },
   "engines": {
     "node": ">= 22"
   },
   "files": [
+    "bin/",
     "index.js",
     "index.mjs",
     "index.d.ts",

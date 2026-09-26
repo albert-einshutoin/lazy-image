@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-25
+
+Upgrade both packages with `npm install @alberteinshutoin/lazy-image@1.4.0 @alberteinshutoin/lazy-image-wasm@1.4.0` to receive the updated Worker diagnostics. The native platform packages use the same version.
+
+### Added
+- Wasm resize codec failures now have `E503` (`CodecError`,
+  `recoverable: false`). This adds a structured code where the underlying
+  resize exception was previously returned without one.
+
+### Fixed
+- Decode `E131` and encode `E300` retain their existing `code`, `category`,
+  and `recoverable` values while guiding callers to distinguish Wasm delivery
+  from image or codec processing failures. Check the selected `.wasm` beside
+  `worker.js`, then its request URL, HTTP status, and response in DevTools
+  Network. The API does not observe or report the codec fetch URL/status itself.
+- Explicit `wasmModules` compilation and initialization failures now return
+  the code and diagnostic for the affected decode, resize, or encode codec.
+- The Worker now returns a cloneable diagnostic even when the original throw
+  value has no usable message or cannot itself be cloned.
+
+## [1.3.1] - 2026-09-24
+
+### Fixed
+- Corrected native package builds for macOS x64, Linux arm64 GNU, and Linux x64 musl. The v1.3.0 packages for these platforms contain an incompatible binary; affected users should update to 1.3.1.
+- Release packaging now rejects binaries with the wrong CPU or Linux libc dependencies and requires API/CLI smoke tests of all six platform candidates on Node.js 22 and 24 before publishing those exact tarballs.
+
+## [1.3.0] - 2026-09-11
+
+### Added
+- Added the `lazy-image compile` CLI for JSON policies, verified artifact sets,
+  manifest JSON output, and cancellation through the existing compiler API.
+- Added a small compiler regression corpus with license/checksum validation and
+  machine-readable E2E, budget, and sampled memory evidence. Broad real-image
+  evidence now includes licensed photos and labelled synthetic workload categories.
+- Added source-reference SSIM-floor and strict-byte-cap comparisons against
+  sharp for JPEG, WebP, and AVIF, with three isolated measurement trials,
+  category coverage and scheduled JSON artifact retention. Results preserve unmet
+  targets and do not establish broad perceptual-quality claims.
+
+### Changed
+- Aligned JPEG performance explanations with the canonical historical benchmark
+  scenarios; these are not new measurements of the release candidate.
+
+### Fixed
+- Corrected ICC chunk placement and the ICC flag in transparent WebP outputs so
+  standard decoders can read public-upload artifacts.
+- Hardened `compileImage()` verification for transparent AVIF artifacts.
+- Distinguished absent EXIF Orientation from unparseable or over-budget input
+  during upload preflight while retaining fail-closed behavior.
+
+### Performance
+- Replaced byte-at-a-time JPEG container verification I/O with bounded-buffer
+  reads while preserving complete scan validation and cleanup guarantees.
+
 ---
 
 ## [1.2.0] - 2026-09-05
@@ -618,7 +672,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.1...v1.4.0
+[1.3.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.0.0...v1.0.1

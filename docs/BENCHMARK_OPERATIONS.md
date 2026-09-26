@@ -90,3 +90,52 @@ Regression means "current metric value is higher than baseline by more than thre
 - Homebrew's libavif bottle may not include every encoder backend needed for publishable evidence. Confirm `avifenc --version` lists `rav1e`, `aom`, and `svt`, or build libavif tools from source with all three system codecs enabled.
 - `AVIF_BACKEND_ALLOW_MISSING=1 npm run test:bench:avif-backends` is only for smoke-checking script wiring in environments without `avifenc`. `--allow-missing-backends` is only for partial local experiments. Do not use skip-mode or partial-backend output as benchmark evidence.
 - Cross-platform impact for this harness is limited to benchmark operation: lazy-image runtime and package contents are unchanged, and `avifenc` is an operator-provided CLI. Any future backend switch proposal must attach macOS, Linux, and Windows build/package-size impact because that would introduce a production build dependency instead of an optional benchmark tool.
+
+## Release compiler and constrained-quality evidence (#769)
+
+Run `npm run test:bench:release` after `npm run build`. It runs the existing
+compiler and quality runners and validates their combined evidence. The scheduled
+Benchmark Regression workflow runs this command and retains `artifacts/benchmark`
+with `if: always()`. The outputs are `compile-image-corpus.json`,
+`quality-matched.json`, `release-evidence.json`, and `release-evidence.md`.
+
+The checksum-verified `test/benchmarks/corpus/release-manifest.json` contains 15
+cases: two CC0 photographs (coffee and Chelsea, from scikit-image), two synthetic
+UI workloads, two illustrations, two semi-transparent PNG/WebP boundaries, two
+ICC/EXIF orientation/GPS cases, two oversized PNGs, and the three original
+#827/#828/#829 regression fixtures. Source URLs, authors, license texts/checksums,
+image checksums and policies are recorded. Synthetic inputs are labelled as such;
+this small corpus does not represent every camera or Web workload. Regeneration
+uses `node test/benchmarks/corpus/generate.js`; generated text rasterization may
+vary with installed fonts, so verify and review resulting checksum changes.
+
+Compiler evidence measures three fresh-process trials per input through resolved
+publication, then checks published manifests, hashes and private metadata removal.
+Normal-input acceptance and strict budgets must both reach 100%; the two hostile
+inputs must fail with their specified phase/code and no published directory. The
+width-limit case is rejected by planning's source-dimension guard; the pixel-limit
+case is rejected by preflight. Expected rejection is never counted as acceptance.
+Original transparent-AVIF regression pixels remain exact. New alpha-boundary cases
+record the actual maximum alpha delta and require at most 8/255: the current AVIF
+encoder uses lossy alpha quality, so these tests do not promise lossless alpha.
+
+Quality evidence independently evaluates all 13 supported inputs as JPEG/WebP/AVIF
+using a shared auto-oriented PNG reference, resized to at most 320px and composited
+on white. It chooses the smallest candidate meeting a common sharp-anchored SSIM
+floor, and highest SSIM within the anchor's strict byte cap. Anchors are q80
+(JPEG/WebP) and q60 (AVIF), not a claim that equal q means equal perception. Every
+candidate in the recorded grid is encoded three times in a process isolated per
+input/format/engine. JSON retains candidate hashes, raw SSIM, PSNR, timing samples,
+nearest-rank p50/p90/worst, RSS, unmet targets, and source/version information.
+SSIM range validation allows 1e-12 floating-point roundoff without changing the
+measurement or relaxing selection targets; exact PSNR uses the string `Infinity`.
+
+RSS is a 10ms sampled process peak including reference preparation and quality
+measurement, not exact encoder-only allocation. Three trials expose variation but
+are insufficient for universal speed rankings. Quality comparison composites
+alpha; compiler evidence separately checks alpha preservation. A finite grid does
+not guarantee globally optimal output. Neither SSIM nor these limited workloads
+prove human perceptual equivalence or a blanket advantage over sharp. Existing
+README claim checks remain `npm run test:bench`; this suite does not rewrite the
+historical benchmark baseline. Consult all per-case results, including unmet and
+larger outputs, in the retained release-evidence report.
