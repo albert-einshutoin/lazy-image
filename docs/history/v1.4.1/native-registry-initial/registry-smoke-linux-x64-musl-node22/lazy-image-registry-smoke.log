@@ -1,0 +1,54 @@
+Unable to find image 'node:22-alpine' locally
+22-alpine: Pulling from library/node
+e2de96513ba9: Pulling fs layer
+f7f2d304681a: Pulling fs layer
+e554276b05e6: Pulling fs layer
+d39db1cf9caa: Pulling fs layer
+d39db1cf9caa: Waiting
+e554276b05e6: Verifying Checksum
+e554276b05e6: Download complete
+e2de96513ba9: Verifying Checksum
+e2de96513ba9: Download complete
+f7f2d304681a: Verifying Checksum
+f7f2d304681a: Download complete
+e2de96513ba9: Pull complete
+d39db1cf9caa: Verifying Checksum
+d39db1cf9caa: Download complete
+f7f2d304681a: Pull complete
+e554276b05e6: Pull complete
+d39db1cf9caa: Pull complete
+Digest: sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+Status: Downloaded newer image for node:22-alpine
+10.9.9
+npm error code ETARGET
+npm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.
+npm error notarget In most cases you or one of your dependencies are requesting
+npm error notarget a package version that doesn't exist.
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-26T15_42_39_229Z-debug-0.log
+Error: npm exited 1: npm error code ETARGET
+npm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.
+npm error notarget In most cases you or one of your dependencies are requesting
+npm error notarget a package version that doesn't exist.
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-26T15_42_39_229Z-debug-0.log
+
+    at run (/source/scripts/registry-native-smoke.cjs:56:11)
+    at main (/source/scripts/registry-native-smoke.cjs:126:5)
+    at Object.<anonymous> (/source/scripts/registry-native-smoke.cjs:185:1)
+    at Module._compile (node:internal/modules/cjs/loader:1781:14)
+    at Object..js (node:internal/modules/cjs/loader:1913:10)
+    at Module.load (node:internal/modules/cjs/loader:1505:32)
+    at Function._load (node:internal/modules/cjs/loader:1309:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49
+registry-native-smoke: FAIL linux-x64-musl v22.23.3

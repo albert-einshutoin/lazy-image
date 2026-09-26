@@ -1,0 +1,46 @@
+{
+  "status": "FAIL",
+  "startedAt": "2026-09-26T15:42:33.634Z",
+  "checkoutRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "eventRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "scriptRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "package": "@alberteinshutoin/lazy-image@1.4.1",
+  "registry": "https://registry.npmjs.org/",
+  "expectedPlatform": "darwin-arm64",
+  "source": "published-registry",
+  "runtime": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "23.6.0",
+    "osVersion": "Darwin Kernel Version 23.6.0: Tue Jul 21 21:56:54 PDT 2026; root:xnu-10063.141.1.713.39~1/RELEASE_ARM64_VMAPPLE",
+    "node": "v22.23.2",
+    "libc": "not applicable",
+    "npm": "10.9.8"
+  },
+  "host": {
+    "runner": "macos-14",
+    "os": "macOS",
+    "arch": "ARM64"
+  },
+  "fixture": {
+    "path": "test/fixtures/test_100KB_1057x1057.jpg",
+    "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90"
+  },
+  "policy": {
+    "widths": [
+      320,
+      640
+    ],
+    "formats": [
+      "webp"
+    ],
+    "placeholder": false
+  },
+  "commands": [
+    "npm --version",
+    "npm install --save-exact @alberteinshutoin/lazy-image@1.4.1 --registry=https://registry.npmjs.org/ --no-audit --no-fund"
+  ],
+  "installDirectory": "/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/lazy-image-registry-smoke-knTrsi",
+  "reason": "Error: npm exited 1: npm error code ETARGET\nnpm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.\nnpm error notarget In most cases you or one of your dependencies are requesting\nnpm error notarget a package version that doesn't exist.\nnpm error A complete log of this run can be found in: /Users/runner/.npm/_logs/2026-09-26T15_42_33_788Z-debug-0.log\n\n    at run (/Users/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:56:11)\n    at main (/Users/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:126:5)\n    at Object.<anonymous> (/Users/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:185:1)\n    at Module._compile (node:internal/modules/cjs/loader:1781:14)\n    at Object..js (node:internal/modules/cjs/loader:1913:10)\n    at Module.load (node:internal/modules/cjs/loader:1505:32)\n    at Function._load (node:internal/modules/cjs/loader:1309:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49",
+  "finishedAt": "2026-09-26T15:42:34.623Z"
+}
