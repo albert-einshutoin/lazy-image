@@ -1,0 +1,961 @@
+{
+  "generatedAt": "2026-09-26T15:45:54.452Z",
+  "sourceSha": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "publishedVersion": "1.4.1",
+  "sourceDirty": false,
+  "sourceFilesSha256": "f6c87568e850100ed181e68e1bab8a299825495e5661227cdaed097b39313404",
+  "packageSource": {
+    "kind": "published-registry",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "command": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --version 1.4.1 --browser-load default",
+  "node": "v24.2.0",
+  "npm": "11.3.0",
+  "os": "darwin",
+  "osVersion": "27.0",
+  "osRelease": "27.0.0",
+  "arch": "arm64",
+  "registry": "https://registry.npmjs.org/",
+  "packages": {
+    "@alberteinshutoin/lazy-image-wasm": {
+      "version": "1.4.1",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.4.1.tgz",
+      "integrity": "sha512-HOQteokY2kEkLgmRwmvq7t4VeCJn3aVgNRpsr+UjuK2WYnqBRE4jIN+m3bDYWs5pux+1LTkAa5N/1+N63jnmKw==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "5d731e0a1692c4a5bb0dd479bb23ff70da9083fb304ad7992dd44eee300a4b30",
+      "licenseFiles": {},
+      "licenseSource": {
+        "url": "https://raw.githubusercontent.com/albert-einshutoin/lazy-image/v1.4.1/LICENSE",
+        "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+      }
+    },
+    "@jsquash/jpeg": {
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/jpeg/-/jpeg-1.6.0.tgz",
+      "integrity": "sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "7b1e0578e6c3361393a8dc3873454e6b93fdc309911bad33bd911a70092ec783",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "8213556ea36ce3a0f2883db06238463e2452fdad68e3d2e2e4ace2189477a37e"
+      }
+    },
+    "@jsquash/png": {
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/png/-/png-3.1.1.tgz",
+      "integrity": "sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "e269127ef77d75435adafb428cc685f47471a8599f226e27d0646c5e147c3e69",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
+    },
+    "@jsquash/resize": {
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/resize/-/resize-2.1.1.tgz",
+      "integrity": "sha512-0R5UL1ZLHUT+carjVikcE1QfA+kfNQ2YamYyGVRmhfh4zttU5EY3bQBGxPIPtY2xIAw1P4Kgyxm2xrceRw1r2w==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "798a7649340c80cb84f6ddb05bd8395f614370b07d12c66e1245453202b1fdee",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "lib/hqx/LICENSE.codec.md": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+        "lib/magic-kernel/LICENSE.codec.md": "21e492c2fb8be34abe00c1b5c4b15139e061ddfaa236adc4c0d4ff70ccd329b2",
+        "lib/resize/LICENSE.codec.md": "373fec335329f8e4c9c8839871606e6ed5bfaa513a4dea2ebee4b7a418853320"
+      }
+    },
+    "@jsquash/webp": {
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/webp/-/webp-1.5.0.tgz",
+      "integrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "bfd9f9b7ec0d51421623e92185b3b994d6430068de323dacaa1a29b8a1c9c83c",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
+    },
+    "esbuild": {
+      "version": "0.25.10",
+      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.10.tgz",
+      "integrity": "sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "93f88a93cd72f8b547d44ba4a02f6f70048fb7a6f923d0b4f0b39f28fea53de6",
+      "licenseFiles": {
+        "LICENSE.md": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+      }
+    },
+    "@esbuild/darwin-arm64": {
+      "version": "0.25.10",
+      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.10.tgz",
+      "integrity": "sha512-JC74bdXcQEpW9KkV326WpZZjLguSZ3DfS8wrrvPMHgQOIEIG/sPXEN/V8IssoJhbefLRcRqw6RQH2NnpdprtMA==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "bf885024ed6b260184de72030345417b5551f99f416f8732691216da55e038bb",
+      "licenseFiles": {},
+      "licenseSource": {
+        "package": "esbuild",
+        "file": "LICENSE.md",
+        "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+      }
+    }
+  },
+  "toolchainBinaries": {
+    "esbuild": {
+      "package": "@esbuild/darwin-arm64",
+      "sha256": "921b19d2a6e983de6aa861582476e4f983c8509cb40c462e572ce64ca1bcb5be"
+    }
+  },
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP",
+  "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
+  "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
+  "nodeExecution": null,
+  "fixtures": [
+    {
+      "id": "jpeg-webp",
+      "input": "test/fixtures/test_3.2MB_5000x5000.jpg",
+      "generatedFrom": null,
+      "inputBytes": 3371242,
+      "inputSha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "webp",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 500000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "png-jpeg",
+      "input": "test/fixtures/test_4.5MB_5000x5000.png",
+      "generatedFrom": null,
+      "inputBytes": 4702925,
+      "inputSha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 450000,
+        "minQuality": 45,
+        "maxQuality": 90,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "metadata-budget",
+      "input": "artifacts/benchmark/wasm-metadata-input.jpg",
+      "generatedFrom": "test/benchmarks/corpus/images/metadata-1.jpg + keepMetadata() + withXmp()",
+      "inputBytes": 7343,
+      "inputSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "inputMetadata": {
+        "exif": true,
+        "gpsTag": true,
+        "xmp": true,
+        "icc": true
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 240,
+        "targetBytes": 30000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    }
+  ],
+  "nodeResults": null,
+  "nodeTotals": null,
+  "nodeModuleAssignments": null,
+  "nodeOptimizerCreationMs": null,
+  "nodeDiagnostic": null,
+  "nodeStage": null,
+  "browserLoadMode": "default",
+  "browserResults": {
+    "chromeVersion": "Google Chrome 153.0.8010.53",
+    "browserVersion": "153.0.8010.53",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+    "setup": [
+      {
+        "case": "probe-jpeg-webp",
+        "type": "setup",
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {}
+      },
+      {
+        "case": "jpeg-webp",
+        "type": "setup",
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {}
+      },
+      {
+        "case": "png-jpeg",
+        "type": "setup",
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {}
+      },
+      {
+        "case": "metadata-budget",
+        "type": "setup",
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {}
+      }
+    ],
+    "requests": [
+      {
+        "url": "/",
+        "absoluteUrl": "http://127.0.0.1:50664/",
+        "status": 200,
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "rawBytes": 113,
+        "transferredBodyBytes": 114,
+        "sha256": "ab22cedc57648ad1ed9ad8aa18a10315fc9280c94bae4ccc71207ae3f593e556"
+      },
+      {
+        "url": "/main.js",
+        "absoluteUrl": "http://127.0.0.1:50664/main.js",
+        "status": 200,
+        "contentType": "text/javascript",
+        "contentEncoding": "gzip",
+        "rawBytes": 3368,
+        "transferredBodyBytes": 1329,
+        "sha256": "4c8e54ba9d544b38445d372fbdb09bc5f3ee8ab1639d41bc6c138a0fc1e22ef5"
+      },
+      {
+        "url": "/config.json",
+        "absoluteUrl": "http://127.0.0.1:50664/config.json",
+        "status": 200,
+        "contentType": "application/json",
+        "contentEncoding": "gzip",
+        "rawBytes": 849,
+        "transferredBodyBytes": 247,
+        "sha256": "fdd1201f805eb0b82197cbcd21e0cdb8e66ce22b9866fe52fc52d7739db2c5e4"
+      },
+      {
+        "url": "/input/probe-jpeg-webp",
+        "absoluteUrl": "http://127.0.0.1:50664/input/probe-jpeg-webp",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentEncoding": "gzip",
+        "rawBytes": 100055,
+        "transferredBodyBytes": 70231,
+        "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90"
+      },
+      {
+        "url": "/favicon.ico",
+        "absoluteUrl": "http://127.0.0.1:50664/favicon.ico",
+        "status": 404,
+        "contentType": "text/plain",
+        "reason": "not found"
+      },
+      {
+        "url": "/worker.js",
+        "absoluteUrl": "http://127.0.0.1:50664/worker.js",
+        "status": 200,
+        "contentType": "text/javascript",
+        "contentEncoding": "gzip",
+        "rawBytes": 328271,
+        "transferredBodyBytes": 69124,
+        "sha256": "dfc86c7370014195c3378f4fea18a06ee4d07a0628e699878d64668147b99f17"
+      },
+      {
+        "url": "/mozjpeg_dec.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/mozjpeg_dec.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 166470,
+        "transferredBodyBytes": 63350,
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      {
+        "url": "/squoosh_resize_bg.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/squoosh_resize_bg.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 34545,
+        "transferredBodyBytes": 16893,
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      {
+        "url": "/webp_enc_simd.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/webp_enc_simd.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 345584,
+        "transferredBodyBytes": 125956,
+        "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+      },
+      {
+        "url": "/input/jpeg-webp",
+        "absoluteUrl": "http://127.0.0.1:50664/input/jpeg-webp",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentEncoding": "gzip",
+        "rawBytes": 3371242,
+        "transferredBodyBytes": 1934315,
+        "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96"
+      },
+      {
+        "url": "/worker.js",
+        "absoluteUrl": "http://127.0.0.1:50664/worker.js",
+        "status": 200,
+        "contentType": "text/javascript",
+        "contentEncoding": "gzip",
+        "rawBytes": 328271,
+        "transferredBodyBytes": 69124,
+        "sha256": "dfc86c7370014195c3378f4fea18a06ee4d07a0628e699878d64668147b99f17"
+      },
+      {
+        "url": "/mozjpeg_dec.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/mozjpeg_dec.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 166470,
+        "transferredBodyBytes": 63350,
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      {
+        "url": "/squoosh_resize_bg.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/squoosh_resize_bg.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 34545,
+        "transferredBodyBytes": 16893,
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      {
+        "url": "/webp_enc_simd.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/webp_enc_simd.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 345584,
+        "transferredBodyBytes": 125956,
+        "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+      },
+      {
+        "url": "/input/png-jpeg",
+        "absoluteUrl": "http://127.0.0.1:50664/input/png-jpeg",
+        "status": 200,
+        "contentType": "image/png",
+        "contentEncoding": "gzip",
+        "rawBytes": 4702925,
+        "transferredBodyBytes": 4577326,
+        "sha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5"
+      },
+      {
+        "url": "/worker.js",
+        "absoluteUrl": "http://127.0.0.1:50664/worker.js",
+        "status": 200,
+        "contentType": "text/javascript",
+        "contentEncoding": "gzip",
+        "rawBytes": 328271,
+        "transferredBodyBytes": 69124,
+        "sha256": "dfc86c7370014195c3378f4fea18a06ee4d07a0628e699878d64668147b99f17"
+      },
+      {
+        "url": "/squoosh_png_bg.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/squoosh_png_bg.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 181088,
+        "transferredBodyBytes": 84183,
+        "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+      },
+      {
+        "url": "/squoosh_resize_bg.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/squoosh_resize_bg.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 34545,
+        "transferredBodyBytes": 16893,
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      {
+        "url": "/mozjpeg_enc.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/mozjpeg_enc.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 251524,
+        "transferredBodyBytes": 59051,
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      },
+      {
+        "url": "/input/metadata-budget",
+        "absoluteUrl": "http://127.0.0.1:50664/input/metadata-budget",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentEncoding": "gzip",
+        "rawBytes": 7343,
+        "transferredBodyBytes": 5419,
+        "sha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70"
+      },
+      {
+        "url": "/worker.js",
+        "absoluteUrl": "http://127.0.0.1:50664/worker.js",
+        "status": 200,
+        "contentType": "text/javascript",
+        "contentEncoding": "gzip",
+        "rawBytes": 328271,
+        "transferredBodyBytes": 69124,
+        "sha256": "dfc86c7370014195c3378f4fea18a06ee4d07a0628e699878d64668147b99f17"
+      },
+      {
+        "url": "/mozjpeg_dec.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/mozjpeg_dec.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 166470,
+        "transferredBodyBytes": 63350,
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      {
+        "url": "/squoosh_resize_bg.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/squoosh_resize_bg.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 34545,
+        "transferredBodyBytes": 16893,
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      {
+        "url": "/mozjpeg_enc.wasm",
+        "absoluteUrl": "http://127.0.0.1:50664/mozjpeg_enc.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 251524,
+        "transferredBodyBytes": 59051,
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      }
+    ],
+    "results": [
+      {
+        "id": "jpeg-webp",
+        "status": "PASS",
+        "coldFromBeforeWorkerMs": 2864.4000000059605,
+        "coldMessageMs": 2864.2999999821186,
+        "warmMs": [
+          1716.2000000178814,
+          1748.8999999761581
+        ],
+        "warmMedianMs": 1732.5499999970198,
+        "metrics": {
+          "version": "1.4.1",
+          "runtime": "browser-worker",
+          "bytesIn": 3371242,
+          "bytesOut": 328690,
+          "formatIn": "jpeg",
+          "formatOut": "webp",
+          "widthIn": 5000,
+          "heightIn": 5000,
+          "widthOut": 1600,
+          "heightOut": 1600,
+          "qualityUsed": 86,
+          "budgetMet": true,
+          "targetBytes": 500000,
+          "instantiateMs": 0,
+          "decodeMs": 252.59999999403954,
+          "opsMs": 1536.7000000178814,
+          "encodeMs": 1063.5,
+          "totalMs": 2853,
+          "firstEncodeMs": 195.59999999403954,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec",
+          "bytes": 328690,
+          "format": "webp",
+          "width": 1600,
+          "height": 1600,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-browser-default-jpeg-webp.webp"
+        },
+        "budget": null
+      },
+      {
+        "id": "png-jpeg",
+        "status": "PASS",
+        "coldFromBeforeWorkerMs": 2672.5,
+        "coldMessageMs": 2672.399999976158,
+        "warmMs": [
+          1567,
+          1551.2999999821186
+        ],
+        "warmMedianMs": 1559.1499999910593,
+        "metrics": {
+          "version": "1.4.1",
+          "runtime": "browser-worker",
+          "bytesIn": 4702925,
+          "bytesOut": 430035,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 5000,
+          "heightIn": 5000,
+          "widthOut": 1600,
+          "heightOut": 1600,
+          "qualityUsed": 88,
+          "budgetMet": true,
+          "targetBytes": 450000,
+          "instantiateMs": 0,
+          "decodeMs": 197,
+          "opsMs": 1534.4000000059605,
+          "encodeMs": 929.5,
+          "totalMs": 2661,
+          "firstEncodeMs": 127.5,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a",
+          "bytes": 430035,
+          "format": "jpeg",
+          "width": 1600,
+          "height": 1600,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-browser-default-png-jpeg.jpg"
+        },
+        "budget": null
+      },
+      {
+        "id": "metadata-budget",
+        "status": "PASS",
+        "coldFromBeforeWorkerMs": 73.90000000596046,
+        "coldMessageMs": 73.90000000596046,
+        "warmMs": [
+          32.099999994039536,
+          31.200000017881393
+        ],
+        "warmMedianMs": 31.650000005960464,
+        "metrics": {
+          "version": "1.4.1",
+          "runtime": "browser-worker",
+          "bytesIn": 7343,
+          "bytesOut": 5886,
+          "formatIn": "jpeg",
+          "formatOut": "jpeg",
+          "widthIn": 240,
+          "heightIn": 320,
+          "widthOut": 180,
+          "heightOut": 240,
+          "qualityUsed": 86,
+          "budgetMet": true,
+          "targetBytes": 30000,
+          "instantiateMs": 0,
+          "decodeMs": 10.900000005960464,
+          "opsMs": 12.699999988079071,
+          "encodeMs": 39.30000001192093,
+          "totalMs": 63.099999994039536,
+          "firstEncodeMs": 15.899999976158142,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0",
+          "bytes": 5886,
+          "format": "jpeg",
+          "width": 180,
+          "height": 240,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-browser-default-metadata-budget.jpg"
+        },
+        "budget": {
+          "bestEffort": {
+            "bytesOut": 3078,
+            "budgetMet": false,
+            "wallMs": 8.799999982118607,
+            "output": {
+              "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
+              "bytes": 3078,
+              "format": "jpeg",
+              "width": 180,
+              "height": 240,
+              "metadata": {
+                "exif": false,
+                "xmp": false,
+                "icc": false
+              },
+              "artifact": "artifacts/benchmark/wasm-browser-default-metadata-budget-best-effort.jpg"
+            }
+          },
+          "strict": {
+            "expectedRejection": true,
+            "code": "E502",
+            "wallMs": 8.800000011920929
+          }
+        }
+      }
+    ],
+    "stderr": "Trying to load the allocator multiple times. This is *not* supported.\n[71047:12611295:0927/004557.479638:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004557.479864:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004557.481951:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004557.481998:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004557.484720:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004557.484771:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004557.484888:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004557.484948:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004557.485027:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004557.485062:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004557.494109:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004557.494167:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004559.051744:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004559.051797:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004559.113583:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004559.113634:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004559.142779:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004559.142827:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004559.184079:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004559.184147:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004559.210027:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004559.210075:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71041:12611278:0927/004559.223467:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\n[71047:12611295:0927/004559.256456:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004559.256515:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611295:0927/004559.282229:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[71047:12611354:0927/004559.282284:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\nCreated TensorFlow Lite XNNPACK delegate for CPU.",
+    "probe": {
+      "id": "probe-jpeg-webp",
+      "status": "PASS",
+      "coldFromBeforeWorkerMs": 276.39999997615814,
+      "coldMessageMs": 276.19999998807907,
+      "warmMs": [
+        77.2000000178814,
+        76
+      ],
+      "warmMedianMs": 76.6000000089407,
+      "metrics": {
+        "version": "1.4.1",
+        "runtime": "browser-worker",
+        "bytesIn": 100055,
+        "bytesOut": 17484,
+        "formatIn": "jpeg",
+        "formatOut": "webp",
+        "widthIn": 1057,
+        "heightIn": 1057,
+        "widthOut": 320,
+        "heightOut": 320,
+        "qualityUsed": 86,
+        "budgetMet": true,
+        "targetBytes": 50000,
+        "instantiateMs": 0,
+        "decodeMs": 33,
+        "opsMs": 90.90000000596046,
+        "encodeMs": 82.19999998807907,
+        "totalMs": 206.19999998807907,
+        "firstEncodeMs": 30.899999976158142,
+        "metadataStripped": true,
+        "policyViolations": [],
+        "memory": {
+          "source": "unavailable"
+        }
+      },
+      "output": {
+        "sha256": "81f5f0380cc1c0be8e391aa30d38065d7bf5afedd0fd0bb704c4098608cf80e3",
+        "bytes": 17484,
+        "format": "webp",
+        "width": 320,
+        "height": 320,
+        "metadata": {
+          "exif": false,
+          "xmp": false,
+          "icc": false
+        },
+        "artifact": "artifacts/benchmark/wasm-browser-default-probe-jpeg-webp.webp"
+      },
+      "budget": null
+    },
+    "totals": {
+      "imageConversionsPassed": 4,
+      "imageConversionsAttempted": 4,
+      "budgetMet": 3,
+      "budgetAttempts": 4,
+      "expectedStrictRejections": 1,
+      "strictAttempts": 1
+    },
+    "delivery": {
+      "/main.js": {
+        "rawBytes": 3368,
+        "gzipBytes": 1329,
+        "sha256": "4c8e54ba9d544b38445d372fbdb09bc5f3ee8ab1639d41bc6c138a0fc1e22ef5"
+      },
+      "/worker.js": {
+        "rawBytes": 328271,
+        "gzipBytes": 69124,
+        "sha256": "dfc86c7370014195c3378f4fea18a06ee4d07a0628e699878d64668147b99f17"
+      },
+      "/mozjpeg_dec.wasm": {
+        "rawBytes": 166470,
+        "gzipBytes": 63350,
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      "/mozjpeg_enc.wasm": {
+        "rawBytes": 251524,
+        "gzipBytes": 59051,
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      },
+      "/squoosh_png_bg.wasm": {
+        "rawBytes": 181088,
+        "gzipBytes": 84183,
+        "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+      },
+      "/squooshhqx_bg.wasm": {
+        "rawBytes": 135082,
+        "gzipBytes": 20308,
+        "sha256": "812617712f0444b09ee61d72f9b2dab6cdd7fed3e9c74cc57e4dd6c80f4a4c80"
+      },
+      "/jsquash_magic_kernel_bg.wasm": {
+        "rawBytes": 18760,
+        "gzipBytes": 8522,
+        "sha256": "f3d1b2e550d4de73abc2a1ed9c89adde4b0eed80009e730b4c3a0ae415f8122d"
+      },
+      "/squoosh_resize_bg.wasm": {
+        "rawBytes": 34545,
+        "gzipBytes": 16893,
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      "/webp_dec.wasm": {
+        "rawBytes": 137960,
+        "gzipBytes": 49535,
+        "sha256": "30fb52fa2a80166d25ba7debf902218904ba1f05ccce9f959f722beff9e2f344"
+      },
+      "/webp_enc.wasm": {
+        "rawBytes": 281261,
+        "gzipBytes": 113951,
+        "sha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7"
+      },
+      "/webp_enc_simd.wasm": {
+        "rawBytes": 345584,
+        "gzipBytes": 125956,
+        "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+      }
+    },
+    "packageDirectoryBytes": 37262,
+    "bundlePackageInputs": [
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@alberteinshutoin/lazy-image-wasm/worker.js"
+    ],
+    "bundleInputs": [
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/jpeg/utils.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/jpeg/codec/dec/mozjpeg_dec.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/jpeg/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/jpeg/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/jpeg/codec/enc/mozjpeg_enc.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/jpeg/encode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/png/codec/pkg/squoosh_png.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/png/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/resize/util.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/resize/lib/resize/pkg/squoosh_resize.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/resize/lib/hqx/pkg/squooshhqx.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/resize/lib/magic-kernel/pkg/jsquash_magic_kernel.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/resize/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/resize/index.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/webp/codec/dec/webp_dec.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/webp/utils.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/webp/decode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/webp/meta.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/wasm-feature-detect/dist/esm/index.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/webp/codec/enc/webp_enc_simd.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/webp/codec/enc/webp_enc.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@jsquash/webp/encode.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/node_modules/@alberteinshutoin/lazy-image-wasm/worker.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-g0HWWP/worker-entry.mjs"
+    ],
+    "copiedWasmSources": {
+      "/mozjpeg_dec.wasm": {
+        "package": "@jsquash/jpeg",
+        "path": "codec/dec/mozjpeg_dec.wasm",
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      "/mozjpeg_enc.wasm": {
+        "package": "@jsquash/jpeg",
+        "path": "codec/enc/mozjpeg_enc.wasm",
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      },
+      "/squoosh_png_bg.wasm": {
+        "package": "@jsquash/png",
+        "path": "codec/pkg/squoosh_png_bg.wasm",
+        "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+      },
+      "/squooshhqx_bg.wasm": {
+        "package": "@jsquash/resize",
+        "path": "lib/hqx/pkg/squooshhqx_bg.wasm",
+        "sha256": "812617712f0444b09ee61d72f9b2dab6cdd7fed3e9c74cc57e4dd6c80f4a4c80"
+      },
+      "/jsquash_magic_kernel_bg.wasm": {
+        "package": "@jsquash/resize",
+        "path": "lib/magic-kernel/pkg/jsquash_magic_kernel_bg.wasm",
+        "sha256": "f3d1b2e550d4de73abc2a1ed9c89adde4b0eed80009e730b4c3a0ae415f8122d"
+      },
+      "/squoosh_resize_bg.wasm": {
+        "package": "@jsquash/resize",
+        "path": "lib/resize/pkg/squoosh_resize_bg.wasm",
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      "/webp_dec.wasm": {
+        "package": "@jsquash/webp",
+        "path": "codec/dec/webp_dec.wasm",
+        "sha256": "30fb52fa2a80166d25ba7debf902218904ba1f05ccce9f959f722beff9e2f344"
+      },
+      "/webp_enc.wasm": {
+        "package": "@jsquash/webp",
+        "path": "codec/enc/webp_enc.wasm",
+        "sha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7"
+      },
+      "/webp_enc_simd.wasm": {
+        "package": "@jsquash/webp",
+        "path": "codec/enc/webp_enc_simd.wasm",
+        "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+      }
+    },
+    "requestedWasm": [
+      {
+        "url": "/mozjpeg_dec.wasm",
+        "source": {
+          "package": "@jsquash/jpeg",
+          "path": "codec/dec/mozjpeg_dec.wasm",
+          "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+        },
+        "delivery": {
+          "rawBytes": 166470,
+          "gzipBytes": 63350,
+          "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+        }
+      },
+      {
+        "url": "/squoosh_resize_bg.wasm",
+        "source": {
+          "package": "@jsquash/resize",
+          "path": "lib/resize/pkg/squoosh_resize_bg.wasm",
+          "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+        },
+        "delivery": {
+          "rawBytes": 34545,
+          "gzipBytes": 16893,
+          "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+        }
+      },
+      {
+        "url": "/webp_enc_simd.wasm",
+        "source": {
+          "package": "@jsquash/webp",
+          "path": "codec/enc/webp_enc_simd.wasm",
+          "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+        },
+        "delivery": {
+          "rawBytes": 345584,
+          "gzipBytes": 125956,
+          "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+        }
+      },
+      {
+        "url": "/squoosh_png_bg.wasm",
+        "source": {
+          "package": "@jsquash/png",
+          "path": "codec/pkg/squoosh_png_bg.wasm",
+          "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+        },
+        "delivery": {
+          "rawBytes": 181088,
+          "gzipBytes": 84183,
+          "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+        }
+      },
+      {
+        "url": "/mozjpeg_enc.wasm",
+        "source": {
+          "package": "@jsquash/jpeg",
+          "path": "codec/enc/mozjpeg_enc.wasm",
+          "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+        },
+        "delivery": {
+          "rawBytes": 251524,
+          "gzipBytes": 59051,
+          "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+        }
+      }
+    ],
+    "copiedAssets": [
+      "/mozjpeg_dec.wasm",
+      "/mozjpeg_enc.wasm",
+      "/squoosh_png_bg.wasm",
+      "/squooshhqx_bg.wasm",
+      "/jsquash_magic_kernel_bg.wasm",
+      "/squoosh_resize_bg.wasm",
+      "/webp_dec.wasm",
+      "/webp_enc.wasm",
+      "/webp_enc_simd.wasm"
+    ],
+    "requiredAssets": [
+      "/main.js",
+      "/worker.js",
+      "/mozjpeg_dec.wasm",
+      "/squoosh_resize_bg.wasm",
+      "/webp_enc_simd.wasm",
+      "/squoosh_png_bg.wasm",
+      "/mozjpeg_enc.wasm"
+    ],
+    "additionalChunks": [],
+    "deploymentRawBytes": 1310850,
+    "deploymentGzipBytes": 419886,
+    "firstCaseTransferredBodyBytes": 276652,
+    "totalRunTransferredBodyBytes": 989644,
+    "cache": "fresh Chrome profile, HTTP Cache-Control: no-store; each case uses a new Worker, warm samples reuse it",
+    "bundleTool": "esbuild 0.25.10",
+    "loadMode": "published Worker helper and codec default loader; no wasmModules"
+  },
+  "edgeResults": null,
+  "edgeTotals": null,
+  "diagnosticValidation": null,
+  "verdict": "PASS",
+  "browserExport": "./browser",
+  "VERSION": "1.4.1",
+  "browserProbeInput": {
+    "path": "test/fixtures/test_100KB_1057x1057.jpg",
+    "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+    "options": {
+      "format": "webp",
+      "maxWidth": 320,
+      "maxHeight": 320,
+      "targetBytes": 50000,
+      "minQuality": 45,
+      "maxQuality": 86,
+      "qualityFloorPolicy": "best-effort",
+      "output": "arrayBuffer"
+    }
+  }
+}

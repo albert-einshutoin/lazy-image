@@ -1,0 +1,387 @@
+{
+  "generatedAt": "2026-09-25T07:20:18.169Z",
+  "sourceSha": "a14f7fb346502c32fcc52e9ec380877abddfa683",
+  "candidateVersion": "1.4.0",
+  "sourceDirty": false,
+  "sourceFilesSha256": "6f40065e48534dbbe7bd94831dc6bd6e0f8ca21d50a15f0116ee38aefb022329",
+  "packageSource": {
+    "kind": "candidate-tarball",
+    "path": "/private/tmp/lazy-image-140-wasm-final.cU3inF/alberteinshutoin-lazy-image-wasm-1.4.0.tgz",
+    "sha256": "350a9cb36a609a7d291702ba75b87b927291816d300ab5e851e94e5a61b83a40",
+    "sourceCommit": "a14f7fb346502c32fcc52e9ec380877abddfa683",
+    "sourceDirty": false
+  },
+  "command": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime browser --version 1.4.0 --browser-load default --candidate-tarball /private/tmp/lazy-image-140-wasm-final.cU3inF/alberteinshutoin-lazy-image-wasm-1.4.0.tgz --corrupt-jpeg",
+  "node": "v24.2.0",
+  "npm": "11.3.0",
+  "os": "darwin",
+  "osVersion": "27.0",
+  "osRelease": "27.0.0",
+  "arch": "arm64",
+  "registry": "https://registry.npmjs.org/",
+  "packages": {
+    "@alberteinshutoin/lazy-image-wasm": {
+      "version": "1.4.0",
+      "resolved": "file:../../../../../../tmp/lazy-image-140-wasm-final.cU3inF/alberteinshutoin-lazy-image-wasm-1.4.0.tgz",
+      "integrity": "sha512-nIYzxbYX2hbAl32qc+3I/O2m9SD5IcKdqoqvFx6/IDoZhF+FzirVRbH7zw3uSHSNFLEc2Qbya/cyEyU8ekYjwg==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "e0c2a979459a02845ee30049186fda69bba8d2001609dcb61fd4ac8bcedeb275",
+      "licenseFiles": {},
+      "licenseSource": {
+        "path": "/Users/shutoide/.codex/worktrees/2841/lazy-image/LICENSE",
+        "sourceCommit": "a14f7fb346502c32fcc52e9ec380877abddfa683",
+        "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+      }
+    },
+    "@jsquash/jpeg": {
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/jpeg/-/jpeg-1.6.0.tgz",
+      "integrity": "sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "7b1e0578e6c3361393a8dc3873454e6b93fdc309911bad33bd911a70092ec783",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "8213556ea36ce3a0f2883db06238463e2452fdad68e3d2e2e4ace2189477a37e"
+      }
+    },
+    "@jsquash/png": {
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/png/-/png-3.1.1.tgz",
+      "integrity": "sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "e269127ef77d75435adafb428cc685f47471a8599f226e27d0646c5e147c3e69",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
+    },
+    "@jsquash/resize": {
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/resize/-/resize-2.1.1.tgz",
+      "integrity": "sha512-0R5UL1ZLHUT+carjVikcE1QfA+kfNQ2YamYyGVRmhfh4zttU5EY3bQBGxPIPtY2xIAw1P4Kgyxm2xrceRw1r2w==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "798a7649340c80cb84f6ddb05bd8395f614370b07d12c66e1245453202b1fdee",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "lib/hqx/LICENSE.codec.md": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+        "lib/magic-kernel/LICENSE.codec.md": "21e492c2fb8be34abe00c1b5c4b15139e061ddfaa236adc4c0d4ff70ccd329b2",
+        "lib/resize/LICENSE.codec.md": "373fec335329f8e4c9c8839871606e6ed5bfaa513a4dea2ebee4b7a418853320"
+      }
+    },
+    "@jsquash/webp": {
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/webp/-/webp-1.5.0.tgz",
+      "integrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "bfd9f9b7ec0d51421623e92185b3b994d6430068de323dacaa1a29b8a1c9c83c",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
+    },
+    "esbuild": {
+      "version": "0.25.10",
+      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.10.tgz",
+      "integrity": "sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "93f88a93cd72f8b547d44ba4a02f6f70048fb7a6f923d0b4f0b39f28fea53de6",
+      "licenseFiles": {
+        "LICENSE.md": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+      }
+    },
+    "@esbuild/darwin-arm64": {
+      "version": "0.25.10",
+      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.10.tgz",
+      "integrity": "sha512-JC74bdXcQEpW9KkV326WpZZjLguSZ3DfS8wrrvPMHgQOIEIG/sPXEN/V8IssoJhbefLRcRqw6RQH2NnpdprtMA==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "bf885024ed6b260184de72030345417b5551f99f416f8732691216da55e038bb",
+      "licenseFiles": {},
+      "licenseSource": {
+        "package": "esbuild",
+        "file": "LICENSE.md",
+        "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+      }
+    }
+  },
+  "toolchainBinaries": {
+    "esbuild": {
+      "package": "@esbuild/darwin-arm64",
+      "sha256": "921b19d2a6e983de6aa861582476e4f983c8509cb40c462e572ce64ca1bcb5be"
+    }
+  },
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-c9k3DR/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-c9k3DR",
+  "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
+  "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
+  "fixtures": [
+    {
+      "id": "jpeg-webp",
+      "input": "test/fixtures/test_3.2MB_5000x5000.jpg",
+      "generatedFrom": null,
+      "inputBytes": 3371242,
+      "inputSha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "webp",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 500000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "png-jpeg",
+      "input": "test/fixtures/test_4.5MB_5000x5000.png",
+      "generatedFrom": null,
+      "inputBytes": 4702925,
+      "inputSha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 450000,
+        "minQuality": 45,
+        "maxQuality": 90,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "metadata-budget",
+      "input": "artifacts/benchmark/wasm-metadata-input.jpg",
+      "generatedFrom": "test/benchmarks/corpus/images/metadata-1.jpg + keepMetadata() + withXmp()",
+      "inputBytes": 7343,
+      "inputSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "inputMetadata": {
+        "exif": true,
+        "gpsTag": true,
+        "xmp": true,
+        "icc": true
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 240,
+        "targetBytes": 30000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    }
+  ],
+  "nodeResults": null,
+  "nodeTotals": null,
+  "browserLoadMode": "default",
+  "browserResults": {
+    "chromeVersion": "Google Chrome 153.0.8010.53",
+    "browserVersion": "153.0.8010.53",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+    "setup": [
+      {
+        "case": "corrupt-jpeg",
+        "type": "setup",
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {}
+      }
+    ],
+    "requests": [
+      {
+        "url": "/",
+        "absoluteUrl": "http://127.0.0.1:60760/",
+        "status": 200,
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "rawBytes": 113,
+        "transferredBodyBytes": 114,
+        "sha256": "ab22cedc57648ad1ed9ad8aa18a10315fc9280c94bae4ccc71207ae3f593e556"
+      },
+      {
+        "url": "/main.js",
+        "absoluteUrl": "http://127.0.0.1:60760/main.js",
+        "status": 200,
+        "contentType": "text/javascript",
+        "contentEncoding": "gzip",
+        "rawBytes": 3368,
+        "transferredBodyBytes": 1329,
+        "sha256": "4c8e54ba9d544b38445d372fbdb09bc5f3ee8ab1639d41bc6c138a0fc1e22ef5"
+      },
+      {
+        "url": "/config.json",
+        "absoluteUrl": "http://127.0.0.1:60760/config.json",
+        "status": 200,
+        "contentType": "application/json",
+        "contentEncoding": "gzip",
+        "rawBytes": 94,
+        "transferredBodyBytes": 103,
+        "sha256": "d4f74a7328d27b4272da5018f794690b94c4f0c20b9fdb120ca188d16b78a3e2"
+      },
+      {
+        "url": "/input/corrupt-jpeg",
+        "absoluteUrl": "http://127.0.0.1:60760/input/corrupt-jpeg",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentEncoding": "gzip",
+        "rawBytes": 6,
+        "transferredBodyBytes": 26,
+        "sha256": "5a8535498f529965f0823bed012228b14684fb5fb05ce3a07a852c74e9b3ae83"
+      },
+      {
+        "url": "/favicon.ico",
+        "absoluteUrl": "http://127.0.0.1:60760/favicon.ico",
+        "status": 404,
+        "contentType": "text/plain",
+        "reason": "not found"
+      },
+      {
+        "url": "/worker.js",
+        "absoluteUrl": "http://127.0.0.1:60760/worker.js",
+        "status": 200,
+        "contentType": "text/javascript",
+        "contentEncoding": "gzip",
+        "rawBytes": 328439,
+        "transferredBodyBytes": 69125,
+        "sha256": "a93aec20631891d099b16bf947615f5001feb7191433605f740cc8fd4b45f1b7"
+      },
+      {
+        "url": "/mozjpeg_dec.wasm",
+        "absoluteUrl": "http://127.0.0.1:60760/mozjpeg_dec.wasm",
+        "status": 200,
+        "contentType": "application/wasm",
+        "contentEncoding": "gzip",
+        "rawBytes": 166470,
+        "transferredBodyBytes": 63350,
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      }
+    ],
+    "expectedFailure": {
+      "validationStatus": "PASS",
+      "imageProcessingOutcome": "FAIL",
+      "case": "corrupt-jpeg",
+      "expectedCode": "E131",
+      "workerError": {
+        "name": "LazyImageWasmError",
+        "message": "jpeg decoder failed during codec initialization or image decoding: Program terminated with exit(1)",
+        "code": "E131",
+        "category": "CodecError",
+        "recoverable": false,
+        "recoveryHint": "For the bundled Worker, check that mozjpeg_dec.wasm is served beside worker.js (dist/ is the HTTP root in the README). In DevTools Network, inspect the .wasm request URL and HTTP status; confirm the response contains Wasm bytes, not a 404 page or HTML. If delivery is valid, check the input image for corruption and the codec for a processing failure."
+      },
+      "wasmRequests": [
+        {
+          "url": "/mozjpeg_dec.wasm",
+          "absoluteUrl": "http://127.0.0.1:60760/mozjpeg_dec.wasm",
+          "status": 200,
+          "contentType": "application/wasm",
+          "contentEncoding": "gzip",
+          "rawBytes": 166470,
+          "transferredBodyBytes": 63350,
+          "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+        }
+      ],
+      "networkEvidenceSource": "verification HTTP server, not the package",
+      "freshWorker": true
+    },
+    "stderr": "Trying to load the allocator multiple times. This is *not* supported.\n[76325:5367208:0925/162019.223407:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367264:0925/162019.225218:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367208:0925/162019.227593:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367264:0925/162019.227646:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367208:0925/162019.229174:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367264:0925/162019.229219:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367208:0925/162019.229340:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367264:0925/162019.229373:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367208:0925/162019.229440:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367264:0925/162019.229486:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367208:0925/162019.233144:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[76325:5367264:0925/162019.233206:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670",
+    "bundlePackageInputs": [
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-c9k3DR/node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-c9k3DR/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-c9k3DR/node_modules/@alberteinshutoin/lazy-image-wasm/worker.js"
+    ],
+    "copiedWasmSources": {
+      "/mozjpeg_dec.wasm": {
+        "package": "@jsquash/jpeg",
+        "path": "codec/dec/mozjpeg_dec.wasm",
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      "/mozjpeg_enc.wasm": {
+        "package": "@jsquash/jpeg",
+        "path": "codec/enc/mozjpeg_enc.wasm",
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      },
+      "/squoosh_png_bg.wasm": {
+        "package": "@jsquash/png",
+        "path": "codec/pkg/squoosh_png_bg.wasm",
+        "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+      },
+      "/squooshhqx_bg.wasm": {
+        "package": "@jsquash/resize",
+        "path": "lib/hqx/pkg/squooshhqx_bg.wasm",
+        "sha256": "812617712f0444b09ee61d72f9b2dab6cdd7fed3e9c74cc57e4dd6c80f4a4c80"
+      },
+      "/jsquash_magic_kernel_bg.wasm": {
+        "package": "@jsquash/resize",
+        "path": "lib/magic-kernel/pkg/jsquash_magic_kernel_bg.wasm",
+        "sha256": "f3d1b2e550d4de73abc2a1ed9c89adde4b0eed80009e730b4c3a0ae415f8122d"
+      },
+      "/squoosh_resize_bg.wasm": {
+        "package": "@jsquash/resize",
+        "path": "lib/resize/pkg/squoosh_resize_bg.wasm",
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      "/webp_dec.wasm": {
+        "package": "@jsquash/webp",
+        "path": "codec/dec/webp_dec.wasm",
+        "sha256": "30fb52fa2a80166d25ba7debf902218904ba1f05ccce9f959f722beff9e2f344"
+      },
+      "/webp_enc.wasm": {
+        "package": "@jsquash/webp",
+        "path": "codec/enc/webp_enc.wasm",
+        "sha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7"
+      },
+      "/webp_enc_simd.wasm": {
+        "package": "@jsquash/webp",
+        "path": "codec/enc/webp_enc_simd.wasm",
+        "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305"
+      }
+    },
+    "copiedAssets": [
+      "/mozjpeg_dec.wasm",
+      "/mozjpeg_enc.wasm",
+      "/squoosh_png_bg.wasm",
+      "/squooshhqx_bg.wasm",
+      "/jsquash_magic_kernel_bg.wasm",
+      "/squoosh_resize_bg.wasm",
+      "/webp_dec.wasm",
+      "/webp_enc.wasm",
+      "/webp_enc_simd.wasm"
+    ],
+    "loadMode": "candidate Worker helper and codec default loader; no wasmModules"
+  },
+  "edgeResults": null,
+  "edgeTotals": null,
+  "diagnosticValidation": {
+    "status": "PASS",
+    "scenario": "corrupt-jpeg",
+    "expectedCode": "E131"
+  },
+  "verdict": "FAIL",
+  "browserProbeInput": {
+    "path": "generated malformed JPEG header",
+    "sha256": "5a8535498f529965f0823bed012228b14684fb5fb05ce3a07a852c74e9b3ae83",
+    "options": {
+      "format": "webp",
+      "output": "arrayBuffer"
+    }
+  },
+  "error": {
+    "message": "Intentional image-processing FAIL; expected diagnostic validated",
+    "stack": null
+  }
+}

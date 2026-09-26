@@ -70,15 +70,17 @@ test("release tag must match the package version", () => {
   );
 });
 
-test("manual release workflow can only enter the publish job in dry-run mode", () => {
-  assert.match(
-    workflow,
-    /if: \(github\.event_name != 'workflow_dispatch' && startsWith\(github\.ref, 'refs\/tags\/v'\)\) \|\| \(github\.event_name == 'workflow_dispatch' && !inputs\.full_validation && inputs\.dry_run\)/,
-  );
+test("manual release workflow stages candidates but only tags publish", () => {
+  const candidate = workflow.slice(workflow.indexOf("  candidate-pack:"), workflow.indexOf("  publish:"));
+  const publish = workflow.slice(workflow.indexOf("  publish:"));
+  assert.match(candidate, /inputs\.dry_run/);
+  assert.match(publish, /- candidate-smoke/);
+  assert.match(publish, /if: startsWith\(github\.ref, 'refs\/tags\/v'\)/);
 });
 
-test("main package publish skips an existing version", () => {
-  const mainPublish = workflow.slice(workflow.indexOf("- name: Publish main package"));
-  assert.match(mainPublish, /npm view "\$pkg_name@\$pkg_version" version/);
-  assert.ok(mainPublish.indexOf("npm view") < mainPublish.indexOf("npm publish"));
+test("published tarballs come from the candidate artifact", () => {
+  const publish = workflow.slice(workflow.indexOf("  publish:"));
+  assert.match(publish, /name: release-candidate/);
+  assert.match(publish, /publish-release-candidate\.cjs candidate platform/);
+  assert.match(publish, /publish-release-candidate\.cjs candidate main/);
 });

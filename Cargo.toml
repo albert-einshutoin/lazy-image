@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "1.2.0"
+version = "1.4.1"
 edition = "2021"
 description = "Web image optimization engine for Node.js with secure defaults and smaller browser-facing JPEG outputs, powered by Rust + mozjpeg"
 license = "MIT"
@@ -28,8 +28,8 @@ required-features = ["stress"]
 
 [dependencies]
 # NAPI binding (optional - only needed for Node.js bindings)
-napi = { version = "3.8", features = ["async"], optional = true }
-napi-derive = { version = "3.5.2", optional = true }
+napi = { version = "3.12.2", features = ["async"], optional = true }
+napi-derive = { version = "=3.6.3", optional = true }
 
 # Image decoding/encoding
 image = { version = "0.25", default-features = false, features = [

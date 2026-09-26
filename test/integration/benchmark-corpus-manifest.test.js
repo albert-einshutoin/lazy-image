@@ -12,8 +12,10 @@ const sharp = require('sharp');
 const {
   buildCorpusManifestMarkdown,
   describeReferenceCorpusEntry,
+  readCorpusManifest,
+  verifyCorpusManifest,
 } = require('../helpers/benchmark-corpus');
-const { resolveFixture, resolveTemp } = require('../helpers/paths');
+const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths');
 
 let passed = 0;
 let failed = 0;
@@ -44,6 +46,35 @@ const outputDir = resolveTemp('integration', 'benchmark-corpus-manifest');
 fs.mkdirSync(outputDir, { recursive: true });
 
 async function main() {
+  await test('verifies the tracked compile-image corpus license and checksums', async () => {
+    const manifestPath = resolveRoot('test/benchmarks/corpus/manifest.json');
+    const verified = verifyCorpusManifest(readCorpusManifest(manifestPath), resolveRoot());
+
+    assert.equal(verified.name, 'compile-image-minimal-v1');
+    assert.equal(verified.license.spdx, 'MIT');
+    assert.equal(verified.entries.length, 3);
+    assert.deepEqual(
+      verified.entries.map((entry) => entry.id),
+      ['jpeg-verification-io', 'orientation-absent-exif', 'transparent-avif'],
+    );
+    assert.equal(verified.entries.find((entry) => entry.id === 'transparent-avif').expectations.outputAlpha, true);
+  });
+
+  await test('rejects corpus checksum and path drift', async () => {
+    const manifest = readCorpusManifest(resolveRoot('test/benchmarks/corpus/manifest.json'));
+    const checksumDrift = JSON.parse(JSON.stringify(manifest));
+    checksumDrift.entries[0].sha256 = '0'.repeat(64);
+    assert.throws(() => verifyCorpusManifest(checksumDrift, resolveRoot()), /checksum mismatch/);
+
+    const licenseDrift = JSON.parse(JSON.stringify(manifest));
+    licenseDrift.license.sha256 = '0'.repeat(64);
+    assert.throws(() => verifyCorpusManifest(licenseDrift, resolveRoot()), /license checksum/);
+
+    const pathDrift = JSON.parse(JSON.stringify(manifest));
+    pathDrift.entries[0].path = '../LICENSE';
+    assert.throws(() => verifyCorpusManifest(pathDrift, resolveRoot()), /stay within the corpus root/);
+  });
+
   await test('records fixture source and resized reference PNG digests', async () => {
     const sourcePath = resolveFixture('test_38kb_input.jpg');
     const referencePng = await sharp(sourcePath).resize(64, null, { withoutEnlargement: true }).png().toBuffer();

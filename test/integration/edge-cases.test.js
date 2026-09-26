@@ -542,6 +542,15 @@ async function runTests() {
     // ========================================================================
     // EDGE CASES - Clone and reuse
     // ========================================================================
+
+    await asyncTest('pipeline methods return the same ImageEngine instance', async () => {
+        const engine = ImageEngine.from(buffer);
+        assert.strictEqual(engine.resize(100), engine);
+        assert.strictEqual(engine.rotate(0), engine);
+        assert.strictEqual(engine.grayscale(), engine);
+        const output = await engine.toBuffer('jpeg', 80);
+        assert(output.length > 0, 'chained instance should produce an image');
+    });
     
     await asyncTest('clone() creates independent instances', async () => {
         const engine1 = ImageEngine.from(buffer).resize(100);

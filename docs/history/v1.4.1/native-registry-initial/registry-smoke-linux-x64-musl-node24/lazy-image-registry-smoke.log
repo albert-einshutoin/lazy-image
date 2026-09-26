@@ -1,0 +1,42 @@
+Unable to find image 'node:24-alpine' locally
+24-alpine: Pulling from library/node
+e2de96513ba9: Pulling fs layer
+3c504d5a797b: Pulling fs layer
+02f40d53b06f: Pulling fs layer
+7ce7dcbafb7f: Pulling fs layer
+7ce7dcbafb7f: Waiting
+02f40d53b06f: Verifying Checksum
+02f40d53b06f: Download complete
+e2de96513ba9: Verifying Checksum
+e2de96513ba9: Download complete
+7ce7dcbafb7f: Verifying Checksum
+7ce7dcbafb7f: Download complete
+e2de96513ba9: Pull complete
+3c504d5a797b: Verifying Checksum
+3c504d5a797b: Download complete
+3c504d5a797b: Pull complete
+02f40d53b06f: Pull complete
+7ce7dcbafb7f: Pull complete
+Digest: sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
+Status: Downloaded newer image for node:24-alpine
+11.19.0
+npm error code ETARGET
+npm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-26T15_42_36_012Z-debug-0.log
+Error: npm exited 1: npm error code ETARGET
+npm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-26T15_42_36_012Z-debug-0.log
+
+    at run (/source/scripts/registry-native-smoke.cjs:56:11)
+    at main (/source/scripts/registry-native-smoke.cjs:126:5)
+    at Object.<anonymous> (/source/scripts/registry-native-smoke.cjs:185:1)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+registry-native-smoke: FAIL linux-x64-musl v24.21.0

@@ -334,7 +334,9 @@ pub fn embed_icc_png(png_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
 /// Embed ICC profile into WebP using img-parts
 pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> {
     run_with_panic_policy("encode:webp:embed_icc", || {
+        use img_parts::riff::{RiffChunk, RiffContent};
         use img_parts::webp::WebP;
+        use img_parts::webp::{CHUNK_ICCP, CHUNK_VP8X};
         use img_parts::Bytes;
 
         let output_cap = webp_data.len() + icc.len() + 64;
@@ -344,6 +346,43 @@ pub fn embed_icc_webp(webp_data: Vec<u8>, icc: &[u8]) -> EncoderResult<Vec<u8>> 
 
         // Avoid the intermediate `Vec` from `Bytes::from(icc.to_vec())`.
         webp.set_icc_profile(Some(Bytes::copy_from_slice(icc)));
+
+        // img-parts 0.4 inserts ICCP after ALPH when the source already has
+        // VP8X. WebP readers require metadata before the image payload, and
+        // VP8X must advertise the ICCP chunk as well.
+        let chunks = webp.chunks_mut();
+        let iccp_index = chunks
+            .iter()
+            .position(|chunk| chunk.id() == CHUNK_ICCP)
+            .ok_or_else(|| {
+                LazyImageError::encode_failed("webp", "ICC chunk was not added to WebP")
+            })?;
+        let iccp_chunk = chunks.remove(iccp_index);
+        let vp8x_index = chunks
+            .iter()
+            .position(|chunk| chunk.id() == CHUNK_VP8X)
+            .ok_or_else(|| {
+                LazyImageError::encode_failed("webp", "ICC WebP output has no VP8X chunk")
+            })?;
+        let vp8x_chunk = chunks.remove(vp8x_index);
+        let mut vp8x_data = match vp8x_chunk.content() {
+            RiffContent::Data(data) => data.to_vec(),
+            RiffContent::List { .. } => {
+                return Err(LazyImageError::encode_failed(
+                    "webp",
+                    "ICC WebP VP8X chunk has invalid content",
+                ));
+            }
+        };
+        let flags = vp8x_data
+            .first_mut()
+            .ok_or_else(|| LazyImageError::encode_failed("webp", "ICC WebP VP8X chunk is empty"))?;
+        *flags |= 0x20;
+        chunks.insert(
+            vp8x_index,
+            RiffChunk::new(CHUNK_VP8X, RiffContent::Data(Bytes::from(vp8x_data))),
+        );
+        chunks.insert(vp8x_index + 1, iccp_chunk);
 
         let mut output = Vec::with_capacity(output_cap);
         webp.encoder().write_to(&mut output).map_err(|e| {
