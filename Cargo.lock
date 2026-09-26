@@ -853,7 +853,7 @@ dependencies = [
 
 [[package]]
 name = "lazy-image"
-version = "1.2.0"
+version = "1.4.0"
 dependencies = [
  "bitflags",
  "criterion",

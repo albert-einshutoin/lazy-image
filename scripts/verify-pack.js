@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const requiredPackFiles = [
+  'bin/lazy-image.js',
   'CHANGELOG.md',
   'LICENSE',
   'README.ja.md',

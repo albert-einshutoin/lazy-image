@@ -1,0 +1,693 @@
+{
+  "generatedAt": "2026-09-24T15:59:31.058Z",
+  "sourceSha": "f34b75485da16d21e86dcc821d9b493f57eceef0",
+  "publishedVersion": "1.3.1",
+  "sourceDirty": false,
+  "sourceFilesSha256": "5865895605e879b3b577b415998cae1e7cc16d2013fefee887d030436f1eaf52",
+  "command": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime edge --version 1.3.1",
+  "node": "v24.2.0",
+  "npm": "11.3.0",
+  "os": "darwin",
+  "arch": "arm64",
+  "registry": "https://registry.npmjs.org/",
+  "packages": {
+    "@alberteinshutoin/lazy-image-wasm": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.3.1.tgz",
+      "integrity": "sha512-80yry+i323threLO1+cl4BkxBIknDBWPgRiQ08Jt3Z98cUfJNZV5WKKCrsfwpcd8fCKC7EhuaDkXrLAxXsxcOw==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "358f947c1ec3311c79a5a053795d76f3c5e63f0fb254c0a40dbc3766dfd2b4a9",
+      "licenseFiles": {},
+      "licenseSource": {
+        "url": "https://raw.githubusercontent.com/albert-einshutoin/lazy-image/v1.3.1/LICENSE",
+        "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+      }
+    },
+    "@jsquash/jpeg": {
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/jpeg/-/jpeg-1.6.0.tgz",
+      "integrity": "sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "7b1e0578e6c3361393a8dc3873454e6b93fdc309911bad33bd911a70092ec783",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "8213556ea36ce3a0f2883db06238463e2452fdad68e3d2e2e4ace2189477a37e"
+      }
+    },
+    "@jsquash/png": {
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/png/-/png-3.1.1.tgz",
+      "integrity": "sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "e269127ef77d75435adafb428cc685f47471a8599f226e27d0646c5e147c3e69",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
+    },
+    "@jsquash/resize": {
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/resize/-/resize-2.1.1.tgz",
+      "integrity": "sha512-0R5UL1ZLHUT+carjVikcE1QfA+kfNQ2YamYyGVRmhfh4zttU5EY3bQBGxPIPtY2xIAw1P4Kgyxm2xrceRw1r2w==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "798a7649340c80cb84f6ddb05bd8395f614370b07d12c66e1245453202b1fdee",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "lib/hqx/LICENSE.codec.md": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+        "lib/magic-kernel/LICENSE.codec.md": "21e492c2fb8be34abe00c1b5c4b15139e061ddfaa236adc4c0d4ff70ccd329b2",
+        "lib/resize/LICENSE.codec.md": "373fec335329f8e4c9c8839871606e6ed5bfaa513a4dea2ebee4b7a418853320"
+      }
+    },
+    "@jsquash/webp": {
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/webp/-/webp-1.5.0.tgz",
+      "integrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "bfd9f9b7ec0d51421623e92185b3b994d6430068de323dacaa1a29b8a1c9c83c",
+      "licenseFiles": {
+        "LICENSE": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+        "codec/LICENSE.codec.md": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42"
+      }
+    },
+    "esbuild": {
+      "version": "0.25.10",
+      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.10.tgz",
+      "integrity": "sha512-9RiGKvCwaqxO2owP61uQ4BgNborAQskMR6QusfWzQqv7AZOg5oGehdY2pRJMTKuwxd1IDBP4rSbI5lHzU7SMsQ==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "93f88a93cd72f8b547d44ba4a02f6f70048fb7a6f923d0b4f0b39f28fea53de6",
+      "licenseFiles": {
+        "LICENSE.md": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+      }
+    },
+    "workerd": {
+      "version": "1.20260924.1",
+      "resolved": "https://registry.npmjs.org/workerd/-/workerd-1.20260924.1.tgz",
+      "integrity": "sha512-uafggYbSNnGaO1Xoa6xX9mNIOU6Pu0EtKD6bg/FTLOztZsOpXTFtAUWKptk4SumYqBwuXZtO1/Gxv3P07QX6uA==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "fa8bbf1950ef48f0afe358c5f152f681ab1d9822391651c384df9440b7718664",
+      "licenseFiles": {},
+      "licenseSource": {
+        "url": "https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+      }
+    },
+    "@esbuild/darwin-arm64": {
+      "version": "0.25.10",
+      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.10.tgz",
+      "integrity": "sha512-JC74bdXcQEpW9KkV326WpZZjLguSZ3DfS8wrrvPMHgQOIEIG/sPXEN/V8IssoJhbefLRcRqw6RQH2NnpdprtMA==",
+      "licenseDeclared": "MIT",
+      "packageJsonSha256": "bf885024ed6b260184de72030345417b5551f99f416f8732691216da55e038bb",
+      "licenseFiles": {},
+      "licenseSource": {
+        "package": "esbuild",
+        "file": "LICENSE.md",
+        "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+      }
+    },
+    "@cloudflare/workerd-darwin-arm64": {
+      "version": "1.20260924.1",
+      "resolved": "https://registry.npmjs.org/@cloudflare/workerd-darwin-arm64/-/workerd-darwin-arm64-1.20260924.1.tgz",
+      "integrity": "sha512-SKpCvVOyFxMmBMdNzBbxPw+cdTTQtLcXyTJGynZ4QYb8Bqqiru08vI+xpuOq+83RDjq5IkRowYayMdeaFQEHwg==",
+      "licenseDeclared": "Apache-2.0",
+      "packageJsonSha256": "f9594be9ff3c173b9343afc6d9e5217d8385d6391b6179a6b1380239409e7e99",
+      "licenseFiles": {},
+      "licenseSource": {
+        "url": "https://raw.githubusercontent.com/cloudflare/workerd/v1.20260924.1/LICENSE",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+      }
+    }
+  },
+  "toolchainBinaries": {
+    "esbuild": {
+      "package": "@esbuild/darwin-arm64",
+      "sha256": "921b19d2a6e983de6aa861582476e4f983c8509cb40c462e572ce64ca1bcb5be"
+    },
+    "workerd": {
+      "package": "@cloudflare/workerd-darwin-arm64",
+      "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c"
+    }
+  },
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo",
+  "shim": "Node ImageData class only; browser uses native ImageData; Edge adapter adds no ImageData or DOM shim",
+  "runtimeClassification": "Node process, Chrome DedicatedWorkerGlobalScope, or local workerd isolate; metrics.runtime is not runtime proof",
+  "fixtures": [
+    {
+      "id": "jpeg-webp",
+      "input": "test/fixtures/test_3.2MB_5000x5000.jpg",
+      "generatedFrom": null,
+      "inputBytes": 3371242,
+      "inputSha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "webp",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 500000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "png-jpeg",
+      "input": "test/fixtures/test_4.5MB_5000x5000.png",
+      "generatedFrom": null,
+      "inputBytes": 4702925,
+      "inputSha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 450000,
+        "minQuality": 45,
+        "maxQuality": 90,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "metadata-budget",
+      "input": "artifacts/benchmark/wasm-metadata-input.jpg",
+      "generatedFrom": "test/benchmarks/corpus/images/metadata-1.jpg + keepMetadata() + withXmp()",
+      "inputBytes": 7343,
+      "inputSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "inputMetadata": {
+        "exif": true,
+        "gpsTag": true,
+        "xmp": true,
+        "icc": true
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 240,
+        "targetBytes": 30000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    }
+  ],
+  "nodeResults": null,
+  "nodeTotals": null,
+  "browserResults": null,
+  "edgeResults": {
+    "status": "PASS",
+    "runtime": "local workerd",
+    "compatibilityDate": "2026-09-24",
+    "compatibilityFlags": [],
+    "workerdCommand": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/.bin/workerd serve <isolated-install>/edge-config.capnp config",
+    "results": [
+      {
+        "id": "jpeg-webp",
+        "status": "PASS",
+        "launchCommand": [
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/.bin/workerd",
+          "serve",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/edge-config.capnp",
+          "config"
+        ],
+        "imageDataType": "function",
+        "coldFromBeforeRuntimeMs": 4152.5055409999995,
+        "startupToReadyMs": 30.27808300000015,
+        "firstRequestMs": 4121.522959,
+        "warmMs": [
+          2790.756458,
+          2767.706709
+        ],
+        "warmMedianMs": 2779.2315835,
+        "isolateId": "0bf7524f-32e0-41b5-8242-7f30a9e0a2f9",
+        "optimizerCreations": 1,
+        "clock": {
+          "status": "unavailable",
+          "reason": "diagnostic request failed after image processing: fetch failed; cause: read ECONNRESET; workerd exit: null"
+        },
+        "metrics": {
+          "version": "1.3.1",
+          "runtime": "edge-isolate",
+          "bytesIn": 3371242,
+          "bytesOut": 328690,
+          "formatIn": "jpeg",
+          "formatOut": "webp",
+          "widthIn": 5000,
+          "heightIn": 5000,
+          "widthOut": 1600,
+          "heightOut": 1600,
+          "qualityUsed": 86,
+          "budgetMet": true,
+          "targetBytes": 500000,
+          "instantiateMs": 6,
+          "decodeMs": 321,
+          "opsMs": 1789,
+          "encodeMs": 2001,
+          "totalMs": 4111,
+          "firstEncodeMs": 314,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec",
+          "bytes": 328690,
+          "format": "webp",
+          "width": 1600,
+          "height": 1600,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-edge-jpeg-webp.webp"
+        },
+        "budget": null,
+        "workerdStderr": ""
+      },
+      {
+        "id": "png-jpeg",
+        "status": "PASS",
+        "launchCommand": [
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/.bin/workerd",
+          "serve",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/edge-config.capnp",
+          "config"
+        ],
+        "imageDataType": "function",
+        "coldFromBeforeRuntimeMs": 3220.0000409999993,
+        "startupToReadyMs": 29.754166000000623,
+        "firstRequestMs": 3189.237167000001,
+        "warmMs": [
+          2127.5118330000005,
+          2079.3197089999994
+        ],
+        "warmMedianMs": 2103.415771,
+        "isolateId": "f5c514be-6bb0-426c-b6ec-ec02726abea7",
+        "optimizerCreations": 1,
+        "clock": {
+          "performanceBefore": 1790265592926,
+          "performanceAfter": 1790265592929,
+          "dateBefore": 1790265592926,
+          "dateAfter": 1790265592929,
+          "value": 1999999000000
+        },
+        "metrics": {
+          "version": "1.3.1",
+          "runtime": "edge-isolate",
+          "bytesIn": 4702925,
+          "bytesOut": 430035,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 5000,
+          "heightIn": 5000,
+          "widthOut": 1600,
+          "heightOut": 1600,
+          "qualityUsed": 88,
+          "budgetMet": true,
+          "targetBytes": 450000,
+          "instantiateMs": 4,
+          "decodeMs": 292,
+          "opsMs": 1626,
+          "encodeMs": 1262,
+          "totalMs": 3180,
+          "firstEncodeMs": 171,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a",
+          "bytes": 430035,
+          "format": "jpeg",
+          "width": 1600,
+          "height": 1600,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-edge-png-jpeg.jpg"
+        },
+        "budget": null,
+        "workerdStderr": ""
+      },
+      {
+        "id": "metadata-budget",
+        "status": "PASS",
+        "launchCommand": [
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/.bin/workerd",
+          "serve",
+          "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/edge-config.capnp",
+          "config"
+        ],
+        "imageDataType": "function",
+        "coldFromBeforeRuntimeMs": 95.58066699999836,
+        "startupToReadyMs": 29.858250000001135,
+        "firstRequestMs": 65.24333299999853,
+        "warmMs": [
+          41.99383300000045,
+          39.94787499999802
+        ],
+        "warmMedianMs": 40.970853999999235,
+        "isolateId": "f7b00375-0f46-4357-a723-0e02cf216da3",
+        "optimizerCreations": 1,
+        "clock": {
+          "performanceBefore": 1790265593153,
+          "performanceAfter": 1790265593156,
+          "dateBefore": 1790265593153,
+          "dateAfter": 1790265593156,
+          "value": 1999999000000
+        },
+        "metrics": {
+          "version": "1.3.1",
+          "runtime": "edge-isolate",
+          "bytesIn": 7343,
+          "bytesOut": 5886,
+          "formatIn": "jpeg",
+          "formatOut": "jpeg",
+          "widthIn": 240,
+          "heightIn": 320,
+          "widthOut": 180,
+          "heightOut": 240,
+          "qualityUsed": 86,
+          "budgetMet": true,
+          "targetBytes": 30000,
+          "instantiateMs": 4,
+          "decodeMs": 5,
+          "opsMs": 13,
+          "encodeMs": 42,
+          "totalMs": 60,
+          "firstEncodeMs": 13,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0",
+          "bytes": 5886,
+          "format": "jpeg",
+          "width": 180,
+          "height": 240,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-edge-metadata-budget.jpg"
+        },
+        "budget": {
+          "bestEffort": {
+            "bytesOut": 3078,
+            "budgetMet": false,
+            "wallMs": 11.405500000000757,
+            "output": {
+              "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
+              "bytes": 3078,
+              "format": "jpeg",
+              "width": 180,
+              "height": 240,
+              "metadata": {
+                "exif": false,
+                "xmp": false,
+                "icc": false
+              },
+              "artifact": "artifacts/benchmark/wasm-edge-metadata-budget-best-effort.jpg"
+            }
+          },
+          "strict": {
+            "expectedRejection": true,
+            "code": "E502",
+            "wallMs": 11.41266700000051
+          }
+        },
+        "workerdStderr": ""
+      }
+    ],
+    "probe": {
+      "id": "probe-jpeg-webp",
+      "status": "PASS",
+      "launchCommand": [
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/.bin/workerd",
+        "serve",
+        "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/edge-config.capnp",
+        "config"
+      ],
+      "imageDataType": "function",
+      "coldFromBeforeRuntimeMs": 260.99625000000015,
+      "startupToReadyMs": 34.6732090000005,
+      "firstRequestMs": 225.899042,
+      "warmMs": [
+        127.54212499999994,
+        125.38625000000047
+      ],
+      "warmMedianMs": 126.46418750000021,
+      "isolateId": "0815ad92-f1ed-4859-9f68-d840f0d1e41f",
+      "optimizerCreations": 1,
+      "clock": {
+        "performanceBefore": 1790265575714,
+        "performanceAfter": 1790265575718,
+        "dateBefore": 1790265575714,
+        "dateAfter": 1790265575718,
+        "value": 1999999000000
+      },
+      "metrics": {
+        "version": "1.3.1",
+        "runtime": "edge-isolate",
+        "bytesIn": 100055,
+        "bytesOut": 17484,
+        "formatIn": "jpeg",
+        "formatOut": "webp",
+        "widthIn": 1057,
+        "heightIn": 1057,
+        "widthOut": 320,
+        "heightOut": 320,
+        "qualityUsed": 86,
+        "budgetMet": true,
+        "targetBytes": 50000,
+        "instantiateMs": 5,
+        "decodeMs": 19,
+        "opsMs": 87,
+        "encodeMs": 111,
+        "totalMs": 217,
+        "firstEncodeMs": 24,
+        "metadataStripped": true,
+        "policyViolations": [],
+        "memory": {
+          "source": "unavailable"
+        }
+      },
+      "output": {
+        "sha256": "81f5f0380cc1c0be8e391aa30d38065d7bf5afedd0fd0bb704c4098608cf80e3",
+        "bytes": 17484,
+        "format": "webp",
+        "width": 320,
+        "height": 320,
+        "metadata": {
+          "exif": false,
+          "xmp": false,
+          "icc": false
+        },
+        "artifact": "artifacts/benchmark/wasm-edge-probe-jpeg-webp.webp"
+      },
+      "budget": null,
+      "workerdStderr": ""
+    },
+    "executedWorkerdBinary": {
+      "path": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/workerd/bin/workerd",
+      "sha256": "354615e8d5ccbc2ab9afff5ec7f9a3a6e21f83bb27c314c4c65685d1fbaf984c",
+      "package": "@cloudflare/workerd-darwin-arm64"
+    },
+    "workerdVersion": "workerd 2026-09-24",
+    "workerdPackageVersion": "1.20260924.1",
+    "esbuildVersion": "0.25.10",
+    "bundleInputs": [
+      {
+        "path": "node_modules/@jsquash/jpeg/utils.js",
+        "sha256": "e71535eeee820d68b68ece7c8af761c39f3ddec93d3d957d2f83b19191339e0d"
+      },
+      {
+        "path": "node_modules/@jsquash/jpeg/codec/dec/mozjpeg_dec.js",
+        "sha256": "a6836b2d03d4fdda64b4aef380e6298d7421c070e7e1e4cf13ec129df7aa0b5e"
+      },
+      {
+        "path": "node_modules/@jsquash/jpeg/meta.js",
+        "sha256": "f1c1f3cd95d3a03de8e87b59e12aaf4f2d9a16a0b20531373d9164c26ca84fce"
+      },
+      {
+        "path": "node_modules/@jsquash/jpeg/decode.js",
+        "sha256": "399ae5ee673223c43d68727192eac9545796a031710608c950381b33c1df6429"
+      },
+      {
+        "path": "node_modules/@jsquash/jpeg/codec/enc/mozjpeg_enc.js",
+        "sha256": "93d3b28a4c9d3278acbbe0e23ff244ec3a6bfb13e51647b87eea311a8d747694"
+      },
+      {
+        "path": "node_modules/@jsquash/jpeg/encode.js",
+        "sha256": "14dd2fd61c1ce1f1552d217b3bb353faa1c593ff9ad73f4a8ff3830c03ebc4fa"
+      },
+      {
+        "path": "node_modules/@jsquash/png/codec/pkg/squoosh_png.js",
+        "sha256": "65ebe1192f970c46263d52a122edf6bd01be81174c6bf1736a16f1e6f0e9b411"
+      },
+      {
+        "path": "node_modules/@jsquash/png/decode.js",
+        "sha256": "e9c9b1eabb5993f85e13f95720bee2a875f6fc4a9d976b6680dcf7b9843ac738"
+      },
+      {
+        "path": "node_modules/@jsquash/resize/util.js",
+        "sha256": "e545c011f2c0267b14b88589a1e3b4dffe4710c4b479a92c592ba3c9c7f1c887"
+      },
+      {
+        "path": "node_modules/@jsquash/resize/lib/resize/pkg/squoosh_resize.js",
+        "sha256": "e974c442bb6a7f2b57a7c86a879f55a008ffd6fccea5f9ed9fee14900ae56225"
+      },
+      {
+        "path": "node_modules/@jsquash/resize/lib/hqx/pkg/squooshhqx.js",
+        "sha256": "b6762322ae8c81259d67165eb72e9a3cd7a2d906dec5f21e5ffbef351838775d"
+      },
+      {
+        "path": "node_modules/@jsquash/resize/lib/magic-kernel/pkg/jsquash_magic_kernel.js",
+        "sha256": "484d0ccf978cc60a009650f738ad8167656e40d06de4fca1b0ab5dbf864709e5"
+      },
+      {
+        "path": "node_modules/@jsquash/resize/meta.js",
+        "sha256": "f12037b8b841d3421897744eb1ab979c339bb4e79a08d923adef6a0c65af66a5"
+      },
+      {
+        "path": "node_modules/@jsquash/resize/index.js",
+        "sha256": "920aef915c66cfbb5751e0031ee91c8919a760ed6eed7af5a04f79ec59922057"
+      },
+      {
+        "path": "node_modules/@jsquash/webp/codec/dec/webp_dec.js",
+        "sha256": "c57971611f4d9ec04e4636ce7bb4a35c031b24cbdb013518f0a017d9f6014370"
+      },
+      {
+        "path": "node_modules/@jsquash/webp/utils.js",
+        "sha256": "e71535eeee820d68b68ece7c8af761c39f3ddec93d3d957d2f83b19191339e0d"
+      },
+      {
+        "path": "node_modules/@jsquash/webp/decode.js",
+        "sha256": "b15d9abe76ad4b07214739fe81a99a47f25d01a1e0b0a329a3bec706509cd9e2"
+      },
+      {
+        "path": "node_modules/@jsquash/webp/meta.js",
+        "sha256": "3d70163a00e6264fc5a8fa7c8f3b1fa21a50a00d910f4d2de3ef1bbd2fdc98ab"
+      },
+      {
+        "path": "node_modules/wasm-feature-detect/dist/esm/index.js",
+        "sha256": "871246e709a8564b583265a37df4b90bebf6aabea6e7b86a41ab6ed986651154"
+      },
+      {
+        "path": "node_modules/@jsquash/webp/codec/enc/webp_enc_simd.js",
+        "sha256": "3038e60ebba6252baba08c691e31d1efe5036a185435daa7b4afaef3cc9273f9"
+      },
+      {
+        "path": "node_modules/@jsquash/webp/codec/enc/webp_enc.js",
+        "sha256": "5fd62301662e37785aec38e38807926f72933d4c8b919018a43faf1b1ca760f6"
+      },
+      {
+        "path": "node_modules/@jsquash/webp/encode.js",
+        "sha256": "edcd883d10e955655946b8fe733bb139faa8b7036092827b1849a4b34d727d6b"
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
+        "sha256": "72afd14d0b4d5c74578a3463ba5b2d4dc3bfa140b9c105b0c7158fef438d788d"
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+        "sha256": "279390dcc69e6824df4b8fac5ef83ab1fad82a7322ab620500c87e29db4e574d"
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
+        "sha256": "5c4af68e588c208f4c947e975691e2c1f2e92d623d70481651a5320563867fb1"
+      },
+      {
+        "path": "edge-entry.mjs",
+        "sha256": "65caba898e8c263d69c6099ae264860c36a1cd5fde1f48c2b333a0a0b13b00ab"
+      }
+    ],
+    "delivery": {
+      "mozjpeg_dec.wasm": {
+        "moduleKey": "jpegDecode",
+        "rawBytes": 166470,
+        "gzipBytes": 63350,
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      "mozjpeg_enc.wasm": {
+        "moduleKey": "jpegEncode",
+        "rawBytes": 251524,
+        "gzipBytes": 59051,
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      },
+      "squoosh_png_bg.wasm": {
+        "moduleKey": "pngDecode",
+        "rawBytes": 181088,
+        "gzipBytes": 84183,
+        "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+      },
+      "squoosh_resize_bg.wasm": {
+        "moduleKey": "resize",
+        "rawBytes": 34545,
+        "gzipBytes": 16893,
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      "webp_enc.wasm": {
+        "moduleKey": "webpEncode",
+        "rawBytes": 281261,
+        "gzipBytes": 113951,
+        "sha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7"
+      },
+      "edge-worker.mjs": {
+        "rawBytes": 324775,
+        "gzipBytes": 68391,
+        "sha256": "6911fd7f064181d785b6945be376088f1c1d7af216ad3b58cba6b1cae51c7209"
+      }
+    },
+    "deploymentRawBytes": 1239663,
+    "deploymentGzipBytes": 405819,
+    "packageEdgeImport": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-5bhcAo/node_modules/@alberteinshutoin/lazy-image-wasm/edge.js",
+    "probeInput": {
+      "path": "test/fixtures/test_100KB_1057x1057.jpg",
+      "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+      "options": {
+        "format": "webp",
+        "maxWidth": 320,
+        "maxHeight": 320,
+        "targetBytes": 50000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    "coldCondition": "new workerd process per case; health check does not create optimizer; two warm requests reuse isolate and optimizer",
+    "loadMode": "static workerd WebAssembly.Module imports passed to published /edge wasmModules"
+  },
+  "edgeTotals": {
+    "imageConversionsPassed": 4,
+    "imageConversionsAttempted": 4,
+    "budgetMet": 3,
+    "budgetAttempts": 4,
+    "expectedStrictRejections": 1,
+    "strictAttempts": 1
+  },
+  "verdict": "PASS"
+}

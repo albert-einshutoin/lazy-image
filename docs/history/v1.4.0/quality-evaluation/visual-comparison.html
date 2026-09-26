@@ -1,0 +1,54 @@
+<!doctype html><html lang="ja"><meta charset="utf-8">
+<title>Wasm v1.4.0 品質比較</title>
+<style>body{font:16px system-ui;max-width:1100px;margin:auto;padding:20px}section{border-top:1px solid #aaa;padding:20px 0}.pair{display:flex;gap:20px;flex-wrap:wrap}.pair figure{margin:0;width:48%;min-width:300px}.pair img{max-width:100%;height:auto}.crop img{width:288px;height:288px;image-rendering:pixelated}figcaption{font-weight:600}small{display:block}</style>
+<h1>公開Wasm v1.4.0 固定参照との比較</h1>
+<p>左は元入力から作ったlossless resize参照、右は公開Wasm出力。各組のcropは両側同一座標で切り出し、どちらも表示幅288 pxとした。目視資料であり主観評価実験ではない。</p>
+<section><h2>jpeg-webp</h2><small>synthetic / 1600×1600 / crop {&quot;left&quot;:672,&quot;top&quot;:672,&quot;width&quot;:256,&quot;height&quot;:256}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-jpeg-webp.png"></figure><figure><figcaption>出力</figcaption><img src="../node-wasm/wasm-node-jpeg-webp.webp"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="jpeg-webp-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="jpeg-webp-output-crop.png"></figure></div></section>
+<section><h2>png-jpeg</h2><small>synthetic / 1600×1600 / crop {&quot;left&quot;:672,&quot;top&quot;:672,&quot;width&quot;:256,&quot;height&quot;:256}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-png-jpeg.png"></figure><figure><figcaption>出力</figcaption><img src="../node-wasm/wasm-node-png-jpeg.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="png-jpeg-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="png-jpeg-output-crop.png"></figure></div></section>
+<section><h2>metadata-budget</h2><small>synthetic / 180×240 / crop {&quot;left&quot;:42,&quot;top&quot;:72,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-metadata-budget.png"></figure><figure><figcaption>出力</figcaption><img src="../node-wasm/wasm-node-metadata-budget.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="metadata-budget-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="metadata-budget-output-crop.png"></figure></div></section>
+<section><h2>metadata-budget-best-effort</h2><small>synthetic / 180×240 / crop {&quot;left&quot;:42,&quot;top&quot;:72,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-metadata-budget.png"></figure><figure><figcaption>出力</figcaption><img src="../node-wasm/wasm-node-metadata-budget-best-effort.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="metadata-budget-best-effort-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="metadata-budget-best-effort-output-crop.png"></figure></div></section>
+<section><h2>coffee-jpeg-none</h2><small>photo / 320×213 / crop {&quot;left&quot;:96,&quot;top&quot;:55,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-coffee.png"></figure><figure><figcaption>出力</figcaption><img src="coffee-jpeg-none.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="coffee-jpeg-none-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="coffee-jpeg-none-output-crop.png"></figure></div></section>
+<section><h2>coffee-jpeg-80%</h2><small>photo / 320×213 / crop {&quot;left&quot;:96,&quot;top&quot;:55,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-coffee.png"></figure><figure><figcaption>出力</figcaption><img src="coffee-jpeg-80.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="coffee-jpeg-80pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="coffee-jpeg-80pct-output-crop.png"></figure></div></section>
+<section><h2>coffee-jpeg-50%</h2><small>photo / 320×213 / crop {&quot;left&quot;:96,&quot;top&quot;:55,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-coffee.png"></figure><figure><figcaption>出力</figcaption><img src="coffee-jpeg-50.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="coffee-jpeg-50pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="coffee-jpeg-50pct-output-crop.png"></figure></div></section>
+<section><h2>coffee-webp-none</h2><small>photo / 320×213 / crop {&quot;left&quot;:96,&quot;top&quot;:55,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-coffee.png"></figure><figure><figcaption>出力</figcaption><img src="coffee-webp-none.webp"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="coffee-webp-none-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="coffee-webp-none-output-crop.png"></figure></div></section>
+<section><h2>coffee-webp-80%</h2><small>photo / 320×213 / crop {&quot;left&quot;:96,&quot;top&quot;:55,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-coffee.png"></figure><figure><figcaption>出力</figcaption><img src="coffee-webp-80.webp"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="coffee-webp-80pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="coffee-webp-80pct-output-crop.png"></figure></div></section>
+<section><h2>coffee-webp-50%</h2><small>photo / 320×213 / crop {&quot;left&quot;:96,&quot;top&quot;:55,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-coffee.png"></figure><figure><figcaption>出力</figcaption><img src="coffee-webp-50.webp"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="coffee-webp-50pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="coffee-webp-50pct-output-crop.png"></figure></div></section>
+<section><h2>chelsea-jpeg-none</h2><small>photo / 320×213 / crop {&quot;left&quot;:112,&quot;top&quot;:48,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-chelsea.png"></figure><figure><figcaption>出力</figcaption><img src="chelsea-jpeg-none.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="chelsea-jpeg-none-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="chelsea-jpeg-none-output-crop.png"></figure></div></section>
+<section><h2>chelsea-jpeg-80%</h2><small>photo / 320×213 / crop {&quot;left&quot;:112,&quot;top&quot;:48,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-chelsea.png"></figure><figure><figcaption>出力</figcaption><img src="chelsea-jpeg-80.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="chelsea-jpeg-80pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="chelsea-jpeg-80pct-output-crop.png"></figure></div></section>
+<section><h2>chelsea-jpeg-50%</h2><small>photo / 320×213 / crop {&quot;left&quot;:112,&quot;top&quot;:48,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-chelsea.png"></figure><figure><figcaption>出力</figcaption><img src="chelsea-jpeg-50.jpg"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="chelsea-jpeg-50pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="chelsea-jpeg-50pct-output-crop.png"></figure></div></section>
+<section><h2>chelsea-webp-none</h2><small>photo / 320×213 / crop {&quot;left&quot;:112,&quot;top&quot;:48,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-chelsea.png"></figure><figure><figcaption>出力</figcaption><img src="chelsea-webp-none.webp"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="chelsea-webp-none-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="chelsea-webp-none-output-crop.png"></figure></div></section>
+<section><h2>chelsea-webp-80%</h2><small>photo / 320×213 / crop {&quot;left&quot;:112,&quot;top&quot;:48,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-chelsea.png"></figure><figure><figcaption>出力</figcaption><img src="chelsea-webp-80.webp"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="chelsea-webp-80pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="chelsea-webp-80pct-output-crop.png"></figure></div></section>
+<section><h2>chelsea-webp-50%</h2><small>photo / 320×213 / crop {&quot;left&quot;:112,&quot;top&quot;:48,&quot;width&quot;:96,&quot;height&quot;:96}</small>
+<div class="pair"><figure><figcaption>参照</figcaption><img src="reference-chelsea.png"></figure><figure><figcaption>出力</figcaption><img src="chelsea-webp-50.webp"></figure></div>
+<div class="pair crop"><figure><figcaption>参照 crop</figcaption><img src="chelsea-webp-50pct-reference-crop.png"></figure><figure><figcaption>出力 crop</figcaption><img src="chelsea-webp-50pct-output-crop.png"></figure></div></section>
+</html>

@@ -23,6 +23,25 @@ import {
 } from './shared.js';
 
 const DEFAULT_RUNTIME = 'browser';
+const DECODE_WASM = {
+  jpeg: 'mozjpeg_dec.wasm',
+  png: 'squoosh_png_bg.wasm',
+  webp: 'webp_dec.wasm',
+};
+
+function codecFailureMessage(error) {
+  try {
+    return typeof error?.message === 'string' ? error.message : 'cause unavailable';
+  } catch {
+    return 'cause unavailable';
+  }
+}
+
+function wasmDeliveryHint(asset) {
+  return `For the bundled Worker, check that ${asset} is served beside worker.js ` +
+    '(dist/ is the HTTP root in the README). In DevTools Network, inspect the .wasm request URL ' +
+    'and HTTP status; confirm the response contains Wasm bytes, not a 404 page or HTML.';
+}
 
 export async function createUploadOptimizer(options = {}) {
   const runtime = options.runtime ?? DEFAULT_RUNTIME;
@@ -71,7 +90,7 @@ async function optimizeUploadWithRuntime(input, options, runtimeOptions) {
   const processed =
     targetDimensions.width === imageData.width && targetDimensions.height === imageData.height
       ? imageData
-      : await resizeImage(imageData, {
+      : await resizeWithCodec(imageData, {
           width: targetDimensions.width,
           height: targetDimensions.height,
           fitMethod: normalized.fit === 'cover' ? 'contain' : 'stretch',
@@ -135,15 +154,30 @@ async function initializeCodecs(options) {
   }
   const modules = options.wasmModules ?? {};
   const tasks = [];
-
-  if (modules.jpegDecode) tasks.push(initJpegDecode(await toWasmModule(modules.jpegDecode)));
-  if (modules.jpegEncode) tasks.push(initJpegEncode(await toWasmModule(modules.jpegEncode)));
-  if (modules.pngDecode) tasks.push(initPngDecode(await toWasmModule(modules.pngDecode)));
-  if (modules.resize) tasks.push(initResize(await toWasmModule(modules.resize)));
-  if (modules.webpDecode) tasks.push(initWebpDecode(await toWasmModule(modules.webpDecode)));
-  if (modules.webpEncode) tasks.push(initWebpEncode(await toWasmModule(modules.webpEncode)));
+  const codecs = [
+    ['jpegDecode', initJpegDecode, 'E131', 'jpeg decoder', DECODE_WASM.jpeg],
+    ['jpegEncode', initJpegEncode, 'E300', 'jpeg encoder', 'mozjpeg_enc.wasm'],
+    ['pngDecode', initPngDecode, 'E131', 'png decoder', DECODE_WASM.png],
+    ['resize', initResize, 'E503', 'resize', 'squoosh_resize_bg.wasm'],
+    ['webpDecode', initWebpDecode, 'E131', 'webp decoder', DECODE_WASM.webp],
+    ['webpEncode', initWebpEncode, 'E300', 'webp encoder', 'webp_enc_simd.wasm or webp_enc.wasm (the selected variant)'],
+  ];
+  for (const [key, init, code, stage, asset] of codecs) {
+    if (modules[key]) tasks.push(initializeCodec(modules[key], init, code, stage, asset));
+  }
 
   await Promise.all(tasks);
+}
+
+async function initializeCodec(module, init, code, stage, asset) {
+  try {
+    await init(await toWasmModule(module));
+  } catch (error) {
+    if (error instanceof LazyImageWasmError) throw error;
+    throwWasmError(code, `${stage} codec initialization failed: ${codecFailureMessage(error)}`, {
+      recoveryHint: `${wasmDeliveryHint(asset)} If wasmModules was supplied, check that its module matches the codec.`,
+    });
+  }
 }
 
 async function toWasmModule(input) {
@@ -167,11 +201,22 @@ async function decodeImage(bytes, inputFormat) {
     if (inputFormat === 'webp') return await webpDecode(buffer);
   } catch (error) {
     if (error instanceof LazyImageWasmError) throw error;
-    throwWasmError('E131', `Failed to decode ${inputFormat} input: ${error.message}`, {
-      recoveryHint: 'Check that the input image is not corrupt.',
+    throwWasmError('E131', `${inputFormat} decoder failed during codec initialization or image decoding: ${codecFailureMessage(error)}`, {
+      recoveryHint: `${wasmDeliveryHint(DECODE_WASM[inputFormat])} If delivery is valid, check the input image for corruption and the codec for a processing failure.`,
     });
   }
   throwWasmError('E111', `Unsupported input format: ${inputFormat}`);
+}
+
+async function resizeWithCodec(imageData, options) {
+  try {
+    return await resizeImage(imageData, options);
+  } catch (error) {
+    if (error instanceof LazyImageWasmError) throw error;
+    throwWasmError('E503', `resize codec failed during initialization or image resizing: ${codecFailureMessage(error)}`, {
+      recoveryHint: `${wasmDeliveryHint('squoosh_resize_bg.wasm')} If delivery is valid, check the codec processing failure.`,
+    });
+  }
 }
 
 async function encodeWithPolicy(imageData, options, now, totalStart) {
@@ -257,7 +302,11 @@ async function encodeAtQuality(imageData, format, quality) {
     }
   } catch (error) {
     if (error instanceof LazyImageWasmError) throw error;
-    throwWasmError('E300', `Failed to encode ${format} output: ${error.message}`);
+    const asset = format === 'webp' ? 'webp_enc_simd.wasm or webp_enc.wasm (the selected variant)' :
+      'mozjpeg_enc.wasm';
+    throwWasmError('E300', `${format} encoder failed during codec initialization or image encoding: ${codecFailureMessage(error)}`, {
+      recoveryHint: `${wasmDeliveryHint(asset)} If delivery is valid, check the codec and encoding options.`,
+    });
   }
   throwWasmError('E400', `Unsupported output format: ${format}`);
 }
