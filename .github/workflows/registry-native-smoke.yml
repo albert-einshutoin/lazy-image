@@ -1,0 +1,103 @@
+name: Published npm native smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published npm version to verify
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: registry-native-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  published-native:
+    name: Published npm ${{ matrix.platform }} / Node ${{ matrix.node }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: darwin-arm64, runner: macos-14, node: '22' }
+          - { platform: darwin-arm64, runner: macos-14, node: '24' }
+          - { platform: darwin-x64, runner: macos-15-intel, node: '22' }
+          - { platform: darwin-x64, runner: macos-15-intel, node: '24' }
+          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '22' }
+          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '24' }
+          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '22' }
+          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '24' }
+          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '22' }
+          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '24' }
+          - { platform: win32-x64-msvc, runner: windows-2022, node: '22' }
+          - { platform: win32-x64-msvc, runner: windows-2022, node: '24' }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    env:
+      SMOKE_SCRIPT_REVISION: ${{ github.sha }}
+      SMOKE_VERSION: ${{ inputs.version }}
+      SMOKE_HOST_RUNNER: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Setup Node.js
+        if: matrix.platform != 'linux-x64-musl'
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Smoke on native runner
+        if: matrix.platform != 'linux-x64-musl'
+        shell: bash
+        env:
+          SMOKE_EXPECTED_PLATFORM: ${{ matrix.platform }}
+          SMOKE_REPORT_PATH: ${{ runner.temp }}/lazy-image-registry-smoke.json
+          SMOKE_HOST_OS: ${{ runner.os }}
+          SMOKE_HOST_ARCH: ${{ runner.arch }}
+        run: |
+          set -o pipefail
+          touch "$RUNNER_TEMP/lazy-image-smoke-started"
+          node scripts/registry-native-smoke.cjs 2>&1 | tee "$RUNNER_TEMP/lazy-image-registry-smoke.log"
+      - name: Smoke in Alpine musl container
+        if: matrix.platform == 'linux-x64-musl'
+        shell: bash
+        env:
+          SMOKE_HOST_OS: ${{ runner.os }}
+          SMOKE_HOST_ARCH: ${{ runner.arch }}
+        run: |
+          set -o pipefail
+          docker run --rm --platform linux/amd64 \
+            -v "$GITHUB_WORKSPACE:/source:ro" -v "$RUNNER_TEMP:/result" \
+            -e SMOKE_EXPECTED_PLATFORM=linux-x64-musl \
+            -e SMOKE_REPORT_PATH=/result/lazy-image-registry-smoke.json \
+            -e SMOKE_SCRIPT_REVISION -e SMOKE_VERSION -e SMOKE_HOST_RUNNER -e SMOKE_HOST_OS -e SMOKE_HOST_ARCH \
+            "node:${{ matrix.node }}-alpine" \
+            sh -c 'touch /result/lazy-image-smoke-started; node /source/scripts/registry-native-smoke.cjs' \
+            2>&1 | tee "$RUNNER_TEMP/lazy-image-registry-smoke.log"
+      - name: Preserve setup failure as a result
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$RUNNER_TEMP/lazy-image-registry-smoke.json" ]; then
+            if [ -f "$RUNNER_TEMP/lazy-image-smoke-started" ]; then
+              state=FAIL
+              reason='Smoke process failed before writing its report; inspect job log'
+            else
+              state=BLOCKED
+              reason='Runner setup or container startup failed before smoke execution; inspect job log'
+            fi
+            printf '{"status":"%s","expectedPlatform":"%s","nodeMajor":"%s","scriptRevision":"%s","reason":"%s"}\n' \
+              "$state" '${{ matrix.platform }}' '${{ matrix.node }}' '${{ github.sha }}' "$reason" \
+              > "$RUNNER_TEMP/lazy-image-registry-smoke.json"
+            printf '%s\n' "$reason" >> "$RUNNER_TEMP/lazy-image-registry-smoke.log"
+          fi
+      - name: Preserve report and execution log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: registry-smoke-${{ matrix.platform }}-node${{ matrix.node }}
+          path: |
+            ${{ runner.temp }}/lazy-image-registry-smoke.json
+            ${{ runner.temp }}/lazy-image-registry-smoke.log
+          if-no-files-found: warn

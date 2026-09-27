@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { createHash } = require('crypto');
+const { execFileSync } = require('child_process');
 const { performance } = require('perf_hooks');
 
 const sharp = require('sharp');
@@ -12,7 +14,8 @@ const JSON_OUTPUT = path.join(OUTPUT_DIR, 'wasm-upload-summary.json');
 const MARKDOWN_OUTPUT = path.join(OUTPUT_DIR, 'wasm-upload-summary.md');
 
 const RUNTIME_FILTERS = new Map([
-  ['all', ['browser-worker', 'edge-isolate']],
+  ['all', ['node-wasm', 'browser-worker', 'edge-isolate']],
+  ['node', ['node-wasm']],
   ['browser', ['browser-worker']],
   ['edge', ['edge-isolate']],
 ]);
@@ -273,8 +276,9 @@ async function runNativeReference(scenario) {
   const totalMs = performance.now() - totalStart;
   const rssAfter = process.memoryUsage().rss;
 
-  const [referenceBuffer, metadata] = await Promise.all([
+  const [referenceBuffer, inputMetadata, outputMetadata] = await Promise.all([
     buildReferenceBuffer(scenario),
+    inspectMetadata(fs.readFileSync(scenario.inputPath)),
     inspectMetadata(result.data),
   ]);
   const quality = await calculateQualityMetrics(result.data, referenceBuffer);
@@ -305,7 +309,7 @@ async function runNativeReference(scenario) {
     quality: result.quality,
     ssim: quality.ssim,
     psnr: quality.psnr,
-    metadataStripped: metadata.stripped,
+    metadataStripped: inputMetadata.hasMetadata ? outputMetadata.stripped : null,
     memory: {
       rssBeforeBytes: rssBefore,
       rssAfterBytes: rssAfter,
@@ -365,6 +369,76 @@ function makeOptionalBaselineRow({ scenario, runtime, baselineType, packageName,
   };
 }
 
+function publishedRow(scenario, runtime, evidence) {
+  const evidenceId = scenario.id === 'large-photo-upload-webp' ? 'jpeg-webp' : 'png-jpeg';
+  const results = runtime === 'node-wasm' ? evidence.nodeResults
+    : runtime === 'browser-worker' ? evidence.browserResults?.results : evidence.edgeResults?.results;
+  const result = results?.find((entry) => entry.id === evidenceId);
+  if (!result) throw new Error(`Missing published evidence: ${runtime}/${evidenceId}`);
+  const fixture = evidence.fixtures.find((item) => item.id === evidenceId);
+  if (!fixture) throw new Error(`Missing published fixture: ${evidenceId}`);
+  return {
+    scenario: scenario.id,
+    scenarioLabel: scenario.label,
+    runtime,
+    package: '@alberteinshutoin/lazy-image-wasm@' + evidence.publishedVersion,
+    baselineType: 'published-package',
+    status: 'ok',
+    inputBytes: fixture.inputBytes,
+    inputKind: scenario.inputKind,
+    outputFormat: scenario.outputFormat,
+    targetBytes: scenario.targetBytes,
+    maxWidth: scenario.maxWidth,
+    maxHeight: scenario.maxHeight,
+    browserBundleBytes: runtime === 'browser-worker' ? evidence.browserResults.deploymentRawBytes : null,
+    browserBundleGzipBytes: runtime === 'browser-worker' ? evidence.browserResults.deploymentGzipBytes : null,
+    edgeBundleBytes: runtime === 'edge-isolate' ? evidence.edgeResults.deploymentRawBytes : null,
+    edgeBundleGzipBytes: runtime === 'edge-isolate' ? evidence.edgeResults.deploymentGzipBytes : null,
+    packageDirectoryBytes: runtime === 'browser-worker' ? evidence.browserResults.packageDirectoryBytes : null,
+    packageDirectoryGzipBytes: null,
+    instantiateMs: result.metrics.instantiateMs,
+    firstEncodeMs: result.metrics.firstEncodeMs,
+    encodeMs: result.metrics.encodeMs,
+    totalMs: result.metrics.totalMs,
+    firstVisibleMs: result.coldFromBeforeWorkerMs ?? result.coldFromBeforeRuntimeMs ?? null,
+    firstRequestMs: result.firstRequestMs ?? null,
+    startupToReadyMs: result.startupToReadyMs ?? null,
+    warmMedianMs: result.warmMedianMs,
+    bytesOut: result.output.bytes,
+    targetHit: result.metrics.budgetMet,
+    quality: result.metrics.qualityUsed,
+    ssim: null,
+    psnr: null,
+    metadataStripped: null,
+    memory: { rssDeltaBytes: null, note: 'Wasm/browser peak memory unavailable.' },
+    loadMode: runtime === 'browser-worker' ? evidence.browserResults?.loadMode ?? null : null,
+    notes: `Published npm${runtime === 'browser-worker' && evidence.browserResults?.loadMode
+      ? `; ${evidence.browserResults.loadMode}` : ''}; inspected output ${result.output.sha256}; full conditions in wasm-published-evidence.json`,
+  };
+}
+
+function metadataVerification(evidence, runtimes, rawEvidence = 'docs/history/wasm-1.3.1/wasm-published-evidence.json') {
+  const fixture = evidence.fixtures.find((item) => item.id === 'metadata-budget');
+  if (!fixture?.inputMetadata || ['exif', 'gpsTag', 'xmp', 'icc'].some((key) => fixture.inputMetadata[key] !== true)) {
+    throw new Error('Metadata evidence input must contain EXIF, GPS, XMP, and ICC');
+  }
+  const results = {};
+  for (const runtime of runtimes) {
+    const runtimeResults = runtime === 'node-wasm' ? evidence.nodeResults
+      : runtime === 'browser-worker' ? evidence.browserResults?.results : evidence.edgeResults?.results;
+    const result = runtimeResults?.find((entry) => entry.id === 'metadata-budget');
+    if (!result) throw new Error(`Missing metadata evidence: ${runtime}`);
+    const output = result.output.metadata;
+    if (output.exif !== false || output.xmp !== false || output.icc !== false) {
+      throw new Error(`Metadata output retained a required field: ${runtime}`);
+    }
+    results[runtime] = { outputMetadata: output, outputSha256: result.output.sha256,
+      removed: { exif: true, gpsTag: true, xmp: true, icc: true } };
+  }
+  return { scenario: 'metadata-budget', inputSha256: fixture.inputSha256,
+    inputMetadata: fixture.inputMetadata, results, rawEvidence };
+}
+
 async function run(runtimeFilter) {
   const runtimes = RUNTIME_FILTERS.get(runtimeFilter);
   if (!runtimes) {
@@ -373,10 +447,41 @@ async function run(runtimeFilter) {
 
   ensureOutputDir();
 
+  // Required runtime rows must come from the published package, not from the checkout.
+  const { collectPublishedWasmEvidence } = await import('./wasm-published-evidence.mjs');
+  const evidence = await collectPublishedWasmEvidence({
+    version: getArg('--version', process.env.WASM_BENCH_VERSION || require('../../package.json').version),
+    runtime: runtimeFilter,
+    chromePath: getArg('--chrome', process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'),
+    workerdPath: getArg('--workerd', null),
+    browserLoad: getArg('--browser-load', 'injected'),
+    withholdWasm: getArg('--withhold-wasm', null),
+    candidateTarball: getArg('--candidate-tarball', null),
+    corruptJpeg: process.argv.includes('--corrupt-jpeg'),
+    edgeDiagnostic: getArg('--edge-diagnostic', null),
+    nodeDiagnostic: getArg('--node-diagnostic', null),
+  });
+  if (evidence.packageSource.kind === 'candidate-tarball') {
+    console.log(`Candidate browser evidence saved to artifacts/benchmark/wasm-published-evidence.json`);
+    return;
+  }
+
   const rows = [];
   for (const scenario of SCENARIOS) {
     console.log(`Scenario: ${scenario.label}`);
-    rows.push(await runNativeReference(scenario));
+    if (runtimeFilter !== 'edge') {
+      try {
+        rows.push(await runNativeReference(scenario));
+      } catch (error) {
+        rows.push({ scenario: scenario.id, scenarioLabel: scenario.label, runtime: 'node-native',
+          package: '@alberteinshutoin/lazy-image', baselineType: 'native-reference',
+          status: 'unavailable', notes: `Optional local native reference: ${error.message}` });
+      }
+    }
+
+    for (const runtime of runtimes) {
+      rows.push(publishedRow(scenario, runtime, evidence));
+    }
 
     for (const runtime of runtimes) {
       for (const baseline of WASM_CODEC_BASELINES) {
@@ -406,30 +511,42 @@ async function run(runtimeFilter) {
   writeReports({
     runtimeFilter,
     rows,
+    evidence,
   });
 
   printSummary(rows);
 }
 
-function writeReports({ runtimeFilter, rows }) {
+function writeReports({ runtimeFilter, rows, evidence }) {
   const generatedAt = new Date().toISOString();
   const jsonReport = {
     generatedAt,
-    command: 'node test/benchmarks/wasm-upload-comparison.bench.js',
+    command: evidence.command,
+    sourceSha: evidence.sourceSha,
+    publishedVersion: evidence.publishedVersion,
+    edgeMeasured: evidence.edgeResults?.status === 'PASS',
+    browserLoadMode: evidence.browserLoadMode,
     runtimeFilter,
     artifactPaths: {
       json: path.relative(resolveRoot(), JSON_OUTPUT),
       markdown: path.relative(resolveRoot(), MARKDOWN_OUTPUT),
+      publishedEvidence: 'artifacts/benchmark/wasm-published-evidence.json',
     },
     metrics: [
       'browserBundleBytes',
       'browserBundleGzipBytes',
+      'edgeBundleBytes',
+      'edgeBundleGzipBytes',
       'packageDirectoryBytes',
       'packageDirectoryGzipBytes',
       'instantiateMs',
       'firstEncodeMs',
       'encodeMs',
       'totalMs',
+      'firstVisibleMs',
+      'firstRequestMs',
+      'startupToReadyMs',
+      'warmMedianMs',
       'bytesOut',
       'targetHit',
       'quality',
@@ -448,24 +565,103 @@ function writeReports({ runtimeFilter, rows }) {
       targetBytes: scenario.targetBytes,
       qualityRange: [scenario.minQuality, scenario.maxQuality],
     })),
+    metadataVerification: metadataVerification(evidence, RUNTIME_FILTERS.get(runtimeFilter),
+      'artifacts/benchmark/wasm-published-evidence.json'),
     rows,
   };
+  writeReportFiles(jsonReport);
+}
 
+function writeReportFiles(jsonReport) {
   fs.writeFileSync(JSON_OUTPUT, `${JSON.stringify(jsonReport, null, 2)}\n`);
   fs.writeFileSync(MARKDOWN_OUTPUT, renderMarkdownReport(jsonReport));
 }
 
+function reaggregate(evidencePath, previousSummaryPath) {
+  if (!evidencePath || !previousSummaryPath) {
+    throw new Error('--reaggregate and --previous-summary are both required');
+  }
+  ensureOutputDir();
+  const evidenceBytes = fs.readFileSync(evidencePath);
+  const previousBytes = fs.readFileSync(previousSummaryPath);
+  const evidence = JSON.parse(evidenceBytes);
+  const previous = JSON.parse(previousBytes);
+  if (evidence.verdict !== 'PASS' || evidence.sourceSha !== previous.sourceSha ||
+      evidence.publishedVersion !== previous.publishedVersion || previous.runtimeFilter !== 'all') {
+    throw new Error('Raw evidence and previous all-runtime summary do not match');
+  }
+  const rows = previous.rows.map((row) => {
+    if (row.baselineType === 'native-reference') {
+      const scenarioId = row.scenario === 'large-photo-upload-webp' ? 'jpeg-webp' : 'png-jpeg';
+      const fixture = evidence.fixtures.find((item) => item.id === scenarioId);
+      if (!fixture || Object.values(fixture.inputMetadata).some(Boolean)) {
+        throw new Error(`Cannot correct native metadata claim without metadata-free input: ${row.scenario}`);
+      }
+      return { ...row, metadataStripped: null };
+    }
+    if (row.baselineType !== 'published-package') return row;
+    const scenario = SCENARIOS.find((item) => item.id === row.scenario);
+    if (!scenario || !['node-wasm', 'browser-worker', 'edge-isolate'].includes(row.runtime)) {
+      throw new Error(`Unexpected published summary row: ${row.runtime}/${row.scenario}`);
+    }
+    return publishedRow(scenario, row.runtime, evidence);
+  });
+  const publishedRows = rows.filter((row) => row.baselineType === 'published-package');
+  const runtimes = [...new Set(publishedRows.map((row) => row.runtime))];
+  if (!['node-wasm', 'browser-worker'].every((runtime) => runtimes.includes(runtime)) ||
+      runtimes.length !== (runtimes.includes('edge-isolate') ? 3 : 2) ||
+      publishedRows.length !== SCENARIOS.length * runtimes.length ||
+      SCENARIOS.some((scenario) => runtimes.some((runtime) =>
+        publishedRows.filter((row) => row.scenario === scenario.id && row.runtime === runtime).length !== 1))) {
+    throw new Error('Previous summary does not contain exactly one published row per scenario/runtime');
+  }
+  const report = { ...previous,
+    artifactPaths: { ...previous.artifactPaths,
+      publishedEvidence: path.relative(resolveRoot(), evidencePath) },
+    edgeMeasured: runtimes.includes('edge-isolate'),
+    metadataVerification: metadataVerification(evidence, runtimes,
+      path.relative(resolveRoot(), evidencePath)),
+    aggregation: {
+      generatedAt: new Date().toISOString(),
+      codeSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: resolveRoot(), encoding: 'utf8' }).trim(),
+      command: `node test/benchmarks/wasm-upload-comparison.bench.js --reaggregate ${path.relative(resolveRoot(), evidencePath)} --previous-summary ${path.relative(resolveRoot(), previousSummaryPath)}`,
+      rawEvidenceSha256: createHash('sha256').update(evidenceBytes).digest('hex'),
+      previousSummarySha256: createHash('sha256').update(previousBytes).digest('hex'),
+    },
+    rows };
+  writeReportFiles(report);
+  printSummary(rows);
+}
+
 function renderMarkdownReport(report) {
+  const measuredRuntimes = new Set(report.rows.filter((row) => row.baselineType === 'published-package')
+    .map((row) => row.runtime));
+  const edgeMeasured = measuredRuntimes.has('edge-isolate');
+  const runtimeScope = [['browser-worker', 'Browser'], ['node-wasm', 'Node'], ['edge-isolate', 'Edge']]
+    .filter(([runtime]) => measuredRuntimes.has(runtime)).map(([, label]) => label).join('/');
   const lines = [
     '# Wasm Upload Benchmark Summary',
     '',
     `Generated: ${report.generatedAt}`,
     '',
-    'This report is generated by `npm run test:bench:wasm` and is intended for browser/Edge upload-preflight comparisons.',
+    `Published package: ${report.publishedVersion}; measuring code revision: ${report.sourceSha}.`,
+    `Command: \`${report.command}\`. ${runtimeScope} details and output hashes: \`${report.artifactPaths.publishedEvidence}\`.`,
+    ...(report.browserLoadMode ? [`Browser load mode: ${report.browserLoadMode}.`] : []),
+    ...(report.aggregation ? [`Aggregation corrected: ${report.aggregation.generatedAt}; code revision: ${report.aggregation.codeSha}.`,
+      report.aggregation.command
+        ? `Reaggregate: \`${report.aggregation.command}\`. Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`
+        : `Raw evidence SHA-256: ${report.aggregation.rawEvidenceSha256}.`] : []),
+    edgeMeasured
+      ? 'Edge results are local workerd observations; production cold-start and CPU billing are unmeasured. Optional competitor rows are not performance results.'
+      : 'Edge isolate remains unmeasured. Optional competitor rows are not performance results.',
     'Rows marked `unavailable` document optional competitor baselines that are not installed or cannot execute in the current Node-local harness.',
     '',
-    '| Scenario | Runtime | Package | Type | Status | Browser bundle gzip | Package dir gzip | Instantiate | First encode | Total | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |',
-    '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---|---:|---|',
+    edgeMeasured
+      ? '| Scenario | Runtime | Package | Type | Status | Browser assets raw | Browser assets gzip | Edge assets raw | Edge assets gzip | Ready | First request | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |'
+      : '| Scenario | Runtime | Package | Type | Status | Browser assets raw | Browser assets gzip | Package dir gzip | Instantiate | First encode | API total | First caller | Warm median | Bytes out | Target hit | Quality | SSIM | PSNR | Metadata stripped | Memory delta | Notes |',
+    edgeMeasured
+      ? `|${Array(25).fill('---').join('|')}|`
+      : '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---|---:|---|',
   ];
 
   for (const row of report.rows) {
@@ -475,11 +671,16 @@ function renderMarkdownReport(report) {
       row.package,
       row.baselineType,
       row.status,
+      formatBytes(row.browserBundleBytes),
       formatBytes(row.browserBundleGzipBytes),
+      ...(edgeMeasured ? [formatBytes(row.edgeBundleBytes), formatBytes(row.edgeBundleGzipBytes),
+        formatMs(row.startupToReadyMs), formatMs(row.firstRequestMs)] : []),
       formatBytes(row.packageDirectoryGzipBytes),
       formatMs(row.instantiateMs),
       formatMs(row.firstEncodeMs),
       formatMs(row.totalMs),
+      formatMs(row.firstVisibleMs),
+      formatMs(row.warmMedianMs),
       formatBytes(row.bytesOut),
       formatMaybe(row.targetHit, 0),
       formatMaybe(row.quality, 0),
@@ -492,7 +693,15 @@ function renderMarkdownReport(report) {
     lines.push(`| ${cells.join(' | ')} |`);
   }
 
-  lines.push('');
+  lines.push('', 'Metadata-only case (`metadata-budget`; separate input from the two upload scenarios):',
+    `Raw evidence: \`${report.metadataVerification.rawEvidence}\`; input SHA-256: ${report.metadataVerification.inputSha256}.`,
+    '| Runtime | Input EXIF | Input GPS | Input XMP | Input ICC | Output EXIF | Output XMP | Output ICC | Removed | Output SHA-256 |',
+    '|---|---|---|---|---|---|---|---|---|---|');
+  for (const [runtime, result] of Object.entries(report.metadataVerification.results)) {
+    const input = report.metadataVerification.inputMetadata;
+    const output = result.outputMetadata;
+    lines.push(`| ${runtime} | ${input.exif} | ${input.gpsTag} | ${input.xmp} | ${input.icc} | ${output.exif} | ${output.xmp} | ${output.icc} | ${Object.values(result.removed).every(Boolean)} | ${result.outputSha256} |`);
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -513,7 +722,14 @@ function printSummary(rows) {
   console.log(`Optional baselines: ${unavailable} unavailable, ${notRun} installed but not run`);
 }
 
-run(getArg('--runtime', 'all')).catch((err) => {
-  console.error(err.stack || err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  const task = getArg('--reaggregate', null)
+    ? Promise.resolve().then(() => reaggregate(getArg('--reaggregate'), getArg('--previous-summary')))
+    : run(getArg('--runtime', 'all'));
+  task.catch((err) => {
+    console.error(err.stack || err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { publishedRow, metadataVerification, renderMarkdownReport, reaggregate, SCENARIOS, RUNTIME_FILTERS };

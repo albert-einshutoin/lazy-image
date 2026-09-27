@@ -1,0 +1,791 @@
+{
+  "analyzedAt": "2026-09-26T07:38:02.890Z",
+  "analysisCodeSha": "6f28daf9e01524d44a325b88c004dddd2fa9de56",
+  "analysisSourceHashes": {
+    "test/benchmarks/wasm-quality-sharp-comparison.mjs": "2d5c8cd194a5c5d9c49c2edab22c800e5e7a8c93dd4ac9f0e22ffe5e151a0ec5",
+    "test/benchmarks/wasm-quality-metrics.mjs": "504c7c0ff24cd5e5a4b3866d2769f7281a079ba7f012e6cc477ad8df04c78367"
+  },
+  "originalReport": "docs/history/v1.4.0/quality-evaluation/quality-results.json",
+  "originalReportSha256": "2e7f7d67505a27db52bfd3cfd1d08a04129b7298503ad8d6356b8969c9b14c79",
+  "originalAnalysisCodeSha": "15623e001ba0d7b01a448cc9793e968749f4fa88",
+  "tool": {
+    "sharpVersions": {
+      "aom": "3.14.1",
+      "archive": "3.8.7",
+      "cairo": "1.18.4",
+      "cgif": "0.5.3",
+      "exif": "0.6.26",
+      "expat": "2.8.1",
+      "ffi": "3.5.2",
+      "fontconfig": "2.18.1",
+      "freetype": "2.14.3",
+      "fribidi": "1.0.16",
+      "glib": "2.89.0",
+      "harfbuzz": "14.2.1",
+      "heif": "1.23.0",
+      "highway": "1.4.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.19.1",
+      "mozjpeg": "0826579",
+      "pango": "1.57.1",
+      "pixman": "0.46.4",
+      "png": "1.6.58",
+      "proxy-libintl": "0.5",
+      "rsvg": "2.62.3",
+      "tiff": "072ca92",
+      "uhdr": "13a058f",
+      "vips": "8.18.3",
+      "webp": "1.6.0",
+      "xml2": "2.15.3",
+      "zlib-ng": "2.3.3",
+      "sharp": "0.35.0"
+    },
+    "ssim": {
+      "version": "3.5.0",
+      "options": {
+        "windowSize": 8,
+        "k1": 0.01,
+        "k2": 0.03,
+        "bitDepth": 8,
+        "downsample": "original",
+        "ssim": "weber",
+        "maxSize": 256,
+        "rgb2grayVersion": "integer"
+      }
+    }
+  },
+  "references": {
+    "jpeg-webp": {
+      "input": {
+        "path": "test/fixtures/test_3.2MB_5000x5000.jpg",
+        "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+        "bytes": 3371242,
+        "width": 5000,
+        "height": 5000,
+        "format": "jpeg",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "policyDimensions": {
+        "width": 1600,
+        "height": 1600
+      },
+      "reference": {
+        "path": "docs/history/v1.4.0/quality-evaluation/reference-jpeg-webp.png",
+        "sha256": "d299755a9392dcbedc2a43daa80a47c91746ce242093f0e7412c2c19443ee16e",
+        "bytes": 4717794,
+        "width": 1600,
+        "height": 1600,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "preResizeOrientedSrgbSha256": "a254e79eda1612c879e48da7eefadf6264355d33720e05e1f914470f42cfa31d",
+      "pixelSha256": "b8dd1682c450fdac58ab1d7f32f4d52e6fcb12c2cca5833aed7586f2d3037c6d",
+      "width": 1600,
+      "height": 1600
+    },
+    "png-jpeg": {
+      "input": {
+        "path": "test/fixtures/test_4.5MB_5000x5000.png",
+        "sha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5",
+        "bytes": 4702925,
+        "width": 5000,
+        "height": 5000,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "policyDimensions": {
+        "width": 1600,
+        "height": 1600
+      },
+      "reference": {
+        "path": "docs/history/v1.4.0/quality-evaluation/reference-png-jpeg.png",
+        "sha256": "7abd0cf5a6d78b0a28276602d1cf5527cb42c270a3106a1177f0f927e84ab25f",
+        "bytes": 3765094,
+        "width": 1600,
+        "height": 1600,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "preResizeOrientedSrgbSha256": "a4e071e1ce4a2333f43e2df0927e06ac9091c8eb0e8376b6f0ea52ada2559fe3",
+      "pixelSha256": "eccdff11549eb3ef5a203014cee2d076e76de51f03301f81fb30e8f7ad81f415",
+      "width": 1600,
+      "height": 1600
+    },
+    "metadata-budget": {
+      "input": {
+        "path": "docs/history/v1.4.0/node-wasm/wasm-metadata-input.jpg",
+        "sha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+        "bytes": 7343,
+        "width": 320,
+        "height": 240,
+        "format": "jpeg",
+        "orientation": 6,
+        "hasIcc": true,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "policyDimensions": {
+        "width": 320,
+        "height": 240
+      },
+      "reference": {
+        "path": "docs/history/v1.4.0/quality-evaluation/reference-metadata-budget.png",
+        "sha256": "db3bb19b80bd491ba8cce534a2c5dd779d6a61d924ec322f19f83f723b22dc9a",
+        "bytes": 14592,
+        "width": 180,
+        "height": 240,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "preResizeOrientedSrgbSha256": "e929b93ff53fab95a3d5569a0d2f67c60a55b3d3cb76c1d4de9205b56778f164",
+      "pixelSha256": "7acbeb92d625c426edba76a793ac557b604a44b14d004bba24b8de14abf53c42",
+      "width": 180,
+      "height": 240
+    },
+    "coffee": {
+      "input": {
+        "path": "test/benchmarks/corpus/images/coffee.png",
+        "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+        "bytes": 466706,
+        "width": 600,
+        "height": 400,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "policyDimensions": {
+        "width": 320,
+        "height": 320
+      },
+      "reference": {
+        "path": "docs/history/v1.4.0/quality-evaluation/reference-coffee.png",
+        "sha256": "91138b8db57f6ac83814b0df92544f6ce6ae6f69940da80e23db4356dba02d61",
+        "bytes": 173280,
+        "width": 320,
+        "height": 213,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "preResizeOrientedSrgbSha256": "285173770c2092c16deae7e93822c5f3b95a132fbb39156ebd822a7a7a188f53",
+      "pixelSha256": "d66feb84e0d6fd932397574ade13776ac71ad72055c95b9b8e925ed4a2850ff2",
+      "width": 320,
+      "height": 213
+    },
+    "chelsea": {
+      "input": {
+        "path": "test/benchmarks/corpus/images/chelsea.png",
+        "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+        "bytes": 240512,
+        "width": 451,
+        "height": 300,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": true,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "policyDimensions": {
+        "width": 320,
+        "height": 320
+      },
+      "reference": {
+        "path": "docs/history/v1.4.0/quality-evaluation/reference-chelsea.png",
+        "sha256": "d504bd395f8c461661f9bb9f9ae9c393e662967fda0645c9ad9d08a63ecb4661",
+        "bytes": 175689,
+        "width": 320,
+        "height": 213,
+        "format": "png",
+        "orientation": null,
+        "hasIcc": false,
+        "hasAlphaChannel": false,
+        "transparentPixels": 0
+      },
+      "preResizeOrientedSrgbSha256": "d01129bbf6dd966cef5846699003b7fb2a39a2c9fef147d3fc6d3ecdaf0e7f3d",
+      "pixelSha256": "d336ac401a89a13e0a1a2328347b3b270ca5e614db3bb15956d97774f18e5230",
+      "width": 320,
+      "height": 213
+    }
+  },
+  "cases": {
+    "jpeg-webp": {
+      "inputId": "jpeg-webp",
+      "output": {
+        "path": "docs/history/v1.4.0/node-wasm/wasm-node-jpeg-webp.webp",
+        "sha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec",
+        "bytes": 328690,
+        "width": 1600,
+        "height": 1600,
+        "format": "webp"
+      },
+      "outputPixelSha256": "ba3c546321ae54743a2539a99102966a5032e443ae3fda2bf42133a39f15f518",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 1600,
+          "height": 1600,
+          "format": "webp",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9957606969915268
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 36.203800999549564
+        },
+        "ssimDownsampleFactor": 6
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "png-jpeg": {
+      "inputId": "png-jpeg",
+      "output": {
+        "path": "docs/history/v1.4.0/node-wasm/wasm-node-png-jpeg.jpg",
+        "sha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a",
+        "bytes": 430035,
+        "width": 1600,
+        "height": 1600,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "fa668263f71261e6d3600800cbf7b2dd80acd49f371c7466905f36a7b02b10c6",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 1600,
+          "height": 1600,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9965811654556795
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 34.72742123893535
+        },
+        "ssimDownsampleFactor": 6
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "metadata-budget": {
+      "inputId": "metadata-budget",
+      "output": {
+        "path": "docs/history/v1.4.0/node-wasm/wasm-node-metadata-budget.jpg",
+        "sha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0",
+        "bytes": 5886,
+        "width": 180,
+        "height": 240,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "c6980a2f4a58f089f468ecef70e9d2abf681ae755a57ca1c438d3155b5a4f7a6",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 180,
+          "height": 240,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9827424712490167
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 34.29537317441449
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "metadata-budget-best-effort": {
+      "inputId": "metadata-budget",
+      "output": {
+        "path": "docs/history/v1.4.0/node-wasm/wasm-node-metadata-budget-best-effort.jpg",
+        "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
+        "bytes": 3078,
+        "width": 180,
+        "height": 240,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "32ef7f5bc8c8eea85451c0bd44d4aeb39b1e20a6e195da4a0e6518f79b8917ee",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 180,
+          "height": 240,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9424637067193643
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 30.201836070666104
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "coffee-jpeg-none": {
+      "inputId": "coffee",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/coffee-jpeg-none.jpg",
+        "sha256": "9b714410b1c7f1043a2760823c935b072502970e7ea3576ac92fc2dd8eef88f4",
+        "bytes": 19317,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "5061149c429d61795097ff10c4f2b87b6ed1096de43b56487f616f29efc22437",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.95020177784609
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 32.25384927467377
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "coffee-jpeg-80%": {
+      "inputId": "coffee",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/coffee-jpeg-80.jpg",
+        "sha256": "dc31ceeafca0e3e50fdb6b9b81117d66bafa596bdc2753cb536563eaeb836010",
+        "bytes": 13466,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "83ee7f10fd4833916037c153c8a5664eaf3f03098d6fba60073d3c4d94d7b39d",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9363371574697213
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 30.970795904237765
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "coffee-jpeg-50%": {
+      "inputId": "coffee",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/coffee-jpeg-50.jpg",
+        "sha256": "4edcfc418041dd9045faf4d6d08bfb63d27702c95c948933c6f386c03ca46562",
+        "bytes": 9506,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "eb0155b50aab081e4631d178bc845898adf8914e8d99e096867da663f422249b",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9058251166050161
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 29.609165910052898
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "coffee-webp-none": {
+      "inputId": "coffee",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/coffee-webp-none.webp",
+        "sha256": "80ba14f5c7cc573c5ecfd8cfc18da60276f3694cf180151fd08e42e0a8ce4ec8",
+        "bytes": 17008,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      },
+      "outputPixelSha256": "5eb6915fbda647feacfed07b0c897c933d5c388cbbedb1a0bbd3038f624a262b",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "webp",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9732726794956789
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 32.95038697730872
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "coffee-webp-80%": {
+      "inputId": "coffee",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/coffee-webp-80.webp",
+        "sha256": "bdfdd7bba3b1f79c6ca62707d07131bdce3fca149a2dc06d0b4f068cdbcf5d02",
+        "bytes": 13380,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      },
+      "outputPixelSha256": "eaf97e12ac9f1dea45c9bf0f4553a256d79b880495456798575e808a9d989ceb",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "webp",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.961507134399008
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 32.16596518673426
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "coffee-webp-50%": {
+      "inputId": "coffee",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/coffee-webp-50.webp",
+        "sha256": "a97830eae877cebda727b6b5389dc522f1e885cb4b357764e12e2dd49292d3e1",
+        "bytes": 8492,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      },
+      "outputPixelSha256": "f038ac4a71af1ee125afc2c51be70f699ec8ca542673125bb05cd4c77ae9a479",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "webp",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.930413190101389
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 30.4533050043622
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "chelsea-jpeg-none": {
+      "inputId": "chelsea",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/chelsea-jpeg-none.jpg",
+        "sha256": "3fee0d83b592c6dfd2152c6aafa31b5ac8dcef98c0b16eeab315872f9bd3fb29",
+        "bytes": 14113,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "d74bc3057b67c6300bcb12f3ca6cc325b88bcb6ac3455108c004d5872598676a",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9712558172480725
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 36.90605524514422
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "chelsea-jpeg-80%": {
+      "inputId": "chelsea",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/chelsea-jpeg-80.jpg",
+        "sha256": "31aaea3ae34bbd6478f21677e85e4cd7a2422d34d0d10e83b26e4fa24dd46e70",
+        "bytes": 10260,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "5cde56bc9c6383f11ed1e1af5d1bd72bc511d88f0b8b2c34b65723e088556762",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9614756653764907
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 35.47081457819971
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "chelsea-jpeg-50%": {
+      "inputId": "chelsea",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/chelsea-jpeg-50.jpg",
+        "sha256": "9670c7b19c80884b5780629ef118df4224b9c087268c3cf6894f47c82fc1559f",
+        "bytes": 7016,
+        "width": 320,
+        "height": 213,
+        "format": "jpeg"
+      },
+      "outputPixelSha256": "099da1dc4da44bad85a180c68c3aa1ff74fb87a5e4c3010e92d08212f3e06b73",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "jpeg",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9363843474150224
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 33.513611487085655
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "chelsea-webp-none": {
+      "inputId": "chelsea",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/chelsea-webp-none.webp",
+        "sha256": "3dca111d0e3e69f734406b53020a09db5b05c799d63be6b8c0c5e0599a0a1223",
+        "bytes": 12300,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      },
+      "outputPixelSha256": "e7552469d319b1058e7993599f4b5c20216f3468e0280e0e96d5223cf1b804bd",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "webp",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9791998964815058
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 37.27016583955093
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "chelsea-webp-80%": {
+      "inputId": "chelsea",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/chelsea-webp-80.webp",
+        "sha256": "8664e295bfe4da1c38def8d2fdd430b9f2bdf8d2e4f6c11c8899f0df630b73b4",
+        "bytes": 9626,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      },
+      "outputPixelSha256": "65558207468303a3a924fbc45bef93268b57692569f1c20b2781fb09a1b38950",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "webp",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9691652175890049
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 35.824189768213614
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    },
+    "chelsea-webp-50%": {
+      "inputId": "chelsea",
+      "output": {
+        "path": "docs/history/v1.4.0/quality-evaluation/chelsea-webp-50.webp",
+        "sha256": "f89f54da328903a10d78853ff41de95382c584076836798cd98fc4f89b87f9e0",
+        "bytes": 6148,
+        "width": 320,
+        "height": 213,
+        "format": "webp"
+      },
+      "outputPixelSha256": "b9a48eb2b2ddde8b6eb6afc9f4ef33bc8f6013ae13d90f34bfc6c36b5ff31a02",
+      "quality": {
+        "status": "measured",
+        "outputMetadata": {
+          "width": 320,
+          "height": 213,
+          "format": "webp",
+          "orientation": null,
+          "hasIcc": false,
+          "hasAlphaChannel": false,
+          "transparentPixels": 0
+        },
+        "ssim": {
+          "status": "measured",
+          "value": 0.9406127889763554
+        },
+        "psnr": {
+          "status": "measured",
+          "value": 33.43995205982309
+        },
+        "ssimDownsampleFactor": 1
+      },
+      "oldReportSsimDelta": 0,
+      "oldReportPsnrDeltaDb": 0
+    }
+  }
+}
