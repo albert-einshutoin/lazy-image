@@ -4,8 +4,11 @@ This document describes how to cut a release of `@alberteinshutoin/lazy-image` w
 
 Related docs:
 - [SEMVER_POLICY.md](SEMVER_POLICY.md) — versioning rules and breaking change criteria
-- [VERSIONING_PLAN.md](VERSIONING_PLAN.md) — current priorities and release policy
-- [VERSION_HISTORY.md](VERSION_HISTORY.md) — historical version notes
+- [ROADMAP.md](ROADMAP.md) — product priorities
+- [CHANGELOG.md](../CHANGELOG.md) — versioned changes
+- [v1.3.0 verification](history/V1.3.0_VERIFICATION.md) — publication evidence and remaining registry smoke coverage (2026-09-23)
+- [v1.4.0 verification](history/V1.4.0_VERIFICATION.md) — release candidate, registry contents, published native and Chrome Worker results
+- [v1.4.1 verification](history/V1.4.1_VERIFICATION.md) — native dependency update release, published npm and Chrome Worker evidence
 
 ---
 
@@ -76,6 +79,7 @@ The files below need to move from the current version to the new one. Skipping a
 | `package-lock.json` | Root `version`, root `packages[""]` block, workspace package entry, and the six `@alberteinshutoin/lazy-image-*` optional dependency entries for the new version. Before publish, npm may keep the platform package lock entries as optional placeholders because the new packages are not in the registry yet. | `npm install --package-lock-only --ignore-scripts` |
 | `Cargo.toml` | `[package].version` | Manual edit |
 | `Cargo.lock` | `lazy-image` entry | `cargo update -p lazy-image` |
+| `fuzz/Cargo.lock` | `lazy-image` entry used by fuzz checks | `cargo update -p lazy-image --manifest-path fuzz/Cargo.toml` |
 | `index.js` | Generated native loader version checks | `npm run build` |
 | `CHANGELOG.md` | Add new `[X.Y.Z]` section under `[Unreleased]` | Manual edit |
 
@@ -110,7 +114,7 @@ node scripts/check-release-policy.js 0.16.0
 #### Commit and push
 
 ```bash
-git add package.json packages/lazy-image-wasm/package.json packages/lazy-image-wasm/shared.js package-lock.json Cargo.toml Cargo.lock index.js CHANGELOG.md
+git add package.json packages/lazy-image-wasm/package.json packages/lazy-image-wasm/shared.js package-lock.json Cargo.toml Cargo.lock fuzz/Cargo.lock index.js CHANGELOG.md
 git commit -m "chore(release): prepare X.Y.Z"
 git push -u origin release/X.Y.Z
 ```
@@ -168,12 +172,9 @@ git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin vX.Y.Z
 ```
 
-Pushing the `vX.Y.Z` tag triggers the publish job in [CI.yml](../.github/workflows/CI.yml). The job:
-1. Downloads the prebuilt `.node` artifacts for all supported platforms.
-2. Publishes each platform package (`@alberteinshutoin/lazy-image-{platform}`).
-3. Publishes the Wasm workspace package (`@alberteinshutoin/lazy-image-wasm`).
-4. Publishes the main package.
-5. Creates a GitHub Release with generated notes.
+Before tagging, run [CI.yml](../.github/workflows/CI.yml) manually on the release commit with `dry_run=true` and retain the candidate reports. Tag CI rebuilds the same revision, verifies exactly one correctly named binary per target, inspects its CPU and Linux libc dependencies, and packs the main and six platform tarballs. Each candidate tarball is installed in an empty directory on all six supported platforms with Node.js 22 and 24. The publish job starts only after **all 12 candidate API/CLI/artifact smoke jobs and full CI pass**. It publishes the exact candidate platform and main tarballs recorded by SHA-256 in `release-candidate/manifest.json`, plus the Wasm workspace package, then creates the GitHub Release. If a candidate job fails or cannot run, the publish job is skipped; fix the cause and use a new reviewed revision before tagging.
+
+The `linux-x64-musl` binding is built and loaded inside an Alpine x64 container with a fixed musl Rust toolchain. The Ubuntu x64 host does not cross-link this package: a target-labelled binary built there retained glibc dependencies in the [v1.3.1 dry-run rejection](https://github.com/albert-einshutoin/lazy-image/actions/runs/35891772404). Check the candidate manifest's `inspection.needed` and the Alpine smoke artifact before tagging; the name or ELF CPU alone cannot prove musl compatibility.
 
 ---
 
@@ -217,6 +218,30 @@ node -e "const li = require('@alberteinshutoin/lazy-image'); console.log(Object.
 npm install @alberteinshutoin/lazy-image-wasm@X.Y.Z
 node --input-type=module -e "import { VERSION } from '@alberteinshutoin/lazy-image-wasm/shared'; console.log(VERSION)"
 ```
+
+The commands above confirm installation and exports only. After publication,
+run [Published npm native smoke](../.github/workflows/registry-native-smoke.yml)
+manually with the **exact published version** (for example,
+`gh workflow run registry-native-smoke.yml -f version=1.4.1 --ref main`).
+It installs from the public registry in an empty directory on each target
+runtime and checks the loaded binding, `compileImage()`, installed CLI,
+image bytes, metadata, hashes, and manifest. Preserve its 12 JSON reports
+and logs separately from the candidate reports. Do not treat candidate PASS
+or registry package existence as post-publication smoke PASS. The immutable
+v1.3.0 failures remain documented in
+[v1.3.0 verification](history/V1.3.0_VERIFICATION.md).
+The separate candidate and published-registry results for the corrected patch
+are in [v1.3.1 verification](history/V1.3.1_VERIFICATION.md).
+The [v1.4.0 verification record](history/V1.4.0_VERIFICATION.md) separately
+preserves the exact tag candidate, published native 12-runtime matrix across
+six platforms, and
+published Wasm Chrome default-load positive/negative evidence. To verify Wasm
+image processing rather than just package exports, use the version-pinned
+Chrome commands in that record.
+The [v1.4.1 verification record](history/V1.4.1_VERIFICATION.md) separately
+preserves the tag candidate, published native 12-runtime matrix, registry
+propagation retry, Wasm tarball contents, and published Chrome Worker default
+load. Its new measurements and references to v1.4.0 evidence are distinct.
 
 ---
 

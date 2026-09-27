@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "name": "compile-image-minimal-v1",
+  "license": {
+    "spdx": "MIT",
+    "path": "LICENSE",
+    "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+  },
+  "entries": [
+    {
+      "id": "jpeg-verification-io",
+      "path": "test/fixtures/test_100KB_1057x1057.jpg",
+      "bytes": 100055,
+      "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+      "license": "MIT",
+      "category": "photo",
+      "source": {
+        "kind": "repository-fixture",
+        "note": "Tracked JPEG fixture larger than the bounded 64 KiB verification buffer."
+      },
+      "expectations": {
+        "inputFormat": "jpeg",
+        "jpegVerificationIo": true
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [320, 1057],
+        "formats": ["jpeg"],
+        "budgets": [
+          {
+            "width": 320,
+            "format": "jpeg",
+            "maxBytes": 65536
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "orientation-absent-exif",
+      "path": "test/fixtures/benchmark-orientation-absent.jpg",
+      "bytes": 100096,
+      "sha256": "0951be722f68f0248f4e6bb32e96977f30b07572e7a960f65e05970f6a542afb",
+      "license": "MIT",
+      "category": "metadata",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/fixtures/create-benchmark-corpus.js",
+        "note": "Repository JPEG with valid EXIF Software metadata and no Orientation tag."
+      },
+      "expectations": {
+        "inputFormat": "jpeg",
+        "exif": true,
+        "orientation": "absent"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [320],
+        "formats": ["webp"],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "transparent-avif",
+      "path": "test/fixtures/benchmark-alpha.png",
+      "bytes": 101,
+      "sha256": "c3b53d0fba388709239a3659c5ae9f86f6fac856c3ea50ba53c74e70effa0b4b",
+      "license": "MIT",
+      "category": "alpha",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/fixtures/create-benchmark-corpus.js",
+        "note": "Small RGBA fixture with semi-transparent pixels for AVIF output validation."
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "alpha": true,
+        "outputFormat": "avif",
+        "outputAlpha": true
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [32],
+        "formats": ["webp", "avif"],
+        "placeholder": false
+      }
+    }
+  ]
+}

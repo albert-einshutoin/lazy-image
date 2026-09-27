@@ -80,5 +80,7 @@ performance claims, collect benchmark artifacts for:
 - metadata stripping behavior
 - memory behavior where the runtime exposes useful data
 
-Use `npm run test:bench:wasm` as the first local artifact generator, then add
-real browser and Edge runtime adapters as the Wasm package matures.
+`npm run test:bench:wasm` now includes published-package Node, real Chrome
+Worker, and local workerd adapters. Their fixed configurations and remaining
+claim-specific evidence are recorded in [WASM_BENCHMARKING.md](./WASM_BENCHMARKING.md)
+and [#645](https://github.com/albert-einshutoin/lazy-image/issues/645).
