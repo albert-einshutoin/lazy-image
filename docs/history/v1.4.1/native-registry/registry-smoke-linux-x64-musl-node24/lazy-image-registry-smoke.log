@@ -1,0 +1,74 @@
+Unable to find image 'node:24-alpine' locally
+24-alpine: Pulling from library/node
+e2de96513ba9: Pulling fs layer
+3c504d5a797b: Pulling fs layer
+02f40d53b06f: Pulling fs layer
+7ce7dcbafb7f: Pulling fs layer
+7ce7dcbafb7f: Waiting
+02f40d53b06f: Download complete
+e2de96513ba9: Download complete
+7ce7dcbafb7f: Download complete
+e2de96513ba9: Pull complete
+3c504d5a797b: Verifying Checksum
+3c504d5a797b: Download complete
+3c504d5a797b: Pull complete
+02f40d53b06f: Pull complete
+7ce7dcbafb7f: Pull complete
+Digest: sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
+Status: Downloaded newer image for node:24-alpine
+11.19.0
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+
+added 2 packages in 1s
+{
+  "shasum": "3ef5c99c92954339786a3dddc8e27a644df28888",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.4.1.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-T7g4MRgf/+C5EJNVH5McJrat9TSbVU9q5UHngUgANdj5gUx0VC46htJuQ6N1yidpG/bYsyIvlcv3wRXhPG8p3g==",
+  "signatures": [
+    {
+      "sig": "MEQCIAlJtjuXN2aUhwILTbCZKRmf3KcQY+eyLOrs6FRibQr2AiBAX7UWalo7IZkf2ITrxJsm2mLJbShejm6tx4moaGMVKg==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEQCIFDU++OWGF11H9UND10h7LbwTN0a6n10crgVqroLqr+bAiA/3nKhba+GXhVoSFuzK5CuJvVXASRBH8uvnOglaF9+iA=="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.4.1",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 224141
+}
+{
+  "shasum": "9ed300f3f89d6a62113e872a356d51f8cb318aef",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-musl/-/lazy-image-linux-x64-musl-1.4.1.tgz",
+  "fileCount": 2,
+  "integrity": "sha512-Vhifes3/y/B4ySHsLwE+DE29YN3mKKnWc9f8E9eckXe85rrepuxu5/uKHI4Um9J6a53nHdHyfhkLdQAeguu0NQ==",
+  "signatures": [
+    {
+      "sig": "MEUCIDVW1w9TvcQqp43OjvxXSDhGFyxMCH4qMIOkrS9Cphp/AiEAqLzLovqlgHJ3lXQzp87hjG3O0qLFSilVJFDA9mDaU9M=",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEQCIGHyGP5Sw15f+GpTOPxQcdBLt0zxah+eKqegkBx7lLsgAiAiERpv2EqVPBItIFbTd1EIlk5r+MOFm/9ifPuu1F6KIA=="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image-linux-x64-musl@1.4.1",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 13618907
+}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.4.1","platform":"linux","arch":"x64","fingerprint":"a0459dc3cf48ca0ba78038ed27c92896f681453596cd1d6a502bc9d147ea5f5b"},"policy":{"preset":"publicUpload","fingerprint":"7db6a8f434e6d7a3ddf10581f9ae7b664b78b2a5d0b9cf27d67b3631b7e7c9f8","widths":[320,640],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"320/webp","path":"image-320.webp","format":"webp","width":320,"height":320,"bytes":12746,"quality":80,"iccOutcome":"absent","sha256":"44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"},{"id":"640/webp","path":"image-640.webp","format":"webp","width":640,"height":640,"bytes":35890,"quality":80,"iccOutcome":"absent","sha256":"01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"}],"delivery":{"srcsets":[{"format":"webp","value":"image-320.webp 320w, image-640.webp 640w"}]},"cacheKey":"d8f6bec9d6c8a18ccb02bdc4ed67ae0ddb0a7a09be222cc4ece7c684db6637cb"}
+registry-native-smoke: PASS linux-x64-musl v24.21.0

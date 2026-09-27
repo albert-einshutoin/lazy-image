@@ -1,0 +1,115 @@
+{
+  "status": "PASS",
+  "startedAt": "2026-09-26T15:40:44.374Z",
+  "checkoutRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "eventRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "scriptRevision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+  "package": "@alberteinshutoin/lazy-image@1.4.1",
+  "registry": "https://registry.npmjs.org/",
+  "expectedPlatform": "darwin-x64",
+  "source": "candidate-tarball",
+  "runtime": {
+    "platform": "darwin",
+    "arch": "x64",
+    "osRelease": "24.6.0",
+    "osVersion": "Darwin Kernel Version 24.6.0: Tue Jul 21 20:50:07 PDT 2026; root:xnu-11417.140.69.711.44~1/RELEASE_X86_64",
+    "node": "v22.23.2",
+    "libc": "not applicable",
+    "npm": "10.9.8"
+  },
+  "host": {
+    "runner": "macos-15-intel",
+    "os": "macOS",
+    "arch": "X64"
+  },
+  "fixture": {
+    "path": "test/fixtures/test_100KB_1057x1057.jpg",
+    "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90"
+  },
+  "policy": {
+    "widths": [
+      320,
+      640
+    ],
+    "formats": [
+      "webp"
+    ],
+    "placeholder": false
+  },
+  "commands": [
+    "npm --version",
+    "npm install --save-exact --omit=optional /Users/runner/work/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-1.4.1.tgz /Users/runner/work/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-darwin-x64-1.4.1.tgz --registry=https://registry.npmjs.org/ --no-audit --no-fund",
+    "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/node_modules/.bin/lazy-image compile /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/input.jpg --out-dir /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/cli-output --policy /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/policy.json"
+  ],
+  "installDirectory": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde",
+  "candidate": {
+    "revision": "3ab052ebc223dcf096e2ed21498e964db2035200",
+    "tarballs": [
+      "/Users/runner/work/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-1.4.1.tgz",
+      "/Users/runner/work/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-darwin-x64-1.4.1.tgz"
+    ]
+  },
+  "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+  "resolved": {
+    "@alberteinshutoin/lazy-image": {
+      "version": "1.4.1",
+      "tarball": "file:../../../../../../../Users/runner/work/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-1.4.1.tgz",
+      "integrity": "sha512-T7g4MRgf/+C5EJNVH5McJrat9TSbVU9q5UHngUgANdj5gUx0VC46htJuQ6N1yidpG/bYsyIvlcv3wRXhPG8p3g=="
+    },
+    "@alberteinshutoin/lazy-image-darwin-x64": {
+      "version": "1.4.1",
+      "tarball": "file:../../../../../../../Users/runner/work/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-darwin-x64-1.4.1.tgz",
+      "integrity": "sha512-eOnW3wleo6Ek98YCjiCFvD5uqVndjU5HcuUM5FBDAmjJWmdjPSGvdpkenwAQaDHDC0zkMZ8YeSHP/7OnTD3KaQ=="
+    }
+  },
+  "loaded": {
+    "entry": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/node_modules/@alberteinshutoin/lazy-image/index.js",
+    "binding": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+    "bin": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/node_modules/.bin/lazy-image",
+    "binTarget": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-sYmsde/node_modules/@alberteinshutoin/lazy-image/bin/lazy-image.js"
+  },
+  "apiArtifacts": [
+    {
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 12746,
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "path": "image-640.webp",
+      "format": "webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 35890,
+      "sha256": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"
+    }
+  ],
+  "cliArtifacts": [
+    {
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 12746,
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "path": "image-640.webp",
+      "format": "webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 35890,
+      "sha256": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"
+    }
+  ],
+  "results": {
+    "binding": "PASS",
+    "api": "PASS",
+    "cli": "PASS",
+    "artifacts": "PASS",
+    "apiCliParity": "PASS"
+  },
+  "finishedAt": "2026-09-26T15:40:47.290Z"
+}

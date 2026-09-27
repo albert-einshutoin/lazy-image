@@ -15,7 +15,7 @@ This document freezes how `QualitySettings` converts a quality value (1-100) int
 
 ### JPEG (mozjpeg)
 - `fast_mode: false` (default) enables aggressive quality optimizations.
-- `fast_mode: true` matches sharp/libjpeg-turbo speed profile.
+- `fast_mode: true` selects the faster JPEG configuration; it does not guarantee another engine's speed.
 - Smoothing: 90+ → 0, 70-89 → 5, 60-69 → 10, 1-59 → 18.
 
 ### WebP
@@ -28,13 +28,7 @@ This document freezes how `QualitySettings` converts a quality value (1-100) int
 - Speed ranges 0 (slowest/best) to 10 (fastest/worst).
 - Mapping: High=6, Balanced=7, Fast=8, Fastest=9.
 
-## Cross-format quality equivalence (guidance)
+## Choosing quality
 
-| Intent | JPEG | WebP | AVIF (speed) | Notes |
-| --- | --- | --- | --- | --- |
-| High detail | 90-95 | 85-90 | 70-80 (6-7) | Preserve fine details |
-| Default/general | 82-88 (default 85) | 78-82 (default 80) | 60-70 (8) | Matches README defaults |
-| Fast delivery | 70-80 | 68-75 | 50-60 (8-9) | Favors throughput and size |
-| Lowest latency | 50-65 | 50-65 | 35-55 (9) | Speed over fidelity |
-
-These ranges are based on current tests/benchmarks; using the same numeric quality keeps behavior stable per band.
+These bands describe encoder parameter selection, not perceptual equivalence or
+guaranteed latency. See [quality guidance](./QUALITY_SEMANTICS.md) for user choices.
