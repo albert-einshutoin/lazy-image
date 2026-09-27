@@ -466,6 +466,15 @@ jobs:
       - name: Generate coverage
         run: cargo llvm-cov --no-default-features --lcov --output-path lcov.info
 
+      - name: Verify LCOV report
+        run: |
+          test -s lcov.info
+          source_records=$(grep -Ec '^SF:(.*/)?src/.*\.rs$' lcov.info)
+          line_records=$(grep -Ec '^DA:[0-9]+,[0-9]+' lcov.info)
+          test "$source_records" -gt 0
+          test "$line_records" -gt 0
+          printf 'LCOV bytes: %s; Rust source records: %s; line records: %s\n' "$(wc -c < lcov.info)" "$source_records" "$line_records"
+
       - name: Upload to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
