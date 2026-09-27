@@ -1,0 +1,625 @@
+{
+  "schemaVersion": 1,
+  "name": "release-evidence-v1",
+  "license": {
+    "spdx": "MIT",
+    "path": "LICENSE",
+    "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+  },
+  "entries": [
+    {
+      "id": "jpeg-verification-io",
+      "path": "test/fixtures/test_100KB_1057x1057.jpg",
+      "bytes": 100055,
+      "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+      "license": "MIT",
+      "category": "photo",
+      "source": {
+        "kind": "repository-fixture",
+        "note": "Tracked JPEG fixture larger than the bounded 64 KiB verification buffer."
+      },
+      "expectations": {
+        "inputFormat": "jpeg",
+        "jpegVerificationIo": true
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          320,
+          1057
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "budgets": [
+          {
+            "width": 320,
+            "format": "jpeg",
+            "maxBytes": 65536
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "orientation-absent-exif",
+      "path": "test/fixtures/benchmark-orientation-absent.jpg",
+      "bytes": 100096,
+      "sha256": "0951be722f68f0248f4e6bb32e96977f30b07572e7a960f65e05970f6a542afb",
+      "license": "MIT",
+      "category": "metadata",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/fixtures/create-benchmark-corpus.js",
+        "note": "Repository JPEG with valid EXIF Software metadata and no Orientation tag."
+      },
+      "expectations": {
+        "inputFormat": "jpeg",
+        "exif": true,
+        "orientation": "absent"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          320
+        ],
+        "formats": [
+          "webp"
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "transparent-avif",
+      "path": "test/fixtures/benchmark-alpha.png",
+      "bytes": 101,
+      "sha256": "c3b53d0fba388709239a3659c5ae9f86f6fac856c3ea50ba53c74e70effa0b4b",
+      "license": "MIT",
+      "category": "alpha",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/fixtures/create-benchmark-corpus.js",
+        "note": "Small RGBA fixture with semi-transparent pixels for AVIF output validation."
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "alpha": true,
+        "outputFormat": "avif",
+        "outputAlpha": true
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          32
+        ],
+        "formats": [
+          "webp",
+          "avif"
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "coffee",
+      "path": "test/benchmarks/corpus/images/coffee.png",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "license": "CC0-1.0",
+      "category": "photo",
+      "source": {
+        "kind": "photograph",
+        "author": "Rachel Michetti",
+        "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+        "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+        "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+      },
+      "expectations": {
+        "inputFormat": "png"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "chelsea",
+      "path": "test/benchmarks/corpus/images/chelsea.png",
+      "bytes": 240512,
+      "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+      "license": "CC0-1.0",
+      "category": "photo",
+      "source": {
+        "kind": "photograph",
+        "author": "Stefan van der Walt",
+        "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/chelsea.png",
+        "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+        "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+      },
+      "expectations": {
+        "inputFormat": "png"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "ui-1",
+      "path": "test/benchmarks/corpus/images/ui-1.png",
+      "bytes": 7610,
+      "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "license": "MIT",
+      "category": "ui",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "note": "Synthetic UI text/line workload; not an application capture."
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "illustration-1",
+      "path": "test/benchmarks/corpus/images/illustration-1.png",
+      "bytes": 7450,
+      "sha256": "88ec37d80833096b1c820e3cb2a18058924b0d2dbc2e674d496c788f4f0fe9e0",
+      "license": "MIT",
+      "category": "illustration",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "alpha-1",
+      "path": "test/benchmarks/corpus/images/alpha-1.png",
+      "bytes": 61394,
+      "sha256": "1706235121b55e8750c2cd7547d4b5b42b5a1f52ca1cdb49dec9e77b0b875bea",
+      "license": "MIT",
+      "category": "alpha",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "outputAlpha": true,
+        "maxAlphaDelta": 8
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "metadata-1",
+      "path": "test/benchmarks/corpus/images/metadata-1.jpg",
+      "bytes": 10386,
+      "sha256": "ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d",
+      "license": "MIT",
+      "category": "metadata",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "jpeg",
+        "exif": true,
+        "icc": true,
+        "orientation": 6
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "hostile-1",
+      "path": "test/benchmarks/corpus/images/hostile-1.png",
+      "bytes": 66886,
+      "sha256": "ad2975555346bdf21a5b347ffe26f7364fe45951b4a5db0668987a3105932dbd",
+      "license": "MIT",
+      "category": "hostile",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "expectedError": "E400",
+        "expectedPhase": "planning",
+        "expectedCause": "source.width must be an integer between 1 and 32768"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "webp"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "ui-2",
+      "path": "test/benchmarks/corpus/images/ui-2.png",
+      "bytes": 7683,
+      "sha256": "d51351ce9f97e5d8e528e7fd368fc40b25877b6748f556b015e67594d4c66925",
+      "license": "MIT",
+      "category": "ui",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "note": "Synthetic UI text/line workload; not an application capture."
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "illustration-2",
+      "path": "test/benchmarks/corpus/images/illustration-2.png",
+      "bytes": 4592,
+      "sha256": "458061b04eef1b53eb05ded1311f8559ca5b5f55e47849706c169950b4ae6833",
+      "license": "MIT",
+      "category": "illustration",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "alpha-2",
+      "path": "test/benchmarks/corpus/images/alpha-2.webp",
+      "bytes": 560,
+      "sha256": "719e1c09d518700bc20c5e3d8aad3f626e13e0d9db474f6a8cf43547b2245425",
+      "license": "MIT",
+      "category": "alpha",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "webp",
+        "outputAlpha": true,
+        "maxAlphaDelta": 8
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "metadata-2",
+      "path": "test/benchmarks/corpus/images/metadata-2.jpg",
+      "bytes": 9628,
+      "sha256": "d42b0e2b49e81b5f1b72b1ae6ed6358873e7df5ad9f5e16a8a17453046ff0039",
+      "license": "MIT",
+      "category": "metadata",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "jpeg",
+        "exif": true,
+        "icc": true,
+        "orientation": 3
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "hostile-2",
+      "path": "test/benchmarks/corpus/images/hostile-2.png",
+      "bytes": 178346,
+      "sha256": "e844f8c615106603f6e80246edbd845fea3c1f68bb14c566fe10657be9d47882",
+      "license": "MIT",
+      "category": "hostile",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "expectedError": "E123",
+        "expectedPhase": "preflight"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "webp"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    }
+  ],
+  "additionalLicenses": [
+    {
+      "spdx": "CC0-1.0",
+      "path": "test/benchmarks/corpus/CC0-1.0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    }
+  ]
+}

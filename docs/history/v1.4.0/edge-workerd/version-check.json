@@ -1,0 +1,8 @@
+{
+  "package": "@alberteinshutoin/lazy-image-wasm",
+  "version": "1.4.0",
+  "VERSION": "1.4.0",
+  "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.4.0.tgz",
+  "integrity": "sha512-R3xpMJr3rBv+LsyfpggixCZvktlS3XRvLi542x4JgbrvvBP3NH/xip3TJSze4fGDQIfj7hWplLeKUlHPCnidew==",
+  "registry": "https://registry.npmjs.org/"
+}

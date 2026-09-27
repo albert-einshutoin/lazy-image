@@ -1,0 +1,5 @@
+Premature end of JPEG file
+JPEG datastream contains no image
+Error: Published Wasm evidence FAIL: Intentional image-processing FAIL; diagnostic PASS; see /Users/shutoide/.codex/worktrees/2841/lazy-image/artifacts/benchmark/wasm-published-evidence.json
+    at collectPublishedWasmEvidence (file:///Users/shutoide/.codex/worktrees/2841/lazy-image/test/benchmarks/wasm-published-evidence.mjs:759:41)
+    at async run (/Users/shutoide/.codex/worktrees/2841/lazy-image/test/benchmarks/wasm-upload-comparison.bench.js:452:20)

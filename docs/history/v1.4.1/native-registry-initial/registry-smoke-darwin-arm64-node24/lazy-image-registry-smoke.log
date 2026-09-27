@@ -1,0 +1,21 @@
+11.19.0
+npm error code ETARGET
+npm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+npm error A complete log of this run can be found in: /Users/runner/.npm/_logs/2026-09-26T15_42_35_972Z-debug-0.log
+Error: npm exited 1: npm error code ETARGET
+npm error notarget No matching version found for @alberteinshutoin/lazy-image@1.4.1.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+npm error A complete log of this run can be found in: /Users/runner/.npm/_logs/2026-09-26T15_42_35_972Z-debug-0.log
+
+    at run (/Users/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:56:11)
+    at main (/Users/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:126:5)
+    at Object.<anonymous> (/Users/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:185:1)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+registry-native-smoke: FAIL darwin-arm64 v24.20.0
