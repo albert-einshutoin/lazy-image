@@ -1,10 +1,17 @@
 # Wasm Package And Policy API
 
 This document defines the package shape and shared policy contract for the
-Wasm/browser/Edge track. The v1.0.0 MVP is published as
+Wasm/browser/Edge track. The MVP was first published in v1.0.0 as
 `@alberteinshutoin/lazy-image-wasm` and lives under `packages/lazy-image-wasm`.
-The native Node package remains the recommended production path until the Wasm
-package is benchmarked in real browser and Edge runtimes.
+Published v1.4.0 has been exercised in a Chrome Web Worker and a fixed local
+workerd configuration, as well as in Node with an `ImageData` shim and explicit
+Wasm bytes. See the [v1.4.0 verification record](./history/V1.4.0_VERIFICATION.md)
+for the separate runtime conditions. The native package remains the recommended
+production path for Node.js build-time, batch, serverless, and file workflows:
+it supplies those Node-oriented APIs, while the measured Node-Wasm path needs a
+shim and manual codec injection. The selected runtime measurements do not
+establish a general performance advantage; the remaining evidence for public
+performance claims is tracked in [#645](https://github.com/albert-einshutoin/lazy-image/issues/645).
 
 ## Package Shape
 
@@ -48,8 +55,14 @@ const optimizer = await createUploadOptimizer({ wasmModules });
 ```
 
 Each value is a `WebAssembly.Module`, `ArrayBuffer`, or `Uint8Array` resolved by
-the target bundler or runtime. See the shipped Edge example for deployment
-binding names and isolate-level optimizer caching.
+the target bundler or runtime. The verified local workerd configuration uses
+**static `WebAssembly.Module` imports**: accepting Wasm bytes at the API boundary
+does not imply that an isolate permits dynamic compilation. See the
+[workerd verification](./history/WASM_1.4.0_EDGE_VERIFICATION.md) for the five
+module assignments and the shipped Edge example for deployment binding names
+and isolate-level optimizer caching. In the verified Chrome module Worker,
+the published codec loader instead resolves copied `.wasm` assets without
+passing `wasmModules`; that loading mode has its own [HTTP and bundle requirements](../packages/lazy-image-wasm/README.md#worker).
 
 The package may use `WebAssembly.instantiateStreaming()` when available, but it
 must provide a fallback for runtimes that return the wrong MIME type for Wasm
@@ -80,13 +93,24 @@ const result = await optimizeUpload(file, {
 console.log(result.metrics.bytesIn, result.metrics.bytesOut, result.metrics.qualityUsed);
 ```
 
-Edge usage should use the same policy shape, but avoid DOM-only assumptions:
+Edge usage should use the same policy shape, but avoid DOM-only assumptions.
+For the verified local workerd setup, the bundler/workerd configuration embeds
+the unmodified codec Wasm files as static `WebAssembly.Module` imports; the
+five names below match the [verified Worker](../test/benchmarks/wasm-edge-worker.mjs):
 
 ```typescript
-import { optimizeUpload } from '@alberteinshutoin/lazy-image-wasm/edge';
+import { createUploadOptimizer } from '@alberteinshutoin/lazy-image-wasm/edge';
+import jpegDecode from './mozjpeg_dec.wasm';
+import jpegEncode from './mozjpeg_enc.wasm';
+import pngDecode from './squoosh_png_bg.wasm';
+import resize from './squoosh_resize_bg.wasm';
+import webpEncode from './webp_enc.wasm';
 
+const optimizer = await createUploadOptimizer({
+  wasmModules: { jpegDecode, jpegEncode, pngDecode, resize, webpEncode },
+});
 const input = new Uint8Array(await request.arrayBuffer());
-const result = await optimizeUpload(input, {
+const result = await optimizer.optimizeUpload(input, {
   format: 'jpeg',
   maxWidth: 1200,
   maxHeight: 1200,
@@ -94,6 +118,10 @@ const result = await optimizeUpload(input, {
   output: 'arrayBuffer',
 });
 ```
+
+These five modules cover the verified JPEG/PNG inputs and JPEG/WebP outputs.
+Processing WebP input also needs a static `webpDecode` module from
+`webp_dec.wasm` in this workerd setup.
 
 ## Shared Policy Types
 
@@ -217,11 +245,23 @@ runtime boundary.
 | `E500` | Operation aborted through `AbortSignal` | `UserError` | `E204` |
 | `E501` | Requested output kind is unavailable in the runtime | `ResourceLimit` | `E303` |
 | `E502` | Strict target-byte budget cannot be met above the quality floor | `ResourceLimit` | `E201` |
+| `E503` | Resize codec failed | `CodecError` | — |
 | `E901` | Codec returned an invalid buffer type | `InternalBug` | `E901` |
 
 `UserError` and `ResourceLimit` are recoverable by default. `CodecError` and
 `InternalBug` are not. Callers should branch on both `code` and `category`
 instead of deriving a category from the numeric range.
+
+For `E131` (decode), `E503` (resize), and `E300` (encode), `message` identifies the codec stage
+and retains the available underlying exception text. That stage can include
+codec Wasm loading/initialization or image processing; the exception alone
+does not prove which one failed. `recoveryHint` points browser Worker users to
+the codec `.wasm` beside the bundled `worker.js`, DevTools Network's request
+URL/status, and the response body. If delivery is valid, inspect input
+corruption or codec processing instead. The package does not observe the
+codec's HTTP response directly, so it does not report a URL/status or assert
+that an asset is missing. The Worker forwards these existing fields; no new
+error property is required.
 
 Native filesystem errors such as file-not-found, mmap failure, and file-write
 failure must not appear in the browser/Edge API.

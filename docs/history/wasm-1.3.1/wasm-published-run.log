@@ -1,0 +1,17 @@
+
+> @alberteinshutoin/lazy-image@1.3.1 test:bench:wasm
+> node test/benchmarks/wasm-upload-comparison.bench.js --runtime all --version 1.3.1
+
+Scenario: Large JPEG upload -> WebP
+Scenario: Large PNG upload -> JPEG
+
+Wrote artifacts/benchmark/wasm-upload-summary.json
+Wrote artifacts/benchmark/wasm-upload-summary.md
+
+large-photo-upload-webp @alberteinshutoin/lazy-image: 330.1 KB in 3183.4ms, targetHit=yes
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3290.2ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image: 164.1 KB in 486.7ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 2607.0ms, targetHit=yes
+Optional baselines: 12 unavailable, 4 installed but not run
