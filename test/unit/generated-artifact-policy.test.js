@@ -14,12 +14,12 @@ const workflow = fs
 
 assert.equal(
   packageJson.devDependencies['@napi-rs/cli'],
-  '3.7.2',
+  '3.9.0',
   'the generator must be pinned exactly in package.json',
 )
 assert.equal(
   packageLock.packages[''].devDependencies['@napi-rs/cli'],
-  '3.7.2',
+  '3.9.0',
   'the root lockfile contract must preserve the exact generator version',
 )
 assert.equal(

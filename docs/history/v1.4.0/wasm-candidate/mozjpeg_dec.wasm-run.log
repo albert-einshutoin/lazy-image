@@ -1,0 +1,3 @@
+Error: Candidate Wasm evidence FAIL: Intentional image-processing FAIL; expected diagnostic validated; see /Users/shutoide/.codex/worktrees/2841/lazy-image/artifacts/benchmark/wasm-published-evidence.json
+    at collectPublishedWasmEvidence (file:///Users/shutoide/.codex/worktrees/2841/lazy-image/test/benchmarks/wasm-published-evidence.mjs:648:41)
+    at async run (/Users/shutoide/.codex/worktrees/2841/lazy-image/test/benchmarks/wasm-upload-comparison.bench.js:452:20)
