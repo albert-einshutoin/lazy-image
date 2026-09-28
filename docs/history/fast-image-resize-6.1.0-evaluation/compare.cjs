@@ -67,7 +67,9 @@ async function run() {
   const outDir = path.resolve(process.env.RESIZE_OUT_DIR || '');
   const revision = process.env.RESIZE_REVISION;
   const label = process.env.RESIZE_LABEL;
+  const warmCount = Number(process.env.RESIZE_WARM_COUNT || 5);
   assert(root && outDir && revision && label, 'RESIZE_ROOT, RESIZE_OUT_DIR, RESIZE_REVISION, RESIZE_LABEL required');
+  assert(Number.isInteger(warmCount) && warmCount >= 1 && warmCount <= 50, 'RESIZE_WARM_COUNT must be 1..50');
   const { sharp, binding, ImageEngine } = setup(root);
   fs.mkdirSync(outDir, { recursive: true });
   const fixture = file => fs.readFileSync(path.join(root, 'test/benchmarks/corpus/images', file));
@@ -89,7 +91,7 @@ async function run() {
     const cold = await invoke();
     const coldWallMs = Number(process.hrtime.bigint() - t0) / 1e6;
     const warm = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < warmCount; i++) {
       const start = process.hrtime.bigint();
       const result = await invoke();
       warm.push({ wallMs: Number(process.hrtime.bigint() - start) / 1e6, metrics: result.metrics });
@@ -119,7 +121,7 @@ async function run() {
     rayonThreads: process.env.RAYON_NUM_THREADS || null,
     rust: process.env.RUSTUP_TOOLCHAIN || null,
     sdk: process.env.SDKROOT || null,
-    timing: 'one cold and five sequential warm calls, ImageEngine.from through awaited toBufferWithMetrics(png); opsMs/encodeMs/totalMs are native metrics',
+    timing: `one cold and ${warmCount} sequential warm calls, ImageEngine.from through awaited toBufferWithMetrics(png); opsMs/encodeMs/totalMs are native metrics`,
     normalization: 'sharp toColourspace(srgb) ensureAlpha raw uchar RGBA' };
   const report = { label, revision, runtime, cases: results };
   fs.writeFileSync(path.join(outDir, 'results.json'), JSON.stringify(report, null, 2) + '\n');

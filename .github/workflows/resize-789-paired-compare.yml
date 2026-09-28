@@ -19,6 +19,7 @@ jobs:
       CARGO_TARGET_DIR: ${{ github.workspace }}/paired-target
       RUSTUP_TOOLCHAIN: '1.88.0'
       RAYON_NUM_THREADS: '4'
+      RESIZE_WARM_COUNT: '15'
     steps:
       - name: Checkout candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -75,16 +76,16 @@ jobs:
       - name: Confirm direct FIR primary path
         run: cargo +1.88.0 test --manifest-path candidate/Cargo.toml --release --no-default-features test_fir_primary_succeeds_for_used_pixel_layouts
 
-      - name: Measure main baseline
-        run: |
-          RESIZE_ROOT="$GITHUB_WORKSPACE/baseline" RESIZE_OUT_DIR="$GITHUB_WORKSPACE/paired-evidence/baseline" RESIZE_LABEL=baseline RESIZE_REVISION=3ffc865739268ae7bd8afa4c0a6882c67a640f12 \
-            node candidate/docs/history/fast-image-resize-6.1.0-evaluation/compare.cjs run
-
       - name: Measure candidate
         env:
           CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           RESIZE_ROOT="$GITHUB_WORKSPACE/candidate" RESIZE_OUT_DIR="$GITHUB_WORKSPACE/paired-evidence/candidate" RESIZE_LABEL=candidate RESIZE_REVISION="$CANDIDATE_SHA" \
+            node candidate/docs/history/fast-image-resize-6.1.0-evaluation/compare.cjs run
+
+      - name: Measure main baseline
+        run: |
+          RESIZE_ROOT="$GITHUB_WORKSPACE/baseline" RESIZE_OUT_DIR="$GITHUB_WORKSPACE/paired-evidence/baseline" RESIZE_LABEL=baseline RESIZE_REVISION=3ffc865739268ae7bd8afa4c0a6882c67a640f12 \
             node candidate/docs/history/fast-image-resize-6.1.0-evaluation/compare.cjs run
           RESIZE_ROOT="$GITHUB_WORKSPACE/candidate" \
             node candidate/docs/history/fast-image-resize-6.1.0-evaluation/compare.cjs compare paired-evidence/baseline paired-evidence/candidate
