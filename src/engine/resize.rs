@@ -613,13 +613,20 @@ mod tests {
                 (1200, 900, 511, 341, PixelType::U8x4),
             ] {
                 let mut src = fir::images::Image::new(src_w, src_h, pixel_type);
-                for (i, pixel) in src.buffer_mut().chunks_exact_mut(pixel_type.size()).enumerate()
+                for (i, pixel) in src
+                    .buffer_mut()
+                    .chunks_exact_mut(pixel_type.size())
+                    .enumerate()
                 {
                     pixel[0] = i as u8;
                     pixel[1] = (i / 3) as u8;
                     pixel[2] = (i / 7) as u8;
                     if pixel_type == PixelType::U8x4 {
-                        pixel[3] = if src_w >= 1000 { 255 } else { [0, 128, 255][i % 3] };
+                        pixel[3] = if src_w >= 1000 {
+                            255
+                        } else {
+                            [0, 128, 255][i % 3]
+                        };
                     }
                 }
 
