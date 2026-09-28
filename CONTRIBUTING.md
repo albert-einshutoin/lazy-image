@@ -21,7 +21,8 @@ This document explains how to participate in the project.
 
 ### Required Tools
 
-- **Node.js**: >= 22
+- **Node.js**: >= 22 for the published package
+- **Development builds**: ^22.13.0 || >=23.5.0 for `@napi-rs/cli` 3.9.0
 - **Rust**: stable (latest recommended)
 - **Cargo**: included with Rust
 - **npm**: included with Node.js
@@ -268,7 +269,8 @@ lazy-image へのコントリビューションに興味を持っていただき
 
 ### 必要なツール
 
-- **Node.js**: >= 22
+- **Node.js**: >= 22（公開packageの対応下限）
+- **開発用build**: `@napi-rs/cli` 3.9.0には ^22.13.0 || >=23.5.0 が必要
 - **Rust**: stable (最新推奨)
 - **Cargo**: Rustに付属
 - **npm**: Node.jsに付属
