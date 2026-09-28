@@ -604,6 +604,38 @@ mod tests {
         }
 
         #[test]
+        fn test_fir_primary_succeeds_for_used_pixel_layouts() {
+            // Call the FIR path directly: fast_resize() can conceal a FIR error
+            // by succeeding through the image-crate fallback.
+            for (src_w, src_h, dst_w, dst_h, pixel_type) in [
+                (64, 41, 31, 19, PixelType::U8x3),
+                (64, 41, 31, 19, PixelType::U8x4),
+                (1200, 900, 511, 341, PixelType::U8x4),
+            ] {
+                let mut src = fir::images::Image::new(src_w, src_h, pixel_type);
+                for (i, pixel) in src.buffer_mut().chunks_exact_mut(pixel_type.size()).enumerate()
+                {
+                    pixel[0] = i as u8;
+                    pixel[1] = (i / 3) as u8;
+                    pixel[2] = (i / 7) as u8;
+                    if pixel_type == PixelType::U8x4 {
+                        pixel[3] = if src_w >= 1000 { 255 } else { [0, 128, 255][i % 3] };
+                    }
+                }
+
+                let resized = resize_with_source_image(
+                    src,
+                    pixel_type,
+                    dst_w,
+                    dst_h,
+                    default_resize_options(),
+                )
+                .expect("FIR primary path should resize without fallback");
+                assert_eq!(resized.dimensions(), (dst_w, dst_h));
+            }
+        }
+
+        #[test]
         fn test_requires_premultiply_only_for_rgba() {
             assert!(requires_premultiply(PixelType::U8x4));
             assert!(!requires_premultiply(PixelType::U8x3));

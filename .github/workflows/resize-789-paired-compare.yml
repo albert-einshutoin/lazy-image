@@ -1,0 +1,98 @@
+name: Resize 789 paired comparison
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: resize-789-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  paired:
+    if: github.event.pull_request.number == 789
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/paired-target
+      RUSTUP_TOOLCHAIN: '1.88.0'
+      RAYON_NUM_THREADS: '4'
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          path: candidate
+
+      - name: Checkout main baseline
+        run: git -C candidate worktree add --detach ../baseline 3ffc865739268ae7bd8afa4c0a6882c67a640f12
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: candidate/package-lock.json
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: 1.88.0
+
+      - name: Setup NASM
+        uses: ./candidate/.github/actions/setup-nasm
+
+      - name: Verify AVX2 and FIR dispatch
+        run: |
+          mkdir -p paired-evidence candidate/examples
+          lscpu > paired-evidence/cpu.txt
+          grep -m1 '^flags' /proc/cpuinfo | grep -qw avx2
+          cat > candidate/examples/resize_789_cpu_probe.rs <<'RS'
+          use fast_image_resize::{CpuExtensions, Resizer};
+          fn main() {
+              let selected = Resizer::new().cpu_extensions();
+              println!("FIR_CPU_EXTENSIONS={selected:?}");
+              assert_eq!(selected, CpuExtensions::Avx2);
+          }
+          RS
+          cargo +1.88.0 run --manifest-path candidate/Cargo.toml --release --example resize_789_cpu_probe
+
+      - name: Build main baseline
+        working-directory: baseline
+        run: |
+          npm ci
+          npm run build -- --target x86_64-unknown-linux-gnu
+
+      - name: Build candidate
+        working-directory: candidate
+        run: |
+          npm ci
+          npm run build -- --target x86_64-unknown-linux-gnu
+
+      - name: Confirm direct FIR primary path
+        run: cargo +1.88.0 test --manifest-path candidate/Cargo.toml --release --no-default-features test_fir_primary_succeeds_for_used_pixel_layouts
+
+      - name: Measure main baseline
+        run: |
+          RESIZE_ROOT="$GITHUB_WORKSPACE/baseline" RESIZE_OUT_DIR="$GITHUB_WORKSPACE/paired-evidence/baseline" RESIZE_LABEL=baseline RESIZE_REVISION=3ffc865739268ae7bd8afa4c0a6882c67a640f12 \
+            node candidate/docs/history/fast-image-resize-6.1.0-evaluation/compare.cjs run
+
+      - name: Measure candidate
+        env:
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          RESIZE_ROOT="$GITHUB_WORKSPACE/candidate" RESIZE_OUT_DIR="$GITHUB_WORKSPACE/paired-evidence/candidate" RESIZE_LABEL=candidate RESIZE_REVISION="$CANDIDATE_SHA" \
+            node candidate/docs/history/fast-image-resize-6.1.0-evaluation/compare.cjs run
+          RESIZE_ROOT="$GITHUB_WORKSPACE/candidate" \
+            node candidate/docs/history/fast-image-resize-6.1.0-evaluation/compare.cjs compare paired-evidence/baseline paired-evidence/candidate
+
+      - name: Upload paired evidence
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: resize-789-paired-evidence
+          path: paired-evidence
+          if-no-files-found: warn
