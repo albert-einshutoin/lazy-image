@@ -1,0 +1,11 @@
+
+> @alberteinshutoin/lazy-image@1.4.2 test:release-policy
+> node test/unit/release-policy.test.js
+
+ok - BREAKING markers are case-sensitive release markers
+ok - Removed section only blocks when it has entries
+ok - target version section is preferred over Unreleased
+ok - major boundary means x.0.0
+ok - release tag must match the package version
+ok - manual release workflow stages candidates but only tags publish
+ok - published tarballs come from the candidate artifact

@@ -1,0 +1,29 @@
+{
+  "version": "1.4.2",
+  "baseMain": "873d46ec230c70abc699783d47fff1f21572905c",
+  "previousTag": "v1.4.1",
+  "releasePr": 872,
+  "releasePrHead": "7dc319023bb12b800c6509bbec51738e7a1a9647",
+  "releaseCommit": "57a5126731b9e3c22f3d5867d9ba0a9dbf9ddfc1",
+  "releasePrCi": 36977861454,
+  "releasePrSecurity": 36977866860,
+  "releasePrFuzz": 36977867022,
+  "releasePrSelective": 36977866909,
+  "mergeCi": 36978868728,
+  "mergeSecurity": 36978868455,
+  "dryRun": 36978907486,
+  "dryRunRef": "verification/v1.4.2-release-commit",
+  "dryRunInputs": {
+    "full_validation": true,
+    "dry_run": true
+  },
+  "tag": "v1.4.2",
+  "tagObject": "aad69e9fc1c5a3c918ed1a030754fadb5070cadb",
+  "tagRun": 36980450710,
+  "tagSecurity": 36980450592,
+  "publishedNativeRun": 36981732116,
+  "publishedNativeRef": "v1.4.2",
+  "publishedNativeInputs": {
+    "version": "1.4.2"
+  }
+}
