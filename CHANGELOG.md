@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-10-02
+
+Update with `npm install @alberteinshutoin/lazy-image@1.4.2 @alberteinshutoin/lazy-image-wasm@1.4.2`. The six native platform packages use the same version and are selected as optional dependencies of the main package.
+
+### Changed
+- Updated `fast_image_resize` to 6.1.0 in the native and Fuzz lockfiles, with native `bytemuck` 1.25.2. Fuzz retains `bytemuck` 1.25.1 and the existing FIR feature selection. The [saved adoption comparison](https://github.com/albert-einshutoin/lazy-image/blob/873d46ec230c70abc699783d47fff1f21572905c/docs/history/fast-image-resize-6.1.0-evaluation/README.md) preserved output compatibility and found no repeatable major speed regression for the measured images on macOS arm64 and Linux x64 AVX2. These samples do not establish a general speedup.
+- Updated development-only `@napi-rs/cli` to 3.9.0 and regenerated its native loader. Public APIs and default image-processing behavior remain unchanged.
+- Updated CI maintenance pins for Codecov 7.0.0, checkout 7.0.1, setup-node 7.0.0, cache/cache-save 6.1.0; synchronized Fuzz pins, npm preparation, and Rust LCOV checks.
+- Recorded the prior v1.4.1 publication verification separately from this release. Wasm implementation and codec dependencies are unchanged; its package version and `VERSION` are synchronized to 1.4.2.
+
+`oxipng` remains 10.1.1 in native and Fuzz; #833 remains on hold. #790, #777, #835, and #739 are excluded and require separate evaluation. This patch contains dependency/tooling/documentation updates without a public contract change under the [SemVer policy](https://github.com/albert-einshutoin/lazy-image/blob/873d46ec230c70abc699783d47fff1f21572905c/docs/SEMVER_POLICY.md).
+
 ## [1.4.1] - 2026-09-26
 
 Update with `npm install @alberteinshutoin/lazy-image@1.4.1 @alberteinshutoin/lazy-image-wasm@1.4.1`. The six native platform packages are selected as optional dependencies of the main package.
