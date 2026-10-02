@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "version": "1.4.2",
+  "sourceSha": "57a5126731b9e3c22f3d5867d9ba0a9dbf9ddfc1",
+  "source": "non-tag-candidate",
+  "node": "v24.2.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mainEntry": "/private/tmp/lazy-image-142-evidence/module-candidate/node_modules/@alberteinshutoin/lazy-image/index.js",
+  "binding": "/private/tmp/lazy-image-142-evidence/module-candidate/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+  "bindingSha256": "9b37911d2e1d52d04fc7cbdf24e3d283d35001d49c9a20218f9002395de98b2f",
+  "inputSha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+  "results": {
+    "cjs": {
+      "status": "PASS",
+      "output": "/private/tmp/lazy-image-142-evidence/module-candidate/cjs-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "metadata": {
+        "width": 157,
+        "height": 119,
+        "hasAlpha": false,
+        "isAnimated": false,
+        "orientationKnown": true,
+        "format": "png"
+      }
+    },
+    "esm": {
+      "status": "PASS",
+      "output": "/private/tmp/lazy-image-142-evidence/module-candidate/esm-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "metadata": {
+        "width": 157,
+        "height": 119,
+        "hasAlpha": false,
+        "isAnimated": false,
+        "orientationKnown": true,
+        "format": "png"
+      }
+    }
+  }
+}

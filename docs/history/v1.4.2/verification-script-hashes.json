@@ -1,0 +1,7 @@
+{
+  "module-candidate/module-smoke-attempt-1.mjs": "23eb16d3a6f2987f58e6e3aa16e38bd627f005f961e07f7c755eb6c7cb122878",
+  "module-candidate/module-smoke.mjs": "bf621a8ac4edaaf24a5bf60565f40f41d4e410c1a029be2099c6240080ac795d",
+  "module-published/module-smoke.mjs": "bf621a8ac4edaaf24a5bf60565f40f41d4e410c1a029be2099c6240080ac795d",
+  "verification-tools/compare-registry.mjs": "b081440327d55c565d97b890aa83b7229397de20c5797990f7b87495d5e432bd",
+  "verification-tools/summarize-smoke.cjs": "692d782246085c4b32e29438558dfabfe91c98169a5a4fde991c3093192b903c"
+}

@@ -9,6 +9,7 @@ Related docs:
 - [v1.3.0 verification](history/V1.3.0_VERIFICATION.md) — publication evidence and remaining registry smoke coverage (2026-09-23)
 - [v1.4.0 verification](history/V1.4.0_VERIFICATION.md) — release candidate, registry contents, published native and Chrome Worker results
 - [v1.4.1 verification](history/V1.4.1_VERIFICATION.md) — native dependency update release, published npm and Chrome Worker evidence
+- [v1.4.2 verification](history/V1.4.2_VERIFICATION.md) — FIR/loader/tooling patch, candidate and published npm evidence
 
 ---
 

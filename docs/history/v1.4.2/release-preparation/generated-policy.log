@@ -1,0 +1,5 @@
+
+> @alberteinshutoin/lazy-image@1.4.2 test:generated-artifact-policy
+> node test/unit/generated-artifact-policy.test.js
+
+generated artifact policy test passed
