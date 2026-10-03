@@ -234,10 +234,108 @@ mod tests {
         );
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn try_shared_lock_rejects_exclusive_lock_then_recovers() {
+        use std::io::{BufRead, BufReader, Write};
+        use std::os::unix::io::AsRawFd;
+        use std::process::{Child, Command, Stdio};
+        use std::sync::mpsc;
+        use std::time::Duration;
+
+        // Kill and reap even if a timeout/assertion fires while the child is locked.
+        struct ChildGuard(Child);
+        impl Drop for ChildGuard {
+            fn drop(&mut self) {
+                let _ = self.0.kill();
+                let _ = self.0.wait();
+            }
+        }
+
+        let tmp = tempfile::NamedTempFile::new().unwrap();
+        let fd = tmp.as_file().as_raw_fd();
+        // SAFETY: fd belongs to the live temporary file; flock takes no pointers.
+        assert_eq!(unsafe { libc::flock(fd, libc::LOCK_EX | libc::LOCK_NB) }, 0);
+        let mut child = ChildGuard(
+            Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "engine::platform::tests::shared_lock_child",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .env("LAZY_IMAGE_LOCK_TEST_FILE", tmp.path())
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .spawn()
+                .unwrap(),
+        );
+        let stdout = child.0.stdout.take().unwrap();
+        let (tx, rx) = mpsc::channel();
+        let reader = std::thread::spawn(move || {
+            for line in BufReader::new(stdout).lines() {
+                let line = line.unwrap();
+                if line == "LOCK_CONTENDED" || line == "LOCK_RECOVERED" {
+                    if tx.send(line).is_err() {
+                        break;
+                    }
+                }
+            }
+        });
+        let timeout = Duration::from_secs(10);
+        assert_eq!(rx.recv_timeout(timeout).unwrap(), "LOCK_CONTENDED");
+        // SAFETY: the same live file descriptor still holds our exclusive lock.
+        assert_eq!(unsafe { libc::flock(fd, libc::LOCK_UN) }, 0);
+        child
+            .0
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(b"release\n")
+            .unwrap();
+        assert_eq!(rx.recv_timeout(timeout).unwrap(), "LOCK_RECOVERED");
+        // EOF is also bounded: a child that hangs after its assertion is a failure.
+        assert!(matches!(
+            rx.recv_timeout(timeout),
+            Err(mpsc::RecvTimeoutError::Disconnected)
+        ));
+        assert!(child.0.wait().unwrap().success());
+        reader.join().unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    #[ignore = "subprocess helper for the exclusive-lock test"]
+    fn shared_lock_child() {
+        use std::io::{BufRead, Write};
+
+        let path = std::env::var_os("LAZY_IMAGE_LOCK_TEST_FILE").unwrap();
+        let file = File::open(path).unwrap();
+        assert!(
+            !try_shared_lock(&file),
+            "exclusive lock must reject a shared lock"
+        );
+        println!("LOCK_CONTENDED");
+        std::io::stdout().flush().unwrap();
+        let mut release = String::new();
+        std::io::stdin().lock().read_line(&mut release).unwrap();
+        assert_eq!(release, "release\n");
+        assert!(
+            try_shared_lock(&file),
+            "shared lock must succeed after release"
+        );
+        println!("LOCK_RECOVERED");
+        std::io::stdout().flush().unwrap();
+    }
+
     #[test]
     fn resource_usage_returns_reasonable_values() {
-        if let Some(usage) = get_resource_usage() {
+        let usage = get_resource_usage();
+        #[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+        assert!(usage.is_some(), "resource usage should succeed on this OS");
+        if let Some(usage) = usage {
             // CPU time should be non-negative
+            assert!(usage.cpu_time.is_finite(), "CPU time should be finite");
             assert!(usage.cpu_time >= 0.0, "CPU time should be non-negative");
             // RSS should be > 0 for a running process
             assert!(
