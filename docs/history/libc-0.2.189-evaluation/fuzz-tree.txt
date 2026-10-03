@@ -1,0 +1,36 @@
+libc v0.2.189
+├── cc v1.3.0
+│   [build-dependencies]
+│   ├── libdeflate-sys v1.25.2
+│   │   └── libdeflater v1.25.2
+│   │       └── oxipng v10.1.1
+│   │           └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│   │               └── lazy-image-fuzz v0.0.0 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image/fuzz)
+│   ├── libfuzzer-sys v0.4.13
+│   │   └── lazy-image-fuzz v0.0.0 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image/fuzz)
+│   ├── libwebp-sys v0.9.6
+│   │   └── webp v0.3.1
+│   │       └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image) (*)
+│   └── mozjpeg-sys v2.2.3
+│       └── mozjpeg v0.10.13
+│           └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image) (*)
+├── errno v0.3.14
+│   └── rustix v1.1.4
+│       └── tempfile v3.27.0
+│           └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image) (*)
+├── getrandom v0.4.3
+│   └── tempfile v3.27.0 (*)
+├── jobserver v0.1.35
+│   ├── cc v1.3.0 (*)
+│   └── nasm-rs v0.3.2
+│       [build-dependencies]
+│       └── mozjpeg-sys v2.2.3 (*)
+├── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image) (*)
+├── memmap2 v0.9.11
+│   └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image) (*)
+├── mozjpeg v0.10.13 (*)
+├── mozjpeg-sys v2.2.3 (*)
+├── parking_lot_core v0.9.12
+│   └── parking_lot v0.12.5
+│       └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image) (*)
+└── rustix v1.1.4 (*)

@@ -1,0 +1,68 @@
+libc v0.2.189
+├── cc v1.2.55
+│   └── cmake v0.1.57
+│       [build-dependencies]
+│       └── libavif-sys v0.17.0+libavif.1.0.4
+│           └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│   [build-dependencies]
+│   ├── alloca v0.4.0
+│   │   └── criterion v0.8.2
+│   │       [dev-dependencies]
+│   │       └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│   ├── libdeflate-sys v1.25.2
+│   │   └── libdeflater v1.25.2
+│   │       └── oxipng v10.1.1
+│   │           └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│   ├── libwebp-sys v0.9.6
+│   │   └── webp v0.3.1
+│   │       └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│   ├── mozjpeg-sys v2.2.3
+│   │   └── mozjpeg v0.10.13
+│   │       └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│   ├── rav1e v0.7.1
+│   │   └── libavif-sys v0.17.0+libavif.1.0.4 (*)
+│   └── tikv-jemalloc-sys v0.7.1+5.3.1-0-g81034ce1f1373e37dc865038e1bc8eeecf559ce8
+│       └── tikv-jemallocator v0.7.0
+│           └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+├── errno v0.3.14
+│   └── rustix v1.1.4
+│       └── tempfile v3.27.0
+│           ├── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│           ├── proptest v1.11.0
+│           │   [dev-dependencies]
+│           │   └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+│           └── rusty-fork v0.3.1
+│               └── proptest v1.11.0 (*)
+├── getrandom v0.3.4
+│   ├── rand_core v0.9.5
+│   │   ├── rand v0.9.4
+│   │   │   └── proptest v1.11.0 (*)
+│   │   ├── rand_chacha v0.9.0
+│   │   │   └── proptest v1.11.0 (*)
+│   │   └── rand_xorshift v0.4.0
+│   │       └── proptest v1.11.0 (*)
+│   └── tempfile v3.27.0 (*)
+├── jobserver v0.1.34
+│   ├── cc v1.2.55 (*)
+│   └── nasm-rs v0.3.1
+│       [build-dependencies]
+│       └── mozjpeg-sys v2.2.3 (*)
+├── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+├── libavif-sys v0.17.0+libavif.1.0.4 (*)
+├── memmap2 v0.9.11
+│   └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+├── mozjpeg v0.10.13 (*)
+├── mozjpeg-sys v2.2.3 (*)
+├── napi v3.12.2
+│   └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+├── page_size v0.6.0
+│   └── criterion v0.8.2 (*)
+├── parking_lot_core v0.9.12
+│   └── parking_lot v0.12.5
+│       └── lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+├── rav1e v0.7.1 (*)
+├── rustix v1.1.4 (*)
+├── tikv-jemalloc-sys v0.7.1+5.3.1-0-g81034ce1f1373e37dc865038e1bc8eeecf559ce8 (*)
+├── tikv-jemallocator v0.7.0 (*)
+└── wait-timeout v0.2.1
+    └── rusty-fork v0.3.1 (*)

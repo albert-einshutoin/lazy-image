@@ -1,0 +1,36 @@
+=== lazy-image Edge Cases & Security Tests ===
+
+✅ rejects images exceeding MAX_DIMENSION via ImageEngine.from()
+✅ rejects empty buffer
+✅ rejects invalid image data
+✅ rejects non-existent file path
+✅ inspectFile() rejects non-existent file
+✅ rejects quality 0
+✅ handles quality 100 (maximum)
+✅ rejects quality > 100
+✅ handles resize to 1x1 (minimum size)
+✅ handles resize with only width (maintains aspect ratio)
+✅ handles resize with only height (maintains aspect ratio)
+✅ handles resize with both dimensions (may distort)
+✅ handles crop at origin (0,0)
+✅ handles crop of entire image
+✅ handles rotation 0 (no-op)
+✅ handles negative rotation (-90)
+✅ rejects rotation 360 (invalid angle)
+✅ handles many chained operations
+✅ handles multiple resize operations (should optimize)
+✅ toFile() rejects non-existent parent directory
+✅ processBatch handles empty input array
+✅ processBatch accepts concurrency 0 (uses default)
+✅ processBatch rejects concurrency > 1024 (UserError)
+✅ toBufferWithMetrics returns valid metrics with all fields
+✅ toBufferWithMetrics handles input_size=0 gracefully
+✅ hasIccProfile() returns null for images without profile
+✅ handles brightness at limits (-100, 100)
+✅ rejects brightness outside range
+✅ handles contrast at limits (-100, 100)
+✅ pipeline methods return the same ImageEngine instance
+✅ clone() creates independent instances
+✅ dimensions() returns correct values
+
+=== Results: 32 passed, 0 failed ===
