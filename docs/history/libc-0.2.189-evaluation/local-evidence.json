@@ -1,0 +1,159 @@
+{
+  "startMain": "4ea709c4c14f98b50ee883a11ae2c5ba927b19cb",
+  "syncedPrCommit": "c7f9d98fa8544ce29e9911fcaaf8143d46c85ed8",
+  "environment": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A428\n",
+    "rust": "rustc 1.88.0 (6b00bc388 2025-06-23)\nbinary: rustc\ncommit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc\ncommit-date: 2025-06-23\nhost: aarch64-apple-darwin\nrelease: 1.88.0\nLLVM version: 20.1.5\n",
+    "sdk": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+    "sdkVersion": "26.5",
+    "node": "v24.2.0"
+  },
+  "locks": {
+    "Cargo.lock": {
+      "sha256": "86045c2e8a6402f9d26fbed54db3b1bf7767aac8c16133f2212c50c03f2b5855",
+      "versions": {
+        "libc": [
+          "0.2.189"
+        ],
+        "oxipng": [
+          "10.1.1"
+        ],
+        "fast_image_resize": [
+          "6.1.0"
+        ],
+        "bytemuck": [
+          "1.25.2"
+        ],
+        "napi": [
+          "3.12.2"
+        ],
+        "napi-derive": [
+          "3.6.3"
+        ],
+        "napi-derive-backend": [
+          "6.1.2"
+        ]
+      }
+    },
+    "fuzz/Cargo.lock": {
+      "sha256": "af959e24046618ac247ddc154425e5e093b19aea724ca0862eeecff610f642b3",
+      "versions": {
+        "libc": [
+          "0.2.189"
+        ],
+        "oxipng": [
+          "10.1.1"
+        ],
+        "fast_image_resize": [
+          "6.1.0"
+        ],
+        "bytemuck": [
+          "1.25.1"
+        ],
+        "napi": [],
+        "napi-derive": [],
+        "napi-derive-backend": []
+      }
+    }
+  },
+  "testSourceSha256": "61474ba0016b92b6a92df80afff8dc8b76b371a06aedd07dbc24e0d907ac103b",
+  "baselineJs": [
+    {
+      "test": "basic",
+      "exitCode": 0,
+      "logSha256": "9480268f641aaa4b0a5f4de0b1492d0acf50ddaba1ce564a83f676ee179511ce"
+    },
+    {
+      "test": "from-path-async",
+      "exitCode": 0,
+      "logSha256": "9aaf0d16a92bf4ba5a845508e6a412c37285acc9212a9d29b102d9b30acd3088"
+    },
+    {
+      "test": "edge-cases",
+      "exitCode": 0,
+      "logSha256": "c5061f8397f53ada49c4548b6d51302291b1015a4dc04b4fee2a7a363b45b75f"
+    },
+    {
+      "test": "artifact-compiler",
+      "exitCode": 0,
+      "logSha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+    },
+    {
+      "test": "metadata-options",
+      "exitCode": 0,
+      "logSha256": "041d33c6fabc8dea54e7f0a9a824e538b83049e7d2ea376a232632340c96d06e"
+    },
+    {
+      "test": "error-codes",
+      "exitCode": 0,
+      "logSha256": "705669c3a15e67c67a1b586f176d2ff757cbe8bfe177114a8561922a11fe1682"
+    }
+  ],
+  "candidateJs": {
+    "startedAt": "2026-10-03T05:11:11.298817+00:00",
+    "bindingSha256": "747a16cbe2f4d7108ae5afa938bccee59a5866d61379487a2ce16d12966d564f",
+    "tests": [
+      {
+        "test": "basic",
+        "exitCode": 0,
+        "logSha256": "9480268f641aaa4b0a5f4de0b1492d0acf50ddaba1ce564a83f676ee179511ce"
+      },
+      {
+        "test": "from-path-async",
+        "exitCode": 0,
+        "logSha256": "9aaf0d16a92bf4ba5a845508e6a412c37285acc9212a9d29b102d9b30acd3088"
+      },
+      {
+        "test": "edge-cases",
+        "exitCode": 0,
+        "logSha256": "c5061f8397f53ada49c4548b6d51302291b1015a4dc04b4fee2a7a363b45b75f"
+      },
+      {
+        "test": "artifact-compiler",
+        "exitCode": 0,
+        "logSha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+      },
+      {
+        "test": "metadata-options",
+        "exitCode": 0,
+        "logSha256": "041d33c6fabc8dea54e7f0a9a824e538b83049e7d2ea376a232632340c96d06e"
+      },
+      {
+        "test": "error-codes",
+        "exitCode": 0,
+        "logSha256": "705669c3a15e67c67a1b586f176d2ff757cbe8bfe177114a8561922a11fe1682"
+      },
+      {
+        "test": "native-worker",
+        "exitCode": 0,
+        "logSha256": "0ff4ef8431b89b3c64280b07616202abecca0bf2fb87f30e06aec0eb7e526fc3"
+      }
+    ]
+  },
+  "baselineRootLockSha256": "9f42919a5202a9f5606b2ef7b631dbf1e4a41042705a14f05edf99e8f03dc9a8",
+  "baselineScope": "Start-main production sources/lock (libc 0.2.186) with only the same test additions; working tree evidence, not pristine-main test sources",
+  "candidateScope": "Synced PR production sources/lock (libc 0.2.189) with test additions; working tree evidence before final documentation commit",
+  "jsTestSourceSha256": "9c484527e36ebbf0f215d569c5865808523ded182f62779261c601f02f25e867",
+  "rustAndBuild": {
+    "baseline-platform": {
+      "exitCode": 0,
+      "logSha256": "608200d2c12534ddb1673f8bb424c814b097320ec76ebb8249413a0f44f93f5c"
+    },
+    "baseline-build": {
+      "exitCode": 0,
+      "logSha256": "c478c607be734a0e0a3637d31352fb18023a11fdda045e9a12b7abeb86982ee9"
+    },
+    "candidate-platform": {
+      "exitCode": 0,
+      "logSha256": "105d56514c44875a96b44628c8cf0107f86340a75f05af5bf75ac909ebe7f1da"
+    },
+    "candidate-platform-release": {
+      "exitCode": 0,
+      "logSha256": "c3377b67f6a6cdab35006c2d608635d78630fef60cdb004997cd828258e14c2e"
+    },
+    "candidate-build": {
+      "exitCode": 0,
+      "logSha256": "2ee9be5705f2a58ec79872188aa6215018141f42f74a6f9e44b1e2a612e74120"
+    }
+  }
+}

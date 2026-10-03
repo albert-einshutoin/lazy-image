@@ -1,0 +1,3 @@
+native Worker worker-only: PASS
+native Worker main-and-worker: PASS
+native Worker terminate-after-async: PASS

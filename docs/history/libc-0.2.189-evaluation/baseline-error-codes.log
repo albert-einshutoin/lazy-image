@@ -1,0 +1,15 @@
+=== Error Code Matrix Tests ===
+
+✅ E111: UnsupportedFormat from unsupported output format
+✅ E400: InvalidArgument from out-of-range quality
+✅ E121: DimensionExceedsLimit from oversized resize
+✅ E123: FirewallViolation from maxBytes limit
+✅ E123: FirewallViolation from maxPixels limit
+✅ E130/E131: CorruptedImage or DecodeFailed from truncated JPEG
+✅ E131: DecodeFailed from corrupted JPEG body
+✅ E204: InvalidResizeFit from bad fit string
+✅ E402: InvalidFirewallPolicy from bad policy string
+✅ Docs and Rust error code tables are synchronized
+✅ Docs and Rust error recoverability flags are synchronized
+
+Tests passed: 11, failed: 0

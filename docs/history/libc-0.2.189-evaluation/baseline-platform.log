@@ -1,0 +1,186 @@
+   Compiling libc v0.2.186
+   Compiling cfg-if v1.0.4
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.44
+   Compiling unicode-ident v1.0.22
+   Compiling find-msvc-tools v0.1.9
+   Compiling shlex v1.3.0
+   Compiling crossbeam-utils v0.8.21
+   Compiling crossbeam-epoch v0.9.20
+   Compiling simd-adler32 v0.3.8
+   Compiling autocfg v1.5.0
+   Compiling rayon-core v1.13.0
+   Compiling getrandom v0.3.4
+   Compiling either v1.15.0
+   Compiling adler2 v2.0.1
+   Compiling bitflags v2.13.0
+   Compiling zerocopy v0.8.36
+   Compiling crc32fast v1.5.0
+   Compiling log v0.4.29
+   Compiling serde_core v1.0.228
+   Compiling bytemuck v1.25.2
+   Compiling miniz_oxide v0.8.9
+   Compiling num-traits v0.2.19
+   Compiling miniz_oxide v0.9.1
+   Compiling rustix v1.1.4
+   Compiling zune-core v0.5.1
+   Compiling fdeflate v0.3.7
+   Compiling jobserver v0.1.34
+   Compiling cc v1.2.55
+   Compiling syn v2.0.114
+   Compiling crossbeam-deque v0.8.6
+   Compiling pxfm v0.1.27
+   Compiling rayon v1.12.0
+   Compiling nasm-rs v0.3.1
+   Compiling flate2 v1.1.10
+   Compiling errno v0.3.14
+   Compiling radium v0.7.0
+   Compiling quick-error v2.0.1
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.17
+   Compiling glob v0.3.3
+   Compiling byteorder-lite v0.1.0
+   Compiling dunce v1.0.5
+   Compiling image-webp v0.2.4
+   Compiling png v0.18.0
+   Compiling syn v3.0.5
+   Compiling moxcms v0.8.1
+   Compiling rand_core v0.9.5
+   Compiling zune-jpeg v0.5.12
+   Compiling fastrand v2.3.0
+   Compiling parking_lot_core v0.9.12
+   Compiling tap v1.0.1
+   Compiling thiserror v2.0.20
+   Compiling regex-syntax v0.8.8
+   Compiling serde_json v1.0.149
+   Compiling once_cell v1.21.4
+   Compiling tempfile v3.27.0
+   Compiling wyz v0.5.1
+   Compiling rgb v0.8.53
+   Compiling image v0.25.10
+   Compiling clap_lex v0.7.7
+   Compiling scopeguard v1.2.0
+   Compiling hashbrown v0.17.1
+   Compiling equivalent v1.0.2
+   Compiling itoa v1.0.17
+   Compiling smallvec v1.15.1
+   Compiling memchr v2.7.6
+   Compiling litrs v1.0.0
+   Compiling anstyle v1.0.13
+   Compiling ciborium-io v0.2.2
+   Compiling funty v2.0.0
+   Compiling plotters-backend v0.3.7
+   Compiling document-features v0.2.12
+   Compiling libdeflate-sys v1.25.2
+   Compiling libwebp-sys v0.9.6
+   Compiling mozjpeg-sys v2.2.3
+   Compiling alloca v0.4.0
+   Compiling plotters-svg v0.3.7
+   Compiling bitvec v1.0.1
+   Compiling libdeflater v1.25.2
+   Compiling clap_builder v4.5.56
+   Compiling indexmap v2.14.0
+   Compiling lock_api v0.4.14
+   Compiling regex-automata v0.4.13
+   Compiling wait-timeout v0.2.1
+   Compiling itertools v0.13.0
+   Compiling zune-inflate v0.2.54
+   Compiling bit-vec v0.8.0
+   Compiling thiserror-impl v2.0.20
+   Compiling arrayvec v0.7.6
+   Compiling bytes v1.11.1
+   Compiling lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+   Compiling mutate_once v0.1.2
+   Compiling fnv v1.0.7
+   Compiling same-file v1.0.6
+   Compiling rustc-hash v2.1.3
+   Compiling cast v0.3.0
+   Compiling quick-error v1.2.3
+   Compiling rusty-fork v0.3.1
+   Compiling criterion-plot v0.8.2
+   Compiling walkdir v2.5.0
+   Compiling oxipng v10.1.1
+   Compiling kamadak-exif v0.6.1
+   Compiling img-parts v0.4.0
+   Compiling bit-set v0.8.0
+   Compiling regex v1.12.2
+   Compiling zune-png v0.5.2
+   Compiling fast_image_resize v6.1.0
+   Compiling clap v4.5.56
+   Compiling parking_lot v0.12.5
+   Compiling plotters v0.3.7
+   Compiling mozjpeg v0.10.13
+   Compiling rand v0.9.4
+   Compiling rand_xorshift v0.4.0
+   Compiling memmap2 v0.9.11
+   Compiling zerocopy-derive v0.8.36
+   Compiling serde_derive v1.0.228
+   Compiling page_size v0.6.0
+   Compiling unarray v0.1.4
+   Compiling anes v0.1.6
+   Compiling oorandom v11.1.5
+   Compiling semver v1.0.28
+   Compiling webp v0.3.1
+   Compiling tinytemplate v1.2.1
+   Compiling half v2.7.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_chacha v0.9.0
+   Compiling ciborium-ll v0.2.2
+   Compiling proptest v1.11.0
+   Compiling ciborium v0.2.2
+   Compiling criterion v0.8.2
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 00s
+     Running unittests src/lib.rs (target/debug/deps/lazy_image-18b97ad29c4ea2da)
+
+running 6 tests
+test engine::platform::tests::shared_lock_child ... ignored, subprocess helper for the exclusive-lock test
+test engine::platform::tests::resource_usage_returns_reasonable_values ... ok
+test engine::platform::tests::allocator_name_returns_known_value ... ok
+test engine::platform::tests::try_shared_lock_succeeds_on_temp_file ... ok
+test engine::platform::tests::detect_system_memory_returns_some_on_supported_os ... ok
+test engine::platform::tests::try_shared_lock_rejects_exclusive_lock_then_recovers ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 291 filtered out; finished in 0.00s
+
+     Running tests/edge_cases.rs (target/debug/deps/edge_cases-f9696c28a3fd3427)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 46 filtered out; finished in 0.00s
+
+     Running tests/engine_tests.rs (target/debug/deps/engine_tests-2c82ae7a3ae1714f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 64 filtered out; finished in 0.00s
+
+     Running tests/error_tests.rs (target/debug/deps/error_tests-1673cb6d002700a3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 0.00s
+
+     Running tests/fuzz_regression.rs (target/debug/deps/fuzz_regression-c45c5c7ff0cce836)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (target/debug/deps/integration_tests-bd53ea44833d67d2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/napi_tests.rs (target/debug/deps/napi_tests-ee0f3e0b02073bd8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/property_based.rs (target/debug/deps/property_based-61b7d3a4697f3fd7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+

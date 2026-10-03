@@ -1,0 +1,32 @@
+
+> @alberteinshutoin/lazy-image@1.4.2 build
+> node scripts/build-native.cjs
+
+Prepared postbuild index.d.ts backup.
+   Compiling libc v0.2.189
+   Compiling lazy-image v1.4.2 (/Users/shutoide/.codex/worktrees/libc-790/lazy-image)
+   Compiling jobserver v0.1.34
+   Compiling errno v0.3.14
+   Compiling parking_lot_core v0.9.12
+   Compiling getrandom v0.3.4
+   Compiling memmap2 v0.9.11
+   Compiling napi v3.12.2
+   Compiling rustix v1.1.4
+   Compiling cc v1.2.55
+   Compiling nasm-rs v0.3.1
+   Compiling parking_lot v0.12.5
+   Compiling cmake v0.1.57
+   Compiling libdeflate-sys v1.25.2
+   Compiling tikv-jemalloc-sys v0.7.1+5.3.1-0-g81034ce1f1373e37dc865038e1bc8eeecf559ce8
+   Compiling rav1e v0.7.1
+   Compiling mozjpeg-sys v2.2.3
+   Compiling libwebp-sys v0.9.6
+   Compiling tempfile v3.27.0
+   Compiling libavif-sys v0.17.0+libavif.1.0.4
+   Compiling libdeflater v1.25.2
+   Compiling oxipng v10.1.1
+   Compiling mozjpeg v0.10.13
+   Compiling webp v0.3.1
+   Compiling tikv-jemallocator v0.7.0
+    Finished `release` profile [optimized] target(s) in 1m 23s
+Applied postbuild fixups to index.js and index.d.ts.

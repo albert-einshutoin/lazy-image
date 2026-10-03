@@ -1,0 +1,9 @@
+Test 1: XMP emits warning but still processes
+keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.
+Test 2: Disable ICC, enable EXIF
+Test 3: GPS stripping (default behavior)
+Test 4: Preserve GPS (opt-in)
+Test 5: ICC only (default metadata behavior)
+Test 6: No metadata (security-first default)
+Test 7: Firewall strict mode overrides keepMetadata
+metadata-options.test.js passed - all 7 tests

@@ -444,6 +444,7 @@ async function runTests() {
 
         // Telemetry
         assert(typeof result.metrics.cpuTime === 'number', 'cpuTime should be number');
+        assert(Number.isFinite(result.metrics.cpuTime), 'cpuTime should be finite');
         assert(typeof result.metrics.processingTime === 'number', 'processingTime should be number');
         assert(typeof result.metrics.compressionRatio === 'number', 'compressionRatio should be number');
         assert(result.metrics.cpuTime >= 0, 'cpuTime should be non-negative');
