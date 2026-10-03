@@ -1,0 +1,71 @@
+{
+  "revision": "57a5126731b9e3c22f3d5867d9ba0a9dbf9ddfc1",
+  "sourceTree": "52ec0851722e7e56c4f7cf3e1508f2185b797dfb",
+  "dryRunManifestSha256": "e0516f4d4f3ca2ea9f4909b52f53adc0599d4d06e3f39713a4b8dfcfa56d8eda",
+  "tagManifestSha256": "34519cea1d7b4825e91a008164c620e2a5a61362a63e96b17b586ff7f27bf2c7",
+  "rows": [
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-x64",
+      "dryRunBinarySha256": "d0f2e8b322d35b64b6a6537d46462d7df9b58e91c2b8cbd73619ca91fd7a5ff9",
+      "tagBinarySha256": "d0f2e8b322d35b64b6a6537d46462d7df9b58e91c2b8cbd73619ca91fd7a5ff9",
+      "binaryHashMatches": true,
+      "dryRunTarballSha256": "4131c203eb1ece2a3e507b6a5ade9a72a9c15998cf0fab9371f15c58695933a3",
+      "tagTarballSha256": "4131c203eb1ece2a3e507b6a5ade9a72a9c15998cf0fab9371f15c58695933a3",
+      "tarballHashMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-arm64",
+      "dryRunBinarySha256": "9b37911d2e1d52d04fc7cbdf24e3d283d35001d49c9a20218f9002395de98b2f",
+      "tagBinarySha256": "9b37911d2e1d52d04fc7cbdf24e3d283d35001d49c9a20218f9002395de98b2f",
+      "binaryHashMatches": true,
+      "dryRunTarballSha256": "a5bfc439a62610bc9a593798887fe2b1ead1659e412cc1d8eebef301679b626f",
+      "tagTarballSha256": "a5bfc439a62610bc9a593798887fe2b1ead1659e412cc1d8eebef301679b626f",
+      "tarballHashMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-win32-x64-msvc",
+      "dryRunBinarySha256": "4f80fdd8939d1f819da3c0b1d4a7243e7d05db9552f528e7ab404109ec2062b0",
+      "tagBinarySha256": "4cb85afb73724c0f36f0416baf43119308093fa4226cc2687eeacf8a014729b0",
+      "binaryHashMatches": false,
+      "dryRunTarballSha256": "d7ac32c4066b4e4943c4ac4fc1e92ef65e2fdaf0ce7a4a1b6eaaf1d8f8baf151",
+      "tagTarballSha256": "9c7b29349740d67dfadbbd34d597bd284aa153eb1b15fb8c7745ae1be6336acb",
+      "tarballHashMatches": false
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-gnu",
+      "dryRunBinarySha256": "82fb3f94a7836e1205b12034b542fd6784464b83c8e79de1264a780445e03207",
+      "tagBinarySha256": "82fb3f94a7836e1205b12034b542fd6784464b83c8e79de1264a780445e03207",
+      "binaryHashMatches": true,
+      "dryRunTarballSha256": "95c8d1174b94575267159f4b3c937bc575252a0cc00d346b92d868f54d44d1ab",
+      "tagTarballSha256": "95c8d1174b94575267159f4b3c937bc575252a0cc00d346b92d868f54d44d1ab",
+      "tarballHashMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-arm64-gnu",
+      "dryRunBinarySha256": "0962b33177cf67e99f8eda52e2db3278a637978a094f38d5b7eea8cf68677c26",
+      "tagBinarySha256": "0962b33177cf67e99f8eda52e2db3278a637978a094f38d5b7eea8cf68677c26",
+      "binaryHashMatches": true,
+      "dryRunTarballSha256": "f2ff8d12aeeee84b67048d81d61505e79e3a6e38ac245420b16376f45bd288ec",
+      "tagTarballSha256": "f2ff8d12aeeee84b67048d81d61505e79e3a6e38ac245420b16376f45bd288ec",
+      "tarballHashMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-musl",
+      "dryRunBinarySha256": "83ddf8a3aae473da9412ff00db1800ba51489dba9eb0c01c930481eb773e70e4",
+      "tagBinarySha256": "87ffb8f8f5c96ed7e9842fc39ed17fee04318a13549069abff36a00a0f934bbb",
+      "binaryHashMatches": false,
+      "dryRunTarballSha256": "dafcc82054b96de4109d955efcff868502ec8a5df2eb88462fae80e82338468d",
+      "tagTarballSha256": "069b9ef6042bfc5e24ce425a7a981c046fdb970966bec597dc91a7d852cb8fac",
+      "tarballHashMatches": false
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image",
+      "dryRunBinarySha256": null,
+      "tagBinarySha256": null,
+      "binaryHashMatches": null,
+      "dryRunTarballSha256": "e55946384cc600715b5dea0585ab29239a8089f94b1974066fd77d436eaf1cce",
+      "tagTarballSha256": "e55946384cc600715b5dea0585ab29239a8089f94b1974066fd77d436eaf1cce",
+      "tarballHashMatches": true
+    }
+  ]
+}

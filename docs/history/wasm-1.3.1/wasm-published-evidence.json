@@ -1,0 +1,749 @@
+{
+  "generatedAt": "2026-09-24T11:55:31.403Z",
+  "sourceSha": "ed873ffb729b0a6bb2214ceedcc2338d66b34809",
+  "publishedVersion": "1.3.1",
+  "sourceDirty": false,
+  "sourceFilesSha256": "72533cdfb122e3f7f8ac8d41d061639354dd6e0a89b3736cc9ee1387ca35f002",
+  "command": "node test/benchmarks/wasm-upload-comparison.bench.js --runtime all --version 1.3.1",
+  "node": "v24.2.0",
+  "npm": "11.3.0",
+  "os": "darwin",
+  "arch": "arm64",
+  "registry": "https://registry.npmjs.org/",
+  "packages": {
+    "@alberteinshutoin/lazy-image-wasm": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.3.1.tgz",
+      "integrity": "sha512-80yry+i323threLO1+cl4BkxBIknDBWPgRiQ08Jt3Z98cUfJNZV5WKKCrsfwpcd8fCKC7EhuaDkXrLAxXsxcOw=="
+    },
+    "@jsquash/jpeg": {
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/jpeg/-/jpeg-1.6.0.tgz",
+      "integrity": "sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA=="
+    },
+    "@jsquash/png": {
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/png/-/png-3.1.1.tgz",
+      "integrity": "sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw=="
+    },
+    "@jsquash/resize": {
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/@jsquash/resize/-/resize-2.1.1.tgz",
+      "integrity": "sha512-0R5UL1ZLHUT+carjVikcE1QfA+kfNQ2YamYyGVRmhfh4zttU5EY3bQBGxPIPtY2xIAw1P4Kgyxm2xrceRw1r2w=="
+    },
+    "@jsquash/webp": {
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@jsquash/webp/-/webp-1.5.0.tgz",
+      "integrity": "sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw=="
+    }
+  },
+  "importPath": "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-N5G9KV/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+  "isolatedInstall": "/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-N5G9KV",
+  "shim": "Node ImageData class only; browser uses native ImageData",
+  "runtimeClassification": "Node process or Chrome DedicatedWorkerGlobalScope; metrics.runtime is not runtime proof",
+  "fixtures": [
+    {
+      "id": "jpeg-webp",
+      "input": "test/fixtures/test_3.2MB_5000x5000.jpg",
+      "generatedFrom": null,
+      "inputBytes": 3371242,
+      "inputSha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "webp",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 500000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "png-jpeg",
+      "input": "test/fixtures/test_4.5MB_5000x5000.png",
+      "generatedFrom": null,
+      "inputBytes": 4702925,
+      "inputSha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5",
+      "inputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 1600,
+        "maxHeight": 1600,
+        "targetBytes": 450000,
+        "minQuality": 45,
+        "maxQuality": 90,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    },
+    {
+      "id": "metadata-budget",
+      "input": "artifacts/benchmark/wasm-metadata-input.jpg",
+      "generatedFrom": "test/benchmarks/corpus/images/metadata-1.jpg + keepMetadata() + withXmp()",
+      "inputBytes": 7343,
+      "inputSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "inputMetadata": {
+        "exif": true,
+        "gpsTag": true,
+        "xmp": true,
+        "icc": true
+      },
+      "options": {
+        "format": "jpeg",
+        "maxWidth": 320,
+        "maxHeight": 240,
+        "targetBytes": 30000,
+        "minQuality": 45,
+        "maxQuality": 86,
+        "qualityFloorPolicy": "best-effort",
+        "output": "arrayBuffer"
+      }
+    }
+  ],
+  "nodeResults": [
+    {
+      "id": "jpeg-webp",
+      "status": "PASS",
+      "optimizerCreationMs": 7.548790999999937,
+      "firstMs": 3041.650292,
+      "warmMs": [
+        2392.826375,
+        2367.3357920000008
+      ],
+      "warmMedianMs": 2380.0810835,
+      "metrics": {
+        "version": "1.3.1",
+        "runtime": "browser",
+        "bytesIn": 3371242,
+        "bytesOut": 328690,
+        "formatIn": "jpeg",
+        "formatOut": "webp",
+        "widthIn": 5000,
+        "heightIn": 5000,
+        "widthOut": 1600,
+        "heightOut": 1600,
+        "qualityUsed": 86,
+        "budgetMet": true,
+        "targetBytes": 500000,
+        "instantiateMs": 7.51279199999999,
+        "decodeMs": 275.051833,
+        "opsMs": 1260.805958,
+        "encodeMs": 1505.3668750000002,
+        "totalMs": 3041.45475,
+        "firstEncodeMs": 235.24458300000015,
+        "metadataStripped": true,
+        "policyViolations": [],
+        "memory": {
+          "source": "unavailable"
+        }
+      },
+      "output": {
+        "sha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec",
+        "bytes": 328690,
+        "format": "webp",
+        "width": 1600,
+        "height": 1600,
+        "metadata": {
+          "exif": false,
+          "xmp": false,
+          "icc": false
+        },
+        "artifact": "artifacts/benchmark/wasm-node-jpeg-webp.webp"
+      },
+      "budget": null
+    },
+    {
+      "id": "png-jpeg",
+      "status": "PASS",
+      "optimizerCreationMs": 7.548790999999937,
+      "firstMs": 1844.942167000001,
+      "warmMs": [
+        1782.3839580000003,
+        1783.4137499999997
+      ],
+      "warmMedianMs": 1782.898854,
+      "metrics": {
+        "version": "1.3.1",
+        "runtime": "browser",
+        "bytesIn": 4702925,
+        "bytesOut": 430035,
+        "formatIn": "png",
+        "formatOut": "jpeg",
+        "widthIn": 5000,
+        "heightIn": 5000,
+        "widthOut": 1600,
+        "heightOut": 1600,
+        "qualityUsed": 88,
+        "budgetMet": true,
+        "targetBytes": 450000,
+        "instantiateMs": 7.51279199999999,
+        "decodeMs": 194.70300000000134,
+        "opsMs": 657.1681250000001,
+        "encodeMs": 993.0280830000011,
+        "totalMs": 1844.9235829999998,
+        "firstEncodeMs": 131.39183299999968,
+        "metadataStripped": true,
+        "policyViolations": [],
+        "memory": {
+          "source": "unavailable"
+        }
+      },
+      "output": {
+        "sha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a",
+        "bytes": 430035,
+        "format": "jpeg",
+        "width": 1600,
+        "height": 1600,
+        "metadata": {
+          "exif": false,
+          "xmp": false,
+          "icc": false
+        },
+        "artifact": "artifacts/benchmark/wasm-node-png-jpeg.jpg"
+      },
+      "budget": null
+    },
+    {
+      "id": "metadata-budget",
+      "status": "PASS",
+      "optimizerCreationMs": 7.548790999999937,
+      "firstMs": 32.201750000000175,
+      "warmMs": [
+        31.665250000000015,
+        31.53045799999927
+      ],
+      "warmMedianMs": 31.597853999999643,
+      "metrics": {
+        "version": "1.3.1",
+        "runtime": "browser",
+        "bytesIn": 7343,
+        "bytesOut": 5886,
+        "formatIn": "jpeg",
+        "formatOut": "jpeg",
+        "widthIn": 240,
+        "heightIn": 320,
+        "widthOut": 180,
+        "heightOut": 240,
+        "qualityUsed": 86,
+        "budgetMet": true,
+        "targetBytes": 30000,
+        "instantiateMs": 7.51279199999999,
+        "decodeMs": 1.1152500000007421,
+        "opsMs": 4.893500000000131,
+        "encodeMs": 26.142165999999634,
+        "totalMs": 32.178791000000274,
+        "firstEncodeMs": 3.5656250000010914,
+        "metadataStripped": true,
+        "policyViolations": [],
+        "memory": {
+          "source": "unavailable"
+        }
+      },
+      "output": {
+        "sha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0",
+        "bytes": 5886,
+        "format": "jpeg",
+        "width": 180,
+        "height": 240,
+        "metadata": {
+          "exif": false,
+          "xmp": false,
+          "icc": false
+        },
+        "artifact": "artifacts/benchmark/wasm-node-metadata-budget.jpg"
+      },
+      "budget": {
+        "bestEffort": {
+          "bytesOut": 3078,
+          "budgetMet": false,
+          "wallMs": 8.986832999999024,
+          "output": {
+            "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
+            "bytes": 3078,
+            "format": "jpeg",
+            "width": 180,
+            "height": 240,
+            "metadata": {
+              "exif": false,
+              "xmp": false,
+              "icc": false
+            },
+            "artifact": "artifacts/benchmark/wasm-node-metadata-budget-best-effort.jpg"
+          }
+        },
+        "strict": {
+          "expectedRejection": true,
+          "code": "E502",
+          "wallMs": 8.988707999998951
+        }
+      }
+    }
+  ],
+  "nodeTotals": {
+    "imageConversionsPassed": 4,
+    "imageConversionsAttempted": 4,
+    "budgetMet": 3,
+    "budgetAttempts": 4,
+    "expectedStrictRejections": 1,
+    "strictAttempts": 1
+  },
+  "browserResults": {
+    "chromeVersion": "Google Chrome 153.0.8010.53",
+    "browserVersion": "153.0.8010.53",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+    "setup": [
+      {
+        "case": "jpeg-webp",
+        "type": "setup",
+        "assetFetchMs": 31.900000002235174,
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {
+          "jpegDecode": 166470,
+          "jpegEncode": 251524,
+          "pngDecode": 181088,
+          "resize": 34545,
+          "webpEncode": 281261
+        }
+      },
+      {
+        "case": "png-jpeg",
+        "type": "setup",
+        "assetFetchMs": 27.5,
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {
+          "jpegDecode": 166470,
+          "jpegEncode": 251524,
+          "pngDecode": 181088,
+          "resize": 34545,
+          "webpEncode": 281261
+        }
+      },
+      {
+        "case": "metadata-budget",
+        "type": "setup",
+        "assetFetchMs": 27.5,
+        "workerScope": "DedicatedWorkerGlobalScope",
+        "hasNativeImageData": true,
+        "hasWebAssembly": true,
+        "assetBytes": {
+          "jpegDecode": 166470,
+          "jpegEncode": 251524,
+          "pngDecode": 181088,
+          "resize": 34545,
+          "webpEncode": 281261
+        }
+      }
+    ],
+    "requests": [
+      {
+        "url": "/",
+        "rawBytes": 113,
+        "transferredBodyBytes": 114,
+        "gzip": true
+      },
+      {
+        "url": "/main.js",
+        "rawBytes": 3368,
+        "transferredBodyBytes": 1329,
+        "gzip": true
+      },
+      {
+        "url": "/config.json",
+        "rawBytes": 635,
+        "transferredBodyBytes": 233,
+        "gzip": true
+      },
+      {
+        "url": "/input/jpeg-webp",
+        "rawBytes": 3371242,
+        "transferredBodyBytes": 1934315,
+        "gzip": true
+      },
+      {
+        "url": "/worker.js",
+        "rawBytes": 327175,
+        "transferredBodyBytes": 68788,
+        "gzip": true
+      },
+      {
+        "url": "/assets/mozjpeg_dec.wasm",
+        "rawBytes": 166470,
+        "transferredBodyBytes": 63350,
+        "gzip": true
+      },
+      {
+        "url": "/assets/mozjpeg_enc.wasm",
+        "rawBytes": 251524,
+        "transferredBodyBytes": 59051,
+        "gzip": true
+      },
+      {
+        "url": "/assets/squoosh_png_bg.wasm",
+        "rawBytes": 181088,
+        "transferredBodyBytes": 84183,
+        "gzip": true
+      },
+      {
+        "url": "/assets/squoosh_resize_bg.wasm",
+        "rawBytes": 34545,
+        "transferredBodyBytes": 16893,
+        "gzip": true
+      },
+      {
+        "url": "/assets/webp_enc.wasm",
+        "rawBytes": 281261,
+        "transferredBodyBytes": 113951,
+        "gzip": true
+      },
+      {
+        "url": "/input/png-jpeg",
+        "rawBytes": 4702925,
+        "transferredBodyBytes": 4577326,
+        "gzip": true
+      },
+      {
+        "url": "/worker.js",
+        "rawBytes": 327175,
+        "transferredBodyBytes": 68788,
+        "gzip": true
+      },
+      {
+        "url": "/assets/mozjpeg_dec.wasm",
+        "rawBytes": 166470,
+        "transferredBodyBytes": 63350,
+        "gzip": true
+      },
+      {
+        "url": "/assets/mozjpeg_enc.wasm",
+        "rawBytes": 251524,
+        "transferredBodyBytes": 59051,
+        "gzip": true
+      },
+      {
+        "url": "/assets/squoosh_png_bg.wasm",
+        "rawBytes": 181088,
+        "transferredBodyBytes": 84183,
+        "gzip": true
+      },
+      {
+        "url": "/assets/squoosh_resize_bg.wasm",
+        "rawBytes": 34545,
+        "transferredBodyBytes": 16893,
+        "gzip": true
+      },
+      {
+        "url": "/assets/webp_enc.wasm",
+        "rawBytes": 281261,
+        "transferredBodyBytes": 113951,
+        "gzip": true
+      },
+      {
+        "url": "/input/metadata-budget",
+        "rawBytes": 7343,
+        "transferredBodyBytes": 5419,
+        "gzip": true
+      },
+      {
+        "url": "/worker.js",
+        "rawBytes": 327175,
+        "transferredBodyBytes": 68788,
+        "gzip": true
+      },
+      {
+        "url": "/assets/mozjpeg_dec.wasm",
+        "rawBytes": 166470,
+        "transferredBodyBytes": 63350,
+        "gzip": true
+      },
+      {
+        "url": "/assets/mozjpeg_enc.wasm",
+        "rawBytes": 251524,
+        "transferredBodyBytes": 59051,
+        "gzip": true
+      },
+      {
+        "url": "/assets/squoosh_png_bg.wasm",
+        "rawBytes": 181088,
+        "transferredBodyBytes": 84183,
+        "gzip": true
+      },
+      {
+        "url": "/assets/squoosh_resize_bg.wasm",
+        "rawBytes": 34545,
+        "transferredBodyBytes": 16893,
+        "gzip": true
+      },
+      {
+        "url": "/assets/webp_enc.wasm",
+        "rawBytes": 281261,
+        "transferredBodyBytes": 113951,
+        "gzip": true
+      }
+    ],
+    "results": [
+      {
+        "id": "jpeg-webp",
+        "status": "PASS",
+        "coldFromBeforeWorkerMs": 3339.800000000745,
+        "coldMessageMs": 3339.60000000149,
+        "warmMs": [
+          2137.599999997765,
+          2148.699999999255
+        ],
+        "warmMedianMs": 2143.14999999851,
+        "metrics": {
+          "version": "1.3.1",
+          "runtime": "browser-worker",
+          "bytesIn": 3371242,
+          "bytesOut": 328690,
+          "formatIn": "jpeg",
+          "formatOut": "webp",
+          "widthIn": 5000,
+          "heightIn": 5000,
+          "widthOut": 1600,
+          "heightOut": 1600,
+          "qualityUsed": 86,
+          "budgetMet": true,
+          "targetBytes": 500000,
+          "instantiateMs": 6.100000001490116,
+          "decodeMs": 261.4000000022352,
+          "opsMs": 1539,
+          "encodeMs": 1489.699999999255,
+          "totalMs": 3290.199999999255,
+          "firstEncodeMs": 251.59999999776483,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec",
+          "bytes": 328690,
+          "format": "webp",
+          "width": 1600,
+          "height": 1600,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-browser-jpeg-webp.webp"
+        },
+        "budget": null
+      },
+      {
+        "id": "png-jpeg",
+        "status": "PASS",
+        "coldFromBeforeWorkerMs": 2648.599999997765,
+        "coldMessageMs": 2648.599999997765,
+        "warmMs": [
+          1532.7000000029802,
+          1540.0999999977648
+        ],
+        "warmMedianMs": 1536.4000000003725,
+        "metrics": {
+          "version": "1.3.1",
+          "runtime": "browser-worker",
+          "bytesIn": 4702925,
+          "bytesOut": 430035,
+          "formatIn": "png",
+          "formatOut": "jpeg",
+          "widthIn": 5000,
+          "heightIn": 5000,
+          "widthOut": 1600,
+          "heightOut": 1600,
+          "qualityUsed": 88,
+          "budgetMet": true,
+          "targetBytes": 450000,
+          "instantiateMs": 3.900000002235174,
+          "decodeMs": 198.40000000223517,
+          "opsMs": 1488.8999999985099,
+          "encodeMs": 919.6000000014901,
+          "totalMs": 2607,
+          "firstEncodeMs": 122.59999999776483,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a",
+          "bytes": 430035,
+          "format": "jpeg",
+          "width": 1600,
+          "height": 1600,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-browser-png-jpeg.jpg"
+        },
+        "budget": null
+      },
+      {
+        "id": "metadata-budget",
+        "status": "PASS",
+        "coldFromBeforeWorkerMs": 88.60000000149012,
+        "coldMessageMs": 88.60000000149012,
+        "warmMs": [
+          31.899999998509884,
+          31
+        ],
+        "warmMedianMs": 31.449999999254942,
+        "metrics": {
+          "version": "1.3.1",
+          "runtime": "browser-worker",
+          "bytesIn": 7343,
+          "bytesOut": 5886,
+          "formatIn": "jpeg",
+          "formatOut": "jpeg",
+          "widthIn": 240,
+          "heightIn": 320,
+          "widthOut": 180,
+          "heightOut": 240,
+          "qualityUsed": 86,
+          "budgetMet": true,
+          "targetBytes": 30000,
+          "instantiateMs": 4.399999998509884,
+          "decodeMs": 3,
+          "opsMs": 10.899999998509884,
+          "encodeMs": 32.399999998509884,
+          "totalMs": 46.399999998509884,
+          "firstEncodeMs": 8.699999999254942,
+          "metadataStripped": true,
+          "policyViolations": [],
+          "memory": {
+            "source": "unavailable"
+          }
+        },
+        "output": {
+          "sha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0",
+          "bytes": 5886,
+          "format": "jpeg",
+          "width": 180,
+          "height": 240,
+          "metadata": {
+            "exif": false,
+            "xmp": false,
+            "icc": false
+          },
+          "artifact": "artifacts/benchmark/wasm-browser-metadata-budget.jpg"
+        },
+        "budget": {
+          "bestEffort": {
+            "bytesOut": 3078,
+            "budgetMet": false,
+            "wallMs": 8.800000000745058,
+            "output": {
+              "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
+              "bytes": 3078,
+              "format": "jpeg",
+              "width": 180,
+              "height": 240,
+              "metadata": {
+                "exif": false,
+                "xmp": false,
+                "icc": false
+              },
+              "artifact": "artifacts/benchmark/wasm-browser-metadata-budget-best-effort.jpg"
+            }
+          },
+          "strict": {
+            "expectedRejection": true,
+            "code": "E502",
+            "wallMs": 8.800000000745058
+          }
+        }
+      }
+    ],
+    "stderr": "Trying to load the allocator multiple times. This is *not* supported.\n[80994:1058314:0924/205545.767214:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205545.767433:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205545.772694:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205545.772745:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205545.773962:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205545.774018:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205545.774109:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205545.774155:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205545.774248:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205545.774294:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205545.777757:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205545.777821:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205547.805597:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205547.805653:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205547.882038:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205547.882094:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205547.912948:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205547.913012:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205547.951389:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205547.951441:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205547.979034:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205547.979091:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80988:1058299:0924/205547.998140:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\n[80994:1058314:0924/205548.024417:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205548.024468:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058314:0924/205548.050716:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n[80994:1058376:0924/205548.050762:ERROR:ui/display/mac/cv_display_link_mac.mm:195] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\nCreated TensorFlow Lite XNNPACK delegate for CPU.",
+    "totals": {
+      "imageConversionsPassed": 4,
+      "imageConversionsAttempted": 4,
+      "budgetMet": 3,
+      "budgetAttempts": 4,
+      "expectedStrictRejections": 1,
+      "strictAttempts": 1
+    },
+    "delivery": {
+      "/main.js": {
+        "rawBytes": 3368,
+        "gzipBytes": 1329,
+        "sha256": "4c8e54ba9d544b38445d372fbdb09bc5f3ee8ab1639d41bc6c138a0fc1e22ef5"
+      },
+      "/worker.js": {
+        "rawBytes": 327175,
+        "gzipBytes": 68788,
+        "sha256": "b458b5fd7403853f2262dbe2ba1b577c42ff9f74e2d1f544217c6d91ecf9013c"
+      },
+      "/assets/mozjpeg_dec.wasm": {
+        "rawBytes": 166470,
+        "gzipBytes": 63350,
+        "sha256": "a7c4b12169817e779ff4af137981393ae924944e167ad1bd95747c9199162d3e"
+      },
+      "/assets/mozjpeg_enc.wasm": {
+        "rawBytes": 251524,
+        "gzipBytes": 59051,
+        "sha256": "24d4177f1c4963e2058b107189249651c61fdef125570e79b1dfb63c8bb49326"
+      },
+      "/assets/squoosh_png_bg.wasm": {
+        "rawBytes": 181088,
+        "gzipBytes": 84183,
+        "sha256": "263d6e658808a74b72a1a99c5cc1d619237e70c150db6e41d5d84d3d117ab9be"
+      },
+      "/assets/squoosh_resize_bg.wasm": {
+        "rawBytes": 34545,
+        "gzipBytes": 16893,
+        "sha256": "5b1f702d502c4d0a70b99f78691bd554d566ba95859e4c57af5435955a1d74a5"
+      },
+      "/assets/webp_enc.wasm": {
+        "rawBytes": 281261,
+        "gzipBytes": 113951,
+        "sha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7"
+      }
+    },
+    "packageDirectoryBytes": 31381,
+    "bundlePackageInputs": [
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-N5G9KV/node_modules/@alberteinshutoin/lazy-image-wasm/shared.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-N5G9KV/node_modules/@alberteinshutoin/lazy-image-wasm/browser.js",
+      "/private/var/folders/72/r_2g2yf93rs0b0t31vf79m3c0000gn/T/lazy-image-wasm-evidence-N5G9KV/node_modules/@alberteinshutoin/lazy-image-wasm/worker.js"
+    ],
+    "requiredAssets": [
+      "/main.js",
+      "/worker.js",
+      "/assets/mozjpeg_dec.wasm",
+      "/assets/mozjpeg_enc.wasm",
+      "/assets/squoosh_png_bg.wasm",
+      "/assets/squoosh_resize_bg.wasm",
+      "/assets/webp_enc.wasm"
+    ],
+    "additionalChunks": [],
+    "deploymentRawBytes": 1245431,
+    "deploymentGzipBytes": 407545,
+    "firstCaseTransferredBodyBytes": 407545,
+    "totalRunTransferredBodyBytes": 1219977,
+    "cache": "fresh Chrome profile, HTTP Cache-Control: no-store; each case uses a new Worker, warm samples reuse it",
+    "bundleTool": "esbuild 0.25.10",
+    "loadMode": "explicit wasmModules injection from Worker HTTP fetch"
+  },
+  "verdict": "PASS"
+}

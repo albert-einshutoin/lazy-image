@@ -1,0 +1,10 @@
+file:///private/tmp/lazy-image-142-evidence/module-candidate/module-smoke.mjs:21
+  const metadata = lib.inspect(output);
+                       ^
+
+Error: Failed to create reference from Buffer
+    at file:///private/tmp/lazy-image-142-evidence/module-candidate/module-smoke.mjs:21:24 {
+  code: 'InvalidArg'
+}
+
+Node.js v24.2.0

@@ -1,0 +1,5 @@
+
+> @alberteinshutoin/lazy-image@1.4.2 release:check
+> node scripts/check-release-policy.js
+
+Release policy check passed for 1.4.2: no breaking marker found.

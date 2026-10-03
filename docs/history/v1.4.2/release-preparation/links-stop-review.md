@@ -1,0 +1,1 @@
+ALLOW: 2リンクはいずれも指定baseの固定GitHub blob URLへ正しく変更され、対応するファイルも当該commitに存在します。

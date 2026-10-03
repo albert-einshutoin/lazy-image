@@ -1,0 +1,63 @@
+Commands succeeded: npm run test:pack-contract (15 files), npm run test:pack-metadata (9/9), npm run test:types, npm run test:wasm:package (16 cases), node test/integration/format-matrix.test.js (21/21), node test/integration/golden.test.js (6/6).
+Generated loader equals HEAD:index.js with only 1.4.1 -> 1.4.2 substitution. index.d.ts unchanged. Unrelated npm lock entries identical to HEAD. Root/Fuzz locked metadata succeeded.
+> @alberteinshutoin/lazy-image@1.4.2 test:wasm:package
+> npm --workspace @alberteinshutoin/lazy-image-wasm test
+
+
+> @alberteinshutoin/lazy-image-wasm@1.4.2 test
+> node test/run.mjs
+
+ok - exports the workspace package version
+ok - uses the native error category vocabulary and code semantics
+ok - keeps every non-E5xx Wasm throw code in the native code registry
+ok - optimizes JPEG input to JPEG with a target byte budget
+ok - optimizes JPEG input to WebP with best-effort target search
+ok - optimizes PNG input to JPEG for upload conversion
+ok - cover fit produces exact target dimensions
+ok - strict target byte policy fails with a Wasm resource-limit error
+ok - limits.timeoutMs uses the native firewall violation contract
+ok - unsupported input format fails with native E111 semantics
+Premature end of JPEG file
+JPEG datastream contains no image
+ok - decode diagnosis leaves Wasm delivery and input corruption as separate checks
+ok - explicit Wasm compilation failure identifies its codec without inventing HTTP facts
+ok - Worker sends a cloneable diagnosis for unknown throw values
+ok - edge entrypoint defaults to ArrayBuffer output
+ok - edge optimizer accepts precompiled WebAssembly.Module inputs
+Premature end of JPEG file
+JPEG datastream contains no image
+ok - edge example handler guards method and maps input errors to HTTP statuses
+=== Format Conversion Matrix Tests ===
+
+✅ format: JPEG -> JPEG
+✅ format: JPEG -> PNG
+✅ format: JPEG -> WebP
+✅ format: JPEG -> AVIF
+✅ format: WebP -> JPEG
+✅ format: WebP -> PNG
+✅ format: WebP -> WebP
+✅ format: WebP -> AVIF
+✅ format: PNG  -> JPEG
+✅ format: PNG  -> PNG
+✅ format: PNG  -> WebP
+✅ format: PNG  -> AVIF
+✅ format: AVIF input fails with a decode error until AVIF decode is supported
+✅ resize fit: inside (both dims <= target)
+✅ resize fit: cover (both dims >= target)
+✅ resize fit: fill (exact target dimensions)
+✅ normalizePixelFormat: JPEG produces valid output
+✅ normalizePixelFormat: PNG produces valid output
+✅ normalizePixelFormat: WebP produces valid output
+✅ normalizePixelFormat: grayscale input produces valid output
+✅ normalizePixelFormat: chainable with other operations
+
+=== Results: 21 passed, 0 failed ===
+=== Golden Test Suite ===
+✅ jpeg_resize_inside_1200_q82 | hash=055beced… | 1200x1200 | SSIM=0.9949 PSNR=41.23 | sizeRatio=0.706
+✅ png_cover_rotate_grayscale | hash=6c8da0a7… | 1600x900 | SSIM=0.9199 PSNR=22.75 | sizeRatio=0.410
+✅ webp_cover_flip | hash=f51e648b… | 800x800 | SSIM=0.9916 PSNR=42.21 | sizeRatio=0.896
+✅ png_cover_no_grayscale | hash=1c1b8537… | 1600x900 | SSIM=0.9987 PSNR=58.53 | sizeRatio=0.572
+✅ avif_cover_rotate_grayscale | hash=85091a8d… | 1200x800 | SSIM=0.9156 PSNR=22.66 | sizeRatio=1.339
+✅ jpeg_to_png_flipv | hash=86a5cbec… | 2000x2000 | SSIM=0.9993 PSNR=60.75 | sizeRatio=0.531
+
+✅ All golden cases passed

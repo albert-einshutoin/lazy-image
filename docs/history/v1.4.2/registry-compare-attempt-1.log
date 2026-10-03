@@ -1,0 +1,70 @@
+npm error code E404
+npm error 404 No match found for version 1.4.2
+npm error 404
+npm error 404  '@alberteinshutoin/lazy-image-darwin-x64@1.4.2' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /Volumes/Satechi/caches/npm/_logs/2026-10-02T07_58_04_147Z-debug-0.log
+node:internal/errors:983
+  const err = new Error(message);
+              ^
+
+Error: Command failed: npm view @alberteinshutoin/lazy-image-darwin-x64@1.4.2 --json --registry=https://registry.npmjs.org/
+npm error code E404
+npm error 404 No match found for version 1.4.2
+npm error 404
+npm error 404  '@alberteinshutoin/lazy-image-darwin-x64@1.4.2' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /Volumes/Satechi/caches/npm/_logs/2026-10-02T07_58_04_147Z-debug-0.log
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:892:11)
+    at execFileSync (node:child_process:928:15)
+    at json (file:///private/tmp/lazy-image-142-evidence/compare-registry.mjs:9:39)
+    at file:///private/tmp/lazy-image-142-evidence/compare-registry.mjs:14:17
+    at ModuleJob.run (node:internal/modules/esm/module_job:358:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '{\n' +
+      '  "error": {\n' +
+      '    "code": "E404",\n' +
+      '    "summary": "No match found for version 1.4.2",\n' +
+      `    "detail": "'@alberteinshutoin/lazy-image-darwin-x64@1.4.2' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url."\n` +
+      '  }\n' +
+      '}\n',
+    'npm error code E404\n' +
+      'npm error 404 No match found for version 1.4.2\n' +
+      'npm error 404\n' +
+      "npm error 404  '@alberteinshutoin/lazy-image-darwin-x64@1.4.2' is not in this registry.\n" +
+      'npm error 404\n' +
+      'npm error 404 Note that you can also install from a\n' +
+      'npm error 404 tarball, folder, http url, or git url.\n' +
+      'npm error A complete log of this run can be found in: /Volumes/Satechi/caches/npm/_logs/2026-10-02T07_58_04_147Z-debug-0.log\n'
+  ],
+  pid: 1099,
+  stdout: '{\n' +
+    '  "error": {\n' +
+    '    "code": "E404",\n' +
+    '    "summary": "No match found for version 1.4.2",\n' +
+    `    "detail": "'@alberteinshutoin/lazy-image-darwin-x64@1.4.2' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url."\n` +
+    '  }\n' +
+    '}\n',
+  stderr: 'npm error code E404\n' +
+    'npm error 404 No match found for version 1.4.2\n' +
+    'npm error 404\n' +
+    "npm error 404  '@alberteinshutoin/lazy-image-darwin-x64@1.4.2' is not in this registry.\n" +
+    'npm error 404\n' +
+    'npm error 404 Note that you can also install from a\n' +
+    'npm error 404 tarball, folder, http url, or git url.\n' +
+    'npm error A complete log of this run can be found in: /Volumes/Satechi/caches/npm/_logs/2026-10-02T07_58_04_147Z-debug-0.log\n'
+}
+
+Node.js v24.2.0

@@ -1,0 +1,419 @@
+{
+  "label": "candidate",
+  "revision": "1295b878aa13bf84ab1ba830a359762c606c49bb",
+  "runtime": {
+    "arch": "x64",
+    "platform": "linux",
+    "node": "v22.23.2",
+    "sharp": "0.35.4",
+    "binding": "lazy-image.linux-x64-gnu.node",
+    "bindingSha256": "68fb48a0d5eb8d4cf6fc616d6a7e1a655da6c3f66f71c3e08aca905ab41f2374",
+    "rayonThreads": "4",
+    "rust": "1.88.0",
+    "sdk": null,
+    "timing": "one cold and five sequential warm calls, ImageEngine.from through awaited toBufferWithMetrics(png); opsMs/encodeMs/totalMs are native metrics",
+    "normalization": "sharp toColourspace(srgb) ensureAlpha raw uchar RGBA"
+  },
+  "cases": [
+    {
+      "id": "photo_inside",
+      "resize": {
+        "width": 237,
+        "height": 157,
+        "fit": "inside"
+      },
+      "input": {
+        "bytes": 240512,
+        "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+        "width": 451,
+        "height": 300,
+        "channels": 3
+      },
+      "output": {
+        "bytes": 65733,
+        "sha256": "c70946a5912591d78fc048fdd46c1a79dab4700c6354fe88d1f827594ac060eb",
+        "width": 236,
+        "height": 157,
+        "pixelSha256": "e93b5d4740985458ab627b6dc4e8a616c6e17c0af4dd4b1599661988b4090bb3",
+        "alpha": {
+          "transparent": 0,
+          "semi": 0,
+          "opaque": 37052,
+          "hiddenRgb": 0
+        }
+      },
+      "cold": {
+        "wallMs": 51.496655,
+        "metrics": {
+          "version": "1.1.0",
+          "decodeMs": 2.0456179999999997,
+          "opsMs": 0.9911169999999999,
+          "encodeMs": 47.483140999999996,
+          "totalMs": 50.526739,
+          "peakRss": 124510208,
+          "cpuTime": 0.11966099999999999,
+          "processingTime": 0.050526739,
+          "bytesIn": 240512,
+          "bytesOut": 65733,
+          "compressionRatio": 0.2733044505055881,
+          "formatOut": "png",
+          "iccPreserved": false,
+          "iccOutcome": "policy-stripped",
+          "metadataStripped": true,
+          "policyViolations": [],
+          "formatIn": "png"
+        }
+      },
+      "warm": {
+        "wallMs": {
+          "median": 50.878489,
+          "min": 47.552151,
+          "max": 52.225352,
+          "values": [
+            52.225352,
+            50.878489,
+            51.762648,
+            47.552151,
+            48.876691
+          ]
+        },
+        "opsMs": {
+          "median": 0.530579,
+          "min": 0.471109,
+          "max": 0.6062109999999999,
+          "values": [
+            0.530579,
+            0.471109,
+            0.510763,
+            0.6005010000000001,
+            0.6062109999999999
+          ]
+        },
+        "encodeMs": {
+          "median": 47.772462000000004,
+          "min": 43.600729,
+          "max": 49.10018,
+          "values": [
+            49.10018,
+            47.772462000000004,
+            48.67682,
+            43.600729,
+            44.684112
+          ]
+        },
+        "totalMs": {
+          "median": 50.280762,
+          "min": 47.291606,
+          "max": 51.661118,
+          "values": [
+            51.661118,
+            50.280762,
+            51.236736,
+            47.291606,
+            48.435632999999996
+          ]
+        }
+      }
+    },
+    {
+      "id": "ui_odd_fill",
+      "resize": {
+        "width": 157,
+        "height": 91,
+        "fit": "fill"
+      },
+      "input": {
+        "bytes": 7610,
+        "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+        "width": 320,
+        "height": 240,
+        "channels": 3
+      },
+      "output": {
+        "bytes": 3364,
+        "sha256": "2900e56fda9b239e06e71ff09a8f1e9210a98bb35c3eca587fe5198ca8beb412",
+        "width": 157,
+        "height": 91,
+        "pixelSha256": "e6d2abe0f2fcd7c4e12a2d3a4ad59cbc3178551c05b55d1f23bc44cbb1c251b5",
+        "alpha": {
+          "transparent": 0,
+          "semi": 0,
+          "opaque": 14287,
+          "hiddenRgb": 0
+        }
+      },
+      "cold": {
+        "wallMs": 35.675228,
+        "metrics": {
+          "version": "1.1.0",
+          "decodeMs": 0.13064399999999998,
+          "opsMs": 0.342932,
+          "encodeMs": 35.03038,
+          "totalMs": 35.508063,
+          "peakRss": 145162240,
+          "cpuTime": 0.08654799999999996,
+          "processingTime": 0.035508063,
+          "bytesIn": 7610,
+          "bytesOut": 3364,
+          "compressionRatio": 0.44204993429697764,
+          "formatOut": "png",
+          "iccPreserved": false,
+          "iccOutcome": "absent",
+          "metadataStripped": false,
+          "policyViolations": [],
+          "formatIn": "png"
+        }
+      },
+      "warm": {
+        "wallMs": {
+          "median": 38.324041,
+          "min": 35.076589,
+          "max": 40.041103,
+          "values": [
+            40.041103,
+            38.324041,
+            35.076589,
+            39.566848,
+            36.578504
+          ]
+        },
+        "opsMs": {
+          "median": 0.37211500000000003,
+          "min": 0.304999,
+          "max": 0.37844,
+          "values": [
+            0.37271899999999997,
+            0.315669,
+            0.37211500000000003,
+            0.37844,
+            0.304999
+          ]
+        },
+        "encodeMs": {
+          "median": 37.666715,
+          "min": 34.317987,
+          "max": 39.299080000000004,
+          "values": [
+            39.299080000000004,
+            37.666715,
+            34.317987,
+            38.853646999999995,
+            35.958023999999995
+          ]
+        },
+        "totalMs": {
+          "median": 38.113539,
+          "min": 34.843097,
+          "max": 39.819784,
+          "values": [
+            39.819784,
+            38.113539,
+            34.843097,
+            39.381494,
+            36.400169000000005
+          ]
+        }
+      }
+    },
+    {
+      "id": "alpha_cover",
+      "resize": {
+        "width": 137,
+        "height": 95,
+        "fit": "cover"
+      },
+      "input": {
+        "bytes": 61394,
+        "sha256": "1706235121b55e8750c2cd7547d4b5b42b5a1f52ca1cdb49dec9e77b0b875bea",
+        "width": 160,
+        "height": 120,
+        "channels": 4
+      },
+      "output": {
+        "bytes": 5128,
+        "sha256": "ed9ca344652993840a510a1607907fbba691e81e2577da72e13b3ee494181101",
+        "width": 137,
+        "height": 95,
+        "pixelSha256": "950d28e2027654b6bb9b44689032dc57860a06a4db140540fb98bc1c24f97fcb",
+        "alpha": {
+          "transparent": 95,
+          "semi": 12825,
+          "opaque": 95,
+          "hiddenRgb": 0
+        }
+      },
+      "cold": {
+        "wallMs": 64.277994,
+        "metrics": {
+          "version": "1.1.0",
+          "decodeMs": 0.286715,
+          "opsMs": 0.5464359999999999,
+          "encodeMs": 63.251279,
+          "totalMs": 64.090363,
+          "peakRss": 146079744,
+          "cpuTime": 0.14936700000000003,
+          "processingTime": 0.064090363,
+          "bytesIn": 61394,
+          "bytesOut": 5128,
+          "compressionRatio": 0.08352607746685344,
+          "formatOut": "png",
+          "iccPreserved": false,
+          "iccOutcome": "absent",
+          "metadataStripped": false,
+          "policyViolations": [],
+          "formatIn": "png"
+        }
+      },
+      "warm": {
+        "wallMs": {
+          "median": 55.79271,
+          "min": 52.841794,
+          "max": 81.485056,
+          "values": [
+            81.485056,
+            63.401409,
+            54.051089,
+            52.841794,
+            55.79271
+          ]
+        },
+        "opsMs": {
+          "median": 0.465148,
+          "min": 0.460129,
+          "max": 0.878931,
+          "values": [
+            0.878931,
+            0.552892,
+            0.46124099999999996,
+            0.465148,
+            0.460129
+          ]
+        },
+        "encodeMs": {
+          "median": 54.790007,
+          "min": 51.828512,
+          "max": 80.068219,
+          "values": [
+            80.068219,
+            62.220825,
+            53.077873999999994,
+            51.828512,
+            54.790007
+          ]
+        },
+        "totalMs": {
+          "median": 55.574870999999995,
+          "min": 52.574053,
+          "max": 81.2316,
+          "values": [
+            81.2316,
+            63.136264,
+            53.820669,
+            52.574053,
+            55.574870999999995
+          ]
+        }
+      }
+    },
+    {
+      "id": "opaque_rgba_1mp_fill",
+      "resize": {
+        "width": 511,
+        "height": 341,
+        "fit": "fill"
+      },
+      "input": {
+        "bytes": 822669,
+        "sha256": "84834d6cc0379d2341d1cd140d9aea8a762d52327fb8ef8530c9ded919d68a5c",
+        "width": 1200,
+        "height": 900,
+        "channels": 4
+      },
+      "output": {
+        "bytes": 294933,
+        "sha256": "7b752dad9e8907da3a00d8aab6d9418b523361b784635146ffbb37ddfa54daaa",
+        "width": 511,
+        "height": 341,
+        "pixelSha256": "45c756aef645f5220a6d8a027e60e7684744658d8f5393f787bcf24370853c12",
+        "alpha": {
+          "transparent": 0,
+          "semi": 0,
+          "opaque": 174251,
+          "hiddenRgb": 0
+        }
+      },
+      "cold": {
+        "wallMs": 194.477191,
+        "metrics": {
+          "version": "1.1.0",
+          "decodeMs": 5.151393,
+          "opsMs": 3.512946,
+          "encodeMs": 185.015301,
+          "totalMs": 193.687595,
+          "peakRss": 179134464,
+          "cpuTime": 0.455603,
+          "processingTime": 0.193687595,
+          "bytesIn": 822669,
+          "bytesOut": 294933,
+          "compressionRatio": 0.3585074920776157,
+          "formatOut": "png",
+          "iccPreserved": false,
+          "iccOutcome": "absent",
+          "metadataStripped": false,
+          "policyViolations": [],
+          "formatIn": "png"
+        }
+      },
+      "warm": {
+        "wallMs": {
+          "median": 185.805342,
+          "min": 183.490198,
+          "max": 204.060991,
+          "values": [
+            185.870601,
+            204.060991,
+            185.805342,
+            183.490198,
+            184.604304
+          ]
+        },
+        "opsMs": {
+          "median": 3.450991,
+          "min": 2.648403,
+          "max": 4.147621,
+          "values": [
+            3.648472,
+            3.450991,
+            4.147621,
+            2.6677720000000003,
+            2.648403
+          ]
+        },
+        "encodeMs": {
+          "median": 176.606577,
+          "min": 175.645916,
+          "max": 195.376914,
+          "values": [
+            176.606577,
+            195.376914,
+            175.645916,
+            176.465493,
+            177.248527
+          ]
+        },
+        "totalMs": {
+          "median": 185.199678,
+          "min": 183.185769,
+          "max": 203.411732,
+          "values": [
+            185.199678,
+            203.411732,
+            185.35578999999998,
+            183.185769,
+            183.96157699999998
+          ]
+        }
+      }
+    }
+  ]
+}
