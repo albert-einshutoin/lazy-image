@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.3] - 2026-10-09
+
+Update with `npm install @alberteinshutoin/lazy-image@1.4.3 @alberteinshutoin/lazy-image-wasm@1.4.3`. The six native platform packages use the same version and are selected as optional dependencies of the main package.
+
+### Changed
+- Updated `libc` to 0.2.189 in the native and Fuzz lockfiles. The [saved compatibility evaluation](https://github.com/albert-einshutoin/lazy-image/blob/37777bbc0b4988e888390e72a9093f602b8908ea/docs/history/libc-0.2.189-evaluation/README.md) preserved platform lock/flock and resource-usage checks on the measured environments and did not reproduce a prior UB or crash. These checks do not claim a product bug fix or a general speedup.
+- Added platform-layer regression coverage for exclusive-lock contention and finite Unix resource-usage metrics that exercise the libc-backed flock and getrusage paths used by the engine.
+- Recorded the prior v1.4.2 publication verification separately from this release. Wasm implementation and codec dependencies are unchanged; its package version and `VERSION` are synchronized to 1.4.3.
+
+`oxipng` remains 10.1.1 in native and Fuzz; #833 remains on hold. #777, #835, #739, and other unevaluated Dependabot updates are excluded and require separate evaluation. This patch contains a dependency and verification update without a public contract change under the [SemVer policy](https://github.com/albert-einshutoin/lazy-image/blob/37777bbc0b4988e888390e72a9093f602b8908ea/docs/SEMVER_POLICY.md).
+
 ## [1.4.2] - 2026-10-02
 
 Update with `npm install @alberteinshutoin/lazy-image@1.4.2 @alberteinshutoin/lazy-image-wasm@1.4.2`. The six native platform packages use the same version and are selected as optional dependencies of the main package.
