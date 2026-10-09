@@ -1,0 +1,51 @@
+10.9.9
+
+added 2 packages in 4s
+{
+  "shasum": "930965937379f43d054be35cf5ac7dada3511ae4",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.4.3.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-KgMuYsItSOkUhW+6YIJClmE+ttQXZPE2JKUCcdrbp4BlcYtYbSGJnardzSGVFSXopWH+K//R+23eS5zuYsvLFw==",
+  "signatures": [
+    {
+      "sig": "MEQCICtTPtXU+IR5sZgoYPWR9plvmgot4ypOLSNwybHQVvkJAiBhzu7ZPkKIDBWdueXXZOzQeTNogI0rLSJw2Vazb4XttQ==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIDy1bLgvTaoBID2T7ir5PwHsxOxvyKkjm65/dKkJB1t2AiEAsGTNi8AdbERqPvip5P3ib59x1FH708qR/aM7p9Yq2gI="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.4.3",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 231385
+}
+{
+  "shasum": "bd631966fe30309a59f33ea425c4eae62991590a",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-arm64-gnu/-/lazy-image-linux-arm64-gnu-1.4.3.tgz",
+  "fileCount": 2,
+  "integrity": "sha512-G5zgQ1Xql9771Px00j00eP3/25fAO2QXn1wDDu825KhaH2Mz9rXzJWS7gblcWF4sp3Yr3k/CNhmegFzHarCpow==",
+  "signatures": [
+    {
+      "sig": "MEUCIQD/xdKImU4rwyx3pl0vc5/HWFOtDc3app1GxGQCrWoOiQIgBD1RNXRmj9GzAe7++uHkFX5HMPjGdR8Sn52HOARu6xE=",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEQCIFznjX1axx8uYwMtTxx8MfcRk8AO/fWgzjglZ8bgTmqRAiBrbWsmVhlqB8pXU+FkSa9NdVLVz7bczCGlYEQ7MMIH0w=="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image-linux-arm64-gnu@1.4.3",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 8461905
+}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.4.3","platform":"linux","arch":"arm64","fingerprint":"cdce16aac10ad7215e04c4a7b1146876d4e1a873b52a195c0f42e0f9d142f798"},"policy":{"preset":"publicUpload","fingerprint":"7db6a8f434e6d7a3ddf10581f9ae7b664b78b2a5d0b9cf27d67b3631b7e7c9f8","widths":[320,640],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"320/webp","path":"image-320.webp","format":"webp","width":320,"height":320,"bytes":12746,"quality":80,"iccOutcome":"absent","sha256":"44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"},{"id":"640/webp","path":"image-640.webp","format":"webp","width":640,"height":640,"bytes":35890,"quality":80,"iccOutcome":"absent","sha256":"01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"}],"delivery":{"srcsets":[{"format":"webp","value":"image-320.webp 320w, image-640.webp 640w"}]},"cacheKey":"f84ecc2e7402ae6f7bdeecfec16a531e9081ff4c4cd001c392b812a7e2467610"}
+registry-native-smoke: PASS linux-arm64-gnu v22.23.3

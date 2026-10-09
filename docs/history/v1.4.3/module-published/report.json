@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "version": "1.4.3",
+  "sourceSha": "61051e50269459097891b4622cf6ae593056ba3f",
+  "source": "published-registry",
+  "node": "v24.2.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mainEntry": "/private/tmp/li-143-module-pub/node_modules/@alberteinshutoin/lazy-image/index.js",
+  "binding": "/private/tmp/li-143-module-pub/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+  "bindingSha256": "4070eeb2ebe5ba4c36831b7561d4252f15cd716226f68c496dacfd4592457706",
+  "inputSha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+  "results": {
+    "cjs": {
+      "status": "PASS",
+      "output": "/private/tmp/li-143-module-pub/cjs-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "metadata": {
+        "width": 157,
+        "height": 119,
+        "hasAlpha": false,
+        "isAnimated": false,
+        "orientationKnown": true,
+        "format": "png"
+      }
+    },
+    "esm": {
+      "status": "PASS",
+      "output": "/private/tmp/li-143-module-pub/esm-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "metadata": {
+        "width": 157,
+        "height": 119,
+        "hasAlpha": false,
+        "isAnimated": false,
+        "orientationKnown": true,
+        "format": "png"
+      }
+    }
+  }
+}

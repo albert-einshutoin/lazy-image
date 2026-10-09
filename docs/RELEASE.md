@@ -10,6 +10,7 @@ Related docs:
 - [v1.4.0 verification](history/V1.4.0_VERIFICATION.md) — release candidate, registry contents, published native and Chrome Worker results
 - [v1.4.1 verification](history/V1.4.1_VERIFICATION.md) — native dependency update release, published npm and Chrome Worker evidence
 - [v1.4.2 verification](history/V1.4.2_VERIFICATION.md) — FIR/loader/tooling patch, candidate and published npm evidence
+- [v1.4.3 verification](history/V1.4.3_VERIFICATION.md) — libc 0.2.189 patch, candidate and published npm evidence
 
 ---
 

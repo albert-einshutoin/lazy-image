@@ -1,0 +1,33 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const name = '@alberteinshutoin/lazy-image';
+const mainEntry = require.resolve(name);
+const packageDir = path.dirname(mainEntry);
+const pkg = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json')));
+assert.equal(pkg.version, '1.4.3');
+assert.equal(pkg.exports['.'].import, './index.mjs');
+const modules = { cjs: require(name), esm: await import(name) };
+const input = fs.readFileSync(process.env.MODULE_SMOKE_INPUT);
+const sha256 = b => createHash('sha256').update(b).digest('hex');
+const results = {};
+for (const [mode, lib] of Object.entries(modules)) {
+  const image = await lib.ImageEngine.from(input).resize({width:157,height:119,fit:'fill'}).toBuffer('png');
+  const output = path.join(path.dirname(new URL(import.meta.url).pathname), `${mode}-resize.png`);
+  fs.writeFileSync(output, image);
+  const metadata = lib.inspect(image);
+  assert.equal(metadata.format, 'png');
+  assert.equal(metadata.width, 157);
+  assert.equal(metadata.height, 119);
+  results[mode] = {status:'PASS',output,bytes:image.length,sha256:sha256(image),metadata};
+}
+assert.equal(results.cjs.sha256, results.esm.sha256);
+const binding = Object.keys(require.cache).find(f=>f.endsWith('.node'));
+assert.ok(binding);
+assert.ok(binding.includes('node_modules/@alberteinshutoin/lazy-image-darwin-arm64/'));
+const report = {status:'PASS',version:pkg.version,sourceSha:process.env.MODULE_SMOKE_SOURCE_SHA,source:process.env.MODULE_SMOKE_SOURCE,node:process.version,platform:process.platform,arch:process.arch,mainEntry,binding,bindingSha256:sha256(fs.readFileSync(binding)),inputSha256:sha256(input),results};
+fs.writeFileSync(process.env.MODULE_SMOKE_REPORT, JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));

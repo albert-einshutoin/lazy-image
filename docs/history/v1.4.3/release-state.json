@@ -1,0 +1,9 @@
+{
+  "version": "1.4.3",
+  "releaseCommit": "61051e50269459097891b4622cf6ae593056ba3f",
+  "dryRun": 37882655708,
+  "tagCi": 37884211511,
+  "tagSecurity": 37884211472,
+  "mergeCi": 37881694970,
+  "publishedSmoke": 37934637484
+}

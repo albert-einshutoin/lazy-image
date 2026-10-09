@@ -1,0 +1,243 @@
+{
+  "checkedAt": "2026-10-09T15:12:52.434Z",
+  "tagRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+  "tagCandidateManifestSha256": "5d73a81bb23f910257c4db1cb3aa2a2242ffcf14304b1d8c637108f9471544c7",
+  "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+  "rows": [
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-x64",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-x64/-/lazy-image-darwin-x64-1.4.3.tgz",
+      "integrity": "sha512-D3/8fHJLASRL8NzOfAKWOyK5o25cqv0egiGwsaJhaMA/0cG0lvq7yEDNIM0aYqSf3Wj0EvjPoVhyfEIDCvhIYA==",
+      "sha256": "e6a0a0751723e3f80afe2ea5ccfa633efa1e633d8619afc81d1bd9f5231d89e2",
+      "tagCandidateSha256": "e6a0a0751723e3f80afe2ea5ccfa633efa1e633d8619afc81d1bd9f5231d89e2",
+      "tagCandidateMatches": true,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-darwin-x64-1.4.3.tgz"
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-arm64",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-arm64/-/lazy-image-darwin-arm64-1.4.3.tgz",
+      "integrity": "sha512-UxlHaSq9eczHzeJHWO8OU4CI1rz/DDJ5eXtlxA0Zg/Dc5hwDzZvejG8gvyjBJLqrBcninH56+uC1cpmSXiVIjA==",
+      "sha256": "a03ba359e001892ded28ead5dc4574e0bd4fdf16534853ebc21137b5aeb92e40",
+      "tagCandidateSha256": "a03ba359e001892ded28ead5dc4574e0bd4fdf16534853ebc21137b5aeb92e40",
+      "tagCandidateMatches": true,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-darwin-arm64-1.4.3.tgz"
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-win32-x64-msvc",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-win32-x64-msvc/-/lazy-image-win32-x64-msvc-1.4.3.tgz",
+      "integrity": "sha512-dD8lDE8oiZROQ3RENBLtoM4FHt6iFGwMmfJWUmLEl3XAOAv7ACiGOv0kYMkOr75o38wzEY2fukyg5AC5uhlRoQ==",
+      "sha256": "aa57500a82d2d8a826ff6370ef8cc54d9b28a6a60d88ed6cfc74f7a212210ea1",
+      "tagCandidateSha256": "aa57500a82d2d8a826ff6370ef8cc54d9b28a6a60d88ed6cfc74f7a212210ea1",
+      "tagCandidateMatches": true,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-win32-x64-msvc-1.4.3.tgz"
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-gnu",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-gnu/-/lazy-image-linux-x64-gnu-1.4.3.tgz",
+      "integrity": "sha512-/zEM9N8g2T1wJ6VEiIbXLfJPmfuYQV3NzNKiPCRCJ7UqnGjZcYCAyPSZxNgs4NWocvrKAON72l4pionbsPosVg==",
+      "sha256": "f10c3d5ac15981a0f1b9768fe497d502cab92d8284bcd05992587322edb3d50b",
+      "tagCandidateSha256": "f10c3d5ac15981a0f1b9768fe497d502cab92d8284bcd05992587322edb3d50b",
+      "tagCandidateMatches": true,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-linux-x64-gnu-1.4.3.tgz"
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-arm64-gnu",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-arm64-gnu/-/lazy-image-linux-arm64-gnu-1.4.3.tgz",
+      "integrity": "sha512-G5zgQ1Xql9771Px00j00eP3/25fAO2QXn1wDDu825KhaH2Mz9rXzJWS7gblcWF4sp3Yr3k/CNhmegFzHarCpow==",
+      "sha256": "4ba33064d697d5078003ea6b83855d1e7860ae7c0a0cca55f49c0a8fd623f7ba",
+      "tagCandidateSha256": "4ba33064d697d5078003ea6b83855d1e7860ae7c0a0cca55f49c0a8fd623f7ba",
+      "tagCandidateMatches": true,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-linux-arm64-gnu-1.4.3.tgz"
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-musl",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-musl/-/lazy-image-linux-x64-musl-1.4.3.tgz",
+      "integrity": "sha512-sq6juqB6v3g56G4Ycxh4aFUOrm+3KmQ/NdyFBxd0fmFfcMWQNBt4kKCH1dCoK28S4bYuLs259c8Di0aXdm7IiQ==",
+      "sha256": "c07aad56a921b389335532effabfa58d2c7d47d6ab630bafbf9285c72c86b1df",
+      "tagCandidateSha256": "c07aad56a921b389335532effabfa58d2c7d47d6ab630bafbf9285c72c86b1df",
+      "tagCandidateMatches": true,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-linux-x64-musl-1.4.3.tgz"
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.4.3.tgz",
+      "integrity": "sha512-KgMuYsItSOkUhW+6YIJClmE+ttQXZPE2JKUCcdrbp4BlcYtYbSGJnardzSGVFSXopWH+K//R+23eS5zuYsvLFw==",
+      "sha256": "4272c60beac7516b3549cf4778b7ab924d1b9b2233b783642e6a834883e925c5",
+      "tagCandidateSha256": "4272c60beac7516b3549cf4778b7ab924d1b9b2233b783642e6a834883e925c5",
+      "tagCandidateMatches": true,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-1.4.3.tgz"
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-wasm",
+      "version": "1.4.3",
+      "latest": "1.4.3",
+      "registry": "https://registry.npmjs.org/",
+      "tarballUrl": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-wasm/-/lazy-image-wasm-1.4.3.tgz",
+      "integrity": "sha512-voKlM0Q8aRqMFQWxk0pOFhEh6pyMAoLZWHrhI4FCElQUCgaUZONseLQKiWiPzobw8xHEsIVi+kaQgaGoGzJFjQ==",
+      "sha256": "71c3f37ed196813c77aa2575d14ae09fa44bb05c278c03c2cb73881412afc45b",
+      "tagCandidateSha256": null,
+      "tagCandidateMatches": null,
+      "integrityMatches": true,
+      "tarball": "/tmp/li-143-arts/registry-out/lazy-image-wasm-1.4.3.tgz"
+    }
+  ],
+  "wasm": {
+    "candidateTarballSha256": "91ceb8a1e70162f9e148c04e263317d448952ae1fb29d1fe9e1a9765a0220bcb",
+    "publishedTarballSha256": "71c3f37ed196813c77aa2575d14ae09fa44bb05c278c03c2cb73881412afc45b",
+    "archiveHashMatches": false,
+    "expandedContentsMatch": true,
+    "fileCount": 12,
+    "candidateFiles": [
+      {
+        "path": "package/browser.d.ts",
+        "bytes": 457,
+        "sha256": "2e26469167121f175d29313ae05b36c3c870bbc8d085d714528def901c9812d2"
+      },
+      {
+        "path": "package/browser.js",
+        "bytes": 10909,
+        "sha256": "cb49e120559b829b8ba0e44eb5261ca1e8749db797518006ba32ca9bd11c8946"
+      },
+      {
+        "path": "package/edge.d.ts",
+        "bytes": 457,
+        "sha256": "2e26469167121f175d29313ae05b36c3c870bbc8d085d714528def901c9812d2"
+      },
+      {
+        "path": "package/edge.js",
+        "bytes": 459,
+        "sha256": "5c4af68e588c208f4c947e975691e2c1f2e92d623d70481651a5320563867fb1"
+      },
+      {
+        "path": "package/examples/edge.mjs",
+        "bytes": 2835,
+        "sha256": "41e39aad172a26bc4cb473a40c3810850748ab8d1a8b682a2d3c4dfd21779456"
+      },
+      {
+        "path": "package/examples/worker.mjs",
+        "bytes": 122,
+        "sha256": "3d1a7479c25e6ae360bd83178d3b54cf3457ec327dbdb7e0ab6ad3acaac6b396"
+      },
+      {
+        "path": "package/package.json",
+        "bytes": 1330,
+        "sha256": "151764b5f546dece0083cd1a2f1bcca39f617a01858bce48e99dac6ea79dde31"
+      },
+      {
+        "path": "package/README.md",
+        "bytes": 7153,
+        "sha256": "2d35666bca16683dff95962062d5cc505935b6ca490c0106842fa03456ffa66a"
+      },
+      {
+        "path": "package/shared.d.ts",
+        "bytes": 2883,
+        "sha256": "fa3986143fde4b4c67e721c68c2c7b5a62aa876fcddfb2ce95ac76d906e9ce69"
+      },
+      {
+        "path": "package/shared.js",
+        "bytes": 9174,
+        "sha256": "4c52acfc3bef5449f01642621b965253dc0458258b3b941843fa0a58c3d24c48"
+      },
+      {
+        "path": "package/worker.d.ts",
+        "bytes": 197,
+        "sha256": "71cd143f93cc22727bd2564af611f1e5b397578164a44fcb6a5c1d435d9c8a3d"
+      },
+      {
+        "path": "package/worker.js",
+        "bytes": 1286,
+        "sha256": "5515069ef856042fb80c9714a3049db9a686647152ba184b1d3648f35299d0b7"
+      }
+    ],
+    "publishedFiles": [
+      {
+        "path": "package/browser.d.ts",
+        "bytes": 457,
+        "sha256": "2e26469167121f175d29313ae05b36c3c870bbc8d085d714528def901c9812d2"
+      },
+      {
+        "path": "package/browser.js",
+        "bytes": 10909,
+        "sha256": "cb49e120559b829b8ba0e44eb5261ca1e8749db797518006ba32ca9bd11c8946"
+      },
+      {
+        "path": "package/edge.d.ts",
+        "bytes": 457,
+        "sha256": "2e26469167121f175d29313ae05b36c3c870bbc8d085d714528def901c9812d2"
+      },
+      {
+        "path": "package/edge.js",
+        "bytes": 459,
+        "sha256": "5c4af68e588c208f4c947e975691e2c1f2e92d623d70481651a5320563867fb1"
+      },
+      {
+        "path": "package/examples/edge.mjs",
+        "bytes": 2835,
+        "sha256": "41e39aad172a26bc4cb473a40c3810850748ab8d1a8b682a2d3c4dfd21779456"
+      },
+      {
+        "path": "package/examples/worker.mjs",
+        "bytes": 122,
+        "sha256": "3d1a7479c25e6ae360bd83178d3b54cf3457ec327dbdb7e0ab6ad3acaac6b396"
+      },
+      {
+        "path": "package/package.json",
+        "bytes": 1330,
+        "sha256": "151764b5f546dece0083cd1a2f1bcca39f617a01858bce48e99dac6ea79dde31"
+      },
+      {
+        "path": "package/README.md",
+        "bytes": 7153,
+        "sha256": "2d35666bca16683dff95962062d5cc505935b6ca490c0106842fa03456ffa66a"
+      },
+      {
+        "path": "package/shared.d.ts",
+        "bytes": 2883,
+        "sha256": "fa3986143fde4b4c67e721c68c2c7b5a62aa876fcddfb2ce95ac76d906e9ce69"
+      },
+      {
+        "path": "package/shared.js",
+        "bytes": 9174,
+        "sha256": "4c52acfc3bef5449f01642621b965253dc0458258b3b941843fa0a58c3d24c48"
+      },
+      {
+        "path": "package/worker.d.ts",
+        "bytes": 197,
+        "sha256": "71cd143f93cc22727bd2564af611f1e5b397578164a44fcb6a5c1d435d9c8a3d"
+      },
+      {
+        "path": "package/worker.js",
+        "bytes": 1286,
+        "sha256": "5515069ef856042fb80c9714a3049db9a686647152ba184b1d3648f35299d0b7"
+      }
+    ]
+  }
+}

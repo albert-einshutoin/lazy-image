@@ -1,0 +1,215 @@
+{
+  "version": "1.4.3",
+  "sourceSha": "61051e50269459097891b4622cf6ae593056ba3f",
+  "source": "published",
+  "status": "PASS",
+  "pass": 12,
+  "fail": 0,
+  "blocked": 0,
+  "rows": [
+    {
+      "platform": "darwin-arm64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/lazy-image-registry-smoke-weBanY/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "darwin-arm64",
+      "node": "v24.20.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/lazy-image-registry-smoke-mX07Cl/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-evI3Vp/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v24.19.0",
+      "npm": "11.17.0",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-GUDMni/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/lazy-image.linux-arm64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-nmK2Io/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/lazy-image.linux-arm64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-qo4K8q/node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu/lazy-image.linux-x64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-x4CHpW/node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu/lazy-image.linux-x64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-fOjgIB/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/lazy-image.linux-x64-musl.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-IkjceC/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/lazy-image.linux-x64-musl.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\lazy-image-registry-smoke-4UVYw6\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\lazy-image.win32-x64-msvc.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.json"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "published-registry",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\lazy-image-registry-smoke-q8ERSQ\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\lazy-image.win32-x64-msvc.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.json"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "dryRun": 37882655708,
+  "tagRun": 37884211511,
+  "revision": "61051e50269459097891b4622cf6ae593056ba3f",
+  "rows": [
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-x64",
+      "dryTarballSha256": "e6a0a0751723e3f80afe2ea5ccfa633efa1e633d8619afc81d1bd9f5231d89e2",
+      "tagTarballSha256": "e6a0a0751723e3f80afe2ea5ccfa633efa1e633d8619afc81d1bd9f5231d89e2",
+      "tarballMatches": true,
+      "dryBinarySha256": "e14b8cdd14a879e716cb696302b3b8c3d1dccb293c24f930bb9ceef7c586c0e8",
+      "tagBinarySha256": "e14b8cdd14a879e716cb696302b3b8c3d1dccb293c24f930bb9ceef7c586c0e8",
+      "binaryMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-arm64",
+      "dryTarballSha256": "a03ba359e001892ded28ead5dc4574e0bd4fdf16534853ebc21137b5aeb92e40",
+      "tagTarballSha256": "a03ba359e001892ded28ead5dc4574e0bd4fdf16534853ebc21137b5aeb92e40",
+      "tarballMatches": true,
+      "dryBinarySha256": "4070eeb2ebe5ba4c36831b7561d4252f15cd716226f68c496dacfd4592457706",
+      "tagBinarySha256": "4070eeb2ebe5ba4c36831b7561d4252f15cd716226f68c496dacfd4592457706",
+      "binaryMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-win32-x64-msvc",
+      "dryTarballSha256": "02be3d7dd6e9053ba7dedabf635436e5a51c7ddb458f827f208d790acbaea95b",
+      "tagTarballSha256": "aa57500a82d2d8a826ff6370ef8cc54d9b28a6a60d88ed6cfc74f7a212210ea1",
+      "tarballMatches": false,
+      "dryBinarySha256": "c5d9aec2d559f15d8769eb2ad4910dabf68c83258e12c8158776e0b1e5042661",
+      "tagBinarySha256": "13a71fdfbe988877d821d951dc5f0d12944addac52574dbe5994c028c8013089",
+      "binaryMatches": false
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-gnu",
+      "dryTarballSha256": "f10c3d5ac15981a0f1b9768fe497d502cab92d8284bcd05992587322edb3d50b",
+      "tagTarballSha256": "f10c3d5ac15981a0f1b9768fe497d502cab92d8284bcd05992587322edb3d50b",
+      "tarballMatches": true,
+      "dryBinarySha256": "c6f99912dae843f53dcb32dd9dd04f7aab4e73c2c15c9123b992c94a0a35ace9",
+      "tagBinarySha256": "c6f99912dae843f53dcb32dd9dd04f7aab4e73c2c15c9123b992c94a0a35ace9",
+      "binaryMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-arm64-gnu",
+      "dryTarballSha256": "4ba33064d697d5078003ea6b83855d1e7860ae7c0a0cca55f49c0a8fd623f7ba",
+      "tagTarballSha256": "4ba33064d697d5078003ea6b83855d1e7860ae7c0a0cca55f49c0a8fd623f7ba",
+      "tarballMatches": true,
+      "dryBinarySha256": "cd97baf5dc3e682c53ed5d74765845954a3719cd4b46735da8efc3d6cdb37650",
+      "tagBinarySha256": "cd97baf5dc3e682c53ed5d74765845954a3719cd4b46735da8efc3d6cdb37650",
+      "binaryMatches": true
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-musl",
+      "dryTarballSha256": "fcbfb6a1df2b55c47622f97c04a48ad07b3595ac64b8a69752766a9842d39b26",
+      "tagTarballSha256": "c07aad56a921b389335532effabfa58d2c7d47d6ab630bafbf9285c72c86b1df",
+      "tarballMatches": false,
+      "dryBinarySha256": "805f9df496d756af25b43a4b89e7a7a127806a00838119c4ac2b5de906fbf862",
+      "tagBinarySha256": "269e83d45284b6f9e843aba9f0b667a421c9d569d0171d7ae2df804e000860e2",
+      "binaryMatches": false
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image",
+      "dryTarballSha256": "4272c60beac7516b3549cf4778b7ab924d1b9b2233b783642e6a834883e925c5",
+      "tagTarballSha256": "4272c60beac7516b3549cf4778b7ab924d1b9b2233b783642e6a834883e925c5",
+      "tarballMatches": true,
+      "dryBinarySha256": null,
+      "tagBinarySha256": null,
+      "binaryMatches": true
+    }
+  ],
+  "allTarballsMatch": false,
+  "allBinariesMatch": false
+}

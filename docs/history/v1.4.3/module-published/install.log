@@ -1,0 +1,5 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm.
+
+added 7 packages, and audited 8 packages in 547ms
+
+found 0 vulnerabilities

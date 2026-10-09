@@ -1,0 +1,110 @@
+{
+  "status": "PASS",
+  "startedAt": "2026-10-09T13:07:53.853Z",
+  "checkoutRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+  "eventRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+  "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+  "package": "@alberteinshutoin/lazy-image@1.4.3",
+  "registry": "https://registry.npmjs.org/",
+  "expectedPlatform": "darwin-x64",
+  "source": "published-registry",
+  "runtime": {
+    "platform": "darwin",
+    "arch": "x64",
+    "osRelease": "24.6.0",
+    "osVersion": "Darwin Kernel Version 24.6.0: Tue Jul 21 20:50:07 PDT 2026; root:xnu-11417.140.69.711.44~1/RELEASE_X86_64",
+    "node": "v24.19.0",
+    "libc": "not applicable",
+    "npm": "11.17.0"
+  },
+  "host": {
+    "runner": "macos-15-intel",
+    "os": "macOS",
+    "arch": "X64"
+  },
+  "fixture": {
+    "path": "test/fixtures/test_100KB_1057x1057.jpg",
+    "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90"
+  },
+  "policy": {
+    "widths": [
+      320,
+      640
+    ],
+    "formats": [
+      "webp"
+    ],
+    "placeholder": false
+  },
+  "commands": [
+    "npm --version",
+    "npm install --save-exact @alberteinshutoin/lazy-image@1.4.3 --registry=https://registry.npmjs.org/ --no-audit --no-fund",
+    "npm view @alberteinshutoin/lazy-image@1.4.3 dist --json --registry=https://registry.npmjs.org/",
+    "npm view @alberteinshutoin/lazy-image-darwin-x64@1.4.3 dist --json --registry=https://registry.npmjs.org/",
+    "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/node_modules/.bin/lazy-image compile /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/input.jpg --out-dir /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/cli-output --policy /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/policy.json"
+  ],
+  "installDirectory": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN",
+  "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+  "resolved": {
+    "@alberteinshutoin/lazy-image": {
+      "version": "1.4.3",
+      "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.4.3.tgz",
+      "integrity": "sha512-KgMuYsItSOkUhW+6YIJClmE+ttQXZPE2JKUCcdrbp4BlcYtYbSGJnardzSGVFSXopWH+K//R+23eS5zuYsvLFw=="
+    },
+    "@alberteinshutoin/lazy-image-darwin-x64": {
+      "version": "1.4.3",
+      "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-x64/-/lazy-image-darwin-x64-1.4.3.tgz",
+      "integrity": "sha512-D3/8fHJLASRL8NzOfAKWOyK5o25cqv0egiGwsaJhaMA/0cG0lvq7yEDNIM0aYqSf3Wj0EvjPoVhyfEIDCvhIYA=="
+    }
+  },
+  "loaded": {
+    "entry": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/node_modules/@alberteinshutoin/lazy-image/index.js",
+    "binding": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+    "bin": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/node_modules/.bin/lazy-image",
+    "binTarget": "/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-92w6EN/node_modules/@alberteinshutoin/lazy-image/bin/lazy-image.js"
+  },
+  "apiArtifacts": [
+    {
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 12746,
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "path": "image-640.webp",
+      "format": "webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 35890,
+      "sha256": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"
+    }
+  ],
+  "cliArtifacts": [
+    {
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 12746,
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "path": "image-640.webp",
+      "format": "webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 35890,
+      "sha256": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"
+    }
+  ],
+  "results": {
+    "binding": "PASS",
+    "api": "PASS",
+    "cli": "PASS",
+    "artifacts": "PASS",
+    "apiCliParity": "PASS"
+  },
+  "finishedAt": "2026-10-09T13:07:59.560Z"
+}
