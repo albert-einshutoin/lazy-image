@@ -102,6 +102,8 @@ under `images/`; its `srcset`, image dimensions and placeholder URL come from th
 actual manifest. Requested widths are not filenames. A 64px-wide input produces
 a 64px variant with this default policy, rather than links to absent 320/640/960px
 images. The script does not put input/output filesystem paths in HTML.
+For multiple formats it orders picture sources AVIF, then WebP, with JPEG as the
+compatible `img` fallback when present; source preference is not a size/quality claim.
 
 Serve **only the generated site directory**, for example with Python's standard
 static server (Python 3 is needed only for this preview command):

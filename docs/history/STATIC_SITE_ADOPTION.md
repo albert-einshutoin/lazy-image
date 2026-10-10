@@ -41,10 +41,10 @@ exampleの実行bytesは`scripts`のSHA-256で固定している。
 
 ```bash
 npm install --save-exact --registry=https://registry.npmjs.org @alberteinshutoin/lazy-image@1.4.3
-mkdir preview-reviewed
-node compile-image-static-site.mjs input.jpg preview-reviewed/normal
+mkdir preview-format-review
+node compile-image-static-site.mjs input.jpg preview-format-review/normal
 node -e "require('@alberteinshutoin/lazy-image').ImageEngine.fromPath('input.jpg').resize({width:64}).toFile('small.jpg','jpeg',80).catch(e=>{console.error(e);process.exitCode=1})"
-node compile-image-static-site.mjs small.jpg preview-reviewed/small
+node compile-image-static-site.mjs small.jpg preview-format-review/small
 ```
 
 | ケース | コマンド終了 | 成果物・観測 |
@@ -54,6 +54,7 @@ node compile-image-static-site.mjs small.jpg preview-reviewed/small
 | 既存normal出力への再実行 | 1 | build/EEXIST。ページ・画像・manifest全件のhashが実行前後で一致 |
 | `not an image`の不正入力 | 1 | preflight/E131。images/とindex.htmlなし |
 | width=320 / WebP / maxBytes=1のstrict budget | 1 | processing/E300、causeにtargetBytes未達。images/とindex.htmlなし |
+| JPEG/WebPのpicture source順 | 0 | width=320、WebP sourceを先にし、imgはJPEG fallback。ブラウザはWebPを取得 |
 
 負例の終了1は意図した拒否で、正常入力の成功件数に数えない。
 strict policyは公開版実行記録の`policies.strict`に保存している。
@@ -62,7 +63,7 @@ strict policyは公開版実行記録の`policies.strict`に保存している�
 ## manifestからページ表示まで
 
 ```bash
-python3 -m http.server 8765 --bind 127.0.0.1 --directory preview-reviewed
+python3 -m http.server 8765 --bind 127.0.0.1 --directory preview-format-review
 # http://127.0.0.1:8765/normal/ と /small/ を開く
 ```
 
@@ -75,10 +76,17 @@ src/srcset/サイズ指定とplaceholder URLを作ったもの。入力・出力
 ブラウザで両ページの画像が表示され、`complete=true`を確認した。
 通常ページは`image-960.webp`を960×960で、smallは`image-64.webp`を64×64で表示した。
 最終出力のページと画像をブラウザ観測・HTTP検査・保存hashで対応付けている。
+PR #882の[format順の指摘](https://github.com/albert-einshutoin/lazy-image/pull/882#discussion_r4238084771)
+を受け、sourceはAVIF/WebPを先にし、JPEGをimg fallbackにした。
+[追加picture](static-site-adoption/picture/index.html)はJPEG/WebP policyで生成し、
+currentSrcが`image-320.webp`、imgのsrcが`image-320.jpg`であることを確認した。
+AVIFの追加実測やcodec性能評価は行っていない。通常/64px出力は初回セットと全hashが一致する。
 
 ![通常ページの表示](static-site-adoption/normal.jpg)
 
 ![小画像の表示](static-site-adoption/small.jpg)
+
+![WebP選択とJPEG fallback](static-site-adoption/picture.jpg)
 
 ## つまずきとアプリ側実装
 
@@ -104,11 +112,12 @@ NAPI_RS_ENFORCE_VERSION_CHECK=1 node examples/compile-image-static-site.mjs --se
 git diff --check
 ```
 
-最終self-testは終了0、5ケースPASS。生成ファイル・manifest・HTML参照・終了状態を検査し、
+最終self-testは終了0、6ケースPASS。生成ファイル・manifest・HTML参照・終了状態を検査し、
 compiler内部の呼び出し順を検査していない。実装前の失敗、環境の失敗、初期のassertion失敗は
 公開版実行記録の`initialAttempts`へ残した。
 
-今回の公開版実証はmacOS arm64 / Node 24.2.0 / WebP / 入力1件と64px派生入力に限る。
+今回の公開版実証はmacOS arm64 / Node 24.2.0 / WebP（format選択確認のJPEGを含む）/
+入力1件と64px派生入力に限る。
 全platform・全入力・全codecの再検証ではなく、v1.4.3の既存公開smokeも再実行していない。
 HTMLは画像一式のcommit後にアプリ側で書く。HTML生成失敗時のサイト全体rollback、
 複数画像ジョブ、外部storage/CDN、HTTP upload、release/deployは扱わない。

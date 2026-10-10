@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-10T14:44:31.877Z",
+  "checkedAt": "2026-10-10T15:18:21.646Z",
   "status": "PASS",
   "baseSha": "3251d13dd5db040bdec4a0272855bf7d44ae1a0b",
   "node": "v24.2.0",
@@ -159,7 +159,7 @@
     "reproductionCommand": "node -e \"require('@alberteinshutoin/lazy-image').ImageEngine.fromPath('input.jpg').resize({width:64}).toFile('small.jpg','jpeg',80).catch(e=>{console.error(e);process.exitCode=1})\""
   },
   "scripts": {
-    "compile-image-static-site.mjs": "bdf5a012c26934f3d0b66399196ed8ce53058b66eb7780ef25aa77a7f1ac3740",
+    "compile-image-static-site.mjs": "ebb1ad2e5741009bea4f908783e8e86efba3bd9100ccfe322b92ee23fbdef9e4",
     "_load.mjs": "f8be23374d85368488c3a5d91427a20682267f6011a0a5fed07478a3a62b6745"
   },
   "cases": [
@@ -169,11 +169,11 @@
         "node",
         "compile-image-static-site.mjs",
         "input.jpg",
-        "preview-reviewed/normal"
+        "preview-format-review/normal"
       ],
       "exitCode": 0,
       "expectedExit": 0,
-      "stdout": "Built preview-reviewed/normal/index.html using 3 verified artifacts\n",
+      "stdout": "Built preview-format-review/normal/index.html using 3 verified artifacts\n",
       "stderr": ""
     },
     {
@@ -182,12 +182,12 @@
         "node",
         "compile-image-static-site.mjs",
         "input.jpg",
-        "preview-reviewed/normal"
+        "preview-format-review/normal"
       ],
       "exitCode": 1,
       "expectedExit": 1,
       "stdout": "",
-      "stderr": "FAIL [build/EEXIST]: EEXIST: file already exists, mkdir 'preview-reviewed/normal'\n"
+      "stderr": "FAIL [build/EEXIST]: EEXIST: file already exists, mkdir 'preview-format-review/normal'\n"
     },
     {
       "name": "small no-upscale",
@@ -195,11 +195,11 @@
         "node",
         "compile-image-static-site.mjs",
         "small.jpg",
-        "preview-reviewed/small"
+        "preview-format-review/small"
       ],
       "exitCode": 0,
       "expectedExit": 0,
-      "stdout": "Built preview-reviewed/small/index.html using 1 verified artifacts\n",
+      "stdout": "Built preview-format-review/small/index.html using 1 verified artifacts\n",
       "stderr": ""
     },
     {
@@ -208,7 +208,7 @@
         "node",
         "compile-image-static-site.mjs",
         "invalid.jpg",
-        "preview-reviewed/invalid"
+        "preview-format-review/invalid"
       ],
       "exitCode": 1,
       "expectedExit": 1,
@@ -221,13 +221,27 @@
         "node",
         "compile-image-static-site.mjs",
         "input.jpg",
-        "preview-reviewed/strict",
+        "preview-format-review/strict",
         "strict.json"
       ],
       "exitCode": 1,
       "expectedExit": 1,
       "stdout": "",
       "stderr": "FAIL [processing/E300]: Image artifact compilation failed during processing (320/webp)\nAdjust output format/quality or try re-encoding the source image.\nCause: [E300] Failed to encode as webp: Unable to meet targetBytes=1 within quality range 30-100\n"
+    },
+    {
+      "name": "modern picture source preference",
+      "command": [
+        "node",
+        "compile-image-static-site.mjs",
+        "input.jpg",
+        "preview-format-review/picture",
+        "formats.json"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0,
+      "stdout": "Built preview-format-review/picture/index.html using 2 verified artifacts\n",
+      "stderr": ""
     }
   ],
   "manifests": {
@@ -256,6 +270,17 @@
         "images/placeholder.webp": "1bdaf8e6b561cf5347304ff0f9f3316f03889923ef35fe45cb4aa5bbd55d7ea4",
         "index.html": "c466490e715e30ebd52adb417ae9e5a34bd83c2740a20328cd767bcef7a43f06"
       }
+    },
+    "picture": {
+      "widths": [
+        320
+      ],
+      "files": {
+        "images/image-320.jpg": "a9b720ec80fe073025fed5a3809f334017a89826e6083cd90b587b5dc93c671a",
+        "images/image-320.webp": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e",
+        "images/manifest.json": "4ad538cdaae1eed23009297e1b6eb843cd7f7f54bcc56f416c2676e91b7bd2d0",
+        "index.html": "81eda5e957433234cbbc35e5ff8130e8abde06c4f238575237a56488f78de99f"
+      }
     }
   },
   "existingSitePreserved": true,
@@ -265,10 +290,11 @@
   "performanceComparison": "unmeasured",
   "browserEvidence": {
     "path": "browser-display.json",
-    "sha256": "9fc48c755246d4f3195f4979855d95de36d74109906876c701b91885499ad3ed",
+    "sha256": "6e8e1b66aa8c04441ad245554f6760d36df6c07c8220135fb0a4a3e07d400941",
     "screenshots": {
       "normal.jpg": "b7460f00f3ac7c9223ba63f4ddabbca9d830ddb5ae76a53d40e6b2858c4bcc51",
-      "small.jpg": "7855e646b08b2a6e181877c186828e07df4f01315b4bf475b0427c3f5aaf1b28"
+      "small.jpg": "7855e646b08b2a6e181877c186828e07df4f01315b4bf475b0427c3f5aaf1b28",
+      "picture.jpg": "e1eb97fbf948f5d7f96ef9b21a4619baaf139fc0058390bc8313d669351461f9"
     }
   },
   "policies": {
@@ -298,12 +324,22 @@
           "maxBytes": 1
         }
       ]
+    },
+    "picture": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "jpeg",
+        "webp"
+      ],
+      "placeholder": false
     }
   },
   "selfTest": {
     "command": "NAPI_RS_ENFORCE_VERSION_CHECK=1 node examples/compile-image-static-site.mjs --self-test",
     "exitCode": 0,
-    "stdout": "PASS: normal, no-upscale, invalid input, strict budget and existing site protection\n"
+    "stdout": "PASS: normal, no-upscale, invalid input, strict budget, existing site protection and modern picture source preference\n"
   },
   "initialAttempts": [
     {
@@ -345,5 +381,9 @@
     "NAPI_RS_ENFORCE_VERSION_CHECK": "1",
     "NAPI_RS_NATIVE_LIBRARY_PATH": "unset",
     "NODE_PATH": "unset"
+  },
+  "reviewFix": {
+    "thread": "https://github.com/albert-einshutoin/lazy-image/pull/882#discussion_r4238084771",
+    "outcome": "Modern source preference is AVIF then WebP; JPEG is the img fallback. JPEG/WebP browser selection verified; no codec performance evaluation."
   }
 }

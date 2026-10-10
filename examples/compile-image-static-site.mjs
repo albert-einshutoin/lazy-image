@@ -39,7 +39,8 @@ async function buildSite(inputPath, siteDir, policy) {
   const { compileImage } = loadLazyImage();
   const manifest = await compileImage({ inputPath, outputDir: path.join(siteDir, 'images'), policy });
   const imageUrl = relative => `images/${relative.split('/').map(encodeURIComponent).join('/')}`;
-  const formats = [...new Set(manifest.artifacts.map(artifact => artifact.format))];
+  // Picture uses the first supported source; reserve JPEG for the img fallback.
+  const formats = ['avif', 'webp', 'jpeg'].filter(format => manifest.artifacts.some(artifact => artifact.format === format));
   const variants = format => manifest.artifacts.filter(artifact => artifact.format === format);
   const srcset = format => variants(format).map(artifact => `${imageUrl(artifact.path)} ${artifact.width}w`).join(', ');
   const fallbackFormat = formats.at(-1);
@@ -115,7 +116,21 @@ async function runSelfTest() {
     assert.match(strict.stderr, /processing\/E300/);
     assert.equal(fs.existsSync(path.join(strictSite, 'index.html')), false);
     assert.equal(fs.existsSync(path.join(strictSite, 'images')), false);
-    console.log('PASS: normal, no-upscale, invalid input, strict budget and existing site protection');
+
+    const formatsPolicy = path.join(temporary, 'formats.json');
+    fs.writeFileSync(formatsPolicy, JSON.stringify({ widths: [320], formats: ['jpeg', 'webp'], placeholder: false }));
+    const pictureSite = path.join(temporary, 'picture');
+    const picture = run(input, pictureSite, formatsPolicy);
+    assert.equal(picture.status, 0, picture.stderr);
+    const pictureManifest = JSON.parse(fs.readFileSync(path.join(pictureSite, 'images', 'manifest.json')));
+    const pictureHtml = fs.readFileSync(path.join(pictureSite, 'index.html'), 'utf8');
+    const webp = pictureManifest.artifacts.find(artifact => artifact.format === 'webp');
+    const jpeg = pictureManifest.artifacts.find(artifact => artifact.format === 'jpeg');
+    assert.match(pictureHtml, /<source type="image\/webp"/);
+    assert.ok(!pictureHtml.includes('<source type="image/jpeg"'));
+    assert.ok(pictureHtml.includes(`srcset="images/${webp.path} ${webp.width}w"`));
+    assert.ok(pictureHtml.includes(`<img src="images/${jpeg.path}"`));
+    console.log('PASS: normal, no-upscale, invalid input, strict budget, existing site protection and modern picture source preference');
   } finally {
     removeDir(temporary);
   }

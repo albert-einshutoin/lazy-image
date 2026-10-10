@@ -1,5 +1,5 @@
 {
-  "server": "python3 -m http.server 8765 --bind 127.0.0.1 --directory preview-reviewed",
+  "server": "python3 -m http.server 8765 --bind 127.0.0.1 --directory preview-format-review",
   "status": "PASS",
   "results": [
     {
@@ -61,6 +61,30 @@
       "status": 200,
       "contentType": "text/html",
       "sha256": "c466490e715e30ebd52adb417ae9e5a34bd83c2740a20328cd767bcef7a43f06"
+    },
+    {
+      "url": "picture/images/image-320.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "sha256": "a9b720ec80fe073025fed5a3809f334017a89826e6083cd90b587b5dc93c671a"
+    },
+    {
+      "url": "picture/images/image-320.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "url": "picture/images/manifest.json",
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "4ad538cdaae1eed23009297e1b6eb843cd7f7f54bcc56f416c2676e91b7bd2d0"
+    },
+    {
+      "url": "picture/index.html",
+      "status": 200,
+      "contentType": "text/html",
+      "sha256": "81eda5e957433234cbbc35e5ff8130e8abde06c4f238575237a56488f78de99f"
     },
     {
       "url": "invalid/index.html",
