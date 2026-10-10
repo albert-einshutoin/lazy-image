@@ -28,6 +28,8 @@ and Windows x64 · JPEG/PNG/WebP input · JPEG/PNG/WebP/AVIF output
 You own upload admission, job execution, storage and delivery. The compiler's
 commit is a local filesystem operation; it does not upload to a CDN or object store.
 
+For a runnable build integration, follow the [manifest-driven static page example](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/ADOPTION_GUIDE.md#build-a-static-page-from-the-manifest): one image → verified sizes/placeholder/manifest → HTML.
+
 ## Install
 
 ```bash

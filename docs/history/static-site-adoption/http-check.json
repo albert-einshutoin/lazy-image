@@ -1,0 +1,74 @@
+{
+  "server": "python3 -m http.server 8765 --bind 127.0.0.1 --directory preview-reviewed",
+  "status": "PASS",
+  "results": [
+    {
+      "url": "normal/images/image-320.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "url": "normal/images/image-640.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "sha256": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"
+    },
+    {
+      "url": "normal/images/image-960.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "sha256": "437f01e39f58d1b6ec48041ee0a3ba64aa5bc19ceba358636f8e6ba9f7865d6b"
+    },
+    {
+      "url": "normal/images/manifest.json",
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "95643c6e7a25aa0e3f9673707ef9e6bfe95b0fdda6544b968f2ea52ab039073d"
+    },
+    {
+      "url": "normal/images/placeholder.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "sha256": "dc12dc1d31d3f104b85aa93e1fe8a65afa4f0c81272ee366d38c9b240bcb4650"
+    },
+    {
+      "url": "normal/index.html",
+      "status": 200,
+      "contentType": "text/html",
+      "sha256": "e52c6b2f137e0cd3fc8ab7f6c115aae753c9df1a23c18591110042e31912ab1d"
+    },
+    {
+      "url": "small/images/image-64.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "sha256": "dd76b30722405889da072a19bb1fb0545c4ac54b96171cdb9740c8cd0efccd74"
+    },
+    {
+      "url": "small/images/manifest.json",
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "80174f54b3b13e185e49464ef64c1da9952d3a0699123de072d54d7b90b252fe"
+    },
+    {
+      "url": "small/images/placeholder.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "sha256": "1bdaf8e6b561cf5347304ff0f9f3316f03889923ef35fe45cb4aa5bbd55d7ea4"
+    },
+    {
+      "url": "small/index.html",
+      "status": 200,
+      "contentType": "text/html",
+      "sha256": "c466490e715e30ebd52adb417ae9e5a34bd83c2740a20328cd767bcef7a43f06"
+    },
+    {
+      "url": "invalid/index.html",
+      "status": 404
+    },
+    {
+      "url": "strict/index.html",
+      "status": 404
+    }
+  ]
+}

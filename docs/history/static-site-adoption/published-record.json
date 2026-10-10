@@ -1,0 +1,349 @@
+{
+  "checkedAt": "2026-10-10T14:44:31.877Z",
+  "status": "PASS",
+  "baseSha": "3251d13dd5db040bdec4a0272855bf7d44ae1a0b",
+  "node": "v24.2.0",
+  "npm": "11.3.0",
+  "os": "darwin",
+  "osVersion": "27.0",
+  "osRelease": "27.0.0",
+  "arch": "arm64",
+  "packageVersion": "1.4.3",
+  "moduleEntry": "node_modules/@alberteinshutoin/lazy-image/index.js",
+  "nativeBinding": "node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+  "nativeBindingSha256": "4070eeb2ebe5ba4c36831b7561d4252f15cd716226f68c496dacfd4592457706",
+  "installation": {
+    "emptyDirectoryConfirmed": true,
+    "registry": "https://registry.npmjs.org/",
+    "command": "npm install --save-exact --registry=https://registry.npmjs.org @alberteinshutoin/lazy-image@1.4.3",
+    "exitCode": 0,
+    "npmLink": false,
+    "nativeBindingOverride": false,
+    "packages": {
+      "node_modules/@alberteinshutoin/lazy-image": {
+        "version": "1.4.3",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.4.3.tgz",
+        "integrity": "sha512-KgMuYsItSOkUhW+6YIJClmE+ttQXZPE2JKUCcdrbp4BlcYtYbSGJnardzSGVFSXopWH+K//R+23eS5zuYsvLFw==",
+        "license": "MIT",
+        "workspaces": [
+          "packages/lazy-image-wasm"
+        ],
+        "bin": {
+          "lazy-image": "bin/lazy-image.js"
+        },
+        "engines": {
+          "node": ">= 22"
+        },
+        "optionalDependencies": {
+          "@alberteinshutoin/lazy-image-darwin-arm64": "1.4.3",
+          "@alberteinshutoin/lazy-image-darwin-x64": "1.4.3",
+          "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.4.3",
+          "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.4.3",
+          "@alberteinshutoin/lazy-image-linux-x64-musl": "1.4.3",
+          "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.4.3"
+        }
+      },
+      "node_modules/@alberteinshutoin/lazy-image-darwin-arm64": {
+        "version": "1.4.3",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-arm64/-/lazy-image-darwin-arm64-1.4.3.tgz",
+        "integrity": "sha512-UxlHaSq9eczHzeJHWO8OU4CI1rz/DDJ5eXtlxA0Zg/Dc5hwDzZvejG8gvyjBJLqrBcninH56+uC1cpmSXiVIjA==",
+        "cpu": [
+          "arm64"
+        ],
+        "license": "MIT",
+        "optional": true,
+        "os": [
+          "darwin"
+        ],
+        "engines": {
+          "node": ">= 22"
+        }
+      },
+      "node_modules/@alberteinshutoin/lazy-image-darwin-x64": {
+        "version": "1.4.3",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-x64/-/lazy-image-darwin-x64-1.4.3.tgz",
+        "integrity": "sha512-D3/8fHJLASRL8NzOfAKWOyK5o25cqv0egiGwsaJhaMA/0cG0lvq7yEDNIM0aYqSf3Wj0EvjPoVhyfEIDCvhIYA==",
+        "cpu": [
+          "x64"
+        ],
+        "license": "MIT",
+        "optional": true,
+        "os": [
+          "darwin"
+        ],
+        "engines": {
+          "node": ">= 22"
+        }
+      },
+      "node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu": {
+        "version": "1.4.3",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-arm64-gnu/-/lazy-image-linux-arm64-gnu-1.4.3.tgz",
+        "integrity": "sha512-G5zgQ1Xql9771Px00j00eP3/25fAO2QXn1wDDu825KhaH2Mz9rXzJWS7gblcWF4sp3Yr3k/CNhmegFzHarCpow==",
+        "cpu": [
+          "arm64"
+        ],
+        "license": "MIT",
+        "optional": true,
+        "os": [
+          "linux"
+        ],
+        "engines": {
+          "node": ">= 22"
+        }
+      },
+      "node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu": {
+        "version": "1.4.3",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-gnu/-/lazy-image-linux-x64-gnu-1.4.3.tgz",
+        "integrity": "sha512-/zEM9N8g2T1wJ6VEiIbXLfJPmfuYQV3NzNKiPCRCJ7UqnGjZcYCAyPSZxNgs4NWocvrKAON72l4pionbsPosVg==",
+        "cpu": [
+          "x64"
+        ],
+        "license": "MIT",
+        "optional": true,
+        "os": [
+          "linux"
+        ],
+        "engines": {
+          "node": ">= 22"
+        }
+      },
+      "node_modules/@alberteinshutoin/lazy-image-linux-x64-musl": {
+        "version": "1.4.3",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-musl/-/lazy-image-linux-x64-musl-1.4.3.tgz",
+        "integrity": "sha512-sq6juqB6v3g56G4Ycxh4aFUOrm+3KmQ/NdyFBxd0fmFfcMWQNBt4kKCH1dCoK28S4bYuLs259c8Di0aXdm7IiQ==",
+        "cpu": [
+          "x64"
+        ],
+        "license": "MIT",
+        "optional": true,
+        "os": [
+          "linux"
+        ],
+        "engines": {
+          "node": ">= 22"
+        }
+      },
+      "node_modules/@alberteinshutoin/lazy-image-win32-x64-msvc": {
+        "version": "1.4.3",
+        "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-win32-x64-msvc/-/lazy-image-win32-x64-msvc-1.4.3.tgz",
+        "integrity": "sha512-dD8lDE8oiZROQ3RENBLtoM4FHt6iFGwMmfJWUmLEl3XAOAv7ACiGOv0kYMkOr75o38wzEY2fukyg5AC5uhlRoQ==",
+        "cpu": [
+          "x64"
+        ],
+        "license": "MIT",
+        "optional": true,
+        "os": [
+          "win32"
+        ],
+        "engines": {
+          "node": ">= 22"
+        }
+      }
+    },
+    "initializeCommand": "npm init -y",
+    "stdout": "\nadded 7 packages, and audited 8 packages in 357ms\n\nfound 0 vulnerabilities\n",
+    "lockSha256": "2a0e067ee307f5c2ee656dd91f2e40cbc0af64c3faafe0c1274b5712699a097b"
+  },
+  "input": {
+    "source": "test/fixtures/test_100KB_1057x1057.jpg",
+    "bytes": 100055,
+    "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+    "license": "MIT",
+    "provenance": "test/benchmarks/corpus/release-manifest.json#jpeg-verification-io",
+    "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+  },
+  "smallInput": {
+    "source": "Derived from the same fixture with published ImageEngine.resize({width:64})",
+    "sha256": "a3937a5752b8b5def94542a9a9a655e457ddf019a03acb5dccab21eda345436b",
+    "operation": "await ImageEngine.fromPath(input.jpg).resize({width:64}).toFile(small.jpg,'jpeg',80) within the published trial recorder",
+    "reproductionCommand": "node -e \"require('@alberteinshutoin/lazy-image').ImageEngine.fromPath('input.jpg').resize({width:64}).toFile('small.jpg','jpeg',80).catch(e=>{console.error(e);process.exitCode=1})\""
+  },
+  "scripts": {
+    "compile-image-static-site.mjs": "bdf5a012c26934f3d0b66399196ed8ce53058b66eb7780ef25aa77a7f1ac3740",
+    "_load.mjs": "f8be23374d85368488c3a5d91427a20682267f6011a0a5fed07478a3a62b6745"
+  },
+  "cases": [
+    {
+      "name": "normal",
+      "command": [
+        "node",
+        "compile-image-static-site.mjs",
+        "input.jpg",
+        "preview-reviewed/normal"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0,
+      "stdout": "Built preview-reviewed/normal/index.html using 3 verified artifacts\n",
+      "stderr": ""
+    },
+    {
+      "name": "existing destination",
+      "command": [
+        "node",
+        "compile-image-static-site.mjs",
+        "input.jpg",
+        "preview-reviewed/normal"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1,
+      "stdout": "",
+      "stderr": "FAIL [build/EEXIST]: EEXIST: file already exists, mkdir 'preview-reviewed/normal'\n"
+    },
+    {
+      "name": "small no-upscale",
+      "command": [
+        "node",
+        "compile-image-static-site.mjs",
+        "small.jpg",
+        "preview-reviewed/small"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0,
+      "stdout": "Built preview-reviewed/small/index.html using 1 verified artifacts\n",
+      "stderr": ""
+    },
+    {
+      "name": "invalid input",
+      "command": [
+        "node",
+        "compile-image-static-site.mjs",
+        "invalid.jpg",
+        "preview-reviewed/invalid"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1,
+      "stdout": "",
+      "stderr": "FAIL [preflight/E131]: Image artifact compilation failed during preflight\nTry opening the file in another viewer or re-encode the source image.\nCause: [E131] Failed to decode image: failed to determine image format\n"
+    },
+    {
+      "name": "strict budget",
+      "command": [
+        "node",
+        "compile-image-static-site.mjs",
+        "input.jpg",
+        "preview-reviewed/strict",
+        "strict.json"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1,
+      "stdout": "",
+      "stderr": "FAIL [processing/E300]: Image artifact compilation failed during processing (320/webp)\nAdjust output format/quality or try re-encoding the source image.\nCause: [E300] Failed to encode as webp: Unable to meet targetBytes=1 within quality range 30-100\n"
+    }
+  ],
+  "manifests": {
+    "normal": {
+      "widths": [
+        320,
+        640,
+        960
+      ],
+      "files": {
+        "images/image-320.webp": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e",
+        "images/image-640.webp": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c",
+        "images/image-960.webp": "437f01e39f58d1b6ec48041ee0a3ba64aa5bc19ceba358636f8e6ba9f7865d6b",
+        "images/manifest.json": "95643c6e7a25aa0e3f9673707ef9e6bfe95b0fdda6544b968f2ea52ab039073d",
+        "images/placeholder.webp": "dc12dc1d31d3f104b85aa93e1fe8a65afa4f0c81272ee366d38c9b240bcb4650",
+        "index.html": "e52c6b2f137e0cd3fc8ab7f6c115aae753c9df1a23c18591110042e31912ab1d"
+      }
+    },
+    "small": {
+      "widths": [
+        64
+      ],
+      "files": {
+        "images/image-64.webp": "dd76b30722405889da072a19bb1fb0545c4ac54b96171cdb9740c8cd0efccd74",
+        "images/manifest.json": "80174f54b3b13e185e49464ef64c1da9952d3a0699123de072d54d7b90b252fe",
+        "images/placeholder.webp": "1bdaf8e6b561cf5347304ff0f9f3316f03889923ef35fe45cb4aa5bbd55d7ea4",
+        "index.html": "c466490e715e30ebd52adb417ae9e5a34bd83c2740a20328cd767bcef7a43f06"
+      }
+    }
+  },
+  "existingSitePreserved": true,
+  "failurePageAbsent": true,
+  "browserDisplay": "PASS",
+  "realUserAdoption": "unmeasured",
+  "performanceComparison": "unmeasured",
+  "browserEvidence": {
+    "path": "browser-display.json",
+    "sha256": "9fc48c755246d4f3195f4979855d95de36d74109906876c701b91885499ad3ed",
+    "screenshots": {
+      "normal.jpg": "b7460f00f3ac7c9223ba63f4ddabbca9d830ddb5ae76a53d40e6b2858c4bcc51",
+      "small.jpg": "7855e646b08b2a6e181877c186828e07df4f01315b4bf475b0427c3f5aaf1b28"
+    }
+  },
+  "policies": {
+    "default": {
+      "widths": [
+        320,
+        640,
+        960
+      ],
+      "formats": [
+        "webp"
+      ],
+      "placeholder": true
+    },
+    "strict": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "webp"
+      ],
+      "placeholder": true,
+      "budgets": [
+        {
+          "width": 320,
+          "format": "webp",
+          "maxBytes": 1
+        }
+      ]
+    }
+  },
+  "selfTest": {
+    "command": "NAPI_RS_ENFORCE_VERSION_CHECK=1 node examples/compile-image-static-site.mjs --self-test",
+    "exitCode": 0,
+    "stdout": "PASS: normal, no-upscale, invalid input, strict budget and existing site protection\n"
+  },
+  "initialAttempts": [
+    {
+      "command": "node examples/compile-image-static-site.mjs --self-test",
+      "exitCode": 1,
+      "outcome": "Expected pre-implementation failing check"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 1,
+      "outcome": "SDK 27 linker rejected arm64e.x1; not a validation success"
+    },
+    {
+      "command": "SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk npm run build",
+      "exitCode": 0,
+      "outcome": "Local native 1.4.3 build; unrelated generated index.js diff restored before validation"
+    },
+    {
+      "command": "npm install --save-exact --registry=https://registry.npmjs.org @alberteinshutoin/lazy-image@1.4.3",
+      "exitCode": 0,
+      "outcome": "Initial wrong working directory; excluded from published adoption evidence"
+    },
+    {
+      "command": "NAPI_RS_ENFORCE_VERSION_CHECK=1 node examples/compile-image-static-site.mjs --self-test",
+      "exitCode": 1,
+      "outcome": "Over-specific strict-error wording assertion failed; use observed structured phase/code and report cause"
+    },
+    {
+      "outcome": "Initial fixed sizes=960px caused density-corrected naturalWidth=959 for the displayed 64px image; final sizes derived from manifest/display width; encoded and displayed image were already 64px"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exitCode": 2,
+      "outcome": "Generated HTML blank line contained trailing spaces; template corrected and outputs regenerated in a new destination"
+    }
+  ],
+  "sourceState": "Example execution bytes are identified by scripts SHA-256; baseSha is the starting checkout, not the published package source revision.",
+  "executionEnvironment": {
+    "NAPI_RS_ENFORCE_VERSION_CHECK": "1",
+    "NAPI_RS_NATIVE_LIBRARY_PATH": "unset",
+    "NODE_PATH": "unset"
+  }
+}
