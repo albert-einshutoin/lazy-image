@@ -1,0 +1,215 @@
+{
+  "version": "1.4.3",
+  "sourceSha": "61051e50269459097891b4622cf6ae593056ba3f",
+  "source": "candidate",
+  "status": "PASS",
+  "pass": 12,
+  "fail": 0,
+  "blocked": 0,
+  "rows": [
+    {
+      "platform": "darwin-arm64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/lazy-image-registry-smoke-zkOLfd/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "darwin-arm64",
+      "node": "v24.20.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/lazy-image-registry-smoke-WdTFZW/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-MkRP3f/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v24.19.0",
+      "npm": "11.17.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/private/var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/lazy-image-registry-smoke-MyghU8/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-bTlmxN/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/lazy-image.linux-arm64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-zt4DEd/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/lazy-image.linux-arm64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-P4TG8F/node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu/lazy-image.linux-x64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-3g3g7d/node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu/lazy-image.linux-x64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-oaJPAO/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/lazy-image.linux-x64-musl.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "/tmp/lazy-image-registry-smoke-BAIJEP/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/lazy-image.linux-x64-musl.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\lazy-image-registry-smoke-EjNe1a\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\lazy-image.win32-x64-msvc.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "61051e50269459097891b4622cf6ae593056ba3f",
+      "binding": "C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\lazy-image-registry-smoke-RYeaER\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\lazy-image.win32-x64-msvc.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS"
+      },
+      "report": "candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.json"
+    }
+  ]
+}

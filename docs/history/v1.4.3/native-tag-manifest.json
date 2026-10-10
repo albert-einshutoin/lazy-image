@@ -1,0 +1,132 @@
+{
+  "revision": "61051e50269459097891b4622cf6ae593056ba3f",
+  "sourceTree": "a128d6231577c5ae004c1c9fc9bb94acf06b423f",
+  "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+  "version": "1.4.3",
+  "packages": [
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-x64",
+      "target": "x86_64-apple-darwin",
+      "platform": "darwin-x64",
+      "binary": "lazy-image.darwin-x64.node",
+      "binarySha256": "e14b8cdd14a879e716cb696302b3b8c3d1dccb293c24f930bb9ceef7c586c0e8",
+      "tarball": "alberteinshutoin-lazy-image-darwin-x64-1.4.3.tgz",
+      "tarballSha256": "e6a0a0751723e3f80afe2ea5ccfa633efa1e633d8619afc81d1bd9f5231d89e2",
+      "inspection": {
+        "description": "Mach-O 64-bit x86_64 dynamically linked shared library, flags:<NOUNDEFS|DYLDLINK|TWOLEVEL|NO_REEXPORTED_DYLIBS|HAS_TLV_DESCRIPTORS>"
+      }
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-darwin-arm64",
+      "target": "aarch64-apple-darwin",
+      "platform": "darwin-arm64",
+      "binary": "lazy-image.darwin-arm64.node",
+      "binarySha256": "4070eeb2ebe5ba4c36831b7561d4252f15cd716226f68c496dacfd4592457706",
+      "tarball": "alberteinshutoin-lazy-image-darwin-arm64-1.4.3.tgz",
+      "tarballSha256": "a03ba359e001892ded28ead5dc4574e0bd4fdf16534853ebc21137b5aeb92e40",
+      "inspection": {
+        "description": "Mach-O 64-bit arm64 dynamically linked shared library, flags:<NOUNDEFS|DYLDLINK|TWOLEVEL|NO_REEXPORTED_DYLIBS|HAS_TLV_DESCRIPTORS>"
+      }
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-win32-x64-msvc",
+      "target": "x86_64-pc-windows-msvc",
+      "platform": "win32-x64-msvc",
+      "binary": "lazy-image.win32-x64-msvc.node",
+      "binarySha256": "13a71fdfbe988877d821d951dc5f0d12944addac52574dbe5994c028c8013089",
+      "tarball": "alberteinshutoin-lazy-image-win32-x64-msvc-1.4.3.tgz",
+      "tarballSha256": "aa57500a82d2d8a826ff6370ef8cc54d9b28a6a60d88ed6cfc74f7a212210ea1",
+      "inspection": {
+        "description": "PE32+ executable (DLL) (GUI) x86-64, for MS Windows, 5 sections"
+      }
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-gnu",
+      "target": "x86_64-unknown-linux-gnu",
+      "platform": "linux-x64-gnu",
+      "binary": "lazy-image.linux-x64-gnu.node",
+      "binarySha256": "c6f99912dae843f53dcb32dd9dd04f7aab4e73c2c15c9123b992c94a0a35ace9",
+      "tarball": "alberteinshutoin-lazy-image-linux-x64-gnu-1.4.3.tgz",
+      "tarballSha256": "f10c3d5ac15981a0f1b9768fe497d502cab92d8284bcd05992587322edb3d50b",
+      "inspection": {
+        "description": "ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=b3a41ae5a20ddeab3a48ab2c98432dfd9959ec4c, stripped",
+        "needed": [
+          "libgcc_s.so.1",
+          "libm.so.6",
+          "libc.so.6",
+          "ld-linux-x86-64.so.2"
+        ],
+        "glibcVersions": [
+          "GLIBC_2.3.2",
+          "GLIBC_2.2.5",
+          "GLIBC_2.34",
+          "GLIBC_2.6",
+          "GLIBC_2.32",
+          "GLIBC_2.25",
+          "GLIBC_2.3",
+          "GLIBC_2.3.4",
+          "GLIBC_2.18",
+          "GLIBC_2.4",
+          "GLIBC_2.29",
+          "GLIBC_2.14",
+          "GLIBC_2.17",
+          "GLIBC_2.28",
+          "GLIBC_2.27",
+          "GLIBC_2.33",
+          "GLIBC_2.16"
+        ]
+      }
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-arm64-gnu",
+      "target": "aarch64-unknown-linux-gnu",
+      "platform": "linux-arm64-gnu",
+      "binary": "lazy-image.linux-arm64-gnu.node",
+      "binarySha256": "cd97baf5dc3e682c53ed5d74765845954a3719cd4b46735da8efc3d6cdb37650",
+      "tarball": "alberteinshutoin-lazy-image-linux-arm64-gnu-1.4.3.tgz",
+      "tarballSha256": "4ba33064d697d5078003ea6b83855d1e7860ae7c0a0cca55f49c0a8fd623f7ba",
+      "inspection": {
+        "description": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, BuildID[sha1]=ebd09200ceb35642bbeadca5ad21fbf311d86cf8, stripped",
+        "needed": [
+          "libgcc_s.so.1",
+          "libm.so.6",
+          "libc.so.6",
+          "ld-linux-aarch64.so.1"
+        ],
+        "glibcVersions": [
+          "GLIBC_2.34",
+          "GLIBC_2.17",
+          "GLIBC_2.32",
+          "GLIBC_2.29",
+          "GLIBC_2.27",
+          "GLIBC_2.33",
+          "GLIBC_2.18",
+          "GLIBC_2.25",
+          "GLIBC_2.28"
+        ]
+      }
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image-linux-x64-musl",
+      "target": "x86_64-unknown-linux-musl",
+      "platform": "linux-x64-musl",
+      "binary": "lazy-image.linux-x64-musl.node",
+      "binarySha256": "269e83d45284b6f9e843aba9f0b667a421c9d569d0171d7ae2df804e000860e2",
+      "tarball": "alberteinshutoin-lazy-image-linux-x64-musl-1.4.3.tgz",
+      "tarballSha256": "c07aad56a921b389335532effabfa58d2c7d47d6ab630bafbf9285c72c86b1df",
+      "inspection": {
+        "description": "ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=311a0b3980ef55a2fa080fb8530ac7bca7000793, stripped",
+        "needed": [
+          "libgcc_s.so.1",
+          "libc.musl-x86_64.so.1"
+        ],
+        "glibcVersions": []
+      }
+    },
+    {
+      "name": "@alberteinshutoin/lazy-image",
+      "tarball": "alberteinshutoin-lazy-image-1.4.3.tgz",
+      "tarballSha256": "4272c60beac7516b3549cf4778b7ab924d1b9b2233b783642e6a834883e925c5"
+    }
+  ]
+}

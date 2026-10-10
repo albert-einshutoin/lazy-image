@@ -1,0 +1,51 @@
+10.9.9
+
+added 2 packages in 2s
+{
+  "shasum": "930965937379f43d054be35cf5ac7dada3511ae4",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.4.3.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-KgMuYsItSOkUhW+6YIJClmE+ttQXZPE2JKUCcdrbp4BlcYtYbSGJnardzSGVFSXopWH+K//R+23eS5zuYsvLFw==",
+  "signatures": [
+    {
+      "sig": "MEQCICtTPtXU+IR5sZgoYPWR9plvmgot4ypOLSNwybHQVvkJAiBhzu7ZPkKIDBWdueXXZOzQeTNogI0rLSJw2Vazb4XttQ==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIDy1bLgvTaoBID2T7ir5PwHsxOxvyKkjm65/dKkJB1t2AiEAsGTNi8AdbERqPvip5P3ib59x1FH708qR/aM7p9Yq2gI="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.4.3",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 231385
+}
+{
+  "shasum": "c3ffd53995b61599c80df1401f6867ae62b7e1e9",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-win32-x64-msvc/-/lazy-image-win32-x64-msvc-1.4.3.tgz",
+  "fileCount": 2,
+  "integrity": "sha512-dD8lDE8oiZROQ3RENBLtoM4FHt6iFGwMmfJWUmLEl3XAOAv7ACiGOv0kYMkOr75o38wzEY2fukyg5AC5uhlRoQ==",
+  "signatures": [
+    {
+      "sig": "MEUCIHxDpHlzvUGSbJQoAyJEw5FqldgqIxQ2RHD9FTKM0S4kAiEA9AKR+/lNno4Hg5iSwAA6EEFc7nKg/JNloV4xheXS1PA=",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIQDCE+39Bbz9WqKlWs/FkJ4xsSH00fhkAjyvFWEN05rUlgIgazWDTIc8+Hl5eYbzxjFQVHrliykDU7MCX4/6Xp8WeT4="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image-win32-x64-msvc@1.4.3",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 12765319
+}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.4.3","platform":"win32","arch":"x64","fingerprint":"d59dc8fc5f7f4e09e7ea16012d58fd434722444e0bb667edb011e7705382dfdc"},"policy":{"preset":"publicUpload","fingerprint":"7db6a8f434e6d7a3ddf10581f9ae7b664b78b2a5d0b9cf27d67b3631b7e7c9f8","widths":[320,640],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"320/webp","path":"image-320.webp","format":"webp","width":320,"height":320,"bytes":12746,"quality":80,"iccOutcome":"absent","sha256":"44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"},{"id":"640/webp","path":"image-640.webp","format":"webp","width":640,"height":640,"bytes":35890,"quality":80,"iccOutcome":"absent","sha256":"01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"}],"delivery":{"srcsets":[{"format":"webp","value":"image-320.webp 320w, image-640.webp 640w"}]},"cacheKey":"98f7dafb58454123a21b0efd3f3ac6b8ba8648eb9547ed0d3ba66d9e608b51af"}
+registry-native-smoke: PASS win32-x64-msvc v22.23.3

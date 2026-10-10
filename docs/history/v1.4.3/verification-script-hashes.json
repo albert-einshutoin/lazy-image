@@ -1,0 +1,14 @@
+{
+  "docs/history/v1.4.3/verification-tools/compare-registry.mjs": {
+    "sha256": "97f78693af0aadf92b6a111561b9059d3f729972f9f1babcb84cc860f7b0da89",
+    "bytes": 3552
+  },
+  "docs/history/v1.4.3/verification-tools/summarize-smoke.cjs": {
+    "sha256": "97969186abe77dc3c396718a437739592807914d53c1b6ba37985cd7b239abb5",
+    "bytes": 1630
+  },
+  "docs/history/v1.4.3/module-published/module-smoke.mjs": {
+    "sha256": "f480b173dbb00a30e73ce09193ac374aba09347b67cb80f1f95cd01ba97eb624",
+    "bytes": 1956
+  }
+}

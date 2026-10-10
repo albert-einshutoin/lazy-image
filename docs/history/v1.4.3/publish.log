@@ -1,0 +1,658 @@
+﻿2026-10-09T04:47:49.0628453Z Current runner version: '2.337.0'
+2026-10-09T04:47:49.0647743Z ##[group]Runner Image Provisioner
+2026-10-09T04:47:49.0648415Z Hosted Compute Agent
+2026-10-09T04:47:49.0649285Z Version: 20261002.596
+2026-10-09T04:47:49.0649752Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T04:47:49.0650251Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T04:47:49.0650745Z Worker ID: {5b7c70a8-1f4a-47a2-9754-efbe5699bbb5}
+2026-10-09T04:47:49.0651228Z Region: centralus
+2026-10-09T04:47:49.0651655Z Cloud: Azure
+2026-10-09T04:47:49.0652034Z ##[endgroup]
+2026-10-09T04:47:49.0653075Z ##[group]Operating System
+2026-10-09T04:47:49.0653519Z Ubuntu
+2026-10-09T04:47:49.0653899Z 24.04.5
+2026-10-09T04:47:49.0654235Z LTS
+2026-10-09T04:47:49.0654619Z ##[endgroup]
+2026-10-09T04:47:49.0655066Z ##[group]Runner Image
+2026-10-09T04:47:49.0655517Z Image: ubuntu-24.04
+2026-10-09T04:47:49.0655935Z Version: 20261004.327.1
+2026-10-09T04:47:49.0657026Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T04:47:49.0658072Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T04:47:49.0658731Z ##[endgroup]
+2026-10-09T04:47:49.0659560Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T04:47:49.0661158Z Contents: write
+2026-10-09T04:47:49.0661580Z Metadata: read
+2026-10-09T04:47:49.0661968Z ##[endgroup]
+2026-10-09T04:47:49.0663462Z Secret source: Actions
+2026-10-09T04:47:49.0664101Z Cache mode: write
+2026-10-09T04:47:49.0664587Z Prepare workflow directory
+2026-10-09T04:47:49.1015554Z Prepare all required actions
+2026-10-09T04:47:49.1052500Z Getting action download info
+2026-10-09T04:47:49.3504746Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-09T04:47:49.4667405Z Download action repository 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+2026-10-09T04:47:49.5917638Z Download action repository 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c' (SHA:3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c)
+2026-10-09T04:47:50.1608873Z Complete job name: Publish to npm
+2026-10-09T04:47:50.2165480Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-09T04:47:50.2166305Z with:
+2026-10-09T04:47:50.2167206Z   repository: albert-einshutoin/lazy-image
+2026-10-09T04:47:50.2170330Z   token: ***
+2026-10-09T04:47:50.2170728Z   ssh-strict: true
+2026-10-09T04:47:50.2171171Z   ssh-user: git
+2026-10-09T04:47:50.2171582Z   persist-credentials: true
+2026-10-09T04:47:50.2172065Z   clean: true
+2026-10-09T04:47:50.2172487Z   sparse-checkout-cone-mode: true
+2026-10-09T04:47:50.2172936Z   fetch-depth: 1
+2026-10-09T04:47:50.2173352Z   fetch-tags: false
+2026-10-09T04:47:50.2173758Z   show-progress: true
+2026-10-09T04:47:50.2174155Z   lfs: false
+2026-10-09T04:47:50.2174597Z   submodules: false
+2026-10-09T04:47:50.2175051Z   set-safe-directory: true
+2026-10-09T04:47:50.2175570Z   allow-unsafe-pr-checkout: false
+2026-10-09T04:47:50.2176235Z env:
+2026-10-09T04:47:50.2176724Z   DEBUG: napi:*
+2026-10-09T04:47:50.2177193Z   APP_NAME: lazy-image
+2026-10-09T04:47:50.2177718Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:47:50.2178221Z ##[endgroup]
+2026-10-09T04:47:50.2983794Z Syncing repository: albert-einshutoin/lazy-image
+2026-10-09T04:47:50.2985893Z ##[group]Getting Git version info
+2026-10-09T04:47:50.2986916Z Working directory is '/home/runner/work/lazy-image/lazy-image'
+2026-10-09T04:47:50.2988371Z [command]/usr/bin/git version
+2026-10-09T04:47:50.3001350Z git version 2.55.0
+2026-10-09T04:47:50.3015396Z ##[endgroup]
+2026-10-09T04:47:50.3022529Z Temporarily overriding HOME='/home/runner/work/_temp/92949e27-1b3d-4866-89cb-548af04bf6e8' before making global git config changes
+2026-10-09T04:47:50.3024189Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T04:47:50.3029259Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/lazy-image/lazy-image
+2026-10-09T04:47:50.3073609Z Deleting the contents of '/home/runner/work/lazy-image/lazy-image'
+2026-10-09T04:47:50.3076828Z ##[group]Determining repository object format
+2026-10-09T04:47:50.3079245Z ##[endgroup]
+2026-10-09T04:47:50.3081523Z ##[group]Initializing the repository
+2026-10-09T04:47:50.3083988Z [command]/usr/bin/git init /home/runner/work/lazy-image/lazy-image
+2026-10-09T04:47:50.3169571Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T04:47:50.3171105Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T04:47:50.3172759Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T04:47:50.3175811Z hint: call:
+2026-10-09T04:47:50.3176905Z hint:
+2026-10-09T04:47:50.3177909Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T04:47:50.3179364Z hint:
+2026-10-09T04:47:50.3180360Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T04:47:50.3182123Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T04:47:50.3183609Z hint:
+2026-10-09T04:47:50.3184401Z hint: 	git branch -m <name>
+2026-10-09T04:47:50.3185217Z hint:
+2026-10-09T04:47:50.3186415Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T04:47:50.3188298Z Initialized empty Git repository in /home/runner/work/lazy-image/lazy-image/.git/
+2026-10-09T04:47:50.3190934Z [command]/usr/bin/git remote add origin https://github.com/albert-einshutoin/lazy-image
+2026-10-09T04:47:50.3221258Z ##[endgroup]
+2026-10-09T04:47:50.3222191Z ##[group]Disabling automatic garbage collection
+2026-10-09T04:47:50.3223835Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T04:47:50.3248927Z ##[endgroup]
+2026-10-09T04:47:50.3250439Z ##[group]Setting up auth
+2026-10-09T04:47:50.3251384Z Removing SSH command configuration
+2026-10-09T04:47:50.3252500Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:47:50.3280965Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:47:50.3543411Z Removing HTTP extra header
+2026-10-09T04:47:50.3548210Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:47:50.3575339Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:47:50.3709373Z Removing includeIf entries pointing to credentials config files
+2026-10-09T04:47:50.3713175Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:47:50.3739496Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:47:50.3877627Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T04:47:50.3903650Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/lazy-image/lazy-image/.git.path /home/runner/work/_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:47:50.3925387Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/lazy-image/lazy-image/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:47:50.3950074Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:47:50.3972928Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:47:50.3992679Z ##[endgroup]
+2026-10-09T04:47:50.3993419Z ##[group]Fetching the repository
+2026-10-09T04:47:50.3997016Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/tags/v1.4.3:refs/tags/v1.4.3
+2026-10-09T04:47:51.9063486Z From https://github.com/albert-einshutoin/lazy-image
+2026-10-09T04:47:51.9064246Z  * [new tag]         v1.4.3     -> v1.4.3
+2026-10-09T04:47:51.9070171Z [command]/usr/bin/git tag --list v1.4.3
+2026-10-09T04:47:51.9094724Z v1.4.3
+2026-10-09T04:47:51.9101335Z [command]/usr/bin/git rev-parse refs/tags/v1.4.3^{commit}
+2026-10-09T04:47:51.9121030Z 61051e50269459097891b4622cf6ae593056ba3f
+2026-10-09T04:47:51.9123508Z ##[endgroup]
+2026-10-09T04:47:51.9124195Z ##[group]Determining the checkout info
+2026-10-09T04:47:51.9128599Z ##[endgroup]
+2026-10-09T04:47:51.9133802Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T04:47:51.9173362Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T04:47:51.9200134Z ##[group]Checking out the ref
+2026-10-09T04:47:51.9200540Z [command]/usr/bin/git checkout --progress --force refs/tags/v1.4.3
+2026-10-09T04:47:52.1471755Z Note: switching to 'refs/tags/v1.4.3'.
+2026-10-09T04:47:52.1472118Z 
+2026-10-09T04:47:52.1472448Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T04:47:52.1472905Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T04:47:52.1473295Z state without impacting any branches by switching back to a branch.
+2026-10-09T04:47:52.1473671Z 
+2026-10-09T04:47:52.1473883Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T04:47:52.1474457Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T04:47:52.1474667Z 
+2026-10-09T04:47:52.1474858Z   git switch -c <new-branch-name>
+2026-10-09T04:47:52.1475084Z 
+2026-10-09T04:47:52.1475218Z Or undo this operation with:
+2026-10-09T04:47:52.1475406Z 
+2026-10-09T04:47:52.1475539Z   git switch -
+2026-10-09T04:47:52.1475738Z 
+2026-10-09T04:47:52.1475963Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T04:47:52.1476793Z 
+2026-10-09T04:47:52.1477002Z HEAD is now at 61051e5 chore(release): 1.4.3 (#878)
+2026-10-09T04:47:52.1484225Z ##[endgroup]
+2026-10-09T04:47:52.1516376Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T04:47:52.1536083Z 61051e50269459097891b4622cf6ae593056ba3f
+2026-10-09T04:47:52.1738328Z ##[group]Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+2026-10-09T04:47:52.1738668Z with:
+2026-10-09T04:47:52.1738935Z   node-version: 22
+2026-10-09T04:47:52.1739272Z   registry-url: https://registry.npmjs.org
+2026-10-09T04:47:52.1739556Z   scope: @alberteinshutoin
+2026-10-09T04:47:52.1739790Z   cache: npm
+2026-10-09T04:47:52.1739992Z   check-latest: false
+2026-10-09T04:47:52.1741754Z   token: ***
+2026-10-09T04:47:52.1741975Z   package-manager-cache: true
+2026-10-09T04:47:52.1742247Z env:
+2026-10-09T04:47:52.1742471Z   DEBUG: napi:*
+2026-10-09T04:47:52.1742680Z   APP_NAME: lazy-image
+2026-10-09T04:47:52.1742989Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:47:52.1743231Z ##[endgroup]
+2026-10-09T04:47:52.2699161Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+2026-10-09T04:47:52.2700484Z ##[group]Environment details
+2026-10-09T04:47:55.8995303Z node: v22.23.3
+2026-10-09T04:47:55.8995708Z npm: 10.9.9
+2026-10-09T04:47:55.8996122Z yarn: 1.22.22
+2026-10-09T04:47:55.8997582Z ##[endgroup]
+2026-10-09T04:47:55.9015689Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+2026-10-09T04:47:56.1631669Z /home/runner/.npm
+2026-10-09T04:47:56.3168089Z Cache hit for: node-cache-Linux-x64-npm-2ea2e6c7ced8c681e54fc72aa5337d664f86f318bc326dfc3a64d464201433b0
+2026-10-09T04:47:57.1951780Z Received 39733298 of 39733298 (100.0%), 52.6 MBs/sec
+2026-10-09T04:47:57.1952190Z Cache Size: ~38 MB (39733298 B)
+2026-10-09T04:47:57.1976129Z [command]/usr/bin/tar -xf /home/runner/work/_temp/7ff6e305-ade5-4767-a38a-3409d836660e/cache.tzst -P -C /home/runner/work/lazy-image/lazy-image --use-compress-program unzstd
+2026-10-09T04:47:57.2444620Z Cache restored successfully
+2026-10-09T04:47:57.2463733Z Cache restored from key: node-cache-Linux-x64-npm-2ea2e6c7ced8c681e54fc72aa5337d664f86f318bc326dfc3a64d464201433b0
+2026-10-09T04:47:57.2581278Z ##[group]Run npm ci
+2026-10-09T04:47:57.2581673Z [36;1mnpm ci[0m
+2026-10-09T04:47:57.2798384Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:47:57.2798722Z env:
+2026-10-09T04:47:57.2799075Z   DEBUG: napi:*
+2026-10-09T04:47:57.2799302Z   APP_NAME: lazy-image
+2026-10-09T04:47:57.2799546Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:47:57.2800016Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+2026-10-09T04:47:57.2800369Z ##[endgroup]
+2026-10-09T04:48:00.3629964Z 
+2026-10-09T04:48:00.3636329Z added 86 packages, and audited 88 packages in 3s
+2026-10-09T04:48:00.3636827Z 
+2026-10-09T04:48:00.3637229Z 12 packages are looking for funding
+2026-10-09T04:48:00.3637620Z   run `npm fund` for details
+2026-10-09T04:48:00.3647459Z 
+2026-10-09T04:48:00.3647798Z 1 high severity vulnerability
+2026-10-09T04:48:00.3648099Z 
+2026-10-09T04:48:00.3648365Z To address all issues, run:
+2026-10-09T04:48:00.3648721Z   npm audit fix
+2026-10-09T04:48:00.3648986Z 
+2026-10-09T04:48:00.3649272Z Run `npm audit` for details.
+2026-10-09T04:48:00.3917775Z ##[group]Run node scripts/check-release-policy.js "$(node -p "require('./package.json').version")" "$GITHUB_REF_NAME"
+2026-10-09T04:48:00.3918561Z [36;1mnode scripts/check-release-policy.js "$(node -p "require('./package.json').version")" "$GITHUB_REF_NAME"[0m
+2026-10-09T04:48:00.3956925Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:48:00.3957264Z env:
+2026-10-09T04:48:00.3958104Z   DEBUG: napi:*
+2026-10-09T04:48:00.3958401Z   APP_NAME: lazy-image
+2026-10-09T04:48:00.3958685Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:48:00.3959072Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+2026-10-09T04:48:00.3959384Z ##[endgroup]
+2026-10-09T04:48:00.4754098Z Release policy check passed for 1.4.3: no breaking marker found.
+2026-10-09T04:48:00.4846898Z ##[group]Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+2026-10-09T04:48:00.4847442Z with:
+2026-10-09T04:48:00.4847773Z   name: release-candidate
+2026-10-09T04:48:00.4848059Z   path: candidate
+2026-10-09T04:48:00.4848392Z   merge-multiple: false
+2026-10-09T04:48:00.4848729Z   repository: albert-einshutoin/lazy-image
+2026-10-09T04:48:00.4849029Z   run-id: 37884211511
+2026-10-09T04:48:00.4849323Z   skip-decompress: false
+2026-10-09T04:48:00.4849656Z   digest-mismatch: error
+2026-10-09T04:48:00.4849929Z env:
+2026-10-09T04:48:00.4850163Z   DEBUG: napi:*
+2026-10-09T04:48:00.4850439Z   APP_NAME: lazy-image
+2026-10-09T04:48:00.4850731Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:48:00.4851093Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+2026-10-09T04:48:00.4851462Z ##[endgroup]
+2026-10-09T04:48:00.5888208Z Downloading single artifact
+2026-10-09T04:48:00.7371651Z Preparing to download the following artifacts:
+2026-10-09T04:48:00.7373480Z - release-candidate (ID: 11595788354, Size: 22439226, Expected Digest: sha256:4396d211a8c7fbf517c6ef780e31893f1cbcb802f290f0634a4ba685dd146dca)
+2026-10-09T04:48:01.0499773Z Redirecting to blob download url: https://productionresultssa6.blob.core.windows.net/actions-results/ebb18ef3-7cae-8561-bea5-a700a1e29f5a/workflow-job-run-ebade010-b656-509d-a7d1-b4d227117d95/artifacts/43fa9551602fcc315bc3e752d5f18b5a1646c70f846afc4baa996ce5d239f41c.zip
+2026-10-09T04:48:01.0500838Z Starting download of artifact to: /home/runner/work/lazy-image/lazy-image/candidate
+2026-10-09T04:48:01.2315687Z (node:2182) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-09T04:48:01.2317173Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T04:48:01.9417350Z SHA256 digest of downloaded artifact is 4396d211a8c7fbf517c6ef780e31893f1cbcb802f290f0634a4ba685dd146dca
+2026-10-09T04:48:01.9418188Z Artifact download completed successfully.
+2026-10-09T04:48:01.9418667Z Total of 1 artifact(s) downloaded
+2026-10-09T04:48:01.9420794Z Download artifact has finished successfully
+2026-10-09T04:48:01.9510671Z ##[group]Run node scripts/publish-release-candidate.cjs candidate platform
+2026-10-09T04:48:01.9511183Z [36;1mnode scripts/publish-release-candidate.cjs candidate platform[0m
+2026-10-09T04:48:01.9544700Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:48:01.9545022Z env:
+2026-10-09T04:48:01.9545278Z   DEBUG: napi:*
+2026-10-09T04:48:01.9545521Z   APP_NAME: lazy-image
+2026-10-09T04:48:01.9545817Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:48:01.9546114Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+2026-10-09T04:48:01.9546838Z   NODE_AUTH_TOKEN: ***
+2026-10-09T04:48:01.9547091Z ##[endgroup]
+2026-10-09T04:48:06.0003329Z + @alberteinshutoin/lazy-image-darwin-x64@1.4.3
+2026-10-09T04:48:06.0003913Z npm notice
+2026-10-09T04:48:06.0019250Z @alberteinshutoin/lazy-image-darwin-x64@1.4.3 published from alberteinshutoin-lazy-image-darwin-x64-1.4.3.tgz (e6a0a0751723e3f80afe2ea5ccfa633efa1e633d8619afc81d1bd9f5231d89e2)
+2026-10-09T04:48:06.0026744Z npm notice 📦  @alberteinshutoin/lazy-image-darwin-x64@1.4.3
+2026-10-09T04:48:06.0027484Z npm notice Tarball Contents
+2026-10-09T04:48:06.0027893Z npm notice 12.2MB lazy-image.darwin-x64.node
+2026-10-09T04:48:06.0028269Z npm notice 636B package.json
+2026-10-09T04:48:06.0028539Z npm notice Tarball Details
+2026-10-09T04:48:06.0028908Z npm notice name: @alberteinshutoin/lazy-image-darwin-x64
+2026-10-09T04:48:06.0029222Z npm notice version: 1.4.3
+2026-10-09T04:48:06.0029633Z npm notice filename: alberteinshutoin-lazy-image-darwin-x64-1.4.3.tgz
+2026-10-09T04:48:06.0030004Z npm notice package size: 3.8 MB
+2026-10-09T04:48:06.0030303Z npm notice unpacked size: 12.2 MB
+2026-10-09T04:48:06.0030667Z npm notice shasum: 6017f11c173ddb292b8ac4cd1a467f1f137371b7
+2026-10-09T04:48:06.0031091Z npm notice integrity: sha512-D3/8fHJLASRL8[...]VhyfEIDCvhIYA==
+2026-10-09T04:48:06.0031463Z npm notice total files: 2
+2026-10-09T04:48:06.0031728Z npm notice
+2026-10-09T04:48:06.0032571Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:06.0033435Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:06.0034391Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157537095
+2026-10-09T04:48:06.0035240Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:09.5822267Z npm notice
+2026-10-09T04:48:09.5823166Z + @alberteinshutoin/lazy-image-darwin-arm64@1.4.3
+2026-10-09T04:48:09.5824714Z npm notice 📦  @alberteinshutoin/lazy-image-darwin-arm64@1.4.3
+2026-10-09T04:48:09.5825918Z @alberteinshutoin/lazy-image-darwin-arm64@1.4.3 published from alberteinshutoin-lazy-image-darwin-arm64-1.4.3.tgz (a03ba359e001892ded28ead5dc4574e0bd4fdf16534853ebc21137b5aeb92e40)
+2026-10-09T04:48:09.5827392Z npm notice Tarball Contents
+2026-10-09T04:48:09.5828043Z npm notice 8.1MB lazy-image.darwin-arm64.node
+2026-10-09T04:48:09.5828630Z npm notice 644B package.json
+2026-10-09T04:48:09.5829237Z npm notice Tarball Details
+2026-10-09T04:48:09.5829822Z npm notice name: @alberteinshutoin/lazy-image-darwin-arm64
+2026-10-09T04:48:09.5830974Z npm notice version: 1.4.3
+2026-10-09T04:48:09.5832110Z npm notice filename: alberteinshutoin-lazy-image-darwin-arm64-1.4.3.tgz
+2026-10-09T04:48:09.5833053Z npm notice package size: 3.1 MB
+2026-10-09T04:48:09.5834217Z npm notice unpacked size: 8.1 MB
+2026-10-09T04:48:09.5835002Z npm notice shasum: 0fb60bce03121a173c367a63100fec61a631f407
+2026-10-09T04:48:09.5836104Z npm notice integrity: sha512-UxlHaSq9eczHz[...]uC1cpmSXiVIjA==
+2026-10-09T04:48:09.5837298Z npm notice total files: 2
+2026-10-09T04:48:09.5837896Z npm notice
+2026-10-09T04:48:09.5839093Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:09.5840208Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:09.5841251Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157537999
+2026-10-09T04:48:09.5842139Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:13.6546771Z npm notice
+2026-10-09T04:48:13.6547403Z + @alberteinshutoin/lazy-image-win32-x64-msvc@1.4.3
+2026-10-09T04:48:13.6548881Z npm notice 📦  @alberteinshutoin/lazy-image-win32-x64-msvc@1.4.3
+2026-10-09T04:48:13.6550062Z @alberteinshutoin/lazy-image-win32-x64-msvc@1.4.3 published from alberteinshutoin-lazy-image-win32-x64-msvc-1.4.3.tgz (aa57500a82d2d8a826ff6370ef8cc54d9b28a6a60d88ed6cfc74f7a212210ea1)
+2026-10-09T04:48:13.6551200Z npm notice Tarball Contents
+2026-10-09T04:48:13.6552855Z npm notice 12.8MB lazy-image.win32-x64-msvc.node
+2026-10-09T04:48:13.6553520Z npm notice 647B package.json
+2026-10-09T04:48:13.6554032Z npm notice Tarball Details
+2026-10-09T04:48:13.6554987Z npm notice name: @alberteinshutoin/lazy-image-win32-x64-msvc
+2026-10-09T04:48:13.6555760Z npm notice version: 1.4.3
+2026-10-09T04:48:13.6556483Z npm notice filename: alberteinshutoin-lazy-image-win32-x64-msvc-1.4.3.tgz
+2026-10-09T04:48:13.6557531Z npm notice package size: 3.7 MB
+2026-10-09T04:48:13.6557953Z npm notice unpacked size: 12.8 MB
+2026-10-09T04:48:13.6558553Z npm notice shasum: c3ffd53995b61599c80df1401f6867ae62b7e1e9
+2026-10-09T04:48:13.6559424Z npm notice integrity: sha512-dD8lDE8oiZROQ[...]kyg5AC5uhlRoQ==
+2026-10-09T04:48:13.6560041Z npm notice total files: 2
+2026-10-09T04:48:13.6560531Z npm notice
+2026-10-09T04:48:13.6561165Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:13.6562134Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:13.6563023Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157539051
+2026-10-09T04:48:13.6564068Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:18.2342652Z npm notice
+2026-10-09T04:48:18.2343182Z + @alberteinshutoin/lazy-image-linux-x64-gnu@1.4.3
+2026-10-09T04:48:18.2344258Z @alberteinshutoin/lazy-image-linux-x64-gnu@1.4.3 published from alberteinshutoin-lazy-image-linux-x64-gnu-1.4.3.tgz (f10c3d5ac15981a0f1b9768fe497d502cab92d8284bcd05992587322edb3d50b)
+2026-10-09T04:48:18.2345751Z npm notice 📦  @alberteinshutoin/lazy-image-linux-x64-gnu@1.4.3
+2026-10-09T04:48:18.2346372Z npm notice Tarball Contents
+2026-10-09T04:48:18.2347733Z npm notice 13.1MB lazy-image.linux-x64-gnu.node
+2026-10-09T04:48:18.2348413Z npm notice 673B package.json
+2026-10-09T04:48:18.2348848Z npm notice Tarball Details
+2026-10-09T04:48:18.2349406Z npm notice name: @alberteinshutoin/lazy-image-linux-x64-gnu
+2026-10-09T04:48:18.2349917Z npm notice version: 1.4.3
+2026-10-09T04:48:18.2350567Z npm notice filename: alberteinshutoin-lazy-image-linux-x64-gnu-1.4.3.tgz
+2026-10-09T04:48:18.2351163Z npm notice package size: 4.1 MB
+2026-10-09T04:48:18.2351657Z npm notice unpacked size: 13.1 MB
+2026-10-09T04:48:18.2352179Z npm notice shasum: 17bce8a411e2f01db022e5431a157c239f1fc55a
+2026-10-09T04:48:18.2352854Z npm notice integrity: sha512-/zEM9N8g2T1wJ[...]l4pionbsPosVg==
+2026-10-09T04:48:18.2353320Z npm notice total files: 2
+2026-10-09T04:48:18.2353753Z npm notice
+2026-10-09T04:48:18.2354330Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:18.2355264Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:18.2356153Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157540253
+2026-10-09T04:48:18.2357390Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:22.6226961Z npm notice
+2026-10-09T04:48:22.6227722Z + @alberteinshutoin/lazy-image-linux-arm64-gnu@1.4.3
+2026-10-09T04:48:22.6229263Z npm notice 📦  @alberteinshutoin/lazy-image-linux-arm64-gnu@1.4.3
+2026-10-09T04:48:22.6230385Z npm notice Tarball Contents
+2026-10-09T04:48:22.6231062Z npm notice 8.5MB lazy-image.linux-arm64-gnu.node
+2026-10-09T04:48:22.6231643Z npm notice 681B package.json
+2026-10-09T04:48:22.6232207Z npm notice Tarball Details
+2026-10-09T04:48:22.6232882Z npm notice name: @alberteinshutoin/lazy-image-linux-arm64-gnu
+2026-10-09T04:48:22.6233540Z npm notice version: 1.4.3
+2026-10-09T04:48:22.6234144Z npm notice filename: alberteinshutoin-lazy-image-linux-arm64-gnu-1.4.3.tgz
+2026-10-09T04:48:22.6234767Z npm notice package size: 3.4 MB
+2026-10-09T04:48:22.6235233Z npm notice unpacked size: 8.5 MB
+2026-10-09T04:48:22.6235783Z npm notice shasum: bd631966fe30309a59f33ea425c4eae62991590a
+2026-10-09T04:48:22.6236419Z npm notice integrity: sha512-G5zgQ1Xql9771[...]hmegFzHarCpow==
+2026-10-09T04:48:22.6237471Z npm notice total files: 2
+2026-10-09T04:48:22.6237882Z npm notice
+2026-10-09T04:48:22.6238488Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:22.6239327Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:22.6240197Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157541502
+2026-10-09T04:48:22.6241102Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:22.6242312Z @alberteinshutoin/lazy-image-linux-arm64-gnu@1.4.3 published from alberteinshutoin-lazy-image-linux-arm64-gnu-1.4.3.tgz (4ba33064d697d5078003ea6b83855d1e7860ae7c0a0cca55f49c0a8fd623f7ba)
+2026-10-09T04:48:26.4855450Z npm notice
+2026-10-09T04:48:26.4856323Z npm notice 📦  @alberteinshutoin/lazy-image-linux-x64-musl@1.4.3
+2026-10-09T04:48:26.4857081Z npm notice Tarball Contents
+2026-10-09T04:48:26.4857522Z npm notice 13.2MB lazy-image.linux-x64-musl.node
+2026-10-09T04:48:26.4857872Z npm notice 675B package.json
+2026-10-09T04:48:26.4858161Z npm notice Tarball Details
+2026-10-09T04:48:26.4858626Z npm notice name: @alberteinshutoin/lazy-image-linux-x64-musl
+2026-10-09T04:48:26.4858965Z npm notice version: 1.4.3
+2026-10-09T04:48:26.4859472Z npm notice filename: alberteinshutoin-lazy-image-linux-x64-musl-1.4.3.tgz
+2026-10-09T04:48:26.4859983Z npm notice package size: 4.2 MB
+2026-10-09T04:48:26.4860353Z npm notice unpacked size: 13.2 MB
+2026-10-09T04:48:26.4860758Z npm notice shasum: 0612b7147df4a907574bec0138f7aff3f4a10203
+2026-10-09T04:48:26.4861309Z npm notice integrity: sha512-sq6juqB6v3g56[...]c8Di0aXdm7IiQ==
+2026-10-09T04:48:26.4861749Z npm notice total files: 2
+2026-10-09T04:48:26.4862060Z npm notice
+2026-10-09T04:48:26.4862610Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:26.4863323Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:26.4864125Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157542697
+2026-10-09T04:48:26.4864780Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:26.4865337Z + @alberteinshutoin/lazy-image-linux-x64-musl@1.4.3
+2026-10-09T04:48:26.4866178Z @alberteinshutoin/lazy-image-linux-x64-musl@1.4.3 published from alberteinshutoin-lazy-image-linux-x64-musl-1.4.3.tgz (c07aad56a921b389335532effabfa58d2c7d47d6ab630bafbf9285c72c86b1df)
+2026-10-09T04:48:26.4923573Z ##[group]Run pkg_name="@alberteinshutoin/lazy-image-wasm"
+2026-10-09T04:48:26.4924014Z [36;1mpkg_name="@alberteinshutoin/lazy-image-wasm"[0m
+2026-10-09T04:48:26.4924432Z [36;1mpkg_version="$(node -p "require('./packages/lazy-image-wasm/package.json').version")"[0m
+2026-10-09T04:48:26.4924787Z [36;1m[0m
+2026-10-09T04:48:26.4925125Z [36;1mif npm view "$pkg_name@$pkg_version" version >/dev/null 2>&1; then[0m
+2026-10-09T04:48:26.4925613Z [36;1m  echo "$pkg_name@$pkg_version already exists; skipping publish."[0m
+2026-10-09T04:48:26.4925979Z [36;1m  exit 0[0m
+2026-10-09T04:48:26.4926193Z [36;1mfi[0m
+2026-10-09T04:48:26.4926427Z [36;1m[0m
+2026-10-09T04:48:26.4927107Z [36;1mnpm publish \[0m
+2026-10-09T04:48:26.4927480Z [36;1m  --workspace "$pkg_name" \[0m
+2026-10-09T04:48:26.4927855Z [36;1m  --access public \[0m
+2026-10-09T04:48:26.4928130Z [36;1m  --provenance \[0m
+2026-10-09T04:48:26.4928385Z [36;1m  --ignore-scripts[0m
+2026-10-09T04:48:26.4962325Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:48:26.4962601Z env:
+2026-10-09T04:48:26.4962836Z   DEBUG: napi:*
+2026-10-09T04:48:26.4963122Z   APP_NAME: lazy-image
+2026-10-09T04:48:26.4963378Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:48:26.4963717Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+2026-10-09T04:48:26.4964414Z   NODE_AUTH_TOKEN: ***
+2026-10-09T04:48:26.4965064Z ##[endgroup]
+2026-10-09T04:48:27.2457169Z npm warn publish npm auto-corrected some errors in your package.json when publishing.  Please run "npm pkg fix" to address these errors.
+2026-10-09T04:48:27.2457943Z npm warn publish errors corrected:
+2026-10-09T04:48:27.2458534Z npm warn publish "repository.url" was normalized to "git+https://github.com/albert-einshutoin/lazy-image.git"
+2026-10-09T04:48:27.2486209Z npm notice
+2026-10-09T04:48:27.2487156Z npm notice 📦  @alberteinshutoin/lazy-image-wasm@1.4.3
+2026-10-09T04:48:27.2487613Z npm notice Tarball Contents
+2026-10-09T04:48:27.2488235Z npm notice 7.2kB README.md
+2026-10-09T04:48:27.2488696Z npm notice 457B browser.d.ts
+2026-10-09T04:48:27.2488963Z npm notice 10.9kB browser.js
+2026-10-09T04:48:27.2489257Z npm notice 457B edge.d.ts
+2026-10-09T04:48:27.2489508Z npm notice 459B edge.js
+2026-10-09T04:48:27.2489830Z npm notice 2.8kB examples/edge.mjs
+2026-10-09T04:48:27.2490121Z npm notice 122B examples/worker.mjs
+2026-10-09T04:48:27.2490421Z npm notice 1.3kB package.json
+2026-10-09T04:48:27.2490704Z npm notice 2.9kB shared.d.ts
+2026-10-09T04:48:27.2490983Z npm notice 9.2kB shared.js
+2026-10-09T04:48:27.2491252Z npm notice 197B worker.d.ts
+2026-10-09T04:48:27.2491520Z npm notice 1.3kB worker.js
+2026-10-09T04:48:27.2491787Z npm notice Tarball Details
+2026-10-09T04:48:27.2492128Z npm notice name: @alberteinshutoin/lazy-image-wasm
+2026-10-09T04:48:27.2492472Z npm notice version: 1.4.3
+2026-10-09T04:48:27.2492950Z npm notice filename: alberteinshutoin-lazy-image-wasm-1.4.3.tgz
+2026-10-09T04:48:27.2493333Z npm notice package size: 10.8 kB
+2026-10-09T04:48:27.2493875Z npm notice unpacked size: 37.3 kB
+2026-10-09T04:48:27.2494339Z npm notice shasum: bb73efb75e8c481cdeb238fd1f56e8e474df137d
+2026-10-09T04:48:27.2494816Z npm notice integrity: sha512-voKlM0Q8aRqMF[...]kaQgaGoGzJFjQ==
+2026-10-09T04:48:27.2495210Z npm notice total files: 12
+2026-10-09T04:48:27.2495539Z npm notice
+2026-10-09T04:48:27.2501206Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:28.4035352Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:28.4036811Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157543599
+2026-10-09T04:48:29.8475409Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:29.8476424Z + @alberteinshutoin/lazy-image-wasm@1.4.3
+2026-10-09T04:48:29.8571013Z ##[group]Run node scripts/publish-release-candidate.cjs candidate main
+2026-10-09T04:48:29.8571480Z [36;1mnode scripts/publish-release-candidate.cjs candidate main[0m
+2026-10-09T04:48:29.8604583Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:48:29.8604933Z env:
+2026-10-09T04:48:29.8605175Z   DEBUG: napi:*
+2026-10-09T04:48:29.8605454Z   APP_NAME: lazy-image
+2026-10-09T04:48:29.8605702Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:48:29.8606029Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+2026-10-09T04:48:29.8606918Z   NODE_AUTH_TOKEN: ***
+2026-10-09T04:48:29.8607238Z ##[endgroup]
+2026-10-09T04:48:33.4150694Z npm notice
+2026-10-09T04:48:33.4151327Z + @alberteinshutoin/lazy-image@1.4.3
+2026-10-09T04:48:33.4152081Z @alberteinshutoin/lazy-image@1.4.3 published from alberteinshutoin-lazy-image-1.4.3.tgz (4272c60beac7516b3549cf4778b7ab924d1b9b2233b783642e6a834883e925c5)
+2026-10-09T04:48:33.4153051Z npm notice 📦  @alberteinshutoin/lazy-image@1.4.3
+2026-10-09T04:48:33.4153530Z npm notice Tarball Contents
+2026-10-09T04:48:33.4153822Z npm notice 38.3kB CHANGELOG.md
+2026-10-09T04:48:33.4154125Z npm notice 1.1kB LICENSE
+2026-10-09T04:48:33.4154409Z npm notice 5.4kB README.ja.md
+2026-10-09T04:48:33.4154693Z npm notice 8.5kB README.md
+2026-10-09T04:48:33.4154980Z npm notice 3.5kB bin/lazy-image.js
+2026-10-09T04:48:33.4155292Z npm notice 33.6kB index.d.ts
+2026-10-09T04:48:33.4155543Z npm notice 31.1kB index.js
+2026-10-09T04:48:33.4155832Z npm notice 540B index.mjs
+2026-10-09T04:48:33.4156111Z npm notice 65.7kB lib/artifact-compiler.js
+2026-10-09T04:48:33.4156508Z npm notice 11.1kB lib/artifact-policy.js
+2026-10-09T04:48:33.4157132Z npm notice 20.3kB lib/helpers.js
+2026-10-09T04:48:33.4157445Z npm notice 7.0kB package.json
+2026-10-09T04:48:33.4157727Z npm notice 753B streaming/pipeline.d.ts
+2026-10-09T04:48:33.4158065Z npm notice 4.5kB streaming/pipeline.js
+2026-10-09T04:48:33.4158432Z npm notice 157B streaming/pipeline.mjs
+2026-10-09T04:48:33.4158838Z npm notice Tarball Details
+2026-10-09T04:48:33.4159284Z npm notice name: @alberteinshutoin/lazy-image
+2026-10-09T04:48:33.4159707Z npm notice version: 1.4.3
+2026-10-09T04:48:33.4160195Z npm notice filename: alberteinshutoin-lazy-image-1.4.3.tgz
+2026-10-09T04:48:33.4160665Z npm notice package size: 57.8 kB
+2026-10-09T04:48:33.4161112Z npm notice unpacked size: 231.4 kB
+2026-10-09T04:48:33.4161557Z npm notice shasum: 930965937379f43d054be35cf5ac7dada3511ae4
+2026-10-09T04:48:33.4162147Z npm notice integrity: sha512-KgMuYsItSOkUh[...]23eS5zuYsvLFw==
+2026-10-09T04:48:33.4162537Z npm notice total files: 15
+2026-10-09T04:48:33.4162805Z npm notice
+2026-10-09T04:48:33.4163260Z npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+2026-10-09T04:48:33.4163875Z npm notice publish Signed provenance statement with source and build information from GitHub Actions
+2026-10-09T04:48:33.4164684Z npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=3157544429
+2026-10-09T04:48:33.4165334Z npm notice Your package is being processed and may take a few minutes to become available.
+2026-10-09T04:48:33.4220735Z ##[group]Run TAG="${GITHUB_REF#refs/tags/}"
+2026-10-09T04:48:33.4221229Z [36;1mTAG="${GITHUB_REF#refs/tags/}"[0m
+2026-10-09T04:48:33.4221614Z [36;1mVERSION="$(node -p "require('./package.json').version")"[0m
+2026-10-09T04:48:33.4222215Z [36;1mawk -v version="$VERSION" 'index($0, "## [" version "]") == 1 { capture=1; next } capture && index($0, "## [") == 1 { exit } capture { print }' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"[0m
+2026-10-09T04:48:33.4222804Z [36;1mtest -s "$RUNNER_TEMP/release-notes.md"[0m
+2026-10-09T04:48:33.4223166Z [36;1mif gh release view "$TAG" >/dev/null 2>&1; then[0m
+2026-10-09T04:48:33.4223508Z [36;1m  echo "Release $TAG already exists. Updating flags..."[0m
+2026-10-09T04:48:33.4223997Z [36;1m  gh release edit "$TAG" --draft=false --prerelease=false --notes-file "$RUNNER_TEMP/release-notes.md"[0m
+2026-10-09T04:48:33.4224387Z [36;1melse[0m
+2026-10-09T04:48:33.4224657Z [36;1m  echo "Creating release $TAG..."[0m
+2026-10-09T04:48:33.4225081Z [36;1m  gh release create "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md"[0m
+2026-10-09T04:48:33.4225424Z [36;1mfi[0m
+2026-10-09T04:48:33.4256844Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:48:33.4257226Z env:
+2026-10-09T04:48:33.4257507Z   DEBUG: napi:*
+2026-10-09T04:48:33.4257738Z   APP_NAME: lazy-image
+2026-10-09T04:48:33.4258023Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-09T04:48:33.4258359Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+2026-10-09T04:48:33.4260699Z   GH_TOKEN: ***
+2026-10-09T04:48:33.4260986Z ##[endgroup]
+2026-10-09T04:48:35.8871900Z Creating release v1.4.3...
+2026-10-09T04:48:35.9542326Z * Request at 2026-10-09 04:48:35.95401942 +0000 UTC m=+0.064860551
+2026-10-09T04:48:35.9543017Z * Request to https://api.github.com/graphql
+2026-10-09T04:48:35.9543460Z > POST /graphql HTTP/1.1
+2026-10-09T04:48:35.9543836Z > Host: api.github.com
+2026-10-09T04:48:35.9544543Z > Accept: application/vnd.github.merge-info-preview+json, application/vnd.github.nebula-preview
+2026-10-09T04:48:35.9545425Z > Authorization: token ████████████████████
+2026-10-09T04:48:35.9545794Z > Content-Length: 246
+2026-10-09T04:48:35.9546096Z > Content-Type: application/json
+2026-10-09T04:48:35.9546480Z > Graphql-Features: merge_queue
+2026-10-09T04:48:35.9546921Z > Time-Zone: Etc/UTC
+2026-10-09T04:48:35.9547242Z > User-Agent: GitHub CLI 2.102.0
+2026-10-09T04:48:35.9547681Z > X-Github-Api-Version: 2022-11-28
+2026-10-09T04:48:35.9547858Z 
+2026-10-09T04:48:35.9547996Z GraphQL query:
+2026-10-09T04:48:35.9548784Z query RepositoryFindRef($name:String!$owner:String!$tagName:String!){repository(owner: $owner, name: $name){ref(qualifiedName: $tagName){id}}}
+2026-10-09T04:48:35.9549595Z GraphQL variables: {"name":"lazy-image","owner":"albert-einshutoin","tagName":"refs/tags/v1.4.3"}
+2026-10-09T04:48:35.9549991Z 
+2026-10-09T04:48:36.3231117Z < HTTP/2.0 200 OK
+2026-10-09T04:48:36.3232170Z < Access-Control-Allow-Origin: *
+2026-10-09T04:48:36.3233967Z < Access-Control-Expose-Headers: ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset, Warning
+2026-10-09T04:48:36.3235341Z < Content-Security-Policy: default-src 'none'
+2026-10-09T04:48:36.3235929Z < Content-Type: application/json; charset=utf-8
+2026-10-09T04:48:36.3236801Z < Date: Fri, 09 Oct 2026 04:48:36 GMT
+2026-10-09T04:48:36.3237412Z < Referrer-Policy: origin-when-cross-origin, strict-origin-when-cross-origin
+2026-10-09T04:48:36.3237896Z < Server: github.com
+2026-10-09T04:48:36.3238317Z < Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
+2026-10-09T04:48:36.3238795Z < Vary: Accept-Encoding, Accept, X-Requested-With
+2026-10-09T04:48:36.3239148Z < X-Content-Type-Options: nosniff
+2026-10-09T04:48:36.3239453Z < X-Frame-Options: deny
+2026-10-09T04:48:36.3239729Z < X-Github-Edge-Region: iad
+2026-10-09T04:48:36.3240670Z < X-Github-Media-Type: github.v4; param=merge-info-preview.nebula-preview; format=json
+2026-10-09T04:48:36.3241186Z < X-Github-Request-Id: 182A:5560E:A0C103:211CBEE:6AC87224
+2026-10-09T04:48:36.3241514Z < X-Ratelimit-Limit: 5000
+2026-10-09T04:48:36.3241814Z < X-Ratelimit-Remaining: 4998
+2026-10-09T04:48:36.3242135Z < X-Ratelimit-Reset: 1791524915
+2026-10-09T04:48:36.3242447Z < X-Ratelimit-Resource: graphql
+2026-10-09T04:48:36.3242738Z < X-Ratelimit-Used: 2
+2026-10-09T04:48:36.3243028Z < X-Xss-Protection: 0
+2026-10-09T04:48:36.3243168Z 
+2026-10-09T04:48:36.3243313Z {
+2026-10-09T04:48:36.3243570Z   "data": {
+2026-10-09T04:48:36.3243801Z     "repository": {
+2026-10-09T04:48:36.3244121Z       "ref": {
+2026-10-09T04:48:36.3244392Z         "id": "REF_kwDOQee36bByZWZzL3RhZ3MvdjEuNC4z"
+2026-10-09T04:48:36.3244755Z       }
+2026-10-09T04:48:36.3244967Z     }
+2026-10-09T04:48:36.3245209Z   }
+2026-10-09T04:48:36.3245413Z }
+2026-10-09T04:48:36.3245526Z 
+2026-10-09T04:48:36.3245678Z * Request took 369.001469ms
+2026-10-09T04:48:36.3246049Z * Request at 2026-10-09 04:48:36.323157339 +0000 UTC m=+0.433998469
+2026-10-09T04:48:36.3246534Z * Request to https://api.github.com/repos/albert-einshutoin/lazy-image/releases
+2026-10-09T04:48:36.3247346Z > POST /repos/albert-einshutoin/lazy-image/releases HTTP/1.1
+2026-10-09T04:48:36.3247689Z > Host: api.github.com
+2026-10-09T04:48:36.3248230Z > Accept: application/vnd.github.merge-info-preview+json, application/vnd.github.nebula-preview
+2026-10-09T04:48:36.3249141Z > Authorization: token ████████████████████
+2026-10-09T04:48:36.3249488Z > Content-Length: 1539
+2026-10-09T04:48:36.3249809Z > Content-Type: application/json; charset=utf-8
+2026-10-09T04:48:36.3250163Z > Time-Zone: Etc/UTC
+2026-10-09T04:48:36.3250436Z > User-Agent: GitHub CLI 2.102.0
+2026-10-09T04:48:36.3250810Z > X-Github-Api-Version: 2022-11-28
+2026-10-09T04:48:36.3250975Z 
+2026-10-09T04:48:36.3251086Z {
+2026-10-09T04:48:36.3254889Z   "body": "\nUpdate with `npm install @alberteinshutoin/lazy-image@1.4.3 @alberteinshutoin/lazy-image-wasm@1.4.3`. The six native platform packages use the same version and are selected as optional dependencies of the main package.\n\n### Changed\n- Updated `libc` to 0.2.189 in the native and Fuzz lockfiles. The [saved compatibility evaluation](https://github.com/albert-einshutoin/lazy-image/blob/37777bbc0b4988e888390e72a9093f602b8908ea/docs/history/libc-0.2.189-evaluation/README.md) preserved platform lock/flock and resource-usage checks on the measured environments and did not reproduce a prior UB or crash. These checks do not claim a product bug fix or a general speedup.\n- Added platform-layer regression coverage for exclusive-lock contention and finite Unix resource-usage metrics that exercise the libc-backed flock and getrusage paths used by the engine.\n- Recorded the prior v1.4.2 publication verification separately from this release. Wasm implementation and codec dependencies are unchanged; its package version and `VERSION` are synchronized to 1.4.3.\n\n`oxipng` remains 10.1.1 in native and Fuzz; #833 remains on hold. #777, #835, #739, and other unevaluated Dependabot updates are excluded and require separate evaluation. This patch contains a dependency and verification update without a public contract change under the [SemVer policy](https://github.com/albert-einshutoin/lazy-image/blob/37777bbc0b4988e888390e72a9093f602b8908ea/docs/SEMVER_POLICY.md).\n\n",
+2026-10-09T04:48:36.3258953Z   "draft": false,
+2026-10-09T04:48:36.3259263Z   "prerelease": false,
+2026-10-09T04:48:36.3259526Z   "tag_name": "v1.4.3"
+2026-10-09T04:48:36.3259828Z }
+2026-10-09T04:48:36.3259961Z 
+2026-10-09T04:48:36.9578944Z < HTTP/2.0 201 Created
+2026-10-09T04:48:36.9579607Z < Access-Control-Allow-Origin: *
+2026-10-09T04:48:36.9582426Z < Access-Control-Expose-Headers: ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset, Warning
+2026-10-09T04:48:36.9583948Z < Cache-Control: private, max-age=60, s-maxage=60
+2026-10-09T04:48:36.9584401Z < Content-Length: 3435
+2026-10-09T04:48:36.9584920Z < Content-Security-Policy: default-src 'none'
+2026-10-09T04:48:36.9585404Z < Content-Type: application/json; charset=utf-8
+2026-10-09T04:48:36.9585924Z < Date: Fri, 09 Oct 2026 04:48:36 GMT
+2026-10-09T04:48:36.9586965Z < Etag: "b54b603eb1a6a670e54976b891f98c9efb50a12b447ab33a562367adb867987c"
+2026-10-09T04:48:36.9587771Z < Location: https://api.github.com/repos/albert-einshutoin/lazy-image/releases/407518482
+2026-10-09T04:48:36.9588516Z < Referrer-Policy: origin-when-cross-origin, strict-origin-when-cross-origin
+2026-10-09T04:48:36.9589112Z < Server: github.com
+2026-10-09T04:48:36.9589636Z < Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
+2026-10-09T04:48:36.9590470Z < Vary: Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+2026-10-09T04:48:36.9591316Z < X-Accepted-Github-Permissions: contents=write; contents=write,workflows=write
+2026-10-09T04:48:36.9591948Z < X-Content-Type-Options: nosniff
+2026-10-09T04:48:36.9592364Z < X-Frame-Options: deny
+2026-10-09T04:48:36.9592760Z < X-Github-Api-Version-Selected: 2022-11-28
+2026-10-09T04:48:36.9593307Z < X-Github-Edge-Region: iad
+2026-10-09T04:48:36.9593891Z < X-Github-Media-Type: github.v3; param=merge-info-preview.nebula-preview; format=json
+2026-10-09T04:48:36.9594667Z < X-Github-Request-Id: 182A:5560E:A0C27A:211D0A8:6AC87224
+2026-10-09T04:48:36.9595352Z < X-Ratelimit-Limit: 5000
+2026-10-09T04:48:36.9595824Z < X-Ratelimit-Remaining: 4999
+2026-10-09T04:48:36.9596783Z < X-Ratelimit-Reset: 1791524916
+2026-10-09T04:48:36.9597236Z < X-Ratelimit-Resource: core
+2026-10-09T04:48:36.9597711Z < X-Ratelimit-Used: 1
+2026-10-09T04:48:36.9598388Z < X-Xss-Protection: 0
+2026-10-09T04:48:36.9598624Z 
+2026-10-09T04:48:36.9598814Z {
+2026-10-09T04:48:36.9599280Z   "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/releases/407518482",
+2026-10-09T04:48:36.9600251Z   "assets_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/releases/407518482/assets",
+2026-10-09T04:48:36.9601082Z   "upload_url": "https://uploads.github.com/repos/albert-einshutoin/lazy-image/releases/407518482/assets{?name,label}",
+2026-10-09T04:48:36.9602062Z   "html_url": "https://github.com/albert-einshutoin/lazy-image/releases/tag/v1.4.3",
+2026-10-09T04:48:36.9602610Z   "id": 407518482,
+2026-10-09T04:48:36.9602941Z   "author": {
+2026-10-09T04:48:36.9603572Z     "login": "github-actions[bot]",
+2026-10-09T04:48:36.9603982Z     "id": 41898282,
+2026-10-09T04:48:36.9604374Z     "node_id": "MDM6Qm90NDE4OTgyODI=",
+2026-10-09T04:48:36.9604808Z     "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
+2026-10-09T04:48:36.9605291Z     "gravatar_id": "",
+2026-10-09T04:48:36.9605670Z     "url": "https://api.github.com/users/github-actions%5Bbot%5D",
+2026-10-09T04:48:36.9606166Z     "html_url": "https://github.com/apps/github-actions",
+2026-10-09T04:48:36.9606962Z     "followers_url": "https://api.github.com/users/github-actions%5Bbot%5D/followers",
+2026-10-09T04:48:36.9608662Z     "following_url": "https://api.github.com/users/github-actions%5Bbot%5D/following{/other_user}",
+2026-10-09T04:48:36.9609484Z     "gists_url": "https://api.github.com/users/github-actions%5Bbot%5D/gists{/gist_id}",
+2026-10-09T04:48:36.9610312Z     "starred_url": "https://api.github.com/users/github-actions%5Bbot%5D/starred{/owner}{/repo}",
+2026-10-09T04:48:36.9610948Z     "subscriptions_url": "https://api.github.com/users/github-actions%5Bbot%5D/subscriptions",
+2026-10-09T04:48:36.9611831Z     "organizations_url": "https://api.github.com/users/github-actions%5Bbot%5D/orgs",
+2026-10-09T04:48:36.9612384Z     "repos_url": "https://api.github.com/users/github-actions%5Bbot%5D/repos",
+2026-10-09T04:48:36.9613024Z     "events_url": "https://api.github.com/users/github-actions%5Bbot%5D/events{/privacy}",
+2026-10-09T04:48:36.9613783Z     "received_events_url": "https://api.github.com/users/github-actions%5Bbot%5D/received_events",
+2026-10-09T04:48:36.9614285Z     "type": "Bot",
+2026-10-09T04:48:36.9614592Z     "user_view_type": "public",
+2026-10-09T04:48:36.9614947Z     "site_admin": false
+2026-10-09T04:48:36.9615268Z   },
+2026-10-09T04:48:36.9615564Z   "node_id": "RE_kwDOQee36c4YSj0S",
+2026-10-09T04:48:36.9615894Z   "tag_name": "v1.4.3",
+2026-10-09T04:48:36.9616215Z   "target_commitish": "main",
+2026-10-09T04:48:36.9616536Z   "name": null,
+2026-10-09T04:48:36.9617164Z   "draft": false,
+2026-10-09T04:48:36.9617483Z   "immutable": false,
+2026-10-09T04:48:36.9617804Z   "prerelease": false,
+2026-10-09T04:48:36.9618107Z   "created_at": "2026-10-09T04:30:35Z",
+2026-10-09T04:48:36.9618817Z   "updated_at": "2026-10-09T04:48:36Z",
+2026-10-09T04:48:36.9619158Z   "published_at": "2026-10-09T04:48:36Z",
+2026-10-09T04:48:36.9619503Z   "assets": [],
+2026-10-09T04:48:36.9620252Z   "tarball_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/tarball/v1.4.3",
+2026-10-09T04:48:36.9620894Z   "zipball_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/zipball/v1.4.3",
+2026-10-09T04:48:36.9625429Z   "body": "\nUpdate with `npm install @alberteinshutoin/lazy-image@1.4.3 @alberteinshutoin/lazy-image-wasm@1.4.3`. The six native platform packages use the same version and are selected as optional dependencies of the main package.\n\n### Changed\n- Updated `libc` to 0.2.189 in the native and Fuzz lockfiles. The [saved compatibility evaluation](https://github.com/albert-einshutoin/lazy-image/blob/37777bbc0b4988e888390e72a9093f602b8908ea/docs/history/libc-0.2.189-evaluation/README.md) preserved platform lock/flock and resource-usage checks on the measured environments and did not reproduce a prior UB or crash. These checks do not claim a product bug fix or a general speedup.\n- Added platform-layer regression coverage for exclusive-lock contention and finite Unix resource-usage metrics that exercise the libc-backed flock and getrusage paths used by the engine.\n- Recorded the prior v1.4.2 publication verification separately from this release. Wasm implementation and codec dependencies are unchanged; its package version and `VERSION` are synchronized to 1.4.3.\n\n`oxipng` remains 10.1.1 in native and Fuzz; #833 remains on hold. #777, #835, #739, and other unevaluated Dependabot updates are excluded and require separate evaluation. This patch contains a dependency and verification update without a public contract change under the [SemVer policy](https://github.com/albert-einshutoin/lazy-image/blob/37777bbc0b4988e888390e72a9093f602b8908ea/docs/SEMVER_POLICY.md).\n\n"
+2026-10-09T04:48:36.9630781Z }
+2026-10-09T04:48:36.9630986Z 
+2026-10-09T04:48:36.9631200Z * Request took 634.918826ms
+2026-10-09T04:48:36.9632019Z https://github.com/albert-einshutoin/lazy-image/releases/tag/v1.4.3
+2026-10-09T04:48:36.9721344Z Post job cleanup.
+2026-10-09T04:48:37.0657744Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-2ea2e6c7ced8c681e54fc72aa5337d664f86f318bc326dfc3a64d464201433b0, not saving cache.
+2026-10-09T04:48:37.0777234Z Post job cleanup.
+2026-10-09T04:48:37.1494903Z [command]/usr/bin/git version
+2026-10-09T04:48:37.1533267Z git version 2.55.0
+2026-10-09T04:48:37.1574667Z Temporarily overriding HOME='/home/runner/work/_temp/379e3494-9fd0-4722-8196-f5f217a95f31' before making global git config changes
+2026-10-09T04:48:37.1575675Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T04:48:37.1579466Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/lazy-image/lazy-image
+2026-10-09T04:48:37.1607291Z Removing SSH command configuration
+2026-10-09T04:48:37.1613118Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:48:37.1644102Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:48:37.1837824Z Removing HTTP extra header
+2026-10-09T04:48:37.1845485Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:48:37.1873774Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:48:37.2044101Z Removing includeIf entries pointing to credentials config files
+2026-10-09T04:48:37.2049495Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:48:37.2073027Z includeif.gitdir:/home/runner/work/lazy-image/lazy-image/.git.path
+2026-10-09T04:48:37.2073950Z includeif.gitdir:/home/runner/work/lazy-image/lazy-image/.git/worktrees/*.path
+2026-10-09T04:48:37.2074551Z includeif.gitdir:/github/workspace/.git.path
+2026-10-09T04:48:37.2075086Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-09T04:48:37.2081588Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/lazy-image/lazy-image/.git.path
+2026-10-09T04:48:37.2098465Z /home/runner/work/_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:48:37.2106255Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/lazy-image/lazy-image/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-11f7f08b\-fc47\-42e3\-837e\-9da8e60732e9\.config
+2026-10-09T04:48:37.2144120Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/lazy-image/lazy-image/.git/worktrees/*.path
+2026-10-09T04:48:37.2172855Z /home/runner/work/_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:48:37.2181493Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/lazy-image/lazy-image/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-11f7f08b\-fc47\-42e3\-837e\-9da8e60732e9\.config
+2026-10-09T04:48:37.2208831Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-09T04:48:37.2225577Z /github/runner_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:48:37.2231365Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-11f7f08b\-fc47\-42e3\-837e\-9da8e60732e9\.config
+2026-10-09T04:48:37.2261704Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-09T04:48:37.2280471Z /github/runner_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config
+2026-10-09T04:48:37.2286043Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-11f7f08b\-fc47\-42e3\-837e\-9da8e60732e9\.config
+2026-10-09T04:48:37.2317047Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:48:37.2465530Z Removing credentials config '/home/runner/work/_temp/git-credentials-11f7f08b-fc47-42e3-837e-9da8e60732e9.config'
+2026-10-09T04:48:37.2595505Z Cleaning up orphan processes
