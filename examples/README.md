@@ -20,6 +20,7 @@ cd lazy-image && npm install && npm run build
 | [error-handling.mjs](./error-handling.mjs) | 4-tier error taxonomy, validation, and Image Firewall handling |
 | [upload-sanitize-server.mjs](./upload-sanitize-server.mjs) | Raw upload endpoint with header inspection, Image Firewall, and HTTP status mapping |
 | [build-time-optimize.mjs](./build-time-optimize.mjs) | Static asset batch optimization with metrics summary and failure reporting |
+| [compile-image-static-site.mjs](./compile-image-static-site.mjs) | One compiler input → verified artifacts/placeholder/manifest → manifest-driven static HTML; [walkthrough](../docs/ADOPTION_GUIDE.md#build-a-static-page-from-the-manifest) |
 | [metrics-observability.mjs](./metrics-observability.mjs) | Structured JSON logs and aggregate counters from `ProcessingMetrics` |
 
 ## Running
@@ -30,6 +31,7 @@ node examples/batch-processing.mjs
 node examples/error-handling.mjs
 node examples/upload-sanitize-server.mjs
 node examples/build-time-optimize.mjs ./public/images ./public/optimized
+node examples/compile-image-static-site.mjs ./input.jpg ./new-site
 node examples/metrics-observability.mjs ./input.jpg
 ```
 

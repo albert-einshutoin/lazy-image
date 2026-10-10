@@ -12,6 +12,7 @@ const EXAMPLES = [
   'error-handling.mjs',
   'upload-sanitize-server.mjs',
   'build-time-optimize.mjs',
+  'compile-image-static-site.mjs',
   'metrics-observability.mjs',
 ];
 
