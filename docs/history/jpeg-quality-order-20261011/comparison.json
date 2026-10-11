@@ -125,6 +125,26 @@
     "targeted-js-results.json": {
       "bytes": 891,
       "sha256": "73374395150b6edfb98a9e9056a3d29e584efb9b37adbb66522c8cb5df726d17"
+    },
+    "full-local-initial-results.json": {
+      "bytes": 732,
+      "sha256": "78b95c41d3ba8098253711f48b911f56f85e9725767751b9b2243442604ffaaf"
+    },
+    "full-npm-test-initial.log": {
+      "bytes": 21226,
+      "sha256": "f96dc0225ddaf1869a33f56502c5e216cfc87be57a32a2b99b48fa3d42457c73"
+    },
+    "golden-before-probe.json": {
+      "bytes": 799,
+      "sha256": "c3ac8f562c4275a62c8ccb643d2997295f51126853fa7d919027251983f52977"
+    },
+    "golden-after-probe.json": {
+      "bytes": 877,
+      "sha256": "10989c99bef02920e03f987f407efc578e17042e117a95329e3aa6bece24b9db"
+    },
+    "green-golden.log": {
+      "bytes": 658,
+      "sha256": "b18368afecee740268dabb3476c2d6d0bf84871dbf8c8a224ff6ebe76ea83e2b"
     }
   },
   "cases": [

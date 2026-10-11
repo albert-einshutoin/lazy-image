@@ -16,7 +16,8 @@ module.exports = [
         ],
         output: { format: 'jpeg', quality: 82 },
         thresholds: { minSsim: 0.99, minPsnr: 38 },
-        sizeRatioMax: 0.95, // lazy-image output should be <= 95% of sharp reference
+        // #885: quality now reaches DQT; the old 5% size lead is unmet and retained
+        // in docs/history/jpeg-quality-order-20261011. Same-q size dominance is not a contract.
     },
     {
         name: 'png_cover_rotate_grayscale',

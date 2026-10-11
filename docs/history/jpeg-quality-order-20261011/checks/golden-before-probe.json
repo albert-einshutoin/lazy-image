@@ -1,0 +1,23 @@
+{
+  "stage": "before",
+  "bindingSha256": "74c5a0179ffa03609713e95cefc1ffd25e47571954b3085d27e3d1f093f1e276",
+  "sourceSha": "059fcb5311ddce4fa9e07b135ecd4eba555b63c7",
+  "fixtureSha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+  "outputSha256": "3e7553ff41af3ed89c4b5c591000e9622f5730a83e36793c99c2a72e4812a97e",
+  "referenceSha256": "41fcac3b2e7d4454957c74ddb14eab346bc09c0bbb45d34fedeb501f63f6b590",
+  "pixelHash": "055beced9600804eb4727844d2380e3f016c235298ba1d89ebf7a405c5975caf",
+  "width": 1200,
+  "height": 1200,
+  "bytes": 95964,
+  "referenceBytes": 135970,
+  "sizeRatio": 0.7057733323527249,
+  "metrics": {
+    "psnr": 41.23137431467596,
+    "ssim": 0.9948615630988136
+  },
+  "thresholds": {
+    "minSsim": 0.99,
+    "minPsnr": 38
+  },
+  "sizeRatioMax": 0.95
+}

@@ -97,3 +97,24 @@ node test/benchmarks/quality-matched.bench.js --worker 8 jpeg sharp
   EXIF/GPS opt-in/strip契約とJPEG出力のmetadata経路を確認した。
 
 専門レビュー、最終Stop Review Gate、完全検証と納品結果は[検証記録](VALIDATION.md)を参照する。
+
+## Golden snapshotの意図した出力変更と旧容量期待の未達
+
+最初の完全`npm test`はexit1で停止し、`test:bench:release`はその時点で未実行だった
+([初回実結果](checks/full-local-initial-results.json)、[失敗ログ](checks/full-npm-test-initial.log))。
+失敗はJPEG q82 golden caseのpixel hash変更。他5ケースのhashは不変だった。
+保存した修正前bindingをpublic indexへその検証プロセス内だけで接続し、同一fixture・既存golden helperで比較した。
+[修正前](checks/golden-before-probe.json) は旧hashを直接再現し、[修正後](checks/golden-after-probe.json) は
+新hash `dad8e345f4403a2e5c5ae2d139a9e77bf06b5ada853f6b770529b5d801ea583e` と1200×1200を確認した。
+fixture hash/reference hashは一致し、binding hashを各記録に保持した。
+
+SSIM 0.994862→0.997755、PSNR41.231→47.575 dBで、既存のSSIM>=0.99/PSNR>=38条件を満たす。
+bytesは95,964→133,070 B、Sharp reference135,970 Bに対する容量比は0.705773→0.978672。
+**旧sizeRatioMax=0.95（5%優位）は未達**であり、probeの`checks.sizeRatio:false`を保持している。
+最初の修正後probeはこの条件のassertでexit1となり、その後の値抽出は診断の保存で、旧条件のPASSではない。
+
+q82が上書きされていた出力のpixel snapshotを修正後へ更新し、このJPEG caseの相対容量優位assertだけを削除した。
+新しい都合のよい閾値を設定せず、同qの全入力優位をquality修正の契約にしない。
+既存の画質閾値・寸法・pixel hash検査、他5ケースのhash/guard、actual targetBytes/strict非公開・非保存条件は保持した。
+容量比はgolden実行の表示と本評価へ残し、旧優位未達を品質修正の成功へ加算していない。
+対象goldenを再実行し6ケース成功/exit0 ([ログ](checks/green-golden.log))。

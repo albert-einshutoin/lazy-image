@@ -1,0 +1,24 @@
+{
+  "sourceSha": "365b33e813a53fd30364136a4534d57ac2d43af7",
+  "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+  "results": [
+    {
+      "command": "npm run build",
+      "sourceSha": "365b33e813a53fd30364136a4534d57ac2d43af7",
+      "startedAt": "2026-10-11T04:57:32.967Z",
+      "completedAt": "2026-10-11T04:58:36.662Z",
+      "exitCode": 0,
+      "signal": null,
+      "logfile": "full-build.log"
+    },
+    {
+      "command": "npm test",
+      "sourceSha": "365b33e813a53fd30364136a4534d57ac2d43af7",
+      "startedAt": "2026-10-11T04:58:36.668Z",
+      "completedAt": "2026-10-11T04:59:10.804Z",
+      "exitCode": 1,
+      "signal": null,
+      "logfile": "full-npm-test.log"
+    }
+  ]
+}
