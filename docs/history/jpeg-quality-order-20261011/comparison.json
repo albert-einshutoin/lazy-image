@@ -145,6 +145,30 @@
     "green-golden.log": {
       "bytes": 658,
       "sha256": "b18368afecee740268dabb3476c2d6d0bf84871dbf8c8a224ff6ebe76ea83e2b"
+    },
+    "full-local-setup-results.json": {
+      "bytes": 571,
+      "sha256": "f720248dc5e2eb405ea18c487d5566e09e60f99fefa2b9f8cdac46de307b8e58"
+    },
+    "full-npm-test-setup.log": {
+      "bytes": 27794,
+      "sha256": "a81be8ed158d0ad013cac667351f8d8e6e78dedd7f5ffaa6629466b4b08860ef"
+    },
+    "full-local-cache-results.json": {
+      "bytes": 547,
+      "sha256": "cc840fe5a3e594da947d44fdfc043fa343c04d5ca3186a2c196ef03626011ffa"
+    },
+    "full-npm-test-cache.log": {
+      "bytes": 54154,
+      "sha256": "9072f227fa6fdcd6056df939ebacb35c3291c8bce8834c7078be0cf5bc22c519"
+    },
+    "green-cache.log": {
+      "bytes": 1831,
+      "sha256": "b161c6572c6da5c34cc0ac4230df6a411f27b0bc08df482ff29039751b75a965"
+    },
+    "full-build.log": {
+      "bytes": 302,
+      "sha256": "753bc39fee01368bcdf7570f3e1f89afb2c2b16a3e619101452e61c0a96d172d"
     }
   },
   "cases": [

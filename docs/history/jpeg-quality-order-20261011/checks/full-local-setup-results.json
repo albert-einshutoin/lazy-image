@@ -1,0 +1,16 @@
+{
+  "sourceSha": "485179de541ae33ef51df1135302a285b0ca29e8",
+  "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+  "buildEvidence": "full-local-initial-results.json npm run build exit0; subsequent changes only golden test data/docs",
+  "results": [
+    {
+      "command": "npm test",
+      "sourceSha": "485179de541ae33ef51df1135302a285b0ca29e8",
+      "startedAt": "2026-10-11T05:06:29.754Z",
+      "completedAt": "2026-10-11T05:07:05.994Z",
+      "exitCode": 1,
+      "signal": null,
+      "logfile": "final-npm-test.log"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+   Compiling lazy-image v1.4.3 (/Volumes/Satechi/Developer/lazy-image)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.25s
+     Running unittests src/lib.rs (target/debug/deps/lazy_image-f8135e58a14bdb3e)
+
+running 1 test
+test engine::tasks::tests::encode_prepared_can_run_multiple_times_against_same_cache ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 297 filtered out; finished in 0.01s
+
+     Running tests/edge_cases.rs (target/debug/deps/edge_cases-c0570a006e889ab8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 46 filtered out; finished in 0.00s
+
+     Running tests/engine_tests.rs (target/debug/deps/engine_tests-98ebee553952cd38)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 64 filtered out; finished in 0.00s
+
+     Running tests/error_tests.rs (target/debug/deps/error_tests-242a503600a7908c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 0.00s
+
+     Running tests/fuzz_regression.rs (target/debug/deps/fuzz_regression-666272a1d221ff4f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (target/debug/deps/integration_tests-eecd916709506e19)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/napi_tests.rs (target/debug/deps/napi_tests-64f56d9c9bd9a0c7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/property_based.rs (target/debug/deps/property_based-e2e39e869b8839ef)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+

@@ -429,11 +429,11 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
     )
     .expect("prepare should succeed");
 
-    // Encode at three different qualities — like the binary search would.
-    let mut last_size: Option<usize> = None;
+    // Revisit a quality after other probes; reuse must not mutate the cached pixels.
+    let mut outputs = Vec::new();
     let policy = MetadataPolicy::strip_all();
     let firewall = FirewallConfig::disabled();
-    for q in [50u8, 80, 100] {
+    for q in [50u8, 80, 100, 50] {
         let format = OutputFormat::Jpeg {
             quality: Quality::unchecked(q),
             fast_mode: false,
@@ -456,16 +456,14 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
             &[0xFF, 0xD8],
             "encode_prepared must produce valid JPEG at quality {q}"
         );
-        // Higher quality should generally yield larger files.
-        if let Some(prev) = last_size {
-            assert!(
-                bytes.len() >= prev,
-                "higher quality should not produce smaller output: prev={prev}, current={}",
-                bytes.len()
-            );
-        }
-        last_size = Some(bytes.len());
+        let decoded = image::load_from_memory(&bytes).expect("output must decode");
+        assert_eq!((decoded.width(), decoded.height()), (64, 64));
+        outputs.push(bytes);
     }
+    assert_eq!(
+        outputs[0], outputs[3],
+        "same pixels/quality must reproduce the JPEG"
+    );
 }
 
 /// Regression test for issue #558: the metrics returned by the byte-budget
