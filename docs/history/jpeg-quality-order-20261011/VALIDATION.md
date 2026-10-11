@@ -116,3 +116,14 @@ Mac対象goldenは6成功/exit0 ([ログ](checks/golden-recorded-targets.log))�
 この追加2fileとMac/Linux実証へ限定して最終レビューしALLOW、関連指摘なし。
 このtest-only変更ではsourcef921bbbから製品code・native・依存を変更していないため、成功した完全build/benchmarkは再実行しない。
 最終HEADの全hosted matrixとSecurityを確認してからmergeする。
+
+## 累積timeoutに関するP1指摘の判断
+
+[PR P1指摘](https://github.com/albert-einshutoin/lazy-image/pull/886#discussion_r4240521274) は、
+探索増加でcompilerの5秒制限に達しやすくなるというもの。同じRust reviewer/Sol mediumが
+encode/processing/firewall、compilerのpublic-upload caller、既存timeout契約だけを限定評価した。
+累積timerはdecode前に1回生成され全probeへ共有される既存契約で、単独のencodeが制限内でも
+探索全体が超過すればpolicy上は受入不可と確認。Errorはbytes返却・file write前に伝播する。
+判定はALLOW/P1不採用、製品修正不要。timer resetや制限緩和はtrust boundaryを変えるため追加しない。
+拒否が増え得る受入・性能上の制約をEVALUATION.mdへ明記し、失敗を途中候補で成功扱いしない。
+この判断は静的契約評価で、大画像の新規timeout比較測定や5秒以内受入の実証ではない。

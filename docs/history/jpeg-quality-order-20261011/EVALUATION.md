@@ -155,3 +155,13 @@ API signature/default・quality検証・panic/error・metadata・atomic file出�
 3 JPEG入力の先の同条件比較はencoder設定順序の効果に限る。この追加変更でencoder本体は不変だが、
 targetBytes/compileのコストを先のencoder-only比較へ読み替えない。以前の完全検証は旧探索のsource証拠として保持し、
 新しい共有探索の必要な完全検証とGate/hosted結果は別途sourceを結び付ける。
+
+### 累積timeoutによる受入制約
+
+最大100回の探索は、sanitized engineの既存の総pipeline timeoutも共有する。
+compilerはpublic-upload policyの5秒制限を使い、各候補のencode後にdecode/opsと先行候補を含む経過時間を検査する。
+したがって単独の低quality encodeが5秒未満でも、探索全体が制限を超えればErrorで拒否し、途中候補を公開しない。
+探索回数の増加により、以前受け入れられた入力・予算がresource limitに達する場合は増え得る。
+「最高適合quality」はresource limitsを通過して完了した探索の契約であり、全入力を5秒以内に受け入れる保証ではない。
+候補ごとのtimer reset、timeoutの自動緩和、途中best-effort成功は加えない。
+既存のbest-effort inter-stage timeoutにはcodec実行中のpreemptionがない点も、docs/ARCHITECTURE.mdの契約どおり維持する。
