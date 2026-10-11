@@ -146,3 +146,22 @@ WebP/JPEGのE300・processing・artifactId、outputDir非公開、CLI exit1/stdo
 2file草稿での実行であり、cleanなcommitのprocess receiptを後から生成したものではない。
 compilerはexit0。CLI直接node実行は既存npm context要求でexit1、canonical `npm run test:cli` はexit0。
 nativeは2ce79f28…37e9のまま。旧必須CI failureを最終HEADの成功へ読み替えず、新HEADを確認する。
+
+## 同じ拒否fixture根因の一括最終修正
+
+[完全CI](https://github.com/albert-einshutoin/lazy-image/actions/runs/38118980024) のsource81d128aはFAIL。
+品質・性能・native build等は成功したが、5つのNode matrix jobでstatic-site例のself-testに
+同じ320px/1 B/E300期待が残り、E123（5012〜5065 ms）へ先に達した。
+同名jobの集約ログへ依存せず、各job IDのGitHub logs APIから直接保存した
+`checks/full-81d128a-job-{114410795105,114410795126,114410795134,114410795136,114410795162}.log`
+を正本とする。5失敗ともこのself-testで、先のcompiler/CLI対象修正は成功している。
+
+test/integrationとexamplesの1 B拒否・E300を逆依存として限定確認し、残存するprocessingケースは
+このself-testだけと確認した（artifact-policyの1 B値はplanning validationで、encodeしない）。
+同じ根因の2巡目として、この拒否policy幅も64へ揃えた。通常320/640/960出力、small/no-upscale、
+picture source優先順、既存site保護、invalid input、E300とHTML/images非公開assertは変更しない。
+製品patch・timeout緩和・新しい分岐やguard緩和は追加していない。
+
+source81d128a＋self-test草稿で `node examples/compile-image-static-site.mjs --self-test` はexit0
+([ログ](checks/green-budget-deadline-site.log))。同じJS専門reviewer/Sol mediumが追加self-testだけを
+限定最終レビューしALLOW、関連指摘なし。最終HEADのhosted結果は別途確認する。

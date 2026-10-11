@@ -1,0 +1,980 @@
+﻿2026-10-11T06:50:58.7337753Z Current runner version: '2.337.0'
+2026-10-11T06:50:58.7362514Z ##[group]Runner Image Provisioner
+2026-10-11T06:50:58.7363217Z Hosted Compute Agent
+2026-10-11T06:50:58.7363643Z Version: 20260901.588
+2026-10-11T06:50:58.7364150Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-11T06:50:58.7364788Z Build Date: 2026-09-01T19:56:44Z
+2026-10-11T06:50:58.7365359Z Worker ID: {88652dc5-c25a-47dc-8a0f-2454cff9f39a}
+2026-10-11T06:50:58.7365910Z Azure Region: westus
+2026-10-11T06:50:58.7366320Z ##[endgroup]
+2026-10-11T06:50:58.7367441Z ##[group]Operating System
+2026-10-11T06:50:58.7367929Z Microsoft Windows Server 2025
+2026-10-11T06:50:58.7368386Z 10.0.26100
+2026-10-11T06:50:58.7368848Z Datacenter
+2026-10-11T06:50:58.7369248Z ##[endgroup]
+2026-10-11T06:50:58.7369688Z ##[group]Runner Image
+2026-10-11T06:50:58.7370219Z Image: windows-2025-vs2026
+2026-10-11T06:50:58.7371012Z Version: 20260925.250.1
+2026-10-11T06:50:58.7372340Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20260925.250/images/windows/Windows2025-VS2026-Readme.md
+2026-10-11T06:50:58.7373835Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20260925.250
+2026-10-11T06:50:58.7374582Z ##[endgroup]
+2026-10-11T06:50:58.7375438Z ##[group]GITHUB_TOKEN Permissions
+2026-10-11T06:50:58.7377179Z Contents: read
+2026-10-11T06:50:58.7377669Z Metadata: read
+2026-10-11T06:50:58.7378156Z ##[endgroup]
+2026-10-11T06:50:58.7379990Z Secret source: Actions
+2026-10-11T06:50:58.7380737Z Cache mode: write
+2026-10-11T06:50:58.7381306Z Prepare workflow directory
+2026-10-11T06:50:58.7698733Z Prepare all required actions
+2026-10-11T06:50:58.7756604Z Getting action download info
+2026-10-11T06:50:59.0998072Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-11T06:50:59.3113114Z Download action repository 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+2026-10-11T06:50:59.4779560Z Download action repository 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c' (SHA:3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c)
+2026-10-11T06:51:00.0079542Z Complete job name: Test (Node 22)
+2026-10-11T06:51:00.1352306Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-11T06:51:00.1353417Z with:
+2026-10-11T06:51:00.1353798Z   repository: albert-einshutoin/lazy-image
+2026-10-11T06:51:00.1357189Z   token: ***
+2026-10-11T06:51:00.1357541Z   ssh-strict: true
+2026-10-11T06:51:00.1357900Z   ssh-user: git
+2026-10-11T06:51:00.1358262Z   persist-credentials: true
+2026-10-11T06:51:00.1358658Z   clean: true
+2026-10-11T06:51:00.1359023Z   sparse-checkout-cone-mode: true
+2026-10-11T06:51:00.1359449Z   fetch-depth: 1
+2026-10-11T06:51:00.1359799Z   fetch-tags: false
+2026-10-11T06:51:00.1360170Z   show-progress: true
+2026-10-11T06:51:00.1360533Z   lfs: false
+2026-10-11T06:51:00.1360872Z   submodules: false
+2026-10-11T06:51:00.1361273Z   set-safe-directory: true
+2026-10-11T06:51:00.1361689Z   allow-unsafe-pr-checkout: false
+2026-10-11T06:51:00.1362261Z env:
+2026-10-11T06:51:00.1362580Z   DEBUG: napi:*
+2026-10-11T06:51:00.1362923Z   APP_NAME: lazy-image
+2026-10-11T06:51:00.1363331Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:00.1363747Z ##[endgroup]
+2026-10-11T06:51:00.2575141Z Syncing repository: albert-einshutoin/lazy-image
+2026-10-11T06:51:00.2576680Z ##[group]Getting Git version info
+2026-10-11T06:51:00.2577213Z Working directory is 'D:\a\lazy-image\lazy-image'
+2026-10-11T06:51:00.3187623Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-11T06:51:03.2578855Z git version 2.55.0.windows.5
+2026-10-11T06:51:03.2634184Z ##[endgroup]
+2026-10-11T06:51:03.2650874Z Temporarily overriding HOME='D:\a\_temp\befced12-6db3-4f28-91f1-58f373e2da5d' before making global git config changes
+2026-10-11T06:51:03.2652194Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-11T06:51:03.2666130Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\lazy-image\lazy-image
+2026-10-11T06:51:04.0523594Z Deleting the contents of 'D:\a\lazy-image\lazy-image'
+2026-10-11T06:51:04.0527881Z ##[group]Determining repository object format
+2026-10-11T06:51:04.0529863Z ##[endgroup]
+2026-10-11T06:51:04.0530721Z ##[group]Initializing the repository
+2026-10-11T06:51:04.0540264Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\lazy-image\lazy-image
+2026-10-11T06:51:05.1296047Z Initialized empty Git repository in D:/a/lazy-image/lazy-image/.git/
+2026-10-11T06:51:05.1343310Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/albert-einshutoin/lazy-image
+2026-10-11T06:51:05.4704729Z ##[endgroup]
+2026-10-11T06:51:05.4705421Z ##[group]Disabling automatic garbage collection
+2026-10-11T06:51:05.4714464Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-11T06:51:05.4976561Z ##[endgroup]
+2026-10-11T06:51:05.4977440Z ##[group]Setting up auth
+2026-10-11T06:51:05.4978229Z Removing SSH command configuration
+2026-10-11T06:51:05.4987836Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-11T06:51:05.5258199Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-11T06:51:16.9292970Z Removing HTTP extra header
+2026-10-11T06:51:16.9302524Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-11T06:51:16.9572970Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-11T06:51:17.3592707Z Removing includeIf entries pointing to credentials config files
+2026-10-11T06:51:17.3602373Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-11T06:51:17.3867609Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-11T06:51:17.8141458Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-11T06:51:17.8569301Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/lazy-image/lazy-image/.git.path D:\a\_temp\git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:51:17.8869574Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/lazy-image/lazy-image/.git/worktrees/*.path D:\a\_temp\git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:51:17.9198078Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:51:17.9524044Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:51:17.9789522Z ##[endgroup]
+2026-10-11T06:51:17.9789865Z ##[group]Fetching the repository
+2026-10-11T06:51:17.9801549Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +81d128ad2f6346cc3ff018d7d7afe4562b51c0a0:refs/remotes/origin/fix/jpeg-quality-initialization-order
+2026-10-11T06:51:20.2865467Z From https://github.com/albert-einshutoin/lazy-image
+2026-10-11T06:51:20.2866442Z  * [new ref]         81d128ad2f6346cc3ff018d7d7afe4562b51c0a0 -> origin/fix/jpeg-quality-initialization-order
+2026-10-11T06:51:20.2908396Z [command]"C:\Program Files\Git\bin\git.exe" branch --list --remote origin/fix/jpeg-quality-initialization-order
+2026-10-11T06:51:20.4680158Z   origin/fix/jpeg-quality-initialization-order
+2026-10-11T06:51:20.4736475Z [command]"C:\Program Files\Git\bin\git.exe" rev-parse refs/remotes/origin/fix/jpeg-quality-initialization-order
+2026-10-11T06:51:20.4982631Z 81d128ad2f6346cc3ff018d7d7afe4562b51c0a0
+2026-10-11T06:51:20.5020213Z ##[endgroup]
+2026-10-11T06:51:20.5020850Z ##[group]Determining the checkout info
+2026-10-11T06:51:20.5021462Z ##[endgroup]
+2026-10-11T06:51:20.5029905Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-11T06:51:20.5432211Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-11T06:51:20.5683251Z ##[group]Checking out the ref
+2026-10-11T06:51:20.5696061Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B fix/jpeg-quality-initialization-order refs/remotes/origin/fix/jpeg-quality-initialization-order
+2026-10-11T06:51:21.2521325Z Switched to a new branch 'fix/jpeg-quality-initialization-order'
+2026-10-11T06:51:21.2577877Z branch 'fix/jpeg-quality-initialization-order' set up to track 'origin/fix/jpeg-quality-initialization-order'.
+2026-10-11T06:51:21.2678949Z ##[endgroup]
+2026-10-11T06:51:21.3038406Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-11T06:51:21.3303558Z 81d128ad2f6346cc3ff018d7d7afe4562b51c0a0
+2026-10-11T06:51:21.3778794Z ##[group]Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+2026-10-11T06:51:21.3779157Z with:
+2026-10-11T06:51:21.3779328Z   node-version: 22
+2026-10-11T06:51:21.3779494Z   cache: npm
+2026-10-11T06:51:21.3779646Z   check-latest: false
+2026-10-11T06:51:21.3781531Z   token: ***
+2026-10-11T06:51:21.3781701Z   package-manager-cache: true
+2026-10-11T06:51:21.3781899Z env:
+2026-10-11T06:51:21.3782038Z   DEBUG: napi:*
+2026-10-11T06:51:21.3782193Z   APP_NAME: lazy-image
+2026-10-11T06:51:21.3782396Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:21.3782582Z ##[endgroup]
+2026-10-11T06:51:21.5362887Z Found in cache @ C:\hostedtoolcache\windows\node\22.23.3\x64
+2026-10-11T06:51:21.5376963Z ##[group]Environment details
+2026-10-11T06:51:25.5892413Z node: v22.23.3
+2026-10-11T06:51:25.5892701Z npm: 10.9.9
+2026-10-11T06:51:25.5892930Z yarn: 1.22.22
+2026-10-11T06:51:25.5893628Z ##[endgroup]
+2026-10-11T06:51:25.6412044Z [command]C:\Windows\system32\cmd.exe /D /S /C "C:\hostedtoolcache\windows\node\22.23.3\x64\npm.cmd config get cache"
+2026-10-11T06:51:26.0723125Z C:\npm\cache
+2026-10-11T06:51:26.4416578Z Cache hit for: node-cache-Windows-x64-npm-c012f0dae83756b20c7bd3711d767c1cb98bf89f1abcb69a251ff3c86e696174
+2026-10-11T06:51:27.7600798Z Received 29071725 of 29071725 (100.0%), 28.2 MBs/sec
+2026-10-11T06:51:27.7602702Z Cache Size: ~28 MB (29071725 B)
+2026-10-11T06:51:27.7656851Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/4eba9a3a-9e36-478c-bcfe-3a70de3c9963/cache.tzst -P -C D:/a/lazy-image/lazy-image --force-local --use-compress-program "zstd -d"
+2026-10-11T06:51:28.1485937Z Cache restored successfully
+2026-10-11T06:51:28.1515347Z Cache restored from key: node-cache-Windows-x64-npm-c012f0dae83756b20c7bd3711d767c1cb98bf89f1abcb69a251ff3c86e696174
+2026-10-11T06:51:28.1797628Z ##[group]Run npm ci
+2026-10-11T06:51:28.1797903Z [36;1mnpm ci[0m
+2026-10-11T06:51:28.2206627Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-11T06:51:28.2206933Z env:
+2026-10-11T06:51:28.2207101Z   DEBUG: napi:*
+2026-10-11T06:51:28.2207276Z   APP_NAME: lazy-image
+2026-10-11T06:51:28.2207457Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:28.2207660Z ##[endgroup]
+2026-10-11T06:51:36.9670144Z 
+2026-10-11T06:51:36.9676856Z added 86 packages, and audited 88 packages in 8s
+2026-10-11T06:51:36.9677152Z 
+2026-10-11T06:51:36.9677312Z 9 packages are looking for funding
+2026-10-11T06:51:36.9677806Z   run `npm fund` for details
+2026-10-11T06:51:36.9692693Z 
+2026-10-11T06:51:36.9693227Z 1 high severity vulnerability
+2026-10-11T06:51:36.9693409Z 
+2026-10-11T06:51:36.9693694Z To address all issues, run:
+2026-10-11T06:51:36.9693995Z   npm audit fix
+2026-10-11T06:51:36.9694098Z 
+2026-10-11T06:51:36.9694187Z Run `npm audit` for details.
+2026-10-11T06:51:39.6942237Z Prepare all required actions
+2026-10-11T06:51:39.6942835Z Getting action download info
+2026-10-11T06:51:39.8063504Z Download action repository 'ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b' (SHA:72793074d3c8cdda771dba85f6deafe00623038b)
+2026-10-11T06:51:40.2845057Z ##[group]Run ./.github/actions/setup-nasm
+2026-10-11T06:51:40.2845297Z env:
+2026-10-11T06:51:40.2845452Z   DEBUG: napi:*
+2026-10-11T06:51:40.2845621Z   APP_NAME: lazy-image
+2026-10-11T06:51:40.2845801Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:40.2846005Z ##[endgroup]
+2026-10-11T06:51:40.2902504Z ##[start-action display=Install NASM (Linux);id=__self.__run]
+2026-10-11T06:51:40.2908598Z ##[end-action id=__self.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-11T06:51:40.2910268Z ##[start-action display=Install NASM (macOS);id=__self.__run_2]
+2026-10-11T06:51:40.2913995Z ##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-11T06:51:40.2915503Z ##[start-action display=Install NASM (Windows);id=__self.__ilammy_setup-nasm]
+2026-10-11T06:51:40.3078308Z ##[group]Run ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+2026-10-11T06:51:40.3078897Z with:
+2026-10-11T06:51:40.3079090Z   version: 2.16.01
+2026-10-11T06:51:40.3079261Z env:
+2026-10-11T06:51:40.3079407Z   DEBUG: napi:*
+2026-10-11T06:51:40.3079581Z   APP_NAME: lazy-image
+2026-10-11T06:51:40.3079787Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:40.3080005Z ##[endgroup]
+2026-10-11T06:51:40.4112919Z Downloading binary distribution...
+2026-10-11T06:51:40.7107048Z ##[group]C:\Users\runneradmin\nasm\nasm.exe -version
+2026-10-11T06:51:40.7959912Z NASM version 2.16.01 compiled on Dec 21 2022
+2026-10-11T06:51:40.7968872Z ##[endgroup]
+2026-10-11T06:51:40.7969458Z ##[group]C:\Users\runneradmin\nasm\ndisasm.exe -version
+2026-10-11T06:51:41.0764026Z NDISASM version 2.16.01 compiled on Dec 21 2022
+2026-10-11T06:51:41.0771434Z ##[endgroup]
+2026-10-11T06:51:41.0905236Z ##[end-action id=__self.__ilammy_setup-nasm;outcome=success;conclusion=success;duration_ms=798]
+2026-10-11T06:51:41.1061968Z ##[group]Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+2026-10-11T06:51:41.1062365Z with:
+2026-10-11T06:51:41.1062559Z   name: bindings-x86_64-pc-windows-msvc
+2026-10-11T06:51:41.1062784Z   path: .
+2026-10-11T06:51:41.1062957Z   merge-multiple: false
+2026-10-11T06:51:41.1063160Z   repository: albert-einshutoin/lazy-image
+2026-10-11T06:51:41.1063380Z   run-id: 38118980024
+2026-10-11T06:51:41.1063556Z   skip-decompress: false
+2026-10-11T06:51:41.1063786Z   digest-mismatch: error
+2026-10-11T06:51:41.1064072Z env:
+2026-10-11T06:51:41.1064329Z   DEBUG: napi:*
+2026-10-11T06:51:41.1064527Z   APP_NAME: lazy-image
+2026-10-11T06:51:41.1064710Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:41.1064918Z ##[endgroup]
+2026-10-11T06:51:41.2573498Z Downloading single artifact
+2026-10-11T06:51:41.5272873Z Preparing to download the following artifacts:
+2026-10-11T06:51:41.5274146Z - bindings-x86_64-pc-windows-msvc (ID: 11694098177, Size: 3734184, Expected Digest: sha256:bc2120ddfb12992bff43ba0706f62ab675f705dfa0035c7667b58f3ede35e4b1)
+2026-10-11T06:51:42.0544525Z Redirecting to blob download url: https://productionresultssa6.blob.core.windows.net/actions-results/4ca60046-ce81-4cfc-a7f2-beba1295f64c/workflow-job-run-9c3df9f2-1ff6-5744-b509-016231e3042e/artifacts/69f89ed6bc31cf3f5f90fc7000ad1f9eead24a885837bc1ab41c01d0b1ebcdf6.zip
+2026-10-11T06:51:42.0546142Z Starting download of artifact to: D:\a\lazy-image\lazy-image
+2026-10-11T06:51:42.3790813Z (node:6784) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-11T06:51:42.3791998Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-11T06:51:42.8506731Z SHA256 digest of downloaded artifact is bc2120ddfb12992bff43ba0706f62ab675f705dfa0035c7667b58f3ede35e4b1
+2026-10-11T06:51:42.8507449Z Artifact download completed successfully.
+2026-10-11T06:51:42.8507905Z Total of 1 artifact(s) downloaded
+2026-10-11T06:51:42.8512514Z Download artifact has finished successfully
+2026-10-11T06:51:42.8755726Z ##[group]Run node test/helpers/create-test-image.js
+2026-10-11T06:51:42.8756102Z [36;1mnode test/helpers/create-test-image.js[0m
+2026-10-11T06:51:42.8811357Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-11T06:51:42.8811635Z env:
+2026-10-11T06:51:42.8811796Z   DEBUG: napi:*
+2026-10-11T06:51:42.8811963Z   APP_NAME: lazy-image
+2026-10-11T06:51:42.8812159Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:42.8812355Z ##[endgroup]
+2026-10-11T06:51:43.1638418Z Created test_input.jpg: 267 bytes
+2026-10-11T06:51:43.1642139Z Created test_input.png: 68 bytes
+2026-10-11T06:51:43.2612549Z ##[group]Run npm run test:js
+2026-10-11T06:51:43.2612973Z [36;1mnpm run test:js[0m
+2026-10-11T06:51:43.2679317Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-11T06:51:43.2679608Z env:
+2026-10-11T06:51:43.2679765Z   DEBUG: napi:*
+2026-10-11T06:51:43.2679945Z   APP_NAME: lazy-image
+2026-10-11T06:51:43.2680134Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+2026-10-11T06:51:43.2680337Z ##[endgroup]
+2026-10-11T06:51:44.1076816Z 
+2026-10-11T06:51:44.1077295Z > @alberteinshutoin/lazy-image@1.4.3 test:js
+2026-10-11T06:51:44.1079001Z > npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:release-artifacts && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples
+2026-10-11T06:51:44.1080441Z 
+2026-10-11T06:51:44.8099181Z 
+2026-10-11T06:51:44.8099989Z > @alberteinshutoin/lazy-image@1.4.3 test:ci-planner
+2026-10-11T06:51:44.8100626Z > node test/unit/selective-test-planner.test.js
+2026-10-11T06:51:44.8100926Z 
+2026-10-11T06:51:45.0740867Z selective-test planner tests passed
+2026-10-11T06:51:45.3566489Z 
+2026-10-11T06:51:45.3567292Z > @alberteinshutoin/lazy-image@1.4.3 test:js:specs
+2026-10-11T06:51:45.3567820Z > node test/integration/run.js
+2026-10-11T06:51:45.3568020Z 
+2026-10-11T06:51:45.4141588Z Found 46 test files
+2026-10-11T06:51:45.4142761Z 
+2026-10-11T06:51:45.4143641Z ▶️  Running test\integration\artifact-compiler-alpha.test.js
+2026-10-11T06:51:46.3632492Z artifact compiler alpha contract passed
+2026-10-11T06:51:46.3746940Z 
+2026-10-11T06:51:46.3747954Z ▶️  Running test\integration\artifact-compiler.test.js
+2026-10-11T06:51:50.4489880Z artifact compiler contract passed
+2026-10-11T06:51:50.4579813Z 
+2026-10-11T06:51:50.4580745Z ▶️  Running test\integration\artifact-policy.test.js
+2026-10-11T06:51:50.5123181Z artifact policy contract passed
+2026-10-11T06:51:50.5215553Z 
+2026-10-11T06:51:50.5216341Z ▶️  Running test\integration\basic.test.js
+2026-10-11T06:51:50.5716912Z === lazy-image Basic Tests ===
+2026-10-11T06:51:50.5717137Z 
+2026-10-11T06:51:50.5721981Z ✅ inspect() returns metadata
+2026-10-11T06:51:50.5723661Z ✅ inspectFile() returns metadata
+2026-10-11T06:51:50.5741917Z ✅ basic JPEG encoding works
+2026-10-11T06:51:50.5759117Z ✅ resize works
+2026-10-11T06:51:50.5775947Z ✅ resize options object works
+2026-10-11T06:51:50.5791975Z ✅ resize options object takes precedence over trailing positional args
+2026-10-11T06:51:50.5803031Z ✅ WebP encoding works
+2026-10-11T06:51:50.5833529Z ✅ AVIF encoding works
+2026-10-11T06:51:50.5886536Z ✅ PNG encoding works
+2026-10-11T06:51:50.5901978Z ✅ rotate(90) works
+2026-10-11T06:51:50.5918906Z ✅ grayscale() works
+2026-10-11T06:51:50.5945953Z ✅ toBufferWithMetrics returns metrics
+2026-10-11T06:51:50.5987851Z ✅ chain multiple operations
+2026-10-11T06:51:50.6002154Z ✅ clone() allows multi-output
+2026-10-11T06:51:50.6071225Z ✅ toBuffer() is non-destructive (multiple calls without clone)
+2026-10-11T06:51:50.6094022Z ✅ toBufferWithMetrics() is non-destructive
+2026-10-11T06:51:50.6132422Z ✅ toFile() is non-destructive
+2026-10-11T06:51:50.6147851Z ✅ toBufferWithPreset() applies preset defaults
+2026-10-11T06:51:50.6176073Z ✅ toFileWithPreset() writes file with preset defaults
+2026-10-11T06:51:50.6190667Z ✅ fromPath() works
+2026-10-11T06:51:50.6212025Z ✅ toFile() works
+2026-10-11T06:51:50.6233735Z ✅ toFileWithMetrics() writes file and returns metrics
+2026-10-11T06:51:50.6268087Z ✅ processBatchWithMetrics() returns item metrics and summary
+2026-10-11T06:51:50.6332018Z ✅ toBufferTargetBytes() returns best effort result under target
+2026-10-11T06:51:50.6342123Z ✅ toBufferTargetBytes() rejects invalid native quality ranges
+2026-10-11T06:51:50.6353018Z ✅ profile quality never resolves below native minimum
+2026-10-11T06:51:50.6419329Z ✅ toFileTargetBytes() writes a budgeted file result
+2026-10-11T06:51:50.6420943Z ✅ invalid rotation angle throws error
+2026-10-11T06:51:50.6422939Z ✅ invalid crop bounds throws error
+2026-10-11T06:51:50.6423751Z ✅ invalid format throws error
+2026-10-11T06:51:50.6427448Z ✅ resize validates dimensions and preserves error category/code
+2026-10-11T06:51:50.6428367Z ✅ brightness validates range and preserves error category/code
+2026-10-11T06:51:50.6429895Z ✅ error category: UserError for invalid rotation
+2026-10-11T06:51:50.6431958Z ✅ error category: UserError for invalid crop bounds
+2026-10-11T06:51:50.6433185Z ✅ error category: CodecError for invalid format
+2026-10-11T06:51:50.6434815Z ✅ error category: UserError for file not found
+2026-10-11T06:51:50.6435656Z ✅ getErrorCategory returns null for non-lazy-image errors
+2026-10-11T06:51:50.6436265Z ✅ getErrorCategory handles null/undefined
+2026-10-11T06:51:50.6452197Z ✅ error category: ResourceLimit for file write error
+2026-10-11T06:51:50.6457521Z ✅ processBatch error results expose category
+2026-10-11T06:51:50.6473248Z ✅ preset("thumbnail") works
+2026-10-11T06:51:50.6474317Z ✅ preset("avatar") works
+2026-10-11T06:51:50.6475041Z ✅ preset("hero") works
+2026-10-11T06:51:50.6476272Z ✅ preset("social") works
+2026-10-11T06:51:50.6477037Z ✅ invalid preset throws error
+2026-10-11T06:51:50.6503711Z ✅ JPEG default quality is 85
+2026-10-11T06:51:50.6522384Z ✅ WebP default quality is 80
+2026-10-11T06:51:50.6573607Z ✅ AVIF default quality is 60
+2026-10-11T06:51:50.6614281Z ✅ processBatch with concurrency control works
+2026-10-11T06:51:50.6654956Z ✅ processBatch with default concurrency (auto-calculated) works
+2026-10-11T06:51:50.6655955Z 
+2026-10-11T06:51:50.6656174Z === Results: 50 passed, 0 failed ===
+2026-10-11T06:51:50.6716770Z 
+2026-10-11T06:51:50.6717253Z ▶️  Running test\integration\batch-chunked.test.js
+2026-10-11T06:51:54.4275598Z ✅ chunks inputs, preserves order, and reports progress
+2026-10-11T06:51:54.9726868Z ✅ matches processBatch result order and output names
+2026-10-11T06:51:57.1882451Z ✅ reports progress for a single default-size chunk
+2026-10-11T06:51:58.6762644Z ✅ aborts at chunk boundaries and keeps completed chunk outputs
+2026-10-11T06:51:58.6778252Z ✅ pre-aborted signal rejects before creating outputs
+2026-10-11T06:51:58.9465934Z ✅ continues when progress callback throws
+2026-10-11T06:52:00.4346525Z ✅ preserves processBatch partial-failure semantics
+2026-10-11T06:52:00.4353496Z ✅ returns failed results when a chunk has no readable bootstrap input
+2026-10-11T06:52:00.4363491Z ✅ rejects invalid chunk sizes before returning a promise
+2026-10-11T06:52:00.4431510Z 
+2026-10-11T06:52:00.4432265Z ▶️  Running test\integration\benchmark-corpus-manifest.test.js
+2026-10-11T06:52:00.5283760Z === Benchmark Corpus Manifest Tests ===
+2026-10-11T06:52:00.5283994Z 
+2026-10-11T06:52:00.5317513Z ok - verifies the tracked compile-image corpus license and checksums
+2026-10-11T06:52:00.5331767Z ok - rejects corpus checksum and path drift
+2026-10-11T06:52:00.5406759Z ok - records fixture source and resized reference PNG digests
+2026-10-11T06:52:00.5427654Z ok - records generated corpus entries without pretending they are fixtures
+2026-10-11T06:52:00.5472589Z ok - renders corpus manifest markdown with compact digests and settings
+2026-10-11T06:52:00.5473236Z 
+2026-10-11T06:52:00.5473398Z Tests passed: 5, failed: 0
+2026-10-11T06:52:00.5544036Z 
+2026-10-11T06:52:00.5544737Z ▶️  Running test\integration\benchmark-fuzz-alignment.test.js
+2026-10-11T06:52:00.5948977Z === Benchmark/Fuzz Alignment Tests ===
+2026-10-11T06:52:00.5949193Z 
+2026-10-11T06:52:00.6530639Z ok - codec bake-off cases declare malformed fuzz targets
+2026-10-11T06:52:00.6532022Z ok - declared bake-off fuzz targets exist in the generated malformed seed corpus
+2026-10-11T06:52:00.6533898Z ok - declared bake-off fuzz targets keep the expected seed families
+2026-10-11T06:52:00.6569124Z 
+2026-10-11T06:52:00.6570365Z Tests passed: 3, failed: 0
+2026-10-11T06:52:00.6627930Z 
+2026-10-11T06:52:00.6628781Z ▶️  Running test\integration\benchmark-package-impact.test.js
+2026-10-11T06:52:00.7035198Z === Benchmark Package Impact Metadata Tests ===
+2026-10-11T06:52:00.7035434Z 
+2026-10-11T06:52:00.7041952Z ok - collects native package contract metadata for backend bake-offs
+2026-10-11T06:52:00.7045098Z ok - renders cross-platform impact into Markdown artifacts
+2026-10-11T06:52:00.7045551Z 
+2026-10-11T06:52:00.7045681Z Tests passed: 2, failed: 0
+2026-10-11T06:52:00.7097625Z 
+2026-10-11T06:52:00.7098299Z ▶️  Running test\integration\cli.test.js
+2026-10-11T06:52:05.4155897Z CLI contract passed
+2026-10-11T06:52:05.4229811Z 
+2026-10-11T06:52:05.4230829Z ▶️  Running test\integration\concurrency-validation.test.js
+2026-10-11T06:52:05.4751481Z 🧪 Concurrency Validation Test
+2026-10-11T06:52:05.4752369Z ==============================
+2026-10-11T06:52:05.4752611Z 
+2026-10-11T06:52:05.4756370Z ✅ Testing concurrency = 0 (default):
+2026-10-11T06:52:05.4802172Z   Success: Processed 1 images with default concurrency
+2026-10-11T06:52:05.4802425Z 
+2026-10-11T06:52:05.4802753Z ✅ Testing concurrency = 1 (minimum valid):
+2026-10-11T06:52:05.4834729Z   Success: Processed 1 images with 1 thread
+2026-10-11T06:52:05.4835127Z 
+2026-10-11T06:52:05.4835537Z ✅ Testing concurrency = 1024 (maximum valid):
+2026-10-11T06:52:05.4866597Z   Success: Processed 1 images with 1024 threads
+2026-10-11T06:52:05.4867017Z 
+2026-10-11T06:52:05.4867323Z ❌ Testing concurrency = 1025 (should fail):
+2026-10-11T06:52:05.4871001Z   ✅ Correctly rejected: [E400] Invalid value for concurrency: 1025. must be 0 or 1-1024
+2026-10-11T06:52:05.4871858Z   ✅ Error code is E400 (invalid argument)
+2026-10-11T06:52:05.4873033Z   ✅ Error category is UserError
+2026-10-11T06:52:05.4873699Z   ✅ Error message format is correct
+2026-10-11T06:52:05.4873899Z 
+2026-10-11T06:52:05.4874071Z 📋 Concurrency Validation Summary:
+2026-10-11T06:52:05.4874469Z 1. ✅ concurrency = 0: Uses default thread pool
+2026-10-11T06:52:05.4874854Z 2. ✅ concurrency = 1-1024: Creates custom thread pool
+2026-10-11T06:52:05.4875243Z 3. ✅ concurrency > 1024: Properly rejected with clear error
+2026-10-11T06:52:05.4875599Z 4. ✅ Error message clarifies "0 or 1-MAX" range
+2026-10-11T06:52:05.4938940Z 
+2026-10-11T06:52:05.4939533Z ▶️  Running test\integration\docs-contract.test.js
+2026-10-11T06:52:05.5327868Z docs safety-limit contract passed
+2026-10-11T06:52:05.5382766Z 
+2026-10-11T06:52:05.5383749Z ▶️  Running test\integration\edge-cases.test.js
+2026-10-11T06:52:05.5911709Z === lazy-image Edge Cases & Security Tests ===
+2026-10-11T06:52:05.5912065Z 
+2026-10-11T06:52:05.5936523Z ✅ rejects images exceeding MAX_DIMENSION via ImageEngine.from()
+2026-10-11T06:52:05.5937792Z ✅ rejects empty buffer
+2026-10-11T06:52:05.5940432Z ✅ rejects invalid image data
+2026-10-11T06:52:05.5942249Z ✅ rejects non-existent file path
+2026-10-11T06:52:05.5943860Z ✅ inspectFile() rejects non-existent file
+2026-10-11T06:52:05.5946316Z ✅ rejects quality 0
+2026-10-11T06:52:05.5963947Z ✅ handles quality 100 (maximum)
+2026-10-11T06:52:05.5967668Z ✅ rejects quality > 100
+2026-10-11T06:52:05.5978657Z ✅ handles resize to 1x1 (minimum size)
+2026-10-11T06:52:05.6005061Z ✅ handles resize with only width (maintains aspect ratio)
+2026-10-11T06:52:05.6030731Z ✅ handles resize with only height (maintains aspect ratio)
+2026-10-11T06:52:05.6055776Z ✅ handles resize with both dimensions (may distort)
+2026-10-11T06:52:05.6066107Z ✅ handles crop at origin (0,0)
+2026-10-11T06:52:05.6077509Z ✅ handles crop of entire image
+2026-10-11T06:52:05.6086096Z ✅ handles rotation 0 (no-op)
+2026-10-11T06:52:05.6095791Z ✅ handles negative rotation (-90)
+2026-10-11T06:52:05.6097361Z ✅ rejects rotation 360 (invalid angle)
+2026-10-11T06:52:05.6161563Z ✅ handles many chained operations
+2026-10-11T06:52:05.6181495Z ✅ handles multiple resize operations (should optimize)
+2026-10-11T06:52:05.6184336Z ✅ toFile() rejects non-existent parent directory
+2026-10-11T06:52:05.6193896Z ✅ processBatch handles empty input array
+2026-10-11T06:52:05.6221197Z ✅ processBatch accepts concurrency 0 (uses default)
+2026-10-11T06:52:05.6223421Z ✅ processBatch rejects concurrency > 1024 (UserError)
+2026-10-11T06:52:05.6245886Z ✅ toBufferWithMetrics returns valid metrics with all fields
+2026-10-11T06:52:05.6269259Z ✅ toBufferWithMetrics handles input_size=0 gracefully
+2026-10-11T06:52:05.6270510Z ✅ hasIccProfile() returns null for images without profile
+2026-10-11T06:52:05.6305668Z ✅ handles brightness at limits (-100, 100)
+2026-10-11T06:52:05.6307422Z ✅ rejects brightness outside range
+2026-10-11T06:52:05.6338993Z ✅ handles contrast at limits (-100, 100)
+2026-10-11T06:52:05.6354887Z ✅ pipeline methods return the same ImageEngine instance
+2026-10-11T06:52:05.6369504Z ✅ clone() creates independent instances
+2026-10-11T06:52:05.6370409Z ✅ dimensions() returns correct values
+2026-10-11T06:52:05.6370712Z 
+2026-10-11T06:52:05.6371253Z === Results: 32 passed, 0 failed ===
+2026-10-11T06:52:05.6431498Z 
+2026-10-11T06:52:05.6431953Z ▶️  Running test\integration\error-codes.test.js
+2026-10-11T06:52:05.6987679Z === Error Code Matrix Tests ===
+2026-10-11T06:52:05.6987899Z 
+2026-10-11T06:52:05.6994269Z ✅ E111: UnsupportedFormat from unsupported output format
+2026-10-11T06:52:05.7013189Z ✅ E400: InvalidArgument from out-of-range quality
+2026-10-11T06:52:05.7014623Z ✅ E121: DimensionExceedsLimit from oversized resize
+2026-10-11T06:52:05.7016565Z ✅ E123: FirewallViolation from maxBytes limit
+2026-10-11T06:52:05.7041291Z ✅ E123: FirewallViolation from maxPixels limit
+2026-10-11T06:52:05.7044240Z ✅ E130/E131: CorruptedImage or DecodeFailed from truncated JPEG
+2026-10-11T06:52:05.7046743Z ✅ E131: DecodeFailed from corrupted JPEG body
+2026-10-11T06:52:05.7048833Z ✅ E204: InvalidResizeFit from bad fit string
+2026-10-11T06:52:05.7051532Z ✅ E402: InvalidFirewallPolicy from bad policy string
+2026-10-11T06:52:05.7064953Z ✅ Docs and Rust error code tables are synchronized
+2026-10-11T06:52:05.7073955Z ✅ Docs and Rust error recoverability flags are synchronized
+2026-10-11T06:52:05.7074198Z 
+2026-10-11T06:52:05.7074306Z Tests passed: 11, failed: 0
+2026-10-11T06:52:05.7157376Z 
+2026-10-11T06:52:05.7157922Z ▶️  Running test\integration\exif-roundtrip.test.js
+2026-10-11T06:52:05.7719756Z 🔬 EXIF Roundtrip Test
+2026-10-11T06:52:05.7721208Z ==================================================
+2026-10-11T06:52:05.7722046Z 
+2026-10-11T06:52:05.7722279Z Test 1: Default - EXIF should be stripped
+2026-10-11T06:52:05.7741584Z   hasExif: false
+2026-10-11T06:52:05.7751375Z 
+2026-10-11T06:52:05.7751922Z Test 2: keepMetadata({ exif: true }) - EXIF preserved, GPS stripped
+2026-10-11T06:52:05.7764496Z   hasExif: true
+2026-10-11T06:52:05.7765477Z   orientation: 1
+2026-10-11T06:52:05.7767229Z   hasGps: false
+2026-10-11T06:52:05.7767758Z   ✅ Orientation correctly reset to 1
+2026-10-11T06:52:05.7779078Z   ✅ GPS correctly stripped (privacy protection)
+2026-10-11T06:52:05.7779588Z 
+2026-10-11T06:52:05.7779828Z Test 3: keepMetadata({ exif: true, stripGps: false }) - GPS preserved
+2026-10-11T06:52:05.7789228Z   hasExif: true
+2026-10-11T06:52:05.7789508Z   hasGps: true
+2026-10-11T06:52:05.7798239Z 
+2026-10-11T06:52:05.7798553Z Test 4: Firewall strict mode - all metadata stripped
+2026-10-11T06:52:05.7807712Z   hasExif: false
+2026-10-11T06:52:05.7807882Z 
+2026-10-11T06:52:05.7808027Z Test 5: ICC + EXIF preservation
+2026-10-11T06:52:05.7817667Z   ✅ Successfully processed with ICC + EXIF
+2026-10-11T06:52:05.7818453Z 
+2026-10-11T06:52:05.7818616Z Test 6: PNG output preserves EXIF
+2026-10-11T06:52:05.7837180Z   ✅ PNG EXIF preserved with sanitized metadata
+2026-10-11T06:52:05.7837461Z 
+2026-10-11T06:52:05.7837592Z Test 7: WebP output preserves EXIF
+2026-10-11T06:52:05.7845473Z   ✅ WebP EXIF preserved with sanitized metadata
+2026-10-11T06:52:05.7845714Z 
+2026-10-11T06:52:05.7845845Z ==================================================
+2026-10-11T06:52:05.7846226Z ✅ All EXIF roundtrip tests passed!
+2026-10-11T06:52:05.7909850Z 
+2026-10-11T06:52:05.7910300Z ▶️  Running test\integration\extract.test.js
+2026-10-11T06:52:05.8426106Z === resize+crop fusion (Extract) integration tests ===
+2026-10-11T06:52:06.8955962Z ✅ fused resize+crop yields expected dimensions
+2026-10-11T06:52:15.7250681Z ✅ fused path uses less or equal peak RSS than two-step pipeline
+2026-10-11T06:52:15.7250966Z 
+2026-10-11T06:52:15.7251121Z ✅ All 2 test(s) passed
+2026-10-11T06:52:15.7328411Z 
+2026-10-11T06:52:15.7329039Z ▶️  Running test\integration\firewall.test.js
+2026-10-11T06:52:15.7839019Z === Image Firewall Tests ===
+2026-10-11T06:52:15.7839333Z 
+2026-10-11T06:52:15.7873463Z ✅ sanitize({ policy: "strict" }) works with small image
+2026-10-11T06:52:15.7887285Z ✅ sanitize({ policy: "lenient" }) works with normal image
+2026-10-11T06:52:15.7950463Z ✅ public-upload forces privacy-safe metadata regardless of call order
+2026-10-11T06:52:15.7959455Z ✅ sanitize() defaults to strict policy
+2026-10-11T06:52:15.7973513Z ✅ limits() can override maxPixels
+2026-10-11T06:52:15.7987856Z ✅ limits() can override maxBytes
+2026-10-11T06:52:15.8001513Z ✅ limits() can override timeoutMs
+2026-10-11T06:52:15.8016041Z ✅ limits({ maxPixels: 0 }) disables pixel limit
+2026-10-11T06:52:15.8020867Z ✅ sanitize() rejects oversized images (maxBytes)
+2026-10-11T06:52:15.8033534Z ✅ sanitize() rejects oversized images (maxPixels)
+2026-10-11T06:52:15.8034797Z ✅ invalid policy name throws error
+2026-10-11T06:52:15.8043815Z ✅ sanitize() can be called multiple times
+2026-10-11T06:52:15.8057704Z ✅ limits() without sanitize() enables firewall
+2026-10-11T06:52:15.8069205Z ✅ clone() preserves firewall config
+2026-10-11T06:52:15.8084008Z ✅ fromPath() works with sanitize()
+2026-10-11T06:52:15.8098135Z ✅ strict policy has tighter limits than lenient
+2026-10-11T06:52:15.8099959Z ✅ error messages are actionable (include suggestions)
+2026-10-11T06:52:15.8100263Z 
+2026-10-11T06:52:15.8100437Z === Results: 17 passed, 0 failed ===
+2026-10-11T06:52:15.8166856Z 
+2026-10-11T06:52:15.8167538Z ▶️  Running test\integration\format-matrix.test.js
+2026-10-11T06:52:15.8669918Z === Format Conversion Matrix Tests ===
+2026-10-11T06:52:15.8670145Z 
+2026-10-11T06:52:15.8722792Z ✅ format: JPEG -> JPEG
+2026-10-11T06:52:15.8773034Z ✅ format: JPEG -> PNG
+2026-10-11T06:52:15.8783240Z ✅ format: JPEG -> WebP
+2026-10-11T06:52:15.8820453Z ✅ format: JPEG -> AVIF
+2026-10-11T06:52:15.8837566Z ✅ format: WebP -> JPEG
+2026-10-11T06:52:15.8889590Z ✅ format: WebP -> PNG
+2026-10-11T06:52:15.8903399Z ✅ format: WebP -> WebP
+2026-10-11T06:52:15.8935843Z ✅ format: WebP -> AVIF
+2026-10-11T06:52:15.8954877Z ✅ format: PNG  -> JPEG
+2026-10-11T06:52:15.9005917Z ✅ format: PNG  -> PNG
+2026-10-11T06:52:15.9016542Z ✅ format: PNG  -> WebP
+2026-10-11T06:52:15.9050683Z ✅ format: PNG  -> AVIF
+2026-10-11T06:52:15.9058842Z ✅ format: AVIF input fails with a decode error until AVIF decode is supported
+2026-10-11T06:52:15.9111015Z ✅ resize fit: inside (both dims <= target)
+2026-10-11T06:52:15.9125630Z ✅ resize fit: cover (both dims >= target)
+2026-10-11T06:52:15.9139684Z ✅ resize fit: fill (exact target dimensions)
+2026-10-11T06:52:15.9153155Z ✅ normalizePixelFormat: JPEG produces valid output
+2026-10-11T06:52:15.9201403Z ✅ normalizePixelFormat: PNG produces valid output
+2026-10-11T06:52:15.9213970Z ✅ normalizePixelFormat: WebP produces valid output
+2026-10-11T06:52:15.9307115Z ✅ normalizePixelFormat: grayscale input produces valid output
+2026-10-11T06:52:15.9323751Z ✅ normalizePixelFormat: chainable with other operations
+2026-10-11T06:52:15.9324111Z 
+2026-10-11T06:52:15.9324588Z === Results: 21 passed, 0 failed ===
+2026-10-11T06:52:15.9391112Z 
+2026-10-11T06:52:15.9391704Z ▶️  Running test\integration\from-path-async.test.js
+2026-10-11T06:52:16.0550592Z fromPathAsync tests passed
+2026-10-11T06:52:16.0650164Z 
+2026-10-11T06:52:16.0651163Z ▶️  Running test\integration\fuzz-seed-corpus.test.js
+2026-10-11T06:52:16.1061926Z === Fuzz Seed Corpus Script Tests ===
+2026-10-11T06:52:16.1062156Z 
+2026-10-11T06:52:16.1584033Z ok - dry-run validates the full malformed seed catalog
+2026-10-11T06:52:16.2087664Z ok - decode_avif target writes AVIF-like malformed seeds only
+2026-10-11T06:52:16.2598272Z ok - decode_from_buffer target includes generic malformed image headers
+2026-10-11T06:52:16.3041897Z ok - structured-input targets are intentionally left without raw seed corpus
+2026-10-11T06:52:16.4043664Z ok - metadata targets include EXIF and ICC marker-bearing malformed seeds
+2026-10-11T06:52:16.4075941Z 
+2026-10-11T06:52:16.4076151Z Tests passed: 5, failed: 0
+2026-10-11T06:52:16.4130646Z 
+2026-10-11T06:52:16.4131328Z ▶️  Running test\integration\golden.test.js
+2026-10-11T06:52:16.5164070Z === Golden Test Suite ===
+2026-10-11T06:52:17.2595676Z ✅ jpeg_resize_inside_1200_q82 | hash=84a6612e… | 1200x1200 | SSIM=0.9978 PSNR=47.58 | sizeRatio=0.979
+2026-10-11T06:52:19.1619227Z ✅ png_cover_rotate_grayscale | hash=6c8da0a7… | 1600x900 | SSIM=0.9199 PSNR=22.75 | sizeRatio=0.410
+2026-10-11T06:52:20.0875639Z ✅ webp_cover_flip | hash=f51e648b… | 800x800 | SSIM=0.9916 PSNR=42.21 | sizeRatio=0.896
+2026-10-11T06:52:22.7075547Z ✅ png_cover_no_grayscale | hash=1c1b8537… | 1600x900 | SSIM=0.9987 PSNR=58.53 | sizeRatio=0.572
+2026-10-11T06:52:24.1159529Z ✅ avif_cover_rotate_grayscale | hash=85091a8d… | 1200x800 | SSIM=0.9156 PSNR=22.66 | sizeRatio=1.339
+2026-10-11T06:52:31.3242576Z ✅ jpeg_to_png_flipv | hash=86a5cbec… | 2000x2000 | SSIM=0.9993 PSNR=60.75 | sizeRatio=0.531
+2026-10-11T06:52:31.3243312Z 
+2026-10-11T06:52:31.3243561Z ✅ All golden cases passed
+2026-10-11T06:52:31.3504438Z 
+2026-10-11T06:52:31.3505358Z ▶️  Running test\integration\input-validation.test.js
+2026-10-11T06:52:31.4032598Z ✅ resize rejects negative width with structured error
+2026-10-11T06:52:31.4034695Z ✅ toBuffer rejects NaN quality
+2026-10-11T06:52:31.4036069Z ✅ toBuffer rejects quality 0
+2026-10-11T06:52:31.4037421Z ✅ toBuffer rejects quality above 100
+2026-10-11T06:52:31.4039468Z ✅ processBatch rejects negative concurrency
+2026-10-11T06:52:31.4041669Z ✅ toFile rejects empty path eagerly
+2026-10-11T06:52:31.4041886Z 
+2026-10-11T06:52:31.4042051Z Tests passed: 6, failed: 0
+2026-10-11T06:52:31.4108262Z 
+2026-10-11T06:52:31.4109132Z ▶️  Running test\integration\inspect-preflight.test.js
+2026-10-11T06:52:31.4696234Z inspect preflight contract tests passed
+2026-10-11T06:52:31.4768982Z 
+2026-10-11T06:52:31.4770078Z ▶️  Running test\integration\jpegli-distance-tuning.test.js
+2026-10-11T06:52:31.5171135Z === jpegli Distance Tuning Tests ===
+2026-10-11T06:52:31.5171376Z 
+2026-10-11T06:52:31.5179687Z ok - parses and normalizes distance candidates with the case baseline included
+2026-10-11T06:52:31.5183575Z ok - rejects invalid distance candidates
+2026-10-11T06:52:31.5185974Z ok - selects the closest byte candidate and breaks ties by quality
+2026-10-11T06:52:31.5187216Z ok - selects the closest SSIM candidate and breaks ties by bytes
+2026-10-11T06:52:31.5188287Z 
+2026-10-11T06:52:31.5188452Z Tests passed: 4, failed: 0
+2026-10-11T06:52:31.5246388Z 
+2026-10-11T06:52:31.5247276Z ▶️  Running test\integration\malformed-corpus-replay.test.js
+2026-10-11T06:52:31.5782627Z === Malformed Corpus Replay Tests ===
+2026-10-11T06:52:31.5782971Z 
+2026-10-11T06:52:31.6422538Z ok - generated corpus keeps the expected target coverage
+2026-10-11T06:52:31.6475499Z ok - generated malformed seeds reject through buffer input
+2026-10-11T06:52:31.6508636Z ok - generated malformed seeds reject through file input
+2026-10-11T06:52:31.6544905Z 
+2026-10-11T06:52:31.6545096Z Tests passed: 3, failed: 0
+2026-10-11T06:52:31.6614430Z 
+2026-10-11T06:52:31.6615264Z ▶️  Running test\integration\metadata-options.test.js
+2026-10-11T06:52:31.7152766Z Test 1: XMP emits warning but still processes
+2026-10-11T06:52:31.7157408Z keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.
+2026-10-11T06:52:31.7644999Z Test 2: Disable ICC, enable EXIF
+2026-10-11T06:52:31.8119521Z Test 3: GPS stripping (default behavior)
+2026-10-11T06:52:31.8592153Z Test 4: Preserve GPS (opt-in)
+2026-10-11T06:52:31.9062716Z Test 5: ICC only (default metadata behavior)
+2026-10-11T06:52:31.9535585Z Test 6: No metadata (security-first default)
+2026-10-11T06:52:32.0007139Z Test 7: Firewall strict mode overrides keepMetadata
+2026-10-11T06:52:32.0481340Z metadata-options.test.js passed - all 7 tests
+2026-10-11T06:52:32.0551459Z 
+2026-10-11T06:52:32.0552255Z ▶️  Running test\integration\napi-stress-corpus.test.js
+2026-10-11T06:52:32.0948549Z === NAPI Stress Corpus Tests ===
+2026-10-11T06:52:32.0948728Z 
+2026-10-11T06:52:32.3541848Z ok - stress smoke includes generated malformed fuzz seeds and writes summaries
+2026-10-11T06:52:32.3542179Z 
+2026-10-11T06:52:32.3542288Z Tests passed: 1, failed: 0
+2026-10-11T06:52:32.3606658Z 
+2026-10-11T06:52:32.3607565Z ▶️  Running test\integration\native-worker.test.js
+2026-10-11T06:52:32.4982441Z native Worker worker-only: PASS
+2026-10-11T06:52:32.6872006Z native Worker main-and-worker: PASS
+2026-10-11T06:52:33.4172065Z native Worker terminate-after-async: PASS
+2026-10-11T06:52:33.4233951Z 
+2026-10-11T06:52:33.4234828Z ▶️  Running test\integration\package-metadata.test.js
+2026-10-11T06:52:33.4634968Z ✅ package keywords include discoverability terms
+2026-10-11T06:52:33.4636205Z ✅ package description length stays within policy-friendly bounds
+2026-10-11T06:52:33.4637212Z ✅ README.md has Quick Start section in first 80 lines
+2026-10-11T06:52:33.4639728Z ✅ README.ja.md has Quick Start section in first 80 lines
+2026-10-11T06:52:33.4640950Z ✅ README heading structure is synchronized with README.ja.md
+2026-10-11T06:52:33.4644601Z ✅ Cargo package metadata includes security/positioning and avif
+2026-10-11T06:52:33.4645699Z ✅ package description keeps Image Firewall positioning
+2026-10-11T06:52:33.4648675Z ✅ Node runtime contract is consistently Node 22 and 24
+2026-10-11T06:52:33.4649694Z ✅ CLI is published through the package bin contract
+2026-10-11T06:52:33.4651417Z 
+2026-10-11T06:52:33.4651696Z ✅ package metadata checks completed: 9 passed, 0 failed
+2026-10-11T06:52:33.4715351Z 
+2026-10-11T06:52:33.4716047Z ▶️  Running test\integration\placeholder.test.js
+2026-10-11T06:52:33.6495131Z Placeholder helper integration tests passed
+2026-10-11T06:52:33.6571318Z 
+2026-10-11T06:52:33.6572407Z ▶️  Running test\integration\preset-output-isolation.test.js
+2026-10-11T06:52:34.3971056Z preset output isolation tests passed
+2026-10-11T06:52:34.4042994Z 
+2026-10-11T06:52:34.4044122Z ▶️  Running test\integration\quality-matched.test.js
+2026-10-11T06:52:34.4904259Z quality-matched selection checks passed
+2026-10-11T06:52:34.4975851Z 
+2026-10-11T06:52:34.4977067Z ▶️  Running test\integration\quality-metrics.test.js
+2026-10-11T06:52:34.6008514Z === Quality Metrics Tests ===
+2026-10-11T06:52:34.6064402Z ✅ SSIM/PSNR are perfect for identical buffers
+2026-10-11T06:52:34.7831025Z ✅ lazy-image encode maintains high quality
+2026-10-11T06:52:34.7945158Z 
+2026-10-11T06:52:34.7946354Z ▶️  Running test\integration\release-corpus.test.js
+2026-10-11T06:52:34.8866965Z release corpus coverage and license checks passed
+2026-10-11T06:52:34.8948750Z 
+2026-10-11T06:52:34.8949729Z ▶️  Running test\integration\responsive.test.js
+2026-10-11T06:52:35.1212569Z Responsive helper integration tests passed
+2026-10-11T06:52:35.1285564Z 
+2026-10-11T06:52:35.1286224Z ▶️  Running test\integration\streaming.test.js
+2026-10-11T06:52:35.1795595Z === Streaming Transform Tests ===
+2026-10-11T06:52:35.1994775Z ✅ streaming resize -> jpeg passed
+2026-10-11T06:52:37.0749035Z ✅ streaming large resize -> webp passed
+2026-10-11T06:52:37.0870180Z ✅ streaming metrics callback passed
+2026-10-11T06:52:37.0887019Z ✅ streaming error propagation passed
+2026-10-11T06:52:37.0903359Z ✅ streaming async process error propagation passed
+2026-10-11T06:52:37.1102484Z ✅ streaming multiple ops passed
+2026-10-11T06:52:37.1274659Z ✅ streaming resize -> png passed
+2026-10-11T06:52:37.1421633Z ✅ streaming resize -> avif passed
+2026-10-11T06:52:37.1436409Z ✅ streaming destroy mid-stream passed
+2026-10-11T06:52:37.1449706Z ✅ streaming empty input error passed
+2026-10-11T06:52:37.1461164Z ✅ streaming cleanup error reporting passed
+2026-10-11T06:52:38.0718481Z ✅ streaming memory pressure (4 concurrent) passed
+2026-10-11T06:52:38.2637952Z ✅ streaming memory pressure RSS bound passed (delta=85.7 MB < 250 MB)
+2026-10-11T06:52:38.2751112Z 
+2026-10-11T06:52:38.2752098Z ▶️  Running test\integration\target-bytes-file-native.test.js
+2026-10-11T06:52:41.5093178Z native target-bytes file tests passed
+2026-10-11T06:52:41.5179090Z 
+2026-10-11T06:52:41.5179961Z ▶️  Running test\integration\type-improvements.test.js
+2026-10-11T06:52:41.5685889Z 🔧 Type Improvements Verification Test
+2026-10-11T06:52:41.5687000Z ====================================
+2026-10-11T06:52:41.5687183Z 
+2026-10-11T06:52:41.5688038Z ✅ Testing ImageMetadata.format type improvements:
+2026-10-11T06:52:41.5689888Z   Image metadata: 1x1
+2026-10-11T06:52:41.5690273Z   Format: jpeg (type: string)
+2026-10-11T06:52:41.5690419Z 
+2026-10-11T06:52:41.5690646Z ✅ Testing improved error messages (conceptual):
+2026-10-11T06:52:41.5691304Z   The zero-copy conversion now provides contextual error messages:
+2026-10-11T06:52:41.5691941Z   - "pixel count overflow: X * 3 (image too large for zero-copy conversion)"
+2026-10-11T06:52:41.5692398Z   - "capacity overflow: X * 3 (memory allocation too large for zero-copy conversion)"
+2026-10-11T06:52:41.5694523Z   - "failed to initialize rayon thread pool: preferred pool (...) failed: ..."
+2026-10-11T06:52:41.5695045Z 
+2026-10-11T06:52:41.5695356Z 📋 Type Safety Improvements Summary:
+2026-10-11T06:52:41.5695910Z 1. ✅ ImageMetadata.format: canonical input format | undefined
+2026-10-11T06:52:41.5696426Z 2. ✅ Better IntelliSense support with strict typing
+2026-10-11T06:52:41.5696804Z 3. ✅ Compile-time validation prevents invalid format strings
+2026-10-11T06:52:41.5697186Z 4. ✅ Enhanced error messages with contextual information
+2026-10-11T06:52:41.5697384Z 
+2026-10-11T06:52:41.5697478Z 💡 Benefits:
+2026-10-11T06:52:41.5697748Z - Type safety: Catch errors at compile-time instead of runtime
+2026-10-11T06:52:41.5698113Z - Developer experience: Better IDE autocomplete and validation
+2026-10-11T06:52:41.5698634Z - Error clarity: Contextual messages help with debugging
+2026-10-11T06:52:41.5699181Z - Maintainability: Stricter types make code more robust
+2026-10-11T06:52:41.5700654Z 
+2026-10-11T06:52:41.5700870Z 🔄 Migration Impact:
+2026-10-11T06:52:41.5701249Z - ImageMetadata.format is now strictly typed (breaking change for TypeScript)
+2026-10-11T06:52:41.5701655Z - Error messages are more descriptive for debugging
+2026-10-11T06:52:41.5701979Z - Zero-copy operations provide better overflow context
+2026-10-11T06:52:41.5757345Z 
+2026-10-11T06:52:41.5757990Z ▶️  Running test\integration\wasm-asset-diagnostics-evidence.test.js
+2026-10-11T06:52:41.6190345Z candidate Chrome evidence and saved image hashes are consistent
+2026-10-11T06:52:41.6252950Z 
+2026-10-11T06:52:41.6253959Z ▶️  Running test\integration\wasm-edge-1.4.0-evidence.test.js
+2026-10-11T06:52:41.7928797Z published 1.4.0 Edge outputs, API diagnostics, and startup failure evidence PASS
+2026-10-11T06:52:41.8022351Z 
+2026-10-11T06:52:41.8023233Z ▶️  Running test\integration\wasm-edge-diagnostic-contract.test.js
+2026-10-11T06:52:41.8515219Z Edge diagnostic validation rejects missing API fields and wrong phase, code, or mapping
+2026-10-11T06:52:41.8574045Z 
+2026-10-11T06:52:41.8575131Z ▶️  Running test\integration\wasm-node-1.4.0-evidence.test.js
+2026-10-11T06:52:42.0213789Z published 1.4.0 Node outputs, budget, metadata, and API diagnostics PASS
+2026-10-11T06:52:42.0304028Z 
+2026-10-11T06:52:42.0304899Z ▶️  Running test\integration\wasm-node-diagnostic-contract.test.js
+2026-10-11T06:52:42.1715775Z Node diagnostic collector preserves initialization and decode API errors
+2026-10-11T06:52:42.1855942Z 
+2026-10-11T06:52:42.1856792Z ▶️  Running test\integration\wasm-quality-metrics.test.js
+2026-10-11T06:52:42.3235468Z Wasm quality metric checks passed
+2026-10-11T06:52:42.3311416Z 
+2026-10-11T06:52:42.3312292Z ▶️  Running test\integration\wasm-required-runtime.test.js
+2026-10-11T06:52:42.7685997Z required Wasm runtime and version are fail-closed
+2026-10-11T06:52:42.7774676Z 
+2026-10-11T06:52:42.7775471Z ▶️  Running test\integration\wasm-review-corrections.test.js
+2026-10-11T06:52:42.9607379Z 
+2026-10-11T06:52:42.9610006Z Wrote artifacts\benchmark\wasm-upload-summary.json
+2026-10-11T06:52:42.9610802Z Wrote artifacts\benchmark\wasm-upload-summary.md
+2026-10-11T06:52:42.9611061Z 
+2026-10-11T06:52:42.9612206Z large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+2026-10-11T06:52:42.9613021Z large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3290.2ms, targetHit=yes
+2026-10-11T06:52:42.9613946Z large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+2026-10-11T06:52:42.9614590Z large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+2026-10-11T06:52:42.9615169Z large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 2607.0ms, targetHit=yes
+2026-10-11T06:52:42.9616114Z large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+2026-10-11T06:52:42.9617005Z Optional baselines: 0 unavailable, 0 installed but not run
+2026-10-11T06:52:42.9670987Z Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS
+2026-10-11T06:52:42.9759952Z 
+2026-10-11T06:52:42.9760701Z ▶️  Running test\integration\zero-copy-safety.test.js
+2026-10-11T06:52:43.0244425Z 🔒 Zero-Copy Conversion Safety Test
+2026-10-11T06:52:43.0245705Z ==================================
+2026-10-11T06:52:43.0245859Z 
+2026-10-11T06:52:43.0246046Z ✅ Testing regular image processing:
+2026-10-11T06:52:43.0250306Z   Image size: 1x1
+2026-10-11T06:52:43.0284372Z   ✅ Processed successfully: 458 bytes
+2026-10-11T06:52:43.0298370Z   ✅ 100x100: 367 bytes
+2026-10-11T06:52:43.0398145Z   ✅ 500x500: 1102 bytes
+2026-10-11T06:52:43.0755723Z   ✅ 1000x1000: 3310 bytes
+2026-10-11T06:52:43.0756149Z 
+2026-10-11T06:52:43.0756814Z ✅ Testing edge cases:
+2026-10-11T06:52:43.0768110Z   ✅ 1x1 resize: 331 bytes
+2026-10-11T06:52:43.0768454Z 
+2026-10-11T06:52:43.0768809Z 📋 Safety Measures Implemented:
+2026-10-11T06:52:43.0769364Z 1. ✅ Overflow protection: checked_mul() for len * 3 and cap * 3
+2026-10-11T06:52:43.0770234Z 2. ✅ Alignment verification: static compile-time assertions
+2026-10-11T06:52:43.0770645Z 3. ✅ Size relationship verification: [u8; 3] == 3 * u8
+2026-10-11T06:52:43.0771112Z 4. ✅ Memory safety: Proper Vec::from_raw_parts usage
+2026-10-11T06:52:43.0771514Z 5. ✅ Drop safety: std::mem::forget prevents double-free
+2026-10-11T06:52:43.0771737Z 
+2026-10-11T06:52:43.0772267Z 🛡️  Protection Against:
+2026-10-11T06:52:43.0772923Z - Integer overflow in len * 3 or capacity * 3
+2026-10-11T06:52:43.0774824Z - Alignment mismatches between [u8; 3] and u8
+2026-10-11T06:52:43.0775205Z - Size calculation errors
+2026-10-11T06:52:43.0775511Z - Memory safety violations
+2026-10-11T06:52:43.0775825Z - Double-free vulnerabilities
+2026-10-11T06:52:43.0776019Z 
+2026-10-11T06:52:43.0776228Z ⚡ Performance Benefits:
+2026-10-11T06:52:43.0776602Z - Zero-copy conversion (no memory allocation)
+2026-10-11T06:52:43.0777013Z - Compile-time safety verification
+2026-10-11T06:52:43.0777412Z - Runtime overflow detection for edge cases
+2026-10-11T06:52:43.0836307Z 
+2026-10-11T06:52:43.0836757Z ✅ All JS integration tests completed
+2026-10-11T06:52:43.4644508Z 
+2026-10-11T06:52:43.4645295Z > @alberteinshutoin/lazy-image@1.4.3 test:js:type-safety
+2026-10-11T06:52:43.4646529Z > node test/type-safety/runtime-type-safety-exit.test.js && node test/type-safety/runtime-type-safety.test.js && node test/unit/target-bytes-search.test.js
+2026-10-11T06:52:43.4647314Z 
+2026-10-11T06:52:43.5724063Z runtime-type-safety-exit.test.js passed
+2026-10-11T06:52:43.6260614Z 🔒 Type Safety Verification Test
+2026-10-11T06:52:43.6261081Z =================================
+2026-10-11T06:52:43.6261333Z 
+2026-10-11T06:52:43.6261528Z ✅ Valid formats test:
+2026-10-11T06:52:43.6302913Z   jpeg: 458 bytes
+2026-10-11T06:52:43.6342253Z   jpg: 458 bytes
+2026-10-11T06:52:43.6378485Z   webp: 134 bytes
+2026-10-11T06:52:43.6379625Z 
+2026-10-11T06:52:43.6379950Z ✅ Valid presets test:
+2026-10-11T06:52:43.6381408Z   thumbnail:
+2026-10-11T06:52:43.6381711Z     Format: webp
+2026-10-11T06:52:43.6384073Z     Quality: 75
+2026-10-11T06:52:43.6384566Z     Size: 150x150
+2026-10-11T06:52:43.6400547Z     Result: 104 bytes
+2026-10-11T06:52:43.6425081Z     Convenience result: 104 bytes
+2026-10-11T06:52:43.6426684Z   avatar:
+2026-10-11T06:52:43.6426948Z     Format: webp
+2026-10-11T06:52:43.6427225Z     Quality: 80
+2026-10-11T06:52:43.6427490Z     Size: 200x200
+2026-10-11T06:52:43.6448842Z     Result: 134 bytes
+2026-10-11T06:52:43.6482541Z     Convenience result: 134 bytes
+2026-10-11T06:52:43.6483879Z   hero:
+2026-10-11T06:52:43.6484380Z     Format: jpeg
+2026-10-11T06:52:43.6484660Z     Quality: 85
+2026-10-11T06:52:43.6484932Z     Size: 1920xundefined
+2026-10-11T06:52:43.7788895Z     Result: 11136 bytes
+2026-10-11T06:52:43.9037742Z     Convenience result: 11136 bytes
+2026-10-11T06:52:43.9039463Z   social:
+2026-10-11T06:52:43.9039705Z     Format: jpeg
+2026-10-11T06:52:43.9039938Z     Quality: 80
+2026-10-11T06:52:43.9040192Z     Size: 1200x630
+2026-10-11T06:52:43.9187601Z     Result: 1534 bytes
+2026-10-11T06:52:43.9337689Z     Convenience result: 1534 bytes
+2026-10-11T06:52:43.9337945Z 
+2026-10-11T06:52:43.9338448Z ❌ Invalid values test (should fail at runtime):
+2026-10-11T06:52:43.9344354Z   ✅ Invalid format correctly rejected: [E111] Unsupported image format: invalid_format...
+2026-10-11T06:52:43.9346198Z   ✅ Invalid preset correctly rejected: [E401] Unknown preset: 'invalid_preset'. Available: thumbnail, avatar, hero, social...
+2026-10-11T06:52:43.9346858Z 
+2026-10-11T06:52:43.9347094Z 📋 Type Safety Benefits:
+2026-10-11T06:52:43.9347597Z 1. ✅ IDE autocomplete for format strings
+2026-10-11T06:52:43.9348053Z 2. ✅ Compile-time validation in TypeScript
+2026-10-11T06:52:43.9348610Z 3. ✅ Runtime validation in both TypeScript and JavaScript
+2026-10-11T06:52:43.9349170Z 4. ✅ Better developer experience and fewer bugs
+2026-10-11T06:52:43.9349438Z 
+2026-10-11T06:52:43.9349547Z 🎯 Before vs After:
+2026-10-11T06:52:43.9349873Z Before: toBuffer(format: string) - accepts ANY string
+2026-10-11T06:52:43.9351320Z After:  toBuffer(format: OutputFormat) - only valid formats
+2026-10-11T06:52:43.9351661Z Result: Compile-time safety + IDE support
+2026-10-11T06:52:43.9819120Z ok - runTargetBytesSearch uses toBufferTargetBytesNative and returns normalized fields
+2026-10-11T06:52:43.9820416Z ok - runTargetBytesSearch accepts jpg and defaults strict policy to false
+2026-10-11T06:52:43.9821264Z ok - runTargetBytesSearch throws explicit guidance when native target-bytes method is missing
+2026-10-11T06:52:43.9822205Z ok - file search fails clearly when native file output is unavailable
+2026-10-11T06:52:43.9822620Z ok - target-bytes options reject values above the native u32 contract
+2026-10-11T06:52:43.9823669Z ok - toFileTargetBytes delegates to native atomic output without returning image data
+2026-10-11T06:52:43.9825594Z ok - target-bytes strict rejects malformed values before native output
+2026-10-11T06:52:44.2088989Z 
+2026-10-11T06:52:44.2090116Z > @alberteinshutoin/lazy-image@1.4.3 test:pack-contract
+2026-10-11T06:52:44.2091047Z > node scripts/verify-pack.js
+2026-10-11T06:52:44.2091300Z 
+2026-10-11T06:52:44.7371718Z Pack contract verified: 15 files included in npm tarball.
+2026-10-11T06:52:44.9716389Z 
+2026-10-11T06:52:44.9717025Z > @alberteinshutoin/lazy-image@1.4.3 test:pack-metadata
+2026-10-11T06:52:44.9717438Z > node test/integration/package-metadata.test.js
+2026-10-11T06:52:44.9717632Z 
+2026-10-11T06:52:45.0246413Z ✅ package keywords include discoverability terms
+2026-10-11T06:52:45.0248312Z ✅ package description length stays within policy-friendly bounds
+2026-10-11T06:52:45.0249398Z ✅ README.md has Quick Start section in first 80 lines
+2026-10-11T06:52:45.0251769Z ✅ README.ja.md has Quick Start section in first 80 lines
+2026-10-11T06:52:45.0253122Z ✅ README heading structure is synchronized with README.ja.md
+2026-10-11T06:52:45.0257463Z ✅ Cargo package metadata includes security/positioning and avif
+2026-10-11T06:52:45.0258737Z ✅ package description keeps Image Firewall positioning
+2026-10-11T06:52:45.0262042Z ✅ Node runtime contract is consistently Node 22 and 24
+2026-10-11T06:52:45.0263259Z ✅ CLI is published through the package bin contract
+2026-10-11T06:52:45.0264952Z 
+2026-10-11T06:52:45.0265230Z ✅ package metadata checks completed: 9 passed, 0 failed
+2026-10-11T06:52:45.2596443Z 
+2026-10-11T06:52:45.2597193Z > @alberteinshutoin/lazy-image@1.4.3 test:release-policy
+2026-10-11T06:52:45.2597630Z > node test/unit/release-policy.test.js
+2026-10-11T06:52:45.2597791Z 
+2026-10-11T06:52:45.3145284Z ok - BREAKING markers are case-sensitive release markers
+2026-10-11T06:52:45.3147811Z ok - Removed section only blocks when it has entries
+2026-10-11T06:52:45.3151841Z ok - target version section is preferred over Unreleased
+2026-10-11T06:52:45.3153427Z ok - major boundary means x.0.0
+2026-10-11T06:52:45.3157466Z ok - release tag must match the package version
+2026-10-11T06:52:45.3159387Z ok - manual release workflow stages candidates but only tags publish
+2026-10-11T06:52:45.3160552Z ok - published tarballs come from the candidate artifact
+2026-10-11T06:52:45.5458666Z 
+2026-10-11T06:52:45.5459456Z > @alberteinshutoin/lazy-image@1.4.3 test:release-artifacts
+2026-10-11T06:52:45.5460077Z > node test/unit/release-artifacts.test.cjs
+2026-10-11T06:52:45.5460357Z 
+2026-10-11T06:52:45.7058708Z release artifact guard rejects missing, multiple, and invalid binary artifacts
+2026-10-11T06:52:45.8728652Z release artifact guard verifies binaries larger than the default child-process buffer
+2026-10-11T06:52:46.1069008Z 
+2026-10-11T06:52:46.1070070Z > @alberteinshutoin/lazy-image@1.4.3 test:generated-artifact-policy
+2026-10-11T06:52:46.1070780Z > node test/unit/generated-artifact-policy.test.js
+2026-10-11T06:52:46.1071093Z 
+2026-10-11T06:52:46.1630738Z generated artifact policy test passed
+2026-10-11T06:52:46.4016888Z 
+2026-10-11T06:52:46.4017988Z > @alberteinshutoin/lazy-image@1.4.3 test:security-audit-notification
+2026-10-11T06:52:46.4018715Z > node test/unit/security-audit-notification.test.js
+2026-10-11T06:52:46.4019032Z 
+2026-10-11T06:52:46.4555392Z ok - only the Cargo audit job receives issue write access and calls the tested module
+2026-10-11T06:52:46.4564153Z ok - creates the canonical security issue when none is open
+2026-10-11T06:52:46.4564731Z ok - does not duplicate a notification for the same workflow run
+2026-10-11T06:52:46.4565085Z ok - does not reuse an unrelated open security issue
+2026-10-11T06:52:46.4565941Z ok - updates the canonical issue with a new failing run
+2026-10-11T06:52:46.4566300Z ok - reports notification failures with actionable context
+2026-10-11T06:52:46.6976887Z 
+2026-10-11T06:52:46.6977672Z > @alberteinshutoin/lazy-image@1.4.3 test:cargo-audit-policy
+2026-10-11T06:52:46.6978335Z > node test/unit/cargo-audit-policy.test.js
+2026-10-11T06:52:46.6978626Z 
+2026-10-11T06:52:46.7535954Z ok - audits root and fuzz lockfiles with lockfile-scoped exceptions
+2026-10-11T06:52:46.7541826Z ok - rejects expired and malformed audit exceptions
+2026-10-11T06:52:46.7544844Z ok - security workflow delegates Cargo auditing to the tested policy runner
+2026-10-11T06:52:46.9913147Z 
+2026-10-11T06:52:46.9913810Z > @alberteinshutoin/lazy-image@1.4.3 test:npm-audit-policy
+2026-10-11T06:52:46.9914206Z > node test/unit/npm-audit-policy.test.js
+2026-10-11T06:52:46.9914379Z 
+2026-10-11T06:52:47.0437062Z {"message":"503 Service Unavailable","method":"POST","statusCode":503}
+2026-10-11T06:52:47.0438008Z npm warn audit 503 Service Unavailable
+2026-10-11T06:52:47.0438766Z npm error audit endpoint returned an error
+2026-10-11T06:52:47.0439159Z npm audit endpoint returned 503; retrying once.
+2026-10-11T06:52:47.0440119Z found 0 vulnerabilities
+2026-10-11T06:52:47.0446263Z ok - retries one audit endpoint 503 and preserves the audit arguments
+2026-10-11T06:52:47.0447665Z 1 critical severity vulnerability
+2026-10-11T06:52:47.0450860Z ok - does not retry a vulnerability failure
+2026-10-11T06:52:47.0452464Z {"statusCode":503,"vulnerabilities":{"example":{"severity":"critical"}}}
+2026-10-11T06:52:47.0452899Z npm warn audit 503 Service Unavailable
+2026-10-11T06:52:47.0453171Z npm error audit endpoint returned an error
+2026-10-11T06:52:47.0454724Z ok - does not retry when a 503 message is mixed with another failure
+2026-10-11T06:52:47.0455745Z {"message":"503 Service Unavailable","method":"POST","statusCode":503}
+2026-10-11T06:52:47.0456221Z npm warn audit 503 Service Unavailable
+2026-10-11T06:52:47.0456623Z npm error audit endpoint returned an error
+2026-10-11T06:52:47.0457044Z npm audit endpoint returned 503; retrying once.
+2026-10-11T06:52:47.0457407Z npm warn audit 503 Service Unavailable
+2026-10-11T06:52:47.0457647Z npm error audit endpoint returned an error
+2026-10-11T06:52:47.0457964Z {"message":"503 Service Unavailable","method":"POST","statusCode":503}
+2026-10-11T06:52:47.0458307Z ok - fails closed after a second audit endpoint 503
+2026-10-11T06:52:47.0460733Z ok - security workflow delegates both npm audits to the retry policy
+2026-10-11T06:52:47.2753755Z 
+2026-10-11T06:52:47.2754443Z > @alberteinshutoin/lazy-image@1.4.3 test:benchmark-quality-gate
+2026-10-11T06:52:47.2754882Z > node test/unit/benchmark-quality-gate.test.js
+2026-10-11T06:52:47.2755060Z 
+2026-10-11T06:52:47.3913629Z benchmark quality gate test passed
+2026-10-11T06:52:47.6236872Z 
+2026-10-11T06:52:47.6237582Z > @alberteinshutoin/lazy-image@1.4.3 test:types
+2026-10-11T06:52:47.6238069Z > tsc --noEmit
+2026-10-11T06:52:47.6238272Z 
+2026-10-11T06:52:48.7727246Z 
+2026-10-11T06:52:48.7729715Z > @alberteinshutoin/lazy-image@1.4.3 test:examples
+2026-10-11T06:52:48.7730081Z > node examples/run-all.mjs
+2026-10-11T06:52:48.7730221Z 
+2026-10-11T06:52:48.8304493Z 
+2026-10-11T06:52:48.8305003Z Running basic.mjs --self-test
+2026-10-11T06:52:50.5941250Z 
+2026-10-11T06:52:50.5941794Z Running batch-processing.mjs --self-test
+2026-10-11T06:52:56.8384894Z 
+2026-10-11T06:52:56.8385482Z Running error-handling.mjs --self-test
+2026-10-11T06:52:57.3276906Z 
+2026-10-11T06:52:57.3277566Z Running upload-sanitize-server.mjs --self-test
+2026-10-11T06:52:58.7522211Z 
+2026-10-11T06:52:58.7522772Z Running build-time-optimize.mjs --self-test
+2026-10-11T06:53:03.9811782Z Build-time optimization summary:
+2026-10-11T06:53:03.9813196Z   Files: 3/3 optimized
+2026-10-11T06:53:03.9813606Z   Total in: 293.0 KiB
+2026-10-11T06:53:03.9813872Z   Total out: 357.3 KiB
+2026-10-11T06:53:03.9814141Z   Reduction: -21.9%
+2026-10-11T06:53:03.9815257Z   Native wall time: 5099 ms
+2026-10-11T06:53:03.9815679Z   Script wall time: 5170 ms
+2026-10-11T06:53:03.9915210Z 
+2026-10-11T06:53:03.9915643Z Running compile-image-static-site.mjs --self-test
+2026-10-11T06:53:10.5669518Z FAIL [build/ERR_ASSERTION]: The input did not match the regular expression /processing\/E300/. Input:
+2026-10-11T06:53:10.5670091Z 
+2026-10-11T06:53:10.5670396Z 'FAIL [processing/E123]: Image artifact compilation failed during processing (320/webp)\n' +
+2026-10-11T06:53:10.5670893Z   'Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n' +
+2026-10-11T06:53:10.5671738Z   'Cause: [E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5023ms). Use .limits({ timeoutMs: 10023 }) for longer operations or switch to lenient policy.\n'
+2026-10-11T06:53:10.5672313Z 
+2026-10-11T06:53:10.5732287Z 
+2026-10-11T06:53:10.5732559Z Running metrics-observability.mjs --self-test
+2026-10-11T06:53:10.9018586Z {"event":"image_optimized","format_in":"jpeg","format_out":"webp","bytes_in":100055,"bytes_out":35890,"compression_ratio":0.3587027135075708,"duration_ms":270.8567,"decode_ms":5.7076,"encode_ms":263.0867,"ops_ms":2.0595000000000003,"icc_preserved":false,"metadata_stripped":false,"output_bytes":35890}
+2026-10-11T06:53:11.1820825Z {"event":"image_optimized","format_in":"jpeg","format_out":"webp","bytes_in":100055,"bytes_out":37796,"compression_ratio":0.37775223627005144,"duration_ms":279.3401,"decode_ms":5.3689,"encode_ms":272.0641,"ops_ms":1.9056,"icc_preserved":false,"metadata_stripped":false,"output_bytes":37796}
+2026-10-11T06:53:11.4869850Z {"event":"image_optimized","format_in":"jpeg","format_out":"webp","bytes_in":100055,"bytes_out":36754,"compression_ratio":0.36733796411973413,"duration_ms":304.1331,"decode_ms":5.356299999999999,"encode_ms":296.4345,"ops_ms":2.3411999999999997,"icc_preserved":false,"metadata_stripped":false,"output_bytes":36754}
+2026-10-11T06:53:11.4941694Z 
+2026-10-11T06:53:11.4942271Z 1 example self-test(s) failed
+2026-10-11T06:53:11.5408179Z ##[error]Process completed with exit code 1.
+2026-10-11T06:53:11.5605366Z Post job cleanup.
+2026-10-11T06:53:11.6997409Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-11T06:53:11.7223914Z git version 2.55.0.windows.5
+2026-10-11T06:53:11.7278358Z Temporarily overriding HOME='D:\a\_temp\828a8184-f15a-41d9-9d31-19225b2a0c12' before making global git config changes
+2026-10-11T06:53:11.7279035Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-11T06:53:11.7286689Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\lazy-image\lazy-image
+2026-10-11T06:53:11.7542837Z Removing SSH command configuration
+2026-10-11T06:53:11.7552749Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-11T06:53:11.7818346Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-11T06:53:12.2636726Z Removing HTTP extra header
+2026-10-11T06:53:12.2645493Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-11T06:53:12.2891121Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-11T06:53:12.7378040Z Removing includeIf entries pointing to credentials config files
+2026-10-11T06:53:12.7387555Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-11T06:53:12.7602287Z includeif.gitdir:D:/a/lazy-image/lazy-image/.git.path
+2026-10-11T06:53:12.7602878Z includeif.gitdir:D:/a/lazy-image/lazy-image/.git/worktrees/*.path
+2026-10-11T06:53:12.7604173Z includeif.gitdir:/github/workspace/.git.path
+2026-10-11T06:53:12.7604527Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-11T06:53:12.7643687Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/lazy-image/lazy-image/.git.path
+2026-10-11T06:53:12.7857422Z D:\a\_temp\git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:53:12.7894191Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/lazy-image/lazy-image/.git.path D\:\\a\\_temp\\git\-credentials\-80032d6f\-fbb8\-445b\-9199\-6f7daa178735\.config
+2026-10-11T06:53:12.8191559Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/lazy-image/lazy-image/.git/worktrees/*.path
+2026-10-11T06:53:12.8394182Z D:\a\_temp\git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:53:12.8423925Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/lazy-image/lazy-image/.git/worktrees/*.path D\:\\a\\_temp\\git\-credentials\-80032d6f\-fbb8\-445b\-9199\-6f7daa178735\.config
+2026-10-11T06:53:12.8651747Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-11T06:53:12.8845005Z /github/runner_temp/git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:53:12.8877033Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-80032d6f\-fbb8\-445b\-9199\-6f7daa178735\.config
+2026-10-11T06:53:12.9109340Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-11T06:53:12.9304933Z /github/runner_temp/git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config
+2026-10-11T06:53:12.9336255Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-80032d6f\-fbb8\-445b\-9199\-6f7daa178735\.config
+2026-10-11T06:53:12.9572167Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-11T06:53:13.3705199Z Removing credentials config 'D:\a\_temp\git-credentials-80032d6f-fbb8-445b-9199-6f7daa178735.config'
+2026-10-11T06:53:13.3879376Z Cleaning up orphan processes
+2026-10-11T06:53:13.4098804Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

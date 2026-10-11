@@ -301,6 +301,30 @@
     "budget-deadline-target-results.json": {
       "bytes": 1109,
       "sha256": "4355cc2bb8bf7d08cdf98cee1f476d0eab573e56cb338f86266c9f44f5da0b3b"
+    },
+    "green-budget-deadline-site.log": {
+      "bytes": 118,
+      "sha256": "544ab468a6dd1cb04375e18a0378fe85001dc4291c3cd9fd58423bb3aabc9752"
+    },
+    "full-81d128a-job-114410795105.log": {
+      "bytes": 72999,
+      "sha256": "bfae419058720235bcfdef2084863fb77659ed73387fa2dbead5d49f88dc22a3"
+    },
+    "full-81d128a-job-114410795126.log": {
+      "bytes": 77974,
+      "sha256": "22ab56fc89a3b4d220f31e8a92af2ee7cca99e9209cc0aa968b0d624a3ecef6e"
+    },
+    "full-81d128a-job-114410795134.log": {
+      "bytes": 73205,
+      "sha256": "d548dd775455bb389d472c42cd76d24f25563cd7830ea310c88a5e021cb94111"
+    },
+    "full-81d128a-job-114410795136.log": {
+      "bytes": 73196,
+      "sha256": "8dc80789adde028a52dc558e9e3c973e983138b4200d59efad288aab9df52fc3"
+    },
+    "full-81d128a-job-114410795162.log": {
+      "bytes": 77959,
+      "sha256": "dfbdf1e60e5cacf450fcd76cd2414622f7a24a94d284834e6a76aa494afc3943"
     }
   },
   "cases": [
