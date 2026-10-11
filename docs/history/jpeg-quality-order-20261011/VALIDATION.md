@@ -84,3 +84,35 @@ source21a15bcのGate/hosted結果は、追加した共有探索コードの承�
 Rustは降順の最高適合quality、全候補不適合時の最小bytes/高quality tie、strict拒否、permit/prepare再利用とError伝播を確認。
 JSはnormal/fast、Buffer/fileの直接q100 oracle、generated型署名の維持、source/native/fixture照合とCPU増加の明記を確認。
 両方ALLOW、関連指摘なし。新経路の完全検証・Companion・hosted成功はこの専門レビューに含まれない。
+
+## 共有探索修正後のローカル完全検証
+
+[実結果](checks/search-full-local-results.json) のsourceは
+`f921bbb51655ea2410286975dc33cb9a392ac1d9`、native SHA-256は
+`2ce79f28c97518e2e6441c593c41abc08128a96b5bead60a10a44488564d37e9`。
+`npm run build`、`npm test`、`npm run test:bench:release`はそれぞれexit0。
+ignored npm生成物は再び一時退避し、元hashの復元をrestored=trueまで照合した。
+実コマンドとoriginal log名はresult JSONからchecks/の同名fileへ辿れる。
+
+新しい[compiler](raw/search-full-validation/compile-image-corpus.json)・
+[quality](raw/search-full-validation/quality-matched.json)・[集約](raw/search-full-validation/release-evidence.json)を、
+旧探索の記録とは別directoryで保持した。compiler正常13/13、strict11/11、期待拒否2/2。
+qualityは37/39、byteは37/39で、AVIF alpha-1/alpha-2品質未達、tiny JPEG/AVIF容量未達を保持する。
+compiler集約時間はこの新sourceのafter-only測定で、旧sourceとの統制された速度比較ではない。
+3 JPEGのencoder-only前後比較と、小fixtureのtargetBytes API前後比較とは別のscopeである。
+
+## Hosted goldenのnative target差
+
+旧PR HEAD `21a15bc99d4c5258f640054e00e9958994e124a3` の
+[必須CI](https://github.com/albert-einshutoin/lazy-image/actions/runs/38115494776/job/114400345846) は
+JPEG goldenのpixel hash不一致でFAIL。実ログを[保持](checks/pr-21a15bc-linux-golden-failed.log)した。
+Mac arm64実出力dad8e345…に対し、Linux x64実出力は84a6612e…で、他5caseは既存hashに一致した。
+このLinux失敗を成功へ再分類せず、現行sourceから観測した2つのJPEG出力を明示したsnapshot setへ変更した。
+全baseline schemaをpixelHashes配列へ統一し、JPEG以外の5caseは従来hash1個だけを維持する。
+未知hashは引き続きFAILとなり、未測定targetのhashを推測しない。画質・寸法・容量の既存検査は維持する。
+新しいhash setの対象goldenと最終hosted matrixの実結果はそれぞれ別に確認する。
+
+Mac対象goldenは6成功/exit0 ([ログ](checks/golden-recorded-targets.log))。同じJS専門reviewer/Sol mediumが
+この追加2fileとMac/Linux実証へ限定して最終レビューしALLOW、関連指摘なし。
+このtest-only変更ではsourcef921bbbから製品code・native・依存を変更していないため、成功した完全build/benchmarkは再実行しない。
+最終HEADの全hosted matrixとSecurityを確認してからmergeする。

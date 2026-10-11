@@ -1,38 +1,51 @@
 {
   "jpeg_resize_inside_1200_q82": {
-    "pixelHash": "dad8e345f4403a2e5c5ae2d139a9e77bf06b5ada853f6b770529b5d801ea583e",
     "width": 1200,
     "height": 1200,
-    "format": "jpeg"
+    "format": "jpeg",
+    "pixelHashes": [
+      "dad8e345f4403a2e5c5ae2d139a9e77bf06b5ada853f6b770529b5d801ea583e",
+      "84a6612e9c75424c6fe25299d279eeb59471f5190ad1921eb10150013e7e611d"
+    ]
   },
   "png_cover_rotate_grayscale": {
-    "pixelHash": "6c8da0a73847462be3160f6ece02fa32e4ae4480f493e10d6ff16aa27ee4e65f",
     "width": 1600,
     "height": 900,
-    "format": "png"
+    "format": "png",
+    "pixelHashes": [
+      "6c8da0a73847462be3160f6ece02fa32e4ae4480f493e10d6ff16aa27ee4e65f"
+    ]
   },
   "webp_cover_flip": {
-    "pixelHash": "f51e648b840a58794d139a6356991040246bc10d7614e8d4f79416daf72c8295",
     "width": 800,
     "height": 800,
-    "format": "webp"
+    "format": "webp",
+    "pixelHashes": [
+      "f51e648b840a58794d139a6356991040246bc10d7614e8d4f79416daf72c8295"
+    ]
   },
   "png_cover_no_grayscale": {
-    "pixelHash": "1c1b8537feef8f0586f244334b61334d3bc1fc603be43206707ffdfded8d6f93",
     "width": 1600,
     "height": 900,
-    "format": "png"
+    "format": "png",
+    "pixelHashes": [
+      "1c1b8537feef8f0586f244334b61334d3bc1fc603be43206707ffdfded8d6f93"
+    ]
   },
   "avif_cover_rotate_grayscale": {
-    "pixelHash": "85091a8d87123f6b50f2f247ae2a5d5692dc9a3ceccb7f8a7b56f8c8929db8dd",
     "width": 1200,
     "height": 800,
-    "format": "avif"
+    "format": "avif",
+    "pixelHashes": [
+      "85091a8d87123f6b50f2f247ae2a5d5692dc9a3ceccb7f8a7b56f8c8929db8dd"
+    ]
   },
   "jpeg_to_png_flipv": {
-    "pixelHash": "86a5cbec3bc8194c50c0d3f25a3212a88750b602556cf27fc7a0d4ba839cc22d",
     "width": 2000,
     "height": 2000,
-    "format": "png"
+    "format": "png",
+    "pixelHashes": [
+      "86a5cbec3bc8194c50c0d3f25a3212a88750b602556cf27fc7a0d4ba839cc22d"
+    ]
   }
 }
