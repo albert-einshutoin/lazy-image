@@ -496,23 +496,23 @@ async function main() {
     );
   });
 
-  await withTempParent(async (parent) => {
-    const outputDir = path.join(parent, 'budget-failure');
+  for (const format of ['webp', 'jpeg']) await withTempParent(async (parent) => {
+    const outputDir = path.join(parent, `budget-failure-${format}`);
     await assertRejected(
       () => compileImage({
         inputPath: INPUT,
         outputDir,
         policy: {
           widths: [320],
-          formats: ['webp'],
-          budgets: [{ width: 320, format: 'webp', maxBytes: 1 }],
+          formats: [format],
+          budgets: [{ width: 320, format, maxBytes: 1 }],
           placeholder: false,
         },
       }),
       (error) => {
         assert.equal(error.name, 'ArtifactCompilationError');
         assert.equal(error.phase, 'processing');
-        assert.equal(error.artifactId, '320/webp');
+        assert.equal(error.artifactId, `320/${format}`);
         assert.equal(error.errorCode, 'E300');
       },
     );

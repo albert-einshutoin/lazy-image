@@ -183,6 +183,10 @@ pub fn encode_jpeg_with_settings(
         validate_buffer_len(w, h, 3, pixels.len(), "jpeg")?;
 
         let mut comp = Compress::new(ColorSpace::JCS_RGB);
+        if !fast_mode {
+            // This resets mozjpeg defaults, so apply quality/chroma/progression afterwards.
+            comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
+        }
         comp.set_size(w as usize, h as usize);
         comp.set_color_space(ColorSpace::JCS_YCbCr);
 
@@ -202,7 +206,6 @@ pub fn encode_jpeg_with_settings(
         } else {
             comp.set_optimize_coding(true);
             comp.set_optimize_scans(true);
-            comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
         }
 
         let smoothing = if quality_f32 >= 90.0 {
@@ -215,8 +218,6 @@ pub fn encode_jpeg_with_settings(
             18
         };
         comp.set_smoothing_factor(smoothing);
-
-        // 7. Quantization table optimization is implied by optimize_coding(true)
 
         let estimated_size = (w as usize * h as usize * 3 / 10).max(4096);
         let mut output = Vec::with_capacity(estimated_size);
