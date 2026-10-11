@@ -3,7 +3,7 @@
 // Buffer-output encode tasks:
 // - `EncodeTask`             — basic `toBuffer()` path
 // - `EncodeWithMetricsTask`  — `toBuffer()` with ProcessingMetrics
-// - `EncodeTargetBytesTask`  — binary search over quality for a byte budget
+// - `EncodeTargetBytesTask`  — bounded quality search for a byte budget
 
 use super::atomic::write_encoded_output;
 use super::context::TaskContext;
@@ -86,7 +86,7 @@ define_encode_task! {
     }
 }
 
-/// Result payload for the byte-budget binary search (before NAPI conversion).
+/// Result payload for the byte-budget quality search (before NAPI conversion).
 #[derive(Debug)]
 pub struct TargetBytesOutput {
     pub data: Vec<u8>,
@@ -108,11 +108,8 @@ pub struct FileTargetBytesOutput {
 }
 
 define_encode_task! {
-    /// Async task that performs byte-budget binary search entirely in Rust.
-    ///
-    /// Previous implementation did this in JS, requiring ~7 NAPI round-trips per
-    /// call (one per binary-search iteration). Moving the loop to Rust eliminates
-    /// all intermediate JS↔NAPI boundary crossings.
+    /// Async task that performs byte-budget quality search entirely in Rust,
+    /// without intermediate JS↔NAPI boundary crossings.
     pub struct EncodeTargetBytesTask {
         pub target_bytes: u32,
         pub min_quality: u8,
@@ -149,11 +146,11 @@ define_encode_task! {
 }
 
 impl EncodeTargetBytesTask {
-    /// Run binary search over quality to find the best encode within byte budget.
+    /// Try qualities from highest to lowest, stopping at the first budget fit.
     ///
     /// Decode + ops are performed **once** via [`prepare_for_encode`]; only the
-    /// encode step (and EXIF embed) re-runs per iteration. For a 4000x3000 JPEG
-    /// with a resize op this eliminates a 5-7x re-decode penalty (issue #558).
+    /// encode step (and EXIF embed) re-runs per iteration, at most 100 times for
+    /// the validated public quality range. Size need not be monotonic in quality.
     pub(super) fn search(&self) -> std::result::Result<TargetBytesOutput, LazyImageError> {
         // Decode + apply ops once. Memory permit is held by `prepared` so the
         // semaphore reservation stays valid across every encode iteration below.
@@ -168,13 +165,9 @@ impl EncodeTargetBytesTask {
             base_ctx.format,
         )?;
 
-        let mut low = self.min_quality;
-        let mut high = self.max_quality;
-        let mut best_under: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
-        let mut best_over: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
+        let mut best: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
 
-        while low <= high {
-            let quality = low + (high - low) / 2;
+        for quality in (self.min_quality..=self.max_quality).rev() {
             let format_at_q = self.ctx.format.with_quality(quality);
             // Reuse the base context, overriding only the per-iteration format.
             let iter_ctx = EncodeContext {
@@ -189,41 +182,29 @@ impl EncodeTargetBytesTask {
                 Ok(size) => size,
                 Err(_) => {
                     // target_bytes is a u32, so an unrepresentable candidate is
-                    // necessarily over budget. Keep searching lower qualities
-                    // instead of aborting before a representable winner is tried.
-                    high = quality.saturating_sub(1);
-                    if quality == 0 {
-                        break;
-                    }
+                    // necessarily over budget. Try the remaining qualities.
                     continue;
                 }
             };
 
             if size <= self.target_bytes {
-                best_under = Some((encoded, quality, size, metrics));
-                if quality == u8::MAX {
-                    break;
-                }
-                low = quality + 1;
+                best = Some((encoded, quality, size, metrics));
+                break;
             } else {
-                let dominated = best_over.as_ref().is_some_and(|(_, _, prev_size, _)| {
-                    size > *prev_size
-                        || (size == *prev_size && quality <= best_over.as_ref().unwrap().1)
-                });
-                if best_over.is_none() || !dominated {
-                    best_over = Some((encoded, quality, size, metrics));
-                }
-                high = quality.saturating_sub(1);
-                if quality == 0 {
-                    break;
+                // Best-effort keeps the smallest output; descending order retains
+                // the highest quality on a size tie without a monotonicity assumption.
+                if best
+                    .as_ref()
+                    .is_none_or(|(_, _, prev_size, _)| size < *prev_size)
+                {
+                    best = Some((encoded, quality, size, metrics));
                 }
             }
         }
 
-        let (data, quality, bytes_out, metrics) = match (best_under, best_over) {
-            (Some(under), _) => under,
-            (None, Some(over)) => over,
-            (None, None) => {
+        let (data, quality, bytes_out, metrics) = match best {
+            Some(candidate) => candidate,
+            None => {
                 return Err(LazyImageError::encode_failed(
                     self.ctx.format.as_str(),
                     "Failed to encode any candidate while searching for target bytes",

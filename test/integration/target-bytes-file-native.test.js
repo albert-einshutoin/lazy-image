@@ -2,6 +2,7 @@
 
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
+const sharp = require('sharp')
 const { resolveFixture, resolveRoot, resolveTemp } = require('../helpers/paths')
 const { ImageEngine, inspectFile } = require(resolveRoot('index'))
 
@@ -9,6 +10,32 @@ const INPUT = resolveFixture('test_100KB_1057x1057.jpg')
 const OPTIONS = { targetBytes: 20_000, minQuality: 40, maxQuality: 90 }
 
 async function main() {
+  const solid = await sharp({ create: {
+    width: 64, height: 64, channels: 3, background: { r: 200, g: 100, b: 50 },
+  } }).png().toBuffer()
+  const solidPath = resolveTemp('target-bytes-nonmonotonic.jpg')
+  try {
+    for (const fastMode of [false, true]) {
+      const maximum = await ImageEngine.from(solid).toBuffer('jpeg', 100, fastMode)
+      if (!fastMode) {
+        const midpoint = await ImageEngine.from(solid).toBuffer('jpeg', 50, false)
+        assert.ok(midpoint.length > maximum.length, 'normal JPEG fixture is non-monotonic')
+      }
+      const options = { targetBytes: maximum.length, minQuality: 1, maxQuality: 100,
+        fastMode, qualityFloorPolicy: 'strict' }
+      const buffer = await ImageEngine.from(solid).toBufferTargetBytes('jpeg', options)
+      assert.equal(buffer.quality, 100, 'a feasible maximum must not be discarded')
+      assert.equal(buffer.budgetMet, true)
+      assert.deepEqual(buffer.data, maximum)
+      const file = await ImageEngine.from(solid).toFileTargetBytes(solidPath, 'jpeg', options)
+      assert.equal(file.quality, 100)
+      assert.equal(file.budgetMet, true)
+      assert.deepEqual(fs.readFileSync(solidPath), maximum)
+    }
+  } finally {
+    fs.rmSync(solidPath, { force: true })
+  }
+
   const outputPath = resolveTemp('target-bytes-native.jpg')
   try {
     fs.writeFileSync(outputPath, 'existing destination')

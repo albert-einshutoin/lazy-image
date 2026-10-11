@@ -338,6 +338,39 @@ fn target_bytes_strict_policy_fails_when_budget_unmet() {
     );
 }
 
+#[test]
+fn target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint() {
+    let mut ctx = make_ctx_with_decoded(OutputFormat::Jpeg {
+        quality: Quality::unchecked(100),
+        fast_mode: false,
+    });
+    ctx.decoded = Some(Arc::new(DynamicImage::ImageRgba8(ImageBuffer::from_pixel(
+        64,
+        64,
+        Rgba([200, 100, 50, 255]),
+    ))));
+    ctx.ops.clear();
+    let max_candidate = ctx.process_and_encode(None).unwrap();
+    ctx.format = ctx.format.with_quality(50);
+    let midpoint = ctx.process_and_encode(None).unwrap();
+    assert!(
+        midpoint.len() > max_candidate.len(),
+        "fixture must expose non-monotonic sizes"
+    );
+    ctx.format = ctx.format.with_quality(100);
+    let task = EncodeTargetBytesTask {
+        ctx,
+        target_bytes: max_candidate.len() as u32,
+        min_quality: 1,
+        max_quality: 100,
+        quality_floor_policy_strict: true,
+    };
+    let result = task.search().expect("a known max-quality candidate fits");
+    assert!(result.budget_met);
+    assert_eq!(result.quality, 100);
+    assert_eq!(result.data, max_candidate);
+}
+
 /// Regression test for issue #558: the binary search must decode + apply
 /// ops once, not per quality iteration. We assert it indirectly by giving
 /// the prepare phase a pre-decoded Arc and checking that `prepare_for_encode`

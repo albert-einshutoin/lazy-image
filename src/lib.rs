@@ -338,10 +338,9 @@ pub struct BatchOutputWithMetrics {
     pub summary: BatchMetricsSummary,
 }
 
-/// Result of byte-budget encoding (binary search over quality).
+/// Result of byte-budget encoding (bounded descending quality search).
 ///
-/// The binary search runs entirely in Rust, eliminating JS↔NAPI round-trips
-/// that the previous JS-side implementation required (~7 per call).
+/// The search runs entirely in Rust, without intermediate JS↔NAPI round-trips.
 #[cfg(feature = "napi")]
 #[napi(object)]
 pub struct TargetBytesResult {

@@ -289,10 +289,10 @@ impl ImageEngine {
 
     /// Encode to buffer with a byte-budget constraint.
     ///
-    /// Performs a binary search over quality (entirely in Rust) to find the
-    /// highest quality that keeps the output within `target_bytes`. This
-    /// eliminates ~7 JS↔NAPI round-trips per call compared to the previous
-    /// JS-side implementation.
+    /// Tries qualities from highest to lowest entirely in Rust, without assuming
+    /// monotonic output sizes. Returns the highest quality within `target_bytes`.
+    /// At most 100 encodes are tried; decode/operations run once and no
+    /// intermediate JS↔NAPI round-trips are needed.
     ///
     /// Returns `TargetBytesResult` with the encoded data, chosen quality,
     /// actual size, and whether the budget was met.
