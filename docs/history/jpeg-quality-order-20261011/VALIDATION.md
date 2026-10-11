@@ -10,7 +10,7 @@ panic/error/metadata/budget共有経路の非変更、DQTの実出力検査と�
   ALLOW、指摘なし。WebP検証維持、JPEGのpolicy/artifactId/E300/processingとoutputDir不存在を確認。
 - 二つのレビューは独立した担当ファイルへ限定し、編集・再測定・CI実行は行っていない。
 
-完全検証とCompanion Stop Review Gateは、この記録作成時点では未実施。未実施を成功へ数えない。
+初版時点では完全検証とCompanion Stop Review Gateは未実施だった。以下の後続実結果を、対象検証の成功と分離して記録する。
 
 ## 関連指摘範囲の最終レビュー
 
@@ -46,3 +46,26 @@ quality50→80→100→50で各JPEGをdecodeし64×64を検査、異なるqualit
 `10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174`。
 その後の変更はgolden data・test-only module・記録だけで、encoder製品部分・依存・APIは変更していない。
 成功済みbuildを繰り返さず、完全testとcompiler/quality証拠の未完了部分を検証する。
+
+## ローカル完全検証の最終結果
+
+[最終実結果](checks/final-verified-local-results.json) のsourceは
+`240d23e061af209d0c34b12feaf93721319a2e05`、native bindingは上記10497403…5174。
+`npm test` **exit0** ([ログ](checks/verified-npm-test.log))、
+`npm run test:bench:release` **exit0** ([ログ](checks/full-bench-release.log))。
+既存Rust ignored testはログどおり保持し、実行成功へ加算しない。
+ignored npm生成物は検証中だけ退避し、終了後に元のhashへ復元した。後者の実結果にもrestored=trueを記録。
+
+[compiler](raw/full-validation/compile-image-corpus.json)、[quality](raw/full-validation/quality-matched.json)、
+[集約](raw/full-validation/release-evidence.json) は新規ローカル証拠で、native1.4.3/source240d23e。
+Markdownのv1.3.0表題はrunnerの固定文字列で、測定版の証拠にはしない。
+正常受入13/13（39trial）、strict budget11/11、期待拒否2/2（6trial）を分離。
+公開manifest/checksum、private metadata除去、該当metadata fixtureのICC bytes保持を検査した。
+処理・検証失敗0。codec39比較の品質達成はJPEG13/13、WebP13/13、AVIF11/13。
+AVIFのalpha-1/alpha-2品質未達2/39、tiny transparent-avifのJPEG/AVIF容量未達2/39を保持する。
+集約passed:trueはこれらの全目標達成を意味しない。
+
+全corpusは修正後のみの追加受入検証であり、修正前の全13入力を同条件測定した比較ではない。
+同条件の前後比較はEVALUATION.mdの3 JPEG入力に限定する。
+この追加記録でも同3入力の候補bytes/hash/SSIMは保存済み修正後と一致した。
+実コマンド、hash、分母、未達はcomparison.jsonから各raw/checkへ辿れる。

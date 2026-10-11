@@ -63,6 +63,22 @@
     "raw/after/ui-1-sharp.json": {
       "bytes": 5653,
       "sha256": "2445c42b0a8e102cf54845c79b93c8d5d6ce9f499c714bd975c674a1e1d3eccf"
+    },
+    "raw/full-validation/compile-image-corpus.json": {
+      "bytes": 234284,
+      "sha256": "60f995fcecbb786bcc7f79dd48c1ff8b15254baa6d9dd438f1e4d88331ae1863"
+    },
+    "raw/full-validation/quality-matched.json": {
+      "bytes": 690726,
+      "sha256": "81327874605379466c39c9e53cdd0d9b5ef68b5d01c97fbff55e1fb9fedac57e"
+    },
+    "raw/full-validation/release-evidence.json": {
+      "bytes": 2575,
+      "sha256": "1363eae224bb729cbe4aa87c4a4810fd7b2e8b9336f43290a28461fef807c38a"
+    },
+    "raw/full-validation/release-evidence.md": {
+      "bytes": 2852,
+      "sha256": "676761ebe4f68a932fcd4e543b8c8d68b715de0eb18b3eba3179d84ffd03011a"
     }
   },
   "checksHashes": {
@@ -169,6 +185,18 @@
     "full-build.log": {
       "bytes": 302,
       "sha256": "753bc39fee01368bcdf7570f3e1f89afb2c2b16a3e619101452e61c0a96d172d"
+    },
+    "final-verified-local-results.json": {
+      "bytes": 916,
+      "sha256": "78fe30a73b5766dc05d7ef8af9405a983f0ff85fdabe1a25618cb285f46b9382"
+    },
+    "verified-npm-test.log": {
+      "bytes": 65237,
+      "sha256": "c1eb76147bee48ff36b08db58ae6c08c37eb65892c120c158e76787cda8aa691"
+    },
+    "full-bench-release.log": {
+      "bytes": 2576,
+      "sha256": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb"
     }
   },
   "cases": [
@@ -663,5 +691,140 @@
     "RSS includes whole grid, both libraries, reference/quality decoding after reference creation; not encoder allocation",
     "independent floor/cap matches; no simultaneous constraint success implied",
     "historical #883 Linux x64 native1.4.2 evidence remains separate"
-  ]
+  ],
+  "fullValidation": {
+    "sourceSha": "240d23e061af209d0c34b12feaf93721319a2e05",
+    "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+    "compiler": {
+      "cases": 15,
+      "accepted": 13,
+      "supportedCases": 13,
+      "acceptanceRate": 1,
+      "expectedRejections": 2,
+      "passed": 15,
+      "e2eMs": {
+        "samples": [
+          230.911,
+          223.53,
+          230.702,
+          72.141,
+          74.023,
+          75.739,
+          29.693,
+          29.998,
+          27.152,
+          595.814,
+          595.748,
+          599.731,
+          461.333,
+          456.989,
+          494.014,
+          378.035,
+          364.386,
+          362.554,
+          419.672,
+          427.745,
+          417.399,
+          313.394,
+          320.432,
+          318.336,
+          426.728,
+          431.703,
+          431.858,
+          341.37,
+          337.868,
+          334.064,
+          370.277,
+          379.178,
+          366.016,
+          393.405,
+          389.785,
+          392.132,
+          380.008,
+          339.689,
+          343.487
+        ],
+        "p50": 366.016,
+        "p90": 494.014,
+        "worst": 599.731
+      },
+      "strictBudget": {
+        "cases": 11,
+        "met": 11,
+        "rate": 1
+      },
+      "peakRssBytes": 99598336,
+      "failureReasons": [
+        {
+          "id": "hostile-1",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during planning",
+          "code": "LAZY_IMAGE_USER_ERROR",
+          "errorCode": "E400",
+          "phase": "planning",
+          "cause": "[E400] source.width must be an integer between 1 and 32768",
+          "category": 0
+        },
+        {
+          "id": "hostile-2",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during preflight",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "preflight",
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: 6400x6400 (40960000 pixels) exceeds limit of 40000000 pixels. Resize the image first with .resize() or use .limits({ maxPixels: 41960000 }).",
+          "category": 2
+        }
+      ]
+    },
+    "quality": {
+      "lazy": {
+        "cases": 39,
+        "qualityMet": 37,
+        "byteMet": 37,
+        "byteTargetRate": 0.9487179487179487,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      },
+      "sharp": {
+        "cases": 39,
+        "qualityMet": 39,
+        "byteMet": 39,
+        "byteTargetRate": 1,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      }
+    },
+    "byFormat": {
+      "jpeg": {
+        "cases": 13,
+        "qualityMet": 13,
+        "byteMet": 12,
+        "qualityUnmet": [],
+        "byteUnmet": [
+          "transparent-avif"
+        ]
+      },
+      "webp": {
+        "cases": 13,
+        "qualityMet": 13,
+        "byteMet": 13,
+        "qualityUnmet": [],
+        "byteUnmet": []
+      },
+      "avif": {
+        "cases": 13,
+        "qualityMet": 11,
+        "byteMet": 12,
+        "qualityUnmet": [
+          "alpha-1",
+          "alpha-2"
+        ],
+        "byteUnmet": [
+          "transparent-avif"
+        ]
+      }
+    },
+    "productionEncoderPrefixSha256": "da1bcf350017e9868ee68f3682e39dcc929e5c71653c01c6c5ff77ef3bfadb9e"
+  }
 }
