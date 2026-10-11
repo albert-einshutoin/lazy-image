@@ -1,0 +1,163 @@
+{
+  "stage": "after",
+  "sourceSha": "64a2ac5d136180987171e0e6c3ccb3f883ebc277",
+  "workingHead": "64a2ac5d136180987171e0e6c3ccb3f883ebc277",
+  "sourceDiagnostic": "canonical native build at sourceSha",
+  "bindingSha256": "2ce79f28c97518e2e6441c593c41abc08128a96b5bead60a10a44488564d37e9",
+  "fixture": {
+    "kind": "generated MIT test fixture",
+    "width": 64,
+    "height": 64,
+    "rgb": [
+      200,
+      100,
+      50
+    ],
+    "sha256": "b211dccb9718fe86159f508ee6fc1c8e33e812862772467285575ca0ccfe70b0"
+  },
+  "environment": {
+    "node": "v24.2.0",
+    "cpu": "Apple M4",
+    "platform": "darwin",
+    "arch": "arm64",
+    "sharpVersions": {
+      "aom": "3.15.0",
+      "archive": "3.8.9",
+      "cairo": "1.18.4",
+      "cgif": "0.5.3",
+      "exif": "0.6.26",
+      "expat": "2.8.3",
+      "ffi": "3.8.0",
+      "fontconfig": "2.18.3",
+      "freetype": "2.14.3",
+      "fribidi": "1.0.16",
+      "glib": "2.89.4",
+      "harfbuzz": "14.3.1",
+      "heif": "1.23.2",
+      "highway": "1.4.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.19.1",
+      "mozjpeg": "0826579",
+      "pango": "1.58.2",
+      "pixman": "0.46.4",
+      "png": "1.6.58",
+      "proxy-libintl": "0.5",
+      "rsvg": "2.62.91",
+      "tiff": "4.7.2",
+      "uhdr": "2.0.2",
+      "vips": "8.18.6",
+      "webp": "1.6.0",
+      "xml2": "2.15.3",
+      "zlib-ng": "2.3.3",
+      "sharp": "0.35.4"
+    }
+  },
+  "command": "node measure-search.cjs after 64a2ac5d136180987171e0e6c3ccb3f883ebc277",
+  "scope": "whole public targetBytes API latency including from/prepare; three trials, not population p90; search failure is retained",
+  "candidates": [
+    {
+      "quality": 50,
+      "bytes": 472,
+      "sha256": "4feebc67439b7ce571a57854bd9ab8af7da13e85dd56a230e884534ec37d77a2"
+    },
+    {
+      "quality": 80,
+      "bytes": 346,
+      "sha256": "813f5802ce442af211f244a52f45230397c4d8100957557cfb4cb860b3ee157f"
+    },
+    {
+      "quality": 100,
+      "bytes": 346,
+      "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7"
+    }
+  ],
+  "calls": [
+    {
+      "name": "feasible-max",
+      "budget": 346,
+      "strict": true,
+      "trials": [
+        {
+          "elapsedMs": 1.1183329999999998,
+          "status": "returned",
+          "quality": 100,
+          "bytes": 346,
+          "budgetMet": true,
+          "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7"
+        },
+        {
+          "elapsedMs": 1.0505839999999935,
+          "status": "returned",
+          "quality": 100,
+          "bytes": 346,
+          "budgetMet": true,
+          "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7"
+        },
+        {
+          "elapsedMs": 0.9330840000000009,
+          "status": "returned",
+          "quality": 100,
+          "bytes": 346,
+          "budgetMet": true,
+          "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7"
+        }
+      ]
+    },
+    {
+      "name": "impossible-strict",
+      "budget": 1,
+      "strict": true,
+      "trials": [
+        {
+          "elapsedMs": 86.19099999999999,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=1 within quality range 1-100",
+          "errorCode": "E300"
+        },
+        {
+          "elapsedMs": 84.41566699999998,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=1 within quality range 1-100",
+          "errorCode": "E300"
+        },
+        {
+          "elapsedMs": 83.87400000000002,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=1 within quality range 1-100",
+          "errorCode": "E300"
+        }
+      ]
+    },
+    {
+      "name": "impossible-best-effort",
+      "budget": 1,
+      "strict": false,
+      "trials": [
+        {
+          "elapsedMs": 84.43820799999997,
+          "status": "returned",
+          "quality": 95,
+          "bytes": 345,
+          "budgetMet": false,
+          "sha256": "8b9eeeeffeb0b54c124ee6f701abd1c4fc7ea53ab26d9fd44cdd8cb2ddf3cd51"
+        },
+        {
+          "elapsedMs": 83.993875,
+          "status": "returned",
+          "quality": 95,
+          "bytes": 345,
+          "budgetMet": false,
+          "sha256": "8b9eeeeffeb0b54c124ee6f701abd1c4fc7ea53ab26d9fd44cdd8cb2ddf3cd51"
+        },
+        {
+          "elapsedMs": 84.197292,
+          "status": "returned",
+          "quality": 95,
+          "bytes": 345,
+          "budgetMet": false,
+          "sha256": "8b9eeeeffeb0b54c124ee6f701abd1c4fc7ea53ab26d9fd44cdd8cb2ddf3cd51"
+        }
+      ]
+    }
+  ]
+}

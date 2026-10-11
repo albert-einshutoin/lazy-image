@@ -3,7 +3,7 @@
 // The two-phase encode pipeline:
 //   `prepare_for_encode` (decode + ops) → `encode_prepared` (encode + EXIF embed)
 //
-// The byte-budget binary search reuses one prepared image across many encode
+// The byte-budget quality search reuses one prepared image across many encode
 // passes; `process_and_encode_from_parts` is the single-shot convenience that
 // chains both phases.
 
@@ -37,7 +37,7 @@ fn get_resource_usage() -> Option<ResourceUsage> {
 /// 8-argument signature on `encode_prepared` with a single struct. Every field
 /// is `Copy`, so the struct itself is `Copy` — that lets callers reuse a base
 /// context and vary only one field with struct-update syntax (used by the
-/// byte-budget binary search, which keeps every field constant except the
+/// byte-budget quality search, which keeps every field constant except the
 /// per-iteration `OutputFormat`).
 ///
 /// `encode_prepared` ignores the prepare-only fields (`source`, `decoded`,
@@ -60,7 +60,7 @@ pub(super) struct EncodeContext<'a> {
 /// Cached state from decode + ops, reusable across multiple encode passes.
 ///
 /// Used by [`super::encode::EncodeTargetBytesTask`] to avoid re-decoding and
-/// re-applying ops for every quality candidate in the binary search. The memory
+/// re-applying ops for every quality candidate in the quality search. The memory
 /// permit is held across all encode iterations so we do not repeatedly
 /// acquire/release.
 pub(super) struct PreparedEncode {
@@ -85,7 +85,7 @@ pub(super) struct PreparedEncode {
 /// Phase 1 of the pipeline: decode the input and apply all ops once.
 ///
 /// Returns a [`PreparedEncode`] that can be fed to [`encode_prepared`] one or
-/// more times — useful for the byte-budget binary search where only the encode
+/// more times — useful for the byte-budget quality search where only the encode
 /// quality varies between iterations.
 pub(super) fn prepare_for_encode(
     source: Option<&Source>,
@@ -206,7 +206,7 @@ pub(super) fn prepare_for_encode(
 /// Phase 2 of the pipeline: encode the prepared image to the given format.
 ///
 /// May be called multiple times against the same [`PreparedEncode`] — the
-/// byte-budget binary search uses this to vary only quality. Per-call timing
+/// byte-budget quality search uses this to vary only quality. Per-call timing
 /// (encode_ms, total_ms) is recorded into `metrics` if provided; decode_ms /
 /// ops_ms come from the cached prepare phase.
 pub(super) fn encode_prepared(
@@ -347,7 +347,7 @@ pub(super) fn encode_prepared(
 
 /// Single-shot helper that chains [`prepare_for_encode`] and [`encode_prepared`].
 ///
-/// Most tasks call this exactly once. The byte-budget binary search bypasses
+/// Most tasks call this exactly once. The byte-budget quality search bypasses
 /// this and runs `prepare_for_encode` separately so it can reuse the prepared
 /// image across encode iterations.
 pub(super) fn process_and_encode_from_parts(

@@ -371,7 +371,7 @@ fn target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint() {
     assert_eq!(result.data, max_candidate);
 }
 
-/// Regression test for issue #558: the binary search must decode + apply
+/// Regression test for issue #558: the quality search must decode + apply
 /// ops once, not per quality iteration. We assert it indirectly by giving
 /// the prepare phase a pre-decoded Arc and checking that `prepare_for_encode`
 /// reuses the Arc by reference (no pixel clone) when ops is empty.

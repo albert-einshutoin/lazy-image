@@ -18,7 +18,7 @@ panic/error/metadata/budget共有経路の非変更、DQTの実出力検査と�
 旧bindingのhash再現と修正後の画質/容量を確認し、JPEG hash更新と相対5%容量優位assertの削除だけを行った。
 旧5%期待は未達として保持し、public targetBytes/strict条件や画質閾値は削除・緩和していない。
 この追加2ファイルと直接証拠を同じJS reviewer/Sol mediumが限定最終レビューし、ALLOW・指摘なし。
-Rust製品経路は専門レビュー後に変更していない。
+この段階ではRust製品経路は専門レビュー後に変更していなかった（後続の共有探索修正は末尾に別記）。
 対象goldenは6成功/exit0。初回完全検証のfailureとその後の対象成功を別記録に保持した。
 
 Companionとhosted CI/merge/Issue完了の最終証拠はIssue #885の完了報告を正本とする。
@@ -44,10 +44,10 @@ quality50→80→100→50で各JPEGをdecodeし64×64を検査、異なるqualit
 
 完全native buildはsource365b33eでexit0。binary SHAは修正後測定と同じ
 `10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174`。
-その後の変更はgolden data・test-only module・記録だけで、encoder製品部分・依存・APIは変更していない。
+source240d23eまでの変更はgolden data・test-only module・記録だけで、encoder製品部分・依存・APIは変更していなかった。
 成功済みbuildを繰り返さず、完全testとcompiler/quality証拠の未完了部分を検証する。
 
-## ローカル完全検証の最終結果
+## 共有探索修正前のローカル完全検証
 
 [最終実結果](checks/final-verified-local-results.json) のsourceは
 `240d23e061af209d0c34b12feaf93721319a2e05`、native bindingは上記10497403…5174。
@@ -69,3 +69,18 @@ AVIFのalpha-1/alpha-2品質未達2/39、tiny transparent-avifのJPEG/AVIF容量
 同条件の前後比較はEVALUATION.mdの3 JPEG入力に限定する。
 この追加記録でも同3入力の候補bytes/hash/SSIMは保存済み修正後と一致した。
 実コマンド、hash、分母、未達はcomparison.jsonから各raw/checkへ辿れる。
+
+## PR #886の共有探索指摘に対する追加検証
+
+[自動review指摘](https://github.com/albert-einshutoin/lazy-image/pull/886#discussion_r4240418811) は実際の契約違反と確認した。
+追加のRust regressionは64×64/q100=346 Bを直接encodeして適合を証明しても旧検索がE300となりexit101。
+native追加testも旧bindingでexit1。新source64a2ac5のcanonical buildはexit0、native digestは2ce79f28…37e9。
+`cargo test --no-default-features target_bytes` は4成功/exit0。
+`node test/integration/target-bytes-file-native.test.js` はnormal/fast、Buffer/fileのmax候補一致を含みexit0。
+compilerとbasic（50test）もexit0。各実ログと小fixtureのAPIコストはEVALUATION.md末尾から辿れる。
+source21a15bcのGate/hosted結果は、追加した共有探索コードの承認・検証へ流用しない。
+
+追加した共有探索・回帰を同じRust/JS専門reviewer（Sol medium）が担当範囲を分けて限定レビューした。
+Rustは降順の最高適合quality、全候補不適合時の最小bytes/高quality tie、strict拒否、permit/prepare再利用とError伝播を確認。
+JSはnormal/fast、Buffer/fileの直接q100 oracle、generated型署名の維持、source/native/fixture照合とCPU増加の明記を確認。
+両方ALLOW、関連指摘なし。新経路の完全検証・Companion・hosted成功はこの専門レビューに含まれない。

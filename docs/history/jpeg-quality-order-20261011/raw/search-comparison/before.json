@@ -1,0 +1,157 @@
+{
+  "stage": "before",
+  "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+  "workingHead": "21a15bc99d4c5258f640054e00e9958994e124a3",
+  "sourceDiagnostic": "native full-build at365b33e; production encoder/search unchanged at21a15bc; pending diff is test-only",
+  "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+  "fixture": {
+    "kind": "generated MIT test fixture",
+    "width": 64,
+    "height": 64,
+    "rgb": [
+      200,
+      100,
+      50
+    ],
+    "sha256": "b211dccb9718fe86159f508ee6fc1c8e33e812862772467285575ca0ccfe70b0"
+  },
+  "environment": {
+    "node": "v24.2.0",
+    "cpu": "Apple M4",
+    "platform": "darwin",
+    "arch": "arm64",
+    "sharpVersions": {
+      "aom": "3.15.0",
+      "archive": "3.8.9",
+      "cairo": "1.18.4",
+      "cgif": "0.5.3",
+      "exif": "0.6.26",
+      "expat": "2.8.3",
+      "ffi": "3.8.0",
+      "fontconfig": "2.18.3",
+      "freetype": "2.14.3",
+      "fribidi": "1.0.16",
+      "glib": "2.89.4",
+      "harfbuzz": "14.3.1",
+      "heif": "1.23.2",
+      "highway": "1.4.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.19.1",
+      "mozjpeg": "0826579",
+      "pango": "1.58.2",
+      "pixman": "0.46.4",
+      "png": "1.6.58",
+      "proxy-libintl": "0.5",
+      "rsvg": "2.62.91",
+      "tiff": "4.7.2",
+      "uhdr": "2.0.2",
+      "vips": "8.18.6",
+      "webp": "1.6.0",
+      "xml2": "2.15.3",
+      "zlib-ng": "2.3.3",
+      "sharp": "0.35.4"
+    }
+  },
+  "command": "node measure-search.cjs before 21a15bc99d4c5258f640054e00e9958994e124a3",
+  "scope": "whole public targetBytes API latency including from/prepare; three trials, not population p90; search failure is retained",
+  "candidates": [
+    {
+      "quality": 50,
+      "bytes": 472,
+      "sha256": "4feebc67439b7ce571a57854bd9ab8af7da13e85dd56a230e884534ec37d77a2"
+    },
+    {
+      "quality": 80,
+      "bytes": 346,
+      "sha256": "813f5802ce442af211f244a52f45230397c4d8100957557cfb4cb860b3ee157f"
+    },
+    {
+      "quality": 100,
+      "bytes": 346,
+      "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7"
+    }
+  ],
+  "calls": [
+    {
+      "name": "feasible-max",
+      "budget": 346,
+      "strict": true,
+      "trials": [
+        {
+          "elapsedMs": 5.602582999999981,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=346 within quality range 1-100",
+          "errorCode": "E300"
+        },
+        {
+          "elapsedMs": 5.111333999999999,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=346 within quality range 1-100",
+          "errorCode": "E300"
+        },
+        {
+          "elapsedMs": 5.043000000000006,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=346 within quality range 1-100",
+          "errorCode": "E300"
+        }
+      ]
+    },
+    {
+      "name": "impossible-strict",
+      "budget": 1,
+      "strict": true,
+      "trials": [
+        {
+          "elapsedMs": 5.008250000000004,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=1 within quality range 1-100",
+          "errorCode": "E300"
+        },
+        {
+          "elapsedMs": 4.969791999999984,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=1 within quality range 1-100",
+          "errorCode": "E300"
+        },
+        {
+          "elapsedMs": 4.752250000000004,
+          "status": "error",
+          "message": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=1 within quality range 1-100",
+          "errorCode": "E300"
+        }
+      ]
+    },
+    {
+      "name": "impossible-best-effort",
+      "budget": 1,
+      "strict": false,
+      "trials": [
+        {
+          "elapsedMs": 5.1004999999999825,
+          "status": "returned",
+          "quality": 12,
+          "bytes": 470,
+          "budgetMet": false,
+          "sha256": "5795524a581a959fff437766f7e1a401c356e293129daf130e82f46c9c53a3a8"
+        },
+        {
+          "elapsedMs": 4.787041999999985,
+          "status": "returned",
+          "quality": 12,
+          "bytes": 470,
+          "budgetMet": false,
+          "sha256": "5795524a581a959fff437766f7e1a401c356e293129daf130e82f46c9c53a3a8"
+        },
+        {
+          "elapsedMs": 5.158833999999985,
+          "status": "returned",
+          "quality": 12,
+          "bytes": 470,
+          "budgetMet": false,
+          "sha256": "5795524a581a959fff437766f7e1a401c356e293129daf130e82f46c9c53a3a8"
+        }
+      ]
+    }
+  ]
+}

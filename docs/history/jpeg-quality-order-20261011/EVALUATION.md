@@ -118,3 +118,40 @@ q82が上書きされていた出力のpixel snapshotを修正後へ更新し、
 既存の画質閾値・寸法・pixel hash検査、他5ケースのhash/guard、actual targetBytes/strict非公開・非保存条件は保持した。
 容量比はgolden実行の表示と本評価へ残し、旧優位未達を品質修正の成功へ加算していない。
 対象goldenを再実行し6ケース成功/exit0 ([ログ](checks/green-golden.log))。
+
+## PR指摘: 非単調なサイズを共有targetBytes探索でも扱う
+
+PR #886の指摘で、公開bridgeの「予算内の最高quality」に対して二分探索が上位候補を捨てることを確認した。
+normal JPEG64×64単色でq50=472 B、q80/q100=346 B。346 B予算に適合するq100が既知なのに、
+旧探索はE300となった ([Rust red](checks/red-nonmonotonic-search-64.log)、[native red](checks/red-native-nonmonotonic-search.log))。
+Rust redはexit101、native redはexit1。最初のRust草稿は既存helperの2×2 resizeが残って333 Bでも再現し、
+そのログも別名で保持した。64×64版はopsを消し、同じ単色fixtureで直接再現した。
+
+同じ根本原因へ局所的なmax-quality probeを重ねず、共有の探索経路から二分探索を削除するclean breakを行った。
+指定quality範囲を上限から降順に試し、最初の予算適合を返すので、サイズの単調性を仮定せず最高qualityを選べる。
+適合なしの場合は既存best-effort契約に従い最小bytes候補、同bytesなら最高qualityを保持する。
+strictは適合なしでE300となり、file/compileの書き込み・公開前に停止する。decode/opsは1回、memory permitを保持し、
+API signature/default・quality検証・panic/error・metadata・atomic file出力は維持した。
+新flag、fallback、旧新アルゴリズム併存、codec/profile/依存は追加していない。
+型生成用のRust docと生成index.d.tsも探索の実態へ合わせ、型・API形状は変更していない。
+
+[before](raw/search-comparison/before.json) はsource21a15bc/native10497403…5174、
+[after](raw/search-comparison/after.json) はsource `64a2ac5d136180987171e0e6c3ccb3f883ebc277` / native
+`2ce79f28c97518e2e6441c593c41abc08128a96b5bead60a10a44488564d37e9`。
+同Apple M4/Node/Sharp・同生成PNG checksum（RGB200/100/50、64×64、MIT test fixture）、3trial。
+測定はpublic API全体のlatencyで、from/prepareを含む。統計的SLAやencoder-only時間ではない。
+[保存probe](checks/measure-search.cjs) は当時のcwdを固定した分析用source。各recordのコマンドどおり実行し、
+異なるcheckoutで再現するときはrootと出力先だけを別directoryへ変更し、既存記録を上書きしない。
+
+| 条件 | 修正前 | 修正後 | API latency p50 ms 前→後 |
+|---|---|---|---:|
+| strict、346 B | 適合q100があるのにE300 | q100/346 B、budgetMet=true | 5.111（誤拒否）→1.051（受入） |
+| strict、1 B | E300 | E300 | 4.970→84.416 |
+| best-effort、1 B | q12/470 B、budgetMet=false | q95/345 B、budgetMet=false | 5.100→84.197 |
+
+最大100候補の全範囲探索により、タイト/不可能な予算のCPU時間は増えうる。低遅延や一般的な速度改善は主張しない。
+範囲内の最高qualityと最小best-effort候補を保証するためのコストで、quality範囲は既存の指定で限定できる。
+画像・metadataは試行間で使い回し、保持する候補bufferを増やしていない。
+3 JPEG入力の先の同条件比較はencoder設定順序の効果に限る。この追加変更でencoder本体は不変だが、
+targetBytes/compileのコストを先のencoder-only比較へ読み替えない。以前の完全検証は旧探索のsource証拠として保持し、
+新しい共有探索の必要な完全検証とGate/hosted結果は別途sourceを結び付ける。

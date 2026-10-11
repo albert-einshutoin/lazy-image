@@ -79,6 +79,14 @@
     "raw/full-validation/release-evidence.md": {
       "bytes": 2852,
       "sha256": "676761ebe4f68a932fcd4e543b8c8d68b715de0eb18b3eba3179d84ffd03011a"
+    },
+    "raw/search-comparison/before.json": {
+      "bytes": 4684,
+      "sha256": "b2ac4eccedce955886c5399329b3d91f38474703fa6707bb81b4a17fb70afc77"
+    },
+    "raw/search-comparison/after.json": {
+      "bytes": 4674,
+      "sha256": "4fa2bcb0402445b0b82321d98a7edf7a6098afc858288c4623cfe374ec7cec1e"
     }
   },
   "checksHashes": {
@@ -197,6 +205,42 @@
     "final-npm-test-clean-setup.log": {
       "bytes": 54154,
       "sha256": "9072f227fa6fdcd6056df939ebacb35c3291c8bce8834c7078be0cf5bc22c519"
+    },
+    "red-nonmonotonic-search.log": {
+      "bytes": 987,
+      "sha256": "234ae8d5bc2e899c05cde7c6e4d6287fe8b821302dadba930be75e88a89825db"
+    },
+    "red-nonmonotonic-search-64.log": {
+      "bytes": 987,
+      "sha256": "4605964a2ef1811eda6af01c911f2e356df427168c2c341c475896bf9d659871"
+    },
+    "red-native-nonmonotonic-search.log": {
+      "bytes": 258,
+      "sha256": "65f3094ca7efeb942f46a1fb4162333fd95b65a77b3ea8f24c2f823861ceb7db"
+    },
+    "green-nonmonotonic-search.log": {
+      "bytes": 2115,
+      "sha256": "96d9d2b6c92265410ddd634fb85f5dfed926d5fde0b871ffa78b1395a506e10c"
+    },
+    "green-native-nonmonotonic-search.log": {
+      "bytes": 38,
+      "sha256": "082f3d1f596c7e1064e4fed2c89e33f99cb3545c5f54b14f78cea602bd8f0b08"
+    },
+    "search-build.log": {
+      "bytes": 302,
+      "sha256": "e744093c948c01ddb5f6079c2aef0067fcf888bab9f63a37aefc41580b85d5ea"
+    },
+    "measure-search.cjs": {
+      "bytes": 2631,
+      "sha256": "7c69b70d7866a9eb9316988f0d31d3846590bc083fd09e04fbe485ce72aa9cce"
+    },
+    "search-compiler.log": {
+      "bytes": 34,
+      "sha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+    },
+    "search-basic.log": {
+      "bytes": 2148,
+      "sha256": "9480268f641aaa4b0a5f4de0b1492d0acf50ddaba1ce564a83f676ee179511ce"
     }
   },
   "cases": [
