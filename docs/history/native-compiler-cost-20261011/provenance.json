@@ -1,0 +1,552 @@
+{
+  "schemaVersion": 1,
+  "measurement": {
+    "runId": 37293485921,
+    "artifactId": 11338520322,
+    "sourceSha": "37777bbc0b4988e888390e72a9093f602b8908ea",
+    "packageVersion": "1.4.2",
+    "kind": "checkout build, not published npm",
+    "environment": {
+      "packageVersion": "1.4.2",
+      "revision": "37777bbc0b4988e888390e72a9093f602b8908ea",
+      "manifestSha256": "1875e2bf7cc659e0ec9c118fdeb1e64e1a7645ffcff9ff5832e1ef10c12ba44c",
+      "node": "v22.23.3",
+      "platform": "linux",
+      "arch": "x64",
+      "parallelism": 4
+    },
+    "sharpVersions": {
+      "aom": "3.15.0",
+      "archive": "3.8.9",
+      "cairo": "1.18.4",
+      "cgif": "0.5.3",
+      "exif": "0.6.26",
+      "expat": "2.8.3",
+      "ffi": "3.8.0",
+      "fontconfig": "2.18.3",
+      "freetype": "2.14.3",
+      "fribidi": "1.0.16",
+      "glib": "2.89.4",
+      "harfbuzz": "14.3.1",
+      "heif": "1.23.2",
+      "highway": "1.4.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.19.1",
+      "mozjpeg": "0826579",
+      "pango": "1.58.2",
+      "pixman": "0.46.4",
+      "png": "1.6.58",
+      "proxy-libintl": "0.5",
+      "rsvg": "2.62.91",
+      "tiff": "4.7.2",
+      "uhdr": "2.0.2",
+      "vips": "8.18.6",
+      "webp": "1.6.0",
+      "xml2": "2.15.3",
+      "zlib-ng": "2.3.3",
+      "sharp": "0.35.4"
+    },
+    "os": "Ubuntu 24.04.5 LTS",
+    "runnerImage": "ubuntu-24.04 20260927.320.1",
+    "rust": "1.88.0",
+    "nativeBindingSha256": null,
+    "nativeBindingDiagnostic": "Not retained; compiler version/fingerprint and successful source build are recorded",
+    "sourceDirty": false,
+    "sourceDirtyScope": "quality JSON git status; compiler JSON has no separate dirty field",
+    "cargoCratesFromLock": [
+      {
+        "name": "fast_image_resize",
+        "version": "6.1.0",
+        "checksum": "e9c50201dc184ba6553da1695aac20a042efffbe2d84542cee31917c86c3ab1e"
+      },
+      {
+        "name": "image",
+        "version": "0.25.10",
+        "checksum": "85ab80394333c02fe689eaf900ab500fbd0c2213da414687ebf995a65d5a6104"
+      },
+      {
+        "name": "libavif-sys",
+        "version": "0.17.0+libavif.1.0.4",
+        "checksum": "490ca74b61e773140bebb086c81facb23273a99364a9ab0c92ab1532b90ade35"
+      },
+      {
+        "name": "libc",
+        "version": "0.2.189",
+        "checksum": "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
+      },
+      {
+        "name": "libwebp-sys",
+        "version": "0.9.6",
+        "checksum": "54cd30df7c7165ce74a456e4ca9732c603e8dc5e60784558c1c6dc047f876733"
+      },
+      {
+        "name": "mozjpeg",
+        "version": "0.10.13",
+        "checksum": "b7891b80aaa86097d38d276eb98b3805d6280708c4e0a1e6f6aed9380c51fec9"
+      },
+      {
+        "name": "mozjpeg-sys",
+        "version": "2.2.3",
+        "checksum": "7f0dc668bf9bf888c88e2fb1ab16a406d2c380f1d082b20d51dd540ab2aa70c1"
+      },
+      {
+        "name": "oxipng",
+        "version": "10.1.1",
+        "checksum": "85eaaaa67c73558edaf5270e28abdf8d0663d88e8e7570cf894eff25305f4ed2"
+      },
+      {
+        "name": "rav1e",
+        "version": "0.7.1",
+        "checksum": "cd87ce80a7665b1cce111f8a16c1f3929f6547ce91ade6addf4ec86a8dda5ce9"
+      },
+      {
+        "name": "rav1e",
+        "version": "0.8.1",
+        "checksum": "43b6dd56e85d9483277cde964fd1bdb0428de4fec5ebba7540995639a21cb32b"
+      },
+      {
+        "name": "webp",
+        "version": "0.3.1",
+        "checksum": "c071456adef4aca59bf6a583c46b90ff5eb0b4f758fc347cea81290288f37ce1"
+      }
+    ],
+    "npmFromLock": {
+      "sharp": {
+        "version": "0.35.4",
+        "resolved": "https://registry.npmjs.org/sharp/-/sharp-0.35.4.tgz",
+        "integrity": "sha512-n++8XWcj+jCOr2IOl7h8LbKnGBDY4aPbmprMONBNFdn0ImXqpGVv5zliDs0V9HbmbCQLpbuo2ej9rAoOQTvMDA==",
+        "dev": true,
+        "license": "Apache-2.0",
+        "dependencies": {
+          "@img/colour": "^1.1.0",
+          "detect-libc": "^2.1.2",
+          "semver": "^7.8.5"
+        },
+        "engines": {
+          "node": ">=20.9.0"
+        },
+        "funding": {
+          "url": "https://opencollective.com/libvips"
+        },
+        "optionalDependencies": {
+          "@img/sharp-darwin-arm64": "0.35.4",
+          "@img/sharp-darwin-x64": "0.35.4",
+          "@img/sharp-freebsd-wasm32": "0.35.4",
+          "@img/sharp-libvips-darwin-arm64": "1.3.3",
+          "@img/sharp-libvips-darwin-x64": "1.3.3",
+          "@img/sharp-libvips-linux-arm": "1.3.3",
+          "@img/sharp-libvips-linux-arm64": "1.3.3",
+          "@img/sharp-libvips-linux-ppc64": "1.3.3",
+          "@img/sharp-libvips-linux-riscv64": "1.3.3",
+          "@img/sharp-libvips-linux-s390x": "1.3.3",
+          "@img/sharp-libvips-linux-x64": "1.3.3",
+          "@img/sharp-libvips-linuxmusl-arm64": "1.3.3",
+          "@img/sharp-libvips-linuxmusl-x64": "1.3.3",
+          "@img/sharp-linux-arm": "0.35.4",
+          "@img/sharp-linux-arm64": "0.35.4",
+          "@img/sharp-linux-ppc64": "0.35.4",
+          "@img/sharp-linux-riscv64": "0.35.4",
+          "@img/sharp-linux-s390x": "0.35.4",
+          "@img/sharp-linux-x64": "0.35.4",
+          "@img/sharp-linuxmusl-arm64": "0.35.4",
+          "@img/sharp-linuxmusl-x64": "0.35.4",
+          "@img/sharp-webcontainers-wasm32": "0.35.4",
+          "@img/sharp-win32-arm64": "0.35.4",
+          "@img/sharp-win32-ia32": "0.35.4",
+          "@img/sharp-win32-x64": "0.35.4"
+        },
+        "peerDependenciesMeta": {
+          "@types/node": {
+            "optional": true
+          }
+        }
+      },
+      "ssim": {
+        "version": "3.5.0",
+        "resolved": "https://registry.npmjs.org/ssim.js/-/ssim.js-3.5.0.tgz",
+        "integrity": "sha512-Aj6Jl2z6oDmgYFFbQqK7fght19bXdOxY7Tj03nF+03M9gCBAjeIiO8/PlEGMfKDwYpw4q6iBqVq2YuREorGg/g==",
+        "dev": true,
+        "license": "MIT"
+      }
+    },
+    "cpuModel": null,
+    "compilerRunnerSha256": "dbc8a0c0c6026a6439147f9e81cc8d1b0b8f5528dc8039673fb23badc1f6fbb2",
+    "compilerRunnerDiagnostic": "Hash derived from the pinned Git source; compiler JSON did not record this field",
+    "archiveSha256": "ebe1d088ea1b07261dc6844be657c5c0a6919327e09b9f48bbddb28f6897cad7",
+    "archiveDigestMatchesMetadata": true,
+    "archiveDigestDiagnostic": "Authenticated archive SHA verified against GitHub artifact metadata"
+  },
+  "assessment": {
+    "sourceSha": "9e73bd07e3c99853f1f60000f71d811f3ef04438",
+    "packageVersion": "1.4.3",
+    "reMeasured": false,
+    "scope": "same related source/codec locks supports diagnosis and prioritization, not current published performance"
+  },
+  "rawHashes": {
+    "compile-image-corpus.json": {
+      "bytes": 234204,
+      "sha256": "7c3b04356710ad9d570efd67351978e340be541366052140dae90d07847bf095"
+    },
+    "quality-matched.json": {
+      "bytes": 683697,
+      "sha256": "67710a39ac686b4992ed52e02b65b1d919c04fe203cc018057e0006fcabe331a"
+    },
+    "regression-summary.json": {
+      "bytes": 1952,
+      "sha256": "39d69de29b2554322d1a3ecad4b5098a53edb091bec1b6715c55e4b64663200b"
+    },
+    "regression-summary.md": {
+      "bytes": 955,
+      "sha256": "c31ef01c54cf8ae72431c14fc44a816a69d05b60077022781607ce7f866361fb"
+    },
+    "release-evidence.json": {
+      "bytes": 2579,
+      "sha256": "c6cf39a504869e72be5c2ff9d8493e6e32372a63f49e8fd6c948cef87d4acbf3"
+    },
+    "release-evidence.md": {
+      "bytes": 2860,
+      "sha256": "e2630b70ef7b8b11b2831233ea778fd69ab1ad05c26e06ab5af453157ff6ad98"
+    }
+  },
+  "sourceFiles": {
+    "test/benchmarks/compile-image-corpus.bench.js": {
+      "measuredSha256": "dbc8a0c0c6026a6439147f9e81cc8d1b0b8f5528dc8039673fb23badc1f6fbb2",
+      "assessmentSha256": "dbc8a0c0c6026a6439147f9e81cc8d1b0b8f5528dc8039673fb23badc1f6fbb2",
+      "unchanged": true
+    },
+    "test/benchmarks/quality-matched.bench.js": {
+      "measuredSha256": "814f794ab6a716e50852bef7edcf81213e213b1139cb9c7f410deec3954180aa",
+      "assessmentSha256": "814f794ab6a716e50852bef7edcf81213e213b1139cb9c7f410deec3954180aa",
+      "unchanged": true
+    },
+    "test/benchmarks/release-evidence.js": {
+      "measuredSha256": "73d27e9d463e71a4ebdb7b3aab4366aa689c9ad380c0a4ee1bc382107661ee49",
+      "assessmentSha256": "73d27e9d463e71a4ebdb7b3aab4366aa689c9ad380c0a4ee1bc382107661ee49",
+      "unchanged": true
+    },
+    "test/helpers/benchmark-corpus.js": {
+      "measuredSha256": "a092971645031bed6967288e24e47709f904132aaa68852fdfd2436a4a1c5b55",
+      "assessmentSha256": "a092971645031bed6967288e24e47709f904132aaa68852fdfd2436a4a1c5b55",
+      "unchanged": true
+    },
+    "test/helpers/quality.js": {
+      "measuredSha256": "b240e8228b856796a4a8533af204a27be34ec4bac2fd02c5dfa5bdb930808786",
+      "assessmentSha256": "b240e8228b856796a4a8533af204a27be34ec4bac2fd02c5dfa5bdb930808786",
+      "unchanged": true
+    },
+    "test/benchmarks/corpus/release-manifest.json": {
+      "measuredSha256": "1875e2bf7cc659e0ec9c118fdeb1e64e1a7645ffcff9ff5832e1ef10c12ba44c",
+      "assessmentSha256": "1875e2bf7cc659e0ec9c118fdeb1e64e1a7645ffcff9ff5832e1ef10c12ba44c",
+      "unchanged": true
+    },
+    "src/engine/encoder.rs": {
+      "measuredSha256": "b4048fb46c3e27bbe90910f0c1631dc077174d3265f1828f96879a097a7f6157",
+      "assessmentSha256": "b4048fb46c3e27bbe90910f0c1631dc077174d3265f1828f96879a097a7f6157",
+      "unchanged": true
+    },
+    "src/engine/api/output_ops.rs": {
+      "measuredSha256": "fe76355553a2243246912e222e401b52196c864f734012591de67af827278d9c",
+      "assessmentSha256": "fe76355553a2243246912e222e401b52196c864f734012591de67af827278d9c",
+      "unchanged": true
+    },
+    "src/engine/tasks/processing.rs": {
+      "measuredSha256": "01f613645d8802fe303fbb37ac0b436af3b1e6803adfe1c656e23034a6a87b69",
+      "assessmentSha256": "01f613645d8802fe303fbb37ac0b436af3b1e6803adfe1c656e23034a6a87b69",
+      "unchanged": true
+    },
+    "lib/artifact-compiler.js": {
+      "measuredSha256": "a50bc892d404a00125fe2563de83661d4301ca135fe35edfee85a965f8b90e69",
+      "assessmentSha256": "a50bc892d404a00125fe2563de83661d4301ca135fe35edfee85a965f8b90e69",
+      "unchanged": true
+    },
+    "lib/artifact-policy.js": {
+      "measuredSha256": "cad32cd66dc39f50666549c02279334f1957bd5dd0effae869832b59fd13117d",
+      "assessmentSha256": "cad32cd66dc39f50666549c02279334f1957bd5dd0effae869832b59fd13117d",
+      "unchanged": true
+    },
+    "LICENSE": {
+      "measuredSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+      "assessmentSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+      "unchanged": true
+    }
+  },
+  "trees": {
+    "src": {
+      "measuredGitTreeSha1": "27454fd6f64bd25ed79ccbbf68716df4e5de89dd",
+      "assessmentGitTreeSha1": "27454fd6f64bd25ed79ccbbf68716df4e5de89dd"
+    },
+    "lib": {
+      "measuredGitTreeSha1": "a57c3006c9bacbdc03de19542d8c1f2974dbc39b",
+      "assessmentGitTreeSha1": "a57c3006c9bacbdc03de19542d8c1f2974dbc39b"
+    },
+    "test/benchmarks": {
+      "measuredGitTreeSha1": "82780daf3b29ea087b56109c52275675e3f45220",
+      "assessmentGitTreeSha1": "82780daf3b29ea087b56109c52275675e3f45220"
+    },
+    "test/helpers": {
+      "measuredGitTreeSha1": "2f784a3cea6fb4ff900a6068f3dd215db5535a26",
+      "assessmentGitTreeSha1": "2f784a3cea6fb4ff900a6068f3dd215db5535a26"
+    }
+  },
+  "lockChanges": {
+    "cargo": "lazy-image package version1.4.2→1.4.3 only",
+    "npm": [
+      {
+        "path": "",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-darwin-arm64",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-darwin-x64",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-linux-x64-musl",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      },
+      {
+        "path": "node_modules/@alberteinshutoin/lazy-image-win32-x64-msvc",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linux-arm",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-3rbU4vqXXc3hY/OiXdl52xZvT0F1yEngWfvqudtPJg/KkyiaQw2DRsFrNzpmLvfavbwOq3qXn36GP8obHRULQA==",
+        "assessmentIntegrity": "sha512-3rbU4vqXXc3hY/OiXdl52xZvT0F1yEngWfvqudtPJg/KkyiaQw2DRsFrNzpmLvfavbwOq3qXn36GP8obHRULQA==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linux-arm64",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-0DaL0A6Xu6sQSQFwe4iVCrKWU2cCTItnRsYsCdxAMm9NF6twAA9BKnoqy4hqz4+azQ0JHuA26qiUKsf1XJ/v5A==",
+        "assessmentIntegrity": "sha512-0DaL0A6Xu6sQSQFwe4iVCrKWU2cCTItnRsYsCdxAMm9NF6twAA9BKnoqy4hqz4+azQ0JHuA26qiUKsf1XJ/v5A==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linux-ppc64",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-cdn1OvUBwsXhbC0zSzJnNzf5MZ/mTrobawDvNXBTxe8VtqKAm0sRuEY2Evzovb/w9JMk4TvRxqt1mekSuJz64w==",
+        "assessmentIntegrity": "sha512-cdn1OvUBwsXhbC0zSzJnNzf5MZ/mTrobawDvNXBTxe8VtqKAm0sRuEY2Evzovb/w9JMk4TvRxqt1mekSuJz64w==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linux-riscv64",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-HjPVx7yKz+0lqdhDlTw1tt90wamBoxhiXpvl1XZpJLiHH4RCJ5yDTqH+VlYPv2fwFs89JFw4c1IexYOcQUi4IQ==",
+        "assessmentIntegrity": "sha512-HjPVx7yKz+0lqdhDlTw1tt90wamBoxhiXpvl1XZpJLiHH4RCJ5yDTqH+VlYPv2fwFs89JFw4c1IexYOcQUi4IQ==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linux-s390x",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-neWLh+3yCNThxnfy3c4BbVBeGgt9aftno+XbT56iK28RgeDs3UOFWviLWlUu0bArYVYJaFDK+RRohbicUNCm8Q==",
+        "assessmentIntegrity": "sha512-neWLh+3yCNThxnfy3c4BbVBeGgt9aftno+XbT56iK28RgeDs3UOFWviLWlUu0bArYVYJaFDK+RRohbicUNCm8Q==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linux-x64",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-4vKmvAst9nrowcqquKFAyZJUDolUaIp8uRiN0mWFguJ1IplC9/pitXtlnnlU4aa/eJw3J7i67V+pwUL+wZGdsA==",
+        "assessmentIntegrity": "sha512-4vKmvAst9nrowcqquKFAyZJUDolUaIp8uRiN0mWFguJ1IplC9/pitXtlnnlU4aa/eJw3J7i67V+pwUL+wZGdsA==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linuxmusl-arm64",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-Y9kQaLMuNoB0bPYOOdcZMaseNrFpPodIWWMrx+CZyydf2xn68j9WYc6sWWRrDwNkzCQjKYfc68L7jKjGlHMibw==",
+        "assessmentIntegrity": "sha512-Y9kQaLMuNoB0bPYOOdcZMaseNrFpPodIWWMrx+CZyydf2xn68j9WYc6sWWRrDwNkzCQjKYfc68L7jKjGlHMibw==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-libvips-linuxmusl-x64",
+        "measuredVersion": "1.3.3",
+        "assessmentVersion": "1.3.3",
+        "measuredIntegrity": "sha512-fj8Mv0HHfD1Rr+4I68+3agJynxDWtBFgicTbSOb9Bke6pIwzGcJ+RX/yHjmiEGFMCavY/dxvem7MyNaJF+wDiw==",
+        "assessmentIntegrity": "sha512-fj8Mv0HHfD1Rr+4I68+3agJynxDWtBFgicTbSOb9Bke6pIwzGcJ+RX/yHjmiEGFMCavY/dxvem7MyNaJF+wDiw==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linux-arm",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-7OAS8gI0EReKGVN2HssHlM6umJgxF5VI3xN0p9FA91p/YO+ou5hiNghLdZ5BEHztwaaK5+bLKRf8x/o2L2nk9A==",
+        "assessmentIntegrity": "sha512-7OAS8gI0EReKGVN2HssHlM6umJgxF5VI3xN0p9FA91p/YO+ou5hiNghLdZ5BEHztwaaK5+bLKRf8x/o2L2nk9A==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linux-arm64",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-De4jpEnAU8Hd5oT0j1G3uL4ZvTuipVMn7YC6vPaJhy6/7EwEae0SVAoBrUMYQbkLGDm85taVWwuPc1a44LTzCQ==",
+        "assessmentIntegrity": "sha512-De4jpEnAU8Hd5oT0j1G3uL4ZvTuipVMn7YC6vPaJhy6/7EwEae0SVAoBrUMYQbkLGDm85taVWwuPc1a44LTzCQ==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linux-ppc64",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-2oYZJeIl4kCcMGk4ouZVjnkCtFrpQFlNEtJ6GbxzhHQchwH0NH/qEb9ykmOl29dqwMq+JhFdZn+1ak2FKhI9fQ==",
+        "assessmentIntegrity": "sha512-2oYZJeIl4kCcMGk4ouZVjnkCtFrpQFlNEtJ6GbxzhHQchwH0NH/qEb9ykmOl29dqwMq+JhFdZn+1ak2FKhI9fQ==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linux-riscv64",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-cPbNChoRURAWdebDIHSenxRpgEdy7JkPydSnUxRm9VvKD7m0/xVaR/8Fzlu81pk5nHEvHH87UZUA7cTtwnbJSA==",
+        "assessmentIntegrity": "sha512-cPbNChoRURAWdebDIHSenxRpgEdy7JkPydSnUxRm9VvKD7m0/xVaR/8Fzlu81pk5nHEvHH87UZUA7cTtwnbJSA==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linux-s390x",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-RY0JFY8Fd6RonCBtHz+DvadaPkXDSI1AUn6yWL9TipqkZ1vY8w8evqdgyDFnkm4/K1ve1TvZiaePP5oSd4+WVQ==",
+        "assessmentIntegrity": "sha512-RY0JFY8Fd6RonCBtHz+DvadaPkXDSI1AUn6yWL9TipqkZ1vY8w8evqdgyDFnkm4/K1ve1TvZiaePP5oSd4+WVQ==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linux-x64",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-9qvvEAuk8k89TfWUoX2htWjbAMX8p+NxCppjpcg5k6xMsjhBQPTsoIh36h9Qde4WRuGpJeYnOjdosDn/cnv+OA==",
+        "assessmentIntegrity": "sha512-9qvvEAuk8k89TfWUoX2htWjbAMX8p+NxCppjpcg5k6xMsjhBQPTsoIh36h9Qde4WRuGpJeYnOjdosDn/cnv+OA==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linuxmusl-arm64",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-KB5jxpfWQTr0nc3xdHtWChdbifHrBGsd2SM62Eyxrl8afikm+f5qGBU75SJIZBT/S1MC8XyacdlXBMSWq6OURA==",
+        "assessmentIntegrity": "sha512-KB5jxpfWQTr0nc3xdHtWChdbifHrBGsd2SM62Eyxrl8afikm+f5qGBU75SJIZBT/S1MC8XyacdlXBMSWq6OURA==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@img/sharp-linuxmusl-x64",
+        "measuredVersion": "0.35.4",
+        "assessmentVersion": "0.35.4",
+        "measuredIntegrity": "sha512-f+eZJZIQNEEd26RPSW+76chwOf1XtA2Y/O+5ocVyLliHkeih3e+jhLVBdNTd2rS3IbNXK8+ug93Vf5ZXtF5Lxg==",
+        "assessmentIntegrity": "sha512-f+eZJZIQNEEd26RPSW+76chwOf1XtA2Y/O+5ocVyLliHkeih3e+jhLVBdNTd2rS3IbNXK8+ug93Vf5ZXtF5Lxg==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@napi-rs/wasm-tools-linux-arm64-gnu",
+        "measuredVersion": "1.1.0",
+        "assessmentVersion": "1.1.0",
+        "measuredIntegrity": "sha512-1TAXJxUHsWGar90k3W/MknavvBMwOWzjh7Q6Spxo8twRcWJbBD5Kow/Q2KhhDq5hxh2sKGDXn3uLc1tdtz4WUg==",
+        "assessmentIntegrity": "sha512-1TAXJxUHsWGar90k3W/MknavvBMwOWzjh7Q6Spxo8twRcWJbBD5Kow/Q2KhhDq5hxh2sKGDXn3uLc1tdtz4WUg==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@napi-rs/wasm-tools-linux-arm64-musl",
+        "measuredVersion": "1.1.0",
+        "assessmentVersion": "1.1.0",
+        "measuredIntegrity": "sha512-7rw3nlubTjNAVRH2LwphCxHy1b/N2/TerXocQ6XRn4Q+buaY1Z7P/hbdALy1i1ex2yfOU2Xcij7ib7ZLi/lKfw==",
+        "assessmentIntegrity": "sha512-7rw3nlubTjNAVRH2LwphCxHy1b/N2/TerXocQ6XRn4Q+buaY1Z7P/hbdALy1i1ex2yfOU2Xcij7ib7ZLi/lKfw==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@napi-rs/wasm-tools-linux-x64-gnu",
+        "measuredVersion": "1.1.0",
+        "assessmentVersion": "1.1.0",
+        "measuredIntegrity": "sha512-1sel0t9MRjI/tdT89M8Dd6gPfANeeFP24Xa46R11WeHNwhjsXXZh+xUk50uWCRTSGcaCy3ugm3AMK/lmHYQJkg==",
+        "assessmentIntegrity": "sha512-1sel0t9MRjI/tdT89M8Dd6gPfANeeFP24Xa46R11WeHNwhjsXXZh+xUk50uWCRTSGcaCy3ugm3AMK/lmHYQJkg==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "node_modules/@napi-rs/wasm-tools-linux-x64-musl",
+        "measuredVersion": "1.1.0",
+        "assessmentVersion": "1.1.0",
+        "measuredIntegrity": "sha512-o2jH5AMfor4EKF2HII1LBnMQxoWu7+usPifTEY8Zk6e9OiSi4EJkAXf9v3ANlX7TI2V/cUEV34OEW7r10GiVIA==",
+        "assessmentIntegrity": "sha512-o2jH5AMfor4EKF2HII1LBnMQxoWu7+usPifTEY8Zk6e9OiSi4EJkAXf9v3ANlX7TI2V/cUEV34OEW7r10GiVIA==",
+        "libcSelectorRemoved": true
+      },
+      {
+        "path": "packages/lazy-image-wasm",
+        "measuredVersion": "1.4.2",
+        "assessmentVersion": "1.4.3",
+        "measuredIntegrity": null,
+        "assessmentIntegrity": null,
+        "libcSelectorRemoved": false
+      }
+    ]
+  },
+  "corpusHash": "1875e2bf7cc659e0ec9c118fdeb1e64e1a7645ffcff9ff5832e1ef10c12ba44c",
+  "licenses": [
+    {
+      "spdx": "MIT",
+      "path": "LICENSE",
+      "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+      "bytes": 1075
+    },
+    {
+      "spdx": "CC0-1.0",
+      "path": "test/benchmarks/corpus/CC0-1.0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "bytes": 7048
+    }
+  ],
+  "limits": [
+    "release-evidence.md heading v1.3.0 is hardcoded; actual version1.4.2 from compiler manifest/runtime",
+    "binding digest and CPU model not retained",
+    "RSS sampled10ms; not encoder-only/exact allocation",
+    "quality reference at most320px, white composite; compiler E2E separate",
+    "3-sample nearest-rank p90 equals maximum, not population p90",
+    "workflow SUCCESS and release passed:true do not mean all quality goals met",
+    "compiler RSS/timing ends before external post-publication audit; quality RSS sampling begins after reference creation and both libraries are loaded in both workers"
+  ],
+  "supplementalLegacyRegressions": {
+    "mode": "warn",
+    "scope": "older baseline codec/complex-pipeline scenarios; not compiler E2E or constrained quality"
+  },
+  "extraMeasurement": {
+    "performed": false,
+    "reason": "source, codec locks, runners and corpus match; saved candidates and direct source suffice for one next-work decision; absolute current npm1.4.3 metrics remain unmeasured"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "mode": "warn",
+  "speedThreshold": 15,
+  "sizeThreshold": 5,
+  "regressions": [
+    "JPEG time (lazy-image)",
+    "WebP time (lazy-image)",
+    "AVIF time (lazy-image)",
+    "Complex pipeline time (lazy-image)"
+  ],
+  "rows": [
+    {
+      "name": "JPEG size (lazy-image)",
+      "status": "ok",
+      "baseline": 31518,
+      "current": 31518,
+      "changePct": 0,
+      "thresholdPct": 5,
+      "kind": "size"
+    },
+    {
+      "name": "JPEG time (lazy-image)",
+      "status": "regression",
+      "baseline": 87,
+      "current": 106,
+      "changePct": 21.839080459770116,
+      "thresholdPct": 15,
+      "kind": "speed"
+    },
+    {
+      "name": "WebP size (lazy-image)",
+      "status": "ok",
+      "baseline": 32448,
+      "current": 32448,
+      "changePct": 0,
+      "thresholdPct": 5,
+      "kind": "size"
+    },
+    {
+      "name": "WebP time (lazy-image)",
+      "status": "regression",
+      "baseline": 176,
+      "current": 404,
+      "changePct": 129.54545454545453,
+      "thresholdPct": 15,
+      "kind": "speed"
+    },
+    {
+      "name": "AVIF size (lazy-image)",
+      "status": "ok",
+      "baseline": 28678,
+      "current": 28666,
+      "changePct": -0.04184392217030476,
+      "thresholdPct": 5,
+      "kind": "size"
+    },
+    {
+      "name": "AVIF time (lazy-image)",
+      "status": "regression",
+      "baseline": 535,
+      "current": 817,
+      "changePct": 52.71028037383177,
+      "thresholdPct": 15,
+      "kind": "speed"
+    },
+    {
+      "name": "Complex pipeline size (lazy-image)",
+      "status": "ok",
+      "baseline": 27129,
+      "current": 27129,
+      "changePct": 0,
+      "thresholdPct": 5,
+      "kind": "size"
+    },
+    {
+      "name": "Complex pipeline time (lazy-image)",
+      "status": "regression",
+      "baseline": 84,
+      "current": 126,
+      "changePct": 50,
+      "thresholdPct": 15,
+      "kind": "speed"
+    }
+  ],
+  "newMetrics": [],
+  "createdAt": "2026-10-05T10:08:19.191Z"
+}

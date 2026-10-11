@@ -1,0 +1,69 @@
+{
+  "repositoryFile": "src/engine/encoder.rs",
+  "repositorySha256": "b4048fb46c3e27bbe90910f0c1631dc077174d3265f1828f96879a097a7f6157",
+  "dependencyEvidence": [
+    {
+      "crate": "mozjpeg",
+      "version": "0.10.13",
+      "path": "src/compress.rs",
+      "ranges": [
+        [
+          383,
+          396
+        ],
+        [
+          413,
+          418
+        ]
+      ],
+      "crateChecksum": "b7891b80aaa86097d38d276eb98b3805d6280708c4e0a1e6f6aed9380c51fec9",
+      "fileSha256": "bdad093055ea7f7cf768c02fdc8c1c90b9678cd6f2180fef520e1b7f7d563895",
+      "checksumVerified": true,
+      "verification": "cached .crate SHA matches Cargo.lock; selected file bytes match installed source",
+      "excerpt": [
+        {
+          "from": 383,
+          "to": 396,
+          "text": "    /// You can only turn it on\n    pub fn set_progressive_mode(&mut self) {\n        unsafe {\n            ffi::jpeg_simple_progression(&mut self.cinfo);\n        }\n    }\n\n    /// One scan for all components looks best. Other options may flash grayscale or green images.\n    pub fn set_scan_optimization_mode(&mut self, mode: ScanMode) {\n        unsafe {\n            ffi::jpeg_c_set_int_param(&mut self.cinfo, J_INT_PARAM::JINT_DC_SCAN_OPT_MODE, mode as c_int);\n            ffi::jpeg_set_defaults(&mut self.cinfo);\n        }\n    }"
+        },
+        {
+          "from": 413,
+          "to": 418,
+          "text": "    /// Set image quality. Values 60-80 are recommended.\n    pub fn set_quality(&mut self, quality: f32) {\n        unsafe {\n            ffi::jpeg_set_quality(&mut self.cinfo, quality as c_int, boolean::from(false));\n        }\n    }"
+        }
+      ]
+    },
+    {
+      "crate": "mozjpeg-sys",
+      "version": "2.2.3",
+      "path": "vendor/jcparam.c",
+      "ranges": [
+        [
+          375,
+          386
+        ],
+        [
+          404,
+          411
+        ]
+      ],
+      "crateChecksum": "7f0dc668bf9bf888c88e2fb1ab16a406d2c380f1d082b20d51dd540ab2aa70c1",
+      "fileSha256": "563fe8e2fbf71760a269cced3dda5a6e67e1a1facc6bbd5f8a9727db5a5d4d9a",
+      "checksumVerified": true,
+      "verification": "cached .crate SHA matches Cargo.lock; selected file bytes match installed source",
+      "excerpt": [
+        {
+          "from": 375,
+          "to": 386,
+          "text": " * Default parameter setup for compression.\n *\n * Applications that don't choose to use this routine must do their\n * own setup of all these parameters.  Alternately, you can call this\n * to establish defaults and then alter parameters selectively.  This\n * is the recommended approach since, if we add any new parameters,\n * your code will still work (they'll be set to reasonable defaults).\n */\n\nGLOBAL(void)\njpeg_set_defaults (j_compress_ptr cinfo)\n{"
+        },
+        {
+          "from": 404,
+          "to": 411,
+          "text": "#if JPEG_LIB_VERSION >= 70\n  cinfo->scale_num = 1;         /* 1:1 scaling */\n  cinfo->scale_denom = 1;\n#endif\n  cinfo->data_precision = BITS_IN_JSAMPLE;\n  /* Set up two quantization tables using default quality of 75 */\n  jpeg_set_quality(cinfo, 75, TRUE);\n  /* Set up two Huffman tables */"
+        }
+      ]
+    }
+  ],
+  "diagnosis": "normal-mode set_scan_optimization_mode calls jpeg_set_defaults after set_quality; default quantization quality75 overwrites earlier request. The source path is consistent with saved smoothing-band plateaus; runtime quantization-table dumps are not retained. No production fix/new measurement."
+}
