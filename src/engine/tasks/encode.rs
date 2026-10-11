@@ -166,6 +166,8 @@ impl EncodeTargetBytesTask {
         )?;
 
         let mut best: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
+        let mut search_cpu_time = 0.0;
+        let mut search_peak_rss = 0;
 
         for quality in (self.min_quality..=self.max_quality).rev() {
             let format_at_q = self.ctx.format.with_quality(quality);
@@ -177,6 +179,8 @@ impl EncodeTargetBytesTask {
 
             let mut metrics = crate::ProcessingMetrics::default();
             let encoded = encode_prepared(&prepared, &iter_ctx, Some(&mut metrics))?;
+            search_cpu_time = metrics.cpu_time;
+            search_peak_rss = search_peak_rss.max(metrics.peak_rss);
 
             let size = match u32::try_from(encoded.len()) {
                 Ok(size) => size,
@@ -202,7 +206,7 @@ impl EncodeTargetBytesTask {
             }
         }
 
-        let (data, quality, bytes_out, metrics) = match best {
+        let (data, quality, bytes_out, mut metrics) = match best {
             Some(candidate) => candidate,
             None => {
                 return Err(LazyImageError::encode_failed(
@@ -222,6 +226,13 @@ impl EncodeTargetBytesTask {
                 ),
             ));
         }
+
+        // The selected candidate may precede later rejected probes. Keep its
+        // encode/output fields, but report cumulative work for the whole search.
+        metrics.total_ms = prepared.start_total.elapsed().as_secs_f64() * 1000.0;
+        metrics.processing_time = metrics.total_ms / 1000.0;
+        metrics.cpu_time = search_cpu_time;
+        metrics.peak_rss = search_peak_rss;
 
         Ok(TargetBytesOutput {
             data,

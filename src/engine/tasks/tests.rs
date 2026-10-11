@@ -371,6 +371,47 @@ fn target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint() {
     assert_eq!(result.data, max_candidate);
 }
 
+#[test]
+fn target_bytes_best_effort_metrics_include_all_probes() {
+    let mut ctx = make_ctx_with_decoded(OutputFormat::Jpeg {
+        quality: Quality::unchecked(100),
+        fast_mode: false,
+    });
+    ctx.decoded = Some(Arc::new(DynamicImage::ImageRgba8(ImageBuffer::from_pixel(
+        64,
+        64,
+        Rgba([200, 100, 50, 255]),
+    ))));
+    ctx.ops.clear();
+    let task = EncodeTargetBytesTask {
+        ctx,
+        target_bytes: 1,
+        min_quality: 1,
+        max_quality: 100,
+        quality_floor_policy_strict: false,
+    };
+    let started = std::time::Instant::now();
+    let result = task.search().unwrap();
+    let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
+    assert!(!result.budget_met);
+    assert!(
+        result.quality > 1,
+        "fixture must retain a candidate before the last probe"
+    );
+    assert_eq!(result.metrics.bytes_out as usize, result.data.len());
+    // Allow call/setup overhead, but not omission of most of the search.
+    assert!(
+        result.metrics.total_ms >= elapsed_ms * 0.75,
+        "reported total {}ms omits probes from {}ms operation",
+        result.metrics.total_ms,
+        elapsed_ms,
+    );
+    assert_eq!(
+        result.metrics.processing_time,
+        result.metrics.total_ms / 1000.0
+    );
+}
+
 /// Regression test for issue #558: the quality search must decode + apply
 /// ops once, not per quality iteration. We assert it indirectly by giving
 /// the prepare phase a pre-decoded Arc and checking that `prepare_for_encode`
