@@ -581,6 +581,10 @@ mod tests {
             let icc_data = minimal_icc_profile();
             let result = encode_jpeg(&img, 80, Some(&icc_data)).unwrap();
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            assert_eq!(
+                crate::engine::io::extract_icc_profile(&result).unwrap(),
+                Some(icc_data)
+            );
         }
 
         #[test]
@@ -617,6 +621,10 @@ mod tests {
             let icc_data = minimal_icc_profile();
             let result = encode_jpeg_with_settings(&img, 80, Some(&icc_data), true).unwrap();
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            assert_eq!(
+                crate::engine::io::extract_icc_profile(&result).unwrap(),
+                Some(icc_data)
+            );
         }
 
         #[test]

@@ -1,0 +1,248 @@
+{
+  "stage": "before",
+  "sourceSha": "059fcb5311ddce4fa9e07b135ecd4eba555b63c7",
+  "sourceDirty": false,
+  "generatedAt": "2026-10-11T04:46:51.142Z",
+  "commandResults": [
+    {
+      "command": "node test/benchmarks/quality-matched.bench.js --worker 3 jpeg lazy",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/benchmarks/quality-matched.bench.js --worker 3 jpeg sharp",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/benchmarks/quality-matched.bench.js --worker 5 jpeg lazy",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/benchmarks/quality-matched.bench.js --worker 5 jpeg sharp",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/benchmarks/quality-matched.bench.js --worker 8 jpeg lazy",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/benchmarks/quality-matched.bench.js --worker 8 jpeg sharp",
+      "exitCode": 0,
+      "signal": null
+    }
+  ],
+  "environment": {
+    "node": "v24.2.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "osRelease": "27.0.0",
+    "rust": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "sharpVersions": {
+      "aom": "3.15.0",
+      "archive": "3.8.9",
+      "cairo": "1.18.4",
+      "cgif": "0.5.3",
+      "exif": "0.6.26",
+      "expat": "2.8.3",
+      "ffi": "3.8.0",
+      "fontconfig": "2.18.3",
+      "freetype": "2.14.3",
+      "fribidi": "1.0.16",
+      "glib": "2.89.4",
+      "harfbuzz": "14.3.1",
+      "heif": "1.23.2",
+      "highway": "1.4.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.19.1",
+      "mozjpeg": "0826579",
+      "pango": "1.58.2",
+      "pixman": "0.46.4",
+      "png": "1.6.58",
+      "proxy-libintl": "0.5",
+      "rsvg": "2.62.91",
+      "tiff": "4.7.2",
+      "uhdr": "2.0.2",
+      "vips": "8.18.6",
+      "webp": "1.6.0",
+      "xml2": "2.15.3",
+      "zlib-ng": "2.3.3",
+      "sharp": "0.35.4"
+    },
+    "cli": "3.9.0"
+  },
+  "hashes": {
+    "src/engine/encoder.rs": "7dcfffc69c3a0bbe4d8c59247becb11f841d59c54a1d506ef3f6d3d84986ece7",
+    "Cargo.lock": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "package-lock.json": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "index.js": "723ed60fea3c79088d95663ab850f6eb2cf6ea8621f14d3ae3c3e668badda099",
+    "test/benchmarks/quality-matched.bench.js": "814f794ab6a716e50852bef7edcf81213e213b1139cb9c7f410deec3954180aa",
+    "test/helpers/quality.js": "b240e8228b856796a4a8533af204a27be34ec4bac2fd02c5dfa5bdb930808786",
+    "test/helpers/benchmark-corpus.js": "a092971645031bed6967288e24e47709f904132aaa68852fdfd2436a4a1c5b55",
+    "test/helpers/paths.js": "4509dc8a9a8d76182068d040cba42c8ae266749cfad65d70b0ebc29a66ebb3ec",
+    "test/benchmarks/corpus/release-manifest.json": "1875e2bf7cc659e0ec9c118fdeb1e64e1a7645ffcff9ff5832e1ef10c12ba44c",
+    "lazy-image.darwin-arm64.node": "74c5a0179ffa03609713e95cefc1ffd25e47571954b3085d27e3d1f093f1e276"
+  },
+  "fixtures": [
+    {
+      "id": "coffee",
+      "path": "test/benchmarks/corpus/images/coffee.png",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "license": "CC0-1.0",
+      "category": "photo",
+      "source": {
+        "kind": "photograph",
+        "author": "Rachel Michetti",
+        "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+        "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+        "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+      },
+      "expectations": {
+        "inputFormat": "png"
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "ui-1",
+      "path": "test/benchmarks/corpus/images/ui-1.png",
+      "bytes": 7610,
+      "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "license": "MIT",
+      "category": "ui",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "note": "Synthetic UI text/line workload; not an application capture."
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "metadata-1",
+      "path": "test/benchmarks/corpus/images/metadata-1.jpg",
+      "bytes": 10386,
+      "sha256": "ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d",
+      "license": "MIT",
+      "category": "metadata",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "jpeg",
+        "exif": true,
+        "icc": true,
+        "orientation": 6
+      },
+      "policy": {
+        "preset": "publicUpload",
+        "widths": [
+          160
+        ],
+        "formats": [
+          "jpeg",
+          "webp",
+          "avif"
+        ],
+        "budgets": [
+          {
+            "width": 160,
+            "format": "jpeg",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "webp",
+            "maxBytes": 24000
+          },
+          {
+            "width": 160,
+            "format": "avif",
+            "maxBytes": 24000
+          }
+        ],
+        "placeholder": false
+      }
+    }
+  ],
+  "licenses": [
+    {
+      "spdx": "MIT",
+      "path": "LICENSE",
+      "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+      "bytes": 1075
+    },
+    {
+      "spdx": "CC0-1.0",
+      "path": "test/benchmarks/corpus/CC0-1.0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "bytes": 7048
+    }
+  ],
+  "scope": "existing quality worker: JPEG only; max320px white-composited PNG reference; 12q x 3 encodes; 3 separate input/engine processes, both libraries loaded; RSS covers whole grid after reference creation; no population p90 or encoder-only allocation claim"
+}

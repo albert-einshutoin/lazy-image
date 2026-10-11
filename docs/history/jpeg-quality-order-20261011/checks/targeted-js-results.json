@@ -1,0 +1,36 @@
+{
+  "sourceSha": "d66c451021a96454ffedbecdfdc112b19331d4a4",
+  "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+  "results": [
+    {
+      "command": "node test/integration/basic.test.js",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/integration/error-codes.test.js",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/integration/target-bytes-file-native.test.js",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/integration/artifact-compiler.test.js",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/integration/metadata-options.test.js",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "node test/integration/exif-roundtrip.test.js",
+      "exitCode": 0,
+      "signal": null
+    }
+  ]
+}

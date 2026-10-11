@@ -1,0 +1,31 @@
+🔬 EXIF Roundtrip Test
+==================================================
+
+Test 1: Default - EXIF should be stripped
+  hasExif: false
+
+Test 2: keepMetadata({ exif: true }) - EXIF preserved, GPS stripped
+  hasExif: true
+  orientation: 1
+  hasGps: false
+  ✅ Orientation correctly reset to 1
+  ✅ GPS correctly stripped (privacy protection)
+
+Test 3: keepMetadata({ exif: true, stripGps: false }) - GPS preserved
+  hasExif: true
+  hasGps: true
+
+Test 4: Firewall strict mode - all metadata stripped
+  hasExif: false
+
+Test 5: ICC + EXIF preservation
+  ✅ Successfully processed with ICC + EXIF
+
+Test 6: PNG output preserves EXIF
+  ✅ PNG EXIF preserved with sanitized metadata
+
+Test 7: WebP output preserves EXIF
+  ✅ WebP EXIF preserved with sanitized metadata
+
+==================================================
+✅ All EXIF roundtrip tests passed!

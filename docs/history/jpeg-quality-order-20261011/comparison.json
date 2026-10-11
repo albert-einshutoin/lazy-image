@@ -1,0 +1,623 @@
+{
+  "schemaVersion": 1,
+  "issue": 885,
+  "beforeSourceSha": "059fcb5311ddce4fa9e07b135ecd4eba555b63c7",
+  "afterSourceSha": "d66c451021a96454ffedbecdfdc112b19331d4a4",
+  "productionEncoderPrefixHashes": {
+    "before": "55f0f5b7d91869d2021db2cdb7321b9ca16803e498a7f6416587a90cfea18af4",
+    "after": "da1bcf350017e9868ee68f3682e39dcc929e5c71653c01c6c5ff77ef3bfadb9e"
+  },
+  "rawHashes": {
+    "raw/before/coffee-lazy.json": {
+      "bytes": 5646,
+      "sha256": "ece07f21af33041fc7bec31b5407a8b48f051d11ed0345bc99b24bab63d8ea76"
+    },
+    "raw/before/coffee-sharp.json": {
+      "bytes": 5607,
+      "sha256": "45fe668635056ca9a2a96f6935bc82e3b75c93875b718bed464e9d43ea6e42b0"
+    },
+    "raw/before/metadata-1-lazy.json": {
+      "bytes": 5641,
+      "sha256": "bc52ce4542aa032023a1704ec94403651d694c69ef099fba2ae0fd84eab4b1c2"
+    },
+    "raw/before/metadata-1-sharp.json": {
+      "bytes": 5585,
+      "sha256": "d9cab93d45e8f138a4a247c03f78f9482e5a65c6cd3e6f2484b51c8e13f2ff08"
+    },
+    "raw/before/provenance.json": {
+      "bytes": 7266,
+      "sha256": "381b0f3671b857f903320d7574c06c8c085428cf6189ada93bd4099d45dd16d9"
+    },
+    "raw/before/ui-1-lazy.json": {
+      "bytes": 5639,
+      "sha256": "068bb4869d5fb2df4b70cbeb29093278b9e62cbcafca4bd4376e64a729ac4978"
+    },
+    "raw/before/ui-1-sharp.json": {
+      "bytes": 5634,
+      "sha256": "01f8b37817d7e1655417dad7922adebc6a37a186758f0c2300f061da272b311f"
+    },
+    "raw/after/coffee-lazy.json": {
+      "bytes": 5651,
+      "sha256": "81cdaace5578f0dd50fc7dc9c11ed8af9a60c3bdd588fc14ccaa1cada5f17c53"
+    },
+    "raw/after/coffee-sharp.json": {
+      "bytes": 5648,
+      "sha256": "82e2f2dec4e2476c34dc7a2e3f0fe187fb2dea59f572ccc48f5fa89cb1c1de39"
+    },
+    "raw/after/metadata-1-lazy.json": {
+      "bytes": 5655,
+      "sha256": "9ad9e447a95057f6c2266f99bee141c0fe8904be8f4ab8c465a9378a9bd75e47"
+    },
+    "raw/after/metadata-1-sharp.json": {
+      "bytes": 5664,
+      "sha256": "3b51c4f57b0eeb3a16d8060ab26ae8bff481db1bff72631fb07b8d82f62d4e7c"
+    },
+    "raw/after/provenance.json": {
+      "bytes": 7265,
+      "sha256": "4fd95f3a79a95b8185fab2d9fa4ffc4fe9d169e8ddb4a0e60ed7a722a586555f"
+    },
+    "raw/after/ui-1-lazy.json": {
+      "bytes": 5623,
+      "sha256": "7009ff90e0a63264a83cdb92a4f33b8de8f714177d7a4926fc547f955cfe7cd6"
+    },
+    "raw/after/ui-1-sharp.json": {
+      "bytes": 5653,
+      "sha256": "2445c42b0a8e102cf54845c79b93c8d5d6ce9f499c714bd975c674a1e1d3eccf"
+    }
+  },
+  "checksHashes": {
+    "after-build.log": {
+      "bytes": 302,
+      "sha256": "3e4549027d45dcae527bdb83ad8c1dcd11cdf67b8bac0dbaea10e4a9c4488726"
+    },
+    "artifact-compiler.log": {
+      "bytes": 34,
+      "sha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+    },
+    "basic.log": {
+      "bytes": 2148,
+      "sha256": "9480268f641aaa4b0a5f4de0b1492d0acf50ddaba1ce564a83f676ee179511ce"
+    },
+    "before-build-locked.log": {
+      "bytes": 230,
+      "sha256": "8583b54f9685a0104c329e453a39fe64d3bf961702d8a4fe6886a5608965f907"
+    },
+    "before-build.log": {
+      "bytes": 302,
+      "sha256": "1bda107bdf237c8cec31b0da75cad2954c35e9a7b4c21dee8745bd19d08b8562"
+    },
+    "before-frame.log": {
+      "bytes": 1826,
+      "sha256": "568009ce24c1c50ed58837d85a962d2c226685c46948b40b2efb638c8c8ab60d"
+    },
+    "error-codes.log": {
+      "bytes": 655,
+      "sha256": "705669c3a15e67c67a1b586f176d2ff757cbe8bfe177114a8561922a11fe1682"
+    },
+    "exif-roundtrip.log": {
+      "bytes": 853,
+      "sha256": "8973b03935fc6ff9430e00f80e016f4144fe834582a968b0e1a0bac92e5d4da2"
+    },
+    "green-rust-icc.log": {
+      "bytes": 2208,
+      "sha256": "63e0411b388e51c764a34e6a8abf188e26609809edc30d2ce1f7bd26ba515f72"
+    },
+    "green-rust-jpeg.log": {
+      "bytes": 5106,
+      "sha256": "ee2ded0e2b74988c80a865145b4f5bb8e4269330ccdb789f0f93dab04ad6d3cd"
+    },
+    "metadata-options.log": {
+      "bytes": 420,
+      "sha256": "41dbe1194cbc5f01e4aaab850321026c7dca44fbf94f5505315a8eecd817312a"
+    },
+    "npm-ci.log": {
+      "bytes": 224,
+      "sha256": "0e219f048ec06c819af57467831280558a16c4c78461343aed687a05898958aa"
+    },
+    "red-dqt.log": {
+      "bytes": 2926,
+      "sha256": "6d0dd716d6ad8a41d37501d8045856e679fb66191d8112011a212520745fe809"
+    },
+    "target-bytes-file-native.log": {
+      "bytes": 38,
+      "sha256": "082f3d1f596c7e1064e4fed2c89e33f99cb3545c5f54b14f78cea602bd8f0b08"
+    },
+    "targeted-js-results.json": {
+      "bytes": 891,
+      "sha256": "73374395150b6edfb98a9e9056a3d29e584efb9b37adbb66522c8cb5df726d17"
+    }
+  },
+  "cases": [
+    {
+      "id": "coffee",
+      "referenceSha256": "f2ba2469b6f96de3c0f9b69421ae9b25ee999596afef3994e5472db6c1bdb574",
+      "commonFloor": 0.9408662783212715,
+      "commonByteCap": 13698,
+      "sharpAnchor": {
+        "quality": 80,
+        "bytes": 13698,
+        "sha256": "dc019e201e83daeab5b833cab2e15f1df1a7c694c0c85f7b98b09a6dc91d28c0",
+        "encodeMs": {
+          "samples": [
+            6.06412499999999,
+            6.015166999999991,
+            5.928958999999992
+          ],
+          "p50": 6.015166999999991,
+          "p90": 6.06412499999999,
+          "worst": 6.06412499999999
+        },
+        "ssim": 0.9408662783212715,
+        "psnrDb": 32.89774269492683
+      },
+      "before": {
+        "matches": {
+          "qualityMatched": null,
+          "byteMatched": {
+            "quality": 90,
+            "bytes": 11722,
+            "sha256": "d68d69b9e6dd87fe274896a2dec465295b0a07b46a37a8ec700dc3f7dec94251",
+            "encodeMs": {
+              "samples": [
+                6.400083999999993,
+                6.086583999999959,
+                6.249459000000002
+              ],
+              "p50": 6.249459000000002,
+              "p90": 6.400083999999993,
+              "worst": 6.400083999999993
+            },
+            "ssim": 0.928982792618814,
+            "psnrDb": 32.24084324347143
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 132775936,
+        "q90": {
+          "quality": 90,
+          "bytes": 11722,
+          "sha256": "d68d69b9e6dd87fe274896a2dec465295b0a07b46a37a8ec700dc3f7dec94251",
+          "encodeMs": {
+            "samples": [
+              6.400083999999993,
+              6.086583999999959,
+              6.249459000000002
+            ],
+            "p50": 6.249459000000002,
+            "p90": 6.400083999999993,
+            "worst": 6.400083999999993
+          },
+          "ssim": 0.928982792618814,
+          "psnrDb": 32.24084324347143
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 11722,
+          "sha256": "d68d69b9e6dd87fe274896a2dec465295b0a07b46a37a8ec700dc3f7dec94251",
+          "encodeMs": {
+            "samples": [
+              6.289582999999993,
+              6.295792000000006,
+              6.179166000000009
+            ],
+            "p50": 6.289582999999993,
+            "p90": 6.295792000000006,
+            "worst": 6.295792000000006
+          },
+          "ssim": 0.928982792618814,
+          "psnrDb": 32.24084324347143
+        }
+      },
+      "after": {
+        "matches": {
+          "qualityMatched": {
+            "quality": 85,
+            "bytes": 16078,
+            "sha256": "a176eafc977513f0bb48b14d9e8f5db53377dea6bb63a22bff4733eaaba3baf0",
+            "encodeMs": {
+              "samples": [
+                7.746082999999999,
+                7.910499999999956,
+                7.835874999999987
+              ],
+              "p50": 7.835874999999987,
+              "p90": 7.910499999999956,
+              "worst": 7.910499999999956
+            },
+            "ssim": 0.9531725114258552,
+            "psnrDb": 33.673146686723236
+          },
+          "byteMatched": {
+            "quality": 80,
+            "bytes": 13588,
+            "sha256": "01a070a2e24b69f2c4d903455be3729ebd5098b091271cf9d44953860259d109",
+            "encodeMs": {
+              "samples": [
+                7.0087089999999534,
+                6.758790999999974,
+                6.888458000000014
+              ],
+              "p50": 6.888458000000014,
+              "p90": 7.0087089999999534,
+              "worst": 7.0087089999999534
+            },
+            "ssim": 0.939653417778195,
+            "psnrDb": 32.81118822215692
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 138117120,
+        "q90": {
+          "quality": 90,
+          "bytes": 20721,
+          "sha256": "94307057bb2d61bef633de351da9d39119491ba08dac99d0ca9b6375306d9cd4",
+          "encodeMs": {
+            "samples": [
+              9.248208999999974,
+              9.050957999999923,
+              8.941041999999925
+            ],
+            "p50": 9.050957999999923,
+            "p90": 9.248208999999974,
+            "worst": 9.248208999999974
+          },
+          "ssim": 0.969907077236619,
+          "psnrDb": 35.04214375151155
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 59476,
+          "sha256": "d9d57732c2f8cdae2a893ff99794b4511145f616fa1ac998f9945999ae249538",
+          "encodeMs": {
+            "samples": [
+              31.88341600000001,
+              33.15350000000001,
+              33.35866699999997
+            ],
+            "p50": 33.15350000000001,
+            "p90": 33.35866699999997,
+            "worst": 33.35866699999997
+          },
+          "ssim": 0.9985474660896755,
+          "psnrDb": 39.101921245842334
+        }
+      }
+    },
+    {
+      "id": "ui-1",
+      "referenceSha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "commonFloor": 0.9897055078679161,
+      "commonByteCap": 5303,
+      "sharpAnchor": {
+        "quality": 80,
+        "bytes": 5303,
+        "sha256": "17a70c6c64afbb76420ff1500ac8be475800168127563c118cb7ae1e0d4a22f3",
+        "encodeMs": {
+          "samples": [
+            3.2789999999999964,
+            3.241291999999987,
+            3.154042000000004
+          ],
+          "p50": 3.241291999999987,
+          "p90": 3.2789999999999964,
+          "worst": 3.2789999999999964
+        },
+        "ssim": 0.9897055078679161,
+        "psnrDb": 37.3607378444376
+      },
+      "before": {
+        "matches": {
+          "qualityMatched": null,
+          "byteMatched": {
+            "quality": 90,
+            "bytes": 4731,
+            "sha256": "6cb30c6d13c69af099696aa927af4731ed6756e5dcfc5a277514a0fae3694b4a",
+            "encodeMs": {
+              "samples": [
+                3.69241599999998,
+                3.712959000000012,
+                3.6827919999999494
+              ],
+              "p50": 3.69241599999998,
+              "p90": 3.712959000000012,
+              "worst": 3.712959000000012
+            },
+            "ssim": 0.9876313633241001,
+            "psnrDb": 36.30624747810075
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 150568960,
+        "q90": {
+          "quality": 90,
+          "bytes": 4731,
+          "sha256": "6cb30c6d13c69af099696aa927af4731ed6756e5dcfc5a277514a0fae3694b4a",
+          "encodeMs": {
+            "samples": [
+              3.69241599999998,
+              3.712959000000012,
+              3.6827919999999494
+            ],
+            "p50": 3.69241599999998,
+            "p90": 3.712959000000012,
+            "worst": 3.712959000000012
+          },
+          "ssim": 0.9876313633241001,
+          "psnrDb": 36.30624747810075
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 4731,
+          "sha256": "6cb30c6d13c69af099696aa927af4731ed6756e5dcfc5a277514a0fae3694b4a",
+          "encodeMs": {
+            "samples": [
+              3.340417000000002,
+              3.6877910000000043,
+              3.575958000000014
+            ],
+            "p50": 3.575958000000014,
+            "p90": 3.6877910000000043,
+            "worst": 3.6877910000000043
+          },
+          "ssim": 0.9876313633241001,
+          "psnrDb": 36.30624747810075
+        }
+      },
+      "after": {
+        "matches": {
+          "qualityMatched": {
+            "quality": 85,
+            "bytes": 5823,
+            "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3",
+            "encodeMs": {
+              "samples": [
+                4.506083999999987,
+                4.481707999999969,
+                4.712000000000046
+              ],
+              "p50": 4.506083999999987,
+              "p90": 4.712000000000046,
+              "worst": 4.712000000000046
+            },
+            "ssim": 0.9902984108592374,
+            "psnrDb": 37.96706941056496
+          },
+          "byteMatched": {
+            "quality": 80,
+            "bytes": 5265,
+            "sha256": "b4bcd29cb1c7e68b2ed79f7d0f54a28ba16a7b8df0e0b66a80df12d6bc639f07",
+            "encodeMs": {
+              "samples": [
+                4.165124999999989,
+                4.04808300000002,
+                3.9416249999999877
+              ],
+              "p50": 4.04808300000002,
+              "p90": 4.165124999999989,
+              "worst": 4.165124999999989
+            },
+            "ssim": 0.9880544268883799,
+            "psnrDb": 37.099847442770525
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 141574144,
+        "q90": {
+          "quality": 90,
+          "bytes": 6931,
+          "sha256": "563b5881df03ff5b5f5dda3a8ef33e15a42ae7d9a93042aa65d06c326dd74ec7",
+          "encodeMs": {
+            "samples": [
+              4.628166999999962,
+              4.450583999999992,
+              4.289874999999995
+            ],
+            "p50": 4.450583999999992,
+            "p90": 4.628166999999962,
+            "worst": 4.628166999999962
+          },
+          "ssim": 0.9942988673142793,
+          "psnrDb": 39.6371433974156
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 13455,
+          "sha256": "e0d672d031f320d3f38756c2c94b06396810e3fca0f1887f8d1406db59619b12",
+          "encodeMs": {
+            "samples": [
+              7.711542000000009,
+              7.16416700000002,
+              7.454917000000023
+            ],
+            "p50": 7.454917000000023,
+            "p90": 7.711542000000009,
+            "worst": 7.711542000000009
+          },
+          "ssim": 0.9999012753297616,
+          "psnrDb": 43.86998722466889
+        }
+      }
+    },
+    {
+      "id": "metadata-1",
+      "referenceSha256": "640576927446f5c94a066d50a7136ebf4d7a5549a6e3700d8d9c7a91824b259f",
+      "commonFloor": 0.9890589138124586,
+      "commonByteCap": 5893,
+      "sharpAnchor": {
+        "quality": 80,
+        "bytes": 5893,
+        "sha256": "4254eae13191530faf5cfd08658403f63ce9d0a084778c2e443d3362029ab4ff",
+        "encodeMs": {
+          "samples": [
+            3.5478750000000048,
+            3.3075000000000045,
+            3.457290999999998
+          ],
+          "p50": 3.457290999999998,
+          "p90": 3.5478750000000048,
+          "worst": 3.5478750000000048
+        },
+        "ssim": 0.9890589138124586,
+        "psnrDb": 37.99109113418893
+      },
+      "before": {
+        "matches": {
+          "qualityMatched": null,
+          "byteMatched": {
+            "quality": 90,
+            "bytes": 5215,
+            "sha256": "ae8d9d543896fb1296e96a90cc496a2de8eca2ad7f3c320c4af937bdbfcfdfda",
+            "encodeMs": {
+              "samples": [
+                3.5292499999999905,
+                3.2924170000000004,
+                3.2017079999999964
+              ],
+              "p50": 3.2924170000000004,
+              "p90": 3.5292499999999905,
+              "worst": 3.5292499999999905
+            },
+            "ssim": 0.9870173505662972,
+            "psnrDb": 36.607238248298614
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 142934016,
+        "q90": {
+          "quality": 90,
+          "bytes": 5215,
+          "sha256": "ae8d9d543896fb1296e96a90cc496a2de8eca2ad7f3c320c4af937bdbfcfdfda",
+          "encodeMs": {
+            "samples": [
+              3.5292499999999905,
+              3.2924170000000004,
+              3.2017079999999964
+            ],
+            "p50": 3.2924170000000004,
+            "p90": 3.5292499999999905,
+            "worst": 3.5292499999999905
+          },
+          "ssim": 0.9870173505662972,
+          "psnrDb": 36.607238248298614
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 5215,
+          "sha256": "ae8d9d543896fb1296e96a90cc496a2de8eca2ad7f3c320c4af937bdbfcfdfda",
+          "encodeMs": {
+            "samples": [
+              3.243499999999983,
+              3.4958750000000123,
+              3.321916999999985
+            ],
+            "p50": 3.321916999999985,
+            "p90": 3.4958750000000123,
+            "worst": 3.4958750000000123
+          },
+          "ssim": 0.9870173505662972,
+          "psnrDb": 36.607238248298614
+        }
+      },
+      "after": {
+        "matches": {
+          "qualityMatched": {
+            "quality": 85,
+            "bytes": 6328,
+            "sha256": "20aa9970fed8acda3aa3db6d4d1db9dd89f6e209834a66a5b6063060ec6cdc31",
+            "encodeMs": {
+              "samples": [
+                4.556457999999964,
+                4.110708999999986,
+                4.092375000000004
+              ],
+              "p50": 4.110708999999986,
+              "p90": 4.556457999999964,
+              "worst": 4.556457999999964
+            },
+            "ssim": 0.9906967368308158,
+            "psnrDb": 38.8731836226555
+          },
+          "byteMatched": {
+            "quality": 80,
+            "bytes": 5839,
+            "sha256": "ee4781116784d84abd092ee16dd626638d9bdccdcd6c88f91d691636efaf37fd",
+            "encodeMs": {
+              "samples": [
+                3.901416999999981,
+                4.27683399999998,
+                3.8057919999999967
+              ],
+              "p50": 3.901416999999981,
+              "p90": 4.27683399999998,
+              "worst": 4.27683399999998
+            },
+            "ssim": 0.988104657213068,
+            "psnrDb": 37.70026523827869
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 144031744,
+        "q90": {
+          "quality": 90,
+          "bytes": 7452,
+          "sha256": "83a8ae33784a16354a81f83b8e41c0476384ef18618c06e9bd3b30f75bffecff",
+          "encodeMs": {
+            "samples": [
+              4.458249999999964,
+              4.789125000000013,
+              4.433375000000012
+            ],
+            "p50": 4.458249999999964,
+            "p90": 4.789125000000013,
+            "worst": 4.789125000000013
+          },
+          "ssim": 0.9939321605679786,
+          "psnrDb": 41.43347737188491
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 12307,
+          "sha256": "2f754a9af45677c29bbd4bb7870091e87ac69bc6189207fff72911fda6ded73c",
+          "encodeMs": {
+            "samples": [
+              6.6286249999999995,
+              6.19037499999996,
+              6.236541000000045
+            ],
+            "p50": 6.236541000000045,
+            "p90": 6.6286249999999995,
+            "worst": 6.6286249999999995
+          },
+          "ssim": 0.9999101591312821,
+          "psnrDb": 49.87577752634061
+        }
+      }
+    }
+  ],
+  "summary": {
+    "before": {
+      "cases": 3,
+      "qualityMet": 0,
+      "byteMet": 3,
+      "jointMet": 0,
+      "capSsimAtLeastSharp": 0
+    },
+    "after": {
+      "cases": 3,
+      "qualityMet": 3,
+      "byteMet": 3,
+      "jointMet": 0,
+      "capSsimAtLeastSharp": 0
+    }
+  },
+  "limits": [
+    "checkout/native 1.4.3 local builds, not published npm measurements",
+    "same Apple M4/Node/Rust/locks and worker conditions, sequential before and after",
+    "three JPEG inputs only; max320px white composite; 12q x 3 trials",
+    "SSIM proxy, not human perceptual equivalence",
+    "nearest-rank 3-sample p90 is maximum, not population p90",
+    "RSS includes whole grid, both libraries, reference/quality decoding after reference creation; not encoder allocation",
+    "independent floor/cap matches; no simultaneous constraint success implied",
+    "historical #883 Linux x64 native1.4.2 evidence remains separate"
+  ]
+}
