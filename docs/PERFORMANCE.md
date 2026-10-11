@@ -10,6 +10,7 @@ not establish a universal speed, quality, size or memory advantage.
 |---|---|---|
 | [Canonical historical baseline](./TRUE_BENCHMARKS.md) | Recorded codec/resize results on its named machine and versions | Performance of the current package or every input |
 | [Compiler and quality runners](./BENCHMARK_OPERATIONS.md#release-compiler-and-constrained-quality-evidence-769) | How to reproduce E2E acceptance, budget and constrained-quality measurements | A successful run merely because the scripts exist |
+| [Native compiler case evaluation](./history/native-compiler-cost-20261011/EVALUATION.md) | Retained 1.4.2 checkout evidence, case-by-case costs/unmet targets, source applicability and one next-work decision | Current published 1.4.3 measurements, user SLA or universal codec superiority |
 | [Historical snapshots](./history/BENCHMARK_RESULTS.md) | Earlier operation, memory and cold-start observations | Fresh release evidence |
 | [Wasm measurements](./WASM_BENCHMARKING.md) | Browser/Edge preflight methodology | Native compiler performance or full API parity |
 
