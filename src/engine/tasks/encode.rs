@@ -7,7 +7,7 @@
 
 use super::atomic::write_encoded_output;
 use super::context::TaskContext;
-use super::processing::{encode_prepared, prepare_for_encode, EncodeContext};
+use super::processing::{encode_prepared, prepare_for_encode, EncodeContext, PreparedEncode};
 use crate::error::LazyImageError;
 #[cfg(test)]
 use image::DynamicImage;
@@ -165,6 +165,14 @@ impl EncodeTargetBytesTask {
             base_ctx.format,
         )?;
 
+        self.search_prepared(&prepared, base_ctx)
+    }
+
+    pub(super) fn search_prepared(
+        &self,
+        prepared: &PreparedEncode,
+        base_ctx: EncodeContext<'_>,
+    ) -> std::result::Result<TargetBytesOutput, LazyImageError> {
         let mut best: Option<(Vec<u8>, u8, u32, crate::ProcessingMetrics)> = None;
         let mut search_cpu_time = 0.0;
         let mut search_peak_rss = 0;
@@ -178,7 +186,7 @@ impl EncodeTargetBytesTask {
             };
 
             let mut metrics = crate::ProcessingMetrics::default();
-            let encoded = encode_prepared(&prepared, &iter_ctx, Some(&mut metrics))?;
+            let encoded = encode_prepared(prepared, &iter_ctx, Some(&mut metrics))?;
             search_cpu_time = metrics.cpu_time;
             search_peak_rss = search_peak_rss.max(metrics.peak_rss);
 

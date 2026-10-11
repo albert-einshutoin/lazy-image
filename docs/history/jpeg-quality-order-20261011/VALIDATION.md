@@ -114,7 +114,7 @@ Mac arm64実出力dad8e345…に対し、Linux x64実出力は84a6612e…で、�
 
 Mac対象goldenは6成功/exit0 ([ログ](checks/golden-recorded-targets.log))。同じJS専門reviewer/Sol mediumが
 この追加2fileとMac/Linux実証へ限定して最終レビューしALLOW、関連指摘なし。
-このtest-only変更ではsourcef921bbbから製品code・native・依存を変更していないため、成功した完全build/benchmarkは再実行しない。
+この段階（sourcecbfe3eaまで）のtest-only変更ではsourcef921bbbから製品code・native・依存を変更していないため、成功した完全build/benchmarkは再実行しない。
 最終HEADの全hosted matrixとSecurityを確認してからmergeする。
 
 ## 累積timeoutに関するP1指摘の判断
@@ -165,3 +165,24 @@ picture source優先順、既存site保護、invalid input、E300とHTML/images�
 source81d128a＋self-test草稿で `node examples/compile-image-static-site.mjs --self-test` はexit0
 ([ログ](checks/green-budget-deadline-site.log))。同じJS専門reviewer/Sol mediumが追加self-testだけを
 限定最終レビューしALLOW、関連指摘なし。最終HEADのhosted結果は別途確認する。
+
+## 累積metrics P2と検証境界の修正
+
+cbfe3eaの[完全CI](https://github.com/albert-einshutoin/lazy-image/actions/runs/38119890635)は、
+追加P2への製品修正が必要と分かった時点でcancelled。成功・失敗へ再分類せず最終証拠には使わない。
+
+最初のRust regressionはcbfe＋format前草稿でexit101（total9.83 ms/外壁108.77 ms）。
+初版metrics修正のtarget_bytesは5成功/exit0だったが、Rust reviewerはobserverがpermit待ちも含む点をBLOCK。
+この初版red/greenは境界の制約を伴う診断として保持し、最終回帰証拠へ流用しない。
+fmt --checkの初回exit1も保持し、cargo fmtで今回2fileだけを整えた。
+
+既存prepare→encode構造へ沿ってsearch_preparedをcanonical入口にし、test observerはprepare完了後に開始する。
+permit/queue待ちはtotalMs契約から除外し、decode/opsを含む総pipeline値を弱めない。
+この境界でtarget_bytes5件exit0。metrics補正だけを一時外した負制御はtotal11.44 ms/probe107.47 msでexit101。
+これはsource356＋分割/test草稿＋旧metrics動作の負制御で、旧HEADをそのまま実行した証拠ではない。
+終了後に修正コードを元bytesへ復元した。選択が最終q1でないこと、選択bytesとmetrics.bytesOut一致も検査する。
+同じRust reviewer/Sol mediumの限定最終レビューはALLOW、前BLOCKの境界指摘は解消、追加P2/P3なし。
+
+source356のcanonical buildはexit0。公開Buffer/file probeの前後出力一致とsource/バイナリ境界、
+誤source rawの除外、tmp cleanupを同じJS reviewer/Sol mediumが限定レビューしALLOW、指摘なし。
+この時点でprepare分割後の新nativeと完全検証は未完了であり、後続の実結果を確認する。

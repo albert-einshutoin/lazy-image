@@ -390,8 +390,20 @@ fn target_bytes_best_effort_metrics_include_all_probes() {
         max_quality: 100,
         quality_floor_policy_strict: false,
     };
+    let base_ctx = task.ctx.encode_context();
+    let prepared = prepare_for_encode(
+        base_ctx.source,
+        base_ctx.decoded,
+        base_ctx.ops,
+        base_ctx.icc_state,
+        base_ctx.auto_orient,
+        base_ctx.firewall,
+        base_ctx.format,
+    )
+    .unwrap();
+    // totalMs excludes permit/queue wait; start the observer after preparation.
     let started = std::time::Instant::now();
-    let result = task.search().unwrap();
+    let result = task.search_prepared(&prepared, base_ctx).unwrap();
     let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
     assert!(!result.budget_met);
     assert!(

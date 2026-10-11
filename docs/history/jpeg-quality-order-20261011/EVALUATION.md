@@ -165,3 +165,26 @@ compilerはpublic-upload policyの5秒制限を使い、各候補のencode後に
 「最高適合quality」はresource limitsを通過して完了した探索の契約であり、全入力を5秒以内に受け入れる保証ではない。
 候補ごとのtimer reset、timeoutの自動緩和、途中best-effort成功は加えない。
 既存のbest-effort inter-stage timeoutにはcodec実行中のpreemptionがない点も、docs/ARCHITECTURE.mdの契約どおり維持する。
+
+### best-effortの累積metrics修正
+
+[追加P2](https://github.com/albert-einshutoin/lazy-image/pull/886#discussion_r4240542847) は、途中の最小候補を保持した後のprobeが総metricsから欠落するもの。
+選択候補のencode/output情報を維持し、全probeのCPU snapshot・最大RSSと探索終端のtotalMs/processingTimeへ確定する。
+canonical searchはprepareを1回だけ行い、同じ準備済み画像・contextで探索する。
+選択・timeout・permit・metadata・Error・APIのfield形状/metrics版は変更しない。
+
+公開APIの補助比較は[before](raw/metrics-correction/before.json)と[after](raw/metrics-correction/after.json)。
+beforeはbuild sourcef921/native2ce79f28…37e9（製品はcbfeまで同じ）、workingHeadcbfe/clean=falseで未build草稿を区別。
+afterはbuild source/workingHead `356958651d52dc9095800e5a2bf5babf74651113`、clean=true、native
+`4e9c3daa61090da56bf154e654767631d2443fe3fdd9ab62d5b886d8e4c55cb7`。
+同64×64 fixtureのBuffer/file各3trialで、q95・345 B・budgetMet=false・出力SHAは全件一致した。
+API elapsedは約83〜89 ms、返却native totalMsは約4.6〜7.3 msから82.7〜86.2 msへ修正。
+APIelapsedはqueue/helper/file writeを含み、native totalMsと同じ測定境界とは扱わない。
+CPU/RSSも既存のprocess-wide境界であり、操作固有のCPU/RSSとは主張しない。
+これはsource356の比較で、後続のprepare分割や最終HEADのreceiptではない。
+
+補助probeのafter source引数を誤記した初回rawは
+[無効記録](raw/metrics-correction/invalid-after-source-argument.json)として保持し、受入比較から除外した。
+rawを修正せず、git rev-parseの実値で別の実行を記録した。
+[保存runner](checks/probe-search-metrics.cjs)はその後after source==HEADのguardを追加した版で、
+before実行時はguard追加前。fixture・API options・各3trialの計測経路は変更していない。

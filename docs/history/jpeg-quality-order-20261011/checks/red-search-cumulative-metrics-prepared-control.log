@@ -1,0 +1,22 @@
+   Compiling lazy-image v1.4.3 (/Volumes/Satechi/Developer/lazy-image)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.52s
+     Running unittests src/lib.rs (target/debug/deps/lazy_image-f8135e58a14bdb3e)
+
+running 1 test
+test engine::tasks::tests::target_bytes_best_effort_metrics_include_all_probes ... FAILED
+
+failures:
+
+---- engine::tasks::tests::target_bytes_best_effort_metrics_include_all_probes stdout ----
+
+thread 'engine::tasks::tests::target_bytes_best_effort_metrics_include_all_probes' (16068213) panicked at src/engine/tasks/tests.rs:415:5:
+reported total 11.440833ms omits probes from 107.471625ms operation
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    engine::tasks::tests::target_bytes_best_effort_metrics_include_all_probes
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 299 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `--lib`
