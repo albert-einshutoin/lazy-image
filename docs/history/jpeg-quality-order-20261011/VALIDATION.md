@@ -186,3 +186,24 @@ permit/queue待ちはtotalMs契約から除外し、decode/opsを含む総pipeli
 source356のcanonical buildはexit0。公開Buffer/file probeの前後出力一致とsource/バイナリ境界、
 誤source rawの除外、tmp cleanupを同じJS reviewer/Sol mediumが限定レビューしALLOW、指摘なし。
 この時点でprepare分割後の新nativeと完全検証は未完了であり、後続の実結果を確認する。
+
+## metrics修正後のローカル完全検証
+
+[実結果](checks/metrics-full-local-results.json) のsourceは
+`43749c1a6c621c5d32ee74bd7d8ba9329c4199ec`、native SHA-256は
+`d55a0229da8966b66ce635199b8d6b36119ee842eb4ff077f0e54063692497ac`。
+canonical `npm run build`・`npm test`・`npm run test:bench:release`が全exit0。
+既存ignored npm生成物は一時退避後に元hashへ復元し、actual resultもrestored=true。
+既存ignored Rust testを成功へ加算せず、original log名・時刻・SHAとの結合を保持する。
+
+[新compiler](raw/metrics-full-validation/compile-image-corpus.json)・
+[新quality](raw/metrics-full-validation/quality-matched.json)・[集約](raw/metrics-full-validation/release-evidence.json)の
+environment.revisionは同source。正常13/13、strict11/11、期待拒否2/2。
+quality37/39・byte37/39で、AVIF alpha1/2品質未達・tiny JPEG/AVIF容量未達を保持。
+これはafter-only追加受入で、全corpusの統制された前後比較ではない。
+
+新nativeでの[prepare分割後のAPI probe](raw/metrics-correction/after-prepared.json)も
+source/workingHead437/clean=trueとnative digestが結合し、beforeの6callとq95/345 B/予算不適合/出力hash全一致。
+native totalMsは82.7〜102.0 msでAPIelapsedの86〜104 ms等と別境界で扱う。
+source356の初回修正比較はそのまま保持し、後続sourceへ偽装していない。
+以降の保存記録追加は製品code・native・依存を変更しない。最終HEADのGate/hosted結果を確認する。

@@ -115,6 +115,26 @@
     "raw/metrics-correction/invalid-after-source-argument.json": {
       "bytes": 5507,
       "sha256": "bcc8daf99237ade776d373e0c0ef8aedf2b098ab2bdb41192edd9f92c64501ef"
+    },
+    "raw/metrics-full-validation/compile-image-corpus.json": {
+      "bytes": 234174,
+      "sha256": "161bd05ea8b2f505ac11884edd788faa1d3536c6f769a638bd52a380fabbfcbe"
+    },
+    "raw/metrics-full-validation/quality-matched.json": {
+      "bytes": 690981,
+      "sha256": "37a442a528220ee346e370d5432afed6f28639887bb656879bd3bdb541c92f2a"
+    },
+    "raw/metrics-full-validation/release-evidence.json": {
+      "bytes": 2550,
+      "sha256": "b7986f0f7ff3d57ca4acbcc3dd51462a290d4bb0bcaa29e76bc1ea2c09199088"
+    },
+    "raw/metrics-full-validation/release-evidence.md": {
+      "bytes": 2851,
+      "sha256": "69b309d5c425f013a29b894715654ae921c342b2dad0be5d3042323b021f21fb"
+    },
+    "raw/metrics-correction/after-prepared.json": {
+      "bytes": 5426,
+      "sha256": "255c45023fe69799fdfb72f6a7edbacc1393a3f7da8f8ad6a40335e507da9702"
     }
   },
   "checksHashes": {
@@ -365,6 +385,22 @@
     "search-metrics-fmt-check.log": {
       "bytes": 1537,
       "sha256": "c0e489497dea02f083ce92d17866b7dcd74b4a47f64f2a2af7ef7a7df01f8d11"
+    },
+    "metrics-full-local-results.json": {
+      "bytes": 1219,
+      "sha256": "ae14eab7d9bfc53334e67ee79142e99990039421298fb511a51060bf129793d9"
+    },
+    "metrics-full-build.log": {
+      "bytes": 302,
+      "sha256": "189bed3dae3d8c1bf79b626e2c97cd84923ed43a1951e2b2287fd97afc59953a"
+    },
+    "metrics-full-npm-test.log": {
+      "bytes": 65456,
+      "sha256": "c2ab5845fc6b52f608f6bce6459cd8cd4162a3421ebb77865935c299070040f1"
+    },
+    "metrics-full-bench-release.log": {
+      "bytes": 2576,
+      "sha256": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb"
     }
   },
   "cases": [
@@ -1057,6 +1093,110 @@
         "rate": 1
       },
       "peakRssBytes": 99205120,
+      "failureReasons": [
+        {
+          "id": "hostile-1",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during planning",
+          "code": "LAZY_IMAGE_USER_ERROR",
+          "errorCode": "E400",
+          "phase": "planning",
+          "cause": "[E400] source.width must be an integer between 1 and 32768",
+          "category": 0
+        },
+        {
+          "id": "hostile-2",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during preflight",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "preflight",
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: 6400x6400 (40960000 pixels) exceeds limit of 40000000 pixels. Resize the image first with .resize() or use .limits({ maxPixels: 41960000 }).",
+          "category": 2
+        }
+      ]
+    },
+    "quality": {
+      "lazy": {
+        "cases": 39,
+        "qualityMet": 37,
+        "byteMet": 37,
+        "byteTargetRate": 0.9487179487179487,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      },
+      "sharp": {
+        "cases": 39,
+        "qualityMet": 39,
+        "byteMet": 39,
+        "byteTargetRate": 1,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      }
+    }
+  },
+  "metricsFullValidation": {
+    "sourceSha": "43749c1a6c621c5d32ee74bd7d8ba9329c4199ec",
+    "bindingSha256": "d55a0229da8966b66ce635199b8d6b36119ee842eb4ff077f0e54063692497ac",
+    "compiler": {
+      "cases": 15,
+      "accepted": 13,
+      "supportedCases": 13,
+      "acceptanceRate": 1,
+      "expectedRejections": 2,
+      "passed": 15,
+      "e2eMs": {
+        "samples": [
+          193.387,
+          186.835,
+          193.125,
+          57.883,
+          67.957,
+          63.721,
+          23.876,
+          23.307,
+          25.273,
+          138.628,
+          137.111,
+          147.198,
+          115.21,
+          115.625,
+          116.633,
+          92.129,
+          78.78,
+          79.828,
+          85.672,
+          86.703,
+          88.312,
+          66.827,
+          70.428,
+          68.07,
+          99.199,
+          104.596,
+          97.307,
+          76.938,
+          75.343,
+          78.319,
+          82.474,
+          80.401,
+          84.399,
+          78.282,
+          73.646,
+          77.725,
+          86.217,
+          82.707,
+          84.649
+        ],
+        "p50": 82.707,
+        "p90": 147.198,
+        "worst": 193.387
+      },
+      "strictBudget": {
+        "cases": 11,
+        "met": 11,
+        "rate": 1
+      },
+      "peakRssBytes": 99123200,
       "failureReasons": [
         {
           "id": "hostile-1",
