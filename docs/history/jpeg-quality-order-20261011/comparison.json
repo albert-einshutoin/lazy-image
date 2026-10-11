@@ -88,10 +88,22 @@
       "bytes": 4674,
       "sha256": "4fa2bcb0402445b0b82321d98a7edf7a6098afc858288c4623cfe374ec7cec1e"
     },
-    "raw/search-full-validation/compile-image-corpus.json": "3a756b272fc68ef4f7f60412930b5f13cb2d4d2463ee36f680d7a0530ffa5514",
-    "raw/search-full-validation/quality-matched.json": "5cda9e50c612ab62fc56e8e3bc2c54ee413f7e7f2afab2735549544d313eb91f",
-    "raw/search-full-validation/release-evidence.json": "e0be7b58dfbfa050e53bc07b0b57a28ecc5eb7370dda9724d51a6b21c4d4d48b",
-    "raw/search-full-validation/release-evidence.md": "91ff158e0bb5c7c1bdc43a405a024d36edcca6177fd6909ba85f390f8c5d46dd"
+    "raw/search-full-validation/compile-image-corpus.json": {
+      "bytes": 234183,
+      "sha256": "3a756b272fc68ef4f7f60412930b5f13cb2d4d2463ee36f680d7a0530ffa5514"
+    },
+    "raw/search-full-validation/quality-matched.json": {
+      "bytes": 691231,
+      "sha256": "5cda9e50c612ab62fc56e8e3bc2c54ee413f7e7f2afab2735549544d313eb91f"
+    },
+    "raw/search-full-validation/release-evidence.json": {
+      "bytes": 2553,
+      "sha256": "e0be7b58dfbfa050e53bc07b0b57a28ecc5eb7370dda9724d51a6b21c4d4d48b"
+    },
+    "raw/search-full-validation/release-evidence.md": {
+      "bytes": 2851,
+      "sha256": "91ff158e0bb5c7c1bdc43a405a024d36edcca6177fd6909ba85f390f8c5d46dd"
+    }
   },
   "checksHashes": {
     "after-build.log": {
@@ -246,12 +258,30 @@
       "bytes": 2148,
       "sha256": "9480268f641aaa4b0a5f4de0b1492d0acf50ddaba1ce564a83f676ee179511ce"
     },
-    "checks/search-full-local-results.json": "c041b857b0256f7000aa4daed5ef08e081eb635f11bc84dfba24bbd2d70c9550",
-    "checks/search-full-build.log": "98d801ad2f487d79136eab57a02b196258e6bfe043c35d6349735fd37d6079f7",
-    "checks/search-full-npm-test.log": "bfc6e0b34d921e119011d53e3b203e49988b5051ebd688a79eb4371a5b889353",
-    "checks/search-full-bench-release.log": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb",
-    "checks/pr-21a15bc-linux-golden-failed.log": "c737d881f0ed3b204f8a501afd7d4e3ade5d590515edb0bd9c9d436939ffc061",
-    "checks/golden-recorded-targets.log": "b18368afecee740268dabb3476c2d6d0bf84871dbf8c8a224ff6ebe76ea83e2b"
+    "search-full-local-results.json": {
+      "bytes": 1216,
+      "sha256": "c041b857b0256f7000aa4daed5ef08e081eb635f11bc84dfba24bbd2d70c9550"
+    },
+    "search-full-build.log": {
+      "bytes": 302,
+      "sha256": "98d801ad2f487d79136eab57a02b196258e6bfe043c35d6349735fd37d6079f7"
+    },
+    "search-full-npm-test.log": {
+      "bytes": 65408,
+      "sha256": "bfc6e0b34d921e119011d53e3b203e49988b5051ebd688a79eb4371a5b889353"
+    },
+    "search-full-bench-release.log": {
+      "bytes": 2576,
+      "sha256": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb"
+    },
+    "pr-21a15bc-linux-golden-failed.log": {
+      "bytes": 76977,
+      "sha256": "c737d881f0ed3b204f8a501afd7d4e3ade5d590515edb0bd9c9d436939ffc061"
+    },
+    "golden-recorded-targets.log": {
+      "bytes": 658,
+      "sha256": "b18368afecee740268dabb3476c2d6d0bf84871dbf8c8a224ff6ebe76ea83e2b"
+    }
   },
   "cases": [
     {
