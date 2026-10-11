@@ -281,6 +281,26 @@
     "golden-recorded-targets.log": {
       "bytes": 658,
       "sha256": "b18368afecee740268dabb3476c2d6d0bf84871dbf8c8a224ff6ebe76ea83e2b"
+    },
+    "pr-0e3fd31-budget-deadline-failed.log": {
+      "bytes": 80344,
+      "sha256": "9be60cb1e0f0fe907b751cc0b29019454fbdb4b158a39a6b43c54a08a3d5324c"
+    },
+    "green-budget-deadline-compiler.log": {
+      "bytes": 34,
+      "sha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+    },
+    "budget-deadline-cli-missing-npm-context.log": {
+      "bytes": 294,
+      "sha256": "7281b00935544aa0116a957bdb119598e1403c376dc525217043f8b2df4e31d6"
+    },
+    "green-budget-deadline-cli-npm.log": {
+      "bytes": 104,
+      "sha256": "6b42d9144395e99d787b7d3608e76ac9fc26f312640960efa47cafa5dee119cc"
+    },
+    "budget-deadline-target-results.json": {
+      "bytes": 1109,
+      "sha256": "4355cc2bb8bf7d08cdf98cee1f476d0eab573e56cb338f86266c9f44f5da0b3b"
     }
   },
   "cases": [

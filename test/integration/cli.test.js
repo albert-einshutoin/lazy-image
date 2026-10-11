@@ -94,7 +94,8 @@ async function main() {
     assert.deepEqual(await fsp.readdir(existingOutput), []);
 
     for (const [name, input, policy, code] of [
-      ['budget', INPUT, { widths: [320], formats: ['webp'], budgets: [{ width: 320, format: 'webp', maxBytes: 1 }] }, 'E300'],
+      // Use a small output to test budget refusal before the cumulative timeout.
+      ['budget', INPUT, { widths: [64], formats: ['webp'], budgets: [{ width: 64, format: 'webp', maxBytes: 1 }] }, 'E300'],
       ['bad-input', invalidJsonPath, { widths: [320], formats: ['webp'] }, null],
     ]) {
       const output = path.join(parent, name);

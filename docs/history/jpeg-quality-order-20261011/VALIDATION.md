@@ -127,3 +127,22 @@ encode/processing/firewall、compilerのpublic-upload caller、既存timeout契�
 判定はALLOW/P1不採用、製品修正不要。timer resetや制限緩和はtrust boundaryを変えるため追加しない。
 拒否が増え得る受入・性能上の制約をEVALUATION.mdへ明記し、失敗を途中候補で成功扱いしない。
 この判断は静的契約評価で、大画像の新規timeout比較測定や5秒以内受入の実証ではない。
+
+## Hosted E300検査のdeadline干渉
+
+source `0e3fd31c02ab43548cf2778aff1cb1d8b9c24896` の
+[必須CI](https://github.com/albert-einshutoin/lazy-image/actions/runs/38118309165) は
+compiler/CLIの1 B予算拒否ケースでE300より先に累積5秒のE123へ達してFAIL。
+[実ログ](checks/pr-0e3fd31-budget-deadline-failed.log) を保持した。
+通常320/640pxの受入ケースの失敗ではなく、両方とも達成不能な予算に対するError code期待の不一致だった。
+この観測は新探索のCPU/拒否制約を裏付けるが、単独encodeと探索のtimeoutを同じ契約にはしない。
+
+E300の予算拒否検査がresource deadlineへ干渉しないよう、この2fileの拒否用出力幅だけ320→64へ変更した。
+WebP/JPEGのE300・processing・artifactId、outputDir非公開、CLI exit1/stdout空/stderr E300/staging残存なしは維持。
+通常320/640受入・製品code・API/defaults・5秒policyは変更しない。
+同じJS専門reviewer/Sol mediumが追加2fileとCI failureだけを限定最終レビューしALLOW、関連指摘なし。
+
+[観測した対象実行の要約](checks/budget-deadline-target-results.json) はsource0e3fd31＋未コミットの
+2file草稿での実行であり、cleanなcommitのprocess receiptを後から生成したものではない。
+compilerはexit0。CLI直接node実行は既存npm context要求でexit1、canonical `npm run test:cli` はexit0。
+nativeは2ce79f28…37e9のまま。旧必須CI failureを最終HEADの成功へ読み替えず、新HEADを確認する。
