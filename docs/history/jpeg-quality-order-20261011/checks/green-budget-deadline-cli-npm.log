@@ -1,0 +1,5 @@
+
+> @alberteinshutoin/lazy-image@1.4.3 test:cli
+> node test/integration/cli.test.js
+
+CLI contract passed

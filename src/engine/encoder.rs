@@ -183,6 +183,10 @@ pub fn encode_jpeg_with_settings(
         validate_buffer_len(w, h, 3, pixels.len(), "jpeg")?;
 
         let mut comp = Compress::new(ColorSpace::JCS_RGB);
+        if !fast_mode {
+            // This resets mozjpeg defaults, so apply quality/chroma/progression afterwards.
+            comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
+        }
         comp.set_size(w as usize, h as usize);
         comp.set_color_space(ColorSpace::JCS_YCbCr);
 
@@ -202,7 +206,6 @@ pub fn encode_jpeg_with_settings(
         } else {
             comp.set_optimize_coding(true);
             comp.set_optimize_scans(true);
-            comp.set_scan_optimization_mode(ScanMode::AllComponentsTogether);
         }
 
         let smoothing = if quality_f32 >= 90.0 {
@@ -215,8 +218,6 @@ pub fn encode_jpeg_with_settings(
             18
         };
         comp.set_smoothing_factor(smoothing);
-
-        // 7. Quantization table optimization is implied by optimize_coding(true)
 
         let estimated_size = (w as usize * h as usize * 3 / 10).max(4096);
         let mut output = Vec::with_capacity(estimated_size);
@@ -500,6 +501,27 @@ mod tests {
     mod encode_tests {
         use super::*;
 
+        // Only walk pre-SOS headers emitted by our encoder, never entropy data.
+        fn jpeg_headers(jpeg: &[u8]) -> Vec<(u8, &[u8])> {
+            assert_eq!(jpeg.get(..2), Some([0xFF, 0xD8].as_slice()));
+            let mut headers = Vec::new();
+            let mut offset = 2;
+            loop {
+                let header = jpeg.get(offset..offset + 4).expect("missing JPEG header");
+                assert_eq!(header[0], 0xFF);
+                let marker = header[1];
+                if marker == 0xDA {
+                    return headers;
+                }
+                let length = usize::from(u16::from_be_bytes([header[2], header[3]]));
+                assert!(length >= 2);
+                let end = offset + 2 + length;
+                let payload = jpeg.get(offset + 4..end).expect("truncated JPEG header");
+                headers.push((marker, payload));
+                offset = end;
+            }
+        }
+
         #[test]
         fn test_encode_jpeg_produces_valid_jpeg() {
             let img = create_test_image(100, 100);
@@ -511,15 +533,46 @@ mod tests {
         }
 
         #[test]
-        fn test_encode_jpeg_quality_affects_size() {
+        fn test_encode_jpeg_quality_changes_quantization_tables() {
             let img = create_test_image(100, 100);
-            let high_quality = encode_jpeg(&img, 95, None).unwrap();
-            let low_quality = encode_jpeg(&img, 50, None).unwrap();
-            // High quality is usually larger (content can flip this); both should be valid JPEGs
-            assert!(!high_quality.is_empty());
-            assert!(!low_quality.is_empty());
-            assert_eq!(&high_quality[0..2], &[0xFF, 0xD8]);
-            assert_eq!(&low_quality[0..2], &[0xFF, 0xD8]);
+            for fast_mode in [false, true] {
+                let tables = |quality| {
+                    let jpeg = encode_jpeg_with_settings(&img, quality, None, fast_mode).unwrap();
+                    jpeg_headers(&jpeg)
+                        .into_iter()
+                        .filter(|(marker, _)| *marker == 0xDB)
+                        .flat_map(|(_, payload)| payload.to_vec())
+                        .collect::<Vec<_>>()
+                };
+                // Both qualities disable smoothing. Size/SSIM need not be monotonic.
+                let q90 = tables(90);
+                let q100 = tables(100);
+                assert_eq!(q90.len(), 130, "two 8-bit quantization tables");
+                assert_eq!(q100.len(), 130);
+                assert_ne!(q90, q100, "quality must reach DQT, fast_mode={fast_mode}");
+                assert!(q100.chunks_exact(65).all(|table| {
+                    table[0] >> 4 == 0 && table[1..].iter().all(|&step| step == 1)
+                }));
+            }
+        }
+
+        #[test]
+        fn test_encode_jpeg_mode_frame_settings() {
+            let img = create_test_image(100, 100);
+            for (fast_mode, frame_marker) in [(false, 0xC2), (true, 0xC0)] {
+                let jpeg = encode_jpeg_with_settings(&img, 90, None, fast_mode).unwrap();
+                let headers = jpeg_headers(&jpeg);
+                let (_, frame) = headers
+                    .iter()
+                    .find(|(marker, _)| *marker == frame_marker)
+                    .unwrap();
+                assert_eq!(frame[5], 3);
+                assert_eq!([frame[7], frame[10], frame[13]], [0x22, 0x11, 0x11]);
+                assert_eq!(
+                    image::load_from_memory(&jpeg).unwrap().dimensions(),
+                    (100, 100)
+                );
+            }
         }
 
         #[test]
@@ -528,6 +581,10 @@ mod tests {
             let icc_data = minimal_icc_profile();
             let result = encode_jpeg(&img, 80, Some(&icc_data)).unwrap();
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            assert_eq!(
+                crate::engine::io::extract_icc_profile(&result).unwrap(),
+                Some(icc_data)
+            );
         }
 
         #[test]
@@ -564,6 +621,10 @@ mod tests {
             let icc_data = minimal_icc_profile();
             let result = encode_jpeg_with_settings(&img, 80, Some(&icc_data), true).unwrap();
             assert_eq!(&result[0..2], &[0xFF, 0xD8]);
+            assert_eq!(
+                crate::engine::io::extract_icc_profile(&result).unwrap(),
+                Some(icc_data)
+            );
         }
 
         #[test]

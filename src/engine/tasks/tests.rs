@@ -338,7 +338,93 @@ fn target_bytes_strict_policy_fails_when_budget_unmet() {
     );
 }
 
-/// Regression test for issue #558: the binary search must decode + apply
+#[test]
+fn target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint() {
+    let mut ctx = make_ctx_with_decoded(OutputFormat::Jpeg {
+        quality: Quality::unchecked(100),
+        fast_mode: false,
+    });
+    ctx.decoded = Some(Arc::new(DynamicImage::ImageRgba8(ImageBuffer::from_pixel(
+        64,
+        64,
+        Rgba([200, 100, 50, 255]),
+    ))));
+    ctx.ops.clear();
+    let max_candidate = ctx.process_and_encode(None).unwrap();
+    ctx.format = ctx.format.with_quality(50);
+    let midpoint = ctx.process_and_encode(None).unwrap();
+    assert!(
+        midpoint.len() > max_candidate.len(),
+        "fixture must expose non-monotonic sizes"
+    );
+    ctx.format = ctx.format.with_quality(100);
+    let task = EncodeTargetBytesTask {
+        ctx,
+        target_bytes: max_candidate.len() as u32,
+        min_quality: 1,
+        max_quality: 100,
+        quality_floor_policy_strict: true,
+    };
+    let result = task.search().expect("a known max-quality candidate fits");
+    assert!(result.budget_met);
+    assert_eq!(result.quality, 100);
+    assert_eq!(result.data, max_candidate);
+}
+
+#[test]
+fn target_bytes_best_effort_metrics_include_all_probes() {
+    let mut ctx = make_ctx_with_decoded(OutputFormat::Jpeg {
+        quality: Quality::unchecked(100),
+        fast_mode: false,
+    });
+    ctx.decoded = Some(Arc::new(DynamicImage::ImageRgba8(ImageBuffer::from_pixel(
+        64,
+        64,
+        Rgba([200, 100, 50, 255]),
+    ))));
+    ctx.ops.clear();
+    let task = EncodeTargetBytesTask {
+        ctx,
+        target_bytes: 1,
+        min_quality: 1,
+        max_quality: 100,
+        quality_floor_policy_strict: false,
+    };
+    let base_ctx = task.ctx.encode_context();
+    let prepared = prepare_for_encode(
+        base_ctx.source,
+        base_ctx.decoded,
+        base_ctx.ops,
+        base_ctx.icc_state,
+        base_ctx.auto_orient,
+        base_ctx.firewall,
+        base_ctx.format,
+    )
+    .unwrap();
+    // totalMs excludes permit/queue wait; start the observer after preparation.
+    let started = std::time::Instant::now();
+    let result = task.search_prepared(&prepared, base_ctx).unwrap();
+    let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
+    assert!(!result.budget_met);
+    assert!(
+        result.quality > 1,
+        "fixture must retain a candidate before the last probe"
+    );
+    assert_eq!(result.metrics.bytes_out as usize, result.data.len());
+    // Allow call/setup overhead, but not omission of most of the search.
+    assert!(
+        result.metrics.total_ms >= elapsed_ms * 0.75,
+        "reported total {}ms omits probes from {}ms operation",
+        result.metrics.total_ms,
+        elapsed_ms,
+    );
+    assert_eq!(
+        result.metrics.processing_time,
+        result.metrics.total_ms / 1000.0
+    );
+}
+
+/// Regression test for issue #558: the quality search must decode + apply
 /// ops once, not per quality iteration. We assert it indirectly by giving
 /// the prepare phase a pre-decoded Arc and checking that `prepare_for_encode`
 /// reuses the Arc by reference (no pixel clone) when ops is empty.
@@ -429,11 +515,11 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
     )
     .expect("prepare should succeed");
 
-    // Encode at three different qualities — like the binary search would.
-    let mut last_size: Option<usize> = None;
+    // Revisit a quality after other probes; reuse must not mutate the cached pixels.
+    let mut outputs = Vec::new();
     let policy = MetadataPolicy::strip_all();
     let firewall = FirewallConfig::disabled();
-    for q in [50u8, 80, 100] {
+    for q in [50u8, 80, 100, 50] {
         let format = OutputFormat::Jpeg {
             quality: Quality::unchecked(q),
             fast_mode: false,
@@ -456,16 +542,14 @@ fn encode_prepared_can_run_multiple_times_against_same_cache() {
             &[0xFF, 0xD8],
             "encode_prepared must produce valid JPEG at quality {q}"
         );
-        // Higher quality should generally yield larger files.
-        if let Some(prev) = last_size {
-            assert!(
-                bytes.len() >= prev,
-                "higher quality should not produce smaller output: prev={prev}, current={}",
-                bytes.len()
-            );
-        }
-        last_size = Some(bytes.len());
+        let decoded = image::load_from_memory(&bytes).expect("output must decode");
+        assert_eq!((decoded.width(), decoded.height()), (64, 64));
+        outputs.push(bytes);
     }
+    assert_eq!(
+        outputs[0], outputs[3],
+        "same pixels/quality must reproduce the JPEG"
+    );
 }
 
 /// Regression test for issue #558: the metrics returned by the byte-budget

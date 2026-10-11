@@ -1,0 +1,93 @@
+   Compiling lazy-image v1.4.3 (/Volumes/Satechi/Developer/lazy-image)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.80s
+     Running unittests src/lib.rs (target/debug/deps/lazy_image-f8135e58a14bdb3e)
+
+running 34 tests
+test engine::decoder::tests::test_decode_image_routes_jpeg_to_mozjpeg ... ok
+test engine::decoder::tests::test_detect_format_jpeg_and_png ... ok
+test engine::firewall::tests::non_jpeg_data_passes_exif_scan ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_produces_valid_jpeg ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_with_icc ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_produces_valid_jpeg ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_with_icc ... ok
+test engine::firewall::tests::scan_exif_size_returns_none_for_non_jpeg ... ok
+test engine::firewall::tests::scan_exif_size_returns_none_for_jpeg_without_exif ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_mode_frame_settings ... ok
+test engine::io::exif::tests::exif_presence_tests::has_exif_returns_true_for_jpeg_with_exif ... ok
+test engine::firewall::tests::scan_exif_size_returns_size_for_jpeg_with_exif ... ok
+test engine::io::exif::tests::exif_presence_tests::has_exif_returns_false_for_jpeg_without_exif ... ok
+test engine::io::exif::tests::exif_raw_tests::extract_exif_raw_returns_data_for_jpeg_with_exif ... ok
+test engine::io::exif::tests::exif_raw_tests::extract_exif_raw_returns_none_for_jpeg_without_exif ... ok
+test engine::memory::estimate::tests::grayscale_jpeg_gets_lower_estimate_than_rgb ... ok
+test engine::memory::estimate::tests::jpeg_header_parsing_returns_rgb_bpp ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_quality_consistency ... ok
+test engine::io::icc::tests::extraction_tests::test_extract_icc_from_jpeg_with_profile ... ok
+test engine::io::icc::tests::test_extract_icc_profile_jpeg ... ok
+test engine::tasks::tests::fast_mode_propagates_to_jpeg_encode ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_quality_changes_quantization_tables ... ok
+test engine::io::icc::tests::test_extract_icc_from_jpeg_no_profile ... ok
+test ops::tests::output_format_tests::test_case_insensitive_jpeg ... ok
+test ops::tests::output_format_tests::test_from_str_with_options_fast_mode_ignored_for_non_jpeg ... ok
+test ops::tests::output_format_tests::test_jpeg_default_quality ... ok
+test inspect::tests::jpeg_is_opaque_and_static ... ok
+test ops::tests::output_format_tests::test_jpeg_with_quality ... ok
+test ops::tests::output_format_tests::test_with_quality_jpeg ... ok
+test engine::tasks::tests::fast_mode_false_produces_valid_jpeg ... ok
+test engine::io::icc::tests::roundtrip_tests::test_jpeg_roundtrip ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_vs_default_size_difference ... ok
+test engine::io::icc::tests::roundtrip_tests::test_cross_format_roundtrip_jpeg_to_png ... ok
+test inspect::tests::jpeg_header_inspection_does_not_read_large_scan_payload ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 264 filtered out; finished in 0.05s
+
+     Running tests/edge_cases.rs (target/debug/deps/edge_cases-c0570a006e889ab8)
+
+running 4 tests
+test corrupted_image_tests::test_jpeg_header_only ... ok
+test encoder_error_tests::test_encode_jpeg_invalid_quality ... ok
+test minimal_image_tests::test_1x1_encode_jpeg ... ok
+test corrupted_image_tests::test_truncated_jpeg ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s
+
+     Running tests/engine_tests.rs (target/debug/deps/engine_tests-98ebee553952cd38)
+
+running 5 tests
+test decode_tests::test_decode_jpeg_mozjpeg_invalid_data ... ok
+test decode_tests::test_decode_jpeg_mozjpeg ... ok
+test encode_tests::test_encode_jpeg_produces_valid_jpeg ... ok
+test encode_tests::test_encode_jpeg_with_icc ... ok
+test encode_tests::test_encode_jpeg_quality_affects_size ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 59 filtered out; finished in 0.01s
+
+     Running tests/error_tests.rs (target/debug/deps/error_tests-242a503600a7908c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 0.00s
+
+     Running tests/fuzz_regression.rs (target/debug/deps/fuzz_regression-666272a1d221ff4f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (target/debug/deps/integration_tests-eecd916709506e19)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/napi_tests.rs (target/debug/deps/napi_tests-64f56d9c9bd9a0c7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/property_based.rs (target/debug/deps/property_based-e2e39e869b8839ef)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+

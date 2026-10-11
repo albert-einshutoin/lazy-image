@@ -1,0 +1,537 @@
+
+> @alberteinshutoin/lazy-image@1.4.3 test
+> npm run test:js && npm run test:ci-planner:rust-targets && npm run test:rust && npm run test:wasm:package
+
+
+> @alberteinshutoin/lazy-image@1.4.3 test:js
+> npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:release-artifacts && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples
+
+
+> @alberteinshutoin/lazy-image@1.4.3 test:ci-planner
+> node test/unit/selective-test-planner.test.js
+
+selective-test planner tests passed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:js:specs
+> node test/integration/run.js
+
+Found 46 test files
+
+▶️  Running test/integration/artifact-compiler-alpha.test.js
+artifact compiler alpha contract passed
+
+▶️  Running test/integration/artifact-compiler.test.js
+artifact compiler contract passed
+
+▶️  Running test/integration/artifact-policy.test.js
+artifact policy contract passed
+
+▶️  Running test/integration/basic.test.js
+=== lazy-image Basic Tests ===
+
+✅ inspect() returns metadata
+✅ inspectFile() returns metadata
+✅ basic JPEG encoding works
+✅ resize works
+✅ resize options object works
+✅ resize options object takes precedence over trailing positional args
+✅ WebP encoding works
+✅ AVIF encoding works
+✅ PNG encoding works
+✅ rotate(90) works
+✅ grayscale() works
+✅ toBufferWithMetrics returns metrics
+✅ chain multiple operations
+✅ clone() allows multi-output
+✅ toBuffer() is non-destructive (multiple calls without clone)
+✅ toBufferWithMetrics() is non-destructive
+✅ toFile() is non-destructive
+✅ toBufferWithPreset() applies preset defaults
+✅ toFileWithPreset() writes file with preset defaults
+✅ fromPath() works
+✅ toFile() works
+✅ toFileWithMetrics() writes file and returns metrics
+✅ processBatchWithMetrics() returns item metrics and summary
+✅ toBufferTargetBytes() returns best effort result under target
+✅ toBufferTargetBytes() rejects invalid native quality ranges
+✅ profile quality never resolves below native minimum
+✅ toFileTargetBytes() writes a budgeted file result
+✅ invalid rotation angle throws error
+✅ invalid crop bounds throws error
+✅ invalid format throws error
+✅ resize validates dimensions and preserves error category/code
+✅ brightness validates range and preserves error category/code
+✅ error category: UserError for invalid rotation
+✅ error category: UserError for invalid crop bounds
+✅ error category: CodecError for invalid format
+✅ error category: UserError for file not found
+✅ getErrorCategory returns null for non-lazy-image errors
+✅ getErrorCategory handles null/undefined
+✅ error category: ResourceLimit for file write error
+✅ processBatch error results expose category
+✅ preset("thumbnail") works
+✅ preset("avatar") works
+✅ preset("hero") works
+✅ preset("social") works
+✅ invalid preset throws error
+✅ JPEG default quality is 85
+✅ WebP default quality is 80
+✅ AVIF default quality is 60
+✅ processBatch with concurrency control works
+✅ processBatch with default concurrency (auto-calculated) works
+
+=== Results: 50 passed, 0 failed ===
+
+▶️  Running test/integration/batch-chunked.test.js
+✅ chunks inputs, preserves order, and reports progress
+✅ matches processBatch result order and output names
+✅ reports progress for a single default-size chunk
+✅ aborts at chunk boundaries and keeps completed chunk outputs
+✅ pre-aborted signal rejects before creating outputs
+✅ continues when progress callback throws
+✅ preserves processBatch partial-failure semantics
+✅ returns failed results when a chunk has no readable bootstrap input
+✅ rejects invalid chunk sizes before returning a promise
+
+▶️  Running test/integration/benchmark-corpus-manifest.test.js
+=== Benchmark Corpus Manifest Tests ===
+
+ok - verifies the tracked compile-image corpus license and checksums
+ok - rejects corpus checksum and path drift
+ok - records fixture source and resized reference PNG digests
+ok - records generated corpus entries without pretending they are fixtures
+ok - renders corpus manifest markdown with compact digests and settings
+
+Tests passed: 5, failed: 0
+
+▶️  Running test/integration/benchmark-fuzz-alignment.test.js
+=== Benchmark/Fuzz Alignment Tests ===
+
+ok - codec bake-off cases declare malformed fuzz targets
+ok - declared bake-off fuzz targets exist in the generated malformed seed corpus
+ok - declared bake-off fuzz targets keep the expected seed families
+
+Tests passed: 3, failed: 0
+
+▶️  Running test/integration/benchmark-package-impact.test.js
+=== Benchmark Package Impact Metadata Tests ===
+
+ok - collects native package contract metadata for backend bake-offs
+ok - renders cross-platform impact into Markdown artifacts
+
+Tests passed: 2, failed: 0
+
+▶️  Running test/integration/cli.test.js
+CLI contract passed
+
+▶️  Running test/integration/concurrency-validation.test.js
+🧪 Concurrency Validation Test
+==============================
+
+✅ Testing concurrency = 0 (default):
+  Success: Processed 1 images with default concurrency
+
+✅ Testing concurrency = 1 (minimum valid):
+  Success: Processed 1 images with 1 thread
+
+✅ Testing concurrency = 1024 (maximum valid):
+  Success: Processed 1 images with 1024 threads
+
+❌ Testing concurrency = 1025 (should fail):
+  ✅ Correctly rejected: [E400] Invalid value for concurrency: 1025. must be 0 or 1-1024
+  ✅ Error code is E400 (invalid argument)
+  ✅ Error category is UserError
+  ✅ Error message format is correct
+
+📋 Concurrency Validation Summary:
+1. ✅ concurrency = 0: Uses default thread pool
+2. ✅ concurrency = 1-1024: Creates custom thread pool
+3. ✅ concurrency > 1024: Properly rejected with clear error
+4. ✅ Error message clarifies "0 or 1-MAX" range
+
+▶️  Running test/integration/docs-contract.test.js
+docs safety-limit contract passed
+
+▶️  Running test/integration/edge-cases.test.js
+=== lazy-image Edge Cases & Security Tests ===
+
+✅ rejects images exceeding MAX_DIMENSION via ImageEngine.from()
+✅ rejects empty buffer
+✅ rejects invalid image data
+✅ rejects non-existent file path
+✅ inspectFile() rejects non-existent file
+✅ rejects quality 0
+✅ handles quality 100 (maximum)
+✅ rejects quality > 100
+✅ handles resize to 1x1 (minimum size)
+✅ handles resize with only width (maintains aspect ratio)
+✅ handles resize with only height (maintains aspect ratio)
+✅ handles resize with both dimensions (may distort)
+✅ handles crop at origin (0,0)
+✅ handles crop of entire image
+✅ handles rotation 0 (no-op)
+✅ handles negative rotation (-90)
+✅ rejects rotation 360 (invalid angle)
+✅ handles many chained operations
+✅ handles multiple resize operations (should optimize)
+✅ toFile() rejects non-existent parent directory
+✅ processBatch handles empty input array
+✅ processBatch accepts concurrency 0 (uses default)
+✅ processBatch rejects concurrency > 1024 (UserError)
+✅ toBufferWithMetrics returns valid metrics with all fields
+✅ toBufferWithMetrics handles input_size=0 gracefully
+✅ hasIccProfile() returns null for images without profile
+✅ handles brightness at limits (-100, 100)
+✅ rejects brightness outside range
+✅ handles contrast at limits (-100, 100)
+✅ pipeline methods return the same ImageEngine instance
+✅ clone() creates independent instances
+✅ dimensions() returns correct values
+
+=== Results: 32 passed, 0 failed ===
+
+▶️  Running test/integration/error-codes.test.js
+=== Error Code Matrix Tests ===
+
+✅ E111: UnsupportedFormat from unsupported output format
+✅ E400: InvalidArgument from out-of-range quality
+✅ E121: DimensionExceedsLimit from oversized resize
+✅ E123: FirewallViolation from maxBytes limit
+✅ E123: FirewallViolation from maxPixels limit
+✅ E130/E131: CorruptedImage or DecodeFailed from truncated JPEG
+✅ E131: DecodeFailed from corrupted JPEG body
+✅ E204: InvalidResizeFit from bad fit string
+✅ E402: InvalidFirewallPolicy from bad policy string
+✅ Docs and Rust error code tables are synchronized
+✅ Docs and Rust error recoverability flags are synchronized
+
+Tests passed: 11, failed: 0
+
+▶️  Running test/integration/exif-roundtrip.test.js
+🔬 EXIF Roundtrip Test
+==================================================
+
+Test 1: Default - EXIF should be stripped
+  hasExif: false
+
+Test 2: keepMetadata({ exif: true }) - EXIF preserved, GPS stripped
+  hasExif: true
+  orientation: 1
+  hasGps: false
+  ✅ Orientation correctly reset to 1
+  ✅ GPS correctly stripped (privacy protection)
+
+Test 3: keepMetadata({ exif: true, stripGps: false }) - GPS preserved
+  hasExif: true
+  hasGps: true
+
+Test 4: Firewall strict mode - all metadata stripped
+  hasExif: false
+
+Test 5: ICC + EXIF preservation
+  ✅ Successfully processed with ICC + EXIF
+
+Test 6: PNG output preserves EXIF
+  ✅ PNG EXIF preserved with sanitized metadata
+
+Test 7: WebP output preserves EXIF
+  ✅ WebP EXIF preserved with sanitized metadata
+
+==================================================
+✅ All EXIF roundtrip tests passed!
+
+▶️  Running test/integration/extract.test.js
+=== resize+crop fusion (Extract) integration tests ===
+✅ fused resize+crop yields expected dimensions
+✅ fused path uses less or equal peak RSS than two-step pipeline
+
+✅ All 2 test(s) passed
+
+▶️  Running test/integration/firewall.test.js
+=== Image Firewall Tests ===
+
+✅ sanitize({ policy: "strict" }) works with small image
+✅ sanitize({ policy: "lenient" }) works with normal image
+✅ public-upload forces privacy-safe metadata regardless of call order
+✅ sanitize() defaults to strict policy
+✅ limits() can override maxPixels
+✅ limits() can override maxBytes
+✅ limits() can override timeoutMs
+✅ limits({ maxPixels: 0 }) disables pixel limit
+✅ sanitize() rejects oversized images (maxBytes)
+✅ sanitize() rejects oversized images (maxPixels)
+✅ invalid policy name throws error
+✅ sanitize() can be called multiple times
+✅ limits() without sanitize() enables firewall
+✅ clone() preserves firewall config
+✅ fromPath() works with sanitize()
+✅ strict policy has tighter limits than lenient
+✅ error messages are actionable (include suggestions)
+
+=== Results: 17 passed, 0 failed ===
+
+▶️  Running test/integration/format-matrix.test.js
+=== Format Conversion Matrix Tests ===
+
+✅ format: JPEG -> JPEG
+✅ format: JPEG -> PNG
+✅ format: JPEG -> WebP
+✅ format: JPEG -> AVIF
+✅ format: WebP -> JPEG
+✅ format: WebP -> PNG
+✅ format: WebP -> WebP
+✅ format: WebP -> AVIF
+✅ format: PNG  -> JPEG
+✅ format: PNG  -> PNG
+✅ format: PNG  -> WebP
+✅ format: PNG  -> AVIF
+✅ format: AVIF input fails with a decode error until AVIF decode is supported
+✅ resize fit: inside (both dims <= target)
+✅ resize fit: cover (both dims >= target)
+✅ resize fit: fill (exact target dimensions)
+✅ normalizePixelFormat: JPEG produces valid output
+✅ normalizePixelFormat: PNG produces valid output
+✅ normalizePixelFormat: WebP produces valid output
+✅ normalizePixelFormat: grayscale input produces valid output
+✅ normalizePixelFormat: chainable with other operations
+
+=== Results: 21 passed, 0 failed ===
+
+▶️  Running test/integration/from-path-async.test.js
+fromPathAsync tests passed
+
+▶️  Running test/integration/fuzz-seed-corpus.test.js
+=== Fuzz Seed Corpus Script Tests ===
+
+ok - dry-run validates the full malformed seed catalog
+ok - decode_avif target writes AVIF-like malformed seeds only
+ok - decode_from_buffer target includes generic malformed image headers
+ok - structured-input targets are intentionally left without raw seed corpus
+ok - metadata targets include EXIF and ICC marker-bearing malformed seeds
+
+Tests passed: 5, failed: 0
+
+▶️  Running test/integration/golden.test.js
+=== Golden Test Suite ===
+❌ jpeg_resize_inside_1200_q82
+   jpeg_resize_inside_1200_q82: pixel hash mismatch (expected 055beced9600804eb4727844d2380e3f016c235298ba1d89ebf7a405c5975caf, got dad8e345f4403a2e5c5ae2d139a9e77bf06b5ada853f6b770529b5d801ea583e)
++ actual - expected
+
++ 'dad8e345f4403a2e5c5ae2d139a9e77bf06b5ada853f6b770529b5d801ea583e'
+- '055beced9600804eb4727844d2380e3f016c235298ba1d89ebf7a405c5975caf'
+
+✅ png_cover_rotate_grayscale | hash=6c8da0a7… | 1600x900 | SSIM=0.9199 PSNR=22.75 | sizeRatio=0.410
+✅ webp_cover_flip | hash=f51e648b… | 800x800 | SSIM=0.9916 PSNR=42.21 | sizeRatio=0.896
+✅ png_cover_no_grayscale | hash=1c1b8537… | 1600x900 | SSIM=0.9987 PSNR=58.53 | sizeRatio=0.572
+✅ avif_cover_rotate_grayscale | hash=85091a8d… | 1200x800 | SSIM=0.9156 PSNR=22.66 | sizeRatio=1.339
+✅ jpeg_to_png_flipv | hash=86a5cbec… | 2000x2000 | SSIM=0.9993 PSNR=60.75 | sizeRatio=0.531
+
+❌ 1 golden case(s) failed
+
+▶️  Running test/integration/input-validation.test.js
+✅ resize rejects negative width with structured error
+✅ toBuffer rejects NaN quality
+✅ toBuffer rejects quality 0
+✅ toBuffer rejects quality above 100
+✅ processBatch rejects negative concurrency
+✅ toFile rejects empty path eagerly
+
+Tests passed: 6, failed: 0
+
+▶️  Running test/integration/inspect-preflight.test.js
+inspect preflight contract tests passed
+
+▶️  Running test/integration/jpegli-distance-tuning.test.js
+=== jpegli Distance Tuning Tests ===
+
+ok - parses and normalizes distance candidates with the case baseline included
+ok - rejects invalid distance candidates
+ok - selects the closest byte candidate and breaks ties by quality
+ok - selects the closest SSIM candidate and breaks ties by bytes
+
+Tests passed: 4, failed: 0
+
+▶️  Running test/integration/malformed-corpus-replay.test.js
+=== Malformed Corpus Replay Tests ===
+
+ok - generated corpus keeps the expected target coverage
+ok - generated malformed seeds reject through buffer input
+ok - generated malformed seeds reject through file input
+
+Tests passed: 3, failed: 0
+
+▶️  Running test/integration/metadata-options.test.js
+Test 1: XMP emits warning but still processes
+keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.
+Test 2: Disable ICC, enable EXIF
+Test 3: GPS stripping (default behavior)
+Test 4: Preserve GPS (opt-in)
+Test 5: ICC only (default metadata behavior)
+Test 6: No metadata (security-first default)
+Test 7: Firewall strict mode overrides keepMetadata
+metadata-options.test.js passed - all 7 tests
+
+▶️  Running test/integration/napi-stress-corpus.test.js
+=== NAPI Stress Corpus Tests ===
+
+ok - stress smoke includes generated malformed fuzz seeds and writes summaries
+
+Tests passed: 1, failed: 0
+
+▶️  Running test/integration/native-worker.test.js
+native Worker worker-only: PASS
+native Worker main-and-worker: PASS
+native Worker terminate-after-async: PASS
+
+▶️  Running test/integration/package-metadata.test.js
+✅ package keywords include discoverability terms
+✅ package description length stays within policy-friendly bounds
+✅ README.md has Quick Start section in first 80 lines
+✅ README.ja.md has Quick Start section in first 80 lines
+✅ README heading structure is synchronized with README.ja.md
+✅ Cargo package metadata includes security/positioning and avif
+✅ package description keeps Image Firewall positioning
+✅ Node runtime contract is consistently Node 22 and 24
+✅ CLI is published through the package bin contract
+
+✅ package metadata checks completed: 9 passed, 0 failed
+
+▶️  Running test/integration/placeholder.test.js
+Placeholder helper integration tests passed
+
+▶️  Running test/integration/preset-output-isolation.test.js
+preset output isolation tests passed
+
+▶️  Running test/integration/quality-matched.test.js
+quality-matched selection checks passed
+
+▶️  Running test/integration/quality-metrics.test.js
+=== Quality Metrics Tests ===
+✅ SSIM/PSNR are perfect for identical buffers
+✅ lazy-image encode maintains high quality
+
+▶️  Running test/integration/release-corpus.test.js
+release corpus coverage and license checks passed
+
+▶️  Running test/integration/responsive.test.js
+Responsive helper integration tests passed
+
+▶️  Running test/integration/streaming.test.js
+=== Streaming Transform Tests ===
+✅ streaming resize -> jpeg passed
+✅ streaming large resize -> webp passed
+✅ streaming metrics callback passed
+✅ streaming error propagation passed
+✅ streaming async process error propagation passed
+✅ streaming multiple ops passed
+✅ streaming resize -> png passed
+✅ streaming resize -> avif passed
+✅ streaming destroy mid-stream passed
+✅ streaming empty input error passed
+✅ streaming cleanup error reporting passed
+✅ streaming memory pressure (4 concurrent) passed
+✅ streaming memory pressure RSS bound passed (delta=76.5 MB < 250 MB)
+
+▶️  Running test/integration/target-bytes-file-native.test.js
+native target-bytes file tests passed
+
+▶️  Running test/integration/type-improvements.test.js
+🔧 Type Improvements Verification Test
+====================================
+
+✅ Testing ImageMetadata.format type improvements:
+  Image metadata: 1x1
+  Format: jpeg (type: string)
+
+✅ Testing improved error messages (conceptual):
+  The zero-copy conversion now provides contextual error messages:
+  - "pixel count overflow: X * 3 (image too large for zero-copy conversion)"
+  - "capacity overflow: X * 3 (memory allocation too large for zero-copy conversion)"
+  - "failed to initialize rayon thread pool: preferred pool (...) failed: ..."
+
+📋 Type Safety Improvements Summary:
+1. ✅ ImageMetadata.format: canonical input format | undefined
+2. ✅ Better IntelliSense support with strict typing
+3. ✅ Compile-time validation prevents invalid format strings
+4. ✅ Enhanced error messages with contextual information
+
+💡 Benefits:
+- Type safety: Catch errors at compile-time instead of runtime
+- Developer experience: Better IDE autocomplete and validation
+- Error clarity: Contextual messages help with debugging
+- Maintainability: Stricter types make code more robust
+
+🔄 Migration Impact:
+- ImageMetadata.format is now strictly typed (breaking change for TypeScript)
+- Error messages are more descriptive for debugging
+- Zero-copy operations provide better overflow context
+
+▶️  Running test/integration/wasm-asset-diagnostics-evidence.test.js
+candidate Chrome evidence and saved image hashes are consistent
+
+▶️  Running test/integration/wasm-edge-1.4.0-evidence.test.js
+published 1.4.0 Edge outputs, API diagnostics, and startup failure evidence PASS
+
+▶️  Running test/integration/wasm-edge-diagnostic-contract.test.js
+Edge diagnostic validation rejects missing API fields and wrong phase, code, or mapping
+
+▶️  Running test/integration/wasm-node-1.4.0-evidence.test.js
+published 1.4.0 Node outputs, budget, metadata, and API diagnostics PASS
+
+▶️  Running test/integration/wasm-node-diagnostic-contract.test.js
+Node diagnostic collector preserves initialization and decode API errors
+
+▶️  Running test/integration/wasm-quality-metrics.test.js
+Wasm quality metric checks passed
+
+▶️  Running test/integration/wasm-required-runtime.test.js
+required Wasm runtime and version are fail-closed
+
+▶️  Running test/integration/wasm-review-corrections.test.js
+
+Wrote artifacts/benchmark/wasm-upload-summary.json
+Wrote artifacts/benchmark/wasm-upload-summary.md
+
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3290.2ms, targetHit=yes
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 2607.0ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+Optional baselines: 0 unavailable, 0 installed but not run
+Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS
+
+▶️  Running test/integration/zero-copy-safety.test.js
+🔒 Zero-Copy Conversion Safety Test
+==================================
+
+✅ Testing regular image processing:
+  Image size: 1x1
+  ✅ Processed successfully: 458 bytes
+  ✅ 100x100: 367 bytes
+  ✅ 500x500: 1102 bytes
+  ✅ 1000x1000: 3310 bytes
+
+✅ Testing edge cases:
+  ✅ 1x1 resize: 331 bytes
+
+📋 Safety Measures Implemented:
+1. ✅ Overflow protection: checked_mul() for len * 3 and cap * 3
+2. ✅ Alignment verification: static compile-time assertions
+3. ✅ Size relationship verification: [u8; 3] == 3 * u8
+4. ✅ Memory safety: Proper Vec::from_raw_parts usage
+5. ✅ Drop safety: std::mem::forget prevents double-free
+
+🛡️  Protection Against:
+- Integer overflow in len * 3 or capacity * 3
+- Alignment mismatches between [u8; 3] and u8
+- Size calculation errors
+- Memory safety violations
+- Double-free vulnerabilities
+
+⚡ Performance Benefits:
+- Zero-copy conversion (no memory allocation)
+- Compile-time safety verification
+- Runtime overflow detection for edge cases
+
+❌ 1 test file(s) failed

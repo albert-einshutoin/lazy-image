@@ -1,0 +1,556 @@
+Required selective test gate	Run selected tests or safe full fallback	﻿2026-10-11T05:45:45.6962278Z ##[group]Run node ci/run-tests.js --plan artifacts/ci/test-plan.json --summary artifacts/ci/selective-summary.json --history artifacts/ci/selective-history.jsonl
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.6963367Z [36;1mnode ci/run-tests.js --plan artifacts/ci/test-plan.json --summary artifacts/ci/selective-summary.json --history artifacts/ci/selective-history.jsonl[0m
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7028204Z shell: /usr/bin/bash -e {0}
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7028479Z env:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7028688Z   DEBUG: napi:*
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7028932Z   MACOSX_DEPLOYMENT_TARGET: 10.13
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7029222Z   CARGO_HOME: /home/runner/.cargo
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7029504Z   CARGO_INCREMENTAL: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7029740Z   CARGO_TERM_COLOR: always
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7029993Z   CACHE_ON_FAILURE: true
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7030231Z ##[endgroup]
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7399802Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.7400200Z [full] npm test
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.8389244Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.8389824Z > @alberteinshutoin/lazy-image@1.4.3 test
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.8390578Z > npm run test:js && npm run test:ci-planner:rust-targets && npm run test:rust && npm run test:wasm:package
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.8391049Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.9462440Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.9463042Z > @alberteinshutoin/lazy-image@1.4.3 test:js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.9465335Z > npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:release-artifacts && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:45.9466719Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.0425267Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.0425833Z > @alberteinshutoin/lazy-image@1.4.3 test:ci-planner
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.0426614Z > node test/unit/selective-test-planner.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.0427014Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.0807307Z selective-test planner tests passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.1863285Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.1863801Z > @alberteinshutoin/lazy-image@1.4.3 test:js:specs
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.1864562Z > node test/integration/run.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.1864823Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.2150229Z Found 46 test files
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.2151589Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.2152390Z ▶️  Running test/integration/artifact-compiler-alpha.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.5083859Z artifact compiler alpha contract passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.5161611Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:46.5162769Z ▶️  Running test/integration/artifact-compiler.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.4911295Z artifact compiler contract passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.4996580Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.4997356Z ▶️  Running test/integration/artifact-policy.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5486453Z artifact policy contract passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5560534Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5561282Z ▶️  Running test/integration/basic.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5935021Z === lazy-image Basic Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5935368Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5939717Z ✅ inspect() returns metadata
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5940540Z ✅ inspectFile() returns metadata
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5962050Z ✅ basic JPEG encoding works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.5988581Z ✅ resize works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6012781Z ✅ resize options object works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6036018Z ✅ resize options object takes precedence over trailing positional args
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6046825Z ✅ WebP encoding works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6071114Z ✅ AVIF encoding works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6127248Z ✅ PNG encoding works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6144783Z ✅ rotate(90) works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6167151Z ✅ grayscale() works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6198376Z ✅ toBufferWithMetrics returns metrics
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6242683Z ✅ chain multiple operations
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6260603Z ✅ clone() allows multi-output
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6334837Z ✅ toBuffer() is non-destructive (multiple calls without clone)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6361034Z ✅ toBufferWithMetrics() is non-destructive
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6398714Z ✅ toFile() is non-destructive
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6415234Z ✅ toBufferWithPreset() applies preset defaults
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6441988Z ✅ toFileWithPreset() writes file with preset defaults
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6458778Z ✅ fromPath() works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6479677Z ✅ toFile() works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6501618Z ✅ toFileWithMetrics() writes file and returns metrics
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6535863Z ✅ processBatchWithMetrics() returns item metrics and summary
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6932563Z ✅ toBufferTargetBytes() returns best effort result under target
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6941168Z ✅ toBufferTargetBytes() rejects invalid native quality ranges
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.6950507Z ✅ profile quality never resolves below native minimum
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7423468Z ✅ toFileTargetBytes() writes a budgeted file result
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7424761Z ✅ invalid rotation angle throws error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7427269Z ✅ invalid crop bounds throws error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7428115Z ✅ invalid format throws error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7431431Z ✅ resize validates dimensions and preserves error category/code
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7432516Z ✅ brightness validates range and preserves error category/code
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7433406Z ✅ error category: UserError for invalid rotation
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7435968Z ✅ error category: UserError for invalid crop bounds
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7436650Z ✅ error category: CodecError for invalid format
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7437432Z ✅ error category: UserError for file not found
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7438121Z ✅ getErrorCategory returns null for non-lazy-image errors
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7438620Z ✅ getErrorCategory handles null/undefined
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7460833Z ✅ error category: ResourceLimit for file write error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7464176Z ✅ processBatch error results expose category
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7480955Z ✅ preset("thumbnail") works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7481557Z ✅ preset("avatar") works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7482346Z ✅ preset("hero") works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7482896Z ✅ preset("social") works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7483592Z ✅ invalid preset throws error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7515470Z ✅ JPEG default quality is 85
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7534356Z ✅ WebP default quality is 80
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7578288Z ✅ AVIF default quality is 60
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7633303Z ✅ processBatch with concurrency control works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7678010Z ✅ processBatch with default concurrency (auto-calculated) works
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7678540Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7678907Z === Results: 50 passed, 0 failed ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7728438Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:50.7729002Z ▶️  Running test/integration/batch-chunked.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:53.9975604Z ✅ chunks inputs, preserves order, and reports progress
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:54.6157198Z ✅ matches processBatch result order and output names
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:56.5226507Z ✅ reports progress for a single default-size chunk
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:57.8105772Z ✅ aborts at chunk boundaries and keeps completed chunk outputs
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:57.8117061Z ✅ pre-aborted signal rejects before creating outputs
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:58.1186500Z ✅ continues when progress callback throws
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.4252344Z ✅ preserves processBatch partial-failure semantics
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.4258035Z ✅ returns failed results when a chunk has no readable bootstrap input
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.4265044Z ✅ rejects invalid chunk sizes before returning a promise
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.4341843Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.4342675Z ▶️  Running test/integration/benchmark-corpus-manifest.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5013671Z === Benchmark Corpus Manifest Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5014669Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5045096Z ok - verifies the tracked compile-image corpus license and checksums
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5058125Z ok - rejects corpus checksum and path drift
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5124362Z ok - records fixture source and resized reference PNG digests
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5149521Z ok - records generated corpus entries without pretending they are fixtures
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5195349Z ok - renders corpus manifest markdown with compact digests and settings
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5195973Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5196311Z Tests passed: 5, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5260364Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5261326Z ▶️  Running test/integration/benchmark-fuzz-alignment.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5536405Z === Benchmark/Fuzz Alignment Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5536932Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5939622Z ok - codec bake-off cases declare malformed fuzz targets
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5940961Z ok - declared bake-off fuzz targets exist in the generated malformed seed corpus
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5943092Z ok - declared bake-off fuzz targets keep the expected seed families
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5961486Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.5961862Z Tests passed: 3, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6004998Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6005941Z ▶️  Running test/integration/benchmark-package-impact.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6285591Z === Benchmark Package Impact Metadata Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6286312Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6292328Z ok - collects native package contract metadata for backend bake-offs
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6296566Z ok - renders cross-platform impact into Markdown artifacts
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6297386Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6297899Z Tests passed: 2, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6328028Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:45:59.6328647Z ▶️  Running test/integration/cli.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.5731942Z CLI contract passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.5794040Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.5795120Z ▶️  Running test/integration/concurrency-validation.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6158663Z 🧪 Concurrency Validation Test
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6160483Z ==============================
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6160785Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6163098Z ✅ Testing concurrency = 0 (default):
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6217523Z   Success: Processed 1 images with default concurrency
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6217936Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6218386Z ✅ Testing concurrency = 1 (minimum valid):
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6250360Z   Success: Processed 1 images with 1 thread
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6250706Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6251118Z ✅ Testing concurrency = 1024 (maximum valid):
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6283174Z   Success: Processed 1 images with 1024 threads
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6283490Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6283774Z ❌ Testing concurrency = 1025 (should fail):
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6309783Z   ✅ Correctly rejected: [E400] Invalid value for concurrency: 1025. must be 0 or 1-1024
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6310751Z   ✅ Error code is E400 (invalid argument)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6311640Z   ✅ Error category is UserError
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6312172Z   ✅ Error message format is correct
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6312457Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6312729Z 📋 Concurrency Validation Summary:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6313352Z 1. ✅ concurrency = 0: Uses default thread pool
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6314108Z 2. ✅ concurrency = 1-1024: Creates custom thread pool
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6315057Z 3. ✅ concurrency > 1024: Properly rejected with clear error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6315776Z 4. ✅ Error message clarifies "0 or 1-MAX" range
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6336703Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6337214Z ▶️  Running test/integration/docs-contract.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6607834Z docs safety-limit contract passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6638475Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.6639140Z ▶️  Running test/integration/edge-cases.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7008579Z === lazy-image Edge Cases & Security Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7008889Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7031357Z ✅ rejects images exceeding MAX_DIMENSION via ImageEngine.from()
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7035271Z ✅ rejects empty buffer
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7039723Z ✅ rejects invalid image data
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7041316Z ✅ rejects non-existent file path
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7042390Z ✅ inspectFile() rejects non-existent file
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7045198Z ✅ rejects quality 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7072914Z ✅ handles quality 100 (maximum)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7074800Z ✅ rejects quality > 100
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7088757Z ✅ handles resize to 1x1 (minimum size)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7120374Z ✅ handles resize with only width (maintains aspect ratio)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7151365Z ✅ handles resize with only height (maintains aspect ratio)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7180541Z ✅ handles resize with both dimensions (may distort)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7193039Z ✅ handles crop at origin (0,0)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7203847Z ✅ handles crop of entire image
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7214282Z ✅ handles rotation 0 (no-op)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7224978Z ✅ handles negative rotation (-90)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7226341Z ✅ rejects rotation 360 (invalid angle)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7290809Z ✅ handles many chained operations
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7318906Z ✅ handles multiple resize operations (should optimize)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7321136Z ✅ toFile() rejects non-existent parent directory
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7331638Z ✅ processBatch handles empty input array
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7364338Z ✅ processBatch accepts concurrency 0 (uses default)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7366874Z ✅ processBatch rejects concurrency > 1024 (UserError)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7385117Z ✅ toBufferWithMetrics returns valid metrics with all fields
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7403689Z ✅ toBufferWithMetrics handles input_size=0 gracefully
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7404691Z ✅ hasIccProfile() returns null for images without profile
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7440337Z ✅ handles brightness at limits (-100, 100)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7441811Z ✅ rejects brightness outside range
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7479899Z ✅ handles contrast at limits (-100, 100)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7499256Z ✅ pipeline methods return the same ImageEngine instance
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7521981Z ✅ clone() creates independent instances
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7522927Z ✅ dimensions() returns correct values
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7523255Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7523462Z === Results: 32 passed, 0 failed ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7568256Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7568844Z ▶️  Running test/integration/error-codes.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7948842Z === Error Code Matrix Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7949209Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7955016Z ✅ E111: UnsupportedFormat from unsupported output format
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7977953Z ✅ E400: InvalidArgument from out-of-range quality
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7978918Z ✅ E121: DimensionExceedsLimit from oversized resize
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.7983808Z ✅ E123: FirewallViolation from maxBytes limit
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8017064Z ✅ E123: FirewallViolation from maxPixels limit
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8021632Z ✅ E130/E131: CorruptedImage or DecodeFailed from truncated JPEG
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8024919Z ✅ E131: DecodeFailed from corrupted JPEG body
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8026525Z ✅ E204: InvalidResizeFit from bad fit string
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8029831Z ✅ E402: InvalidFirewallPolicy from bad policy string
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8041728Z ✅ Docs and Rust error code tables are synchronized
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8056584Z ✅ Docs and Rust error recoverability flags are synchronized
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8057017Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8057216Z Tests passed: 11, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8102422Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8103017Z ▶️  Running test/integration/exif-roundtrip.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8472988Z 🔬 EXIF Roundtrip Test
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8474786Z ==================================================
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8475557Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8475859Z Test 1: Default - EXIF should be stripped
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8497700Z   hasExif: false
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8513616Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8514192Z Test 2: keepMetadata({ exif: true }) - EXIF preserved, GPS stripped
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8531834Z   hasExif: true
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8532410Z   orientation: 1
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8532829Z   hasGps: false
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8533420Z   ✅ Orientation correctly reset to 1
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8550023Z   ✅ GPS correctly stripped (privacy protection)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8550431Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8550913Z Test 3: keepMetadata({ exif: true, stripGps: false }) - GPS preserved
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8561263Z   hasExif: true
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8561657Z   hasGps: true
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8573388Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8573729Z Test 4: Firewall strict mode - all metadata stripped
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8584880Z   hasExif: false
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8585337Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8585542Z Test 5: ICC + EXIF preservation
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8597091Z   ✅ Successfully processed with ICC + EXIF
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8597948Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8598667Z Test 6: PNG output preserves EXIF
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8622795Z   ✅ PNG EXIF preserved with sanitized metadata
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8623074Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8629714Z Test 7: WebP output preserves EXIF
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8630472Z   ✅ WebP EXIF preserved with sanitized metadata
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8630816Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8631085Z ==================================================
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8631693Z ✅ All EXIF roundtrip tests passed!
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8677438Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.8678012Z ▶️  Running test/integration/extract.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:03.9052071Z === resize+crop fusion (Extract) integration tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:05.1665273Z ✅ fused resize+crop yields expected dimensions
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9314312Z ✅ fused path uses less or equal peak RSS than two-step pipeline
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9315016Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9315276Z ✅ All 2 test(s) passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9383839Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9384401Z ▶️  Running test/integration/firewall.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9771354Z === Image Firewall Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9771705Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9814073Z ✅ sanitize({ policy: "strict" }) works with small image
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9835074Z ✅ sanitize({ policy: "lenient" }) works with normal image
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9917470Z ✅ public-upload forces privacy-safe metadata regardless of call order
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9928696Z ✅ sanitize() defaults to strict policy
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9946348Z ✅ limits() can override maxPixels
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9963637Z ✅ limits() can override maxBytes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9981548Z ✅ limits() can override timeoutMs
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:15.9999140Z ✅ limits({ maxPixels: 0 }) disables pixel limit
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0005054Z ✅ sanitize() rejects oversized images (maxBytes)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0017373Z ✅ sanitize() rejects oversized images (maxPixels)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0018438Z ✅ invalid policy name throws error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0029630Z ✅ sanitize() can be called multiple times
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0045953Z ✅ limits() without sanitize() enables firewall
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0059905Z ✅ clone() preserves firewall config
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0077160Z ✅ fromPath() works with sanitize()
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0093157Z ✅ strict policy has tighter limits than lenient
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0095537Z ✅ error messages are actionable (include suggestions)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0095905Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0096157Z === Results: 17 passed, 0 failed ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0142733Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0143290Z ▶️  Running test/integration/format-matrix.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0515832Z === Format Conversion Matrix Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0516220Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0581856Z ✅ format: JPEG -> JPEG
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0643315Z ✅ format: JPEG -> PNG
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0655890Z ✅ format: JPEG -> WebP
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0687175Z ✅ format: JPEG -> AVIF
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0707697Z ✅ format: WebP -> JPEG
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0761491Z ✅ format: WebP -> PNG
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0774310Z ✅ format: WebP -> WebP
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0804909Z ✅ format: WebP -> AVIF
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0825040Z ✅ format: PNG  -> JPEG
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0879297Z ✅ format: PNG  -> PNG
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0890955Z ✅ format: PNG  -> WebP
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0917596Z ✅ format: PNG  -> AVIF
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0924138Z ✅ format: AVIF input fails with a decode error until AVIF decode is supported
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.0990030Z ✅ resize fit: inside (both dims <= target)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1006709Z ✅ resize fit: cover (both dims >= target)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1023736Z ✅ resize fit: fill (exact target dimensions)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1040610Z ✅ normalizePixelFormat: JPEG produces valid output
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1089049Z ✅ normalizePixelFormat: PNG produces valid output
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1101897Z ✅ normalizePixelFormat: WebP produces valid output
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1195117Z ✅ normalizePixelFormat: grayscale input produces valid output
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1215571Z ✅ normalizePixelFormat: chainable with other operations
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1216032Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1216504Z === Results: 21 passed, 0 failed ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1261976Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.1262557Z ▶️  Running test/integration/from-path-async.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.2114658Z fromPathAsync tests passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.2177194Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.2177923Z ▶️  Running test/integration/fuzz-seed-corpus.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.2440162Z === Fuzz Seed Corpus Script Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.2440564Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.2815110Z ok - dry-run validates the full malformed seed catalog
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.3142028Z ok - decode_avif target writes AVIF-like malformed seeds only
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.3499891Z ok - decode_from_buffer target includes generic malformed image headers
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.3833848Z ok - structured-input targets are intentionally left without raw seed corpus
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.4482522Z ok - metadata targets include EXIF and ICC marker-bearing malformed seeds
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.4497281Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.4497468Z Tests passed: 5, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.4534810Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.4535363Z ▶️  Running test/integration/golden.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.5325882Z === Golden Test Suite ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.8593160Z ❌ jpeg_resize_inside_1200_q82
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.8594318Z    jpeg_resize_inside_1200_q82: pixel hash mismatch (expected dad8e345f4403a2e5c5ae2d139a9e77bf06b5ada853f6b770529b5d801ea583e, got 84a6612e9c75424c6fe25299d279eeb59471f5190ad1921eb10150013e7e611d)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.8595511Z + actual - expected
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.8595673Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.8595956Z + '84a6612e9c75424c6fe25299d279eeb59471f5190ad1921eb10150013e7e611d'
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.8596516Z - 'dad8e345f4403a2e5c5ae2d139a9e77bf06b5ada853f6b770529b5d801ea583e'
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:16.8596815Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:19.1641249Z ✅ png_cover_rotate_grayscale | hash=6c8da0a7… | 1600x900 | SSIM=0.9199 PSNR=22.75 | sizeRatio=0.410
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:20.1358967Z ✅ webp_cover_flip | hash=f51e648b… | 800x800 | SSIM=0.9916 PSNR=42.21 | sizeRatio=0.896
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:23.3437616Z ✅ png_cover_no_grayscale | hash=1c1b8537… | 1600x900 | SSIM=0.9987 PSNR=58.53 | sizeRatio=0.572
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:25.8150367Z ✅ avif_cover_rotate_grayscale | hash=85091a8d… | 1200x800 | SSIM=0.9157 PSNR=22.66 | sizeRatio=1.345
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.7380233Z ✅ jpeg_to_png_flipv | hash=86a5cbec… | 2000x2000 | SSIM=0.9993 PSNR=60.75 | sizeRatio=0.531
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.7381613Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.7381908Z ❌ 1 golden case(s) failed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.7681667Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.7682601Z ▶️  Running test/integration/input-validation.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8066294Z ✅ resize rejects negative width with structured error
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8068507Z ✅ toBuffer rejects NaN quality
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8069674Z ✅ toBuffer rejects quality 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8070927Z ✅ toBuffer rejects quality above 100
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8073037Z ✅ processBatch rejects negative concurrency
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8075071Z ✅ toFile rejects empty path eagerly
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8075372Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8075572Z Tests passed: 6, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8112365Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8113001Z ▶️  Running test/integration/inspect-preflight.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8543097Z inspect preflight contract tests passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8614589Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8615315Z ▶️  Running test/integration/jpegli-distance-tuning.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8855066Z === jpegli Distance Tuning Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8855467Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8863967Z ok - parses and normalizes distance candidates with the case baseline included
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8868268Z ok - rejects invalid distance candidates
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8870896Z ok - selects the closest byte candidate and breaks ties by quality
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8872124Z ok - selects the closest SSIM candidate and breaks ties by bytes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8872804Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8873015Z Tests passed: 4, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8901682Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.8902344Z ▶️  Running test/integration/malformed-corpus-replay.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9285628Z === Malformed Corpus Replay Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9286024Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9709009Z ok - generated corpus keeps the expected target coverage
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9756229Z ok - generated malformed seeds reject through buffer input
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9773861Z ok - generated malformed seeds reject through file input
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9790201Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9790425Z Tests passed: 3, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9838460Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:34.9839252Z ▶️  Running test/integration/metadata-options.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.0243916Z Test 1: XMP emits warning but still processes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.0249427Z keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.0805443Z Test 2: Disable ICC, enable EXIF
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.1361514Z Test 3: GPS stripping (default behavior)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.1922772Z Test 4: Preserve GPS (opt-in)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.2481629Z Test 5: ICC only (default metadata behavior)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.3031308Z Test 6: No metadata (security-first default)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.3544697Z Test 7: Firewall strict mode overrides keepMetadata
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.4057481Z metadata-options.test.js passed - all 7 tests
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.4116035Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.4116739Z ▶️  Running test/integration/napi-stress-corpus.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.4392359Z === NAPI Stress Corpus Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.4392705Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.7141289Z ok - stress smoke includes generated malformed fuzz seeds and writes summaries
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.7141737Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.7141888Z Tests passed: 1, failed: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.7181943Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.7182707Z ▶️  Running test/integration/native-worker.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:35.8257886Z native Worker worker-only: PASS
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.0013663Z native Worker main-and-worker: PASS
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8410788Z native Worker terminate-after-async: PASS
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8454001Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8454929Z ▶️  Running test/integration/package-metadata.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8722114Z ✅ package keywords include discoverability terms
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8724212Z ✅ package description length stays within policy-friendly bounds
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8725488Z ✅ README.md has Quick Start section in first 80 lines
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8727803Z ✅ README.ja.md has Quick Start section in first 80 lines
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8729139Z ✅ README heading structure is synchronized with README.ja.md
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8733590Z ✅ Cargo package metadata includes security/positioning and avif
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8734860Z ✅ package description keeps Image Firewall positioning
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8738467Z ✅ Node runtime contract is consistently Node 22 and 24
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8739120Z ✅ CLI is published through the package bin contract
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8740828Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8741186Z ✅ package metadata checks completed: 9 passed, 0 failed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8775386Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:36.8775881Z ▶️  Running test/integration/placeholder.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.0598285Z Placeholder helper integration tests passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.0668678Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.0669584Z ▶️  Running test/integration/preset-output-isolation.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.8302852Z preset output isolation tests passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.8365002Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.8365919Z ▶️  Running test/integration/quality-matched.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.9043709Z quality-matched selection checks passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.9091639Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.9092430Z ▶️  Running test/integration/quality-metrics.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.9857825Z === Quality Metrics Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:37.9911352Z ✅ SSIM/PSNR are perfect for identical buffers
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.2043188Z ✅ lazy-image encode maintains high quality
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.2167749Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.2168557Z ▶️  Running test/integration/release-corpus.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.2856434Z release corpus coverage and license checks passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.2912708Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.2913347Z ▶️  Running test/integration/responsive.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.5259638Z Responsive helper integration tests passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.5330219Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.5331034Z ▶️  Running test/integration/streaming.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.5696592Z === Streaming Transform Tests ===
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:38.5863374Z ✅ streaming resize -> jpeg passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.1895853Z ✅ streaming large resize -> webp passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.1982553Z ✅ streaming metrics callback passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.1998592Z ✅ streaming error propagation passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.2012450Z ✅ streaming async process error propagation passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.2106821Z ✅ streaming multiple ops passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.2256494Z ✅ streaming resize -> png passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.2347054Z ✅ streaming resize -> avif passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.2358341Z ✅ streaming destroy mid-stream passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.2366333Z ✅ streaming empty input error passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:40.2373411Z ✅ streaming cleanup error reporting passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.0431647Z ✅ streaming memory pressure (4 concurrent) passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.2117955Z ✅ streaming memory pressure RSS bound passed (delta=88.1 MB < 250 MB)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.2219601Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.2220310Z ▶️  Running test/integration/target-bytes-file-native.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8095269Z native target-bytes file tests passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8160139Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8160966Z ▶️  Running test/integration/type-improvements.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8518887Z 🔧 Type Improvements Verification Test
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8520324Z ====================================
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8520670Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8521251Z ✅ Testing ImageMetadata.format type improvements:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8522430Z   Image metadata: 1x1
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8522867Z   Format: jpeg (type: string)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8523143Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8523572Z ✅ Testing improved error messages (conceptual):
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8524344Z   The zero-copy conversion now provides contextual error messages:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8525423Z   - "pixel count overflow: X * 3 (image too large for zero-copy conversion)"
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8526425Z   - "capacity overflow: X * 3 (memory allocation too large for zero-copy conversion)"
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8527458Z   - "failed to initialize rayon thread pool: preferred pool (...) failed: ..."
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8528401Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8528798Z 📋 Type Safety Improvements Summary:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8529611Z 1. ✅ ImageMetadata.format: canonical input format | undefined
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8530457Z 2. ✅ Better IntelliSense support with strict typing
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8531272Z 3. ✅ Compile-time validation prevents invalid format strings
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8532056Z 4. ✅ Enhanced error messages with contextual information
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8532424Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8532612Z 💡 Benefits:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8533300Z - Type safety: Catch errors at compile-time instead of runtime
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8534196Z - Developer experience: Better IDE autocomplete and validation
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8535216Z - Error clarity: Contextual messages help with debugging
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8535973Z - Maintainability: Stricter types make code more robust
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8536402Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8536671Z 🔄 Migration Impact:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8537474Z - ImageMetadata.format is now strictly typed (breaking change for TypeScript)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8538388Z - Error messages are more descriptive for debugging
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8539128Z - Zero-copy operations provide better overflow context
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8567327Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8567870Z ▶️  Running test/integration/wasm-asset-diagnostics-evidence.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8895038Z candidate Chrome evidence and saved image hashes are consistent
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8932572Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:41.8933145Z ▶️  Running test/integration/wasm-edge-1.4.0-evidence.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.0589051Z published 1.4.0 Edge outputs, API diagnostics, and startup failure evidence PASS
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.0661634Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.0662624Z ▶️  Running test/integration/wasm-edge-diagnostic-contract.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.1054356Z Edge diagnostic validation rejects missing API fields and wrong phase, code, or mapping
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.1086691Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.1087295Z ▶️  Running test/integration/wasm-node-1.4.0-evidence.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.2709882Z published 1.4.0 Node outputs, budget, metadata, and API diagnostics PASS
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.2781384Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.2782158Z ▶️  Running test/integration/wasm-node-diagnostic-contract.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.3959883Z Node diagnostic collector preserves initialization and decode API errors
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.4071820Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.4072655Z ▶️  Running test/integration/wasm-quality-metrics.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.5228915Z Wasm quality metric checks passed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.5284139Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.5285096Z ▶️  Running test/integration/wasm-required-runtime.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.8949805Z required Wasm runtime and version are fail-closed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.9028932Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:42.9030046Z ▶️  Running test/integration/wasm-review-corrections.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0393491Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0396271Z Wrote artifacts/benchmark/wasm-upload-summary.json
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0405339Z Wrote artifacts/benchmark/wasm-upload-summary.md
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0406027Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0407232Z large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0408705Z large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3290.2ms, targetHit=yes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0410040Z large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0411282Z large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0412608Z large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 2607.0ms, targetHit=yes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0413903Z large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0415202Z Optional baselines: 0 unavailable, 0 installed but not run
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0455352Z Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0547707Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0548725Z ▶️  Running test/integration/zero-copy-safety.test.js
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0947341Z 🔒 Zero-Copy Conversion Safety Test
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0948223Z ==================================
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0948470Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0948766Z ✅ Testing regular image processing:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0956121Z   Image size: 1x1
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.0997409Z   ✅ Processed successfully: 458 bytes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1018716Z   ✅ 100x100: 367 bytes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1137793Z   ✅ 500x500: 1102 bytes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1550443Z   ✅ 1000x1000: 3310 bytes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1550783Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1551029Z ✅ Testing edge cases:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1563311Z   ✅ 1x1 resize: 331 bytes
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1563611Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1563956Z 📋 Safety Measures Implemented:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1565320Z 1. ✅ Overflow protection: checked_mul() for len * 3 and cap * 3
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1566233Z 2. ✅ Alignment verification: static compile-time assertions
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1567013Z 3. ✅ Size relationship verification: [u8; 3] == 3 * u8
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1567904Z 4. ✅ Memory safety: Proper Vec::from_raw_parts usage
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1568652Z 5. ✅ Drop safety: std::mem::forget prevents double-free
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1569115Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1569402Z 🛡️  Protection Against:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1569928Z - Integer overflow in len * 3 or capacity * 3
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1570564Z - Alignment mismatches between [u8; 3] and u8
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1571073Z - Size calculation errors
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1571510Z - Memory safety violations
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1571952Z - Double-free vulnerabilities
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1572250Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1572519Z ⚡ Performance Benefits:
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1573053Z - Zero-copy conversion (no memory allocation)
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1573625Z - Compile-time safety verification
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1575521Z - Runtime overflow detection for edge cases
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1617449Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1617851Z ❌ 1 test file(s) failed
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1880067Z 
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1880409Z Test strategy: full
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1880849Z Targets: 1/60
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1881305Z Success: 0, failure: 1, skipped: 0
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1882465Z Wall time: 57449 ms, total compute: 57446 ms
+Required selective test gate	Run selected tests or safe full fallback	2026-10-11T05:46:43.1948361Z ##[error]Process completed with exit code 1.

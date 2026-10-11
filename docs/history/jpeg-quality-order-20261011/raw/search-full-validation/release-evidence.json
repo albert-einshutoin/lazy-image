@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "compiler": {
+    "cases": 15,
+    "accepted": 13,
+    "supportedCases": 13,
+    "acceptanceRate": 1,
+    "expectedRejections": 2,
+    "passed": 15,
+    "e2eMs": {
+      "samples": [
+        213.571,
+        188.825,
+        189.431,
+        60.373,
+        56.243,
+        64.787,
+        23.772,
+        22.526,
+        22.89,
+        148.535,
+        142.127,
+        132.574,
+        112.505,
+        108.972,
+        111.878,
+        77.454,
+        76.259,
+        85.192,
+        85.298,
+        85.943,
+        89.589,
+        67.192,
+        66.094,
+        65.955,
+        107.129,
+        112.176,
+        99.875,
+        74.474,
+        78.921,
+        75.335,
+        81.437,
+        84.006,
+        82.363,
+        76.228,
+        75.601,
+        73.741,
+        83.834,
+        83.755,
+        80.835
+      ],
+      "p50": 82.363,
+      "p90": 148.535,
+      "worst": 213.571
+    },
+    "strictBudget": {
+      "cases": 11,
+      "met": 11,
+      "rate": 1
+    },
+    "peakRssBytes": 99205120,
+    "failureReasons": [
+      {
+        "id": "hostile-1",
+        "name": "ArtifactCompilationError",
+        "message": "Image artifact compilation failed during planning",
+        "code": "LAZY_IMAGE_USER_ERROR",
+        "errorCode": "E400",
+        "phase": "planning",
+        "cause": "[E400] source.width must be an integer between 1 and 32768",
+        "category": 0
+      },
+      {
+        "id": "hostile-2",
+        "name": "ArtifactCompilationError",
+        "message": "Image artifact compilation failed during preflight",
+        "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+        "errorCode": "E123",
+        "phase": "preflight",
+        "cause": "[E123] Image Firewall blocked the image: Image Firewall: 6400x6400 (40960000 pixels) exceeds limit of 40000000 pixels. Resize the image first with .resize() or use .limits({ maxPixels: 41960000 }).",
+        "category": 2
+      }
+    ]
+  },
+  "quality": {
+    "lazy": {
+      "cases": 39,
+      "qualityMet": 37,
+      "byteMet": 37,
+      "byteTargetRate": 0.9487179487179487,
+      "candidatesPerCase": 12,
+      "encodesPerCase": 36
+    },
+    "sharp": {
+      "cases": 39,
+      "qualityMet": 39,
+      "byteMet": 39,
+      "byteTargetRate": 1,
+      "candidatesPerCase": 12,
+      "encodesPerCase": 36
+    }
+  },
+  "evidenceHashes": {
+    "compile-image-corpus.json": "3a756b272fc68ef4f7f60412930b5f13cb2d4d2463ee36f680d7a0530ffa5514",
+    "quality-matched.json": "5cda9e50c612ab62fc56e8e3bc2c54ee413f7e7f2afab2735549544d313eb91f"
+  }
+}

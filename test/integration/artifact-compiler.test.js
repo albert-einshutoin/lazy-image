@@ -496,23 +496,25 @@ async function main() {
     );
   });
 
-  await withTempParent(async (parent) => {
-    const outputDir = path.join(parent, 'budget-failure');
+  // Keep this impossible-budget check below the cumulative firewall deadline;
+  // timeout policy takes precedence when a full quality search exceeds it.
+  for (const format of ['webp', 'jpeg']) await withTempParent(async (parent) => {
+    const outputDir = path.join(parent, `budget-failure-${format}`);
     await assertRejected(
       () => compileImage({
         inputPath: INPUT,
         outputDir,
         policy: {
-          widths: [320],
-          formats: ['webp'],
-          budgets: [{ width: 320, format: 'webp', maxBytes: 1 }],
+          widths: [64],
+          formats: [format],
+          budgets: [{ width: 64, format, maxBytes: 1 }],
           placeholder: false,
         },
       }),
       (error) => {
         assert.equal(error.name, 'ArtifactCompilationError');
         assert.equal(error.phase, 'processing');
-        assert.equal(error.artifactId, '320/webp');
+        assert.equal(error.artifactId, `64/${format}`);
         assert.equal(error.errorCode, 'E300');
       },
     );

@@ -1,0 +1,29 @@
+{
+  "recordKind": "summary of observed tool exit states, not a process receipt",
+  "productionSourceSha": "0e3fd31c02ab43548cf2778aff1cb1d8b9c24896",
+  "clean": false,
+  "scope": "two uncommitted refusal-test width changes only; production binary unchanged",
+  "bindingSha256": "2ce79f28c97518e2e6441c593c41abc08128a96b5bead60a10a44488564d37e9",
+  "testDraftHashes": {
+    "test/integration/artifact-compiler.test.js": "046d848b37e15b93cd6ee5b8dff12b4490db50c7af0b43bc9d1cdfe213dcdc54",
+    "test/integration/cli.test.js": "48d4ece47f9724c722a71eedd165c1b349b06f482638cc71d2f11716568223eb"
+  },
+  "results": [
+    {
+      "command": "node test/integration/artifact-compiler.test.js",
+      "exitCode": 0,
+      "logfile": "green-budget-deadline-compiler.log"
+    },
+    {
+      "command": "node test/integration/cli.test.js",
+      "exitCode": 1,
+      "logfile": "budget-deadline-cli-missing-npm-context.log",
+      "reason": "existing test requires npm CLI path context"
+    },
+    {
+      "command": "npm run test:cli",
+      "exitCode": 0,
+      "logfile": "green-budget-deadline-cli-npm.log"
+    }
+  ]
+}

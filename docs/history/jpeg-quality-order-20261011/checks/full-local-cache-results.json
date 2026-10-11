@@ -1,0 +1,16 @@
+{
+  "sourceSha": "485179de541ae33ef51df1135302a285b0ca29e8",
+  "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+  "setup": "old ignored npm/ temporarily preserved outside root; restored at end",
+  "results": [
+    {
+      "command": "npm test",
+      "sourceSha": "485179de541ae33ef51df1135302a285b0ca29e8",
+      "startedAt": "2026-10-11T05:10:35.573Z",
+      "completedAt": "2026-10-11T05:11:20.534Z",
+      "exitCode": 101,
+      "signal": null,
+      "logfile": "final-npm-test-clean-setup.log"
+    }
+  ]
+}

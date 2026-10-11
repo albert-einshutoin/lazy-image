@@ -1,0 +1,54 @@
+=== lazy-image Basic Tests ===
+
+✅ inspect() returns metadata
+✅ inspectFile() returns metadata
+✅ basic JPEG encoding works
+✅ resize works
+✅ resize options object works
+✅ resize options object takes precedence over trailing positional args
+✅ WebP encoding works
+✅ AVIF encoding works
+✅ PNG encoding works
+✅ rotate(90) works
+✅ grayscale() works
+✅ toBufferWithMetrics returns metrics
+✅ chain multiple operations
+✅ clone() allows multi-output
+✅ toBuffer() is non-destructive (multiple calls without clone)
+✅ toBufferWithMetrics() is non-destructive
+✅ toFile() is non-destructive
+✅ toBufferWithPreset() applies preset defaults
+✅ toFileWithPreset() writes file with preset defaults
+✅ fromPath() works
+✅ toFile() works
+✅ toFileWithMetrics() writes file and returns metrics
+✅ processBatchWithMetrics() returns item metrics and summary
+✅ toBufferTargetBytes() returns best effort result under target
+✅ toBufferTargetBytes() rejects invalid native quality ranges
+✅ profile quality never resolves below native minimum
+✅ toFileTargetBytes() writes a budgeted file result
+✅ invalid rotation angle throws error
+✅ invalid crop bounds throws error
+✅ invalid format throws error
+✅ resize validates dimensions and preserves error category/code
+✅ brightness validates range and preserves error category/code
+✅ error category: UserError for invalid rotation
+✅ error category: UserError for invalid crop bounds
+✅ error category: CodecError for invalid format
+✅ error category: UserError for file not found
+✅ getErrorCategory returns null for non-lazy-image errors
+✅ getErrorCategory handles null/undefined
+✅ error category: ResourceLimit for file write error
+✅ processBatch error results expose category
+✅ preset("thumbnail") works
+✅ preset("avatar") works
+✅ preset("hero") works
+✅ preset("social") works
+✅ invalid preset throws error
+✅ JPEG default quality is 85
+✅ WebP default quality is 80
+✅ AVIF default quality is 60
+✅ processBatch with concurrency control works
+✅ processBatch with default concurrency (auto-calculated) works
+
+=== Results: 50 passed, 0 failed ===

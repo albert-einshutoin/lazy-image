@@ -1,0 +1,29 @@
+{
+  "sourceSha": "240d23e061af209d0c34b12feaf93721319a2e05",
+  "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+  "setup": {
+    "npmTemporarilyPreserved": true,
+    "npmHash": "8649e8a9bd3f7a0aec5a495c1a198349bcc61dd5286463d36738f0da8f2a69cd",
+    "restored": true
+  },
+  "results": [
+    {
+      "command": "npm test",
+      "sourceSha": "240d23e061af209d0c34b12feaf93721319a2e05",
+      "startedAt": "2026-10-11T05:19:32.954Z",
+      "completedAt": "2026-10-11T05:20:21.211Z",
+      "exitCode": 0,
+      "signal": null,
+      "logfile": "verified-npm-test.log"
+    },
+    {
+      "command": "npm run test:bench:release",
+      "sourceSha": "240d23e061af209d0c34b12feaf93721319a2e05",
+      "startedAt": "2026-10-11T05:20:21.212Z",
+      "completedAt": "2026-10-11T05:21:59.440Z",
+      "exitCode": 0,
+      "signal": null,
+      "logfile": "full-bench-release.log"
+    }
+  ]
+}

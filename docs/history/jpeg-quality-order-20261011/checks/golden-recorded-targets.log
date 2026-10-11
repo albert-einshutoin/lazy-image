@@ -1,0 +1,9 @@
+=== Golden Test Suite ===
+✅ jpeg_resize_inside_1200_q82 | hash=dad8e345… | 1200x1200 | SSIM=0.9978 PSNR=47.58 | sizeRatio=0.979
+✅ png_cover_rotate_grayscale | hash=6c8da0a7… | 1600x900 | SSIM=0.9199 PSNR=22.75 | sizeRatio=0.410
+✅ webp_cover_flip | hash=f51e648b… | 800x800 | SSIM=0.9916 PSNR=42.21 | sizeRatio=0.896
+✅ png_cover_no_grayscale | hash=1c1b8537… | 1600x900 | SSIM=0.9987 PSNR=58.53 | sizeRatio=0.572
+✅ avif_cover_rotate_grayscale | hash=85091a8d… | 1200x800 | SSIM=0.9156 PSNR=22.66 | sizeRatio=1.339
+✅ jpeg_to_png_flipv | hash=86a5cbec… | 2000x2000 | SSIM=0.9993 PSNR=60.75 | sizeRatio=0.531
+
+✅ All golden cases passed

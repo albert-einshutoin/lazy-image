@@ -29,10 +29,11 @@ async function runCase(testCase) {
     );
 
     const { hash, info } = await hashPixels(output);
-    assert.strictEqual(
-        hash,
-        baseline.pixelHash,
-        `${testCase.name}: pixel hash mismatch (expected ${baseline.pixelHash}, got ${hash})`,
+    // Lossy encoders can produce different pixels across native targets. Only
+    // explicitly recorded outputs are accepted; unknown hashes still fail.
+    assert(
+        baseline.pixelHashes.includes(hash),
+        `${testCase.name}: pixel hash mismatch (expected ${baseline.pixelHashes.join(" or ")}, got ${hash})`,
     );
     assert.strictEqual(info.width, baseline.width, `${testCase.name}: width mismatch`);
     assert.strictEqual(info.height, baseline.height, `${testCase.name}: height mismatch`);

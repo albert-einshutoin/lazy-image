@@ -1,0 +1,38 @@
+Diff in /Volumes/Satechi/Developer/lazy-image/src/engine/tasks/tests.rs:378:
+         fast_mode: false,
+     });
+     ctx.decoded = Some(Arc::new(DynamicImage::ImageRgba8(ImageBuffer::from_pixel(
+-        64, 64, Rgba([200, 100, 50, 255]),
++        64,
++        64,
++        Rgba([200, 100, 50, 255]),
+     ))));
+     ctx.ops.clear();
+     let task = EncodeTargetBytesTask {
+Diff in /Volumes/Satechi/Developer/lazy-image/src/engine/tasks/tests.rs:392:
+     let result = task.search().unwrap();
+     let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
+     assert!(!result.budget_met);
+-    assert!(result.quality > 1, "fixture must retain a candidate before the last probe");
++    assert!(
++        result.quality > 1,
++        "fixture must retain a candidate before the last probe"
++    );
+     assert_eq!(result.metrics.bytes_out as usize, result.data.len());
+     // Allow call/setup overhead, but not omission of most of the search.
+     assert!(
+Diff in /Volumes/Satechi/Developer/lazy-image/src/engine/tasks/tests.rs:399:
+         result.metrics.total_ms >= elapsed_ms * 0.75,
+         "reported total {}ms omits probes from {}ms operation",
+-        result.metrics.total_ms, elapsed_ms,
++        result.metrics.total_ms,
++        elapsed_ms,
+     );
+-    assert_eq!(result.metrics.processing_time, result.metrics.total_ms / 1000.0);
++    assert_eq!(
++        result.metrics.processing_time,
++        result.metrics.total_ms / 1000.0
++    );
+ }
+ 
+ /// Regression test for issue #558: the quality search must decode + apply

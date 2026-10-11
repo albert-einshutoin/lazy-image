@@ -1,0 +1,1242 @@
+{
+  "schemaVersion": 1,
+  "issue": 885,
+  "beforeSourceSha": "059fcb5311ddce4fa9e07b135ecd4eba555b63c7",
+  "afterSourceSha": "d66c451021a96454ffedbecdfdc112b19331d4a4",
+  "productionEncoderPrefixHashes": {
+    "before": "55f0f5b7d91869d2021db2cdb7321b9ca16803e498a7f6416587a90cfea18af4",
+    "after": "da1bcf350017e9868ee68f3682e39dcc929e5c71653c01c6c5ff77ef3bfadb9e"
+  },
+  "rawHashes": {
+    "raw/before/coffee-lazy.json": {
+      "bytes": 5646,
+      "sha256": "ece07f21af33041fc7bec31b5407a8b48f051d11ed0345bc99b24bab63d8ea76"
+    },
+    "raw/before/coffee-sharp.json": {
+      "bytes": 5607,
+      "sha256": "45fe668635056ca9a2a96f6935bc82e3b75c93875b718bed464e9d43ea6e42b0"
+    },
+    "raw/before/metadata-1-lazy.json": {
+      "bytes": 5641,
+      "sha256": "bc52ce4542aa032023a1704ec94403651d694c69ef099fba2ae0fd84eab4b1c2"
+    },
+    "raw/before/metadata-1-sharp.json": {
+      "bytes": 5585,
+      "sha256": "d9cab93d45e8f138a4a247c03f78f9482e5a65c6cd3e6f2484b51c8e13f2ff08"
+    },
+    "raw/before/provenance.json": {
+      "bytes": 7266,
+      "sha256": "381b0f3671b857f903320d7574c06c8c085428cf6189ada93bd4099d45dd16d9"
+    },
+    "raw/before/ui-1-lazy.json": {
+      "bytes": 5639,
+      "sha256": "068bb4869d5fb2df4b70cbeb29093278b9e62cbcafca4bd4376e64a729ac4978"
+    },
+    "raw/before/ui-1-sharp.json": {
+      "bytes": 5634,
+      "sha256": "01f8b37817d7e1655417dad7922adebc6a37a186758f0c2300f061da272b311f"
+    },
+    "raw/after/coffee-lazy.json": {
+      "bytes": 5651,
+      "sha256": "81cdaace5578f0dd50fc7dc9c11ed8af9a60c3bdd588fc14ccaa1cada5f17c53"
+    },
+    "raw/after/coffee-sharp.json": {
+      "bytes": 5648,
+      "sha256": "82e2f2dec4e2476c34dc7a2e3f0fe187fb2dea59f572ccc48f5fa89cb1c1de39"
+    },
+    "raw/after/metadata-1-lazy.json": {
+      "bytes": 5655,
+      "sha256": "9ad9e447a95057f6c2266f99bee141c0fe8904be8f4ab8c465a9378a9bd75e47"
+    },
+    "raw/after/metadata-1-sharp.json": {
+      "bytes": 5664,
+      "sha256": "3b51c4f57b0eeb3a16d8060ab26ae8bff481db1bff72631fb07b8d82f62d4e7c"
+    },
+    "raw/after/provenance.json": {
+      "bytes": 7265,
+      "sha256": "4fd95f3a79a95b8185fab2d9fa4ffc4fe9d169e8ddb4a0e60ed7a722a586555f"
+    },
+    "raw/after/ui-1-lazy.json": {
+      "bytes": 5623,
+      "sha256": "7009ff90e0a63264a83cdb92a4f33b8de8f714177d7a4926fc547f955cfe7cd6"
+    },
+    "raw/after/ui-1-sharp.json": {
+      "bytes": 5653,
+      "sha256": "2445c42b0a8e102cf54845c79b93c8d5d6ce9f499c714bd975c674a1e1d3eccf"
+    },
+    "raw/full-validation/compile-image-corpus.json": {
+      "bytes": 234284,
+      "sha256": "60f995fcecbb786bcc7f79dd48c1ff8b15254baa6d9dd438f1e4d88331ae1863"
+    },
+    "raw/full-validation/quality-matched.json": {
+      "bytes": 690726,
+      "sha256": "81327874605379466c39c9e53cdd0d9b5ef68b5d01c97fbff55e1fb9fedac57e"
+    },
+    "raw/full-validation/release-evidence.json": {
+      "bytes": 2575,
+      "sha256": "1363eae224bb729cbe4aa87c4a4810fd7b2e8b9336f43290a28461fef807c38a"
+    },
+    "raw/full-validation/release-evidence.md": {
+      "bytes": 2852,
+      "sha256": "676761ebe4f68a932fcd4e543b8c8d68b715de0eb18b3eba3179d84ffd03011a"
+    },
+    "raw/search-comparison/before.json": {
+      "bytes": 4684,
+      "sha256": "b2ac4eccedce955886c5399329b3d91f38474703fa6707bb81b4a17fb70afc77"
+    },
+    "raw/search-comparison/after.json": {
+      "bytes": 4674,
+      "sha256": "4fa2bcb0402445b0b82321d98a7edf7a6098afc858288c4623cfe374ec7cec1e"
+    },
+    "raw/search-full-validation/compile-image-corpus.json": {
+      "bytes": 234183,
+      "sha256": "3a756b272fc68ef4f7f60412930b5f13cb2d4d2463ee36f680d7a0530ffa5514"
+    },
+    "raw/search-full-validation/quality-matched.json": {
+      "bytes": 691231,
+      "sha256": "5cda9e50c612ab62fc56e8e3bc2c54ee413f7e7f2afab2735549544d313eb91f"
+    },
+    "raw/search-full-validation/release-evidence.json": {
+      "bytes": 2553,
+      "sha256": "e0be7b58dfbfa050e53bc07b0b57a28ecc5eb7370dda9724d51a6b21c4d4d48b"
+    },
+    "raw/search-full-validation/release-evidence.md": {
+      "bytes": 2851,
+      "sha256": "91ff158e0bb5c7c1bdc43a405a024d36edcca6177fd6909ba85f390f8c5d46dd"
+    },
+    "raw/metrics-correction/before.json": {
+      "bytes": 5502,
+      "sha256": "937723f6290afe5cfa3af7dd90f9d726a7a66fa425feb2456e84e253222077a6"
+    },
+    "raw/metrics-correction/after.json": {
+      "bytes": 5426,
+      "sha256": "11076e3aed1ce1b4e226940a4651ede302639a7400ec1695d266659ab724e045"
+    },
+    "raw/metrics-correction/invalid-after-source-argument.json": {
+      "bytes": 5507,
+      "sha256": "bcc8daf99237ade776d373e0c0ef8aedf2b098ab2bdb41192edd9f92c64501ef"
+    },
+    "raw/metrics-full-validation/compile-image-corpus.json": {
+      "bytes": 234174,
+      "sha256": "161bd05ea8b2f505ac11884edd788faa1d3536c6f769a638bd52a380fabbfcbe"
+    },
+    "raw/metrics-full-validation/quality-matched.json": {
+      "bytes": 690981,
+      "sha256": "37a442a528220ee346e370d5432afed6f28639887bb656879bd3bdb541c92f2a"
+    },
+    "raw/metrics-full-validation/release-evidence.json": {
+      "bytes": 2550,
+      "sha256": "b7986f0f7ff3d57ca4acbcc3dd51462a290d4bb0bcaa29e76bc1ea2c09199088"
+    },
+    "raw/metrics-full-validation/release-evidence.md": {
+      "bytes": 2851,
+      "sha256": "69b309d5c425f013a29b894715654ae921c342b2dad0be5d3042323b021f21fb"
+    },
+    "raw/metrics-correction/after-prepared.json": {
+      "bytes": 5426,
+      "sha256": "255c45023fe69799fdfb72f6a7edbacc1393a3f7da8f8ad6a40335e507da9702"
+    }
+  },
+  "checksHashes": {
+    "after-build.log": {
+      "bytes": 302,
+      "sha256": "3e4549027d45dcae527bdb83ad8c1dcd11cdf67b8bac0dbaea10e4a9c4488726"
+    },
+    "artifact-compiler.log": {
+      "bytes": 34,
+      "sha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+    },
+    "basic.log": {
+      "bytes": 2148,
+      "sha256": "9480268f641aaa4b0a5f4de0b1492d0acf50ddaba1ce564a83f676ee179511ce"
+    },
+    "before-build-locked.log": {
+      "bytes": 230,
+      "sha256": "8583b54f9685a0104c329e453a39fe64d3bf961702d8a4fe6886a5608965f907"
+    },
+    "before-build.log": {
+      "bytes": 302,
+      "sha256": "1bda107bdf237c8cec31b0da75cad2954c35e9a7b4c21dee8745bd19d08b8562"
+    },
+    "before-frame.log": {
+      "bytes": 1826,
+      "sha256": "568009ce24c1c50ed58837d85a962d2c226685c46948b40b2efb638c8c8ab60d"
+    },
+    "error-codes.log": {
+      "bytes": 655,
+      "sha256": "705669c3a15e67c67a1b586f176d2ff757cbe8bfe177114a8561922a11fe1682"
+    },
+    "exif-roundtrip.log": {
+      "bytes": 853,
+      "sha256": "8973b03935fc6ff9430e00f80e016f4144fe834582a968b0e1a0bac92e5d4da2"
+    },
+    "green-rust-icc.log": {
+      "bytes": 2208,
+      "sha256": "63e0411b388e51c764a34e6a8abf188e26609809edc30d2ce1f7bd26ba515f72"
+    },
+    "green-rust-jpeg.log": {
+      "bytes": 5106,
+      "sha256": "ee2ded0e2b74988c80a865145b4f5bb8e4269330ccdb789f0f93dab04ad6d3cd"
+    },
+    "metadata-options.log": {
+      "bytes": 420,
+      "sha256": "41dbe1194cbc5f01e4aaab850321026c7dca44fbf94f5505315a8eecd817312a"
+    },
+    "npm-ci.log": {
+      "bytes": 224,
+      "sha256": "0e219f048ec06c819af57467831280558a16c4c78461343aed687a05898958aa"
+    },
+    "red-dqt.log": {
+      "bytes": 2926,
+      "sha256": "6d0dd716d6ad8a41d37501d8045856e679fb66191d8112011a212520745fe809"
+    },
+    "target-bytes-file-native.log": {
+      "bytes": 38,
+      "sha256": "082f3d1f596c7e1064e4fed2c89e33f99cb3545c5f54b14f78cea602bd8f0b08"
+    },
+    "targeted-js-results.json": {
+      "bytes": 891,
+      "sha256": "73374395150b6edfb98a9e9056a3d29e584efb9b37adbb66522c8cb5df726d17"
+    },
+    "full-local-initial-results.json": {
+      "bytes": 732,
+      "sha256": "78b95c41d3ba8098253711f48b911f56f85e9725767751b9b2243442604ffaaf"
+    },
+    "golden-before-probe.json": {
+      "bytes": 799,
+      "sha256": "c3ac8f562c4275a62c8ccb643d2997295f51126853fa7d919027251983f52977"
+    },
+    "golden-after-probe.json": {
+      "bytes": 877,
+      "sha256": "10989c99bef02920e03f987f407efc578e17042e117a95329e3aa6bece24b9db"
+    },
+    "green-golden.log": {
+      "bytes": 658,
+      "sha256": "b18368afecee740268dabb3476c2d6d0bf84871dbf8c8a224ff6ebe76ea83e2b"
+    },
+    "full-local-setup-results.json": {
+      "bytes": 571,
+      "sha256": "f720248dc5e2eb405ea18c487d5566e09e60f99fefa2b9f8cdac46de307b8e58"
+    },
+    "full-local-cache-results.json": {
+      "bytes": 547,
+      "sha256": "cc840fe5a3e594da947d44fdfc043fa343c04d5ca3186a2c196ef03626011ffa"
+    },
+    "green-cache.log": {
+      "bytes": 1831,
+      "sha256": "b161c6572c6da5c34cc0ac4230df6a411f27b0bc08df482ff29039751b75a965"
+    },
+    "full-build.log": {
+      "bytes": 302,
+      "sha256": "753bc39fee01368bcdf7570f3e1f89afb2c2b16a3e619101452e61c0a96d172d"
+    },
+    "final-verified-local-results.json": {
+      "bytes": 916,
+      "sha256": "78fe30a73b5766dc05d7ef8af9405a983f0ff85fdabe1a25618cb285f46b9382"
+    },
+    "verified-npm-test.log": {
+      "bytes": 65237,
+      "sha256": "c1eb76147bee48ff36b08db58ae6c08c37eb65892c120c158e76787cda8aa691"
+    },
+    "full-bench-release.log": {
+      "bytes": 2576,
+      "sha256": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb"
+    },
+    "full-npm-test.log": {
+      "bytes": 21226,
+      "sha256": "f96dc0225ddaf1869a33f56502c5e216cfc87be57a32a2b99b48fa3d42457c73"
+    },
+    "final-npm-test.log": {
+      "bytes": 27794,
+      "sha256": "a81be8ed158d0ad013cac667351f8d8e6e78dedd7f5ffaa6629466b4b08860ef"
+    },
+    "final-npm-test-clean-setup.log": {
+      "bytes": 54154,
+      "sha256": "9072f227fa6fdcd6056df939ebacb35c3291c8bce8834c7078be0cf5bc22c519"
+    },
+    "red-nonmonotonic-search.log": {
+      "bytes": 987,
+      "sha256": "234ae8d5bc2e899c05cde7c6e4d6287fe8b821302dadba930be75e88a89825db"
+    },
+    "red-nonmonotonic-search-64.log": {
+      "bytes": 987,
+      "sha256": "4605964a2ef1811eda6af01c911f2e356df427168c2c341c475896bf9d659871"
+    },
+    "red-native-nonmonotonic-search.log": {
+      "bytes": 258,
+      "sha256": "65f3094ca7efeb942f46a1fb4162333fd95b65a77b3ea8f24c2f823861ceb7db"
+    },
+    "green-nonmonotonic-search.log": {
+      "bytes": 2115,
+      "sha256": "96d9d2b6c92265410ddd634fb85f5dfed926d5fde0b871ffa78b1395a506e10c"
+    },
+    "green-native-nonmonotonic-search.log": {
+      "bytes": 38,
+      "sha256": "082f3d1f596c7e1064e4fed2c89e33f99cb3545c5f54b14f78cea602bd8f0b08"
+    },
+    "search-build.log": {
+      "bytes": 302,
+      "sha256": "e744093c948c01ddb5f6079c2aef0067fcf888bab9f63a37aefc41580b85d5ea"
+    },
+    "measure-search.cjs": {
+      "bytes": 2631,
+      "sha256": "7c69b70d7866a9eb9316988f0d31d3846590bc083fd09e04fbe485ce72aa9cce"
+    },
+    "search-compiler.log": {
+      "bytes": 34,
+      "sha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+    },
+    "search-basic.log": {
+      "bytes": 2148,
+      "sha256": "9480268f641aaa4b0a5f4de0b1492d0acf50ddaba1ce564a83f676ee179511ce"
+    },
+    "search-full-local-results.json": {
+      "bytes": 1216,
+      "sha256": "c041b857b0256f7000aa4daed5ef08e081eb635f11bc84dfba24bbd2d70c9550"
+    },
+    "search-full-build.log": {
+      "bytes": 302,
+      "sha256": "98d801ad2f487d79136eab57a02b196258e6bfe043c35d6349735fd37d6079f7"
+    },
+    "search-full-npm-test.log": {
+      "bytes": 65408,
+      "sha256": "bfc6e0b34d921e119011d53e3b203e49988b5051ebd688a79eb4371a5b889353"
+    },
+    "search-full-bench-release.log": {
+      "bytes": 2576,
+      "sha256": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb"
+    },
+    "pr-21a15bc-linux-golden-failed.log": {
+      "bytes": 76977,
+      "sha256": "c737d881f0ed3b204f8a501afd7d4e3ade5d590515edb0bd9c9d436939ffc061"
+    },
+    "golden-recorded-targets.log": {
+      "bytes": 658,
+      "sha256": "b18368afecee740268dabb3476c2d6d0bf84871dbf8c8a224ff6ebe76ea83e2b"
+    },
+    "pr-0e3fd31-budget-deadline-failed.log": {
+      "bytes": 80344,
+      "sha256": "9be60cb1e0f0fe907b751cc0b29019454fbdb4b158a39a6b43c54a08a3d5324c"
+    },
+    "green-budget-deadline-compiler.log": {
+      "bytes": 34,
+      "sha256": "bab5deb0c0e26b6eabb76ee055e9ff816c5e868c53f814cabd7151ef43c8f0ca"
+    },
+    "budget-deadline-cli-missing-npm-context.log": {
+      "bytes": 294,
+      "sha256": "7281b00935544aa0116a957bdb119598e1403c376dc525217043f8b2df4e31d6"
+    },
+    "green-budget-deadline-cli-npm.log": {
+      "bytes": 104,
+      "sha256": "6b42d9144395e99d787b7d3608e76ac9fc26f312640960efa47cafa5dee119cc"
+    },
+    "budget-deadline-target-results.json": {
+      "bytes": 1109,
+      "sha256": "4355cc2bb8bf7d08cdf98cee1f476d0eab573e56cb338f86266c9f44f5da0b3b"
+    },
+    "green-budget-deadline-site.log": {
+      "bytes": 118,
+      "sha256": "544ab468a6dd1cb04375e18a0378fe85001dc4291c3cd9fd58423bb3aabc9752"
+    },
+    "full-81d128a-job-114410795105.log": {
+      "bytes": 72999,
+      "sha256": "bfae419058720235bcfdef2084863fb77659ed73387fa2dbead5d49f88dc22a3"
+    },
+    "full-81d128a-job-114410795126.log": {
+      "bytes": 77974,
+      "sha256": "22ab56fc89a3b4d220f31e8a92af2ee7cca99e9209cc0aa968b0d624a3ecef6e"
+    },
+    "full-81d128a-job-114410795134.log": {
+      "bytes": 73205,
+      "sha256": "d548dd775455bb389d472c42cd76d24f25563cd7830ea310c88a5e021cb94111"
+    },
+    "full-81d128a-job-114410795136.log": {
+      "bytes": 73196,
+      "sha256": "8dc80789adde028a52dc558e9e3c973e983138b4200d59efad288aab9df52fc3"
+    },
+    "full-81d128a-job-114410795162.log": {
+      "bytes": 77959,
+      "sha256": "dfbdf1e60e5cacf450fcd76cd2414622f7a24a94d284834e6a76aa494afc3943"
+    },
+    "probe-search-metrics.cjs": {
+      "bytes": 2709,
+      "sha256": "10059492bd8cbcf263147fc96e7dc608fc14242d4125fd799a9196ad64d308d7"
+    },
+    "red-search-cumulative-metrics.log": {
+      "bytes": 962,
+      "sha256": "4a58057a8168ba060ba5faa3c389cd5d3a5c259f23d9e878034a5a9ba770069e"
+    },
+    "green-search-cumulative-metrics.log": {
+      "bytes": 2201,
+      "sha256": "9eac60f36891c1ed377d3e11bec011a00d36bcbec027b6db91787aa675a87d7c"
+    },
+    "green-search-cumulative-metrics-prepared.log": {
+      "bytes": 2201,
+      "sha256": "f8541a1d66050a473ed844bf4e70beac02d147d88f1d5a206ed0d5256d6fce3d"
+    },
+    "red-search-cumulative-metrics-prepared-control.log": {
+      "bytes": 955,
+      "sha256": "58bb8f7e791155d891bc63247d9f61e818bab81c5f41ffcaf5a571d32eec0251"
+    },
+    "search-metrics-build.log": {
+      "bytes": 302,
+      "sha256": "471312e4578b1f24c242aa5dd8fce5d366a34725a6b2cf161602a7d82de9b4d1"
+    },
+    "search-metrics-fmt-check.log": {
+      "bytes": 1537,
+      "sha256": "c0e489497dea02f083ce92d17866b7dcd74b4a47f64f2a2af7ef7a7df01f8d11"
+    },
+    "metrics-full-local-results.json": {
+      "bytes": 1219,
+      "sha256": "ae14eab7d9bfc53334e67ee79142e99990039421298fb511a51060bf129793d9"
+    },
+    "metrics-full-build.log": {
+      "bytes": 302,
+      "sha256": "189bed3dae3d8c1bf79b626e2c97cd84923ed43a1951e2b2287fd97afc59953a"
+    },
+    "metrics-full-npm-test.log": {
+      "bytes": 65456,
+      "sha256": "c2ab5845fc6b52f608f6bce6459cd8cd4162a3421ebb77865935c299070040f1"
+    },
+    "metrics-full-bench-release.log": {
+      "bytes": 2576,
+      "sha256": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb"
+    }
+  },
+  "cases": [
+    {
+      "id": "coffee",
+      "referenceSha256": "f2ba2469b6f96de3c0f9b69421ae9b25ee999596afef3994e5472db6c1bdb574",
+      "commonFloor": 0.9408662783212715,
+      "commonByteCap": 13698,
+      "sharpAnchor": {
+        "quality": 80,
+        "bytes": 13698,
+        "sha256": "dc019e201e83daeab5b833cab2e15f1df1a7c694c0c85f7b98b09a6dc91d28c0",
+        "encodeMs": {
+          "samples": [
+            6.06412499999999,
+            6.015166999999991,
+            5.928958999999992
+          ],
+          "p50": 6.015166999999991,
+          "p90": 6.06412499999999,
+          "worst": 6.06412499999999
+        },
+        "ssim": 0.9408662783212715,
+        "psnrDb": 32.89774269492683
+      },
+      "before": {
+        "matches": {
+          "qualityMatched": null,
+          "byteMatched": {
+            "quality": 90,
+            "bytes": 11722,
+            "sha256": "d68d69b9e6dd87fe274896a2dec465295b0a07b46a37a8ec700dc3f7dec94251",
+            "encodeMs": {
+              "samples": [
+                6.400083999999993,
+                6.086583999999959,
+                6.249459000000002
+              ],
+              "p50": 6.249459000000002,
+              "p90": 6.400083999999993,
+              "worst": 6.400083999999993
+            },
+            "ssim": 0.928982792618814,
+            "psnrDb": 32.24084324347143
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 132775936,
+        "q90": {
+          "quality": 90,
+          "bytes": 11722,
+          "sha256": "d68d69b9e6dd87fe274896a2dec465295b0a07b46a37a8ec700dc3f7dec94251",
+          "encodeMs": {
+            "samples": [
+              6.400083999999993,
+              6.086583999999959,
+              6.249459000000002
+            ],
+            "p50": 6.249459000000002,
+            "p90": 6.400083999999993,
+            "worst": 6.400083999999993
+          },
+          "ssim": 0.928982792618814,
+          "psnrDb": 32.24084324347143
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 11722,
+          "sha256": "d68d69b9e6dd87fe274896a2dec465295b0a07b46a37a8ec700dc3f7dec94251",
+          "encodeMs": {
+            "samples": [
+              6.289582999999993,
+              6.295792000000006,
+              6.179166000000009
+            ],
+            "p50": 6.289582999999993,
+            "p90": 6.295792000000006,
+            "worst": 6.295792000000006
+          },
+          "ssim": 0.928982792618814,
+          "psnrDb": 32.24084324347143
+        }
+      },
+      "after": {
+        "matches": {
+          "qualityMatched": {
+            "quality": 85,
+            "bytes": 16078,
+            "sha256": "a176eafc977513f0bb48b14d9e8f5db53377dea6bb63a22bff4733eaaba3baf0",
+            "encodeMs": {
+              "samples": [
+                7.746082999999999,
+                7.910499999999956,
+                7.835874999999987
+              ],
+              "p50": 7.835874999999987,
+              "p90": 7.910499999999956,
+              "worst": 7.910499999999956
+            },
+            "ssim": 0.9531725114258552,
+            "psnrDb": 33.673146686723236
+          },
+          "byteMatched": {
+            "quality": 80,
+            "bytes": 13588,
+            "sha256": "01a070a2e24b69f2c4d903455be3729ebd5098b091271cf9d44953860259d109",
+            "encodeMs": {
+              "samples": [
+                7.0087089999999534,
+                6.758790999999974,
+                6.888458000000014
+              ],
+              "p50": 6.888458000000014,
+              "p90": 7.0087089999999534,
+              "worst": 7.0087089999999534
+            },
+            "ssim": 0.939653417778195,
+            "psnrDb": 32.81118822215692
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 138117120,
+        "q90": {
+          "quality": 90,
+          "bytes": 20721,
+          "sha256": "94307057bb2d61bef633de351da9d39119491ba08dac99d0ca9b6375306d9cd4",
+          "encodeMs": {
+            "samples": [
+              9.248208999999974,
+              9.050957999999923,
+              8.941041999999925
+            ],
+            "p50": 9.050957999999923,
+            "p90": 9.248208999999974,
+            "worst": 9.248208999999974
+          },
+          "ssim": 0.969907077236619,
+          "psnrDb": 35.04214375151155
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 59476,
+          "sha256": "d9d57732c2f8cdae2a893ff99794b4511145f616fa1ac998f9945999ae249538",
+          "encodeMs": {
+            "samples": [
+              31.88341600000001,
+              33.15350000000001,
+              33.35866699999997
+            ],
+            "p50": 33.15350000000001,
+            "p90": 33.35866699999997,
+            "worst": 33.35866699999997
+          },
+          "ssim": 0.9985474660896755,
+          "psnrDb": 39.101921245842334
+        }
+      }
+    },
+    {
+      "id": "ui-1",
+      "referenceSha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "commonFloor": 0.9897055078679161,
+      "commonByteCap": 5303,
+      "sharpAnchor": {
+        "quality": 80,
+        "bytes": 5303,
+        "sha256": "17a70c6c64afbb76420ff1500ac8be475800168127563c118cb7ae1e0d4a22f3",
+        "encodeMs": {
+          "samples": [
+            3.2789999999999964,
+            3.241291999999987,
+            3.154042000000004
+          ],
+          "p50": 3.241291999999987,
+          "p90": 3.2789999999999964,
+          "worst": 3.2789999999999964
+        },
+        "ssim": 0.9897055078679161,
+        "psnrDb": 37.3607378444376
+      },
+      "before": {
+        "matches": {
+          "qualityMatched": null,
+          "byteMatched": {
+            "quality": 90,
+            "bytes": 4731,
+            "sha256": "6cb30c6d13c69af099696aa927af4731ed6756e5dcfc5a277514a0fae3694b4a",
+            "encodeMs": {
+              "samples": [
+                3.69241599999998,
+                3.712959000000012,
+                3.6827919999999494
+              ],
+              "p50": 3.69241599999998,
+              "p90": 3.712959000000012,
+              "worst": 3.712959000000012
+            },
+            "ssim": 0.9876313633241001,
+            "psnrDb": 36.30624747810075
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 150568960,
+        "q90": {
+          "quality": 90,
+          "bytes": 4731,
+          "sha256": "6cb30c6d13c69af099696aa927af4731ed6756e5dcfc5a277514a0fae3694b4a",
+          "encodeMs": {
+            "samples": [
+              3.69241599999998,
+              3.712959000000012,
+              3.6827919999999494
+            ],
+            "p50": 3.69241599999998,
+            "p90": 3.712959000000012,
+            "worst": 3.712959000000012
+          },
+          "ssim": 0.9876313633241001,
+          "psnrDb": 36.30624747810075
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 4731,
+          "sha256": "6cb30c6d13c69af099696aa927af4731ed6756e5dcfc5a277514a0fae3694b4a",
+          "encodeMs": {
+            "samples": [
+              3.340417000000002,
+              3.6877910000000043,
+              3.575958000000014
+            ],
+            "p50": 3.575958000000014,
+            "p90": 3.6877910000000043,
+            "worst": 3.6877910000000043
+          },
+          "ssim": 0.9876313633241001,
+          "psnrDb": 36.30624747810075
+        }
+      },
+      "after": {
+        "matches": {
+          "qualityMatched": {
+            "quality": 85,
+            "bytes": 5823,
+            "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3",
+            "encodeMs": {
+              "samples": [
+                4.506083999999987,
+                4.481707999999969,
+                4.712000000000046
+              ],
+              "p50": 4.506083999999987,
+              "p90": 4.712000000000046,
+              "worst": 4.712000000000046
+            },
+            "ssim": 0.9902984108592374,
+            "psnrDb": 37.96706941056496
+          },
+          "byteMatched": {
+            "quality": 80,
+            "bytes": 5265,
+            "sha256": "b4bcd29cb1c7e68b2ed79f7d0f54a28ba16a7b8df0e0b66a80df12d6bc639f07",
+            "encodeMs": {
+              "samples": [
+                4.165124999999989,
+                4.04808300000002,
+                3.9416249999999877
+              ],
+              "p50": 4.04808300000002,
+              "p90": 4.165124999999989,
+              "worst": 4.165124999999989
+            },
+            "ssim": 0.9880544268883799,
+            "psnrDb": 37.099847442770525
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 141574144,
+        "q90": {
+          "quality": 90,
+          "bytes": 6931,
+          "sha256": "563b5881df03ff5b5f5dda3a8ef33e15a42ae7d9a93042aa65d06c326dd74ec7",
+          "encodeMs": {
+            "samples": [
+              4.628166999999962,
+              4.450583999999992,
+              4.289874999999995
+            ],
+            "p50": 4.450583999999992,
+            "p90": 4.628166999999962,
+            "worst": 4.628166999999962
+          },
+          "ssim": 0.9942988673142793,
+          "psnrDb": 39.6371433974156
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 13455,
+          "sha256": "e0d672d031f320d3f38756c2c94b06396810e3fca0f1887f8d1406db59619b12",
+          "encodeMs": {
+            "samples": [
+              7.711542000000009,
+              7.16416700000002,
+              7.454917000000023
+            ],
+            "p50": 7.454917000000023,
+            "p90": 7.711542000000009,
+            "worst": 7.711542000000009
+          },
+          "ssim": 0.9999012753297616,
+          "psnrDb": 43.86998722466889
+        }
+      }
+    },
+    {
+      "id": "metadata-1",
+      "referenceSha256": "640576927446f5c94a066d50a7136ebf4d7a5549a6e3700d8d9c7a91824b259f",
+      "commonFloor": 0.9890589138124586,
+      "commonByteCap": 5893,
+      "sharpAnchor": {
+        "quality": 80,
+        "bytes": 5893,
+        "sha256": "4254eae13191530faf5cfd08658403f63ce9d0a084778c2e443d3362029ab4ff",
+        "encodeMs": {
+          "samples": [
+            3.5478750000000048,
+            3.3075000000000045,
+            3.457290999999998
+          ],
+          "p50": 3.457290999999998,
+          "p90": 3.5478750000000048,
+          "worst": 3.5478750000000048
+        },
+        "ssim": 0.9890589138124586,
+        "psnrDb": 37.99109113418893
+      },
+      "before": {
+        "matches": {
+          "qualityMatched": null,
+          "byteMatched": {
+            "quality": 90,
+            "bytes": 5215,
+            "sha256": "ae8d9d543896fb1296e96a90cc496a2de8eca2ad7f3c320c4af937bdbfcfdfda",
+            "encodeMs": {
+              "samples": [
+                3.5292499999999905,
+                3.2924170000000004,
+                3.2017079999999964
+              ],
+              "p50": 3.2924170000000004,
+              "p90": 3.5292499999999905,
+              "worst": 3.5292499999999905
+            },
+            "ssim": 0.9870173505662972,
+            "psnrDb": 36.607238248298614
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 142934016,
+        "q90": {
+          "quality": 90,
+          "bytes": 5215,
+          "sha256": "ae8d9d543896fb1296e96a90cc496a2de8eca2ad7f3c320c4af937bdbfcfdfda",
+          "encodeMs": {
+            "samples": [
+              3.5292499999999905,
+              3.2924170000000004,
+              3.2017079999999964
+            ],
+            "p50": 3.2924170000000004,
+            "p90": 3.5292499999999905,
+            "worst": 3.5292499999999905
+          },
+          "ssim": 0.9870173505662972,
+          "psnrDb": 36.607238248298614
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 5215,
+          "sha256": "ae8d9d543896fb1296e96a90cc496a2de8eca2ad7f3c320c4af937bdbfcfdfda",
+          "encodeMs": {
+            "samples": [
+              3.243499999999983,
+              3.4958750000000123,
+              3.321916999999985
+            ],
+            "p50": 3.321916999999985,
+            "p90": 3.4958750000000123,
+            "worst": 3.4958750000000123
+          },
+          "ssim": 0.9870173505662972,
+          "psnrDb": 36.607238248298614
+        }
+      },
+      "after": {
+        "matches": {
+          "qualityMatched": {
+            "quality": 85,
+            "bytes": 6328,
+            "sha256": "20aa9970fed8acda3aa3db6d4d1db9dd89f6e209834a66a5b6063060ec6cdc31",
+            "encodeMs": {
+              "samples": [
+                4.556457999999964,
+                4.110708999999986,
+                4.092375000000004
+              ],
+              "p50": 4.110708999999986,
+              "p90": 4.556457999999964,
+              "worst": 4.556457999999964
+            },
+            "ssim": 0.9906967368308158,
+            "psnrDb": 38.8731836226555
+          },
+          "byteMatched": {
+            "quality": 80,
+            "bytes": 5839,
+            "sha256": "ee4781116784d84abd092ee16dd626638d9bdccdcd6c88f91d691636efaf37fd",
+            "encodeMs": {
+              "samples": [
+                3.901416999999981,
+                4.27683399999998,
+                3.8057919999999967
+              ],
+              "p50": 3.901416999999981,
+              "p90": 4.27683399999998,
+              "worst": 4.27683399999998
+            },
+            "ssim": 0.988104657213068,
+            "psnrDb": 37.70026523827869
+          }
+        },
+        "jointEligibleQualities": [],
+        "sampledGridRssBytes": 144031744,
+        "q90": {
+          "quality": 90,
+          "bytes": 7452,
+          "sha256": "83a8ae33784a16354a81f83b8e41c0476384ef18618c06e9bd3b30f75bffecff",
+          "encodeMs": {
+            "samples": [
+              4.458249999999964,
+              4.789125000000013,
+              4.433375000000012
+            ],
+            "p50": 4.458249999999964,
+            "p90": 4.789125000000013,
+            "worst": 4.789125000000013
+          },
+          "ssim": 0.9939321605679786,
+          "psnrDb": 41.43347737188491
+        },
+        "q100": {
+          "quality": 100,
+          "bytes": 12307,
+          "sha256": "2f754a9af45677c29bbd4bb7870091e87ac69bc6189207fff72911fda6ded73c",
+          "encodeMs": {
+            "samples": [
+              6.6286249999999995,
+              6.19037499999996,
+              6.236541000000045
+            ],
+            "p50": 6.236541000000045,
+            "p90": 6.6286249999999995,
+            "worst": 6.6286249999999995
+          },
+          "ssim": 0.9999101591312821,
+          "psnrDb": 49.87577752634061
+        }
+      }
+    }
+  ],
+  "summary": {
+    "before": {
+      "cases": 3,
+      "qualityMet": 0,
+      "byteMet": 3,
+      "jointMet": 0,
+      "capSsimAtLeastSharp": 0
+    },
+    "after": {
+      "cases": 3,
+      "qualityMet": 3,
+      "byteMet": 3,
+      "jointMet": 0,
+      "capSsimAtLeastSharp": 0
+    }
+  },
+  "limits": [
+    "checkout/native 1.4.3 local builds, not published npm measurements",
+    "same Apple M4/Node/Rust/locks and worker conditions, sequential before and after",
+    "three JPEG inputs only; max320px white composite; 12q x 3 trials",
+    "SSIM proxy, not human perceptual equivalence",
+    "nearest-rank 3-sample p90 is maximum, not population p90",
+    "RSS includes whole grid, both libraries, reference/quality decoding after reference creation; not encoder allocation",
+    "independent floor/cap matches; no simultaneous constraint success implied",
+    "historical #883 Linux x64 native1.4.2 evidence remains separate"
+  ],
+  "fullValidation": {
+    "sourceSha": "240d23e061af209d0c34b12feaf93721319a2e05",
+    "bindingSha256": "10497403b2fd60c1f01e929fbbe8a3c6dabb5d448d9927a15d99e771d2385174",
+    "compiler": {
+      "cases": 15,
+      "accepted": 13,
+      "supportedCases": 13,
+      "acceptanceRate": 1,
+      "expectedRejections": 2,
+      "passed": 15,
+      "e2eMs": {
+        "samples": [
+          230.911,
+          223.53,
+          230.702,
+          72.141,
+          74.023,
+          75.739,
+          29.693,
+          29.998,
+          27.152,
+          595.814,
+          595.748,
+          599.731,
+          461.333,
+          456.989,
+          494.014,
+          378.035,
+          364.386,
+          362.554,
+          419.672,
+          427.745,
+          417.399,
+          313.394,
+          320.432,
+          318.336,
+          426.728,
+          431.703,
+          431.858,
+          341.37,
+          337.868,
+          334.064,
+          370.277,
+          379.178,
+          366.016,
+          393.405,
+          389.785,
+          392.132,
+          380.008,
+          339.689,
+          343.487
+        ],
+        "p50": 366.016,
+        "p90": 494.014,
+        "worst": 599.731
+      },
+      "strictBudget": {
+        "cases": 11,
+        "met": 11,
+        "rate": 1
+      },
+      "peakRssBytes": 99598336,
+      "failureReasons": [
+        {
+          "id": "hostile-1",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during planning",
+          "code": "LAZY_IMAGE_USER_ERROR",
+          "errorCode": "E400",
+          "phase": "planning",
+          "cause": "[E400] source.width must be an integer between 1 and 32768",
+          "category": 0
+        },
+        {
+          "id": "hostile-2",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during preflight",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "preflight",
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: 6400x6400 (40960000 pixels) exceeds limit of 40000000 pixels. Resize the image first with .resize() or use .limits({ maxPixels: 41960000 }).",
+          "category": 2
+        }
+      ]
+    },
+    "quality": {
+      "lazy": {
+        "cases": 39,
+        "qualityMet": 37,
+        "byteMet": 37,
+        "byteTargetRate": 0.9487179487179487,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      },
+      "sharp": {
+        "cases": 39,
+        "qualityMet": 39,
+        "byteMet": 39,
+        "byteTargetRate": 1,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      }
+    },
+    "byFormat": {
+      "jpeg": {
+        "cases": 13,
+        "qualityMet": 13,
+        "byteMet": 12,
+        "qualityUnmet": [],
+        "byteUnmet": [
+          "transparent-avif"
+        ]
+      },
+      "webp": {
+        "cases": 13,
+        "qualityMet": 13,
+        "byteMet": 13,
+        "qualityUnmet": [],
+        "byteUnmet": []
+      },
+      "avif": {
+        "cases": 13,
+        "qualityMet": 11,
+        "byteMet": 12,
+        "qualityUnmet": [
+          "alpha-1",
+          "alpha-2"
+        ],
+        "byteUnmet": [
+          "transparent-avif"
+        ]
+      }
+    },
+    "productionEncoderPrefixSha256": "da1bcf350017e9868ee68f3682e39dcc929e5c71653c01c6c5ff77ef3bfadb9e"
+  },
+  "searchFullValidation": {
+    "sourceSha": "f921bbb51655ea2410286975dc33cb9a392ac1d9",
+    "bindingSha256": "2ce79f28c97518e2e6441c593c41abc08128a96b5bead60a10a44488564d37e9",
+    "compiler": {
+      "cases": 15,
+      "accepted": 13,
+      "supportedCases": 13,
+      "acceptanceRate": 1,
+      "expectedRejections": 2,
+      "passed": 15,
+      "e2eMs": {
+        "samples": [
+          213.571,
+          188.825,
+          189.431,
+          60.373,
+          56.243,
+          64.787,
+          23.772,
+          22.526,
+          22.89,
+          148.535,
+          142.127,
+          132.574,
+          112.505,
+          108.972,
+          111.878,
+          77.454,
+          76.259,
+          85.192,
+          85.298,
+          85.943,
+          89.589,
+          67.192,
+          66.094,
+          65.955,
+          107.129,
+          112.176,
+          99.875,
+          74.474,
+          78.921,
+          75.335,
+          81.437,
+          84.006,
+          82.363,
+          76.228,
+          75.601,
+          73.741,
+          83.834,
+          83.755,
+          80.835
+        ],
+        "p50": 82.363,
+        "p90": 148.535,
+        "worst": 213.571
+      },
+      "strictBudget": {
+        "cases": 11,
+        "met": 11,
+        "rate": 1
+      },
+      "peakRssBytes": 99205120,
+      "failureReasons": [
+        {
+          "id": "hostile-1",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during planning",
+          "code": "LAZY_IMAGE_USER_ERROR",
+          "errorCode": "E400",
+          "phase": "planning",
+          "cause": "[E400] source.width must be an integer between 1 and 32768",
+          "category": 0
+        },
+        {
+          "id": "hostile-2",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during preflight",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "preflight",
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: 6400x6400 (40960000 pixels) exceeds limit of 40000000 pixels. Resize the image first with .resize() or use .limits({ maxPixels: 41960000 }).",
+          "category": 2
+        }
+      ]
+    },
+    "quality": {
+      "lazy": {
+        "cases": 39,
+        "qualityMet": 37,
+        "byteMet": 37,
+        "byteTargetRate": 0.9487179487179487,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      },
+      "sharp": {
+        "cases": 39,
+        "qualityMet": 39,
+        "byteMet": 39,
+        "byteTargetRate": 1,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      }
+    }
+  },
+  "metricsFullValidation": {
+    "sourceSha": "43749c1a6c621c5d32ee74bd7d8ba9329c4199ec",
+    "bindingSha256": "d55a0229da8966b66ce635199b8d6b36119ee842eb4ff077f0e54063692497ac",
+    "compiler": {
+      "cases": 15,
+      "accepted": 13,
+      "supportedCases": 13,
+      "acceptanceRate": 1,
+      "expectedRejections": 2,
+      "passed": 15,
+      "e2eMs": {
+        "samples": [
+          193.387,
+          186.835,
+          193.125,
+          57.883,
+          67.957,
+          63.721,
+          23.876,
+          23.307,
+          25.273,
+          138.628,
+          137.111,
+          147.198,
+          115.21,
+          115.625,
+          116.633,
+          92.129,
+          78.78,
+          79.828,
+          85.672,
+          86.703,
+          88.312,
+          66.827,
+          70.428,
+          68.07,
+          99.199,
+          104.596,
+          97.307,
+          76.938,
+          75.343,
+          78.319,
+          82.474,
+          80.401,
+          84.399,
+          78.282,
+          73.646,
+          77.725,
+          86.217,
+          82.707,
+          84.649
+        ],
+        "p50": 82.707,
+        "p90": 147.198,
+        "worst": 193.387
+      },
+      "strictBudget": {
+        "cases": 11,
+        "met": 11,
+        "rate": 1
+      },
+      "peakRssBytes": 99123200,
+      "failureReasons": [
+        {
+          "id": "hostile-1",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during planning",
+          "code": "LAZY_IMAGE_USER_ERROR",
+          "errorCode": "E400",
+          "phase": "planning",
+          "cause": "[E400] source.width must be an integer between 1 and 32768",
+          "category": 0
+        },
+        {
+          "id": "hostile-2",
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during preflight",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "preflight",
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: 6400x6400 (40960000 pixels) exceeds limit of 40000000 pixels. Resize the image first with .resize() or use .limits({ maxPixels: 41960000 }).",
+          "category": 2
+        }
+      ]
+    },
+    "quality": {
+      "lazy": {
+        "cases": 39,
+        "qualityMet": 37,
+        "byteMet": 37,
+        "byteTargetRate": 0.9487179487179487,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      },
+      "sharp": {
+        "cases": 39,
+        "qualityMet": 39,
+        "byteMet": 39,
+        "byteTargetRate": 1,
+        "candidatesPerCase": 12,
+        "encodesPerCase": 36
+      }
+    }
+  }
+}

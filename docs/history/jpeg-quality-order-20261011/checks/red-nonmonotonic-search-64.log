@@ -1,0 +1,19 @@
+   Compiling lazy-image v1.4.3 (/Volumes/Satechi/Developer/lazy-image)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.89s
+     Running unittests src/lib.rs (target/debug/deps/lazy_image-f8135e58a14bdb3e)
+
+running 1 test
+
+thread 'engine::tasks::tests::target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint' (15880262) panicked at src/engine/tasks/tests.rs:368:32:
+a known max-quality candidate fits: EncodeFailed { format: "jpeg", message: "Unable to meet targetBytes=346 within quality range 1-100" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test engine::tasks::tests::target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint ... FAILED
+
+failures:
+
+failures:
+    engine::tasks::tests::target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--lib`

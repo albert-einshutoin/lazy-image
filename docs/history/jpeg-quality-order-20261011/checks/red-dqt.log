@@ -1,0 +1,53 @@
+   Compiling libc v0.2.189
+   Compiling bytemuck v1.25.2
+   Compiling lazy-image v1.4.3 (/Volumes/Satechi/Developer/lazy-image)
+   Compiling image v0.25.10
+   Compiling rgb v0.8.53
+   Compiling jobserver v0.1.34
+   Compiling getrandom v0.3.4
+   Compiling errno v0.3.14
+   Compiling parking_lot_core v0.9.12
+   Compiling wait-timeout v0.2.1
+   Compiling memmap2 v0.9.11
+   Compiling page_size v0.6.0
+   Compiling rustix v1.1.4
+   Compiling rand_core v0.9.5
+   Compiling parking_lot v0.12.5
+   Compiling cc v1.2.55
+   Compiling nasm-rs v0.3.1
+   Compiling rand_xorshift v0.4.0
+   Compiling rand_chacha v0.9.0
+   Compiling rand v0.9.4
+   Compiling fast_image_resize v6.1.0
+   Compiling tempfile v3.27.0
+   Compiling rusty-fork v0.3.1
+   Compiling proptest v1.11.0
+   Compiling libdeflate-sys v1.25.2
+   Compiling mozjpeg-sys v2.2.3
+   Compiling libwebp-sys v0.9.6
+   Compiling alloca v0.4.0
+   Compiling libdeflater v1.25.2
+   Compiling oxipng v10.1.1
+   Compiling criterion v0.8.2
+   Compiling mozjpeg v0.10.13
+   Compiling webp v0.3.1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.76s
+     Running unittests src/lib.rs (target/debug/deps/lazy_image-f8135e58a14bdb3e)
+
+running 1 test
+
+thread 'engine::encoder::tests::encode_tests::test_encode_jpeg_quality_changes_quantization_tables' (12414835) panicked at src/engine/encoder.rs:551:17:
+assertion `left != right` failed: quality must reach DQT, fast_mode=false
+  left: [0, 8, 8, 8, 8, 9, 8, 9, 10, 10, 9, 13, 14, 12, 14, 13, 19, 17, 16, 16, 17, 19, 28, 20, 22, 20, 22, 20, 28, 43, 27, 31, 27, 27, 31, 27, 43, 38, 46, 37, 35, 37, 46, 38, 68, 53, 47, 47, 53, 68, 78, 66, 62, 66, 78, 95, 85, 85, 95, 119, 113, 119, 156, 156, 209, 1, 8, 8, 8, 8, 9, 8, 9, 10, 10, 9, 13, 14, 12, 14, 13, 19, 17, 16, 16, 17, 19, 28, 20, 22, 20, 22, 20, 28, 43, 27, 31, 27, 27, 31, 27, 43, 38, 46, 37, 35, 37, 46, 38, 68, 53, 47, 47, 53, 68, 78, 66, 62, 66, 78, 95, 85, 85, 95, 119, 113, 119, 156, 156, 209]
+ right: [0, 8, 8, 8, 8, 9, 8, 9, 10, 10, 9, 13, 14, 12, 14, 13, 19, 17, 16, 16, 17, 19, 28, 20, 22, 20, 22, 20, 28, 43, 27, 31, 27, 27, 31, 27, 43, 38, 46, 37, 35, 37, 46, 38, 68, 53, 47, 47, 53, 68, 78, 66, 62, 66, 78, 95, 85, 85, 95, 119, 113, 119, 156, 156, 209, 1, 8, 8, 8, 8, 9, 8, 9, 10, 10, 9, 13, 14, 12, 14, 13, 19, 17, 16, 16, 17, 19, 28, 20, 22, 20, 22, 20, 28, 43, 27, 31, 27, 27, 31, 27, 43, 38, 46, 37, 35, 37, 46, 38, 68, 53, 47, 47, 53, 68, 78, 66, 62, 66, 78, 95, 85, 85, 95, 119, 113, 119, 156, 156, 209]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test engine::encoder::tests::encode_tests::test_encode_jpeg_quality_changes_quantization_tables ... FAILED
+
+failures:
+
+failures:
+    engine::encoder::tests::encode_tests::test_encode_jpeg_quality_changes_quantization_tables
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 297 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

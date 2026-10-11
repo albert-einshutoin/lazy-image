@@ -1,0 +1,38 @@
+{
+  "sourceSha": "43749c1a6c621c5d32ee74bd7d8ba9329c4199ec",
+  "setup": {
+    "npmTemporarilyPreserved": true,
+    "npmHash": "8649e8a9bd3f7a0aec5a495c1a198349bcc61dd5286463d36738f0da8f2a69cd",
+    "restored": true
+  },
+  "results": [
+    {
+      "command": "npm run build",
+      "sourceSha": "43749c1a6c621c5d32ee74bd7d8ba9329c4199ec",
+      "startedAt": "2026-10-11T07:14:22.612Z",
+      "completedAt": "2026-10-11T07:15:07.836Z",
+      "exitCode": 0,
+      "signal": null,
+      "logfile": "metrics-full-build.log"
+    },
+    {
+      "command": "npm test",
+      "sourceSha": "43749c1a6c621c5d32ee74bd7d8ba9329c4199ec",
+      "startedAt": "2026-10-11T07:15:07.840Z",
+      "completedAt": "2026-10-11T07:15:54.850Z",
+      "exitCode": 0,
+      "signal": null,
+      "logfile": "metrics-full-npm-test.log"
+    },
+    {
+      "command": "npm run test:bench:release",
+      "sourceSha": "43749c1a6c621c5d32ee74bd7d8ba9329c4199ec",
+      "startedAt": "2026-10-11T07:15:54.854Z",
+      "completedAt": "2026-10-11T07:17:12.343Z",
+      "exitCode": 0,
+      "signal": null,
+      "logfile": "metrics-full-bench-release.log"
+    }
+  ],
+  "bindingSha256": "d55a0229da8966b66ce635199b8d6b36119ee842eb4ff077f0e54063692497ac"
+}

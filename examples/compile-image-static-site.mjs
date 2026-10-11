@@ -108,8 +108,9 @@ async function runSelfTest() {
     assert.equal(fs.existsSync(path.join(invalidSite, 'images')), false);
 
     const policy = path.join(temporary, 'strict.json');
-    fs.writeFileSync(policy, JSON.stringify({ widths: [320], formats: ['webp'], placeholder: true,
-      budgets: [{ width: 320, format: 'webp', maxBytes: 1 }] }));
+    // Isolate budget refusal from the cumulative processing deadline.
+    fs.writeFileSync(policy, JSON.stringify({ widths: [64], formats: ['webp'], placeholder: true,
+      budgets: [{ width: 64, format: 'webp', maxBytes: 1 }] }));
     const strictSite = path.join(temporary, 'strict');
     const strict = run(input, strictSite, policy);
     assert.equal(strict.status, 1);
