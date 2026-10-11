@@ -29,12 +29,12 @@ Companionとhosted CI/merge/Issue完了の最終証拠はIssue #885の完了報�
 2回目の完全`npm test`はexit1。既存ignored `npm/darwin-arm64/lazy-image.darwin-arm64.node`（2025年生成、約5.6MB）が
 release guardの『stale npm』拒否を先に発動し、単体テストの意図したmissing-artifact拒否まで到達しなかった。
 生成物を削除せず一時退避すると、既存release-artifacts単体テストは成功した。CI/scriptの変更は行っていない。
-このsetup failureを[実結果](checks/full-local-setup-results.json)と[ログ](checks/full-npm-test-setup.log)に保持した。
+このsetup failureを[実結果](checks/full-local-setup-results.json)と[ログ](checks/final-npm-test.log)に保持した。
 退避復元のvolume間renameはEXDEVとなったが、標準mvで復元し、元のSHA-256
 `8649e8a9bd3f7a0aec5a495c1a198349bcc61dd5286463d36738f0da8f2a69cd` と一致を確認した。
 
 setupを分離した次の完全`npm test`はRust cache testでexit101
-([実結果](checks/full-local-cache-results.json)、[ログ](checks/full-npm-test-cache.log))。
+([実結果](checks/full-local-cache-results.json)、[ログ](checks/final-npm-test-clean-setup.log))。
 `encode_prepared_can_run_multiple_times_against_same_cache`が、64×64単色JPEGのquality上昇で
 サイズ472→346 Bとなることを失敗扱いしていた。サイズ単調性は未保証で、cache再利用契約ではない。
 製品経路へ追加patchを重ねず、この誤条件から共有の観測可能な契約へclean breakした。

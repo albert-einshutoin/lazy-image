@@ -101,7 +101,7 @@ node test/benchmarks/quality-matched.bench.js --worker 8 jpeg sharp
 ## Golden snapshotの意図した出力変更と旧容量期待の未達
 
 最初の完全`npm test`はexit1で停止し、`test:bench:release`はその時点で未実行だった
-([初回実結果](checks/full-local-initial-results.json)、[失敗ログ](checks/full-npm-test-initial.log))。
+([初回実結果](checks/full-local-initial-results.json)、[失敗ログ](checks/full-npm-test.log))。
 失敗はJPEG q82 golden caseのpixel hash変更。他5ケースのhashは不変だった。
 保存した修正前bindingをpublic indexへその検証プロセス内だけで接続し、同一fixture・既存golden helperで比較した。
 [修正前](checks/golden-before-probe.json) は旧hashを直接再現し、[修正後](checks/golden-after-probe.json) は

@@ -146,10 +146,6 @@
       "bytes": 732,
       "sha256": "78b95c41d3ba8098253711f48b911f56f85e9725767751b9b2243442604ffaaf"
     },
-    "full-npm-test-initial.log": {
-      "bytes": 21226,
-      "sha256": "f96dc0225ddaf1869a33f56502c5e216cfc87be57a32a2b99b48fa3d42457c73"
-    },
     "golden-before-probe.json": {
       "bytes": 799,
       "sha256": "c3ac8f562c4275a62c8ccb643d2997295f51126853fa7d919027251983f52977"
@@ -166,17 +162,9 @@
       "bytes": 571,
       "sha256": "f720248dc5e2eb405ea18c487d5566e09e60f99fefa2b9f8cdac46de307b8e58"
     },
-    "full-npm-test-setup.log": {
-      "bytes": 27794,
-      "sha256": "a81be8ed158d0ad013cac667351f8d8e6e78dedd7f5ffaa6629466b4b08860ef"
-    },
     "full-local-cache-results.json": {
       "bytes": 547,
       "sha256": "cc840fe5a3e594da947d44fdfc043fa343c04d5ca3186a2c196ef03626011ffa"
-    },
-    "full-npm-test-cache.log": {
-      "bytes": 54154,
-      "sha256": "9072f227fa6fdcd6056df939ebacb35c3291c8bce8834c7078be0cf5bc22c519"
     },
     "green-cache.log": {
       "bytes": 1831,
@@ -197,6 +185,18 @@
     "full-bench-release.log": {
       "bytes": 2576,
       "sha256": "d1736070f51a132c27747cbd318730ee0c77976ea35391ae10be36fa8abb3ddb"
+    },
+    "full-npm-test.log": {
+      "bytes": 21226,
+      "sha256": "f96dc0225ddaf1869a33f56502c5e216cfc87be57a32a2b99b48fa3d42457c73"
+    },
+    "final-npm-test.log": {
+      "bytes": 27794,
+      "sha256": "a81be8ed158d0ad013cac667351f8d8e6e78dedd7f5ffaa6629466b4b08860ef"
+    },
+    "final-npm-test-clean-setup.log": {
+      "bytes": 54154,
+      "sha256": "9072f227fa6fdcd6056df939ebacb35c3291c8bce8834c7078be0cf5bc22c519"
     }
   },
   "cases": [
