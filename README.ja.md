@@ -24,6 +24,11 @@ Node.js 22+。対応環境では native binary を自動インストールしま
 npm install @alberteinshutoin/lazy-image
 ```
 
+更新前に[1.5.0のリリース説明](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/V1.5.0_RELEASE_NOTES.md)で、
+JPEG出力の変化、容量探索のコスト、quality上限を明示するpolicyを確認してください。
+1.5.0を指定してインストールする前にregistry上の公開状況を確認してください。
+checkoutや配布候補の検証成功だけでは、npm公開を確認できません。
+
 ## クイックスタート
 
 `.mjs` ファイルで実行する例です。

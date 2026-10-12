@@ -19,10 +19,35 @@ const pkg = require('../package.json');
 
 function sha256(file) { return createHash('sha256').update(fs.readFileSync(file)).digest('hex'); }
 function command(executable, args, cwd) {
-  return execFileSync(executable, args, { cwd, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }).trim();
+  const npmExecPath = executable === 'npm' && process.env.npm_execpath;
+  return execFileSync(npmExecPath ? process.execPath : executable, npmExecPath ? [npmExecPath, ...args] : args,
+    { cwd, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }).trim();
 }
 function tarEntry(tarball, member) {
   return execFileSync('tar', ['-xOzf', tarball, member], { maxBuffer: 64 * 1024 * 1024 });
+}
+function verifyWasmTarball(tarball, files) {
+  const wasmRoot = path.join(root, 'packages', 'lazy-image-wasm');
+  const sourcePackage = JSON.parse(fs.readFileSync(path.join(wasmRoot, 'package.json'), 'utf8'));
+  assert.equal(sourcePackage.name, `${pkg.name}-wasm`);
+  assert.equal(sourcePackage.version, pkg.version);
+  assert.deepEqual(JSON.parse(tarEntry(tarball, 'package/package.json')), sourcePackage);
+  assert.ok(tarEntry(tarball, 'package/shared.js').toString().startsWith(`export const VERSION = '${pkg.version}';`),
+    'Wasm VERSION differs from package version');
+  return files.map(({ path: name }) => {
+    const source = path.resolve(wasmRoot, name);
+    assert.ok(source.startsWith(wasmRoot + path.sep), 'Wasm package path escaped workspace');
+    const bytes = tarEntry(tarball, `package/${name}`);
+    assert.ok(bytes.equals(fs.readFileSync(source)), `Wasm candidate differs from source: ${name}`);
+    return { path: name, sha256: createHash('sha256').update(bytes).digest('hex') };
+  });
+}
+function stageWasm(output) {
+  const wasmRoot = path.join(root, 'packages', 'lazy-image-wasm');
+  const [packed] = JSON.parse(command('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', output], wasmRoot));
+  const tarball = path.join(output, packed.filename);
+  return { name: `${pkg.name}-wasm`, tarball: packed.filename, tarballSha256: sha256(tarball),
+    files: verifyWasmTarball(tarball, packed.files) };
 }
 function inspect(file, target, pattern) {
   const description = command('file', ['-b', file]);
@@ -102,6 +127,7 @@ function main() {
     'main tarball license differs from source');
   packages.push({ name: pkg.name, tarball: packed.filename,
     tarballSha256: sha256(path.join(output, packed.filename)) });
+  packages.push(stageWasm(output));
   fs.writeFileSync(path.join(output, 'manifest.json'), `${JSON.stringify({
     revision: process.env.GITHUB_SHA || command('git', ['rev-parse', 'HEAD'], root),
     sourceTree: command('git', ['rev-parse', 'HEAD^{tree}'], root),
@@ -111,4 +137,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { inspect, tarEntry };
+module.exports = { inspect, tarEntry, stageWasm, verifyWasmTarball };

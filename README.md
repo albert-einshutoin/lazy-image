@@ -38,6 +38,11 @@ npm install @alberteinshutoin/lazy-image
 
 Prebuilt native binaries are installed automatically on supported platforms.
 
+Read the [1.5.0 release notes](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/V1.5.0_RELEASE_NOTES.md)
+for JPEG output changes, budget-search costs, and explicit quality-ceiling policies before updating.
+Check registry availability before pinning 1.5.0; checkout or candidate verification
+does not establish npm publication.
+
 ## Quick Start
 
 ```javascript

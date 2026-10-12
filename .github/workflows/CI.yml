@@ -782,21 +782,8 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish Wasm package
-        run: |
-          pkg_name="@alberteinshutoin/lazy-image-wasm"
-          pkg_version="$(node -p "require('./packages/lazy-image-wasm/package.json').version")"
-
-          if npm view "$pkg_name@$pkg_version" version >/dev/null 2>&1; then
-            echo "$pkg_name@$pkg_version already exists; skipping publish."
-            exit 0
-          fi
-
-          npm publish \
-            --workspace "$pkg_name" \
-            --access public \
-            --provenance \
-            --ignore-scripts
+      - name: Publish verified Wasm tarball
+        run: node scripts/publish-release-candidate.cjs candidate wasm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
