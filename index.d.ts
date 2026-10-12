@@ -585,6 +585,8 @@ export interface ArtifactByteBudget {
   readonly width: number
   readonly format: ArtifactFormat
   readonly maxBytes: number
+  /** Integer 30-100; defaults to 100. Select the highest byte-feasible quality within 30..maxQuality. */
+  readonly maxQuality?: number
 }
 
 export interface PublicUploadPolicy {
@@ -637,6 +639,8 @@ export interface ArtifactPlanItem {
   readonly width: number
   readonly quality: number
   readonly targetBytes?: number
+  /** Non-default byte-budget quality ceiling; absent means 100 for budgeted artifacts. */
+  readonly maxQuality?: number
 }
 
 export interface ArtifactPlan {
