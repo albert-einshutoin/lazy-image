@@ -7,13 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add opt-in `policy.budgets[].maxQuality` to `compileImage()` and CLI policy JSON. It accepts integers 30–100 (default 100), selects the highest byte-fitting quality within 30..maxQuality, and verifies the selected range before publication. Omission and explicit 100 retain the existing canonical policy/fingerprint semantics; other ceilings are distinct. This is an additive public option under the SemVer policy, with no version selected here (#889).
+
 ### Fixed
 - Preserve the requested normal-JPEG quality/chroma/progression settings by applying them after mozjpeg defaults initialization (#885/#886). Correctly requested quality can produce larger files and take longer than the prior incorrectly lower-quality output.
 - Select the highest byte-budget quality without assuming monotonic encoded sizes; preserve strict failure without publishing unsuitable artifacts. Retain the minimum-size candidate for standalone best-effort results and keep `budgetMet: false` explicit.
 - Include all byte-budget probes in cumulative `totalMs`/CPU/peak-RSS metrics while retaining the selected candidate's encode/output information. The metrics shape/version is unchanged.
 
 ### Performance
-- The corrected search can attempt up to 100 encodes and still shares the existing cumulative resource limit. In the [2026-10-12 upload/build evaluation](docs/history/target-bytes-operational-20261012/EVALUATION.md), byte-feasible JPEG1600 and AVIF320 compiler budgets timed out in all three trials on one M4, while the prior search accepted those budgets. The compiler has no public quality-range or timeout override. Publication preparation is held pending this specific acceptance/cost issue; no release version is selected here.
+- The corrected search can attempt up to 100 encodes and still shares the existing cumulative resource limit. In the [2026-10-12 upload/build evaluation](docs/history/target-bytes-operational-20261012/EVALUATION.md), byte-feasible JPEG1600 and AVIF320 compiler budgets without an explicit ceiling timed out in all three trials on one M4, while the prior search accepted those budgets. The new compiler ceiling is opt-in; budgets without maxQuality still search through 100. There is no timeout override or time/perceptual-quality guarantee. The prior publication hold is assessed separately in the dated maxQuality evaluation; no release version is selected here.
 
 ## [1.4.3] - 2026-10-09
 

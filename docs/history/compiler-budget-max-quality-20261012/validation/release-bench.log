@@ -1,0 +1,69 @@
+
+> @alberteinshutoin/lazy-image@1.4.3 test:bench:release
+> npm run test:bench:compile-image && npm run test:bench:quality-matched && node test/benchmarks/release-evidence.js
+
+
+> @alberteinshutoin/lazy-image@1.4.3 test:bench:compile-image
+> node test/benchmarks/compile-image-corpus.bench.js
+
+▶ jpeg-verification-io
+▶ orientation-absent-exif
+▶ transparent-avif
+▶ coffee
+▶ chelsea
+▶ ui-1
+▶ illustration-1
+▶ alpha-1
+▶ metadata-1
+▶ hostile-1
+▶ ui-2
+▶ illustration-2
+▶ alpha-2
+▶ metadata-2
+▶ hostile-2
+JSON artifact: /Volumes/Satechi/Developer/lazy-image-max-quality-889/artifacts/benchmark/compile-image-corpus.json
+Accepted: 13/15
+
+> @alberteinshutoin/lazy-image@1.4.3 test:bench:quality-matched
+> node test/benchmarks/quality-matched.bench.js
+
+jpeg-verification-io/jpeg: lazy quality=85, bytes=80
+jpeg-verification-io/webp: lazy quality=80, bytes=80
+jpeg-verification-io/avif: lazy quality=60, bytes=50
+orientation-absent-exif/jpeg: lazy quality=85, bytes=80
+orientation-absent-exif/webp: lazy quality=80, bytes=80
+orientation-absent-exif/avif: lazy quality=60, bytes=50
+transparent-avif/jpeg: lazy quality=70, bytes=unmet
+transparent-avif/webp: lazy quality=20, bytes=20
+transparent-avif/avif: lazy quality=100, bytes=unmet
+coffee/jpeg: lazy quality=85, bytes=80
+coffee/webp: lazy quality=80, bytes=70
+coffee/avif: lazy quality=60, bytes=50
+chelsea/jpeg: lazy quality=85, bytes=80
+chelsea/webp: lazy quality=85, bytes=80
+chelsea/avif: lazy quality=60, bytes=50
+ui-1/jpeg: lazy quality=85, bytes=80
+ui-1/webp: lazy quality=85, bytes=80
+ui-1/avif: lazy quality=80, bytes=10
+illustration-1/jpeg: lazy quality=85, bytes=80
+illustration-1/webp: lazy quality=85, bytes=80
+illustration-1/avif: lazy quality=95, bytes=60
+alpha-1/jpeg: lazy quality=80, bytes=70
+alpha-1/webp: lazy quality=80, bytes=60
+alpha-1/avif: lazy quality=unmet, bytes=60
+metadata-1/jpeg: lazy quality=85, bytes=80
+metadata-1/webp: lazy quality=80, bytes=80
+metadata-1/avif: lazy quality=70, bytes=20
+ui-2/jpeg: lazy quality=85, bytes=80
+ui-2/webp: lazy quality=85, bytes=80
+ui-2/avif: lazy quality=85, bytes=10
+illustration-2/jpeg: lazy quality=85, bytes=80
+illustration-2/webp: lazy quality=80, bytes=80
+illustration-2/avif: lazy quality=90, bytes=60
+alpha-2/jpeg: lazy quality=85, bytes=80
+alpha-2/webp: lazy quality=80, bytes=80
+alpha-2/avif: lazy quality=unmet, bytes=20
+metadata-2/jpeg: lazy quality=85, bytes=80
+metadata-2/webp: lazy quality=85, bytes=80
+metadata-2/avif: lazy quality=90, bytes=10
+JSON artifact: /Volumes/Satechi/Developer/lazy-image-max-quality-889/artifacts/benchmark/quality-matched.json

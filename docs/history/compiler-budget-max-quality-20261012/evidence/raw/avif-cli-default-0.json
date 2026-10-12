@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "574b81148b4f2fc30ddab567644e1037c2416343",
+    "buildSourceSha": "464187c4a428f95263e9f6ef456f4bfb118fef01",
+    "root": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-max-quality-889/lazy-image.darwin-arm64.node",
+    "nativeSha256": "c15f1e55f5552ec49d4b853bb49a3eed26141b071b7772c166eadeab8649d841",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=9fb6ad8ca3de1eef8df38c091f72449de3d7e59f932d9d69214a742b6d0bab79;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "jsSha256": {
+      "index.js": "723ed60fea3c79088d95663ab850f6eb2cf6ea8621f14d3ae3c3e668badda099",
+      "index.mjs": "c5a7b1e640d6751aa03e749ec18a1d093ab65964518d134f7950c97f953bdac3",
+      "index.d.ts": "d876c9ea66dd056dc8ac46c88d4a406c71627a41eadc1c86de1bd7a76239ddbe",
+      "lib/artifact-policy.js": "a0648632a2255fdb92f0789f4043a4e14a5d97dda1b006c8a0179d7068bed2e6",
+      "lib/artifact-compiler.js": "78467d5a71eb9615c41a8f675b24c73f7c0461ca7a8bb8a291e019a12a9362a2",
+      "lib/helpers.js": "e959ce2dedf0357b00a4d5454e886c39b53d4827f29d8e51d2db5d4eec459f08",
+      "scripts/postbuild-fixup.js": "fc63317a524bc95509d53ed62715bcde3189fde3e29e13f4769052c02a697b81"
+    },
+    "rustTree": "c2a8a1294230765d6e091304aeaa1adf15084ddd",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "4e936ebb3c919ddb13fdd381a18aec25f47b41a6644bd7f3b1a7915589d9af78",
+    "observerHelperSha256": "a092971645031bed6967288e24e47709f904132aaa68852fdfd2436a4a1c5b55"
+  },
+  "condition": {
+    "id": "avif-cli-default",
+    "fixture": "coffee",
+    "width": 320,
+    "format": "avif",
+    "budget": 12850,
+    "ceiling": 60,
+    "interface": "cli",
+    "cap": false,
+    "policy": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "avif"
+      ],
+      "placeholder": false,
+      "budgets": [
+        {
+          "width": 320,
+          "format": "avif",
+          "maxBytes": 12850
+        }
+      ]
+    }
+  },
+  "trial": 0,
+  "fixture": {
+    "id": "coffee",
+    "path": "test/benchmarks/corpus/images/coffee.png",
+    "bytes": 466706,
+    "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+    "license": "CC0-1.0",
+    "source": {
+      "kind": "photograph",
+      "author": "Rachel Michetti",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+      "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+    }
+  },
+  "outcome": "rejected",
+  "error": {
+    "name": null,
+    "message": "[E123] Image artifact compilation failed during processing (320/avif) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+    "errorCode": "E123",
+    "phase": "processing",
+    "cause": null,
+    "cleanupError": null,
+    "detailBoundary": "CLI diagnostics do not expose cause/cleanupError"
+  },
+  "outerMs": 5066.728375,
+  "rss": {
+    "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+    "intervalMs": 100,
+    "samples": 50,
+    "missedSamples": 0,
+    "peakRssBytes": 70402048
+  },
+  "cliProcess": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image-max-quality-889/bin/lazy-image.js",
+      "compile",
+      "/Volumes/Satechi/Developer/lazy-image/test/benchmarks/corpus/images/coffee.png",
+      "--out-dir",
+      "/Volumes/Satechi/Developer/lazy-image-max-quality-889-runs/current-avif-cli-default-0-PCGJq9/output",
+      "--policy",
+      "/Volumes/Satechi/Developer/lazy-image-max-quality-889-runs/current-avif-cli-default-0-PCGJq9/policy.json"
+    ],
+    "exitCode": 1,
+    "signal": null,
+    "stdout": "",
+    "stderr": "[E123] Image artifact compilation failed during processing (320/avif) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+    "measurementGuardMs": 120000
+  },
+  "nativeMetrics": null,
+  "nativeTrace": [],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [],
+  "manifest": null,
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": true
+  },
+  "residualNames": [],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/compiler-budget-max-quality-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"avif-cli-default\",\"fixture\":\"coffee\",\"width\":320,\"format\":\"avif\",\"budget\":12850,\"ceiling\":60,\"interface\":\"cli\",\"cap\":false,\"policy\":{\"widths\":[320],\"formats\":[\"avif\"],\"placeholder\":false,\"budgets\":[{\"width\":320,\"format\":\"avif\",\"maxBytes\":12850}]}}",
+      "0",
+      "/Volumes/Satechi/Developer/lazy-image-max-quality-889-runs/current-avif-cli-default-0-PCGJq9"
+    ],
+    "startedAt": "2026-10-12T11:33:25.100Z",
+    "completedAt": "2026-10-12T11:33:30.257Z",
+    "matrixSha256": "b4143014d686a486e97de361a5eaf229140dc125f7ccfe691b6cfa292de47fa2"
+  },
+  "group": "raw"
+}

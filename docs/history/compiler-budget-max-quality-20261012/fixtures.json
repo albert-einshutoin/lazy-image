@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "name": "compiler-budget-max-quality-889",
+  "license": {
+    "spdx": "MIT",
+    "path": "LICENSE",
+    "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+  },
+  "additionalLicenses": [
+    {
+      "spdx": "CC0-1.0",
+      "path": "test/benchmarks/corpus/CC0-1.0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    }
+  ],
+  "entries": [
+    {
+      "id": "coffee",
+      "path": "test/benchmarks/corpus/images/coffee.png",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "license": "CC0-1.0",
+      "category": "photo",
+      "source": {
+        "kind": "photograph",
+        "author": "Rachel Michetti",
+        "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+        "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+        "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+      },
+      "expectations": {
+        "inputFormat": "png"
+      },
+      "policy": {}
+    },
+    {
+      "id": "ui-1",
+      "path": "test/benchmarks/corpus/images/ui-1.png",
+      "bytes": 7610,
+      "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "license": "MIT",
+      "category": "ui",
+      "source": {
+        "kind": "project-generated-fixture",
+        "generator": "test/benchmarks/corpus/generate.js"
+      },
+      "expectations": {
+        "inputFormat": "png",
+        "note": "Synthetic UI text/line workload; not an application capture."
+      },
+      "policy": {}
+    },
+    {
+      "id": "large",
+      "path": "test/fixtures/test_3.2MB_5000x5000.jpg",
+      "bytes": 3371242,
+      "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "license": "MIT",
+      "category": "large-synthetic",
+      "source": {
+        "kind": "repository-fixture",
+        "note": "Tracked size fixture; synthetic generator context is test/helpers/create-size-fixtures-sharp.js; original generator runtime is not asserted."
+      },
+      "expectations": {
+        "inputFormat": "jpeg"
+      },
+      "policy": {}
+    },
+    {
+      "id": "control",
+      "path": "docs/history/target-bytes-operational-20261012/fixtures/nonmonotonic64.png",
+      "bytes": 237,
+      "sha256": "b211dccb9718fe86159f508ee6fc1c8e33e812862772467285575ca0ccfe70b0",
+      "license": "MIT",
+      "category": "synthetic-control",
+      "source": {
+        "kind": "repository-fixture",
+        "note": "Reuses #885 fixed RGB 200/100/50 64px generation; current locked sharp, not a camera photograph."
+      },
+      "expectations": {
+        "inputFormat": "png"
+      },
+      "policy": {}
+    }
+  ]
+}

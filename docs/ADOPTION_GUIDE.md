@@ -195,7 +195,8 @@ Runnable examples are maintained separately:
 
 ## Byte budgets and compute limits
 
-The current checkout contains unreleased JPEG/byte-budget/metrics corrections;
+The current checkout contains an unreleased compiler quality ceiling and
+JPEG/byte-budget/metrics corrections;
 the published npm 1.4.3 package does not establish the same implementation.
 Read [Unreleased](../CHANGELOG.md#unreleased) and the
 [dated operational evaluation](./history/target-bytes-operational-20261012/EVALUATION.md).
@@ -208,11 +209,28 @@ can consume more work before success or refusal. A valid input that hits `E123`
 is a resource refusal, not successful hostile-input rejection.
 
 For the compiler, choose `widths`, `formats`, `budgets`, and `placeholder` to match
-the job. It has no arbitrary `minQuality`/`maxQuality` or timeout policy field.
+the job. Each budget can opt into `maxQuality`, an integer 30–100 (default 100).
+The compiler selects the highest byte-fitting quality in 30..maxQuality and
+verifies it before publication. It has no `minQuality` or timeout policy field.
 On `E300`, reconsider the requested width/format, required quality, and byte limit.
 On `E123`, report a failed job and reconsider width/format/output count or job
 design; do not blindly retry, reset the timer, or publish a partial candidate.
 Increasing a byte limit is an application policy decision, not an automatic fallback.
+
+For example, keep the same byte limit and explicitly exclude quality above 90:
+
+```js
+const policy = {
+  widths: [1600], formats: ['jpeg'], placeholder: false,
+  budgets: [{ width: 1600, format: 'jpeg', maxBytes: 93782, maxQuality: 90 }],
+};
+```
+
+Use this object with `compileImage()` or save it as CLI `--policy` JSON.
+Omission and explicit 100 have identical normalized policy semantics. A ceiling
+can reduce search work but does not guarantee completion within five seconds.
+`maxQuality: 60` is an encoder setting, not 60% perceptual quality or lossless output.
+Choosing it excludes higher-quality candidates even if one could fit the bytes.
 
 For individual `ImageEngine` outputs, existing `minQuality`/`maxQuality` options
 can bound the search. The evaluation's JPEG1600 example accepted its 93,782-byte
@@ -221,10 +239,12 @@ That choice excludes quality above 90 and returns one file; it does not provide
 the compiler's verified set/manifest and is not a universal latency guarantee.
 Standalone best-effort callers must explicitly check `budgetMet` before delivery.
 
-The measured compiler JPEG1600 and AVIF320 tight-budget timeouts remain a
-publication-preparation blocker. No product algorithm, firewall limit or release
-is changed by that assessment. Use the recorded workload to evaluate your own
-deployment; three single-concurrency M4 trials are not p99, an SLA, or OOM proof.
+The [maxQuality evaluation](./history/compiler-budget-max-quality-20261012/EVALUATION.md)
+accepted JPEG1600/max90 and AVIF320/max60 in all three API and CLI trials with
+the same byte limits. Publication preparation can proceed for this explicit-policy
+contract; omitted ceilings still produced resource refusals in those workloads.
+The option does not fix default-policy timeouts or approve a release. Evaluate
+your own deployment; three single-concurrency M4 trials are not p99, an SLA, or OOM proof.
 
 ## Deploy and measure
 

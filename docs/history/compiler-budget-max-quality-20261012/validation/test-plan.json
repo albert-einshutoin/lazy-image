@@ -1,0 +1,54 @@
+{
+  "strategy": "full",
+  "baseRevision": "16662b40a922d4fc47a65c93d08ed76deb06ad2a",
+  "headRevision": "574b81148b4f2fc30ddab567644e1037c2416343",
+  "changedFiles": [
+    "index.d.ts",
+    "lib/artifact-compiler.js",
+    "lib/artifact-policy.js",
+    "scripts/postbuild-fixup.js",
+    "test/integration/artifact-compiler.test.js",
+    "test/integration/artifact-policy.test.js",
+    "test/integration/cli.test.js",
+    "test/type-safety/typescript-typecheck.test.ts"
+  ],
+  "detectedProjects": [
+    {
+      "name": ".:rust",
+      "root": ".",
+      "adapter": "rust",
+      "manifest": "Cargo.toml"
+    },
+    {
+      "name": "fuzz:rust",
+      "root": "fuzz",
+      "adapter": "rust",
+      "manifest": "fuzz/Cargo.toml"
+    },
+    {
+      "name": ".:javascript",
+      "root": ".",
+      "adapter": "javascript",
+      "manifest": "package.json"
+    },
+    {
+      "name": "packages/lazy-image-wasm:javascript",
+      "root": "packages/lazy-image-wasm",
+      "adapter": "javascript",
+      "manifest": "packages/lazy-image-wasm/package.json"
+    }
+  ],
+  "affectedProjects": [
+    ".:rust",
+    "fuzz:rust",
+    ".:javascript",
+    "packages/lazy-image-wasm:javascript"
+  ],
+  "affectedModules": [],
+  "unitTestTargets": [],
+  "integrationTestTargets": [],
+  "e2eTestTargets": [],
+  "smokeTestTargets": [],
+  "fallback": true,
+  "fallbackReason": "public API contract changed: index.d.ts"
+}

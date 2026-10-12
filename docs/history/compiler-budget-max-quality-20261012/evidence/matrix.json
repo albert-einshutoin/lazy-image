@@ -1,0 +1,626 @@
+{
+  "schemaVersion": 1,
+  "issue": 889,
+  "trials": 3,
+  "concurrency": 1,
+  "variants": {
+    "current": {
+      "root": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+      "sha": "574b81148b4f2fc30ddab567644e1037c2416343"
+    }
+  },
+  "identity": {
+    "variant": "current",
+    "sourceSha": "574b81148b4f2fc30ddab567644e1037c2416343",
+    "buildSourceSha": "464187c4a428f95263e9f6ef456f4bfb118fef01",
+    "root": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-max-quality-889/lazy-image.darwin-arm64.node",
+    "nativeSha256": "c15f1e55f5552ec49d4b853bb49a3eed26141b071b7772c166eadeab8649d841",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=9fb6ad8ca3de1eef8df38c091f72449de3d7e59f932d9d69214a742b6d0bab79;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "jsSha256": {
+      "index.js": "723ed60fea3c79088d95663ab850f6eb2cf6ea8621f14d3ae3c3e668badda099",
+      "index.mjs": "c5a7b1e640d6751aa03e749ec18a1d093ab65964518d134f7950c97f953bdac3",
+      "index.d.ts": "d876c9ea66dd056dc8ac46c88d4a406c71627a41eadc1c86de1bd7a76239ddbe",
+      "lib/artifact-policy.js": "a0648632a2255fdb92f0789f4043a4e14a5d97dda1b006c8a0179d7068bed2e6",
+      "lib/artifact-compiler.js": "78467d5a71eb9615c41a8f675b24c73f7c0461ca7a8bb8a291e019a12a9362a2",
+      "lib/helpers.js": "e959ce2dedf0357b00a4d5454e886c39b53d4827f29d8e51d2db5d4eec459f08",
+      "scripts/postbuild-fixup.js": "fc63317a524bc95509d53ed62715bcde3189fde3e29e13f4769052c02a697b81"
+    },
+    "rustTree": "c2a8a1294230765d6e091304aeaa1adf15084ddd",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "4e936ebb3c919ddb13fdd381a18aec25f47b41a6644bd7f3b1a7915589d9af78",
+    "observerHelperSha256": "a092971645031bed6967288e24e47709f904132aaa68852fdfd2436a4a1c5b55"
+  },
+  "runnerSha256": "4e936ebb3c919ddb13fdd381a18aec25f47b41a6644bd7f3b1a7915589d9af78",
+  "fixturesSha256": "d6887baf281daa4f760193fed5098ea8cc6c93af7d7c321e736361ad0a26de72",
+  "primary": [
+    {
+      "id": "large-compiler-default",
+      "fixture": "large",
+      "width": 1600,
+      "format": "jpeg",
+      "budget": 93782,
+      "ceiling": 90,
+      "interface": "compiler",
+      "cap": false,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782
+          }
+        ]
+      }
+    },
+    {
+      "id": "large-compiler-cap",
+      "fixture": "large",
+      "width": 1600,
+      "format": "jpeg",
+      "budget": 93782,
+      "ceiling": 90,
+      "interface": "compiler",
+      "cap": true,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782,
+            "maxQuality": 90
+          }
+        ]
+      }
+    },
+    {
+      "id": "avif-compiler-default",
+      "fixture": "coffee",
+      "width": 320,
+      "format": "avif",
+      "budget": 12850,
+      "ceiling": 60,
+      "interface": "compiler",
+      "cap": false,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850
+          }
+        ]
+      }
+    },
+    {
+      "id": "avif-compiler-cap",
+      "fixture": "coffee",
+      "width": 320,
+      "format": "avif",
+      "budget": 12850,
+      "ceiling": 60,
+      "interface": "compiler",
+      "cap": true,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850,
+            "maxQuality": 60
+          }
+        ]
+      }
+    },
+    {
+      "id": "large-cli-default",
+      "fixture": "large",
+      "width": 1600,
+      "format": "jpeg",
+      "budget": 93782,
+      "ceiling": 90,
+      "interface": "cli",
+      "cap": false,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782
+          }
+        ]
+      }
+    },
+    {
+      "id": "large-cli-cap",
+      "fixture": "large",
+      "width": 1600,
+      "format": "jpeg",
+      "budget": 93782,
+      "ceiling": 90,
+      "interface": "cli",
+      "cap": true,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782,
+            "maxQuality": 90
+          }
+        ]
+      }
+    },
+    {
+      "id": "avif-cli-default",
+      "fixture": "coffee",
+      "width": 320,
+      "format": "avif",
+      "budget": 12850,
+      "ceiling": 60,
+      "interface": "cli",
+      "cap": false,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850
+          }
+        ]
+      }
+    },
+    {
+      "id": "avif-cli-cap",
+      "fixture": "coffee",
+      "width": 320,
+      "format": "avif",
+      "budget": 12850,
+      "ceiling": 60,
+      "interface": "cli",
+      "cap": true,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850,
+            "maxQuality": 60
+          }
+        ]
+      }
+    }
+  ],
+  "regression": [
+    {
+      "id": "webp-cap",
+      "fixture": "ui-1",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "webp"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "webp",
+            "maxBytes": 2218,
+            "maxQuality": 60
+          }
+        ]
+      }
+    },
+    {
+      "id": "jpeg-none",
+      "fixture": "coffee",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "nonmonotonic-100",
+      "fixture": "control",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          64
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 64,
+            "format": "jpeg",
+            "maxBytes": 346,
+            "maxQuality": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": "nonmonotonic-30",
+      "fixture": "control",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          64
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 64,
+            "format": "jpeg",
+            "maxBytes": 346,
+            "maxQuality": 30
+          }
+        ]
+      }
+    }
+  ],
+  "proof": [
+    {
+      "id": "large-q90",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 90,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q89",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 89,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q88",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 88,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q87",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 87,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q86",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 86,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q85",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 85,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q84",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 84,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q83",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 83,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q82",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 82,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q81",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 81,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q80",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 80,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q79",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 79,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q78",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 78,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q77",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 77,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q76",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 76,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q75",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 75,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q74",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 74,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q73",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 73,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q72",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 72,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q71",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 71,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q70",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 70,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q69",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 69,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q68",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 68,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q67",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 67,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q66",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 66,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q65",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 65,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q64",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 64,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q63",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 63,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q62",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 62,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q61",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 61,
+      "interface": "calibration"
+    },
+    {
+      "id": "large-q60",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "quality": 60,
+      "interface": "calibration"
+    },
+    {
+      "id": "avif-q60",
+      "fixture": "coffee",
+      "format": "avif",
+      "width": 320,
+      "quality": 60,
+      "interface": "calibration"
+    },
+    {
+      "id": "webp-q60",
+      "fixture": "ui-1",
+      "format": "webp",
+      "width": 320,
+      "quality": 60,
+      "interface": "calibration"
+    },
+    {
+      "id": "control-q30",
+      "fixture": "control",
+      "format": "jpeg",
+      "width": 64,
+      "quality": 30,
+      "interface": "calibration"
+    },
+    {
+      "id": "control-q100",
+      "fixture": "control",
+      "format": "jpeg",
+      "width": 64,
+      "quality": 100,
+      "interface": "calibration"
+    }
+  ]
+}

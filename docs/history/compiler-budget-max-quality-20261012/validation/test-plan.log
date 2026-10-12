@@ -1,0 +1,15 @@
+
+> @alberteinshutoin/lazy-image@1.4.3 ci:plan-tests
+> node ci/plan-tests.js --base 16662b40a922d4fc47a65c93d08ed76deb06ad2a --head 574b81148b4f2fc30ddab567644e1037c2416343 --output /tmp/lazy-image-max-quality-889-full-plan.json
+
+Base revision: 16662b40a922d4fc47a65c93d08ed76deb06ad2a
+Head revision: 574b81148b4f2fc30ddab567644e1037c2416343
+Detected projects: 4
+Adapters: rust, javascript
+Changed files (8): index.d.ts, lib/artifact-compiler.js, lib/artifact-policy.js, scripts/postbuild-fixup.js, test/integration/artifact-compiler.test.js, test/integration/artifact-policy.test.js, test/integration/cli.test.js, test/type-safety/typescript-typecheck.test.ts
+Affected projects: .:rust, fuzz:rust, .:javascript, packages/lazy-image-wasm:javascript
+Affected modules: none
+Test strategy: full
+Fallback: true
+Fallback reason: public API contract changed: index.d.ts
+Test categories: {"unit":0,"integration":0,"e2e":0,"smoke":0}

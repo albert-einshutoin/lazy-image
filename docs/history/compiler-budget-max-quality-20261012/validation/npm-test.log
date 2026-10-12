@@ -1,0 +1,1280 @@
+
+> @alberteinshutoin/lazy-image@1.4.3 ci:run-tests
+> node ci/run-tests.js --plan /tmp/lazy-image-max-quality-889-full-plan.json --mode full --summary /tmp/lazy-image-max-quality-889-full-validation/test-summary.json --history /tmp/lazy-image-max-quality-889-full-validation/test-history.jsonl
+
+
+[full] npm test
+
+> @alberteinshutoin/lazy-image@1.4.3 test
+> npm run test:js && npm run test:ci-planner:rust-targets && npm run test:rust && npm run test:wasm:package
+
+
+> @alberteinshutoin/lazy-image@1.4.3 test:js
+> npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:release-artifacts && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples
+
+
+> @alberteinshutoin/lazy-image@1.4.3 test:ci-planner
+> node test/unit/selective-test-planner.test.js
+
+selective-test planner tests passed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:js:specs
+> node test/integration/run.js
+
+Found 46 test files
+
+▶️  Running test/integration/artifact-compiler-alpha.test.js
+artifact compiler alpha contract passed
+
+▶️  Running test/integration/artifact-compiler.test.js
+artifact compiler contract passed
+
+▶️  Running test/integration/artifact-policy.test.js
+artifact policy contract passed
+
+▶️  Running test/integration/basic.test.js
+=== lazy-image Basic Tests ===
+
+✅ inspect() returns metadata
+✅ inspectFile() returns metadata
+✅ basic JPEG encoding works
+✅ resize works
+✅ resize options object works
+✅ resize options object takes precedence over trailing positional args
+✅ WebP encoding works
+✅ AVIF encoding works
+✅ PNG encoding works
+✅ rotate(90) works
+✅ grayscale() works
+✅ toBufferWithMetrics returns metrics
+✅ chain multiple operations
+✅ clone() allows multi-output
+✅ toBuffer() is non-destructive (multiple calls without clone)
+✅ toBufferWithMetrics() is non-destructive
+✅ toFile() is non-destructive
+✅ toBufferWithPreset() applies preset defaults
+✅ toFileWithPreset() writes file with preset defaults
+✅ fromPath() works
+✅ toFile() works
+✅ toFileWithMetrics() writes file and returns metrics
+✅ processBatchWithMetrics() returns item metrics and summary
+✅ toBufferTargetBytes() returns best effort result under target
+✅ toBufferTargetBytes() rejects invalid native quality ranges
+✅ profile quality never resolves below native minimum
+✅ toFileTargetBytes() writes a budgeted file result
+✅ invalid rotation angle throws error
+✅ invalid crop bounds throws error
+✅ invalid format throws error
+✅ resize validates dimensions and preserves error category/code
+✅ brightness validates range and preserves error category/code
+✅ error category: UserError for invalid rotation
+✅ error category: UserError for invalid crop bounds
+✅ error category: CodecError for invalid format
+✅ error category: UserError for file not found
+✅ getErrorCategory returns null for non-lazy-image errors
+✅ getErrorCategory handles null/undefined
+✅ error category: ResourceLimit for file write error
+✅ processBatch error results expose category
+✅ preset("thumbnail") works
+✅ preset("avatar") works
+✅ preset("hero") works
+✅ preset("social") works
+✅ invalid preset throws error
+✅ JPEG default quality is 85
+✅ WebP default quality is 80
+✅ AVIF default quality is 60
+✅ processBatch with concurrency control works
+✅ processBatch with default concurrency (auto-calculated) works
+
+=== Results: 50 passed, 0 failed ===
+
+▶️  Running test/integration/batch-chunked.test.js
+✅ chunks inputs, preserves order, and reports progress
+✅ matches processBatch result order and output names
+✅ reports progress for a single default-size chunk
+✅ aborts at chunk boundaries and keeps completed chunk outputs
+✅ pre-aborted signal rejects before creating outputs
+✅ continues when progress callback throws
+✅ preserves processBatch partial-failure semantics
+✅ returns failed results when a chunk has no readable bootstrap input
+✅ rejects invalid chunk sizes before returning a promise
+
+▶️  Running test/integration/benchmark-corpus-manifest.test.js
+=== Benchmark Corpus Manifest Tests ===
+
+ok - verifies the tracked compile-image corpus license and checksums
+ok - rejects corpus checksum and path drift
+ok - records fixture source and resized reference PNG digests
+ok - records generated corpus entries without pretending they are fixtures
+ok - renders corpus manifest markdown with compact digests and settings
+
+Tests passed: 5, failed: 0
+
+▶️  Running test/integration/benchmark-fuzz-alignment.test.js
+=== Benchmark/Fuzz Alignment Tests ===
+
+ok - codec bake-off cases declare malformed fuzz targets
+ok - declared bake-off fuzz targets exist in the generated malformed seed corpus
+ok - declared bake-off fuzz targets keep the expected seed families
+
+Tests passed: 3, failed: 0
+
+▶️  Running test/integration/benchmark-package-impact.test.js
+=== Benchmark Package Impact Metadata Tests ===
+
+ok - collects native package contract metadata for backend bake-offs
+ok - renders cross-platform impact into Markdown artifacts
+
+Tests passed: 2, failed: 0
+
+▶️  Running test/integration/cli.test.js
+CLI contract passed
+
+▶️  Running test/integration/concurrency-validation.test.js
+🧪 Concurrency Validation Test
+==============================
+
+✅ Testing concurrency = 0 (default):
+  Success: Processed 1 images with default concurrency
+
+✅ Testing concurrency = 1 (minimum valid):
+  Success: Processed 1 images with 1 thread
+
+✅ Testing concurrency = 1024 (maximum valid):
+  Success: Processed 1 images with 1024 threads
+
+❌ Testing concurrency = 1025 (should fail):
+  ✅ Correctly rejected: [E400] Invalid value for concurrency: 1025. must be 0 or 1-1024
+  ✅ Error code is E400 (invalid argument)
+  ✅ Error category is UserError
+  ✅ Error message format is correct
+
+📋 Concurrency Validation Summary:
+1. ✅ concurrency = 0: Uses default thread pool
+2. ✅ concurrency = 1-1024: Creates custom thread pool
+3. ✅ concurrency > 1024: Properly rejected with clear error
+4. ✅ Error message clarifies "0 or 1-MAX" range
+
+▶️  Running test/integration/docs-contract.test.js
+docs safety-limit contract passed
+
+▶️  Running test/integration/edge-cases.test.js
+=== lazy-image Edge Cases & Security Tests ===
+
+✅ rejects images exceeding MAX_DIMENSION via ImageEngine.from()
+✅ rejects empty buffer
+✅ rejects invalid image data
+✅ rejects non-existent file path
+✅ inspectFile() rejects non-existent file
+✅ rejects quality 0
+✅ handles quality 100 (maximum)
+✅ rejects quality > 100
+✅ handles resize to 1x1 (minimum size)
+✅ handles resize with only width (maintains aspect ratio)
+✅ handles resize with only height (maintains aspect ratio)
+✅ handles resize with both dimensions (may distort)
+✅ handles crop at origin (0,0)
+✅ handles crop of entire image
+✅ handles rotation 0 (no-op)
+✅ handles negative rotation (-90)
+✅ rejects rotation 360 (invalid angle)
+✅ handles many chained operations
+✅ handles multiple resize operations (should optimize)
+✅ toFile() rejects non-existent parent directory
+✅ processBatch handles empty input array
+✅ processBatch accepts concurrency 0 (uses default)
+✅ processBatch rejects concurrency > 1024 (UserError)
+✅ toBufferWithMetrics returns valid metrics with all fields
+✅ toBufferWithMetrics handles input_size=0 gracefully
+✅ hasIccProfile() returns null for images without profile
+✅ handles brightness at limits (-100, 100)
+✅ rejects brightness outside range
+✅ handles contrast at limits (-100, 100)
+✅ pipeline methods return the same ImageEngine instance
+✅ clone() creates independent instances
+✅ dimensions() returns correct values
+
+=== Results: 32 passed, 0 failed ===
+
+▶️  Running test/integration/error-codes.test.js
+=== Error Code Matrix Tests ===
+
+✅ E111: UnsupportedFormat from unsupported output format
+✅ E400: InvalidArgument from out-of-range quality
+✅ E121: DimensionExceedsLimit from oversized resize
+✅ E123: FirewallViolation from maxBytes limit
+✅ E123: FirewallViolation from maxPixels limit
+✅ E130/E131: CorruptedImage or DecodeFailed from truncated JPEG
+✅ E131: DecodeFailed from corrupted JPEG body
+✅ E204: InvalidResizeFit from bad fit string
+✅ E402: InvalidFirewallPolicy from bad policy string
+✅ Docs and Rust error code tables are synchronized
+✅ Docs and Rust error recoverability flags are synchronized
+
+Tests passed: 11, failed: 0
+
+▶️  Running test/integration/exif-roundtrip.test.js
+🔬 EXIF Roundtrip Test
+==================================================
+
+Test 1: Default - EXIF should be stripped
+  hasExif: false
+
+Test 2: keepMetadata({ exif: true }) - EXIF preserved, GPS stripped
+  hasExif: true
+  orientation: 1
+  hasGps: false
+  ✅ Orientation correctly reset to 1
+  ✅ GPS correctly stripped (privacy protection)
+
+Test 3: keepMetadata({ exif: true, stripGps: false }) - GPS preserved
+  hasExif: true
+  hasGps: true
+
+Test 4: Firewall strict mode - all metadata stripped
+  hasExif: false
+
+Test 5: ICC + EXIF preservation
+  ✅ Successfully processed with ICC + EXIF
+
+Test 6: PNG output preserves EXIF
+  ✅ PNG EXIF preserved with sanitized metadata
+
+Test 7: WebP output preserves EXIF
+  ✅ WebP EXIF preserved with sanitized metadata
+
+==================================================
+✅ All EXIF roundtrip tests passed!
+
+▶️  Running test/integration/extract.test.js
+=== resize+crop fusion (Extract) integration tests ===
+✅ fused resize+crop yields expected dimensions
+✅ fused path uses less or equal peak RSS than two-step pipeline
+
+✅ All 2 test(s) passed
+
+▶️  Running test/integration/firewall.test.js
+=== Image Firewall Tests ===
+
+✅ sanitize({ policy: "strict" }) works with small image
+✅ sanitize({ policy: "lenient" }) works with normal image
+✅ public-upload forces privacy-safe metadata regardless of call order
+✅ sanitize() defaults to strict policy
+✅ limits() can override maxPixels
+✅ limits() can override maxBytes
+✅ limits() can override timeoutMs
+✅ limits({ maxPixels: 0 }) disables pixel limit
+✅ sanitize() rejects oversized images (maxBytes)
+✅ sanitize() rejects oversized images (maxPixels)
+✅ invalid policy name throws error
+✅ sanitize() can be called multiple times
+✅ limits() without sanitize() enables firewall
+✅ clone() preserves firewall config
+✅ fromPath() works with sanitize()
+✅ strict policy has tighter limits than lenient
+✅ error messages are actionable (include suggestions)
+
+=== Results: 17 passed, 0 failed ===
+
+▶️  Running test/integration/format-matrix.test.js
+=== Format Conversion Matrix Tests ===
+
+✅ format: JPEG -> JPEG
+✅ format: JPEG -> PNG
+✅ format: JPEG -> WebP
+✅ format: JPEG -> AVIF
+✅ format: WebP -> JPEG
+✅ format: WebP -> PNG
+✅ format: WebP -> WebP
+✅ format: WebP -> AVIF
+✅ format: PNG  -> JPEG
+✅ format: PNG  -> PNG
+✅ format: PNG  -> WebP
+✅ format: PNG  -> AVIF
+✅ format: AVIF input fails with a decode error until AVIF decode is supported
+✅ resize fit: inside (both dims <= target)
+✅ resize fit: cover (both dims >= target)
+✅ resize fit: fill (exact target dimensions)
+✅ normalizePixelFormat: JPEG produces valid output
+✅ normalizePixelFormat: PNG produces valid output
+✅ normalizePixelFormat: WebP produces valid output
+✅ normalizePixelFormat: grayscale input produces valid output
+✅ normalizePixelFormat: chainable with other operations
+
+=== Results: 21 passed, 0 failed ===
+
+▶️  Running test/integration/from-path-async.test.js
+fromPathAsync tests passed
+
+▶️  Running test/integration/fuzz-seed-corpus.test.js
+=== Fuzz Seed Corpus Script Tests ===
+
+ok - dry-run validates the full malformed seed catalog
+ok - decode_avif target writes AVIF-like malformed seeds only
+ok - decode_from_buffer target includes generic malformed image headers
+ok - structured-input targets are intentionally left without raw seed corpus
+ok - metadata targets include EXIF and ICC marker-bearing malformed seeds
+
+Tests passed: 5, failed: 0
+
+▶️  Running test/integration/golden.test.js
+=== Golden Test Suite ===
+✅ jpeg_resize_inside_1200_q82 | hash=dad8e345… | 1200x1200 | SSIM=0.9978 PSNR=47.58 | sizeRatio=0.979
+✅ png_cover_rotate_grayscale | hash=6c8da0a7… | 1600x900 | SSIM=0.9199 PSNR=22.75 | sizeRatio=0.410
+✅ webp_cover_flip | hash=f51e648b… | 800x800 | SSIM=0.9916 PSNR=42.21 | sizeRatio=0.896
+✅ png_cover_no_grayscale | hash=1c1b8537… | 1600x900 | SSIM=0.9987 PSNR=58.53 | sizeRatio=0.572
+✅ avif_cover_rotate_grayscale | hash=85091a8d… | 1200x800 | SSIM=0.9156 PSNR=22.66 | sizeRatio=1.339
+✅ jpeg_to_png_flipv | hash=86a5cbec… | 2000x2000 | SSIM=0.9993 PSNR=60.75 | sizeRatio=0.531
+
+✅ All golden cases passed
+
+▶️  Running test/integration/input-validation.test.js
+✅ resize rejects negative width with structured error
+✅ toBuffer rejects NaN quality
+✅ toBuffer rejects quality 0
+✅ toBuffer rejects quality above 100
+✅ processBatch rejects negative concurrency
+✅ toFile rejects empty path eagerly
+
+Tests passed: 6, failed: 0
+
+▶️  Running test/integration/inspect-preflight.test.js
+inspect preflight contract tests passed
+
+▶️  Running test/integration/jpegli-distance-tuning.test.js
+=== jpegli Distance Tuning Tests ===
+
+ok - parses and normalizes distance candidates with the case baseline included
+ok - rejects invalid distance candidates
+ok - selects the closest byte candidate and breaks ties by quality
+ok - selects the closest SSIM candidate and breaks ties by bytes
+
+Tests passed: 4, failed: 0
+
+▶️  Running test/integration/malformed-corpus-replay.test.js
+=== Malformed Corpus Replay Tests ===
+
+ok - generated corpus keeps the expected target coverage
+ok - generated malformed seeds reject through buffer input
+ok - generated malformed seeds reject through file input
+
+Tests passed: 3, failed: 0
+
+▶️  Running test/integration/metadata-options.test.js
+Test 1: XMP emits warning but still processes
+keepMetadata: XMP preservation is not implemented yet; XMP data will be stripped.
+Test 2: Disable ICC, enable EXIF
+Test 3: GPS stripping (default behavior)
+Test 4: Preserve GPS (opt-in)
+Test 5: ICC only (default metadata behavior)
+Test 6: No metadata (security-first default)
+Test 7: Firewall strict mode overrides keepMetadata
+metadata-options.test.js passed - all 7 tests
+
+▶️  Running test/integration/napi-stress-corpus.test.js
+=== NAPI Stress Corpus Tests ===
+
+ok - stress smoke includes generated malformed fuzz seeds and writes summaries
+
+Tests passed: 1, failed: 0
+
+▶️  Running test/integration/native-worker.test.js
+native Worker worker-only: PASS
+native Worker main-and-worker: PASS
+native Worker terminate-after-async: PASS
+
+▶️  Running test/integration/package-metadata.test.js
+✅ package keywords include discoverability terms
+✅ package description length stays within policy-friendly bounds
+✅ README.md has Quick Start section in first 80 lines
+✅ README.ja.md has Quick Start section in first 80 lines
+✅ README heading structure is synchronized with README.ja.md
+✅ Cargo package metadata includes security/positioning and avif
+✅ package description keeps Image Firewall positioning
+✅ Node runtime contract is consistently Node 22 and 24
+✅ CLI is published through the package bin contract
+
+✅ package metadata checks completed: 9 passed, 0 failed
+
+▶️  Running test/integration/placeholder.test.js
+Placeholder helper integration tests passed
+
+▶️  Running test/integration/preset-output-isolation.test.js
+preset output isolation tests passed
+
+▶️  Running test/integration/quality-matched.test.js
+quality-matched selection checks passed
+
+▶️  Running test/integration/quality-metrics.test.js
+=== Quality Metrics Tests ===
+✅ SSIM/PSNR are perfect for identical buffers
+✅ lazy-image encode maintains high quality
+
+▶️  Running test/integration/release-corpus.test.js
+release corpus coverage and license checks passed
+
+▶️  Running test/integration/responsive.test.js
+Responsive helper integration tests passed
+
+▶️  Running test/integration/streaming.test.js
+=== Streaming Transform Tests ===
+✅ streaming resize -> jpeg passed
+✅ streaming large resize -> webp passed
+✅ streaming metrics callback passed
+✅ streaming error propagation passed
+✅ streaming async process error propagation passed
+✅ streaming multiple ops passed
+✅ streaming resize -> png passed
+✅ streaming resize -> avif passed
+✅ streaming destroy mid-stream passed
+✅ streaming empty input error passed
+✅ streaming cleanup error reporting passed
+✅ streaming memory pressure (4 concurrent) passed
+✅ streaming memory pressure RSS bound passed (delta=95.3 MB < 250 MB)
+
+▶️  Running test/integration/target-bytes-file-native.test.js
+native target-bytes file tests passed
+
+▶️  Running test/integration/type-improvements.test.js
+🔧 Type Improvements Verification Test
+====================================
+
+✅ Testing ImageMetadata.format type improvements:
+  Image metadata: 1x1
+  Format: jpeg (type: string)
+
+✅ Testing improved error messages (conceptual):
+  The zero-copy conversion now provides contextual error messages:
+  - "pixel count overflow: X * 3 (image too large for zero-copy conversion)"
+  - "capacity overflow: X * 3 (memory allocation too large for zero-copy conversion)"
+  - "failed to initialize rayon thread pool: preferred pool (...) failed: ..."
+
+📋 Type Safety Improvements Summary:
+1. ✅ ImageMetadata.format: canonical input format | undefined
+2. ✅ Better IntelliSense support with strict typing
+3. ✅ Compile-time validation prevents invalid format strings
+4. ✅ Enhanced error messages with contextual information
+
+💡 Benefits:
+- Type safety: Catch errors at compile-time instead of runtime
+- Developer experience: Better IDE autocomplete and validation
+- Error clarity: Contextual messages help with debugging
+- Maintainability: Stricter types make code more robust
+
+🔄 Migration Impact:
+- ImageMetadata.format is now strictly typed (breaking change for TypeScript)
+- Error messages are more descriptive for debugging
+- Zero-copy operations provide better overflow context
+
+▶️  Running test/integration/wasm-asset-diagnostics-evidence.test.js
+candidate Chrome evidence and saved image hashes are consistent
+
+▶️  Running test/integration/wasm-edge-1.4.0-evidence.test.js
+published 1.4.0 Edge outputs, API diagnostics, and startup failure evidence PASS
+
+▶️  Running test/integration/wasm-edge-diagnostic-contract.test.js
+Edge diagnostic validation rejects missing API fields and wrong phase, code, or mapping
+
+▶️  Running test/integration/wasm-node-1.4.0-evidence.test.js
+published 1.4.0 Node outputs, budget, metadata, and API diagnostics PASS
+
+▶️  Running test/integration/wasm-node-diagnostic-contract.test.js
+Node diagnostic collector preserves initialization and decode API errors
+
+▶️  Running test/integration/wasm-quality-metrics.test.js
+Wasm quality metric checks passed
+
+▶️  Running test/integration/wasm-required-runtime.test.js
+required Wasm runtime and version are fail-closed
+
+▶️  Running test/integration/wasm-review-corrections.test.js
+
+Wrote artifacts/benchmark/wasm-upload-summary.json
+Wrote artifacts/benchmark/wasm-upload-summary.md
+
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3290.2ms, targetHit=yes
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.3.1: 321.0 KB in 3041.5ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 2607.0ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.3.1: 420.0 KB in 1844.9ms, targetHit=yes
+Optional baselines: 0 unavailable, 0 installed but not run
+Wasm review corrections: saved input, ICC negative, runtime rows, JSON/Markdown PASS
+
+▶️  Running test/integration/zero-copy-safety.test.js
+🔒 Zero-Copy Conversion Safety Test
+==================================
+
+✅ Testing regular image processing:
+  Image size: 1x1
+  ✅ Processed successfully: 458 bytes
+  ✅ 100x100: 367 bytes
+  ✅ 500x500: 1102 bytes
+  ✅ 1000x1000: 3310 bytes
+
+✅ Testing edge cases:
+  ✅ 1x1 resize: 331 bytes
+
+📋 Safety Measures Implemented:
+1. ✅ Overflow protection: checked_mul() for len * 3 and cap * 3
+2. ✅ Alignment verification: static compile-time assertions
+3. ✅ Size relationship verification: [u8; 3] == 3 * u8
+4. ✅ Memory safety: Proper Vec::from_raw_parts usage
+5. ✅ Drop safety: std::mem::forget prevents double-free
+
+🛡️  Protection Against:
+- Integer overflow in len * 3 or capacity * 3
+- Alignment mismatches between [u8; 3] and u8
+- Size calculation errors
+- Memory safety violations
+- Double-free vulnerabilities
+
+⚡ Performance Benefits:
+- Zero-copy conversion (no memory allocation)
+- Compile-time safety verification
+- Runtime overflow detection for edge cases
+
+✅ All JS integration tests completed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:js:type-safety
+> node test/type-safety/runtime-type-safety-exit.test.js && node test/type-safety/runtime-type-safety.test.js && node test/unit/target-bytes-search.test.js
+
+runtime-type-safety-exit.test.js passed
+🔒 Type Safety Verification Test
+=================================
+
+✅ Valid formats test:
+  jpeg: 458 bytes
+  jpg: 458 bytes
+  webp: 134 bytes
+
+✅ Valid presets test:
+  thumbnail:
+    Format: webp
+    Quality: 75
+    Size: 150x150
+    Result: 104 bytes
+    Convenience result: 104 bytes
+  avatar:
+    Format: webp
+    Quality: 80
+    Size: 200x200
+    Result: 134 bytes
+    Convenience result: 134 bytes
+  hero:
+    Format: jpeg
+    Quality: 85
+    Size: 1920xundefined
+    Result: 11136 bytes
+    Convenience result: 11136 bytes
+  social:
+    Format: jpeg
+    Quality: 80
+    Size: 1200x630
+    Result: 1534 bytes
+    Convenience result: 1534 bytes
+
+❌ Invalid values test (should fail at runtime):
+  ✅ Invalid format correctly rejected: [E111] Unsupported image format: invalid_format...
+  ✅ Invalid preset correctly rejected: [E401] Unknown preset: 'invalid_preset'. Available: thumbnail, avatar, hero, social...
+
+📋 Type Safety Benefits:
+1. ✅ IDE autocomplete for format strings
+2. ✅ Compile-time validation in TypeScript
+3. ✅ Runtime validation in both TypeScript and JavaScript
+4. ✅ Better developer experience and fewer bugs
+
+🎯 Before vs After:
+Before: toBuffer(format: string) - accepts ANY string
+After:  toBuffer(format: OutputFormat) - only valid formats
+Result: Compile-time safety + IDE support
+ok - runTargetBytesSearch uses toBufferTargetBytesNative and returns normalized fields
+ok - runTargetBytesSearch accepts jpg and defaults strict policy to false
+ok - runTargetBytesSearch throws explicit guidance when native target-bytes method is missing
+ok - file search fails clearly when native file output is unavailable
+ok - target-bytes options reject values above the native u32 contract
+ok - toFileTargetBytes delegates to native atomic output without returning image data
+ok - target-bytes strict rejects malformed values before native output
+
+> @alberteinshutoin/lazy-image@1.4.3 test:pack-contract
+> node scripts/verify-pack.js
+
+Pack contract verified: 15 files included in npm tarball.
+
+> @alberteinshutoin/lazy-image@1.4.3 test:pack-metadata
+> node test/integration/package-metadata.test.js
+
+✅ package keywords include discoverability terms
+✅ package description length stays within policy-friendly bounds
+✅ README.md has Quick Start section in first 80 lines
+✅ README.ja.md has Quick Start section in first 80 lines
+✅ README heading structure is synchronized with README.ja.md
+✅ Cargo package metadata includes security/positioning and avif
+✅ package description keeps Image Firewall positioning
+✅ Node runtime contract is consistently Node 22 and 24
+✅ CLI is published through the package bin contract
+
+✅ package metadata checks completed: 9 passed, 0 failed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:release-policy
+> node test/unit/release-policy.test.js
+
+ok - BREAKING markers are case-sensitive release markers
+ok - Removed section only blocks when it has entries
+ok - target version section is preferred over Unreleased
+ok - major boundary means x.0.0
+ok - release tag must match the package version
+ok - manual release workflow stages candidates but only tags publish
+ok - published tarballs come from the candidate artifact
+
+> @alberteinshutoin/lazy-image@1.4.3 test:release-artifacts
+> node test/unit/release-artifacts.test.cjs
+
+release artifact guard rejects missing, multiple, and invalid binary artifacts
+release artifact guard verifies binaries larger than the default child-process buffer
+
+> @alberteinshutoin/lazy-image@1.4.3 test:generated-artifact-policy
+> node test/unit/generated-artifact-policy.test.js
+
+generated artifact policy test passed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:security-audit-notification
+> node test/unit/security-audit-notification.test.js
+
+ok - only the Cargo audit job receives issue write access and calls the tested module
+ok - creates the canonical security issue when none is open
+ok - does not duplicate a notification for the same workflow run
+ok - does not reuse an unrelated open security issue
+ok - updates the canonical issue with a new failing run
+ok - reports notification failures with actionable context
+
+> @alberteinshutoin/lazy-image@1.4.3 test:cargo-audit-policy
+> node test/unit/cargo-audit-policy.test.js
+
+ok - audits root and fuzz lockfiles with lockfile-scoped exceptions
+ok - rejects expired and malformed audit exceptions
+ok - security workflow delegates Cargo auditing to the tested policy runner
+
+> @alberteinshutoin/lazy-image@1.4.3 test:npm-audit-policy
+> node test/unit/npm-audit-policy.test.js
+
+{"message":"503 Service Unavailable","method":"POST","statusCode":503}
+npm warn audit 503 Service Unavailable
+npm error audit endpoint returned an error
+npm audit endpoint returned 503; retrying once.
+found 0 vulnerabilities
+ok - retries one audit endpoint 503 and preserves the audit arguments
+1 critical severity vulnerability
+ok - does not retry a vulnerability failure
+{"statusCode":503,"vulnerabilities":{"example":{"severity":"critical"}}}
+npm warn audit 503 Service Unavailable
+npm error audit endpoint returned an error
+ok - does not retry when a 503 message is mixed with another failure
+{"message":"503 Service Unavailable","method":"POST","statusCode":503}
+npm warn audit 503 Service Unavailable
+npm error audit endpoint returned an error
+npm audit endpoint returned 503; retrying once.
+{"message":"503 Service Unavailable","method":"POST","statusCode":503}
+npm warn audit 503 Service Unavailable
+npm error audit endpoint returned an error
+ok - fails closed after a second audit endpoint 503
+ok - security workflow delegates both npm audits to the retry policy
+
+> @alberteinshutoin/lazy-image@1.4.3 test:benchmark-quality-gate
+> node test/unit/benchmark-quality-gate.test.js
+
+benchmark quality gate test passed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:types
+> tsc --noEmit
+
+
+> @alberteinshutoin/lazy-image@1.4.3 test:examples
+> node examples/run-all.mjs
+
+
+Running basic.mjs --self-test
+
+Running batch-processing.mjs --self-test
+
+Running error-handling.mjs --self-test
+
+Running upload-sanitize-server.mjs --self-test
+
+Running build-time-optimize.mjs --self-test
+Build-time optimization summary:
+  Files: 3/3 optimized
+  Total in: 293.0 KiB
+  Total out: 357.3 KiB
+  Reduction: -21.9%
+  Native wall time: 1578 ms
+  Script wall time: 547 ms
+
+Running compile-image-static-site.mjs --self-test
+PASS: normal, no-upscale, invalid input, strict budget, existing site protection and modern picture source preference
+
+Running metrics-observability.mjs --self-test
+{"event":"image_optimized","format_in":"jpeg","format_out":"webp","bytes_in":100055,"bytes_out":35890,"compression_ratio":0.3587027135075708,"duration_ms":83.14045899999999,"decode_ms":3.025167,"encode_ms":78.458917,"ops_ms":1.6502080000000001,"icc_preserved":false,"metadata_stripped":false,"output_bytes":35890}
+{"event":"image_optimized","format_in":"jpeg","format_out":"webp","bytes_in":100055,"bytes_out":37796,"compression_ratio":0.37775223627005144,"duration_ms":85.711417,"decode_ms":2.9293750000000003,"encode_ms":81.42770900000001,"ops_ms":1.348292,"icc_preserved":false,"metadata_stripped":false,"output_bytes":37796}
+{"event":"image_optimized","format_in":"jpeg","format_out":"webp","bytes_in":100055,"bytes_out":36754,"compression_ratio":0.36733796411973413,"duration_ms":92.911042,"decode_ms":2.995667,"encode_ms":88.508583,"ops_ms":1.39925,"icc_preserved":false,"metadata_stripped":false,"output_bytes":36754}
+
+All example self-tests passed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:ci-planner:rust-targets
+> node test/unit/selective-rust-targets.test.js
+
+selective Rust target tests passed
+
+> @alberteinshutoin/lazy-image@1.4.3 test:rust
+> cargo test --no-default-features
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running unittests src/lib.rs (target/debug/deps/lazy_image-f8135e58a14bdb3e)
+
+running 300 tests
+test engine::api::engine::tests::clone_once_lock_does_not_force_uninitialized_lock ... ok
+test engine::api::engine::tests::clone_once_lock_copies_initialized_value ... ok
+test engine::api::engine::tests::with_source_initializes_default_engine_state ... ok
+test engine::api::tests::fast_resize_owned_returns_error_instead_of_dummy_image ... ok
+test engine::decoder::tests::bounded_orientation_reader_rejects_out_of_range_value ... ok
+test engine::decoder::tests::bounded_orientation_reader_scans_duplicate_exif_segments ... ok
+test engine::decoder::tests::bounded_orientation_reader_matches_byte_api_within_budget ... ok
+test engine::decoder::tests::test_decode_rejects_crafted_png_with_huge_dimensions ... ok
+test engine::decoder::tests::test_decode_image_routes_by_format ... ok
+test engine::decoder::tests::test_decode_image_routes_png_to_zune ... ok
+test engine::decoder::tests::test_detect_format_jpeg_and_png ... ok
+test engine::decoder::tests::processing_orientation_lookup_scans_beyond_preflight_budget ... ok
+test engine::decoder::tests::bounded_orientation_reader_does_not_treat_budget_eof_as_absent ... ok
+test engine::decoder::tests::test_decode_with_image_crate_enforces_limits_on_unknown_header ... ok
+test engine::decoder::tests::test_ensure_dimensions_safe_rejects_invalid_webp_header ... ok
+test engine::decoder::tests::test_decode_image_routes_jpeg_to_mozjpeg ... ok
+test engine::decoder::tests::test_ensure_dimensions_safe_allows_small_image ... ok
+test engine::decoder::tests::test_orientation_scan_reader_caps_reads_and_seeks ... ok
+test engine::decoder::tests::test_zune_png_limit_lte_max_dimension ... ok
+test engine::decoder::tests::test_decode_image_routes_webp_to_libwebp ... ok
+test engine::decoder::tests::test_ensure_dimensions_safe_allows_small_webp ... ok
+test engine::encoder::tests::encode_tests::test_encode_avif_returns_unsupported_without_feature ... ok
+test engine::decoder::tests::test_decode_png_rejects_beyond_max_dimension ... ok
+test engine::decoder::tests::test_ensure_dimensions_safe_rejects_large_image ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_produces_valid_jpeg ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_with_icc ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_produces_valid_jpeg ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_with_icc ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_mode_frame_settings ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_quality_changes_quantization_tables ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_quality_consistency ... ok
+test engine::encoder::tests::encode_tests::test_quality_band_mapping_boundaries ... ok
+test engine::encoder::tests::encode_tests::test_quality_settings_webp_mapping_is_stable ... ok
+test engine::firewall::tests::base_limits_enforced_even_when_disabled ... ok
+test engine::firewall::tests::enforce_pixels_allows_small_image_from_header ... ok
+test engine::encoder::tests::encode_tests::test_encode_webp_produces_valid_webp ... ok
+test engine::encoder::tests::encode_tests::test_encode_webp_with_icc ... ok
+test engine::firewall::tests::lenient_policy_allows_small_exif ... ok
+test engine::firewall::tests::exif_size_limit_rejects_oversized_exif ... ok
+test engine::firewall::tests::enforce_pixels_rejects_oversized_image_from_header ... ok
+test engine::firewall::tests::non_jpeg_data_passes_exif_scan ... ok
+test engine::firewall::tests::lenient_policy_allows_small_icc ... ok
+test engine::firewall::tests::public_upload_uses_strict_limits_and_bounded_icc ... ok
+test engine::firewall::tests::scan_exif_size_returns_none_for_non_jpeg ... ok
+test engine::firewall::tests::scan_exif_size_returns_none_for_jpeg_without_exif ... ok
+test engine::firewall::tests::scan_exif_size_returns_size_for_jpeg_with_exif ... ok
+test engine::firewall::tests::strict_policy_enforces_pixels_and_metadata ... ok
+test engine::firewall::tests::timeout_enforced ... ok
+test engine::io::exif::tests::exif_presence_tests::exif_has_gps_handles_big_endian ... ok
+test engine::io::exif::tests::exif_presence_tests::exif_has_gps_rejects_unknown_byte_order ... ok
+test engine::io::exif::tests::exif_presence_tests::exif_has_gps_returns_false_for_empty ... ok
+test engine::firewall::tests::strict_policy_allows_small_exif ... ok
+test engine::io::exif::tests::exif_presence_tests::exif_has_gps_returns_false_when_gps_absent ... ok
+test engine::io::exif::tests::exif_presence_tests::exif_has_gps_returns_true_when_gps_present ... ok
+test engine::io::exif::tests::exif_presence_tests::has_exif_returns_false_for_png ... ok
+test engine::io::exif::tests::exif_presence_tests::has_exif_returns_false_for_jpeg_without_exif ... ok
+test engine::io::exif::tests::exif_presence_tests::has_exif_returns_true_for_jpeg_with_exif ... ok
+test engine::io::exif::tests::exif_raw_tests::extract_exif_raw_returns_data_for_jpeg_with_exif ... ok
+test engine::io::exif::tests::exif_raw_tests::extract_exif_raw_returns_none_for_png ... ok
+test engine::io::exif::tests::exif_raw_tests::extract_exif_raw_returns_none_for_webp ... ok
+test engine::io::exif_embed::tests::keep_gps_leaves_the_pointer_intact ... ok
+test engine::io::exif::tests::exif_presence_tests::has_exif_works_beyond_max_exif_source_bytes ... ok
+test engine::io::exif::tests::exif_raw_tests::extract_exif_raw_returns_none_for_jpeg_without_exif ... ok
+test engine::io::exif_embed::tests::no_flags_returns_payload_unchanged ... ok
+test engine::io::exif_embed::tests::reset_orientation_rewrites_tag_to_one ... ok
+test engine::io::exif_embed::tests::strip_gps_zeroes_the_gps_ifd_pointer ... ok
+test engine::io::exif_embed::tests::strip_and_reset_together ... ok
+test engine::io::exif_embed::tests::too_short_payload_is_returned_unchanged ... ok
+test engine::encoder::tests::encode_tests::test_encode_rgba_image ... ok
+test engine::io::icc::tests::extraction_tests::test_extract_icc_from_jpeg_with_profile ... ok
+test engine::io::icc::tests::extraction_tests::test_extract_icc_returns_none_for_empty ... ok
+test engine::io::icc::tests::extraction_tests::test_extract_icc_returns_none_for_no_icc ... ok
+test engine::io::icc::tests::extraction_tests::test_extract_icc_returns_none_for_non_image ... ok
+test engine::encoder::tests::encode_tests::test_encode_jpeg_fast_mode_vs_default_size_difference ... ok
+test engine::io::icc::tests::extraction_tests::test_extract_icc_from_webp_with_profile ... ok
+test engine::encoder::tests::encode_tests::test_encode_png_produces_valid_png ... ok
+test engine::encoder::tests::encode_tests::test_encode_png_with_icc ... ok
+test engine::io::icc::tests::extraction_tests::test_extract_icc_from_png_with_profile ... ok
+test engine::io::icc::tests::roundtrip_tests::test_jpeg_roundtrip ... ok
+test engine::io::icc::tests::test_extract_icc_from_jpeg_no_profile ... ok
+test engine::io::icc::tests::test_extract_icc_from_png_no_profile ... ok
+test engine::io::icc::tests::test_extract_icc_from_webp_no_profile ... ok
+test engine::io::icc::tests::test_extract_icc_profile_invalid_data ... ok
+test engine::io::icc::tests::test_extract_icc_profile_large_input_skips_icc ... ok
+test engine::io::icc::tests::test_extract_icc_profile_jpeg ... ok
+test engine::io::icc::tests::roundtrip_tests::test_webp_roundtrip ... ok
+test engine::io::icc::tests::test_validate_icc_profile_allows_shared_tag_data_but_rejects_partial_overlap ... ok
+test engine::io::icc::tests::test_validate_icc_profile_invalid_version ... ok
+test engine::io::icc::tests::test_validate_icc_profile_minimal_valid ... ok
+test engine::io::icc::tests::test_validate_icc_profile_rejects_missing_signature_and_bad_tag_table ... ok
+test engine::io::icc::tests::test_validate_icc_profile_size_mismatch ... ok
+test engine::io::icc::tests::test_validate_icc_profile_too_small ... ok
+test engine::io::icc::tests::validation_tests::test_validate_empty ... ok
+test engine::io::icc::tests::validation_tests::test_validate_too_short ... ok
+test engine::io::icc::tests::validation_tests::test_validate_truncated_icc ... ok
+test engine::io::icc::tests::validation_tests::test_validate_valid_icc ... ok
+test engine::io::icc::tests::validation_tests::test_validate_wrong_size_field ... ok
+test engine::io::source::tests::nonexistent_file_returns_error ... ok
+test engine::memory::estimate::tests::cover_resize_accounts_intermediate ... ok
+test engine::memory::estimate::tests::cover_resize_estimate_grows_with_target ... ok
+test engine::io::source::tests::source_memory_has_correct_bytes ... ok
+test engine::io::source::tests::small_file_loaded_into_memory ... ok
+test engine::memory::estimate::tests::estimate_memory_from_dimensions_non_zero ... ok
+test engine::memory::estimate::tests::estimate_memory_from_header_returns_minimum_for_small_png ... ok
+test engine::memory::estimate::tests::fallback_estimate_clamped_to_max ... ok
+test engine::memory::estimate::tests::fallback_estimate_scales_with_file_size ... ok
+test engine::memory::estimate::tests::format_specific_estimate_differs ... ok
+test engine::memory::estimate::tests::grayscale_jpeg_gets_lower_estimate_than_rgb ... ok
+test engine::memory::estimate::tests::header_estimate_populates_decoded_bpp ... ok
+test engine::memory::estimate::tests::jpeg_header_parsing_returns_rgb_bpp ... ok
+test engine::memory::estimate::tests::png_header_parsing_grayscale ... ok
+test engine::memory::estimate::tests::png_header_parsing_rgb ... ok
+test engine::memory::estimate::tests::png_header_parsing_rgba ... ok
+test engine::io::icc::tests::roundtrip_tests::test_cross_format_roundtrip_jpeg_to_png ... ok
+test engine::memory::estimate::tests::webp_header_parsing_no_alpha ... ok
+test engine::memory::semaphore::tests::normal_request_not_clamped ... ok
+test engine::memory::semaphore::tests::oversized_request_acquires_full_capacity ... ok
+test engine::memory::semaphore::tests::acquire_release_returns_capacity ... ok
+test engine::io::icc::tests::roundtrip_tests::test_cross_format_roundtrip_png_to_webp ... ok
+test engine::memory::semaphore::tests::wakes_waiter_after_drop ... ok
+test engine::memory::semaphore::tests::zero_weight_acquire_returns_immediately ... ok
+test engine::metadata::tests::firewall_override_strips_all ... ok
+test engine::metadata::tests::from_flags_maps_every_combination ... ok
+test engine::metadata::tests::gps_without_exif_is_unrepresentable ... ok
+test engine::metadata::tests::keep_exif_honors_strip_gps_flag ... ok
+test engine::metadata::tests::public_upload_forces_icc_only_regardless_of_prior_policy ... ok
+test engine::metadata::tests::strip_all_keeps_nothing ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_flip_horizontal ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_flip_vertical ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_identity ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_invalid_orientation_ignored ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_rotate_180 ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_rotate_270 ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_rotate_90 ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_transpose ... ok
+test engine::memory::estimate::tests::estimate_cache_has_bounded_size ... ok
+test engine::memory::estimate::tests::estimate_cache_keeps_distinct_bpp_variants_separate ... ok
+test engine::pipeline::tests::apply_ops_tests::test_auto_orient_transverse ... ok
+test engine::pipeline::tests::apply_ops_tests::test_brightness ... ok
+test engine::pipeline::tests::apply_ops_tests::test_colorspace_srgb ... ok
+test engine::pipeline::tests::apply_ops_tests::test_contrast ... ok
+test engine::pipeline::tests::apply_ops_tests::test_crop_at_origin ... ok
+test engine::pipeline::tests::apply_ops_tests::test_crop_entire_image ... ok
+test engine::pipeline::tests::apply_ops_tests::test_crop_out_of_bounds ... ok
+test engine::pipeline::tests::apply_ops_tests::test_crop_valid ... ok
+test engine::pipeline::tests::apply_ops_tests::test_empty_operations ... ok
+test engine::pipeline::tests::apply_ops_tests::test_extract_at_boundary ... ok
+test engine::pipeline::tests::apply_ops_tests::test_extract_cover_fit_is_not_fused ... ok
+test engine::pipeline::tests::apply_ops_tests::test_crop_then_resize_rounds_from_cropped_bounds ... ok
+test engine::pipeline::tests::apply_ops_tests::test_chained_operations ... ok
+test engine::pipeline::tests::apply_ops_tests::test_extract_fusion_preserves_following_operations ... ok
+test engine::pipeline::tests::apply_ops_tests::test_extract_fill_fit_matches_two_step ... ok
+test engine::pipeline::tests::apply_ops_tests::test_extract_small_image ... ok
+test engine::pipeline::tests::apply_ops_tests::test_flip_h ... ok
+test engine::pipeline::tests::apply_ops_tests::test_flip_v ... ok
+test engine::pipeline::tests::apply_ops_tests::test_grayscale_reduces_channels ... ok
+test engine::pipeline::tests::apply_ops_tests::test_extract_matches_resize_then_crop ... ok
+test engine::firewall::tests::base_metadata_limit_enforced_even_when_disabled ... ok
+test engine::io::icc::tests::roundtrip_tests::test_png_roundtrip ... ok
+test engine::pipeline::tests::apply_ops_tests::test_resize_fill_ignores_aspect_ratio ... ok
+test engine::pipeline::tests::apply_ops_tests::test_resize_cover_crops_to_box ... ok
+test engine::pipeline::tests::apply_ops_tests::test_resize_height_only ... ok
+test engine::pipeline::tests::apply_ops_tests::test_resize_operation ... ok
+test engine::pipeline::tests::apply_ops_tests::test_rotate_0 ... ok
+test engine::pipeline::tests::apply_ops_tests::test_rotate_180 ... ok
+test engine::pipeline::tests::apply_ops_tests::test_rotate_270 ... ok
+test engine::io::icc::tests::classification_distinguishes_unsafe_and_public_large_valid_icc ... ok
+test engine::pipeline::tests::apply_ops_tests::test_rotate_90 ... ok
+test engine::pipeline::tests::apply_ops_tests::test_rotate_invalid_angle ... ok
+test engine::pipeline::tests::color_state_tests::color_state_from_dynamic_image_detects_rgba_8bit ... ok
+test engine::pipeline::tests::color_state_tests::apply_ops_tracked_keeps_icc_flag ... ok
+test engine::pipeline::tests::color_state_tests::update_color_state_converts_bit_depth_on_grayscale_16bit ... ok
+test engine::pipeline::tests::color_state_tests::update_color_state_normalizes_colorspace_and_bitdepth ... ok
+test engine::pipeline::tests::color_state_tests::update_color_state_sets_luma_on_grayscale ... ok
+test engine::pipeline::tests::operation_contract_tests::validate_sequence_fails_when_orientation_missing ... ok
+test engine::pipeline::tests::optimize_ops_tests::test_consecutive_resizes_combined ... ok
+test engine::pipeline::tests::operation_contract_tests::validate_sequence_allows_current_ops ... ok
+test engine::pipeline::tests::optimize_ops_tests::test_empty_operations ... ok
+test engine::pipeline::tests::apply_ops_tests::test_rotate_neg90 ... ok
+test engine::pipeline::tests::optimize_ops_tests::test_multiple_consecutive_resizes ... ok
+test engine::pipeline::tests::optimize_ops_tests::test_non_consecutive_resizes_not_combined ... ok
+test engine::pipeline::tests::optimize_ops_tests::test_resize_then_crop_is_fused_into_extract ... ok
+test engine::pipeline::tests::optimize_ops_tests::test_resize_with_both_dimensions ... ok
+test engine::pipeline::tests::optimize_ops_tests::test_single_operation ... ok
+test engine::platform::tests::allocator_name_returns_known_value ... ok
+test engine::platform::tests::shared_lock_child ... ignored, subprocess helper for the exclusive-lock test
+test engine::platform::tests::resource_usage_returns_reasonable_values ... ok
+test engine::platform::tests::try_shared_lock_succeeds_on_temp_file ... ok
+test engine::pipeline::tests::apply_ops_tests::test_resize_width_only ... ok
+test engine::resize::tests::fast_resize_tests::test_fast_resize_invalid_dimensions ... ok
+test engine::platform::tests::try_shared_lock_rejects_exclusive_lock_then_recovers ... ok
+test engine::firewall::tests::timeout_is_inter_stage_best_effort ... ok
+test engine::resize::tests::fast_resize_tests::test_fast_resize_rgba_respects_transparency_when_downscaling ... ok
+test engine::resize::tests::fast_resize_tests::test_fast_resize_same_size ... ok
+test engine::platform::tests::detect_system_memory_returns_some_on_supported_os ... ok
+test engine::resize::tests::fast_resize_tests::test_fast_resize_rgba ... ok
+test engine::resize::tests::fast_resize_tests::test_is_fully_opaque_skips_small_image_scan ... ok
+test engine::resize::tests::fast_resize_tests::test_is_fully_opaque_uses_wide_multiplication_for_threshold ... ok
+test engine::resize::tests::fast_resize_tests::test_requires_premultiply_only_for_rgba ... ok
+test engine::resize::tests::resize_calc_tests::test_aspect_ratio_preservation_tall ... ok
+test engine::resize::tests::resize_calc_tests::test_aspect_ratio_preservation_wide ... ok
+test engine::resize::tests::resize_calc_tests::test_both_dimensions_same_aspect_ratio ... ok
+test engine::resize::tests::resize_calc_tests::test_both_dimensions_specified ... ok
+test engine::resize::tests::resize_calc_tests::test_both_dimensions_tall_image_fits_inside ... ok
+test engine::resize::tests::resize_calc_tests::test_both_dimensions_wide_image_fits_inside ... ok
+test engine::resize::tests::resize_calc_tests::test_extreme_aspect_ratio_keeps_short_edge_at_one_pixel ... ok
+test engine::resize::tests::resize_calc_tests::test_height_only_maintains_aspect_ratio ... ok
+test engine::resize::tests::fast_resize_tests::test_fast_resize_aspect_ratio_change ... ok
+test engine::resize::tests::resize_calc_tests::test_none_returns_original ... ok
+test engine::resize::tests::resize_calc_tests::test_rounding_behavior ... ok
+test engine::resize::tests::resize_calc_tests::test_square_image ... ok
+test engine::resize::tests::resize_calc_tests::test_width_only_maintains_aspect_ratio ... ok
+test engine::resize::tests::fast_resize_tests::test_fast_resize_downscale ... ok
+test engine::resize::tests::fast_resize_tests::test_fast_resize_upscale ... ok
+test engine::resize::tests::resize_fallback_tests::image_crate_fallback_resizes_rgb ... ok
+test engine::resize::tests::resize_fallback_tests::image_crate_fallback_resizes_rgba ... ok
+test engine::resize::tests::test_copy_pixels_to_aligned_image_preserves_data ... ok
+test engine::resize::tests::test_fast_resize_internal_impl_errors_on_short_buffer ... ok
+test engine::tasks::tests::auto_orient_flag_default_is_true ... ok
+test engine::tasks::tests::base_limits_enforced_without_sanitize ... ok
+test engine::tasks::tests::base_metadata_scan_runs_without_sanitize ... ok
+test engine::tasks::tests::decode_internal_errors_when_source_missing ... ok
+test engine::tasks::tests::auto_orient_flag_disables_orientation_lookup ... ok
+test engine::tasks::tests::fast_mode_propagates_to_jpeg_encode ... ok
+test engine::tasks::tests::fast_mode_false_produces_valid_jpeg ... ok
+test engine::tasks::tests::firewall_limits_are_enforced_on_decode ... ok
+test engine::tasks::tests::fast_mode_true_vs_false_both_valid ... ok
+test engine::tasks::tests::prepare_for_encode_reuses_decoded_arc_when_ops_empty ... ok
+test engine::tasks::tests::prepare_for_encode_applies_ops_once_when_ops_nonempty ... ok
+test engine::tasks::tests::process_and_encode_outputs_image ... ok
+test engine::tasks::tests::target_bytes_search_finds_best_quality_under_budget ... ok
+test engine::tasks::tests::encode_prepared_can_run_multiple_times_against_same_cache ... ok
+test engine::decoder::tests::test_decode_png_fallback_to_image_crate_for_large_dimensions ... ok
+test engine::tasks::tests::target_bytes_search_metrics_include_decode_ops_and_encode_timings ... ok
+test engine::test_support::tests::minimal_icc_profile_matches_encoder_fixture ... ok
+test engine::tasks::tests::target_bytes_search_keeps_feasible_quality_above_over_budget_midpoint ... ok
+test engine::tests::decode_tests::test_decode_no_source ... ok
+test engine::tests::decode_tests::test_decode_with_image_crate ... ok
+test engine::tests::decode_tests::test_firewall_blocks_large_input_bytes ... ok
+test engine::tests::decode_tests::test_firewall_blocks_large_pixel_count ... ok
+test inspect::tests::animated_webp_reports_animation_and_alpha ... ok
+test engine::tests::decode_tests::test_decode_already_decoded ... ok
+test inspect::tests::jpeg_is_opaque_and_static ... ok
+test inspect::tests::malformed_supported_header_returns_typed_decode_failure ... ok
+test engine::pipeline::tests::apply_ops_tests::test_extract_extreme_aspect_ratio ... ok
+test inspect::tests::orientation_is_reported_without_changing_dimensions ... ok
+test inspect::tests::path_and_buffer_inspection_return_identical_metadata ... ok
+test inspect::tests::rgb_png_reports_no_alpha ... ok
+test inspect::tests::opened_reader_keeps_metadata_from_one_file_after_path_replacement ... ok
+test inspect::tests::rgba_png_reports_alpha_without_decoding_pixels ... ok
+test ops::tests::output_format_tests::test_as_str_all_formats ... ok
+test ops::tests::output_format_tests::test_avif_is_unsupported_without_feature ... ok
+test ops::tests::output_format_tests::test_case_insensitive_jpeg ... ok
+test ops::tests::output_format_tests::test_case_insensitive_jpg ... ok
+test ops::tests::output_format_tests::test_case_insensitive_png ... ok
+test ops::tests::output_format_tests::test_case_insensitive_webp ... ok
+test ops::tests::output_format_tests::test_empty_format ... ok
+test ops::tests::output_format_tests::test_from_str_default_fast_mode_is_false ... ok
+test ops::tests::output_format_tests::test_from_str_with_options_fast_mode_false ... ok
+test ops::tests::output_format_tests::test_from_str_with_options_fast_mode_ignored_for_non_jpeg ... ok
+test ops::tests::output_format_tests::test_from_str_with_options_fast_mode_true ... ok
+test ops::tests::output_format_tests::test_jpeg_default_quality ... ok
+test ops::tests::output_format_tests::test_jpeg_with_quality ... ok
+test ops::tests::output_format_tests::test_jpg_alias ... ok
+test ops::tests::output_format_tests::test_jpg_with_quality ... ok
+test ops::tests::output_format_tests::test_png_format ... ok
+test ops::tests::output_format_tests::test_png_ignores_quality_for_compatibility ... ok
+test ops::tests::output_format_tests::test_quality_above_range_is_rejected ... ok
+test ops::tests::output_format_tests::test_quality_below_range_is_rejected ... ok
+test ops::tests::output_format_tests::test_quality_range ... ok
+test ops::tests::output_format_tests::test_unsupported_format ... ok
+test ops::tests::output_format_tests::test_unsupported_format_bmp ... ok
+test ops::tests::output_format_tests::test_webp_default_quality ... ok
+test ops::tests::output_format_tests::test_webp_with_quality ... ok
+test ops::tests::output_format_tests::test_with_quality_avif ... ok
+test ops::tests::output_format_tests::test_with_quality_jpeg ... ok
+test ops::tests::output_format_tests::test_with_quality_png_unchanged ... ok
+test ops::tests::output_format_tests::test_with_quality_webp ... ok
+test ops::tests::preset_config_tests::test_avatar_preset ... ok
+test ops::tests::preset_config_tests::test_case_insensitive_avatar ... ok
+test engine::resize::tests::test_fast_resize_uses_rayon_pool ... ok
+test ops::tests::preset_config_tests::test_case_insensitive_hero ... ok
+test ops::tests::preset_config_tests::test_case_insensitive_social ... ok
+test ops::tests::preset_config_tests::test_case_insensitive_thumbnail ... ok
+test ops::tests::preset_config_tests::test_hero_preset ... ok
+test ops::tests::preset_config_tests::test_preset_new ... ok
+test ops::tests::preset_config_tests::test_preset_new_with_none ... ok
+test engine::memory::semaphore::tests::oversized_requests_are_serialized ... ok
+test ops::tests::preset_config_tests::test_social_preset ... ok
+test ops::tests::preset_config_tests::test_thumbnail_preset ... ok
+test ops::tests::preset_config_tests::test_unknown_preset ... ok
+test tests::test_cargo_pkg_version_is_semver ... ok
+test tests::test_processing_metrics_version_constant ... ok
+test tests::test_processing_metrics_default ... ok
+test engine::resize::tests::fast_resize_tests::test_is_fully_opaque_scans_large_image ... ok
+test engine::memory::semaphore::tests::queued_waiter_blocks_later_fast_path ... ok
+test engine::tasks::tests::target_bytes_strict_policy_fails_when_budget_unmet ... ok
+test inspect::tests::jpeg_header_inspection_does_not_read_large_scan_payload ... ok
+test engine::tasks::tests::target_bytes_best_effort_metrics_include_all_probes ... ok
+test engine::resize::tests::fast_resize_tests::test_fir_primary_succeeds_for_used_pixel_layouts ... ok
+
+test result: ok. 299 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/edge_cases.rs (target/debug/deps/edge_cases-c0570a006e889ab8)
+
+running 46 tests
+test decoder_error_tests::test_source_len ... ok
+test decoder_error_tests::test_source_as_bytes ... ok
+test corrupted_image_tests::test_empty_buffer ... ok
+test decoder_error_tests::test_source_as_bytes_memory ... ok
+test large_image_tests::test_calc_resize_extreme_aspect_ratio ... ok
+test large_image_tests::test_exceed_max_dimension_height ... ok
+test corrupted_image_tests::test_jpeg_header_only ... ok
+test large_image_tests::test_exceed_max_dimension_width ... ok
+test encoder_error_tests::test_encode_jpeg_invalid_quality ... ok
+test encoder_error_tests::test_encode_avif_returns_unsupported_without_feature ... ok
+test large_image_tests::test_exceed_max_pixels ... ok
+test large_image_tests::test_extreme_aspect_ratio_tall ... ok
+test large_image_tests::test_extreme_aspect_ratio_wide ... ok
+test encoder_error_tests::test_encode_webp_invalid_quality ... ok
+test large_image_tests::test_max_dimension_boundary ... ok
+test large_image_tests::test_max_pixels_boundary ... ok
+test minimal_image_tests::test_1x1_rotate ... ok
+test minimal_image_tests::test_1x1_grayscale ... ok
+test non_image_tests::test_random_binary ... ok
+test non_image_tests::test_text_file ... ok
+test minimal_image_tests::test_1x1_encode_webp ... ok
+test corrupted_image_tests::test_wrong_magic_bytes ... ok
+test pipeline_error_tests::test_invalid_rotation_angle ... ok
+test pipeline_error_tests::test_fast_resize_owned_invalid_dimensions ... ok
+test minimal_image_tests::test_1x1_encode_png ... ok
+test extreme_aspect_ratio_tests::test_resize_extreme_wide ... ok
+test minimal_image_tests::test_1x1_encode_jpeg ... ok
+test pipeline_error_tests::test_negative_rotation_angles ... ok
+test pipeline_error_tests::test_crop_bounds_exceed_height ... ok
+test pipeline_error_tests::test_crop_bounds_exceed_image ... ok
+test pipeline_error_tests::test_rotation_0_degrees ... ok
+test extreme_aspect_ratio_tests::test_resize_extreme_tall ... ok
+test quality_boundary_tests::test_quality_0 ... ok
+test corrupted_image_tests::test_truncated_jpeg ... ok
+test quality_boundary_tests::test_quality_over_100 ... ok
+test quality_boundary_tests::test_quality_avif_is_unsupported_without_feature ... ok
+test quality_boundary_tests::test_quality_webp_0 ... ok
+test zero_dimension_tests::test_fast_resize_zero_dimensions ... ok
+test zero_dimension_tests::test_crop_zero_width ... ok
+test zero_dimension_tests::test_resize_to_zero_height ... ok
+test quality_boundary_tests::test_quality_100 ... ok
+test minimal_image_tests::test_1x1_resize ... ok
+test quality_boundary_tests::test_quality_1 ... ok
+test zero_dimension_tests::test_crop_zero_height ... ok
+test zero_dimension_tests::test_resize_to_zero_width ... ok
+test quality_boundary_tests::test_quality_webp_100 ... ok
+
+test result: ok. 46 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/engine_tests.rs (target/debug/deps/engine_tests-98ebee553952cd38)
+
+running 64 tests
+test apply_ops_tests::test_crop_at_origin ... ok
+test apply_ops_tests::test_crop_entire_image ... ok
+test apply_ops_tests::test_crop_valid ... ok
+test apply_ops_tests::test_brightness ... ok
+test apply_ops_tests::test_empty_operations ... ok
+test apply_ops_tests::test_flip_h ... ok
+test apply_ops_tests::test_colorspace_srgb ... ok
+test apply_ops_tests::test_contrast ... ok
+test apply_ops_tests::test_crop_out_of_bounds ... ok
+test apply_ops_tests::test_grayscale_reduces_channels ... ok
+test apply_ops_tests::test_rotate_270 ... ok
+test apply_ops_tests::test_rotate_invalid_angle ... ok
+test apply_ops_tests::test_flip_v ... ok
+test apply_ops_tests::test_rotate_90 ... ok
+test apply_ops_tests::test_rotate_0 ... ok
+test apply_ops_tests::test_rotate_neg90 ... ok
+test apply_ops_tests::test_rotate_180 ... ok
+test decode_tests::test_decode_jpeg_mozjpeg_invalid_data ... ok
+test encode_tests::test_encode_avif_returns_unsupported_without_feature ... ok
+test decode_tests::test_decode_jpeg_mozjpeg ... ok
+test encode_tests::test_encode_jpeg_with_icc ... ok
+test encode_tests::test_encode_jpeg_produces_valid_jpeg ... ok
+test apply_ops_tests::test_resize_height_only ... ok
+test encode_tests::test_encode_jpeg_quality_affects_size ... ok
+test apply_ops_tests::test_resize_width_only ... ok
+test fast_resize_owned_returns_error_instead_of_dummy_image ... ok
+test fast_resize_tests::test_fast_resize_invalid_dimensions ... ok
+test encode_tests::test_encode_webp_produces_valid_webp ... ok
+test encode_tests::test_encode_webp_with_icc ... ok
+test fast_resize_tests::test_fast_resize_same_size ... ok
+test optimize_ops_tests::test_consecutive_resizes_combined ... ok
+test optimize_ops_tests::test_empty_operations ... ok
+test optimize_ops_tests::test_multiple_consecutive_resizes ... ok
+test optimize_ops_tests::test_non_consecutive_resizes_not_combined ... ok
+test optimize_ops_tests::test_resize_with_both_dimensions ... ok
+test optimize_ops_tests::test_single_operation ... ok
+test resize_calc_tests::test_aspect_ratio_preservation_tall ... ok
+test resize_calc_tests::test_aspect_ratio_preservation_wide ... ok
+test resize_calc_tests::test_both_dimensions_same_aspect_ratio ... ok
+test resize_calc_tests::test_both_dimensions_specified ... ok
+test resize_calc_tests::test_both_dimensions_tall_image_fits_inside ... ok
+test resize_calc_tests::test_both_dimensions_wide_image_fits_inside ... ok
+test resize_calc_tests::test_height_only_maintains_aspect_ratio ... ok
+test resize_calc_tests::test_none_returns_original ... ok
+test resize_calc_tests::test_rounding_behavior ... ok
+test resize_calc_tests::test_square_image ... ok
+test resize_calc_tests::test_width_only_maintains_aspect_ratio ... ok
+test security_tests::test_check_dimensions_at_max_dimension ... ok
+test security_tests::test_check_dimensions_at_pixel_boundary ... ok
+test security_tests::test_check_dimensions_exceeds_max_dimension ... ok
+test security_tests::test_check_dimensions_exceeds_max_dimension_height ... ok
+test security_tests::test_check_dimensions_exceeds_max_pixels ... ok
+test security_tests::test_check_dimensions_small_image ... ok
+test security_tests::test_check_dimensions_valid ... ok
+test security_tests::test_check_dimensions_zero_dimension ... ok
+test encode_tests::test_encode_png_produces_valid_png ... ok
+test apply_ops_tests::test_resize_operation ... ok
+test fast_resize_tests::test_fast_resize_upscale ... ok
+test fast_resize_tests::test_fast_resize_downscale ... ok
+test fast_resize_tests::test_fast_resize_rgba ... ok
+test encode_tests::test_encode_rgba_image ... ok
+test encode_tests::test_encode_png_with_icc ... ok
+test fast_resize_tests::test_fast_resize_aspect_ratio_change ... ok
+test apply_ops_tests::test_chained_operations ... ok
+
+test result: ok. 64 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/error_tests.rs (target/debug/deps/error_tests-242a503600a7908c)
+
+running 43 tests
+test test_all_error_constructors ... ok
+test test_clone_shares_arc_identity ... ok
+test test_clone_preserves_io_error_chain ... ok
+test test_e100_file_not_found ... ok
+test test_e101_file_read_failed ... ok
+test test_e111_unsupported_format ... ok
+test test_e102_mmap_failed ... ok
+test test_clone_preserves_io_error_kind_for_all_io_variants ... ok
+test test_e122_pixel_count_exceeds_limit ... ok
+test test_e121_dimension_exceeds_limit ... ok
+test test_e123_firewall_violation ... ok
+test test_e130_corrupted_image ... ok
+test test_e131_decode_failed ... ok
+test test_e200_invalid_crop_bounds ... ok
+test test_e201_invalid_crop_dimensions ... ok
+test test_e202_invalid_rotation_angle ... ok
+test test_e203_invalid_resize_dimensions ... ok
+test test_e204_invalid_resize_fit ... ok
+test test_e210_unsupported_color_space ... ok
+test test_e299_resize_failed ... ok
+test test_e300_encode_failed ... ok
+test test_e301_file_write_failed ... ok
+test test_e400_invalid_argument ... ok
+test test_e401_invalid_preset ... ok
+test test_e402_invalid_firewall_policy ... ok
+test test_e900_source_consumed ... ok
+test test_e901_internal_panic ... ok
+test test_e999_generic ... ok
+test test_error_category_codec_error ... ok
+test test_error_category_internal_bug ... ok
+test test_error_category_repr_values ... ok
+test test_error_category_resource_limit ... ok
+test test_error_category_user_error ... ok
+test test_error_code_as_str_exhaustive ... ok
+test test_error_code_category_exhaustive ... ok
+test test_error_code_consistency_with_error_variant ... ok
+test test_error_code_is_recoverable_exhaustive ... ok
+test test_error_code_mapping ... ok
+test test_error_code_repr_values ... ok
+test test_error_display ... ok
+test test_error_recoverable ... ok
+test test_recovery_hint_non_empty_for_all_variants ... ok
+test test_recovery_hint_present ... ok
+
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fuzz_regression.rs (target/debug/deps/fuzz_regression-666272a1d221ff4f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (target/debug/deps/integration_tests-eecd916709506e19)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/napi_tests.rs (target/debug/deps/napi_tests-64f56d9c9bd9a0c7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/property_based.rs (target/debug/deps/property_based-e2e39e869b8839ef)
+
+running 8 tests
+test prop_rotate_invalid_angles_error ... ok
+test prop_rotate_valid_angles_preserve_dimensions ... ok
+test prop_crop_within_bounds_succeeds ... ok
+test prop_crop_out_of_bounds_errors ... ok
+test prop_rotate_180_commutes_with_fill_resize ... ok
+test prop_resize_inside_matches_calc ... ok
+test prop_resize_width_only_matches_calc ... ok
+test prop_resize_height_only_matches_calc ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+   Doc-tests lazy_image
+
+running 1 test
+test src/engine/tasks/macros.rs - engine::tasks::macros::define_encode_task (line 12) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+> @alberteinshutoin/lazy-image@1.4.3 test:wasm:package
+> npm --workspace @alberteinshutoin/lazy-image-wasm test
+
+
+> @alberteinshutoin/lazy-image-wasm@1.4.3 test
+> node test/run.mjs
+
+ok - exports the workspace package version
+ok - uses the native error category vocabulary and code semantics
+ok - keeps every non-E5xx Wasm throw code in the native code registry
+ok - optimizes JPEG input to JPEG with a target byte budget
+ok - optimizes JPEG input to WebP with best-effort target search
+ok - optimizes PNG input to JPEG for upload conversion
+ok - cover fit produces exact target dimensions
+ok - strict target byte policy fails with a Wasm resource-limit error
+ok - limits.timeoutMs uses the native firewall violation contract
+ok - unsupported input format fails with native E111 semantics
+Premature end of JPEG file
+JPEG datastream contains no image
+ok - decode diagnosis leaves Wasm delivery and input corruption as separate checks
+ok - explicit Wasm compilation failure identifies its codec without inventing HTTP facts
+ok - Worker sends a cloneable diagnosis for unknown throw values
+ok - edge entrypoint defaults to ArrayBuffer output
+ok - edge optimizer accepts precompiled WebAssembly.Module inputs
+Premature end of JPEG file
+JPEG datastream contains no image
+ok - edge example handler guards method and maps input errors to HTTP statuses
+
+Test strategy: full
+Targets: 1/60
+Success: 1, failure: 0, skipped: 0
+Wall time: 95646 ms, total compute: 95644 ms

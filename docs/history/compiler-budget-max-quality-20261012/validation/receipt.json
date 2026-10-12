@@ -1,0 +1,52 @@
+{
+  "sourceSha": "574b81148b4f2fc30ddab567644e1037c2416343",
+  "initialTrackedStatus": "",
+  "envOverrides": {
+    "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
+    "SDKROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+    "CC": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+    "CXX": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++"
+  },
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "ci:run-tests",
+        "--",
+        "--plan",
+        "/tmp/lazy-image-max-quality-889-full-plan.json",
+        "--mode",
+        "full",
+        "--summary",
+        "/tmp/lazy-image-max-quality-889-full-validation/test-summary.json",
+        "--history",
+        "/tmp/lazy-image-max-quality-889-full-validation/test-history.jsonl"
+      ],
+      "cwd": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+      "startedAt": "2026-10-12T11:55:36.362Z",
+      "endedAt": "2026-10-12T11:57:12.119Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "npm-test.log",
+      "logSha256": "8e3aee94f0371be6630afa05549ef3c3ce7bad2518008700ce4c6b2c0513209f"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:bench:release"
+      ],
+      "cwd": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+      "startedAt": "2026-10-12T11:57:12.142Z",
+      "endedAt": "2026-10-12T11:58:28.820Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "release-bench.log",
+      "logSha256": "d958c441372075f7f1ba1f9dbd3b4b17600a56d0c0b42a7d170f0104911a5b34"
+    }
+  ],
+  "finalTrackedStatus": ""
+}

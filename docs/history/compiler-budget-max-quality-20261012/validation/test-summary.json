@@ -1,0 +1,28 @@
+{
+  "requestedStrategy": "full",
+  "strategy": "full",
+  "fallback": true,
+  "fallbackReason": "public API contract changed: index.d.ts",
+  "selectedTestTargets": 1,
+  "allTestFiles": 60,
+  "successCount": 1,
+  "failureCount": 0,
+  "skippedCount": 0,
+  "wallDurationMs": 95646,
+  "totalComputeMs": 95644,
+  "commit": null,
+  "branch": null,
+  "results": [
+    {
+      "category": "full",
+      "target": "all",
+      "command": "npm",
+      "args": [
+        "test"
+      ],
+      "success": true,
+      "exitCode": 0,
+      "durationMs": 95644
+    }
+  ]
+}
