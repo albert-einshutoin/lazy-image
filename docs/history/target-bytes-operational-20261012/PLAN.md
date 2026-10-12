@@ -20,7 +20,7 @@
 
 photo/ui/largeの4条件は、予算なし・余裕・q60単独encodeでbyte適合を示した厳しい予算・1 B不可能予算。
 余裕は主測定前のq100 bytes×1.1（切上げ、q60 bytes+1以上）、厳しい予算はq60実bytesで固定する。
-各workloadのq100/q60（計8回）と既知64pxのq100を両sourceで確認（計2回）の限定calibrationを行う。
+各workloadのq100/q60（計8回）と既知64pxのq50/q100と346 B strict探索を両sourceで確認（計6回）の限定calibrationを行う。
 q60 byte適合は累積5秒で探索を完了できる保証ではない。その有効入力のtimeoutを今回観測する。
 calibration失敗やq100/q60の非単調性は隠さず、主matrixの開始前に数値と条件JSON/hashを凍結する。
 
@@ -54,3 +54,13 @@ versionを先に決めず、「公開準備へ進める」か「この具体的�
 
 専門レビュー1件（resource境界・公開判断）、セルフレビュー、関連修正と最終確認、Companion Gate、対象検証、
 対応PRの必要CI→保護merge→merge SHAのCI/Security→#887完了報告。#703はOPEN、release/branch削除は行わない。
+
+## Source/binary対応の修正
+
+最初の共有Cargo targetによるsetupでは異なるsourceのnativeが同一hashになり、旧sourceの再compileも記録されなかった。
+最初の108主記録・calibration・集計はinvalid-shared-target-cacheとして保持し、採用対象から除外する。
+独立cacheの初回は既存Xcode clangとCommandLineTools SDKの不一致でjemalloc configureが失敗し、setup failureを保持した。
+既存Xcodeのclang/SDK26.5を各buildコマンド内だけで選び、各clean checkoutの独立targetでcanonical buildする。
+依存/CI/製品/グローバル設定は変更しない。採用するbuild receiptのsource/exit/native hashを各workerで照合し、
+旧q50=472 B/q100=346 Bと旧strict誤拒否、新strict q100受入のsemantic対照も主測定前に確認する。
+この具体的なprovenance疑問のためcalibration/対照は14操作へ増え、主matrix18条件/108操作は維持する。

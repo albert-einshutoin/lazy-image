@@ -40,6 +40,11 @@ function pinned(variant) {
   assert.equal(git(['status', '--porcelain']), '', 'measurement source must be clean');
   const native = path.join(v.root, 'lazy-image.darwin-arm64.node');
   const nativeSha256 = sha256(fs.readFileSync(native));
+  const builds = JSON.parse(fs.readFileSync(path.join(DATA, 'matched-sdk-build-results.json')));
+  assert.equal(builds.length, 2, 'both independent builds must finish');
+  assert.notEqual(builds[0].nativeSha256, builds[1].nativeSha256, 'different native source must not reuse one binary');
+  const proof = builds.find(b => b.variant === variant);
+  assert(proof && proof.exitCode === 0 && proof.sourceSha === v.sha && proof.nativeSha256 === nativeSha256, 'native/build binding mismatch');
   const api = require(path.join(v.root, 'index.js'));
   assert(require.cache[native], 'the checkout-local native must be loaded');
   const cli = require(path.join(v.root, 'node_modules/@napi-rs/cli/package.json')).version;
@@ -83,7 +88,7 @@ async function cli(root, input, output, policy, parent) {
   const policyPath = path.join(parent, 'policy.json');
   fs.writeFileSync(policyPath, JSON.stringify(policy));
   const args = [path.join(root, 'bin/lazy-image.js'), 'compile', input, '--out-dir', output, '--policy', policyPath];
-  const started = performance.now(), child = cp.spawn(process.execPath, args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+  const started = performance.now(), child = cp.spawn(process.execPath, args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'], timeout: 120000 });
   let stdout = '', stderr = '', peakRssBytes = null, samples = 0, missedSamples = 0;
   // Darwin ps reports RSS in KiB. Query only this owned CLI PID, never system-wide.
   const sample = () => {
@@ -108,7 +113,7 @@ async function cli(root, input, output, policy, parent) {
     cause: null, cleanupError: null, detailBoundary: 'CLI diagnostics do not expose cause/cleanupError' };
   return { value: exit.exitCode === 0 ? JSON.parse(stdout) : null, error, outerMs,
     rss: { scope: 'owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak', intervalMs: 100, samples, missedSamples, peakRssBytes },
-    cliProcess: { command: [process.execPath, ...args], ...exit, stdout, stderr } };
+    cliProcess: { command: [process.execPath, ...args], ...exit, stdout, stderr, measurementGuardMs: 120000 } };
 }
 
 function tapMetrics(api) {
@@ -186,7 +191,7 @@ async function execute(variant, condition, trial, parent) {
     postChecks.push({ kind: 'best-effort-unmet-control', ...best });
   }
   return { schemaVersion: 1, identity, condition, trial, fixture: { id: entry.id, path: entry.path, bytes: entry.bytes, sha256: entry.sha256, license: entry.license, source: entry.source },
-    outcome: m.error ? 'rejected' : 'returned', error: m.error, outerMs: m.outerMs, rss: m.rss,
+    outcome: m.cliProcess?.signal ? 'measurement-failure' : m.error ? 'rejected' : 'returned', error: m.error, outerMs: m.outerMs, rss: m.rss,
     cliProcess: m.cliProcess ?? null, nativeMetrics: condition.interface === 'cli' ? null : (m.value?.metrics ?? null),
     nativeTrace, nativeTraceBoundary: 'delegating public-method observer, no encode/probe count instrumentation',
     encodeCount: null, nativeCumulativeTrusted: variant === 'current', artifacts,
@@ -258,10 +263,17 @@ async function main() {
       console.log(c.id + ': ' + (r.error ? r.error.errorCode : r.artifacts[0].bytes + ' B'));
     }
     for (const variant of ['before', 'current']) {
-      const c = { id: 'control-q100', fixture: 'control', interface: 'calibration', format: 'jpeg', width: 64, quality: 100 };
+      for (const quality of [50, 100]) {
+        const c = { id: 'control-q' + quality, fixture: 'control', interface: 'calibration', format: 'jpeg', width: 64, quality };
+        const r = capture(variant, c, 0);
+        records.push(r); fs.writeFileSync(path.join(DATA, 'calibration.json'), JSON.stringify(records, null, 2) + '\n');
+        assert(r.outcome === 'returned' && r.artifacts[0].bytes === (quality === 100 ? 346 : 472), 'known non-monotonic byte witness changed');
+      }
+      const c = { id: 'binding-known-max', fixture: 'control', interface: 'api', format: 'jpeg', width: 64, budget: 346, minQuality: 1, maxQuality: 100 };
       const r = capture(variant, c, 0);
       records.push(r); fs.writeFileSync(path.join(DATA, 'calibration.json'), JSON.stringify(records, null, 2) + '\n');
-      assert(r.outcome === 'returned' && r.artifacts[0].bytes === 346, 'known max must remain byte-feasible');
+      assert(variant === 'before' ? r.outcome === 'rejected' && r.error.errorCode === 'E300'
+        : r.outcome === 'returned' && r.artifacts[0].quality === 100, 'search semantic fingerprint contradicts source');
     }
     fs.writeFileSync(path.join(DATA, 'calibration.json'), JSON.stringify(records, null, 2) + '\n');
     const matrix = { schemaVersion: 1, issue: 887, trials: 3, concurrency: 1, variants: VARIANTS,
