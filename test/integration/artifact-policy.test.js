@@ -62,6 +62,53 @@ assert.deepEqual(canonical.artifacts.map(({ id }) => id), [
 assert.equal(canonical.artifacts.find(({ id }) => id === '768/webp').targetBytes, 50_000);
 assert.equal(canonical.placeholder, null);
 
+const budgetPolicy = { widths: [320], formats: ['jpeg'], placeholder: false,
+  budgets: [{ width: 320, format: 'jpeg', maxBytes: 50_000 }] };
+const defaultBudgetPlan = compileArtifactPlan(SOURCE, budgetPolicy, COMPILER_FINGERPRINT);
+// These digests were captured from the pre-option policy contract with the same source/build identity.
+assert.equal(defaultBudgetPlan.policyFingerprint, '1291078ff615ec76960b5db34ff1f18157d3c9557413e49e38ac8489f4103e04');
+assert.equal(defaultBudgetPlan.cacheKey, '06b6ac2ac7abb7749acbf836d5e5c654551ee1cfb415a03bee67d6dc8c8e4503');
+const cappedPlans = [30, 60, 90, 99, 100].map(maxQuality => compileArtifactPlan(SOURCE, {
+  ...budgetPolicy, budgets: [{ ...budgetPolicy.budgets[0], maxQuality }],
+}, COMPILER_FINGERPRINT));
+for (const [index, maxQuality] of [30, 60, 90, 99, 100].entries()) {
+  const capped = cappedPlans[index];
+  assert.equal(capped.policy.budgets[0].maxQuality ?? 100, maxQuality);
+  assert.equal(capped.artifacts[0].maxQuality ?? 100, maxQuality);
+  assert(Object.isFrozen(capped.policy.budgets[0]));
+  assert(Object.isFrozen(capped.artifacts[0]));
+}
+assert.deepEqual(cappedPlans.at(-1), defaultBudgetPlan, 'omission and explicit 100 must retain the existing canonical plan');
+assert.deepEqual(compileArtifactPlan(SOURCE, { ...budgetPolicy,
+  budgets: [{ ...budgetPolicy.budgets[0], maxQuality: undefined }] }, COMPILER_FINGERPRINT), defaultBudgetPlan);
+assert.deepEqual(compileArtifactPlan(SOURCE, { ...budgetPolicy,
+  budgets: [Object.assign(Object.create(null), budgetPolicy.budgets[0], { maxQuality: 60 })] }, COMPILER_FINGERPRINT), cappedPlans[1]);
+assert.equal(new Set(cappedPlans.map(p => p.policyFingerprint)).size, 5);
+assert.equal(new Set(cappedPlans.map(p => p.cacheKey)).size, 5);
+assert.equal(plan.artifacts[0].quality, 80, 'budget-free defaults are unchanged');
+assert.equal(plan.placeholder.quality, 20);
+for (const maxQuality of [null, '90', 90.5, 29, 101, NaN, Infinity, true, {}, []]) {
+  assertPolicyError(() => compileArtifactPlan(SOURCE, {
+    ...budgetPolicy, budgets: [{ ...budgetPolicy.budgets[0], maxQuality }],
+  }, COMPILER_FINGERPRINT), /maxQuality/);
+}
+for (const key of ['minQuality', 'effort', 'maxAttempts', 'timeout', 'maxQualty']) {
+  assertPolicyError(() => compileArtifactPlan(SOURCE, { ...budgetPolicy,
+    budgets: [{ ...budgetPolicy.budgets[0], [key]: 60 }] }, COMPILER_FINGERPRINT), /unknown budget key/);
+}
+const qualityAccessor = { ...budgetPolicy.budgets[0] };
+Object.defineProperty(qualityAccessor, 'maxQuality', { get() { throw Error('getter must not execute'); } });
+assertPolicyError(() => compileArtifactPlan(SOURCE, { ...budgetPolicy, budgets: [qualityAccessor] }, COMPILER_FINGERPRINT), /own data property/);
+Object.defineProperty(Object.prototype, 'maxQuality', { value: 90, configurable: true });
+try {
+  assertPolicyError(() => compileArtifactPlan(SOURCE, budgetPolicy, COMPILER_FINGERPRINT), /own data property/);
+} finally {
+  delete Object.prototype.maxQuality;
+}
+assertPolicyError(() => compileArtifactPlan(SOURCE, {
+  ...budgetPolicy, budgets: [Object.assign(Object.create({ maxQuality: 90 }), budgetPolicy.budgets[0])],
+}, COMPILER_FINGERPRINT), /plain object/);
+
 const duplicateWidths = compileArtifactPlan(
   SOURCE,
   { widths: Array(9).fill(320) },
