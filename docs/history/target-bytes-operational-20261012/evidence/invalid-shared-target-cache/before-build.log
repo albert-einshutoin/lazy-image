@@ -1,0 +1,7 @@
+
+> @alberteinshutoin/lazy-image@1.4.3 build
+> node scripts/build-native.cjs
+
+Prepared postbuild index.d.ts backup.
+    Finished `release` profile [optimized] target(s) in 0.19s
+Applied postbuild fixups to index.js and index.d.ts.

@@ -39,7 +39,8 @@ calibration失敗やq100/q60の非単調性は隠さず、主matrixの開始前�
 - E300 byte不適合、E123 resource timeout、他Error、measurement failureを分け、timeoutした有効入力を期待 hostile拒否や受入へ加算しない。
 - 成功時のmanifest/出力bytes/hash/quality/budgetを記録。source、native、lock/tool、fixture/license/runner、実command/exitを結ぶ。
   未観測のencode回数はnull。static上限とruntime観測を区別する。
-- failed strict/compilerで未公開・staging/一時source残存なしを確認する。既存compiler output保護と低レベルstrict file保護は
+- failed strict/compilerで新output未公開・owned output parent内のsibling staging残存なしを確認する。
+  private source snapshotのOS tmp残存を独立に全走査せず、公開cleanupErrorの観測境界として記録する。既存compiler output保護と低レベルstrict file保護は
   代表conditionのpostcheckとして別時間/別結果に記録し、主trialの時間へ混ぜない。
 - 旧known-maxのE300は既知q100が適合可能な誤拒否であり、成功の性能改善として比較しない。
   他の旧budget fitも、同じ最高qualityが証明されなければ結果差を明記し、同等成功と断定しない。

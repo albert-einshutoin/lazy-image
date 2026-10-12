@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/lazy-image.darwin-arm64.node",
+    "nativeSha256": "b86fa58fd8a66d5cb8970578452b077f5f8c20032af6402f784aaab650311f2a",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=026abe3263fced05513faa61299f46d6ee59e053c387b332da9d48849faf2fc4;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "cdc20c5d3fb81f26eb2fec0e47d27c1ae1edc4bc23a26d3e08f8381a677f6969"
+  },
+  "condition": {
+    "id": "large-tight",
+    "fixture": "large",
+    "format": "jpeg",
+    "width": 1600,
+    "interface": "compiler",
+    "budgetKind": "tight",
+    "budget": 93782,
+    "policy": {
+      "widths": [
+        1600
+      ],
+      "formats": [
+        "jpeg"
+      ],
+      "placeholder": false,
+      "budgets": [
+        {
+          "width": 1600,
+          "format": "jpeg",
+          "maxBytes": 93782
+        }
+      ]
+    }
+  },
+  "trial": 1,
+  "fixture": {
+    "id": "large",
+    "path": "test/fixtures/test_3.2MB_5000x5000.jpg",
+    "bytes": 3371242,
+    "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+    "license": "MIT",
+    "source": {
+      "kind": "repository-fixture",
+      "note": "Tracked size fixture; synthetic generator context is test/helpers/create-size-fixtures-sharp.js; original generator runtime is not asserted."
+    }
+  },
+  "outcome": "rejected",
+  "error": {
+    "name": "ArtifactCompilationError",
+    "message": "Image artifact compilation failed during processing (1600/jpeg)",
+    "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+    "errorCode": "E123",
+    "phase": "processing",
+    "category": 2,
+    "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5021ms). Use .limits({ timeoutMs: 10021 }) for longer operations or switch to lenient policy.",
+    "cleanupError": null
+  },
+  "outerMs": 5617.119291,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 488,
+    "rssStartBytes": 84033536,
+    "peakRssBytes": 289652736,
+    "rssEndBytes": 165380096
+  },
+  "cliProcess": null,
+  "nativeMetrics": null,
+  "nativeTrace": [
+    {
+      "method": "toFileTargetBytes",
+      "format": "jpeg",
+      "suppliedOptions": {
+        "targetBytes": 93782,
+        "strict": true,
+        "qualityFloorPolicy": "strict"
+      },
+      "outcome": "rejected",
+      "error": {
+        "name": "Error",
+        "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5021ms). Use .limits({ timeoutMs: 10021 }) for longer operations or switch to lenient policy.",
+        "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+        "errorCode": "E123",
+        "phase": null,
+        "category": 2,
+        "cause": null,
+        "cleanupError": null
+      }
+    }
+  ],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [],
+  "manifest": null,
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": true
+  },
+  "residualNames": [],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"large-tight\",\"fixture\":\"large\",\"format\":\"jpeg\",\"width\":1600,\"interface\":\"compiler\",\"budgetKind\":\"tight\",\"budget\":93782,\"policy\":{\"widths\":[1600],\"formats\":[\"jpeg\"],\"placeholder\":false,\"budgets\":[{\"width\":1600,\"format\":\"jpeg\",\"maxBytes\":93782}]}}",
+      "1",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-large-tight-1-DxTyJ8"
+    ],
+    "startedAt": "2026-10-12T09:23:31.785Z",
+    "completedAt": "2026-10-12T09:23:37.494Z",
+    "matrixSha256": "d5a26f9e0fceb8cc4f073637d688fdeb04e5c62d8cc1dac176cb8661c0189490"
+  }
+}

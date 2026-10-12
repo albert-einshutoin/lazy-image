@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "before",
+    "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before/lazy-image.darwin-arm64.node",
+    "nativeSha256": "b86fa58fd8a66d5cb8970578452b077f5f8c20032af6402f784aaab650311f2a",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=026abe3263fced05513faa61299f46d6ee59e053c387b332da9d48849faf2fc4;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "cdc20c5d3fb81f26eb2fec0e47d27c1ae1edc4bc23a26d3e08f8381a677f6969"
+  },
+  "condition": {
+    "id": "api-range-tight",
+    "fixture": "large",
+    "format": "jpeg",
+    "width": 1600,
+    "interface": "api",
+    "budgetKind": "tight",
+    "budget": 93782,
+    "minQuality": 40,
+    "maxQuality": 90
+  },
+  "trial": 1,
+  "fixture": {
+    "id": "large",
+    "path": "test/fixtures/test_3.2MB_5000x5000.jpg",
+    "bytes": 3371242,
+    "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+    "license": "MIT",
+    "source": {
+      "kind": "repository-fixture",
+      "note": "Tracked size fixture; synthetic generator context is test/helpers/create-size-fixtures-sharp.js; original generator runtime is not asserted."
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 2888.005084,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 252,
+    "rssStartBytes": 83951616,
+    "peakRssBytes": 281018368,
+    "rssEndBytes": 153436160
+  },
+  "cliProcess": null,
+  "nativeMetrics": {
+    "version": "1.1.0",
+    "decodeMs": 105.477625,
+    "opsMs": 24.133374999999997,
+    "encodeMs": 61.994,
+    "totalMs": 2873.628958,
+    "peakRss": 281149440,
+    "cpuTime": 2.8917409999999997,
+    "processingTime": 2.873628958,
+    "bytesIn": 3371242,
+    "bytesOut": 93782,
+    "compressionRatio": 0.02781823434805333,
+    "formatOut": "jpeg",
+    "iccPreserved": false,
+    "iccOutcome": "absent",
+    "metadataStripped": false,
+    "policyViolations": [],
+    "formatIn": "jpeg"
+  },
+  "nativeTrace": [],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": false,
+  "artifacts": [
+    {
+      "format": "jpeg",
+      "quality": 60,
+      "budgetMet": true,
+      "bytes": 93782,
+      "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857"
+    }
+  ],
+  "manifest": null,
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output.jpg"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "before",
+      "{\"id\":\"api-range-tight\",\"fixture\":\"large\",\"format\":\"jpeg\",\"width\":1600,\"interface\":\"api\",\"budgetKind\":\"tight\",\"budget\":93782,\"minQuality\":40,\"maxQuality\":90}",
+      "1",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/before-api-range-tight-1-nZtAnb"
+    ],
+    "startedAt": "2026-10-12T09:25:23.691Z",
+    "completedAt": "2026-10-12T09:25:26.672Z",
+    "matrixSha256": "d5a26f9e0fceb8cc4f073637d688fdeb04e5c62d8cc1dac176cb8661c0189490"
+  }
+}

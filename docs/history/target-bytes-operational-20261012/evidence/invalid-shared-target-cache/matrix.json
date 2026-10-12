@@ -1,0 +1,406 @@
+{
+  "schemaVersion": 1,
+  "issue": 887,
+  "trials": 3,
+  "concurrency": 1,
+  "variants": {
+    "current": {
+      "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+      "sha": "1962f233299aa10d6053230c1af1605faeaddc5d"
+    },
+    "before": {
+      "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+      "sha": "21a15bc99d4c5258f640054e00e9958994e124a3"
+    }
+  },
+  "runnerSha256": "cdc20c5d3fb81f26eb2fec0e47d27c1ae1edc4bc23a26d3e08f8381a677f6969",
+  "fixturesSha256": "a6b87529e34836b609bb792f2c13e3b97d8c7edfdda0bb78deb82c88ee81c107",
+  "conditions": [
+    {
+      "id": "photo-none",
+      "fixture": "coffee",
+      "format": "jpeg",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "none",
+      "budget": null,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "photo-loose",
+      "fixture": "coffee",
+      "format": "jpeg",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "loose",
+      "budget": 65511,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "jpeg",
+            "maxBytes": 65511
+          }
+        ]
+      }
+    },
+    {
+      "id": "photo-tight",
+      "fixture": "coffee",
+      "format": "jpeg",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "tight",
+      "budget": 8415,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "jpeg",
+            "maxBytes": 8415
+          }
+        ]
+      }
+    },
+    {
+      "id": "photo-impossible",
+      "fixture": "coffee",
+      "format": "jpeg",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "impossible",
+      "budget": 1,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "jpeg",
+            "maxBytes": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "ui-none",
+      "fixture": "ui-1",
+      "format": "webp",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "none",
+      "budget": null,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "webp"
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "ui-loose",
+      "fixture": "ui-1",
+      "format": "webp",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "loose",
+      "budget": 5474,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "webp"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "webp",
+            "maxBytes": 5474
+          }
+        ]
+      }
+    },
+    {
+      "id": "ui-tight",
+      "fixture": "ui-1",
+      "format": "webp",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "tight",
+      "budget": 2218,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "webp"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "webp",
+            "maxBytes": 2218
+          }
+        ]
+      }
+    },
+    {
+      "id": "ui-impossible",
+      "fixture": "ui-1",
+      "format": "webp",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "impossible",
+      "budget": 1,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "webp"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "webp",
+            "maxBytes": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "large-none",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "interface": "compiler",
+      "budgetKind": "none",
+      "budget": null,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "large-loose",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "interface": "compiler",
+      "budgetKind": "loose",
+      "budget": 1942043,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 1942043
+          }
+        ]
+      }
+    },
+    {
+      "id": "large-tight",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "interface": "compiler",
+      "budgetKind": "tight",
+      "budget": 93782,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782
+          }
+        ]
+      }
+    },
+    {
+      "id": "large-impossible",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "interface": "compiler",
+      "budgetKind": "impossible",
+      "budget": 1,
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "cli-build",
+      "fixture": "large",
+      "interface": "cli",
+      "budgetKind": "none",
+      "policy": {
+        "widths": [
+          320,
+          1280
+        ],
+        "formats": [
+          "jpeg",
+          "webp"
+        ],
+        "placeholder": true
+      }
+    },
+    {
+      "id": "cli-ui-tight",
+      "fixture": "ui-1",
+      "format": "webp",
+      "width": 320,
+      "interface": "cli",
+      "budgetKind": "tight",
+      "budget": 2218,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "webp"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "webp",
+            "maxBytes": 2218
+          }
+        ]
+      }
+    },
+    {
+      "id": "avif-none",
+      "fixture": "coffee",
+      "format": "avif",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "none",
+      "budget": null,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false
+      }
+    },
+    {
+      "id": "avif-tight",
+      "fixture": "coffee",
+      "format": "avif",
+      "width": 320,
+      "interface": "compiler",
+      "budgetKind": "tight",
+      "budget": 12850,
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850
+          }
+        ]
+      }
+    },
+    {
+      "id": "api-range-tight",
+      "fixture": "large",
+      "format": "jpeg",
+      "width": 1600,
+      "interface": "api",
+      "budgetKind": "tight",
+      "budget": 93782,
+      "minQuality": 40,
+      "maxQuality": 90
+    },
+    {
+      "id": "api-known-max",
+      "fixture": "control",
+      "interface": "api",
+      "format": "jpeg",
+      "width": 64,
+      "budgetKind": "known-feasible",
+      "budget": 346,
+      "minQuality": 1,
+      "maxQuality": 100
+    }
+  ]
+}

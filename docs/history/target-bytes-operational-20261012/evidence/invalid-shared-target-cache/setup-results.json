@@ -1,0 +1,50 @@
+[
+  {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "command": "npm ci",
+    "cargoTargetDir": "/Volumes/Satechi/Developer/lazy-image/target",
+    "startedAt": "2026-10-12T08:47:04.988Z",
+    "completedAt": "2026-10-12T08:47:06.711Z",
+    "exitCode": 0,
+    "signal": null,
+    "logfile": "current-npm-ci.log"
+  },
+  {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "command": "npm run build",
+    "cargoTargetDir": "/Volumes/Satechi/Developer/lazy-image/target",
+    "startedAt": "2026-10-12T08:47:06.711Z",
+    "completedAt": "2026-10-12T08:48:12.886Z",
+    "exitCode": 0,
+    "signal": null,
+    "logfile": "current-build.log"
+  },
+  {
+    "variant": "before",
+    "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+    "command": "npm ci",
+    "cargoTargetDir": "/Volumes/Satechi/Developer/lazy-image/target",
+    "startedAt": "2026-10-12T08:48:12.982Z",
+    "completedAt": "2026-10-12T08:48:14.201Z",
+    "exitCode": 0,
+    "signal": null,
+    "logfile": "before-npm-ci.log"
+  },
+  {
+    "variant": "before",
+    "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+    "command": "npm run build",
+    "cargoTargetDir": "/Volumes/Satechi/Developer/lazy-image/target",
+    "startedAt": "2026-10-12T08:48:14.202Z",
+    "completedAt": "2026-10-12T08:48:15.575Z",
+    "exitCode": 0,
+    "signal": null,
+    "logfile": "before-build.log"
+  }
+]

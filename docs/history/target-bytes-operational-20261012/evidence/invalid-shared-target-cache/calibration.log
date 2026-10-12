@@ -1,0 +1,9 @@
+photo-q100: 59555 B
+photo-q60: 8415 B
+ui-q100: 4976 B
+ui-q60: 2218 B
+large-q100: 1765493 B
+large-q60: 93782 B
+avif-q100: 56378 B
+avif-q60: 12850 B
+frozen 18-condition matrix SHA256 d5a26f9e0fceb8cc4f073637d688fdeb04e5c62d8cc1dac176cb8661c0189490

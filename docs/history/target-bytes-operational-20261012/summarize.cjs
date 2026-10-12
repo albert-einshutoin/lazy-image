@@ -5,7 +5,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { sha256, distribution } = require('../../../test/helpers/benchmark-corpus');
 const HERE = __dirname;
-const DATA = '/tmp/lazy-image-operational-887';
+const DATA = path.join(HERE, 'evidence');
 
 function classify(r) {
   if (r.outcome === 'measurement-failure') return 'measurement-failure';
@@ -50,6 +50,50 @@ function summarize(matrix, records) {
     primaryTrials: records.length, rows, sampleLimits: 'Single M4, fresh processes, concurrency 1; p90 of 3 is maximum, no p99/SLA claim.' };
 }
 
+function verifySaved(matrix, records) {
+  const hashes = JSON.parse(fs.readFileSync(path.join(HERE, 'evidence-hashes.json')));
+  for (const f of hashes.files) {
+    const data = fs.readFileSync(path.join(HERE, f.path));
+    assert.equal(data.length, f.bytes); assert.equal(sha256(data), f.sha256);
+  }
+  assert.equal(matrix.runnerSha256, sha256(fs.readFileSync(path.join(HERE, 'evaluate.cjs'))));
+  assert.equal(matrix.fixturesSha256, sha256(fs.readFileSync(path.join(HERE, 'fixtures.json'))));
+  const builds = JSON.parse(fs.readFileSync(path.join(DATA, 'matched-sdk-build-results.json')));
+  assert.equal(builds.length, 2); assert.notEqual(builds[0].nativeSha256, builds[1].nativeSha256);
+  const matrixSha = sha256(fs.readFileSync(path.join(DATA, 'matrix.json')));
+  for (const r of records) {
+    assert.equal(r.workerExitCode, 0, 'worker failure remains unaccepted');
+    const build = builds.find(b => b.variant === r.identity.variant);
+    assert.equal(build.exitCode, 0); assert.equal(r.identity.sourceSha, build.sourceSha);
+    assert.equal(r.identity.nativeSha256, build.nativeSha256);
+    assert.equal(r.identity.runnerSha256, matrix.runnerSha256);
+    assert.equal(r.execution.matrixSha256, matrixSha);
+    assert.deepEqual(r.condition, matrix.conditions.find(c => c.id === r.condition.id));
+    assert(Number.isFinite(r.outerMs) && r.outerMs >= 0);
+    assert.equal(r.encodeCount, null, 'unobserved encode count must stay unknown');
+    if (r.condition.interface === 'cli') {
+      assert.equal(r.nativeMetrics, null);
+      assert.equal(r.cliProcess.exitCode, r.error ? 1 : 0);
+    }
+    for (const p of r.postChecks) {
+      if (p.kind === 'existing-compiler-output') {
+        assert.equal(p.error.errorCode, 'E301'); assert(p.unchangedManifest && p.unchangedArtifacts);
+        assert.equal(p.remainingSiblingStaging.length, 0);
+      } else if (p.kind === 'strict-existing-file') {
+        assert.equal(p.error.errorCode, 'E300'); assert(p.unchangedFile);
+      } else if (p.kind === 'best-effort-unmet-control') {
+        assert.equal(p.error, null); assert.equal(p.value.budgetMet, false);
+      } else throw Error('unknown postcheck');
+    }
+  }
+  const before = builds.find(b => b.variant === 'before'), current = builds.find(b => b.variant === 'current');
+  assert.equal(before.sdkRoot, current.sdkRoot); assert.equal(before.cc, current.cc);
+  for (const field of ['cargoLockSha256', 'packageLockSha256', 'node', 'cpu', 'platform', 'arch']) {
+    assert.equal(new Set(records.map(r => r.identity[field])).size, 1, 'comparison environment changed: ' + field);
+  }
+  console.log(`PASS: ${records.length} primary records, ${hashes.files.length} file bindings, distinct native source, fixed environment and safety guards`);
+}
+
 function selfTest() {
   const base = { condition: { id: 'photo-tight', budget: 100 }, artifacts: [], checks: { noUnpublishedStaging: true, rejectedWithoutNewOutput: true } };
   assert.equal(classify({ ...base, error: { errorCode: 'E300' } }), 'budget-unmet');
@@ -72,6 +116,12 @@ if (require.main === module) {
     const matrix = JSON.parse(fs.readFileSync(path.join(DATA, 'matrix.json')));
     const records = fs.readdirSync(path.join(DATA, 'raw')).filter(n => n.endsWith('.json')).map(n => JSON.parse(fs.readFileSync(path.join(DATA, 'raw', n))));
     const result = summarize(matrix, records);
+    if (process.argv[2] === '--check') {
+      verifySaved(matrix, records);
+      assert.deepEqual(JSON.parse(fs.readFileSync(path.join(DATA, 'summary.json'))), result, 'saved summary differs');
+      console.log('PASS: deterministic aggregation matches saved summary');
+      process.exit(0);
+    }
     fs.writeFileSync(path.join(DATA, 'summary.json'), JSON.stringify(result, null, 2) + '\n');
     console.log(JSON.stringify(result.rows.map(r => ({ id: r.id, variant: r.variant, outcomes: r.outcomes, p50: r.outerMs?.p50 ?? null })), null, 2));
   }

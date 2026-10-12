@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "before",
+    "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before/lazy-image.darwin-arm64.node",
+    "nativeSha256": "1926c6c8157af958f12a154afa5829684afa5802627e768fe7c538a15a687670",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=ef4aa5d31e5a6e7fdc1ccfbdff0b5ba9cfb9537e894291bc67a81e167c0b0b4f;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "36fb2821bd944d3ef446e23c7e2779cd4bdcc9977612b2569ca220168c419674"
+  },
+  "condition": {
+    "id": "photo-none",
+    "fixture": "coffee",
+    "format": "jpeg",
+    "width": 320,
+    "interface": "compiler",
+    "budgetKind": "none",
+    "budget": null,
+    "policy": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "jpeg"
+      ],
+      "placeholder": false
+    }
+  },
+  "trial": 2,
+  "fixture": {
+    "id": "coffee",
+    "path": "test/benchmarks/corpus/images/coffee.png",
+    "bytes": 466706,
+    "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+    "license": "CC0-1.0",
+    "source": {
+      "kind": "photograph",
+      "author": "Rachel Michetti",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+      "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 34.759333999999996,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 5,
+    "rssStartBytes": 84017152,
+    "peakRssBytes": 100188160,
+    "rssEndBytes": 100188160
+  },
+  "cliProcess": null,
+  "nativeMetrics": null,
+  "nativeTrace": [
+    {
+      "method": "toFileWithMetrics",
+      "format": "jpeg",
+      "suppliedOptions": 85,
+      "outcome": "returned",
+      "quality": null,
+      "budgetMet": null,
+      "bytesWritten": 16069,
+      "metrics": {
+        "version": "1.1.0",
+        "decodeMs": 2.5195,
+        "opsMs": 0.49549999999999994,
+        "encodeMs": 7.537042,
+        "totalMs": 10.557709000000001,
+        "peakRss": 93011968,
+        "cpuTime": 0.01324199999999999,
+        "processingTime": 0.010557709,
+        "bytesIn": 466706,
+        "bytesOut": 16069,
+        "compressionRatio": 0.03443066941500645,
+        "formatOut": "jpeg",
+        "iccPreserved": false,
+        "iccOutcome": "absent",
+        "metadataStripped": false,
+        "policyViolations": [],
+        "formatIn": "png"
+      }
+    }
+  ],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": false,
+  "artifacts": [
+    {
+      "id": "320/jpeg",
+      "path": "image-320.jpg",
+      "format": "jpeg",
+      "width": 320,
+      "height": 213,
+      "bytes": 16069,
+      "quality": 85,
+      "iccOutcome": "absent",
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9",
+      "observed": {
+        "bytes": 16069,
+        "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+      }
+    }
+  ],
+  "manifest": {
+    "schemaVersion": 1,
+    "compiler": {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.4.3",
+      "platform": "darwin",
+      "arch": "arm64",
+      "fingerprint": "ad2fb8543accd737c99532abe847a8f04bd1f3e5f10eeb036be9aa8a1987dd23"
+    },
+    "policy": {
+      "preset": "publicUpload",
+      "fingerprint": "fc0ac4463bfbc9bad261580eb2f523d445703b1c2c49c57c5ce15f5fd7cc8ac3",
+      "widths": [
+        320
+      ],
+      "formats": [
+        "jpeg"
+      ],
+      "placeholder": false
+    },
+    "source": {
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "bytes": 466706,
+      "detectedFormat": "png",
+      "encodedWidth": 600,
+      "encodedHeight": 400,
+      "displayWidth": 600,
+      "displayHeight": 400,
+      "hasAlpha": false,
+      "orientation": null,
+      "orientationApplied": false
+    },
+    "metadata": {
+      "mode": "privacySafe",
+      "exif": "stripped",
+      "gps": "stripped",
+      "xmp": "stripped",
+      "comments": "stripped",
+      "unknownAncillary": "stripped",
+      "artifactIccPolicy": "preserve-if-safe",
+      "placeholderIccPolicy": "strip"
+    },
+    "artifacts": [
+      {
+        "id": "320/jpeg",
+        "path": "image-320.jpg",
+        "format": "jpeg",
+        "width": 320,
+        "height": 213,
+        "bytes": 16069,
+        "quality": 85,
+        "iccOutcome": "absent",
+        "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+      }
+    ],
+    "delivery": {
+      "srcsets": [
+        {
+          "format": "jpeg",
+          "value": "image-320.jpg 320w"
+        }
+      ]
+    },
+    "cacheKey": "23a9de96eddfaa0b0110ab5c87683225cce20c76434de360ecfa4bcfe03e446f"
+  },
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "before",
+      "{\"id\":\"photo-none\",\"fixture\":\"coffee\",\"format\":\"jpeg\",\"width\":320,\"interface\":\"compiler\",\"budgetKind\":\"none\",\"budget\":null,\"policy\":{\"widths\":[320],\"formats\":[\"jpeg\"],\"placeholder\":false}}",
+      "2",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/before-photo-none-2-GFjkyj"
+    ],
+    "startedAt": "2026-10-12T09:42:45.713Z",
+    "completedAt": "2026-10-12T09:42:45.833Z",
+    "matrixSha256": "63943e56dcc5d73c9b818ae8ef06b68b63154d792b3a06183eed813f2cbe963d"
+  }
+}

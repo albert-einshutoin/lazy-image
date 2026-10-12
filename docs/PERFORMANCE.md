@@ -12,6 +12,7 @@ not establish a universal speed, quality, size or memory advantage.
 | [Compiler and quality runners](./BENCHMARK_OPERATIONS.md#release-compiler-and-constrained-quality-evidence-769) | How to reproduce E2E acceptance, budget and constrained-quality measurements | A successful run merely because the scripts exist |
 | [Native compiler case evaluation](./history/native-compiler-cost-20261011/EVALUATION.md) | Retained 1.4.2 checkout evidence, case-by-case costs/unmet targets, source applicability and one next-work decision | Current published 1.4.3 measurements, user SLA or universal codec superiority |
 | [JPEG quality setting-order correction](./history/jpeg-quality-order-20261011/EVALUATION.md) | Output DQT regression and same-machine before/after costs on three JPEG inputs | Published npm measurements, all-input gains or simultaneous quality/byte superiority |
+| [Upload/build byte-budget operational evaluation](./history/target-bytes-operational-20261012/EVALUATION.md) | Fixed 18-condition M4 acceptance, E300/E123, outer timing/RSS, and a concrete publication-preparation blocker | Universal SLA/p99, parallel scaling, published npm equivalence, or the correctness of every old-search success |
 | [Historical snapshots](./history/BENCHMARK_RESULTS.md) | Earlier operation, memory and cold-start observations | Fresh release evidence |
 | [Wasm measurements](./WASM_BENCHMARKING.md) | Browser/Edge preflight methodology | Native compiler performance or full API parity |
 
@@ -20,7 +21,8 @@ macOS 26.3 / Apple M4. Its two simple PNG-to-JPEG scenarios produced smaller
 lazy-image files at the same numeric quality setting; they were not exact
 perceptual-quality matches. WebP and AVIF favored sharp in the recorded timing
 scenarios. Read the original tables for dimensions, operations and quality context.
-No new measurements accompany this documentation cleanup.
+The dated operational evaluation measures different byte-budget workloads and
+does not refresh this historical engine comparison.
 
 ## Compare your workload
 

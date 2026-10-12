@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/lazy-image.darwin-arm64.node",
+    "nativeSha256": "b86fa58fd8a66d5cb8970578452b077f5f8c20032af6402f784aaab650311f2a",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=026abe3263fced05513faa61299f46d6ee59e053c387b332da9d48849faf2fc4;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "cdc20c5d3fb81f26eb2fec0e47d27c1ae1edc4bc23a26d3e08f8381a677f6969"
+  },
+  "condition": {
+    "id": "photo-loose",
+    "fixture": "coffee",
+    "format": "jpeg",
+    "width": 320,
+    "interface": "compiler",
+    "budgetKind": "loose",
+    "budget": 65511,
+    "policy": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "jpeg"
+      ],
+      "placeholder": false,
+      "budgets": [
+        {
+          "width": 320,
+          "format": "jpeg",
+          "maxBytes": 65511
+        }
+      ]
+    }
+  },
+  "trial": 1,
+  "fixture": {
+    "id": "coffee",
+    "path": "test/benchmarks/corpus/images/coffee.png",
+    "bytes": 466706,
+    "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+    "license": "CC0-1.0",
+    "source": {
+      "kind": "photograph",
+      "author": "Rachel Michetti",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+      "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 63.51908300000001,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 7,
+    "rssStartBytes": 83836928,
+    "peakRssBytes": 101007360,
+    "rssEndBytes": 101007360
+  },
+  "cliProcess": null,
+  "nativeMetrics": null,
+  "nativeTrace": [
+    {
+      "method": "toFileTargetBytes",
+      "format": "jpeg",
+      "suppliedOptions": {
+        "targetBytes": 65511,
+        "strict": true,
+        "qualityFloorPolicy": "strict"
+      },
+      "outcome": "returned",
+      "quality": 100,
+      "budgetMet": true,
+      "bytesWritten": 59555,
+      "metrics": {
+        "version": "1.1.0",
+        "decodeMs": 2.6385829999999997,
+        "opsMs": 0.496625,
+        "encodeMs": 28.772833000000002,
+        "totalMs": 31.913999999999998,
+        "peakRss": 93208576,
+        "cpuTime": 0.034437999999999996,
+        "processingTime": 0.031914,
+        "bytesIn": 466706,
+        "bytesOut": 59555,
+        "compressionRatio": 0.1276071016871435,
+        "formatOut": "jpeg",
+        "iccPreserved": false,
+        "iccOutcome": "absent",
+        "metadataStripped": false,
+        "policyViolations": [],
+        "formatIn": "png"
+      }
+    }
+  ],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [
+    {
+      "id": "320/jpeg",
+      "path": "image-320.jpg",
+      "format": "jpeg",
+      "width": 320,
+      "height": 213,
+      "bytes": 59555,
+      "quality": 100,
+      "targetBytes": 65511,
+      "iccOutcome": "absent",
+      "sha256": "3d1605d09bfbe25af3e3ac55b3c7405494bee11a5e3d44b808a2956f4eef3c1e",
+      "observed": {
+        "bytes": 59555,
+        "sha256": "3d1605d09bfbe25af3e3ac55b3c7405494bee11a5e3d44b808a2956f4eef3c1e"
+      }
+    }
+  ],
+  "manifest": {
+    "schemaVersion": 1,
+    "compiler": {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.4.3",
+      "platform": "darwin",
+      "arch": "arm64",
+      "fingerprint": "838ec8b207ac71b3d941632b87a75cd250a1ffa28ee947eba9a902079f35bf8c"
+    },
+    "policy": {
+      "preset": "publicUpload",
+      "fingerprint": "849742f8292aaa816fe5292922c830e77270bf98ddfc59b4f576b10055e2982d",
+      "widths": [
+        320
+      ],
+      "formats": [
+        "jpeg"
+      ],
+      "placeholder": false
+    },
+    "source": {
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "bytes": 466706,
+      "detectedFormat": "png",
+      "encodedWidth": 600,
+      "encodedHeight": 400,
+      "displayWidth": 600,
+      "displayHeight": 400,
+      "hasAlpha": false,
+      "orientation": null,
+      "orientationApplied": false
+    },
+    "metadata": {
+      "mode": "privacySafe",
+      "exif": "stripped",
+      "gps": "stripped",
+      "xmp": "stripped",
+      "comments": "stripped",
+      "unknownAncillary": "stripped",
+      "artifactIccPolicy": "preserve-if-safe",
+      "placeholderIccPolicy": "strip"
+    },
+    "artifacts": [
+      {
+        "id": "320/jpeg",
+        "path": "image-320.jpg",
+        "format": "jpeg",
+        "width": 320,
+        "height": 213,
+        "bytes": 59555,
+        "quality": 100,
+        "targetBytes": 65511,
+        "iccOutcome": "absent",
+        "sha256": "3d1605d09bfbe25af3e3ac55b3c7405494bee11a5e3d44b808a2956f4eef3c1e"
+      }
+    ],
+    "delivery": {
+      "srcsets": [
+        {
+          "format": "jpeg",
+          "value": "image-320.jpg 320w"
+        }
+      ]
+    },
+    "cacheKey": "2e73420d150b1dd6ea0c7d283691a4f8300f684ed9b05e8e1475bfe4b5595213"
+  },
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"photo-loose\",\"fixture\":\"coffee\",\"format\":\"jpeg\",\"width\":320,\"interface\":\"compiler\",\"budgetKind\":\"loose\",\"budget\":65511,\"policy\":{\"widths\":[320],\"formats\":[\"jpeg\"],\"placeholder\":false,\"budgets\":[{\"width\":320,\"format\":\"jpeg\",\"maxBytes\":65511}]}}",
+      "1",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-photo-loose-1-oA3cjG"
+    ],
+    "startedAt": "2026-10-12T09:22:46.986Z",
+    "completedAt": "2026-10-12T09:22:47.136Z",
+    "matrixSha256": "d5a26f9e0fceb8cc4f073637d688fdeb04e5c62d8cc1dac176cb8661c0189490"
+  }
+}

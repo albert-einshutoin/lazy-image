@@ -1,0 +1,36 @@
+[
+  {
+    "variant": "current",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "command": "npm run build",
+    "cargoTargetDir": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/target",
+    "developerDir": "/Applications/Xcode.app/Contents/Developer",
+    "sdkRoot": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+    "cc": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+    "cxx": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+    "startedAt": "2026-10-12T09:37:22.836Z",
+    "completedAt": "2026-10-12T09:39:04.069Z",
+    "exitCode": 0,
+    "signal": null,
+    "logfile": "current-matched-sdk-build.log",
+    "nativeSha256": "34926526c54f42cab8151250d648550fa7062af61c57f20d79e64b66e5578223"
+  },
+  {
+    "variant": "before",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+    "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+    "command": "npm run build",
+    "cargoTargetDir": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before/target",
+    "developerDir": "/Applications/Xcode.app/Contents/Developer",
+    "sdkRoot": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+    "cc": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+    "cxx": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+    "startedAt": "2026-10-12T09:39:04.121Z",
+    "completedAt": "2026-10-12T09:40:36.035Z",
+    "exitCode": 0,
+    "signal": null,
+    "logfile": "before-matched-sdk-build.log",
+    "nativeSha256": "1926c6c8157af958f12a154afa5829684afa5802627e768fe7c538a15a687670"
+  }
+]
