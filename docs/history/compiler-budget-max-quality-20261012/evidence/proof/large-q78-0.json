@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "574b81148b4f2fc30ddab567644e1037c2416343",
+    "buildSourceSha": "464187c4a428f95263e9f6ef456f4bfb118fef01",
+    "root": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-max-quality-889/lazy-image.darwin-arm64.node",
+    "nativeSha256": "c15f1e55f5552ec49d4b853bb49a3eed26141b071b7772c166eadeab8649d841",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=9fb6ad8ca3de1eef8df38c091f72449de3d7e59f932d9d69214a742b6d0bab79;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "jsSha256": {
+      "index.js": "723ed60fea3c79088d95663ab850f6eb2cf6ea8621f14d3ae3c3e668badda099",
+      "index.mjs": "c5a7b1e640d6751aa03e749ec18a1d093ab65964518d134f7950c97f953bdac3",
+      "index.d.ts": "d876c9ea66dd056dc8ac46c88d4a406c71627a41eadc1c86de1bd7a76239ddbe",
+      "lib/artifact-policy.js": "a0648632a2255fdb92f0789f4043a4e14a5d97dda1b006c8a0179d7068bed2e6",
+      "lib/artifact-compiler.js": "78467d5a71eb9615c41a8f675b24c73f7c0461ca7a8bb8a291e019a12a9362a2",
+      "lib/helpers.js": "e959ce2dedf0357b00a4d5454e886c39b53d4827f29d8e51d2db5d4eec459f08",
+      "scripts/postbuild-fixup.js": "fc63317a524bc95509d53ed62715bcde3189fde3e29e13f4769052c02a697b81"
+    },
+    "rustTree": "c2a8a1294230765d6e091304aeaa1adf15084ddd",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "4e936ebb3c919ddb13fdd381a18aec25f47b41a6644bd7f3b1a7915589d9af78",
+    "observerHelperSha256": "a092971645031bed6967288e24e47709f904132aaa68852fdfd2436a4a1c5b55"
+  },
+  "condition": {
+    "id": "large-q78",
+    "fixture": "large",
+    "format": "jpeg",
+    "width": 1600,
+    "quality": 78,
+    "interface": "calibration"
+  },
+  "trial": 0,
+  "fixture": {
+    "id": "large",
+    "path": "test/fixtures/test_3.2MB_5000x5000.jpg",
+    "bytes": 3371242,
+    "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+    "license": "MIT",
+    "source": {
+      "kind": "repository-fixture",
+      "note": "Tracked size fixture; synthetic generator context is test/helpers/create-size-fixtures-sharp.js; original generator runtime is not asserted."
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 201.91445800000002,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 20,
+    "rssStartBytes": 84246528,
+    "peakRssBytes": 281313280,
+    "rssEndBytes": 209879040
+  },
+  "cliProcess": null,
+  "nativeMetrics": {
+    "version": "1.1.0",
+    "decodeMs": 88.6005,
+    "opsMs": 19.821749999999998,
+    "encodeMs": 82.022958,
+    "totalMs": 190.45195900000002,
+    "peakRss": 281460736,
+    "cpuTime": 0.255677,
+    "processingTime": 0.190451959,
+    "bytesIn": 3371242,
+    "bytesOut": 194145,
+    "compressionRatio": 0.05758856824873444,
+    "formatOut": "jpeg",
+    "iccPreserved": false,
+    "iccOutcome": "absent",
+    "metadataStripped": false,
+    "policyViolations": [],
+    "formatIn": "jpeg"
+  },
+  "nativeTrace": [],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [
+    {
+      "format": "jpeg",
+      "quality": 78,
+      "budgetMet": null,
+      "bytes": 194145,
+      "sha256": "d4ef6ba21cfbea0b490eac9f0930690f6d901e10d1dbe3bc3e53ad8a6d955349"
+    }
+  ],
+  "manifest": null,
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output.jpg"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/compiler-budget-max-quality-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"large-q78\",\"fixture\":\"large\",\"format\":\"jpeg\",\"width\":1600,\"quality\":78,\"interface\":\"calibration\"}",
+      "0",
+      "/Volumes/Satechi/Developer/lazy-image-max-quality-889-runs/current-large-q78-0-QUWPWM"
+    ],
+    "startedAt": "2026-10-12T11:36:40.770Z",
+    "completedAt": "2026-10-12T11:36:41.054Z",
+    "matrixSha256": "b4143014d686a486e97de361a5eaf229140dc125f7ccfe691b6cfa292de47fa2"
+  },
+  "group": "proof"
+}

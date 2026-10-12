@@ -48,6 +48,27 @@ async function main() {
     });
     assert.deepEqual(cliManifest, apiManifest);
 
+    const cappedPolicy = { widths: [64], formats: ['webp'], placeholder: false,
+      budgets: [{ width: 64, format: 'webp', maxBytes: 1_000_000, maxQuality: 60 }] };
+    await fsp.writeFile(policyPath, JSON.stringify(cappedPolicy));
+    const cappedDir = path.join(parent, 'capped-cli');
+    const capped = runCli(['compile', INPUT, '--out-dir', cappedDir, '--policy', policyPath]);
+    assert.equal(capped.status, 0, capped.stderr);
+    const cappedManifest = JSON.parse(capped.stdout);
+    assert.equal(cappedManifest.artifacts[0].quality, 60);
+    assert.deepEqual(cappedManifest, await compileImage({ inputPath: INPUT,
+      outputDir: path.join(parent, 'capped-api'), policy: cappedPolicy }));
+    assert.deepEqual(cappedManifest, JSON.parse(await fsp.readFile(path.join(cappedDir, 'manifest.json'))));
+    for (const maxQuality of [null, '60', 60.5, 29, 101]) {
+      await fsp.writeFile(policyPath, JSON.stringify({ ...cappedPolicy,
+        budgets: [{ ...cappedPolicy.budgets[0], maxQuality }] }));
+      const invalidDir = path.join(parent, `invalid-cap-${String(maxQuality)}`);
+      const result = runCli(['compile', INPUT, '--out-dir', invalidDir, '--policy', policyPath]);
+      assert.equal(result.status, 1); assert.equal(result.stdout, ''); assert.match(result.stderr, /E400/);
+      assert.equal(await fsp.stat(invalidDir).catch(() => null), null);
+    }
+    await fsp.writeFile(policyPath, JSON.stringify({ widths: [320, 640], formats: ['webp'], placeholder: false }));
+
     const unknownFlag = runCli([
       'compile', INPUT, '--out-dir', path.join(parent, 'unknown'), '--policy', policyPath, '--nope',
     ]);

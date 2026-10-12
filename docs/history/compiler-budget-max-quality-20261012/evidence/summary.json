@@ -1,0 +1,1333 @@
+{
+  "schemaVersion": 1,
+  "issue": 889,
+  "sourceSha": "574b81148b4f2fc30ddab567644e1037c2416343",
+  "nativeSha256": "c15f1e55f5552ec49d4b853bb49a3eed26141b071b7772c166eadeab8649d841",
+  "matrixSha256": "b4143014d686a486e97de361a5eaf229140dc125f7ccfe691b6cfa292de47fa2",
+  "rows": [
+    {
+      "id": "large-compiler-default",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782
+          }
+        ]
+      },
+      "outcomes": {
+        "resource-timeout": 3
+      },
+      "outerMs": {
+        "samples": [
+          5499.382208,
+          5550.162082999999,
+          5557.007875
+        ],
+        "p50": 5550.162082999999,
+        "p90": 5557.007875,
+        "worst": 5557.007875
+      },
+      "rss": [
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 463,
+          "rssStartBytes": 84393984,
+          "peakRssBytes": 290177024,
+          "rssEndBytes": 141213696
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 466,
+          "rssStartBytes": 84459520,
+          "peakRssBytes": 290226176,
+          "rssEndBytes": 155631616
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 466,
+          "rssStartBytes": 84393984,
+          "peakRssBytes": 290160640,
+          "rssEndBytes": 162906112
+        }
+      ],
+      "artifacts": [
+        [],
+        [],
+        []
+      ],
+      "errors": [
+        {
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during processing (1600/jpeg)",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "processing",
+          "category": 2,
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5011ms). Use .limits({ timeoutMs: 10011 }) for longer operations or switch to lenient policy.",
+          "cleanupError": null
+        },
+        {
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during processing (1600/jpeg)",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "processing",
+          "category": 2,
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5057ms). Use .limits({ timeoutMs: 10057 }) for longer operations or switch to lenient policy.",
+          "cleanupError": null
+        },
+        {
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during processing (1600/jpeg)",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "processing",
+          "category": 2,
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5066ms). Use .limits({ timeoutMs: 10066 }) for longer operations or switch to lenient policy.",
+          "cleanupError": null
+        }
+      ],
+      "nativeTrace": [
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "jpeg",
+            "suppliedOptions": {
+              "targetBytes": 93782,
+              "minQuality": 30,
+              "maxQuality": 100,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "rejected",
+            "error": {
+              "name": "Error",
+              "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5011ms). Use .limits({ timeoutMs: 10011 }) for longer operations or switch to lenient policy.",
+              "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+              "errorCode": "E123",
+              "phase": null,
+              "category": 2,
+              "cause": null,
+              "cleanupError": null
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "jpeg",
+            "suppliedOptions": {
+              "targetBytes": 93782,
+              "minQuality": 30,
+              "maxQuality": 100,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "rejected",
+            "error": {
+              "name": "Error",
+              "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5057ms). Use .limits({ timeoutMs: 10057 }) for longer operations or switch to lenient policy.",
+              "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+              "errorCode": "E123",
+              "phase": null,
+              "category": 2,
+              "cause": null,
+              "cleanupError": null
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "jpeg",
+            "suppliedOptions": {
+              "targetBytes": 93782,
+              "minQuality": 30,
+              "maxQuality": 100,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "rejected",
+            "error": {
+              "name": "Error",
+              "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5066ms). Use .limits({ timeoutMs: 10066 }) for longer operations or switch to lenient policy.",
+              "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+              "errorCode": "E123",
+              "phase": null,
+              "category": 2,
+              "cause": null,
+              "cleanupError": null
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "large-compiler-cap",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782,
+            "maxQuality": 90
+          }
+        ]
+      },
+      "outcomes": {
+        "accepted": 3
+      },
+      "outerMs": {
+        "samples": [
+          3347.860083,
+          4025.8979579999996,
+          3209.2252919999996
+        ],
+        "p50": 3347.860083,
+        "p90": 4025.8979579999996,
+        "worst": 4025.8979579999996
+      },
+      "rss": [
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 284,
+          "rssStartBytes": 84131840,
+          "peakRssBytes": 289964032,
+          "rssEndBytes": 166232064
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 338,
+          "rssStartBytes": 84443136,
+          "peakRssBytes": 290226176,
+          "rssEndBytes": 141049856
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 266,
+          "rssStartBytes": 84295680,
+          "peakRssBytes": 290209792,
+          "rssEndBytes": 166166528
+        }
+      ],
+      "artifacts": [
+        [
+          {
+            "id": "1600/jpeg",
+            "path": "image-1600.jpg",
+            "format": "jpeg",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 93782,
+            "quality": 60,
+            "targetBytes": 93782,
+            "iccOutcome": "absent",
+            "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857",
+            "observed": {
+              "bytes": 93782,
+              "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857"
+            }
+          }
+        ],
+        [
+          {
+            "id": "1600/jpeg",
+            "path": "image-1600.jpg",
+            "format": "jpeg",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 93782,
+            "quality": 60,
+            "targetBytes": 93782,
+            "iccOutcome": "absent",
+            "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857",
+            "observed": {
+              "bytes": 93782,
+              "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857"
+            }
+          }
+        ],
+        [
+          {
+            "id": "1600/jpeg",
+            "path": "image-1600.jpg",
+            "format": "jpeg",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 93782,
+            "quality": 60,
+            "targetBytes": 93782,
+            "iccOutcome": "absent",
+            "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857",
+            "observed": {
+              "bytes": 93782,
+              "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857"
+            }
+          }
+        ]
+      ],
+      "errors": [
+        null,
+        null,
+        null
+      ],
+      "nativeTrace": [
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "jpeg",
+            "suppliedOptions": {
+              "targetBytes": 93782,
+              "minQuality": 30,
+              "maxQuality": 90,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "returned",
+            "quality": 60,
+            "budgetMet": true,
+            "bytesWritten": 93782,
+            "metrics": {
+              "version": "1.1.0",
+              "decodeMs": 94.563083,
+              "opsMs": 17.947709,
+              "encodeMs": 63.967499999999994,
+              "totalMs": 2794.576667,
+              "peakRss": 290095104,
+              "cpuTime": 2.787407,
+              "processingTime": 2.794576667,
+              "bytesIn": 3371242,
+              "bytesOut": 93782,
+              "compressionRatio": 0.02781823434805333,
+              "formatOut": "jpeg",
+              "iccPreserved": false,
+              "iccOutcome": "absent",
+              "metadataStripped": false,
+              "policyViolations": [],
+              "formatIn": "jpeg"
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "jpeg",
+            "suppliedOptions": {
+              "targetBytes": 93782,
+              "minQuality": 30,
+              "maxQuality": 90,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "returned",
+            "quality": 60,
+            "budgetMet": true,
+            "bytesWritten": 93782,
+            "metrics": {
+              "version": "1.1.0",
+              "decodeMs": 97.11825,
+              "opsMs": 20.659167,
+              "encodeMs": 87.584458,
+              "totalMs": 3492.527167,
+              "peakRss": 290357248,
+              "cpuTime": 3.541547,
+              "processingTime": 3.492527167,
+              "bytesIn": 3371242,
+              "bytesOut": 93782,
+              "compressionRatio": 0.02781823434805333,
+              "formatOut": "jpeg",
+              "iccPreserved": false,
+              "iccOutcome": "absent",
+              "metadataStripped": false,
+              "policyViolations": [],
+              "formatIn": "jpeg"
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "jpeg",
+            "suppliedOptions": {
+              "targetBytes": 93782,
+              "minQuality": 30,
+              "maxQuality": 90,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "returned",
+            "quality": 60,
+            "budgetMet": true,
+            "bytesWritten": 93782,
+            "metrics": {
+              "version": "1.1.0",
+              "decodeMs": 91.53966700000001,
+              "opsMs": 15.001166,
+              "encodeMs": 58.412082999999996,
+              "totalMs": 2681.361708,
+              "peakRss": 290340864,
+              "cpuTime": 2.730995,
+              "processingTime": 2.681361708,
+              "bytesIn": 3371242,
+              "bytesOut": 93782,
+              "compressionRatio": 0.02781823434805333,
+              "formatOut": "jpeg",
+              "iccPreserved": false,
+              "iccOutcome": "absent",
+              "metadataStripped": false,
+              "policyViolations": [],
+              "formatIn": "jpeg"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "avif-compiler-default",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850
+          }
+        ]
+      },
+      "outcomes": {
+        "resource-timeout": 3
+      },
+      "outerMs": {
+        "samples": [
+          5079.961792,
+          5061.06275,
+          5028.5893750000005
+        ],
+        "p50": 5061.06275,
+        "p90": 5079.961792,
+        "worst": 5079.961792
+      },
+      "rss": [
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 438,
+          "rssStartBytes": 84279296,
+          "peakRssBytes": 101187584,
+          "rssEndBytes": 88244224
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 436,
+          "rssStartBytes": 84328448,
+          "peakRssBytes": 101138432,
+          "rssEndBytes": 89145344
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 434,
+          "rssStartBytes": 84328448,
+          "peakRssBytes": 101089280,
+          "rssEndBytes": 87965696
+        }
+      ],
+      "artifacts": [
+        [],
+        [],
+        []
+      ],
+      "errors": [
+        {
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during processing (320/avif)",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "processing",
+          "category": 2,
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5068ms). Use .limits({ timeoutMs: 10068 }) for longer operations or switch to lenient policy.",
+          "cleanupError": null
+        },
+        {
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during processing (320/avif)",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "processing",
+          "category": 2,
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5052ms). Use .limits({ timeoutMs: 10052 }) for longer operations or switch to lenient policy.",
+          "cleanupError": null
+        },
+        {
+          "name": "ArtifactCompilationError",
+          "message": "Image artifact compilation failed during processing (320/avif)",
+          "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+          "errorCode": "E123",
+          "phase": "processing",
+          "category": 2,
+          "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5019ms). Use .limits({ timeoutMs: 10019 }) for longer operations or switch to lenient policy.",
+          "cleanupError": null
+        }
+      ],
+      "nativeTrace": [
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "avif",
+            "suppliedOptions": {
+              "targetBytes": 12850,
+              "minQuality": 30,
+              "maxQuality": 100,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "rejected",
+            "error": {
+              "name": "Error",
+              "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5068ms). Use .limits({ timeoutMs: 10068 }) for longer operations or switch to lenient policy.",
+              "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+              "errorCode": "E123",
+              "phase": null,
+              "category": 2,
+              "cause": null,
+              "cleanupError": null
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "avif",
+            "suppliedOptions": {
+              "targetBytes": 12850,
+              "minQuality": 30,
+              "maxQuality": 100,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "rejected",
+            "error": {
+              "name": "Error",
+              "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5052ms). Use .limits({ timeoutMs: 10052 }) for longer operations or switch to lenient policy.",
+              "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+              "errorCode": "E123",
+              "phase": null,
+              "category": 2,
+              "cause": null,
+              "cleanupError": null
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "avif",
+            "suppliedOptions": {
+              "targetBytes": 12850,
+              "minQuality": 30,
+              "maxQuality": 100,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "rejected",
+            "error": {
+              "name": "Error",
+              "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5019ms). Use .limits({ timeoutMs: 10019 }) for longer operations or switch to lenient policy.",
+              "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+              "errorCode": "E123",
+              "phase": null,
+              "category": 2,
+              "cause": null,
+              "cleanupError": null
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "avif-compiler-cap",
+      "interface": "compiler",
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850,
+            "maxQuality": 60
+          }
+        ]
+      },
+      "outcomes": {
+        "accepted": 3
+      },
+      "outerMs": {
+        "samples": [
+          97.24849999999999,
+          97.910583,
+          96.57308300000001
+        ],
+        "p50": 97.24849999999999,
+        "p90": 97.910583,
+        "worst": 97.910583
+      },
+      "rss": [
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 10,
+          "rssStartBytes": 84279296,
+          "peakRssBytes": 97910784,
+          "rssEndBytes": 97910784
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 10,
+          "rssStartBytes": 84279296,
+          "peakRssBytes": 97959936,
+          "rssEndBytes": 97959936
+        },
+        {
+          "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+          "intervalMs": 10,
+          "samples": 10,
+          "rssStartBytes": 84623360,
+          "peakRssBytes": 98304000,
+          "rssEndBytes": 98304000
+        }
+      ],
+      "artifacts": [
+        [
+          {
+            "id": "320/avif",
+            "path": "image-320.avif",
+            "format": "avif",
+            "width": 320,
+            "height": 213,
+            "bytes": 12850,
+            "quality": 60,
+            "targetBytes": 12850,
+            "iccOutcome": "absent",
+            "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7",
+            "observed": {
+              "bytes": 12850,
+              "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7"
+            }
+          }
+        ],
+        [
+          {
+            "id": "320/avif",
+            "path": "image-320.avif",
+            "format": "avif",
+            "width": 320,
+            "height": 213,
+            "bytes": 12850,
+            "quality": 60,
+            "targetBytes": 12850,
+            "iccOutcome": "absent",
+            "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7",
+            "observed": {
+              "bytes": 12850,
+              "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7"
+            }
+          }
+        ],
+        [
+          {
+            "id": "320/avif",
+            "path": "image-320.avif",
+            "format": "avif",
+            "width": 320,
+            "height": 213,
+            "bytes": 12850,
+            "quality": 60,
+            "targetBytes": 12850,
+            "iccOutcome": "absent",
+            "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7",
+            "observed": {
+              "bytes": 12850,
+              "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7"
+            }
+          }
+        ]
+      ],
+      "errors": [
+        null,
+        null,
+        null
+      ],
+      "nativeTrace": [
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "avif",
+            "suppliedOptions": {
+              "targetBytes": 12850,
+              "minQuality": 30,
+              "maxQuality": 60,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "returned",
+            "quality": 60,
+            "budgetMet": true,
+            "bytesWritten": 12850,
+            "metrics": {
+              "version": "1.1.0",
+              "decodeMs": 2.532375,
+              "opsMs": 0.568542,
+              "encodeMs": 74.391917,
+              "totalMs": 77.498709,
+              "peakRss": 97648640,
+              "cpuTime": 0.080481,
+              "processingTime": 0.077498709,
+              "bytesIn": 466706,
+              "bytesOut": 12850,
+              "compressionRatio": 0.02753339361396682,
+              "formatOut": "avif",
+              "iccPreserved": false,
+              "iccOutcome": "absent",
+              "metadataStripped": false,
+              "policyViolations": [],
+              "formatIn": "png"
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "avif",
+            "suppliedOptions": {
+              "targetBytes": 12850,
+              "minQuality": 30,
+              "maxQuality": 60,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "returned",
+            "quality": 60,
+            "budgetMet": true,
+            "bytesWritten": 12850,
+            "metrics": {
+              "version": "1.1.0",
+              "decodeMs": 2.659833,
+              "opsMs": 0.46429099999999995,
+              "encodeMs": 75.07575,
+              "totalMs": 78.207708,
+              "peakRss": 97599488,
+              "cpuTime": 0.08063000000000001,
+              "processingTime": 0.078207708,
+              "bytesIn": 466706,
+              "bytesOut": 12850,
+              "compressionRatio": 0.02753339361396682,
+              "formatOut": "avif",
+              "iccPreserved": false,
+              "iccOutcome": "absent",
+              "metadataStripped": false,
+              "policyViolations": [],
+              "formatIn": "png"
+            }
+          }
+        ],
+        [
+          {
+            "method": "toFileTargetBytes",
+            "format": "avif",
+            "suppliedOptions": {
+              "targetBytes": 12850,
+              "minQuality": 30,
+              "maxQuality": 60,
+              "strict": true,
+              "qualityFloorPolicy": "strict"
+            },
+            "outcome": "returned",
+            "quality": 60,
+            "budgetMet": true,
+            "bytesWritten": 12850,
+            "metrics": {
+              "version": "1.1.0",
+              "decodeMs": 2.5062919999999997,
+              "opsMs": 0.594542,
+              "encodeMs": 75.174083,
+              "totalMs": 78.28112499999999,
+              "peakRss": 97992704,
+              "cpuTime": 0.081229,
+              "processingTime": 0.078281125,
+              "bytesIn": 466706,
+              "bytesOut": 12850,
+              "compressionRatio": 0.02753339361396682,
+              "formatOut": "avif",
+              "iccPreserved": false,
+              "iccOutcome": "absent",
+              "metadataStripped": false,
+              "policyViolations": [],
+              "formatIn": "png"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "large-cli-default",
+      "interface": "cli",
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782
+          }
+        ]
+      },
+      "outcomes": {
+        "resource-cause-unobserved": 3
+      },
+      "outerMs": {
+        "samples": [
+          5552.250667,
+          5584.123374999999,
+          5548.878459
+        ],
+        "p50": 5552.250667,
+        "p90": 5584.123374999999,
+        "worst": 5584.123374999999
+      },
+      "rss": [
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 55,
+          "missedSamples": 0,
+          "peakRssBytes": 217448448
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 55,
+          "missedSamples": 0,
+          "peakRssBytes": 215564288
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 55,
+          "missedSamples": 0,
+          "peakRssBytes": 217284608
+        }
+      ],
+      "artifacts": [
+        [],
+        [],
+        []
+      ],
+      "errors": [
+        {
+          "name": null,
+          "message": "[E123] Image artifact compilation failed during processing (1600/jpeg) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+          "errorCode": "E123",
+          "phase": "processing",
+          "cause": null,
+          "cleanupError": null,
+          "detailBoundary": "CLI diagnostics do not expose cause/cleanupError"
+        },
+        {
+          "name": null,
+          "message": "[E123] Image artifact compilation failed during processing (1600/jpeg) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+          "errorCode": "E123",
+          "phase": "processing",
+          "cause": null,
+          "cleanupError": null,
+          "detailBoundary": "CLI diagnostics do not expose cause/cleanupError"
+        },
+        {
+          "name": null,
+          "message": "[E123] Image artifact compilation failed during processing (1600/jpeg) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+          "errorCode": "E123",
+          "phase": "processing",
+          "cause": null,
+          "cleanupError": null,
+          "detailBoundary": "CLI diagnostics do not expose cause/cleanupError"
+        }
+      ],
+      "nativeTrace": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "large-cli-cap",
+      "interface": "cli",
+      "policy": {
+        "widths": [
+          1600
+        ],
+        "formats": [
+          "jpeg"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 1600,
+            "format": "jpeg",
+            "maxBytes": 93782,
+            "maxQuality": 90
+          }
+        ]
+      },
+      "outcomes": {
+        "accepted": 3
+      },
+      "outerMs": {
+        "samples": [
+          3193.1430840000003,
+          3222.175,
+          3204.428334
+        ],
+        "p50": 3204.428334,
+        "p90": 3222.175,
+        "worst": 3222.175
+      },
+      "rss": [
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 32,
+          "missedSamples": 0,
+          "peakRssBytes": 203456512
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 32,
+          "missedSamples": 0,
+          "peakRssBytes": 203456512
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 32,
+          "missedSamples": 0,
+          "peakRssBytes": 202964992
+        }
+      ],
+      "artifacts": [
+        [
+          {
+            "id": "1600/jpeg",
+            "path": "image-1600.jpg",
+            "format": "jpeg",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 93782,
+            "quality": 60,
+            "targetBytes": 93782,
+            "iccOutcome": "absent",
+            "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857",
+            "observed": {
+              "bytes": 93782,
+              "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857"
+            }
+          }
+        ],
+        [
+          {
+            "id": "1600/jpeg",
+            "path": "image-1600.jpg",
+            "format": "jpeg",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 93782,
+            "quality": 60,
+            "targetBytes": 93782,
+            "iccOutcome": "absent",
+            "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857",
+            "observed": {
+              "bytes": 93782,
+              "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857"
+            }
+          }
+        ],
+        [
+          {
+            "id": "1600/jpeg",
+            "path": "image-1600.jpg",
+            "format": "jpeg",
+            "width": 1600,
+            "height": 1600,
+            "bytes": 93782,
+            "quality": 60,
+            "targetBytes": 93782,
+            "iccOutcome": "absent",
+            "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857",
+            "observed": {
+              "bytes": 93782,
+              "sha256": "283dcdcabaa25ce5302f33c700e475f2009786779c018d930c01eb67955af857"
+            }
+          }
+        ]
+      ],
+      "errors": [
+        null,
+        null,
+        null
+      ],
+      "nativeTrace": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "avif-cli-default",
+      "interface": "cli",
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850
+          }
+        ]
+      },
+      "outcomes": {
+        "resource-cause-unobserved": 3
+      },
+      "outerMs": {
+        "samples": [
+          5066.728375,
+          5117.981916,
+          5081.550292
+        ],
+        "p50": 5081.550292,
+        "p90": 5117.981916,
+        "worst": 5117.981916
+      },
+      "rss": [
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 50,
+          "missedSamples": 0,
+          "peakRssBytes": 70402048
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 51,
+          "missedSamples": 0,
+          "peakRssBytes": 69779456
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 50,
+          "missedSamples": 0,
+          "peakRssBytes": 69926912
+        }
+      ],
+      "artifacts": [
+        [],
+        [],
+        []
+      ],
+      "errors": [
+        {
+          "name": null,
+          "message": "[E123] Image artifact compilation failed during processing (320/avif) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+          "errorCode": "E123",
+          "phase": "processing",
+          "cause": null,
+          "cleanupError": null,
+          "detailBoundary": "CLI diagnostics do not expose cause/cleanupError"
+        },
+        {
+          "name": null,
+          "message": "[E123] Image artifact compilation failed during processing (320/avif) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+          "errorCode": "E123",
+          "phase": "processing",
+          "cause": null,
+          "cleanupError": null,
+          "detailBoundary": "CLI diagnostics do not expose cause/cleanupError"
+        },
+        {
+          "name": null,
+          "message": "[E123] Image artifact compilation failed during processing (320/avif) (processing)\nHint: Adjust firewall limits (bytes/pixels/metadata) or use smaller inputs.\n",
+          "errorCode": "E123",
+          "phase": "processing",
+          "cause": null,
+          "cleanupError": null,
+          "detailBoundary": "CLI diagnostics do not expose cause/cleanupError"
+        }
+      ],
+      "nativeTrace": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "avif-cli-cap",
+      "interface": "cli",
+      "policy": {
+        "widths": [
+          320
+        ],
+        "formats": [
+          "avif"
+        ],
+        "placeholder": false,
+        "budgets": [
+          {
+            "width": 320,
+            "format": "avif",
+            "maxBytes": 12850,
+            "maxQuality": 60
+          }
+        ]
+      },
+      "outcomes": {
+        "accepted": 3
+      },
+      "outerMs": {
+        "samples": [
+          128.45070900000002,
+          129.208958,
+          133.776833
+        ],
+        "p50": 129.208958,
+        "p90": 133.776833,
+        "worst": 133.776833
+      },
+      "rss": [
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 2,
+          "missedSamples": 0,
+          "peakRssBytes": 65732608
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 2,
+          "missedSamples": 0,
+          "peakRssBytes": 65732608
+        },
+        {
+          "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+          "intervalMs": 100,
+          "samples": 2,
+          "missedSamples": 0,
+          "peakRssBytes": 65667072
+        }
+      ],
+      "artifacts": [
+        [
+          {
+            "id": "320/avif",
+            "path": "image-320.avif",
+            "format": "avif",
+            "width": 320,
+            "height": 213,
+            "bytes": 12850,
+            "quality": 60,
+            "targetBytes": 12850,
+            "iccOutcome": "absent",
+            "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7",
+            "observed": {
+              "bytes": 12850,
+              "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7"
+            }
+          }
+        ],
+        [
+          {
+            "id": "320/avif",
+            "path": "image-320.avif",
+            "format": "avif",
+            "width": 320,
+            "height": 213,
+            "bytes": 12850,
+            "quality": 60,
+            "targetBytes": 12850,
+            "iccOutcome": "absent",
+            "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7",
+            "observed": {
+              "bytes": 12850,
+              "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7"
+            }
+          }
+        ],
+        [
+          {
+            "id": "320/avif",
+            "path": "image-320.avif",
+            "format": "avif",
+            "width": 320,
+            "height": 213,
+            "bytes": 12850,
+            "quality": 60,
+            "targetBytes": 12850,
+            "iccOutcome": "absent",
+            "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7",
+            "observed": {
+              "bytes": 12850,
+              "sha256": "fc3908d6154f0c0315d2ac917361251f0810bbef2638c8cd783e23bd1e605da7"
+            }
+          }
+        ]
+      ],
+      "errors": [
+        null,
+        null,
+        null
+      ],
+      "nativeTrace": [
+        [],
+        [],
+        []
+      ]
+    }
+  ],
+  "regression": [
+    {
+      "id": "jpeg-none",
+      "outcome": "accepted",
+      "artifacts": [
+        {
+          "id": "320/jpeg",
+          "path": "image-320.jpg",
+          "format": "jpeg",
+          "width": 320,
+          "height": 213,
+          "bytes": 16069,
+          "quality": 85,
+          "iccOutcome": "absent",
+          "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9",
+          "observed": {
+            "bytes": 16069,
+            "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "nonmonotonic-100",
+      "outcome": "accepted",
+      "artifacts": [
+        {
+          "id": "64/jpeg",
+          "path": "image-64.jpg",
+          "format": "jpeg",
+          "width": 64,
+          "height": 64,
+          "bytes": 346,
+          "quality": 100,
+          "targetBytes": 346,
+          "iccOutcome": "absent",
+          "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7",
+          "observed": {
+            "bytes": 346,
+            "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7"
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "nonmonotonic-30",
+      "outcome": "budget-unmet",
+      "artifacts": [],
+      "error": {
+        "name": "ArtifactCompilationError",
+        "message": "Image artifact compilation failed during processing (64/jpeg)",
+        "code": "LAZY_IMAGE_CODEC_ERROR",
+        "errorCode": "E300",
+        "phase": "processing",
+        "category": 1,
+        "cause": "[E300] Failed to encode as jpeg: Unable to meet targetBytes=346 within quality range 30-30",
+        "cleanupError": null
+      }
+    },
+    {
+      "id": "webp-cap",
+      "outcome": "accepted",
+      "artifacts": [
+        {
+          "id": "320/webp",
+          "path": "image-320.webp",
+          "format": "webp",
+          "width": 320,
+          "height": 240,
+          "bytes": 2218,
+          "quality": 60,
+          "targetBytes": 2218,
+          "iccOutcome": "absent",
+          "sha256": "7fa96b635e3e1f6a3c5b8846a463a238132daa937dca3fbe45703f320de5c947",
+          "observed": {
+            "bytes": 2218,
+            "sha256": "7fa96b635e3e1f6a3c5b8846a463a238132daa937dca3fbe45703f320de5c947"
+          }
+        }
+      ],
+      "error": null
+    }
+  ],
+  "proofBoundary": "Independent single-quality work is excluded from primary costs; q61..90 byte-unmet plus fitting q60 prove JPEG highest-fit; fitting AVIF q60 equals its ceiling."
+}

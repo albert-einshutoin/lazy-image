@@ -1,0 +1,28 @@
+raw/large-compiler-default/0: rejected E123 5499.4ms
+raw/large-compiler-cap/0: returned  3347.9ms
+raw/avif-compiler-default/0: rejected E123 5080.0ms
+raw/avif-compiler-cap/0: returned  97.2ms
+raw/large-cli-default/0: rejected E123 5552.3ms
+raw/large-cli-cap/0: returned  3193.1ms
+raw/avif-cli-default/0: rejected E123 5066.7ms
+raw/avif-cli-cap/0: returned  128.5ms
+raw/large-compiler-cap/1: returned  4025.9ms
+raw/large-compiler-default/1: rejected E123 5550.2ms
+raw/avif-compiler-cap/1: returned  97.9ms
+raw/avif-compiler-default/1: rejected E123 5061.1ms
+raw/large-cli-cap/1: returned  3222.2ms
+raw/large-cli-default/1: rejected E123 5584.1ms
+raw/avif-cli-cap/1: returned  129.2ms
+raw/avif-cli-default/1: rejected E123 5118.0ms
+raw/large-compiler-default/2: rejected E123 5557.0ms
+raw/large-compiler-cap/2: returned  3209.2ms
+raw/avif-compiler-default/2: rejected E123 5028.6ms
+raw/avif-compiler-cap/2: returned  96.6ms
+raw/large-cli-default/2: rejected E123 5548.9ms
+raw/large-cli-cap/2: returned  3204.4ms
+raw/avif-cli-default/2: rejected E123 5081.6ms
+raw/avif-cli-cap/2: returned  133.8ms
+regression/webp-cap/0: returned  26.8ms
+regression/jpeg-none/0: returned  32.0ms
+regression/nonmonotonic-100/0: returned  16.9ms
+regression/nonmonotonic-30/0: rejected E300 7.9ms

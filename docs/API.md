@@ -156,8 +156,8 @@ print this attached error; see
 ### Compiler policy
 
 `policy` is a plain object. Unknown keys are rejected. This is narrower than
-`ImageEngine` output options; PNG output and arbitrary encoder quality are not
-compiler policy fields.
+`ImageEngine` output options; PNG output and arbitrary fixed encoder quality are
+not compiler policy fields. Budget entries can set the quality ceiling below.
 
 | Field | Default | Contract |
 |---|---|---|
@@ -165,7 +165,7 @@ compiler policy fields.
 | `widths` | `[320, 640, 1280]` | Up to 8 unique widths, integers 16–8192; normalized in ascending order |
 | `formats` | `['webp']` | JPEG, WebP, AVIF; JPEG is rejected for alpha inputs |
 | `placeholder` | `true` | Include a 16px-wide WebP placeholder using strip-all metadata |
-| `budgets` | `[]` | Entries `{ width, format, maxBytes }`, targeting an artifact in the normalized plan; maxBytes is 1–32 MiB |
+| `budgets` | `[]` | Entries `{ width, format, maxBytes, maxQuality? }`, targeting an artifact in the normalized plan; maxBytes is 1–32 MiB; maxQuality is an integer 30–100, default 100 |
 
 Requested widths above the display width are omitted. If all are above it, the
 source display width is used, provided it is at least 16px. A budget pointing at
@@ -176,7 +176,28 @@ inputs fail rather than producing an assumed-safe artifact.
 A requested byte budget must be met for publication. This differs from standalone
 target-byte APIs that return `budgetMet` for the caller to check. Budget compliance
 is not a perceptual-quality guarantee. The compiler uses JPEG 85, WebP 80 and AVIF
-60 defaults; see [adoption](./ADOPTION_GUIDE.md) for API/CLI usage.
+60 defaults for artifacts without budgets; see [adoption](./ADOPTION_GUIDE.md) for API/CLI usage.
+
+For each budget, search qualities 30 through `maxQuality` and return the highest
+quality whose encoded bytes fit. Encoded size need not be monotonic. Qualities
+outside that range are not candidates; no fitting candidate is a strict failure.
+The manifest records the selected quality after its integer/range and byte checks.
+Omitted `maxQuality` and explicit `100` normalize identically, preserving the
+existing policy fingerprint/cache key for the same source/compiler fingerprint.
+Other ceilings produce distinct policy fingerprints and cache keys. Plan `quality` is the fixed
+encoding default; a budgeted artifact uses `targetBytes` and `maxQuality` instead.
+
+```js
+const policy = {
+  widths: [1600], formats: ['jpeg'], placeholder: false,
+  budgets: [{ width: 1600, format: 'jpeg', maxBytes: 93782, maxQuality: 90 }],
+};
+```
+
+This ceiling is opt-in and retains the cumulative `public-upload` resource limit.
+It is neither a latency nor perceptual-quality guarantee; `maxQuality: 60` does
+not mean 60% visual quality or lossless pixels. There is no compiler `minQuality`,
+effort/attempt limit, or timeout override. CLI `--policy` JSON uses the same contract.
 
 ## Utilities
 

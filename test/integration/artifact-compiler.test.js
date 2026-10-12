@@ -10,6 +10,7 @@ const { compilerFingerprint } = require('../../lib/artifact-compiler');
 const { resolveFixture } = require('../helpers/paths');
 
 const INPUT = resolveFixture('test_100KB_1057x1057.jpg');
+const NONMONOTONIC_INPUT = path.join(__dirname, '../../docs/history/target-bytes-operational-20261012/fixtures/nonmonotonic64.png');
 
 async function withTempParent(run) {
   const parent = await fsp.mkdtemp(path.join(os.tmpdir(), 'lazy-image-compiler-'));
@@ -216,6 +217,75 @@ async function main() {
     assert.deepEqual((await fsp.readdir(outputDir)).filter((name) => !name.startsWith('.')).sort(), [
       'image-320.webp', 'manifest.json', 'placeholder.webp',
     ]);
+  });
+
+  await withTempParent(async (parent) => {
+    for (const maxQuality of [30, 60, 100]) {
+      const manifest = await compileImage({ inputPath: INPUT, outputDir: path.join(parent, `cap-${maxQuality}`),
+        policy: { widths: [64], formats: ['jpeg'], placeholder: false,
+          budgets: [{ width: 64, format: 'jpeg', maxBytes: 1_000_000, maxQuality }] } });
+      const artifact = manifest.artifacts[0];
+      assert.equal(artifact.quality, maxQuality, 'the maximum fitting quality in the requested range wins');
+      assert(artifact.bytes <= 1_000_000);
+      assert.equal(artifact.sha256, await hashFile(path.join(parent, `cap-${maxQuality}`, artifact.path)));
+      assert.deepEqual(JSON.parse(await fsp.readFile(path.join(parent, `cap-${maxQuality}/manifest.json`))), manifest);
+    }
+  });
+
+  await withTempParent(async (parent) => {
+    const encode = quality => ImageEngine.fromPath(NONMONOTONIC_INPUT).sanitize({ policy: 'public-upload' })
+      .resize({ width: 64, fit: 'inside' }).toBuffer('jpeg', quality, false);
+    const maximum = await encode(100);
+    const floor = await encode(30);
+    assert(floor.length > maximum.length, 'the known fixture has a smaller higher-quality candidate');
+    const policy = { widths: [64], formats: ['jpeg'], placeholder: false,
+      budgets: [{ width: 64, format: 'jpeg', maxBytes: maximum.length, maxQuality: 100 }] };
+    const manifest = await compileImage({ inputPath: NONMONOTONIC_INPUT, outputDir: path.join(parent, 'maximum'), policy });
+    assert.equal(manifest.artifacts[0].quality, 100);
+    assert.deepEqual(await fsp.readFile(path.join(parent, 'maximum', manifest.artifacts[0].path)), maximum);
+    const cappedOutput = path.join(parent, 'outside-range');
+    await assertRejected(() => compileImage({ inputPath: NONMONOTONIC_INPUT, outputDir: cappedOutput,
+      policy: { ...policy, budgets: [{ ...policy.budgets[0], maxQuality: 30 }] } }), error => {
+      assert.equal(error.errorCode, 'E300'); assert.equal(error.phase, 'processing');
+    });
+    assert.equal(await fsp.stat(cappedOutput).catch(() => null), null);
+    assert.deepEqual((await fsp.readdir(parent)).filter(name => name.includes('staging')), []);
+    const before = await fsp.readFile(path.join(parent, 'maximum/manifest.json'));
+    await assertRejected(() => compileImage({ inputPath: NONMONOTONIC_INPUT, outputDir: path.join(parent, 'maximum'),
+      policy: { ...policy, budgets: [{ ...policy.budgets[0], maxQuality: 30 }] } }), error => assert.equal(error.errorCode, 'E301'));
+    assert.deepEqual(await fsp.readFile(path.join(parent, 'maximum/manifest.json')), before);
+    assert.deepEqual(await fsp.readFile(path.join(parent, 'maximum', manifest.artifacts[0].path)), maximum);
+  });
+
+  for (const quality of [29, 61, 60.5, null, '60', undefined]) await withTempParent(async (parent) => {
+    const original = ImageEngine.prototype.toFileTargetBytes;
+    ImageEngine.prototype.toFileTargetBytes = async function incorrectQuality(...args) {
+      return { ...await original.apply(this, args), quality };
+    };
+    try {
+      await assertRejected(() => compileImage({ inputPath: INPUT, outputDir: path.join(parent, 'unsafe'),
+        policy: { widths: [64], formats: ['jpeg'], placeholder: false,
+          budgets: [{ width: 64, format: 'jpeg', maxBytes: 1_000_000, maxQuality: 60 }] } }), error => {
+        assert.equal(error.phase, 'verification'); assert.equal(error.errorCode, 'E900');
+      });
+      assert.deepEqual(await fsp.readdir(parent), [], 'an invalid selected quality must never be published');
+    } finally { ImageEngine.prototype.toFileTargetBytes = original; }
+  });
+
+  await withTempParent(async (parent) => {
+    const original = ImageEngine.prototype.toFileTargetBytes;
+    ImageEngine.prototype.toFileTargetBytes = async function resourceRefusal() {
+      const error = new Error('processing exceeded 5000ms timeout at encode stage');
+      error.errorCode = 'E123'; error.category = 2; throw error;
+    };
+    try {
+      await assertRejected(() => compileImage({ inputPath: INPUT, outputDir: path.join(parent, 'timeout'),
+        policy: { widths: [64], formats: ['jpeg'], placeholder: false,
+          budgets: [{ width: 64, format: 'jpeg', maxBytes: 1_000_000, maxQuality: 60 }] } }), error => {
+        assert.equal(error.phase, 'processing'); assert.equal(error.errorCode, 'E123');
+      });
+      assert.deepEqual(await fsp.readdir(parent), [], 'resource refusal must remove unpublished staging');
+    } finally { ImageEngine.prototype.toFileTargetBytes = original; }
   });
 
   await withTempParent(async (parent) => {
@@ -474,9 +544,11 @@ async function main() {
       const manifest = await compileImage({
         inputPath,
         outputDir: path.join(parent, 'icc-output'),
-        policy: { widths: [320], formats: ['jpeg'], placeholder: false },
+        policy: { widths: [320], formats: ['jpeg'], placeholder: false,
+          budgets: [{ width: 320, format: 'jpeg', maxBytes: 1_000_000, maxQuality: 60 }] },
       });
       assert.equal(manifest.artifacts[0].iccOutcome, 'preserved');
+      assert.equal(manifest.artifacts[0].quality, 60);
     });
   }
 

@@ -46,9 +46,18 @@ async function testTypeSafety() {
         preset: 'publicUpload',
         widths: [320, 640],
         formats: ['webp'],
+        budgets: [{ width: 320, format: 'webp', maxBytes: 50_000, maxQuality: 90 }],
         placeholder: true,
     };
     const artifactPlan = null as ArtifactPlan | null;
+    const invalidQualityPolicy: PublicUploadPolicy = {
+        budgets: [{ width: 320, format: 'webp', maxBytes: 50_000,
+            // @ts-expect-error a compiler quality ceiling is numeric
+            maxQuality: '90' }],
+    };
+    console.log(invalidQualityPolicy);
+    const selectedQualityCeiling: number | undefined = artifactPlan?.artifacts[0].maxQuality;
+    console.log(selectedQualityCeiling);
     const compiledArtifactPlan: ArtifactPlan = compileArtifactPlan(
         artifactSource,
         publicUploadPolicy,

@@ -1,0 +1,56 @@
+{
+  "sourceSha": "464187c4a428f95263e9f6ef456f4bfb118fef01",
+  "initialTrackedStatus": "",
+  "node": "v24.2.0",
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "cwd": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+      "envOverrides": {},
+      "startedAt": "2026-10-12T11:18:07.826Z",
+      "endedAt": "2026-10-12T11:18:09.254Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "npm-ci.log",
+      "logSha256": "0d844926499038ae16ef9588a7d4a8fe6542fddd079dc778e1b9c246af86994c"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/Volumes/Satechi/Developer/lazy-image-max-quality-889",
+      "envOverrides": {
+        "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
+        "SDKROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "CC": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+        "CXX": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++"
+      },
+      "startedAt": "2026-10-12T11:18:09.255Z",
+      "endedAt": "2026-10-12T11:19:32.808Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "build.log",
+      "logSha256": "4d61478b8106c5c01935eaa20802b668427068eb4733acab216246fcfa7f4640"
+    }
+  ],
+  "finalSourceSha": "464187c4a428f95263e9f6ef456f4bfb118fef01",
+  "generatedStatus": "M index.d.ts",
+  "napiCli": "3.9.0",
+  "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+  "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+  "native": {
+    "path": "lazy-image.darwin-arm64.node",
+    "sha256": "c15f1e55f5552ec49d4b853bb49a3eed26141b071b7772c166eadeab8649d841"
+  },
+  "generated": {
+    "index.js": "723ed60fea3c79088d95663ab850f6eb2cf6ea8621f14d3ae3c3e668badda099",
+    "index.d.ts": "d876c9ea66dd056dc8ac46c88d4a406c71627a41eadc1c86de1bd7a76239ddbe"
+  }
+}
