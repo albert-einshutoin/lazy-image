@@ -50,7 +50,7 @@ jobs:
           --output artifacts/ci/test-plan.json
 
       - name: Upload machine-readable test plan
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: selective-test-plan
           path: artifacts/ci/test-plan.json
@@ -101,7 +101,7 @@ jobs:
         run: npm run build -- --target x86_64-unknown-linux-gnu
 
       - name: Upload canonical binding
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: pr-binding-linux-x64-gnu
           path: '*.node'
@@ -162,7 +162,7 @@ jobs:
 
       - name: Upload selective-test results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: selective-test-results
           path: artifacts/ci/selective-*
@@ -226,7 +226,7 @@ jobs:
 
       - name: Upload full-suite comparison results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: full-test-results
           path: artifacts/ci/full-*
