@@ -83,4 +83,6 @@ test("published tarballs come from the candidate artifact", () => {
   assert.match(publish, /name: release-candidate/);
   assert.match(publish, /publish-release-candidate\.cjs candidate platform/);
   assert.match(publish, /publish-release-candidate\.cjs candidate main/);
+  assert.match(publish, /publish-release-candidate\.cjs candidate wasm/);
+  assert.doesNotMatch(publish, /npm publish\s+\\\s+--workspace/);
 });

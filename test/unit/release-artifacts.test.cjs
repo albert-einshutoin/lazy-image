@@ -50,3 +50,33 @@ const extracted = require('../../scripts/stage-release-artifacts.cjs').tarEntry(
 assert.equal(createHash('sha256').update(extracted).digest('hex'),
   createHash('sha256').update(payload).digest('hex'));
 console.log('release artifact guard verifies binaries larger than the default child-process buffer');
+
+const { stageWasm, verifyWasmTarball } = require('../../scripts/stage-release-artifacts.cjs');
+assert.equal(typeof stageWasm, 'function', 'Wasm must be an actual retained candidate');
+const wasmOutput = path.join(temp, 'wasm-candidate');
+fs.mkdirSync(wasmOutput);
+const wasm = stageWasm(wasmOutput);
+assert.equal(wasm.name, '@alberteinshutoin/lazy-image-wasm');
+assert.equal(wasm.files.length, 12);
+assert.equal(wasm.tarballSha256, createHash('sha256').update(fs.readFileSync(path.join(wasmOutput, wasm.tarball))).digest('hex'));
+const altered = path.join(temp, 'altered');
+fs.mkdirSync(altered);
+result = spawnSync('tar', ['-xzf', path.join(wasmOutput, wasm.tarball), '-C', altered], { encoding: 'utf8' });
+assert.equal(result.status, 0);
+fs.appendFileSync(path.join(altered, 'package', 'shared.js'), '\n// altered candidate\n');
+const alteredTarball = path.join(temp, 'altered-wasm.tgz');
+result = spawnSync('tar', ['-czf', alteredTarball, '-C', altered, 'package'], { encoding: 'utf8' });
+assert.equal(result.status, 0);
+assert.throws(() => verifyWasmTarball(alteredTarball, wasm.files), /Wasm candidate differs from source/);
+console.log('Wasm candidate is retained with content hashes and rejects altered payloads');
+
+const { selectPackages } = require('../../scripts/publish-release-candidate.cjs');
+const mainName = require('../../package.json').name;
+const records = [{ name: mainName }, { name: `${mainName}-wasm` },
+  ...Object.keys(require('../../package.json').optionalDependencies).map(name => ({ name, platform: 'target' }))];
+assert.deepEqual(selectPackages(records, 'main').map(p => p.name), [mainName]);
+assert.deepEqual(selectPackages(records, 'wasm').map(p => p.name), [`${mainName}-wasm`]);
+assert.equal(selectPackages(records, 'platform').length, 6);
+assert.throws(() => selectPackages(records.filter(p => !p.name.endsWith('-wasm')), 'wasm'));
+assert.throws(() => selectPackages([...records, records[1]], 'wasm'));
+console.log('candidate publication selects exact groups and rejects missing or duplicate packages');

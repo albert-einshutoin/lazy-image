@@ -33,6 +33,7 @@ Use an explicit ceiling after checking representative inputs, for example with A
 ### Changed
 - Synchronize the main package, six native platform packages, and Wasm package to 1.5.0. Wasm runtime and codec dependencies are unchanged.
 - Preserve native compiler quality/cost evaluations, unmet outcomes, and bounded upload/build guidance (#883/#884, #887/#888, #889/#890).
+- Retain Wasm alongside native candidate tarballs with version/content hashes and publish that verified tarball; extend installed native API/CLI smoke to check maxQuality and invalid-policy non-publication (#891).
 
 ### Fixed
 - Preserve the requested normal-JPEG quality/chroma/progression settings by applying them after mozjpeg defaults initialization (#885/#886). Correctly requested quality can produce larger files and take longer than the prior incorrectly lower-quality output.
