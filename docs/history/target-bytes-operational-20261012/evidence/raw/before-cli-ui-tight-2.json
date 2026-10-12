@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "before",
+    "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before/lazy-image.darwin-arm64.node",
+    "nativeSha256": "1926c6c8157af958f12a154afa5829684afa5802627e768fe7c538a15a687670",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=ef4aa5d31e5a6e7fdc1ccfbdff0b5ba9cfb9537e894291bc67a81e167c0b0b4f;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "36fb2821bd944d3ef446e23c7e2779cd4bdcc9977612b2569ca220168c419674"
+  },
+  "condition": {
+    "id": "cli-ui-tight",
+    "fixture": "ui-1",
+    "format": "webp",
+    "width": 320,
+    "interface": "cli",
+    "budgetKind": "tight",
+    "budget": 2218,
+    "policy": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "webp"
+      ],
+      "placeholder": false,
+      "budgets": [
+        {
+          "width": 320,
+          "format": "webp",
+          "maxBytes": 2218
+        }
+      ]
+    }
+  },
+  "trial": 2,
+  "fixture": {
+    "id": "ui-1",
+    "path": "test/benchmarks/corpus/images/ui-1.png",
+    "bytes": 7610,
+    "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+    "license": "MIT",
+    "source": {
+      "kind": "project-generated-fixture",
+      "generator": "test/benchmarks/corpus/generate.js"
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 130.163417,
+  "rss": {
+    "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+    "intervalMs": 100,
+    "samples": 2,
+    "missedSamples": 0,
+    "peakRssBytes": 57049088
+  },
+  "cliProcess": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before/bin/lazy-image.js",
+      "compile",
+      "/Volumes/Satechi/Developer/lazy-image/test/benchmarks/corpus/images/ui-1.png",
+      "--out-dir",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/before-cli-ui-tight-2-4VTqx6/output",
+      "--policy",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/before-cli-ui-tight-2-4VTqx6/policy.json"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "{\"schemaVersion\":1,\"compiler\":{\"name\":\"@alberteinshutoin/lazy-image\",\"version\":\"1.4.3\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"fingerprint\":\"ad2fb8543accd737c99532abe847a8f04bd1f3e5f10eeb036be9aa8a1987dd23\"},\"policy\":{\"preset\":\"publicUpload\",\"fingerprint\":\"aa3c822594bd83e89aa28e53ad369d197f104eb3bead810dc7a4db0aaa225aed\",\"widths\":[320],\"formats\":[\"webp\"],\"placeholder\":false},\"source\":{\"sha256\":\"9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847\",\"bytes\":7610,\"detectedFormat\":\"png\",\"encodedWidth\":320,\"encodedHeight\":240,\"displayWidth\":320,\"displayHeight\":240,\"hasAlpha\":false,\"orientation\":null,\"orientationApplied\":false},\"metadata\":{\"mode\":\"privacySafe\",\"exif\":\"stripped\",\"gps\":\"stripped\",\"xmp\":\"stripped\",\"comments\":\"stripped\",\"unknownAncillary\":\"stripped\",\"artifactIccPolicy\":\"preserve-if-safe\",\"placeholderIccPolicy\":\"strip\"},\"artifacts\":[{\"id\":\"320/webp\",\"path\":\"image-320.webp\",\"format\":\"webp\",\"width\":320,\"height\":240,\"bytes\":2218,\"quality\":60,\"targetBytes\":2218,\"iccOutcome\":\"absent\",\"sha256\":\"7fa96b635e3e1f6a3c5b8846a463a238132daa937dca3fbe45703f320de5c947\"}],\"delivery\":{\"srcsets\":[{\"format\":\"webp\",\"value\":\"image-320.webp 320w\"}]},\"cacheKey\":\"23a6449176b266ef2beca498fb0a953dd438455b1946b5dfe1f0cc5de7cb41cf\"}\n",
+    "stderr": "",
+    "measurementGuardMs": 120000
+  },
+  "nativeMetrics": null,
+  "nativeTrace": [],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": false,
+  "artifacts": [
+    {
+      "id": "320/webp",
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 240,
+      "bytes": 2218,
+      "quality": 60,
+      "targetBytes": 2218,
+      "iccOutcome": "absent",
+      "sha256": "7fa96b635e3e1f6a3c5b8846a463a238132daa937dca3fbe45703f320de5c947",
+      "observed": {
+        "bytes": 2218,
+        "sha256": "7fa96b635e3e1f6a3c5b8846a463a238132daa937dca3fbe45703f320de5c947"
+      }
+    }
+  ],
+  "manifest": {
+    "schemaVersion": 1,
+    "compiler": {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.4.3",
+      "platform": "darwin",
+      "arch": "arm64",
+      "fingerprint": "ad2fb8543accd737c99532abe847a8f04bd1f3e5f10eeb036be9aa8a1987dd23"
+    },
+    "policy": {
+      "preset": "publicUpload",
+      "fingerprint": "aa3c822594bd83e89aa28e53ad369d197f104eb3bead810dc7a4db0aaa225aed",
+      "widths": [
+        320
+      ],
+      "formats": [
+        "webp"
+      ],
+      "placeholder": false
+    },
+    "source": {
+      "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "bytes": 7610,
+      "detectedFormat": "png",
+      "encodedWidth": 320,
+      "encodedHeight": 240,
+      "displayWidth": 320,
+      "displayHeight": 240,
+      "hasAlpha": false,
+      "orientation": null,
+      "orientationApplied": false
+    },
+    "metadata": {
+      "mode": "privacySafe",
+      "exif": "stripped",
+      "gps": "stripped",
+      "xmp": "stripped",
+      "comments": "stripped",
+      "unknownAncillary": "stripped",
+      "artifactIccPolicy": "preserve-if-safe",
+      "placeholderIccPolicy": "strip"
+    },
+    "artifacts": [
+      {
+        "id": "320/webp",
+        "path": "image-320.webp",
+        "format": "webp",
+        "width": 320,
+        "height": 240,
+        "bytes": 2218,
+        "quality": 60,
+        "targetBytes": 2218,
+        "iccOutcome": "absent",
+        "sha256": "7fa96b635e3e1f6a3c5b8846a463a238132daa937dca3fbe45703f320de5c947"
+      }
+    ],
+    "delivery": {
+      "srcsets": [
+        {
+          "format": "webp",
+          "value": "image-320.webp 320w"
+        }
+      ]
+    },
+    "cacheKey": "23a6449176b266ef2beca498fb0a953dd438455b1946b5dfe1f0cc5de7cb41cf"
+  },
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "before",
+      "{\"id\":\"cli-ui-tight\",\"fixture\":\"ui-1\",\"format\":\"webp\",\"width\":320,\"interface\":\"cli\",\"budgetKind\":\"tight\",\"budget\":2218,\"policy\":{\"widths\":[320],\"formats\":[\"webp\"],\"placeholder\":false,\"budgets\":[{\"width\":320,\"format\":\"webp\",\"maxBytes\":2218}]}}",
+      "2",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/before-cli-ui-tight-2-4VTqx6"
+    ],
+    "startedAt": "2026-10-12T09:44:09.307Z",
+    "completedAt": "2026-10-12T09:44:09.521Z",
+    "matrixSha256": "63943e56dcc5d73c9b818ae8ef06b68b63154d792b3a06183eed813f2cbe963d"
+  }
+}

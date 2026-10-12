@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Preserve the requested normal-JPEG quality/chroma/progression settings by applying them after mozjpeg defaults initialization (#885/#886). Correctly requested quality can produce larger files and take longer than the prior incorrectly lower-quality output.
+- Select the highest byte-budget quality without assuming monotonic encoded sizes; preserve strict failure without publishing unsuitable artifacts. Retain the minimum-size candidate for standalone best-effort results and keep `budgetMet: false` explicit.
+- Include all byte-budget probes in cumulative `totalMs`/CPU/peak-RSS metrics while retaining the selected candidate's encode/output information. The metrics shape/version is unchanged.
+
+### Performance
+- The corrected search can attempt up to 100 encodes and still shares the existing cumulative resource limit. In the [2026-10-12 upload/build evaluation](docs/history/target-bytes-operational-20261012/EVALUATION.md), byte-feasible JPEG1600 and AVIF320 compiler budgets timed out in all three trials on one M4, while the prior search accepted those budgets. The compiler has no public quality-range or timeout override. Publication preparation is held pending this specific acceptance/cost issue; no release version is selected here.
+
 ## [1.4.3] - 2026-10-09
 
 Update with `npm install @alberteinshutoin/lazy-image@1.4.3 @alberteinshutoin/lazy-image-wasm@1.4.3`. The six native platform packages use the same version and are selected as optional dependencies of the main package.

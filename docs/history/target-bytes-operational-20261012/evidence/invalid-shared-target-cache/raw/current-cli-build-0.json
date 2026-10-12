@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/lazy-image.darwin-arm64.node",
+    "nativeSha256": "b86fa58fd8a66d5cb8970578452b077f5f8c20032af6402f784aaab650311f2a",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=026abe3263fced05513faa61299f46d6ee59e053c387b332da9d48849faf2fc4;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "cdc20c5d3fb81f26eb2fec0e47d27c1ae1edc4bc23a26d3e08f8381a677f6969"
+  },
+  "condition": {
+    "id": "cli-build",
+    "fixture": "large",
+    "interface": "cli",
+    "budgetKind": "none",
+    "policy": {
+      "widths": [
+        320,
+        1280
+      ],
+      "formats": [
+        "jpeg",
+        "webp"
+      ],
+      "placeholder": true
+    }
+  },
+  "trial": 0,
+  "fixture": {
+    "id": "large",
+    "path": "test/fixtures/test_3.2MB_5000x5000.jpg",
+    "bytes": 3371242,
+    "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+    "license": "MIT",
+    "source": {
+      "kind": "repository-fixture",
+      "note": "Tracked size fixture; synthetic generator context is test/helpers/create-size-fixtures-sharp.js; original generator runtime is not asserted."
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 1701.938208,
+  "rss": {
+    "scope": "owned CLI child only, includes Node/module startup, maximum sampled RSS; not exact peak",
+    "intervalMs": 100,
+    "samples": 17,
+    "missedSamples": 0,
+    "peakRssBytes": 228032512
+  },
+  "cliProcess": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/bin/lazy-image.js",
+      "compile",
+      "/Volumes/Satechi/Developer/lazy-image/test/fixtures/test_3.2MB_5000x5000.jpg",
+      "--out-dir",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-cli-build-0-QG5usQ/output",
+      "--policy",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-cli-build-0-QG5usQ/policy.json"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "{\"schemaVersion\":1,\"compiler\":{\"name\":\"@alberteinshutoin/lazy-image\",\"version\":\"1.4.3\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"fingerprint\":\"838ec8b207ac71b3d941632b87a75cd250a1ffa28ee947eba9a902079f35bf8c\"},\"policy\":{\"preset\":\"publicUpload\",\"fingerprint\":\"8fa69141e8f3c969b4c7705b53497ea10bb2d8c32dced4ddf952f1f8ebb3ec90\",\"widths\":[320,1280],\"formats\":[\"jpeg\",\"webp\"],\"placeholder\":true},\"source\":{\"sha256\":\"fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96\",\"bytes\":3371242,\"detectedFormat\":\"jpeg\",\"encodedWidth\":5000,\"encodedHeight\":5000,\"displayWidth\":5000,\"displayHeight\":5000,\"hasAlpha\":false,\"orientation\":null,\"orientationApplied\":false},\"metadata\":{\"mode\":\"privacySafe\",\"exif\":\"stripped\",\"gps\":\"stripped\",\"xmp\":\"stripped\",\"comments\":\"stripped\",\"unknownAncillary\":\"stripped\",\"artifactIccPolicy\":\"preserve-if-safe\",\"placeholderIccPolicy\":\"strip\"},\"artifacts\":[{\"id\":\"320/jpeg\",\"path\":\"image-320.jpg\",\"format\":\"jpeg\",\"width\":320,\"height\":320,\"bytes\":7989,\"quality\":85,\"iccOutcome\":\"absent\",\"sha256\":\"be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd\"},{\"id\":\"1280/jpeg\",\"path\":\"image-1280.jpg\",\"format\":\"jpeg\",\"width\":1280,\"height\":1280,\"bytes\":177117,\"quality\":85,\"iccOutcome\":\"absent\",\"sha256\":\"b54997e8ecacea058473d8a249c5af90bb2c67d66a90ca286547dacbf66f8d37\"},{\"id\":\"320/webp\",\"path\":\"image-320.webp\",\"format\":\"webp\",\"width\":320,\"height\":320,\"bytes\":5170,\"quality\":80,\"iccOutcome\":\"absent\",\"sha256\":\"05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682\"},{\"id\":\"1280/webp\",\"path\":\"image-1280.webp\",\"format\":\"webp\",\"width\":1280,\"height\":1280,\"bytes\":139556,\"quality\":80,\"iccOutcome\":\"absent\",\"sha256\":\"bce682fdfeabe4bce9bcbc9ac913b85dee857f2dd011798c8f57c195b838ac3f\"}],\"delivery\":{\"srcsets\":[{\"format\":\"jpeg\",\"value\":\"image-320.jpg 320w, image-1280.jpg 1280w\"},{\"format\":\"webp\",\"value\":\"image-320.webp 320w, image-1280.webp 1280w\"}]},\"placeholder\":{\"path\":\"placeholder.webp\",\"dataUrl\":\"data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAgCdASoQABAAA4B8J7ACdDiM9wA/WYF2vpGsZYYgAPuNapZ4MtB/w1vWxoqNdPmBcHO+Nb1MEeNb1MEEgi2Rv9S6pH5qbP204DyAAAA=\",\"format\":\"webp\",\"width\":16,\"height\":16,\"bytes\":98,\"iccOutcome\":\"stripped-for-placeholder\",\"sha256\":\"3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1\"},\"cacheKey\":\"c27a6546c75ecbe0aba7752f1e6e67639fc75ff7e920e7ada4f1d34e94fceb83\"}\n",
+    "stderr": ""
+  },
+  "nativeMetrics": null,
+  "nativeTrace": [],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [
+    {
+      "id": "320/jpeg",
+      "path": "image-320.jpg",
+      "format": "jpeg",
+      "width": 320,
+      "height": 320,
+      "bytes": 7989,
+      "quality": 85,
+      "iccOutcome": "absent",
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd",
+      "observed": {
+        "bytes": 7989,
+        "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+      }
+    },
+    {
+      "id": "1280/jpeg",
+      "path": "image-1280.jpg",
+      "format": "jpeg",
+      "width": 1280,
+      "height": 1280,
+      "bytes": 177117,
+      "quality": 85,
+      "iccOutcome": "absent",
+      "sha256": "b54997e8ecacea058473d8a249c5af90bb2c67d66a90ca286547dacbf66f8d37",
+      "observed": {
+        "bytes": 177117,
+        "sha256": "b54997e8ecacea058473d8a249c5af90bb2c67d66a90ca286547dacbf66f8d37"
+      }
+    },
+    {
+      "id": "320/webp",
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 5170,
+      "quality": 80,
+      "iccOutcome": "absent",
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682",
+      "observed": {
+        "bytes": 5170,
+        "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+      }
+    },
+    {
+      "id": "1280/webp",
+      "path": "image-1280.webp",
+      "format": "webp",
+      "width": 1280,
+      "height": 1280,
+      "bytes": 139556,
+      "quality": 80,
+      "iccOutcome": "absent",
+      "sha256": "bce682fdfeabe4bce9bcbc9ac913b85dee857f2dd011798c8f57c195b838ac3f",
+      "observed": {
+        "bytes": 139556,
+        "sha256": "bce682fdfeabe4bce9bcbc9ac913b85dee857f2dd011798c8f57c195b838ac3f"
+      }
+    },
+    {
+      "path": "placeholder.webp",
+      "dataUrl": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAgCdASoQABAAA4B8J7ACdDiM9wA/WYF2vpGsZYYgAPuNapZ4MtB/w1vWxoqNdPmBcHO+Nb1MEeNb1MEEgi2Rv9S6pH5qbP204DyAAAA=",
+      "format": "webp",
+      "width": 16,
+      "height": 16,
+      "bytes": 98,
+      "iccOutcome": "stripped-for-placeholder",
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1",
+      "observed": {
+        "bytes": 98,
+        "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+      }
+    }
+  ],
+  "manifest": {
+    "schemaVersion": 1,
+    "compiler": {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.4.3",
+      "platform": "darwin",
+      "arch": "arm64",
+      "fingerprint": "838ec8b207ac71b3d941632b87a75cd250a1ffa28ee947eba9a902079f35bf8c"
+    },
+    "policy": {
+      "preset": "publicUpload",
+      "fingerprint": "8fa69141e8f3c969b4c7705b53497ea10bb2d8c32dced4ddf952f1f8ebb3ec90",
+      "widths": [
+        320,
+        1280
+      ],
+      "formats": [
+        "jpeg",
+        "webp"
+      ],
+      "placeholder": true
+    },
+    "source": {
+      "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "bytes": 3371242,
+      "detectedFormat": "jpeg",
+      "encodedWidth": 5000,
+      "encodedHeight": 5000,
+      "displayWidth": 5000,
+      "displayHeight": 5000,
+      "hasAlpha": false,
+      "orientation": null,
+      "orientationApplied": false
+    },
+    "metadata": {
+      "mode": "privacySafe",
+      "exif": "stripped",
+      "gps": "stripped",
+      "xmp": "stripped",
+      "comments": "stripped",
+      "unknownAncillary": "stripped",
+      "artifactIccPolicy": "preserve-if-safe",
+      "placeholderIccPolicy": "strip"
+    },
+    "artifacts": [
+      {
+        "id": "320/jpeg",
+        "path": "image-320.jpg",
+        "format": "jpeg",
+        "width": 320,
+        "height": 320,
+        "bytes": 7989,
+        "quality": 85,
+        "iccOutcome": "absent",
+        "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+      },
+      {
+        "id": "1280/jpeg",
+        "path": "image-1280.jpg",
+        "format": "jpeg",
+        "width": 1280,
+        "height": 1280,
+        "bytes": 177117,
+        "quality": 85,
+        "iccOutcome": "absent",
+        "sha256": "b54997e8ecacea058473d8a249c5af90bb2c67d66a90ca286547dacbf66f8d37"
+      },
+      {
+        "id": "320/webp",
+        "path": "image-320.webp",
+        "format": "webp",
+        "width": 320,
+        "height": 320,
+        "bytes": 5170,
+        "quality": 80,
+        "iccOutcome": "absent",
+        "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+      },
+      {
+        "id": "1280/webp",
+        "path": "image-1280.webp",
+        "format": "webp",
+        "width": 1280,
+        "height": 1280,
+        "bytes": 139556,
+        "quality": 80,
+        "iccOutcome": "absent",
+        "sha256": "bce682fdfeabe4bce9bcbc9ac913b85dee857f2dd011798c8f57c195b838ac3f"
+      }
+    ],
+    "delivery": {
+      "srcsets": [
+        {
+          "format": "jpeg",
+          "value": "image-320.jpg 320w, image-1280.jpg 1280w"
+        },
+        {
+          "format": "webp",
+          "value": "image-320.webp 320w, image-1280.webp 1280w"
+        }
+      ]
+    },
+    "placeholder": {
+      "path": "placeholder.webp",
+      "dataUrl": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAgCdASoQABAAA4B8J7ACdDiM9wA/WYF2vpGsZYYgAPuNapZ4MtB/w1vWxoqNdPmBcHO+Nb1MEeNb1MEEgi2Rv9S6pH5qbP204DyAAAA=",
+      "format": "webp",
+      "width": 16,
+      "height": 16,
+      "bytes": 98,
+      "iccOutcome": "stripped-for-placeholder",
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    "cacheKey": "c27a6546c75ecbe0aba7752f1e6e67639fc75ff7e920e7ada4f1d34e94fceb83"
+  },
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"cli-build\",\"fixture\":\"large\",\"interface\":\"cli\",\"budgetKind\":\"none\",\"policy\":{\"widths\":[320,1280],\"formats\":[\"jpeg\",\"webp\"],\"placeholder\":true}}",
+      "0",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-cli-build-0-QG5usQ"
+    ],
+    "startedAt": "2026-10-12T09:24:30.322Z",
+    "completedAt": "2026-10-12T09:24:32.113Z",
+    "matrixSha256": "d5a26f9e0fceb8cc4f073637d688fdeb04e5c62d8cc1dac176cb8661c0189490"
+  }
+}

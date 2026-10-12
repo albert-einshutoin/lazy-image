@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "before",
+    "sourceSha": "21a15bc99d4c5258f640054e00e9958994e124a3",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-before/lazy-image.darwin-arm64.node",
+    "nativeSha256": "b86fa58fd8a66d5cb8970578452b077f5f8c20032af6402f784aaab650311f2a",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=026abe3263fced05513faa61299f46d6ee59e053c387b332da9d48849faf2fc4;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "cdc20c5d3fb81f26eb2fec0e47d27c1ae1edc4bc23a26d3e08f8381a677f6969"
+  },
+  "condition": {
+    "id": "api-known-max",
+    "fixture": "control",
+    "interface": "api",
+    "format": "jpeg",
+    "width": 64,
+    "budgetKind": "known-feasible",
+    "budget": 346,
+    "minQuality": 1,
+    "maxQuality": 100
+  },
+  "trial": 2,
+  "fixture": {
+    "id": "control",
+    "path": "docs/history/target-bytes-operational-20261012/fixtures/nonmonotonic64.png",
+    "bytes": 237,
+    "sha256": "b211dccb9718fe86159f508ee6fc1c8e33e812862772467285575ca0ccfe70b0",
+    "license": "MIT",
+    "source": {
+      "kind": "repository-fixture",
+      "note": "Reuses #885 fixed RGB 200/100/50 64px generation; current locked sharp, not a camera photograph."
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 8.806666000000007,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 2,
+    "rssStartBytes": 84328448,
+    "peakRssBytes": 86474752,
+    "rssEndBytes": 86474752
+  },
+  "cliProcess": null,
+  "nativeMetrics": {
+    "version": "1.1.0",
+    "decodeMs": 0.03875,
+    "opsMs": 0.0025,
+    "encodeMs": 0.914833,
+    "totalMs": 0.958375,
+    "peakRss": 86376448,
+    "cpuTime": 0.0009529999999999955,
+    "processingTime": 0.000958375,
+    "bytesIn": 237,
+    "bytesOut": 346,
+    "compressionRatio": 1.459915611814346,
+    "formatOut": "jpeg",
+    "iccPreserved": false,
+    "iccOutcome": "absent",
+    "metadataStripped": false,
+    "policyViolations": [],
+    "formatIn": "png"
+  },
+  "nativeTrace": [],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": false,
+  "artifacts": [
+    {
+      "format": "jpeg",
+      "quality": 100,
+      "budgetMet": true,
+      "bytes": 346,
+      "sha256": "b4d325e616add44aaf16bb7c64b528020d447f20404f70311b72e2f190ff58c7"
+    }
+  ],
+  "manifest": null,
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output.jpg"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "before",
+      "{\"id\":\"api-known-max\",\"fixture\":\"control\",\"interface\":\"api\",\"format\":\"jpeg\",\"width\":64,\"budgetKind\":\"known-feasible\",\"budget\":346,\"minQuality\":1,\"maxQuality\":100}",
+      "2",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/before-api-known-max-2-OsTNZQ"
+    ],
+    "startedAt": "2026-10-12T09:25:33.428Z",
+    "completedAt": "2026-10-12T09:25:33.521Z",
+    "matrixSha256": "d5a26f9e0fceb8cc4f073637d688fdeb04e5c62d8cc1dac176cb8661c0189490"
+  }
+}

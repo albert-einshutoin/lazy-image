@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/lazy-image.darwin-arm64.node",
+    "nativeSha256": "34926526c54f42cab8151250d648550fa7062af61c57f20d79e64b66e5578223",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=50e1f6a36e7378b3cf41d8beac6f8cd2c517e9d02aa229d324ae7211224d023b;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "36fb2821bd944d3ef446e23c7e2779cd4bdcc9977612b2569ca220168c419674"
+  },
+  "condition": {
+    "id": "ui-impossible",
+    "fixture": "ui-1",
+    "format": "webp",
+    "width": 320,
+    "interface": "compiler",
+    "budgetKind": "impossible",
+    "budget": 1,
+    "policy": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "webp"
+      ],
+      "placeholder": false,
+      "budgets": [
+        {
+          "width": 320,
+          "format": "webp",
+          "maxBytes": 1
+        }
+      ]
+    }
+  },
+  "trial": 1,
+  "fixture": {
+    "id": "ui-1",
+    "path": "test/benchmarks/corpus/images/ui-1.png",
+    "bytes": 7610,
+    "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+    "license": "MIT",
+    "source": {
+      "kind": "project-generated-fixture",
+      "generator": "test/benchmarks/corpus/generate.js"
+    }
+  },
+  "outcome": "rejected",
+  "error": {
+    "name": "ArtifactCompilationError",
+    "message": "Image artifact compilation failed during processing (320/webp)",
+    "code": "LAZY_IMAGE_CODEC_ERROR",
+    "errorCode": "E300",
+    "phase": "processing",
+    "category": 1,
+    "cause": "[E300] Failed to encode as webp: Unable to meet targetBytes=1 within quality range 30-100",
+    "cleanupError": null
+  },
+  "outerMs": 751.786334,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 66,
+    "rssStartBytes": 84017152,
+    "peakRssBytes": 88571904,
+    "rssEndBytes": 88571904
+  },
+  "cliProcess": null,
+  "nativeMetrics": null,
+  "nativeTrace": [
+    {
+      "method": "toFileTargetBytes",
+      "format": "webp",
+      "suppliedOptions": {
+        "targetBytes": 1,
+        "strict": true,
+        "qualityFloorPolicy": "strict"
+      },
+      "outcome": "rejected",
+      "error": {
+        "name": "Error",
+        "message": "[E300] Failed to encode as webp: Unable to meet targetBytes=1 within quality range 30-100",
+        "code": "LAZY_IMAGE_CODEC_ERROR",
+        "errorCode": "E300",
+        "phase": null,
+        "category": 1,
+        "cause": null,
+        "cleanupError": null
+      }
+    }
+  ],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [],
+  "manifest": null,
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": true
+  },
+  "residualNames": [],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"ui-impossible\",\"fixture\":\"ui-1\",\"format\":\"webp\",\"width\":320,\"interface\":\"compiler\",\"budgetKind\":\"impossible\",\"budget\":1,\"policy\":{\"widths\":[320],\"formats\":[\"webp\"],\"placeholder\":false,\"budgets\":[{\"width\":320,\"format\":\"webp\",\"maxBytes\":1}]}}",
+      "1",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-ui-impossible-1-kxSEwI"
+    ],
+    "startedAt": "2026-10-12T09:42:54.855Z",
+    "completedAt": "2026-10-12T09:42:55.690Z",
+    "matrixSha256": "63943e56dcc5d73c9b818ae8ef06b68b63154d792b3a06183eed813f2cbe963d"
+  }
+}

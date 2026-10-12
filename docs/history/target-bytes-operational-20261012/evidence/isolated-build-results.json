@@ -1,0 +1,15 @@
+[
+  {
+    "variant": "current",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "command": "npm run build",
+    "cargoTargetDir": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/target-isolated-887",
+    "startedAt": "2026-10-12T09:32:28.133Z",
+    "completedAt": "2026-10-12T09:32:48.289Z",
+    "exitCode": 1,
+    "signal": null,
+    "logfile": "current-isolated-build.log",
+    "nativeSha256": "b86fa58fd8a66d5cb8970578452b077f5f8c20032af6402f784aaab650311f2a"
+  }
+]

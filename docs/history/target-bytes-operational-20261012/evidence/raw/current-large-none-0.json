@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/lazy-image.darwin-arm64.node",
+    "nativeSha256": "34926526c54f42cab8151250d648550fa7062af61c57f20d79e64b66e5578223",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=50e1f6a36e7378b3cf41d8beac6f8cd2c517e9d02aa229d324ae7211224d023b;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "36fb2821bd944d3ef446e23c7e2779cd4bdcc9977612b2569ca220168c419674"
+  },
+  "condition": {
+    "id": "large-none",
+    "fixture": "large",
+    "format": "jpeg",
+    "width": 1600,
+    "interface": "compiler",
+    "budgetKind": "none",
+    "budget": null,
+    "policy": {
+      "widths": [
+        1600
+      ],
+      "formats": [
+        "jpeg"
+      ],
+      "placeholder": false
+    }
+  },
+  "trial": 0,
+  "fixture": {
+    "id": "large",
+    "path": "test/fixtures/test_3.2MB_5000x5000.jpg",
+    "bytes": 3371242,
+    "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+    "license": "MIT",
+    "source": {
+      "kind": "repository-fixture",
+      "note": "Tracked size fixture; synthetic generator context is test/helpers/create-size-fixtures-sharp.js; original generator runtime is not asserted."
+    }
+  },
+  "outcome": "returned",
+  "error": null,
+  "outerMs": 795.113625,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 63,
+    "rssStartBytes": 84017152,
+    "peakRssBytes": 289931264,
+    "rssEndBytes": 218349568
+  },
+  "cliProcess": null,
+  "nativeMetrics": null,
+  "nativeTrace": [
+    {
+      "method": "toFileWithMetrics",
+      "format": "jpeg",
+      "suppliedOptions": 85,
+      "outcome": "returned",
+      "quality": null,
+      "budgetMet": null,
+      "bytesWritten": 294962,
+      "metrics": {
+        "version": "1.1.0",
+        "decodeMs": 95.732417,
+        "opsMs": 19.427041,
+        "encodeMs": 102.645209,
+        "totalMs": 217.811167,
+        "peakRss": 289947648,
+        "cpuTime": 0.292214,
+        "processingTime": 0.217811167,
+        "bytesIn": 3371242,
+        "bytesOut": 294962,
+        "compressionRatio": 0.08749357061878085,
+        "formatOut": "jpeg",
+        "iccPreserved": false,
+        "iccOutcome": "absent",
+        "metadataStripped": false,
+        "policyViolations": [],
+        "formatIn": "jpeg"
+      }
+    }
+  ],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [
+    {
+      "id": "1600/jpeg",
+      "path": "image-1600.jpg",
+      "format": "jpeg",
+      "width": 1600,
+      "height": 1600,
+      "bytes": 294962,
+      "quality": 85,
+      "iccOutcome": "absent",
+      "sha256": "16ad2cd5c231f840922cb2b59ca0cc8ec1e9a06e7258335464b54630c7031fd7",
+      "observed": {
+        "bytes": 294962,
+        "sha256": "16ad2cd5c231f840922cb2b59ca0cc8ec1e9a06e7258335464b54630c7031fd7"
+      }
+    }
+  ],
+  "manifest": {
+    "schemaVersion": 1,
+    "compiler": {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.4.3",
+      "platform": "darwin",
+      "arch": "arm64",
+      "fingerprint": "235d263f342bb555eea465e0713a911f96326b4b7bed0073344bdbb2e1198678"
+    },
+    "policy": {
+      "preset": "publicUpload",
+      "fingerprint": "a6ef14ada8f5a8d924ee6d4b2d593b337aaf3adabe59e59484bfdf42478bb67a",
+      "widths": [
+        1600
+      ],
+      "formats": [
+        "jpeg"
+      ],
+      "placeholder": false
+    },
+    "source": {
+      "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "bytes": 3371242,
+      "detectedFormat": "jpeg",
+      "encodedWidth": 5000,
+      "encodedHeight": 5000,
+      "displayWidth": 5000,
+      "displayHeight": 5000,
+      "hasAlpha": false,
+      "orientation": null,
+      "orientationApplied": false
+    },
+    "metadata": {
+      "mode": "privacySafe",
+      "exif": "stripped",
+      "gps": "stripped",
+      "xmp": "stripped",
+      "comments": "stripped",
+      "unknownAncillary": "stripped",
+      "artifactIccPolicy": "preserve-if-safe",
+      "placeholderIccPolicy": "strip"
+    },
+    "artifacts": [
+      {
+        "id": "1600/jpeg",
+        "path": "image-1600.jpg",
+        "format": "jpeg",
+        "width": 1600,
+        "height": 1600,
+        "bytes": 294962,
+        "quality": 85,
+        "iccOutcome": "absent",
+        "sha256": "16ad2cd5c231f840922cb2b59ca0cc8ec1e9a06e7258335464b54630c7031fd7"
+      }
+    ],
+    "delivery": {
+      "srcsets": [
+        {
+          "format": "jpeg",
+          "value": "image-1600.jpg 1600w"
+        }
+      ]
+    },
+    "cacheKey": "e314a4acb62311e6dd20271dde583179636ef9f2d6634db39de5fd097bb18c38"
+  },
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": null
+  },
+  "residualNames": [
+    "output"
+  ],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"large-none\",\"fixture\":\"large\",\"format\":\"jpeg\",\"width\":1600,\"interface\":\"compiler\",\"budgetKind\":\"none\",\"budget\":null,\"policy\":{\"widths\":[1600],\"formats\":[\"jpeg\"],\"placeholder\":false}}",
+      "0",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-large-none-0-F2zINj"
+    ],
+    "startedAt": "2026-10-12T09:42:57.738Z",
+    "completedAt": "2026-10-12T09:42:58.618Z",
+    "matrixSha256": "63943e56dcc5d73c9b818ae8ef06b68b63154d792b3a06183eed813f2cbe963d"
+  }
+}

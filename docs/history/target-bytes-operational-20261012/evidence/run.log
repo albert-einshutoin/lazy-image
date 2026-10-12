@@ -1,0 +1,108 @@
+before-photo-none-0.json: returned  41.4ms
+current-photo-none-0.json: returned  34.7ms
+current-photo-none-1.json: returned  33.5ms
+before-photo-none-1.json: returned  34.1ms
+before-photo-none-2.json: returned  34.8ms
+current-photo-none-2.json: returned  37.0ms
+before-photo-loose-0.json: returned  136.9ms
+current-photo-loose-0.json: returned  61.4ms
+current-photo-loose-1.json: returned  63.7ms
+before-photo-loose-1.json: returned  137.4ms
+before-photo-loose-2.json: returned  135.3ms
+current-photo-loose-2.json: returned  62.4ms
+before-photo-tight-0.json: returned  51.5ms
+current-photo-tight-0.json: returned  358.6ms
+current-photo-tight-1.json: returned  355.0ms
+before-photo-tight-1.json: returned  49.6ms
+before-photo-tight-2.json: returned  51.2ms
+current-photo-tight-2.json: returned  353.0ms
+before-photo-impossible-0.json: rejected E300 32.8ms
+current-photo-impossible-0.json: rejected E300 449.6ms
+current-photo-impossible-1.json: rejected E300 454.8ms
+before-photo-impossible-1.json: rejected E300 38.5ms
+before-photo-impossible-2.json: rejected E300 33.1ms
+current-photo-impossible-2.json: rejected E300 447.0ms
+before-ui-none-0.json: returned  27.9ms
+current-ui-none-0.json: returned  27.2ms
+current-ui-none-1.json: returned  25.4ms
+before-ui-none-1.json: returned  25.9ms
+before-ui-none-2.json: returned  25.5ms
+current-ui-none-2.json: returned  25.9ms
+before-ui-loose-0.json: returned  55.5ms
+current-ui-loose-0.json: returned  17.8ms
+current-ui-loose-1.json: returned  18.0ms
+before-ui-loose-1.json: returned  55.2ms
+before-ui-loose-2.json: returned  56.4ms
+current-ui-loose-2.json: returned  19.2ms
+before-ui-tight-0.json: returned  85.8ms
+current-ui-tight-0.json: returned  351.5ms
+current-ui-tight-1.json: returned  352.5ms
+before-ui-tight-1.json: returned  87.2ms
+before-ui-tight-2.json: returned  84.4ms
+current-ui-tight-2.json: returned  345.6ms
+before-ui-impossible-0.json: rejected E300 85.7ms
+current-ui-impossible-0.json: rejected E300 755.4ms
+current-ui-impossible-1.json: rejected E300 751.8ms
+before-ui-impossible-1.json: rejected E300 84.9ms
+before-ui-impossible-2.json: rejected E300 83.7ms
+current-ui-impossible-2.json: rejected E300 746.1ms
+before-large-none-0.json: returned  798.6ms
+current-large-none-0.json: returned  795.1ms
+current-large-none-1.json: returned  799.5ms
+before-large-none-1.json: returned  791.0ms
+before-large-none-2.json: returned  791.4ms
+current-large-none-2.json: returned  781.4ms
+before-large-loose-0.json: returned  3109.3ms
+current-large-loose-0.json: returned  1638.2ms
+current-large-loose-1.json: returned  1637.7ms
+before-large-loose-1.json: returned  3169.2ms
+before-large-loose-2.json: returned  3138.1ms
+current-large-loose-2.json: returned  1626.4ms
+before-large-tight-0.json: returned  1009.9ms
+current-large-tight-0.json: rejected E123 5559.4ms
+current-large-tight-1.json: rejected E123 5566.4ms
+before-large-tight-1.json: returned  1030.0ms
+before-large-tight-2.json: returned  1017.7ms
+current-large-tight-2.json: rejected E123 5548.6ms
+before-large-impossible-0.json: rejected E300 931.6ms
+current-large-impossible-0.json: rejected E123 5556.8ms
+current-large-impossible-1.json: rejected E123 5576.4ms
+before-large-impossible-1.json: rejected E300 922.9ms
+before-large-impossible-2.json: rejected E300 927.4ms
+current-large-impossible-2.json: rejected E123 5525.7ms
+before-cli-build-0.json: returned  1672.5ms
+current-cli-build-0.json: returned  1722.2ms
+current-cli-build-1.json: returned  1705.8ms
+before-cli-build-1.json: returned  1672.3ms
+before-cli-build-2.json: returned  1781.2ms
+current-cli-build-2.json: returned  1675.3ms
+before-cli-ui-tight-0.json: returned  122.5ms
+current-cli-ui-tight-0.json: returned  416.9ms
+current-cli-ui-tight-1.json: returned  391.5ms
+before-cli-ui-tight-1.json: returned  124.9ms
+before-cli-ui-tight-2.json: returned  130.2ms
+current-cli-ui-tight-2.json: returned  397.9ms
+before-avif-none-0.json: returned  102.1ms
+current-avif-none-0.json: returned  104.6ms
+current-avif-none-1.json: returned  115.5ms
+before-avif-none-1.json: returned  103.0ms
+before-avif-none-2.json: returned  102.5ms
+current-avif-none-2.json: returned  104.7ms
+before-avif-tight-0.json: returned  472.8ms
+current-avif-tight-0.json: rejected E123 5039.3ms
+current-avif-tight-1.json: rejected E123 5094.7ms
+before-avif-tight-1.json: returned  478.3ms
+before-avif-tight-2.json: returned  477.7ms
+current-avif-tight-2.json: rejected E123 5057.4ms
+before-api-range-tight-0.json: returned  510.9ms
+current-api-range-tight-0.json: returned  2792.7ms
+current-api-range-tight-1.json: returned  2821.6ms
+before-api-range-tight-1.json: returned  501.1ms
+before-api-range-tight-2.json: returned  502.6ms
+current-api-range-tight-2.json: returned  2778.7ms
+before-api-known-max-0.json: rejected E300 7.5ms
+current-api-known-max-0.json: returned  10.8ms
+current-api-known-max-1.json: returned  10.4ms
+before-api-known-max-1.json: rejected E300 7.2ms
+before-api-known-max-2.json: rejected E300 7.1ms
+current-api-known-max-2.json: returned  11.6ms

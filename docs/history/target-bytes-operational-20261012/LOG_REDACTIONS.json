@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "path": "evidence/current-isolated-build.log",
+      "originalBytes": 12712,
+      "originalSha256": "c7c39446e848ff915453e646db67541fae100a5f19a9420f6168fd759588094f",
+      "publishedBytes": 12703,
+      "publishedSha256": "8f938a37bb8f34bfbdc839bbc857fbcb8bb9f81ebe045b5e4b6bb0103c2057f7",
+      "removed": [
+        "local home prefix",
+        "unique Codex/local temporary paths",
+        "personal PATH when present"
+      ],
+      "scope": "Publication derivative only; build outcome/compiler diagnostics retained; original kept locally outside Git."
+    },
+    {
+      "path": "evidence/jemalloc-sdk-mismatch-config.log",
+      "originalBytes": 12757,
+      "originalSha256": "d62edc7f539f17d38ad10f69fd1a2ae1a957ad64a39eceb8f42a14625b8dcead",
+      "publishedBytes": 12030,
+      "publishedSha256": "fa346f0d06343b13e44a31b6c2949bfc7402ee0a637bc0c6324990c30dc99d1b",
+      "removed": [
+        "local home prefix",
+        "unique Codex/local temporary paths",
+        "personal PATH when present"
+      ],
+      "scope": "Publication derivative only; build outcome/compiler diagnostics retained; original kept locally outside Git."
+    }
+  ]
+}

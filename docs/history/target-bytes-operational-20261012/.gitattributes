@@ -1,0 +1,2 @@
+# Retain diagnostic whitespace in the configure log after local-path redaction.
+evidence/jemalloc-sdk-mismatch-config.log -whitespace

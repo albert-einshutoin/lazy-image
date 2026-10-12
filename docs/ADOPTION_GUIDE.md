@@ -193,6 +193,39 @@ Runnable examples are maintained separately:
 - [Upload endpoint](../examples/upload-sanitize-server.mjs): raw uploads and error mapping.
 - [Observability](../examples/metrics-observability.mjs): structured metrics logs.
 
+## Byte budgets and compute limits
+
+The current checkout contains unreleased JPEG/byte-budget/metrics corrections;
+the published npm 1.4.3 package does not establish the same implementation.
+Read [Unreleased](../CHANGELOG.md#unreleased) and the
+[dated operational evaluation](./history/target-bytes-operational-20261012/EVALUATION.md).
+
+A byte-feasible output does not guarantee the compiler can search for it within
+its resource policy. `compileImage()` and the CLI use `public-upload`'s cumulative
+5-second inter-stage limit. Codec calls are not forcibly interrupted mid-encode.
+The corrected search tries qualities from high to low; tight or impossible budgets
+can consume more work before success or refusal. A valid input that hits `E123`
+is a resource refusal, not successful hostile-input rejection.
+
+For the compiler, choose `widths`, `formats`, `budgets`, and `placeholder` to match
+the job. It has no arbitrary `minQuality`/`maxQuality` or timeout policy field.
+On `E300`, reconsider the requested width/format, required quality, and byte limit.
+On `E123`, report a failed job and reconsider width/format/output count or job
+design; do not blindly retry, reset the timer, or publish a partial candidate.
+Increasing a byte limit is an application policy decision, not an automatic fallback.
+
+For individual `ImageEngine` outputs, existing `minQuality`/`maxQuality` options
+can bound the search. The evaluation's JPEG1600 example accepted its 93,782-byte
+limit with `minQuality: 40`, `maxQuality: 90`, and `strict: true` in three trials.
+That choice excludes quality above 90 and returns one file; it does not provide
+the compiler's verified set/manifest and is not a universal latency guarantee.
+Standalone best-effort callers must explicitly check `budgetMet` before delivery.
+
+The measured compiler JPEG1600 and AVIF320 tight-budget timeouts remain a
+publication-preparation blocker. No product algorithm, firewall limit or release
+is changed by that assessment. Use the recorded workload to evaluate your own
+deployment; three single-concurrency M4 trials are not p99, an SLA, or OOM proof.
+
 ## Deploy and measure
 
 Use the native package on its [supported Node platforms](./COMPATIBILITY.md).

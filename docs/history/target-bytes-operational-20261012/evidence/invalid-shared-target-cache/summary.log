@@ -1,0 +1,290 @@
+[
+  {
+    "id": "photo-none",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 42.75224999999999
+  },
+  {
+    "id": "photo-none",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 38.17700000000001
+  },
+  {
+    "id": "photo-loose",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 65.490833
+  },
+  {
+    "id": "photo-loose",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 67.01575000000001
+  },
+  {
+    "id": "photo-tight",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 377.24899999999997
+  },
+  {
+    "id": "photo-tight",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 383.66537500000004
+  },
+  {
+    "id": "photo-impossible",
+    "variant": "current",
+    "outcomes": {
+      "budget-unmet": 3
+    },
+    "p50": 481.347083
+  },
+  {
+    "id": "photo-impossible",
+    "variant": "before",
+    "outcomes": {
+      "budget-unmet": 3
+    },
+    "p50": 481.42029199999996
+  },
+  {
+    "id": "ui-none",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 27.02645799999999
+  },
+  {
+    "id": "ui-none",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 26.71166699999999
+  },
+  {
+    "id": "ui-loose",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 18.873833000000005
+  },
+  {
+    "id": "ui-loose",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 19.987125000000006
+  },
+  {
+    "id": "ui-tight",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 365.31454199999996
+  },
+  {
+    "id": "ui-tight",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 364.015
+  },
+  {
+    "id": "ui-impossible",
+    "variant": "current",
+    "outcomes": {
+      "budget-unmet": 3
+    },
+    "p50": 787.6742079999999
+  },
+  {
+    "id": "ui-impossible",
+    "variant": "before",
+    "outcomes": {
+      "budget-unmet": 3
+    },
+    "p50": 791.740042
+  },
+  {
+    "id": "large-none",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 873.535667
+  },
+  {
+    "id": "large-none",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 839.181292
+  },
+  {
+    "id": "large-loose",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 1736.558125
+  },
+  {
+    "id": "large-loose",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 1731.865917
+  },
+  {
+    "id": "large-tight",
+    "variant": "current",
+    "outcomes": {
+      "resource-timeout": 3
+    },
+    "p50": 5617.119291
+  },
+  {
+    "id": "large-tight",
+    "variant": "before",
+    "outcomes": {
+      "resource-timeout": 3
+    },
+    "p50": 5570.067416999999
+  },
+  {
+    "id": "large-impossible",
+    "variant": "current",
+    "outcomes": {
+      "resource-timeout": 3
+    },
+    "p50": 5563.639208
+  },
+  {
+    "id": "large-impossible",
+    "variant": "before",
+    "outcomes": {
+      "resource-timeout": 3
+    },
+    "p50": 5599.86375
+  },
+  {
+    "id": "cli-build",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 1702.2904159999998
+  },
+  {
+    "id": "cli-build",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 1690.892542
+  },
+  {
+    "id": "cli-ui-tight",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 415.5325
+  },
+  {
+    "id": "cli-ui-tight",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 477.07837499999994
+  },
+  {
+    "id": "avif-none",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 104.029917
+  },
+  {
+    "id": "avif-none",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 102.48416700000001
+  },
+  {
+    "id": "avif-tight",
+    "variant": "current",
+    "outcomes": {
+      "resource-timeout": 3
+    },
+    "p50": 5092.185875
+  },
+  {
+    "id": "avif-tight",
+    "variant": "before",
+    "outcomes": {
+      "resource-timeout": 3
+    },
+    "p50": 5068.939209
+  },
+  {
+    "id": "api-range-tight",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 2938.8169159999998
+  },
+  {
+    "id": "api-range-tight",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 2870.043083
+  },
+  {
+    "id": "api-known-max",
+    "variant": "current",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 10.447541999999999
+  },
+  {
+    "id": "api-known-max",
+    "variant": "before",
+    "outcomes": {
+      "accepted": 3
+    },
+    "p50": 10.005750000000006
+  }
+]

@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "variant": "current",
+    "sourceSha": "1962f233299aa10d6053230c1af1605faeaddc5d",
+    "root": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main",
+    "clean": true,
+    "nativePath": "/Volumes/Satechi/Developer/lazy-image-evaluation-20261012-main/lazy-image.darwin-arm64.node",
+    "nativeSha256": "34926526c54f42cab8151250d648550fa7062af61c57f20d79e64b66e5578223",
+    "nativeVersion": "1.4.3",
+    "compilerIdentity": "lazy-image-native:1.4.3;config=50e1f6a36e7378b3cf41d8beac6f8cd2c517e9d02aa229d324ae7211224d023b;target=aarch64-apple-darwin;profile=release;feature=avif",
+    "napiCli": "3.9.0",
+    "packageVersion": "1.4.3",
+    "cargoLockSha256": "d2692f07977c2a204042c37e6dd992f8b99c629eda232bc68781461f5e37fb23",
+    "packageLockSha256": "08f481f2ca18b5fdb5ece31c4eed81f68f24cf80abe368118227bc43a379964d",
+    "node": "v24.2.0",
+    "modules": "137",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.0.0",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "memoryBytes": 34359738368,
+    "runnerSha256": "36fb2821bd944d3ef446e23c7e2779cd4bdcc9977612b2569ca220168c419674"
+  },
+  "condition": {
+    "id": "avif-tight",
+    "fixture": "coffee",
+    "format": "avif",
+    "width": 320,
+    "interface": "compiler",
+    "budgetKind": "tight",
+    "budget": 12850,
+    "policy": {
+      "widths": [
+        320
+      ],
+      "formats": [
+        "avif"
+      ],
+      "placeholder": false,
+      "budgets": [
+        {
+          "width": 320,
+          "format": "avif",
+          "maxBytes": 12850
+        }
+      ]
+    }
+  },
+  "trial": 0,
+  "fixture": {
+    "id": "coffee",
+    "path": "test/benchmarks/corpus/images/coffee.png",
+    "bytes": 466706,
+    "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+    "license": "CC0-1.0",
+    "source": {
+      "kind": "photograph",
+      "author": "Rachel Michetti",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+      "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+    }
+  },
+  "outcome": "rejected",
+  "error": {
+    "name": "ArtifactCompilationError",
+    "message": "Image artifact compilation failed during processing (320/avif)",
+    "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+    "errorCode": "E123",
+    "phase": "processing",
+    "category": 2,
+    "cause": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5029ms). Use .limits({ timeoutMs: 10029 }) for longer operations or switch to lenient policy.",
+    "cleanupError": null
+  },
+  "outerMs": 5039.252291,
+  "rss": {
+    "scope": "worker process, operation window after module/fixture load; excludes post-verification",
+    "intervalMs": 10,
+    "samples": 438,
+    "rssStartBytes": 83755008,
+    "peakRssBytes": 100859904,
+    "rssEndBytes": 89866240
+  },
+  "cliProcess": null,
+  "nativeMetrics": null,
+  "nativeTrace": [
+    {
+      "method": "toFileTargetBytes",
+      "format": "avif",
+      "suppliedOptions": {
+        "targetBytes": 12850,
+        "strict": true,
+        "qualityFloorPolicy": "strict"
+      },
+      "outcome": "rejected",
+      "error": {
+        "name": "Error",
+        "message": "[E123] Image Firewall blocked the image: Image Firewall: processing exceeded 5000ms timeout at encode stage (elapsed: 5029ms). Use .limits({ timeoutMs: 10029 }) for longer operations or switch to lenient policy.",
+        "code": "LAZY_IMAGE_RESOURCE_LIMIT",
+        "errorCode": "E123",
+        "phase": null,
+        "category": 2,
+        "cause": null,
+        "cleanupError": null
+      }
+    }
+  ],
+  "nativeTraceBoundary": "delegating public-method observer, no encode/probe count instrumentation",
+  "encodeCount": null,
+  "nativeCumulativeTrusted": true,
+  "artifacts": [],
+  "manifest": null,
+  "checks": {
+    "noUnpublishedStaging": true,
+    "rejectedWithoutNewOutput": true
+  },
+  "residualNames": [],
+  "postChecks": [],
+  "workerExitCode": 0,
+  "execution": {
+    "command": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Volumes/Satechi/Developer/lazy-image/docs/history/target-bytes-operational-20261012/evaluate.cjs",
+      "--worker",
+      "current",
+      "{\"id\":\"avif-tight\",\"fixture\":\"coffee\",\"format\":\"avif\",\"width\":320,\"interface\":\"compiler\",\"budgetKind\":\"tight\",\"budget\":12850,\"policy\":{\"widths\":[320],\"formats\":[\"avif\"],\"placeholder\":false,\"budgets\":[{\"width\":320,\"format\":\"avif\",\"maxBytes\":12850}]}}",
+      "0",
+      "/Volumes/Satechi/Developer/lazy-image-operational-887-runs/current-avif-tight-0-3FaMSt"
+    ],
+    "startedAt": "2026-10-12T09:44:11.724Z",
+    "completedAt": "2026-10-12T09:44:16.847Z",
+    "matrixSha256": "63943e56dcc5d73c9b818ae8ef06b68b63154d792b3a06183eed813f2cbe963d"
+  }
+}
