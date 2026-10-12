@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.5.0] - Unreleased candidate
+## [1.5.0]
 
-**Not published yet.** This MINOR candidate adds a native compiler policy option. Wasm is version-synchronized without new compiler functionality or codec changes.
+This MINOR release adds a native compiler policy option. Wasm is version-synchronized without new compiler functionality or codec changes. During preparation, a versioned checkout or candidate PASS does not establish publication; install 1.5.0 only after checking its registry availability.
 
 Normal-JPEG output bytes, hashes, sizes, and processing cost can change because the requested quality is now applied correctly. Exact byte-budget search can cost more and return `E123` on tight budgets. Omitting `maxQuality` still means 100; the observed default-policy timeouts remain unresolved. The public-upload five-second limit is checked at processing boundaries, not by forcibly stopping a codec, and is not an SLA. Strict compiler failures do not publish unsuitable artifacts.
 
@@ -24,7 +24,7 @@ Use an explicit ceiling after checking representative inputs, for example with A
 }
 ```
 
-`maxQuality` accepts integers 30–100, defaults to 100, and retains a lower bound of 30. The compiler selects the highest byte-fitting quality in that range. A ceiling excludes higher-quality candidates even if they fit; it does not guarantee latency, perceptual quality, or acceptance of every input. The dated checkout evaluations below are not measurements of published npm 1.5.0. Read the [release notes draft](docs/history/V1.5.0_RELEASE_NOTES.md) before updating.
+`maxQuality` accepts integers 30–100, defaults to 100, and retains a lower bound of 30. The compiler selects the highest byte-fitting quality in that range. A ceiling excludes higher-quality candidates even if they fit; it does not guarantee latency, perceptual quality, or acceptance of every input. The dated checkout evaluations below are not measurements of published npm 1.5.0. Read the [release notes](docs/history/V1.5.0_RELEASE_NOTES.md) before updating.
 
 ### Added
 - Add opt-in `policy.budgets[].maxQuality` to `compileImage()` and CLI policy JSON. Omission and explicit 100 retain the existing canonical policy/fingerprint semantics; other ceilings are distinct (#889/#890).

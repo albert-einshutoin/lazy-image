@@ -101,8 +101,9 @@ npm install --save-dev esbuild@0.25.10
 find node_modules/@jsquash/{jpeg,png,resize,webp} -name '*.wasm' -exec cp {} dist/ \;
 ```
 
-1.5.0 is currently a release candidate; the version-pinned install above applies
-after publication. Candidate verification installs the packed workspace tarball.
+The version-pinned command requires 1.5.0 to be available in the registry.
+During release preparation, use the packed workspace candidate tarball; candidate
+verification does not establish npm publication.
 This version synchronizes with the native packages and does not add the native
 compiler or its `maxQuality` policy to Wasm. Codec/runtime behavior is unchanged.
 
