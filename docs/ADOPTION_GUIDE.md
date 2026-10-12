@@ -195,10 +195,12 @@ Runnable examples are maintained separately:
 
 ## Byte budgets and compute limits
 
-The current checkout contains an unreleased compiler quality ceiling and
+The current checkout is the unpublished 1.5.0 candidate with a compiler quality ceiling and
 JPEG/byte-budget/metrics corrections;
 the published npm 1.4.3 package does not establish the same implementation.
-Read [Unreleased](../CHANGELOG.md#unreleased) and the
+The pinned 1.4.3 static-page example above remains a published-version example.
+Use candidate tarballs until 1.5.0 is published, then pin that version explicitly.
+Read the [1.5.0 release notes draft](./history/V1.5.0_RELEASE_NOTES.md) and the
 [dated operational evaluation](./history/target-bytes-operational-20261012/EVALUATION.md).
 
 A byte-feasible output does not guarantee the compiler can search for it within

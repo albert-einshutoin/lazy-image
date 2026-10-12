@@ -7,8 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - Unreleased candidate
+
+**Not published yet.** This MINOR candidate adds a native compiler policy option. Wasm is version-synchronized without new compiler functionality or codec changes.
+
+Normal-JPEG output bytes, hashes, sizes, and processing cost can change because the requested quality is now applied correctly. Exact byte-budget search can cost more and return `E123` on tight budgets. Omitting `maxQuality` still means 100; the observed default-policy timeouts remain unresolved. The public-upload five-second limit is checked at processing boundaries, not by forcibly stopping a codec, and is not an SLA. Strict compiler failures do not publish unsuitable artifacts.
+
+Use an explicit ceiling after checking representative inputs, for example with API `compileImage({ inputPath, outputDir, policy })` or the same JSON through `lazy-image compile input.jpg --out-dir out --policy policy.json`:
+
+```json
+{
+  "widths": [1600],
+  "formats": ["jpeg"],
+  "placeholder": false,
+  "budgets": [{ "width": 1600, "format": "jpeg", "maxBytes": 93782, "maxQuality": 90 }]
+}
+```
+
+`maxQuality` accepts integers 30–100, defaults to 100, and retains a lower bound of 30. The compiler selects the highest byte-fitting quality in that range. A ceiling excludes higher-quality candidates even if they fit; it does not guarantee latency, perceptual quality, or acceptance of every input. The dated checkout evaluations below are not measurements of published npm 1.5.0. Read the [release notes draft](docs/history/V1.5.0_RELEASE_NOTES.md) before updating.
+
 ### Added
-- Add opt-in `policy.budgets[].maxQuality` to `compileImage()` and CLI policy JSON. It accepts integers 30–100 (default 100), selects the highest byte-fitting quality within 30..maxQuality, and verifies the selected range before publication. Omission and explicit 100 retain the existing canonical policy/fingerprint semantics; other ceilings are distinct. This is an additive public option under the SemVer policy, with no version selected here (#889).
+- Add opt-in `policy.budgets[].maxQuality` to `compileImage()` and CLI policy JSON. Omission and explicit 100 retain the existing canonical policy/fingerprint semantics; other ceilings are distinct (#889/#890).
+- Add a manifest-to-static-HTML adoption example. Technical reproduction is covered; this is not evidence of real-user adoption or market fit (#881/#882).
+
+### Changed
+- Synchronize the main package, six native platform packages, and Wasm package to 1.5.0. Wasm runtime and codec dependencies are unchanged.
+- Preserve native compiler quality/cost evaluations, unmet outcomes, and bounded upload/build guidance (#883/#884, #887/#888, #889/#890).
 
 ### Fixed
 - Preserve the requested normal-JPEG quality/chroma/progression settings by applying them after mozjpeg defaults initialization (#885/#886). Correctly requested quality can produce larger files and take longer than the prior incorrectly lower-quality output.
@@ -16,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Include all byte-budget probes in cumulative `totalMs`/CPU/peak-RSS metrics while retaining the selected candidate's encode/output information. The metrics shape/version is unchanged.
 
 ### Performance
-- The corrected search can attempt up to 100 encodes and still shares the existing cumulative resource limit. In the [2026-10-12 upload/build evaluation](docs/history/target-bytes-operational-20261012/EVALUATION.md), byte-feasible JPEG1600 and AVIF320 compiler budgets without an explicit ceiling timed out in all three trials on one M4, while the prior search accepted those budgets. The new compiler ceiling is opt-in; budgets without maxQuality still search through 100. There is no timeout override or time/perceptual-quality guarantee. The prior publication hold is assessed separately in the dated maxQuality evaluation; no release version is selected here.
+- The low-level corrected search can attempt up to 100 encodes and retains cumulative resource limits; compiler budgets search 30..maxQuality. In the [2026-10-12 upload/build evaluation](docs/history/target-bytes-operational-20261012/EVALUATION.md), byte-feasible JPEG1600 and AVIF320 compiler budgets without an explicit ceiling timed out in all three API trials on one M4. The [maxQuality evaluation](docs/history/compiler-budget-max-quality-20261012/EVALUATION.md) accepted those selected conditions with explicit ceilings in three API and three CLI trials each. These bounded observations do not establish a general speedup, compression advantage, or time guarantee.
 
 ## [1.4.3] - 2026-10-09
 
@@ -720,6 +744,7 @@ Upgrade both packages with `npm install @alberteinshutoin/lazy-image@1.4.0 @albe
 ---
 
 [Unreleased]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.3...HEAD
+[1.5.0]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.3...release/1.5.0
 [1.4.3]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/albert-einshutoin/lazy-image/compare/v1.4.0...v1.4.1

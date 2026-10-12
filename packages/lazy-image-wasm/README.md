@@ -95,11 +95,16 @@ The codec loader resolves Wasm with `new URL(..., import.meta.url)`; the tested
 esbuild ESM bundle emits those URLs relative to `worker.js`.
 
 ```bash
-npm install @alberteinshutoin/lazy-image-wasm@1.4.2
+npm install @alberteinshutoin/lazy-image-wasm@1.5.0
 npm install --save-dev esbuild@0.25.10
 ./node_modules/.bin/esbuild worker.mjs --bundle --format=esm --platform=browser --target=es2022 --outfile=dist/worker.js
 find node_modules/@jsquash/{jpeg,png,resize,webp} -name '*.wasm' -exec cp {} dist/ \;
 ```
+
+1.5.0 is currently a release candidate; the version-pinned install above applies
+after publication. Candidate verification installs the packed workspace tarball.
+This version synchronizes with the native packages and does not add the native
+compiler or its `maxQuality` policy to Wasm. Codec/runtime behavior is unchanged.
 
 `worker.mjs`:
 

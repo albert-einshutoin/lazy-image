@@ -11,6 +11,7 @@ Related docs:
 - [v1.4.1 verification](history/V1.4.1_VERIFICATION.md) — native dependency update release, published npm and Chrome Worker evidence
 - [v1.4.2 verification](history/V1.4.2_VERIFICATION.md) — FIR/loader/tooling patch, candidate and published npm evidence
 - [v1.4.3 verification](history/V1.4.3_VERIFICATION.md) — libc 0.2.189 patch, candidate and published npm evidence
+- [v1.5.0 preparation](history/V1.5.0_PREPARATION.md) — unpublished scope, compatibility, and candidate-evidence handoff
 
 ---
 
@@ -174,7 +175,7 @@ git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin vX.Y.Z
 ```
 
-Before tagging, run [CI.yml](../.github/workflows/CI.yml) manually on the release commit with `dry_run=true` and retain the candidate reports. Tag CI rebuilds the same revision, verifies exactly one correctly named binary per target, inspects its CPU and Linux libc dependencies, and packs the main and six platform tarballs. Each candidate tarball is installed in an empty directory on all six supported platforms with Node.js 22 and 24. The publish job starts only after **all 12 candidate API/CLI/artifact smoke jobs and full CI pass**. It publishes the exact candidate platform and main tarballs recorded by SHA-256 in `release-candidate/manifest.json`, plus the Wasm workspace package, then creates the GitHub Release. If a candidate job fails or cannot run, the publish job is skipped; fix the cause and use a new reviewed revision before tagging.
+Before tagging, run [CI.yml](../.github/workflows/CI.yml) manually on a **non-tag ref pointing to the exact release commit**, with `full_validation=true` and `dry_run=true`, and retain the candidate reports. Match the run's `headSha` to that commit. The publish condition is the tag ref; `dry_run=true` alone is not a publish guard. Tag CI rebuilds the same revision, verifies exactly one correctly named binary per target, inspects its CPU and Linux libc dependencies, and packs the main and six platform tarballs. Each candidate tarball is installed in an empty directory on all six supported platforms with Node.js 22 and 24. The smoke runner retains the baseline WebP API/CLI checks and also verifies budgeted `maxQuality: 30` through both installed entry points, plus invalid-ceiling rejection without publication. The publish job starts only after **all 12 candidate API/CLI/artifact smoke jobs and full CI pass**. It publishes the exact candidate platform and main tarballs recorded by SHA-256 in `release-candidate/manifest.json`, plus the Wasm workspace package, then creates the GitHub Release. If a candidate job fails or cannot run, the publish job is skipped; fix the cause and use a new reviewed revision before tagging.
 
 The `linux-x64-musl` binding is built and loaded inside an Alpine x64 container with a fixed musl Rust toolchain. The Ubuntu x64 host does not cross-link this package: a target-labelled binary built there retained glibc dependencies in the [v1.3.1 dry-run rejection](https://github.com/albert-einshutoin/lazy-image/actions/runs/35891772404). Check the candidate manifest's `inspection.needed` and the Alpine smoke artifact before tagging; the name or ELF CPU alone cannot prove musl compatibility.
 

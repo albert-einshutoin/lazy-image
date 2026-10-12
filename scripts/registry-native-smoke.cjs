@@ -1,4 +1,4 @@
-// Run from a checkout, but install and load only public npm packages in a fresh temp directory.
+// Run from a checkout; install and load registry packages or candidate tarballs in a fresh temp directory.
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const { createHash } = require('node:crypto');
@@ -14,6 +14,8 @@ const candidateDir = process.env.SMOKE_CANDIDATE_DIR;
 const FIXTURE = 'test/fixtures/test_100KB_1057x1057.jpg';
 const FIXTURE_SHA256 = '6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90';
 const POLICY = { widths: [320, 640], formats: ['webp'], placeholder: false };
+const MAX_QUALITY_POLICY = { widths: [64], formats: ['webp'], placeholder: false,
+  budgets: [{ width: 64, format: 'webp', maxBytes: 1024 * 1024, maxQuality: 30 }] };
 const PLATFORMS = {
   'darwin-arm64': ['darwin', 'arm64', 'darwin-arm64'],
   'darwin-x64': ['darwin', 'x64', 'darwin-x64'],
@@ -39,32 +41,37 @@ const report = {
   fixture: { path: FIXTURE, sha256: FIXTURE_SHA256 },
   policy: POLICY,
   commands: [],
+  commandResults: [],
 };
 
 function sha256(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
 
-function run(command, args, cwd) {
+function run(command, args, cwd, expectedExitCode = 0) {
   report.commands.push([command, ...args].join(' '));
   const result = spawnSync(command, args, {
     cwd, encoding: 'utf8', timeout: 180_000, maxBuffer: 4 * 1024 * 1024,
     shell: process.platform === 'win32' && command.endsWith('.cmd'),
     env: { ...process.env, npm_config_registry: REGISTRY },
   });
+  report.commandResults.push({ command: [command, ...args], exitCode: result.status,
+    signal: result.signal, expectedExitCode, error: result.error?.message || null });
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);
-  if (result.error || result.status !== 0) {
+  if (result.error || result.signal || result.status !== expectedExitCode) {
     throw new Error(`${command} exited ${result.status}: ${result.error?.message || result.stderr?.slice(-1000)}`);
+  }
+  if (expectedExitCode !== 0) {
+    assert.equal(result.stdout.trim(), '', 'invalid policy must not return a manifest');
+    assert.match(result.stderr, /\[E400\]/, 'invalid quality ceiling must be a policy error');
   }
   return result.stdout.trim();
 }
 
-function assertArtifactSet(manifest, outputDir, inspect) {
+function assertArtifactSet(manifest, outputDir, inspect, dimensions = [['webp', 320, 320], ['webp', 640, 640]]) {
   assert.equal(manifest.compiler.version, VERSION);
   assert.equal(manifest.source.sha256, FIXTURE_SHA256);
-  assert.equal(manifest.artifacts.length, 2);
-  assert.deepEqual(manifest.artifacts.map(a => [a.format, a.width, a.height]), [
-    ['webp', 320, 320], ['webp', 640, 640],
-  ]);
+  assert.equal(manifest.artifacts.length, dimensions.length);
+  assert.deepEqual(manifest.artifacts.map(a => [a.format, a.width, a.height]), dimensions);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(outputDir, 'manifest.json'), 'utf8')), manifest);
   for (const artifact of manifest.artifacts) {
     const file = path.resolve(outputDir, artifact.path);
@@ -79,6 +86,14 @@ function assertArtifactSet(manifest, outputDir, inspect) {
   }
   return manifest.artifacts.map(({ path: name, format, width, height, bytes, sha256: hash }) =>
     ({ path: name, format, width, height, bytes, sha256: hash }));
+}
+
+function assertBudgetedQuality(artifact, budget) {
+  // With the smoke's floor=ceiling=30 and ample bytes, exactly q30 must win.
+  assert(Number.isInteger(artifact.quality));
+  assert.equal(artifact.quality, budget.maxQuality, 'quality ceiling was ignored');
+  assert.equal(artifact.targetBytes, budget.maxBytes);
+  assert(Number.isInteger(artifact.bytes) && artifact.bytes > 0 && artifact.bytes <= budget.maxBytes);
 }
 
 async function main() {
@@ -179,10 +194,42 @@ async function main() {
   report.cliArtifacts = assertArtifactSet(cliManifest, cliDir, lib.inspect);
   assert.deepEqual(cliManifest, apiManifest);
   report.results = { binding: 'PASS', api: 'PASS', cli: 'PASS', artifacts: 'PASS', apiCliParity: 'PASS' };
+
+  const cappedApiDir = path.join(temp, 'max-quality-api');
+  const cappedCliDir = path.join(temp, 'max-quality-cli');
+  const cappedApi = await lib.compileImage({ inputPath, outputDir: cappedApiDir, policy: MAX_QUALITY_POLICY });
+  fs.writeFileSync(policyPath, JSON.stringify(MAX_QUALITY_POLICY));
+  const cappedCli = JSON.parse(run(bin, ['compile', inputPath, '--out-dir', cappedCliDir, '--policy', policyPath], temp));
+  const dimensions = [['webp', 64, 64]];
+  const cappedArtifacts = (manifest, dir) => {
+    const artifacts = assertArtifactSet(manifest, dir, lib.inspect, dimensions);
+    assertBudgetedQuality(manifest.artifacts[0], MAX_QUALITY_POLICY.budgets[0]);
+    return artifacts.map((artifact, index) => ({ ...artifact, quality: manifest.artifacts[index].quality,
+      targetBytes: manifest.artifacts[index].targetBytes }));
+  };
+  report.maxQuality = { policy: MAX_QUALITY_POLICY, apiArtifacts: cappedArtifacts(cappedApi, cappedApiDir),
+    cliArtifacts: cappedArtifacts(cappedCli, cappedCliDir), invalid: [] };
+  assert.deepEqual(cappedCli, cappedApi);
+  for (const [index, maxQuality] of [29, 101, '30'].entries()) {
+    const invalidPolicy = { ...MAX_QUALITY_POLICY,
+      budgets: [{ ...MAX_QUALITY_POLICY.budgets[0], maxQuality }] };
+    const invalidApiDir = path.join(temp, `invalid-max-quality-api-${index}`);
+    const invalidCliDir = path.join(temp, `invalid-max-quality-cli-${index}`);
+    await assert.rejects(() => lib.compileImage({ inputPath, outputDir: invalidApiDir, policy: invalidPolicy }), error => {
+      assert.equal(error.errorCode, 'E400'); assert.equal(error.phase, 'planning'); return true;
+    });
+    fs.writeFileSync(policyPath, JSON.stringify(invalidPolicy));
+    run(bin, ['compile', inputPath, '--out-dir', invalidCliDir, '--policy', policyPath], temp, 1);
+    assert.equal(fs.existsSync(invalidApiDir), false); assert.equal(fs.existsSync(invalidCliDir), false);
+    assert.deepEqual(fs.readdirSync(temp).filter(name => name.includes('lazy-image-staging')), []);
+    report.maxQuality.invalid.push({ maxQuality, api: 'E400', cli: 'E400', unpublished: true, remainingSiblingStaging: [] });
+  }
+  report.results.maxQuality = 'PASS';
+  report.results.invalidMaxQuality = 'PASS';
   report.status = 'PASS';
 }
 
-main().catch(error => {
+if (require.main === module) main().catch(error => {
   report.reason = error.stack || String(error);
   console.error(error);
   process.exitCode = 1;
@@ -194,3 +241,5 @@ main().catch(error => {
   }
   console.log(`registry-native-smoke: ${report.status} ${expected} ${process.version}`);
 });
+
+module.exports = { assertBudgetedQuality };
