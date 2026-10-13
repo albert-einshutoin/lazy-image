@@ -1,0 +1,20 @@
+{
+  "condition": "B",
+  "packageVersion": "1.5.0",
+  "rows": [],
+  "nativeTotalMs": null,
+  "nativeMetricsReason": "compileImage public manifest does not expose native metrics",
+  "successPageCreated": false,
+  "success": false,
+  "applicationError": {
+    "name": "Error",
+    "message": "EEXIST: file already exists, mkdir '<PRIVATE_EVAL_ROOT>/runs/B1'",
+    "phase": null,
+    "errorCode": null,
+    "code": "EEXIST",
+    "recoveryHint": null,
+    "cause": null,
+    "cleanupError": null
+  },
+  "pageWallMs": 0.6057090000000009
+}

@@ -1,0 +1,123 @@
+{
+  "url": "http://127.0.0.1:8875/quality-single/chelsea/index.html",
+  "viewport": {
+    "width": 1440,
+    "height": 1000,
+    "dpr": 1
+  },
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+  "browserVersion": {
+    "brands": [
+      {
+        "brand": "Chromium",
+        "version": "154"
+      },
+      {
+        "brand": "Google Chrome",
+        "version": "154"
+      },
+      {
+        "brand": "Not A(Brand",
+        "version": "99"
+      }
+    ],
+    "fullVersionList": [
+      {
+        "brand": "Chromium",
+        "version": "154.0.8037.98"
+      },
+      {
+        "brand": "Google Chrome",
+        "version": "154.0.8037.98"
+      },
+      {
+        "brand": "Not A(Brand",
+        "version": "99.0.0.0"
+      }
+    ],
+    "mobile": false,
+    "platform": "macOS"
+  },
+  "decodeError": null,
+  "images": [
+    {
+      "id": "chelsea Original",
+      "currentSrc": "http://127.0.0.1:8875/quality-single/chelsea/chelsea.png",
+      "src": "chelsea.png",
+      "srcset": null,
+      "sizes": "",
+      "complete": true,
+      "naturalWidth": 451,
+      "naturalHeight": 300,
+      "rect": {
+        "width": 320,
+        "height": 213
+      },
+      "placeholder": "none"
+    },
+    {
+      "id": "chelsea A",
+      "currentSrc": "http://127.0.0.1:8875/quality-single/chelsea/A.webp",
+      "src": "A.webp",
+      "srcset": null,
+      "sizes": "",
+      "complete": true,
+      "naturalWidth": 320,
+      "naturalHeight": 213,
+      "rect": {
+        "width": 320,
+        "height": 213
+      },
+      "placeholder": "none"
+    },
+    {
+      "id": "chelsea B",
+      "currentSrc": "http://127.0.0.1:8875/quality-single/chelsea/B.webp",
+      "src": "B.webp",
+      "srcset": null,
+      "sizes": "",
+      "complete": true,
+      "naturalWidth": 320,
+      "naturalHeight": 213,
+      "rect": {
+        "width": 320,
+        "height": 213
+      },
+      "placeholder": "none"
+    }
+  ],
+  "resources": [
+    {
+      "name": "http://127.0.0.1:8875/quality-single/chelsea/A.webp",
+      "type": "img",
+      "transferSize": 13322,
+      "encodedBodySize": 13022,
+      "decodedBodySize": 13022,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/quality-single/chelsea/chelsea.png",
+      "type": "img",
+      "transferSize": 240812,
+      "encodedBodySize": 240512,
+      "decodedBodySize": 240512,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/quality-single/chelsea/qa.js",
+      "type": "script",
+      "transferSize": 1557,
+      "encodedBodySize": 1257,
+      "decodedBodySize": 1257,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/quality-single/chelsea/B.webp",
+      "type": "img",
+      "transferSize": 13322,
+      "encodedBodySize": 13022,
+      "decodedBodySize": 13022,
+      "responseStatus": 200
+    }
+  ]
+}

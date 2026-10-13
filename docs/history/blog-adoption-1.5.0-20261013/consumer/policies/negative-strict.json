@@ -1,0 +1,17 @@
+{
+  "widths": [
+    64
+  ],
+  "formats": [
+    "webp"
+  ],
+  "placeholder": true,
+  "budgets": [
+    {
+      "width": 64,
+      "format": "webp",
+      "maxBytes": 1,
+      "maxQuality": 30
+    }
+  ]
+}

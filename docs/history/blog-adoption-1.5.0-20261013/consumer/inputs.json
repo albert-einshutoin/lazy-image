@@ -1,0 +1,174 @@
+[
+  {
+    "id": "coffee",
+    "file": "inputs/coffee.png",
+    "source": {
+      "kind": "photograph",
+      "author": "Rachel Michetti",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/coffee.png",
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+      "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+    },
+    "license": "CC0-1.0",
+    "originalPath": "test/benchmarks/corpus/images/coffee.png",
+    "bytes": 466706,
+    "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+    "inspection": {
+      "width": 600,
+      "height": 400,
+      "hasAlpha": false,
+      "isAnimated": false,
+      "orientationKnown": false,
+      "format": "png"
+    },
+    "displayWidth": 600,
+    "displayHeight": 400,
+    "actualWidths": [
+      320
+    ],
+    "A": "policies/A-coffee.json",
+    "B": "policies/B-coffee.json"
+  },
+  {
+    "id": "chelsea",
+    "file": "inputs/chelsea.png",
+    "source": {
+      "kind": "photograph",
+      "author": "Stefan van der Walt",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.19.3/skimage/data/chelsea.png",
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.25.2/skimage/data/_fetchers.py",
+      "note": "CC0 dedication documented by scikit-image; original pixels, no local transformation."
+    },
+    "license": "CC0-1.0",
+    "originalPath": "test/benchmarks/corpus/images/chelsea.png",
+    "bytes": 240512,
+    "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+    "inspection": {
+      "width": 451,
+      "height": 300,
+      "hasAlpha": false,
+      "isAnimated": false,
+      "orientationKnown": false,
+      "format": "png"
+    },
+    "displayWidth": 451,
+    "displayHeight": 300,
+    "actualWidths": [
+      320
+    ],
+    "A": "policies/A-chelsea.json",
+    "B": "policies/B-chelsea.json"
+  },
+  {
+    "id": "ui-1",
+    "file": "inputs/ui-1.png",
+    "source": {
+      "kind": "project-generated-fixture",
+      "generator": "test/benchmarks/corpus/generate.js"
+    },
+    "license": "MIT",
+    "originalPath": "test/benchmarks/corpus/images/ui-1.png",
+    "bytes": 7610,
+    "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+    "inspection": {
+      "width": 320,
+      "height": 240,
+      "hasAlpha": false,
+      "isAnimated": false,
+      "orientationKnown": true,
+      "format": "png"
+    },
+    "displayWidth": 320,
+    "displayHeight": 240,
+    "actualWidths": [
+      320
+    ],
+    "A": "policies/A-ui-1.json",
+    "B": "policies/B-ui-1.json"
+  },
+  {
+    "id": "metadata-1",
+    "file": "inputs/metadata-1.jpg",
+    "source": {
+      "kind": "project-generated-fixture",
+      "generator": "test/benchmarks/corpus/generate.js"
+    },
+    "license": "MIT",
+    "originalPath": "test/benchmarks/corpus/images/metadata-1.jpg",
+    "bytes": 10386,
+    "sha256": "ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d",
+    "inspection": {
+      "width": 320,
+      "height": 240,
+      "hasAlpha": false,
+      "isAnimated": false,
+      "orientationKnown": true,
+      "format": "jpeg",
+      "orientation": 6
+    },
+    "displayWidth": 240,
+    "displayHeight": 320,
+    "actualWidths": [
+      240
+    ],
+    "A": "policies/A-metadata-1.json",
+    "B": "policies/B-metadata-1.json"
+  },
+  {
+    "id": "large",
+    "file": "inputs/large.jpg",
+    "source": {
+      "kind": "project-synthetic-fixture",
+      "path": "test/fixtures/test_3.2MB_5000x5000.jpg"
+    },
+    "license": "MIT",
+    "originalPath": "test/fixtures/test_3.2MB_5000x5000.jpg",
+    "bytes": 3371242,
+    "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+    "inspection": {
+      "width": 5000,
+      "height": 5000,
+      "hasAlpha": false,
+      "isAnimated": false,
+      "orientationKnown": false,
+      "format": "jpeg"
+    },
+    "displayWidth": 5000,
+    "displayHeight": 5000,
+    "actualWidths": [
+      320,
+      640,
+      960
+    ],
+    "A": "policies/A-large.json",
+    "B": "policies/B-large.json"
+  },
+  {
+    "id": "coffee-64",
+    "file": "inputs/coffee-64.png",
+    "source": {
+      "kind": "derived-from-coffee",
+      "parentSha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "command": "ImageEngine.fromPath('inputs/coffee.png').resize({width:64}).toFile('inputs/coffee-64.png','png')",
+      "packageVersion": "1.5.0"
+    },
+    "license": "CC0-1.0",
+    "bytes": 6293,
+    "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d",
+    "inspection": {
+      "width": 64,
+      "height": 43,
+      "hasAlpha": false,
+      "isAnimated": false,
+      "orientationKnown": true,
+      "format": "png"
+    },
+    "displayWidth": 64,
+    "displayHeight": 43,
+    "actualWidths": [
+      64
+    ],
+    "A": "policies/A-coffee-64.json",
+    "B": "policies/B-coffee-64.json"
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "reason": "CUA read-only DOM scope does not expose image.decode; native browser page observer exposes decode and ResourceTiming results in visible DOM",
+  "mainMeasurementsUnchanged": true,
+  "mainConsumerRevision": "6ffda40cd1af311711d17c178e838ad842f1d64f",
+  "observerSha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df",
+  "initialProbe": {
+    "outcome": "TypeError: image.decode is not a function",
+    "processExit": null,
+    "nativeCompilerFailure": false
+  },
+  "finalBrowserUrls": [
+    "http://127.0.0.1:8875/desktop-A-observed/index.html",
+    "http://127.0.0.1:8875/desktop-B-observed/index.html",
+    "http://127.0.0.1:8875/mobile-A-observed/index.html",
+    "http://127.0.0.1:8875/mobile-B-observed/index.html"
+  ]
+}

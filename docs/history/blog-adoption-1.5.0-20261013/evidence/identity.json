@@ -1,0 +1,179 @@
+{
+  "package": "@alberteinshutoin/lazy-image",
+  "version": "1.5.0",
+  "publishedSource": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "evaluationBase": "39e348bed04daa7072e83a80a351f5ee268d3575",
+  "os": {
+    "platform": "darwin",
+    "release": "27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "ramBytes": 34359738368,
+    "macOS": "27.0"
+  },
+  "node": "v24.2.0",
+  "npm": "11.3.0",
+  "registry": "https://registry.npmjs.org/",
+  "loaderOverrides": "absent",
+  "installed": [
+    {
+      "file": "<PRIVATE_EVAL_ROOT>/consumer/node_modules/@alberteinshutoin/lazy-image/index.js",
+      "sha256": "e4d196650b52ca26f75cf5379437e73ae2fa3bd0be490a891245910ebb0feb89"
+    },
+    {
+      "file": "<PRIVATE_EVAL_ROOT>/consumer/node_modules/@alberteinshutoin/lazy-image/index.mjs",
+      "sha256": "c5a7b1e640d6751aa03e749ec18a1d093ab65964518d134f7950c97f953bdac3"
+    },
+    {
+      "file": "<PRIVATE_EVAL_ROOT>/consumer/node_modules/@alberteinshutoin/lazy-image/lib/artifact-policy.js",
+      "sha256": "a0648632a2255fdb92f0789f4043a4e14a5d97dda1b006c8a0179d7068bed2e6"
+    },
+    {
+      "file": "<PRIVATE_EVAL_ROOT>/consumer/node_modules/@alberteinshutoin/lazy-image/lib/artifact-compiler.js",
+      "sha256": "78467d5a71eb9615c41a8f675b24c73f7c0461ca7a8bb8a291e019a12a9362a2"
+    },
+    {
+      "file": "<PRIVATE_EVAL_ROOT>/consumer/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+      "sha256": "d7b3871a3377f0add70a8058992505207e047728db0dcef8ff44654838b98055"
+    }
+  ],
+  "registryPackages": [
+    {
+      "key": "node_modules/@alberteinshutoin/lazy-image",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.5.0.tgz",
+      "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg==",
+      "license": "MIT",
+      "workspaces": [
+        "packages/lazy-image-wasm"
+      ],
+      "bin": {
+        "lazy-image": "bin/lazy-image.js"
+      },
+      "engines": {
+        "node": ">= 22"
+      },
+      "optionalDependencies": {
+        "@alberteinshutoin/lazy-image-darwin-arm64": "1.5.0",
+        "@alberteinshutoin/lazy-image-darwin-x64": "1.5.0",
+        "@alberteinshutoin/lazy-image-linux-arm64-gnu": "1.5.0",
+        "@alberteinshutoin/lazy-image-linux-x64-gnu": "1.5.0",
+        "@alberteinshutoin/lazy-image-linux-x64-musl": "1.5.0",
+        "@alberteinshutoin/lazy-image-win32-x64-msvc": "1.5.0"
+      }
+    },
+    {
+      "key": "node_modules/@alberteinshutoin/lazy-image-darwin-arm64",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-arm64/-/lazy-image-darwin-arm64-1.5.0.tgz",
+      "integrity": "sha512-CVC1vGRcZSwrZ973TR6r9iyVmq9/EwgC2+J22z/oPLlE7bEvlEQOiMqr97tWY3Vvs8KV3iZ4FL1C+SzOTVSopg==",
+      "cpu": [
+        "arm64"
+      ],
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "darwin"
+      ],
+      "engines": {
+        "node": ">= 22"
+      }
+    },
+    {
+      "key": "node_modules/@alberteinshutoin/lazy-image-darwin-x64",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-x64/-/lazy-image-darwin-x64-1.5.0.tgz",
+      "integrity": "sha512-thbmBuY1PrSdItnfeET4vMYS+FsJaewnv5FtbzXvS1M9UEwd4OTFbYoH3K2FZHmQiKd+SxdmFq2SAMFs+CtO+g==",
+      "cpu": [
+        "x64"
+      ],
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "darwin"
+      ],
+      "engines": {
+        "node": ">= 22"
+      }
+    },
+    {
+      "key": "node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-arm64-gnu/-/lazy-image-linux-arm64-gnu-1.5.0.tgz",
+      "integrity": "sha512-oc6Np1ihYRWXx0sg1EHvctQGnwJ4xiWWNOfq1Z2/YTj+kj0FOzqYce9BOt6FY0PnbZh/KGRfcgMQS6YUKSzqBQ==",
+      "cpu": [
+        "arm64"
+      ],
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "linux"
+      ],
+      "engines": {
+        "node": ">= 22"
+      }
+    },
+    {
+      "key": "node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-gnu/-/lazy-image-linux-x64-gnu-1.5.0.tgz",
+      "integrity": "sha512-fNfGegvmwctCxPcInks/YJ784WPwVLuPazsJKtSsMkQUi4Q6wWtO6dFsJfhj3JWNw5Msl+WyQUsv/GSdpMVtJw==",
+      "cpu": [
+        "x64"
+      ],
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "linux"
+      ],
+      "engines": {
+        "node": ">= 22"
+      }
+    },
+    {
+      "key": "node_modules/@alberteinshutoin/lazy-image-linux-x64-musl",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-musl/-/lazy-image-linux-x64-musl-1.5.0.tgz",
+      "integrity": "sha512-R2xsC5tj1R0zXfwQAK4aclGHL0Bn+iX+UgnMvmSzttbQzCmiCHqQzAWzp0KTHH66m0d/25GK3zrhcHULh1n0XA==",
+      "cpu": [
+        "x64"
+      ],
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "linux"
+      ],
+      "engines": {
+        "node": ">= 22"
+      }
+    },
+    {
+      "key": "node_modules/@alberteinshutoin/lazy-image-win32-x64-msvc",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-win32-x64-msvc/-/lazy-image-win32-x64-msvc-1.5.0.tgz",
+      "integrity": "sha512-IpYOXtlg1hqPHJwnRntrN+1kL7c/r03AE+rCMAMazEANEuFyYKI8bVuIeLnyg++KwSRWPvUm6ZD8Y4v7vqV+aA==",
+      "cpu": [
+        "x64"
+      ],
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "win32"
+      ],
+      "engines": {
+        "node": ">= 22"
+      }
+    }
+  ],
+  "licenses": [
+    {
+      "file": "LICENSE",
+      "sha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539"
+    },
+    {
+      "file": "CC0-1.0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    }
+  ]
+}

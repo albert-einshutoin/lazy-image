@@ -1,0 +1,48 @@
+{
+  "condition": "A",
+  "packageVersion": "1.5.0",
+  "rows": [
+    {
+      "id": "not-image",
+      "policy": {
+        "widths": [
+          320,
+          640,
+          960
+        ],
+        "formats": [
+          "webp",
+          "jpeg"
+        ],
+        "placeholder": true
+      },
+      "policySha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410",
+      "success": false,
+      "error": {
+        "name": "ArtifactCompilationError",
+        "message": "Image artifact compilation failed during preflight",
+        "phase": "preflight",
+        "errorCode": "E131",
+        "code": "LAZY_IMAGE_CODEC_ERROR",
+        "recoveryHint": "Try opening the file in another viewer or re-encode the source image.",
+        "cause": {
+          "name": "Error",
+          "message": "[E131] Failed to decode image: failed to determine image format",
+          "phase": null,
+          "errorCode": "E131",
+          "code": "LAZY_IMAGE_CODEC_ERROR",
+          "recoveryHint": "Try opening the file in another viewer or re-encode the source image.",
+          "cause": null,
+          "cleanupError": null
+        },
+        "cleanupError": null
+      },
+      "wallMs": 4.539958000000006
+    }
+  ],
+  "nativeTotalMs": null,
+  "nativeMetricsReason": "compileImage public manifest does not expose native metrics",
+  "successPageCreated": false,
+  "success": false,
+  "pageWallMs": 5.606666000000004
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "id": "coffee-64",
+    "file": "inputs/coffee-64.png",
+    "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d",
+    "A": "policies/negative-strict.json",
+    "B": "policies/negative-strict.json"
+  }
+]

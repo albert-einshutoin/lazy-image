@@ -1,0 +1,3311 @@
+{
+  "algorithm": "sha256",
+  "scope": "current public blog evaluation files and guide; manifest excluded",
+  "files": [
+    {
+      "path": "docs/ADOPTION_GUIDE.md",
+      "bytes": 13603,
+      "sha256": "36cf5ba56b9555a1e24cbfad30ff04b5528c73666aa43190b404b35f769a8a82"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/DECISION.md",
+      "bytes": 3456,
+      "sha256": "cf984769a65cb2370e94d34305dc3b301572ab71e197349966925717c645941b"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/LOG_REDACTIONS.json",
+      "bytes": 263916,
+      "sha256": "0ec46ebbd9e653f6f0c7425860682de52f9c64ec647120aa7863156d256ef796"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/PLAN.md",
+      "bytes": 5571,
+      "sha256": "80a7c62e53ee3519e87ad461df25a76fc220236dd9e31d76e1d78bf3f016ede5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/REPRODUCE.md",
+      "bytes": 5262,
+      "sha256": "15928a0319f4d2b3e06fdb023941202f186ab6e9a76e9b5dd249024231a69904"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/RESULTS.md",
+      "bytes": 10286,
+      "sha256": "5f61022290e94abbef6ba3184546b6074166da7a2c515113c51c1e2cb1ff7cdd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/VALIDATION.md",
+      "bytes": 2961,
+      "sha256": "3c0e24652c2de7d198cfe406e1baa51c348461f415f4905ad7bf60ccc32bb6be"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/CC0-1.0.txt",
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/LICENSE",
+      "bytes": 1074,
+      "sha256": "fbabd6d9e58d928db3395247d5885fa22c848688887e8b85a3c5904799b5ff5d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/audit.mjs",
+      "bytes": 5108,
+      "sha256": "f329cd3db68e3bbb06ad16a68fed79a90b034eb4fb24b8cb19018590051b19b9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/build.mjs",
+      "bytes": 6377,
+      "sha256": "ddbbe254dfdf9e72e0446b54e7652029e18081597f7693a3ae527d2358108477"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs/chelsea.png",
+      "bytes": 240512,
+      "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs/coffee-64.png",
+      "bytes": 6293,
+      "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs/coffee.png",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs/large.jpg",
+      "bytes": 3371242,
+      "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs/metadata-1.jpg",
+      "bytes": 10386,
+      "sha256": "ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs/not-image.txt",
+      "bytes": 12,
+      "sha256": "5464533c9647b67eb320c40ccc5959537c09102ae75388f6a7675b433e745c9d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs/ui-1.png",
+      "bytes": 7610,
+      "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/inputs.json",
+      "bytes": 5002,
+      "sha256": "8d2a13b2e9ae3a6740d87d1c198ebaf74d3f2d18fdccf448381ccab7d89d030d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/measure.mjs",
+      "bytes": 2392,
+      "sha256": "589b19dc42f5def2028ec62284ff7368b7d5162bed6d43ecfbb0bddc83c52131"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/negative-invalid.json",
+      "bytes": 140,
+      "sha256": "a4a53116229fd8855a5cd2734cd7b2f37fd0b2f0db02be903eee81dc62366c56"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/negative-strict.json",
+      "bytes": 236,
+      "sha256": "c4903cbb12e5f3b343e992fd17cf693af951b8e254dd3361f9c1bffd1dd2f1c9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/negative.mjs",
+      "bytes": 3038,
+      "sha256": "9eebea6a2f88ff9fa14ee5c52dfb83ba30e55496fd36b15b0433560242ff1c6c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/package-lock.json",
+      "bytes": 4367,
+      "sha256": "26ca5639b537b3265b773b666e92c5551b0a092e85bc4331fa945ba5bf9f2761"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/package.json",
+      "bytes": 232,
+      "sha256": "2d2489b5cdce7c9a5eed95d299a16012afc871c132c6c105c6553eddcd4e430c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/A-chelsea.json",
+      "bytes": 114,
+      "sha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/A-coffee-64.json",
+      "bytes": 114,
+      "sha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/A-coffee.json",
+      "bytes": 114,
+      "sha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/A-large.json",
+      "bytes": 114,
+      "sha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/A-metadata-1.json",
+      "bytes": 114,
+      "sha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/A-ui-1.json",
+      "bytes": 114,
+      "sha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/B-chelsea.json",
+      "bytes": 343,
+      "sha256": "fd924423173ae866b5d9be912bacfd0bb260a49e4c95bed206c48e324968c449"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/B-coffee-64.json",
+      "bytes": 341,
+      "sha256": "f29f8d9047dff2c9f0a063415d645c1bb89898df94ccd8b8defa802c30ce86b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/B-coffee.json",
+      "bytes": 343,
+      "sha256": "fd924423173ae866b5d9be912bacfd0bb260a49e4c95bed206c48e324968c449"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/B-large.json",
+      "bytes": 767,
+      "sha256": "c330fd4bbdf480fc6fccd8f560e6d28fedd62c5c0c22bf34c2e375c86010f465"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/B-metadata-1.json",
+      "bytes": 343,
+      "sha256": "c64c7d1b489893645b1c5900569667499b710b0ad503384f93d834fd129056da"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/B-ui-1.json",
+      "bytes": 343,
+      "sha256": "fd924423173ae866b5d9be912bacfd0bb260a49e4c95bed206c48e324968c449"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/policies/negative-strict.json",
+      "bytes": 202,
+      "sha256": "de90c7ab8b487d3350ff542141f398c1a1978c12d7ad4de87ae00e8bb49becec"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/prepare.mjs",
+      "bytes": 4788,
+      "sha256": "61f4a0d75420a4e25605715d81699fcf67a7a8cf78cb0a661b3b527b90a02582"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/preview.mjs",
+      "bytes": 3617,
+      "sha256": "067d58e5b015efe4fb2c3bdfd40a50bbe27dd23fa93e2d19316e6eafe653c344"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/quality-pages.mjs",
+      "bytes": 2455,
+      "sha256": "b17ef1b14ae620645703dd091a9b38fd21bce2482edff1d1651d7a10328a3076"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/audit-final.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/audit-final.log",
+      "bytes": 3973,
+      "sha256": "8f36e9c0e1e8c1c275ce92d947139a8ea852a5d9d42dfd5cf571b92c2fb33dd4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/audit.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/audit.log",
+      "bytes": 3973,
+      "sha256": "8f36e9c0e1e8c1c275ce92d947139a8ea852a5d9d42dfd5cf571b92c2fb33dd4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/desktop-A-page.jpg",
+      "bytes": 268369,
+      "sha256": "da065420b4569b22e903730eef05bc75d64e46f3f75a336357c2e8d38c595bd8"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/desktop-A.jpg",
+      "bytes": 724549,
+      "sha256": "86d335c1a8580503587217e4314b27e8502a70a33fd9d1dee9b19749150baa19"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/desktop-A.json",
+      "bytes": 7337,
+      "sha256": "875d987864e6f485c46091821a4c3eb61d11e0f726bcbbd39017179d4e1481b4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/desktop-B.jpg",
+      "bytes": 268361,
+      "sha256": "5fa5d54e593c455b5f391672e60b660b4e850998c3dbafa822185da7e96b1937"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/desktop-B.json",
+      "bytes": 7337,
+      "sha256": "5929128fd3405c8c4bdbe47ce8136da7a34bff0eadc1e9b1f8cc19bb4e1dad1d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/http-and-body-check.json",
+      "bytes": 14326,
+      "sha256": "282d255b518140894064017de7f903c3808a04709353d0506aa58949b238ff74"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/jpeg-fallback.jpg",
+      "bytes": 275326,
+      "sha256": "b45b92a3a8c597867f33f557851f6bbe356fd76e35cb631678716e00931eb805"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/jpeg-fallback.json",
+      "bytes": 7320,
+      "sha256": "fb61a94473d8aac46d8a5c57c6f53eff9188022ef2f6f390ed47022d5c3b13bb"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/mobile-A.jpg",
+      "bytes": 168102,
+      "sha256": "b7720630be1356092c1ce4385399af9fd39a83090f7159cf9761579f38645e4d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/mobile-A.json",
+      "bytes": 7309,
+      "sha256": "51209c52cf805b448983cef2b28de8e4cf9772b1f2c37b15611910d4fc0f2fa9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/mobile-B.jpg",
+      "bytes": 168102,
+      "sha256": "b7720630be1356092c1ce4385399af9fd39a83090f7159cf9761579f38645e4d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/mobile-B.json",
+      "bytes": 7309,
+      "sha256": "3cb31673ff6fdf7157f8388e244711e8bd81360d564e420813bd16f1fa9399c2"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-A-metadata-http.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-chelsea.jpg",
+      "bytes": 70954,
+      "sha256": "7b7d563e7133ceba3eb8c02257eb9a7933827260df013c56f399922874042c86"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-chelsea.json",
+      "bytes": 2912,
+      "sha256": "03c67f99b3022103ddc1dd5241c1aab2c39f835fd177d345dd3f9fdd5d91c0c5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-coffee-64.jpg",
+      "bytes": 34843,
+      "sha256": "e2b43f6350962f36fa70e5b082a963730c7ea81c4a18d82e91d339863abe0a05"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-coffee-64.json",
+      "bytes": 2916,
+      "sha256": "815293398fd3a10e1f62ccc1ba91fae94e3abe2c28974123036b876b3012fe89"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-coffee.jpg",
+      "bytes": 80423,
+      "sha256": "b827c55dccd78a0008d2ad664602cebac7ea8cb864c1cf7d9111e857a154ca19"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-coffee.json",
+      "bytes": 2898,
+      "sha256": "691cd094459868b9000e1899af590898a506efd0cd5c8f88b311f161985ef43f"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-fresh.jpg",
+      "bytes": 285447,
+      "sha256": "1ef85a9fa84347a2a06b47b89603146baaf24c1708b86d972b0bc8c372f5bfd1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-fresh.json",
+      "bytes": 12625,
+      "sha256": "2ee676a5c1d6c6edfae5a3b95cffcc61768e404bb9275bf717c9e758b8b85a03"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-large.jpg",
+      "bytes": 55246,
+      "sha256": "9abfc25c87efe4e4dfaabeca0df7f33835117236d9e4fbed1b7b9ad50df19160"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-large.json",
+      "bytes": 2889,
+      "sha256": "32178d09ebb86c9804ca9be9a993e5e1763818768ea537aaea29e5a38ed0cc40"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-metadata-1.jpg",
+      "bytes": 50078,
+      "sha256": "e4c0fdfb58bc5b23f64a24670a7a4326c760636264833ee215c551a642cf0ffd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-metadata-1.json",
+      "bytes": 2945,
+      "sha256": "521bb4bac8642e3b3f39d8b2745d664e38a57c4a7f5703e3568b674b583ed7f0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-ui-1.jpg",
+      "bytes": 49866,
+      "sha256": "7e03ccfdf47d9f63ea658828565f4684ae8b494e18b1c08d0f4207cabde04160"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality-ui-1.json",
+      "bytes": 2858,
+      "sha256": "ad1a9ed05ed6b73292009f4cdfc9a72d0bd93f1159682599e5a2b7ed68ce3e2e"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality.jpg",
+      "bytes": 280507,
+      "sha256": "9d85070c9e06e8ebf5118b29f5e2fd8e4d15f2cd0a217d703f9700943f53cc76"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser/quality.json",
+      "bytes": 12168,
+      "sha256": "1b04ec7e34c4470d86721b9b3577587276e55f451de6372d7fa1bb5f89679de4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser-audit.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser-audit.log",
+      "bytes": 92,
+      "sha256": "c921a5e3c952aa37713343f427a848159c6783d43d8ea2a5fe982c0d2808df26"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/browser-instrumentation.json",
+      "bytes": 760,
+      "sha256": "befa370ac28f5884b031978ef243ac690006d14c8c0cc50a24f01125ec0364f6"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/executed-auxiliary/audit.mjs.txt",
+      "bytes": 5108,
+      "sha256": "f329cd3db68e3bbb06ad16a68fed79a90b034eb4fb24b8cb19018590051b19b9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/executed-auxiliary/hashes.json",
+      "bytes": 1006,
+      "sha256": "eec3ea2a3790a3ae541058b5d2cd79b9480cc6603bec39d877a7fccee1d1edda"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/executed-auxiliary/negative.mjs.txt",
+      "bytes": 3021,
+      "sha256": "1d472887d5383893909742fb03ff356b6482fa8dbf073ef6c954fa985d1093f2"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/executed-auxiliary/preview.mjs.txt",
+      "bytes": 2764,
+      "sha256": "6e36f2e59a3f471180d1b9eb081cc3334c1597497f388b5c2fac39f2169b904a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/executed-auxiliary/qa.js.txt",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/executed-auxiliary/quality-pages.mjs.txt",
+      "bytes": 2334,
+      "sha256": "117d4b3d2466e5e569d7b7b21ceec2807b3b501509a379087d5988927d42f323"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/gate.json",
+      "bytes": 1106,
+      "sha256": "be951427b53f240b43909efbbfa498b31bb325dd695171f4f70a74fe8c957023"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/http-server.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/http-server.log",
+      "bytes": 29433,
+      "sha256": "dc061f4d8f5cf05ee6f61abe9e9e3067dfdade697ae8dd95b8dd726492d0c97e"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/identity.json",
+      "bytes": 5982,
+      "sha256": "8c1b429884e606b6216182fba7ae522386c0496cff3204c0f7690b82bf7af24c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/install.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/install.log",
+      "bytes": 24,
+      "sha256": "573c6d511ac37560bbff184c77b50db6f50af048da57bec97f4e5704287a67b4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/measurement.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/measurement.log",
+      "bytes": 354,
+      "sha256": "2a89942fe0b17e983681a7d1a805eaf80053504f919d6053f2968920790afd83"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/metadata-observation.json",
+      "bytes": 390,
+      "sha256": "9a7d6f4127a3e2ace06322ec35c6d35c954db98045a18aafb30c80bfeda79d35"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/existing.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/existing.json",
+      "bytes": 533,
+      "sha256": "5fd4e221a1263291d20edaef6c7475d321944d93ee0a2dd62a02870c8c819152"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/existing.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/existing.stdout.log",
+      "bytes": 290,
+      "sha256": "30c65e078a037c093cf63297bbb64d50d5db8453241ec835b0c7339e1741027c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/input-bindings.json",
+      "bytes": 354,
+      "sha256": "f16b59e61e8d01cdcf197e16442e74e1cff920c027105190d4f019fa4e2a55d2"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/invalid.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/invalid.json",
+      "bytes": 1420,
+      "sha256": "04bafc766fc0e4c17566245a59b78d177a051bcd6307b83fbfbd44ea54098fef"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/invalid.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/invalid.stdout.log",
+      "bytes": 732,
+      "sha256": "89d815b3e660d5374a4e02ac224c62ec6d9fd4a7654882bab944bd6061028c69"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/strict.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/strict.json",
+      "bytes": 1649,
+      "sha256": "e6040f37e901154f71028631b3ebc2c6b910aeb21fc0b8e028a2219d7cd2acb6"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/strict.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/strict.stdout.log",
+      "bytes": 754,
+      "sha256": "e7ba81bb9771d24b3b19af53bc8f8e30f19583873f7ca675ab533052829cce02"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/summary.json",
+      "bytes": 11800,
+      "sha256": "4e697160bf5105e8f1cd627b9e13cbb2ebf59b4f0c0b79679755838f21aa0ab8"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative.log",
+      "bytes": 2112,
+      "sha256": "0544bf2828c98d025f123639910d76bf2ac15218bb953c49fd7c78921b571d72"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/prepare.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/prepare.log",
+      "bytes": 2118,
+      "sha256": "e4d4e99e1a22e4a85040cadd687b261566854700403e42a9e2e6841172ef30c7"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/preview.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/preview.log",
+      "bytes": 80,
+      "sha256": "fb9c56f419557b67ad2436512ec03aac74282b660d8186558013cb129eefcd1e"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/quality-pages.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/quality-pages.log",
+      "bytes": 91,
+      "sha256": "38ffe63bb5cff99ecc9c5f3923ca3d464f5d07dc5d5469da2cbfbd5fb4f9b582"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/reproduce-preview.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/reproduce-preview.log",
+      "bytes": 80,
+      "sha256": "fb9c56f419557b67ad2436512ec03aac74282b660d8186558013cb129eefcd1e"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/reproduce-quality.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/reproduce-quality.log",
+      "bytes": 91,
+      "sha256": "38ffe63bb5cff99ecc9c5f3923ca3d464f5d07dc5d5469da2cbfbd5fb4f9b582"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1.json",
+      "bytes": 22319,
+      "sha256": "94fe58808cc05bc175a0520294e289aa471ad80d8c23147a178931eb14cad0fa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1.process.json",
+      "bytes": 5591,
+      "sha256": "ca0f623aa6f2f0f4995ded98d697b1f23d04eaf643cd0d9066526c8be279f9a8"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1.stdout.log",
+      "bytes": 504,
+      "sha256": "8914ac8adc1171e904fad8d3995ce94413fb59f4ac6e2986e92ae80d3a1cb56b"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2.json",
+      "bytes": 22325,
+      "sha256": "f2404eb8f4b8f6d84f9bf6569d08a487f85c3be31f19834f00b76ec464ca96fd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2.process.json",
+      "bytes": 5605,
+      "sha256": "4d2a25b2a50edba956558fbc8e76823134a489a2c12f32ec8b0f2f370a1b2ada"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2.stdout.log",
+      "bytes": 510,
+      "sha256": "6699958bea998f5b1a771c99eaf8b3d39099d4e28cb15ddf65de9f59f7081fff"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3.json",
+      "bytes": 22330,
+      "sha256": "0e8bc38982db4ec42094838f4e8c85d788f3b2ea1952611463f11fedc256c4ef"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3.process.json",
+      "bytes": 5597,
+      "sha256": "0cdef8820aa2a6d793fdf52a0c1c3ae0a6adb3f9d2498c210369d002092e880a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3.stdout.log",
+      "bytes": 515,
+      "sha256": "f9822aaa19ce138964ae1efd05544a4ba6ac093b22819ba1defd248dc880b908"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1.json",
+      "bytes": 25331,
+      "sha256": "bd857cd93d34c0a8fce4a7465c4e12a72588645bf2fcab639db57d062bb72ad8"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1.process.json",
+      "bytes": 5605,
+      "sha256": "90fc98d96f76f8780111b2c1c0969fab1bcbd0538bcbbc3166e7ef6e3099b351"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1.stdout.log",
+      "bytes": 524,
+      "sha256": "9c743249dd95b7b378a4c4ac33bbe1bcc1d526478a65ed96a65759051e0543ba"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2.json",
+      "bytes": 25332,
+      "sha256": "1f09d7b13a47f4300283729dc8daaa3ed55f093e0a4f857b54e2f033023b0e90"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2.process.json",
+      "bytes": 5597,
+      "sha256": "5de8a9e7484bfe13d8e7a8a580fb235d72616838eb43d5d94a6ceaebbc859107"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2.stdout.log",
+      "bytes": 525,
+      "sha256": "d47a2efd28c18d9dcc9537f2ba233fc9cfbf6eec1a740ccb10fd52b41e91aed4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3.json",
+      "bytes": 25305,
+      "sha256": "a69d4849aff1341523017cf9e6c18491e2bbde74a67e809ed94ffc20a48cc287"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3.process.json",
+      "bytes": 5598,
+      "sha256": "4eb3612f721c3deddb68cb421de9a0662416cb5bd38298df857084ec8ebca56a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3.stdout.log",
+      "bytes": 498,
+      "sha256": "e2506f2d13d870d910dbdf2f2840c2197b4651e1fe50fb4e6383d3345ca00666"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/processes.json",
+      "bytes": 35774,
+      "sha256": "16ca1b64010fc2d84a14f80f333cae4288fbd7d8602d55b4fd137465bd5e3b74"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/summary.json",
+      "bytes": 93412,
+      "sha256": "62b760aff67dfe4aa7badffbba4f839b3c1b01e8cb35715c7e3113f4c2a84afe"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/index.html",
+      "bytes": 5486,
+      "sha256": "659ccf10e045224cd102fa3bc5d3f94a74f9aef04dd12f60ade29c3e04cf57d5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-observed/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-A-quality-fresh/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B/qa-jpeg.html",
+      "bytes": 4542,
+      "sha256": "36261507c4bf92b10e8750fbc9056d228d4c2dbec1c6eda6a08c35a0da04ba72"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/index.html",
+      "bytes": 5486,
+      "sha256": "659ccf10e045224cd102fa3bc5d3f94a74f9aef04dd12f60ade29c3e04cf57d5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/qa-jpeg.html",
+      "bytes": 4666,
+      "sha256": "d5931274f603116959aa42537c5f0947ed726f4a6fb60638a93e161e059cfc10"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-observed/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/desktop-B-quality-fresh/qa-jpeg.html",
+      "bytes": 4542,
+      "sha256": "36261507c4bf92b10e8750fbc9056d228d4c2dbec1c6eda6a08c35a0da04ba72"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/chelsea/manifest.json",
+      "bytes": 2392,
+      "sha256": "e7b24aad4082a8b575cf1a071ba583347f9da6f6e4dc8752767e6bd514dead67"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee/manifest.json",
+      "bytes": 2415,
+      "sha256": "1a519955a63885bf631745f94c16a8555c23230c1427924342561bb0177b8654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee-64/manifest.json",
+      "bytes": 2394,
+      "sha256": "48c8f1638b60e3cbfb4542bfb25fcce78b3d34a531df161cfb2824c5bc85a6f5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/manifest.json",
+      "bytes": 3672,
+      "sha256": "cde5997186f1d3f8f63cafcdc86e4606f7792f55daf95a54b3929e5ce310f85c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/metadata-1/manifest.json",
+      "bytes": 2402,
+      "sha256": "a3dc3de99d35da02c57f5d98e12bb50daa72551daff4b2fadc39e03ce5910350"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/ui-1/manifest.json",
+      "bytes": 2362,
+      "sha256": "d380729030104464b8d669ff6d1a0491456cd95785b87326b39ad2db2a413750"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/index.html",
+      "bytes": 5486,
+      "sha256": "659ccf10e045224cd102fa3bc5d3f94a74f9aef04dd12f60ade29c3e04cf57d5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-A-observed/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B/index.html",
+      "bytes": 5345,
+      "sha256": "3c7e10b42d26590184e9bf69aef272cef20b410a0c432b54cb6a4ab6fa4382a9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/chelsea/image-320.jpg",
+      "bytes": 15747,
+      "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/chelsea/image-320.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/chelsea/manifest.json",
+      "bytes": 2448,
+      "sha256": "945cef177fc2c1ece528f8d31b338930e73e0238d00b19225b9f988616633547"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/chelsea/placeholder.webp",
+      "bytes": 84,
+      "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee/image-320.jpg",
+      "bytes": 16069,
+      "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee/image-320.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee/manifest.json",
+      "bytes": 2471,
+      "sha256": "02a913f4453eacde50f6c6ec2d9720fcfbf9351d8bce9d62f7737de4d0bb6a13"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee-64/image-64.jpg",
+      "bytes": 1482,
+      "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee-64/image-64.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee-64/manifest.json",
+      "bytes": 2450,
+      "sha256": "3b1121f7516d88bf6229ab4a886706c4306c9423652afbdd591ee15cc8108335"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/coffee-64/placeholder.webp",
+      "bytes": 104,
+      "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/image-320.jpg",
+      "bytes": 7989,
+      "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/image-320.webp",
+      "bytes": 5170,
+      "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/image-640.jpg",
+      "bytes": 31495,
+      "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/image-640.webp",
+      "bytes": 21812,
+      "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/image-960.jpg",
+      "bytes": 86683,
+      "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/image-960.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/manifest.json",
+      "bytes": 3844,
+      "sha256": "36d195576966ad6864c45b573d7d6d242cdf700bb865d4a447a300438ccb3998"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/large/placeholder.webp",
+      "bytes": 98,
+      "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/metadata-1/image-240.jpg",
+      "bytes": 6826,
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/metadata-1/image-240.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/metadata-1/manifest.json",
+      "bytes": 2458,
+      "sha256": "9e06ae59781a9677541642e8600a7a1d72c50e6b7437af1f526e888a42116290"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/metadata-1/placeholder.webp",
+      "bytes": 94,
+      "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/ui-1/image-320.jpg",
+      "bytes": 5823,
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/ui-1/image-320.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/ui-1/manifest.json",
+      "bytes": 2418,
+      "sha256": "c2bb408c1e5fa3d23a149f7d7e698e1ddb394f84f45b6c5a70a836da51d312d4"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/images/ui-1/placeholder.webp",
+      "bytes": 68,
+      "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/index.html",
+      "bytes": 5486,
+      "sha256": "659ccf10e045224cd102fa3bc5d3f94a74f9aef04dd12f60ade29c3e04cf57d5"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/mobile-B-observed/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-fresh.html",
+      "bytes": 5246,
+      "sha256": "66f35537a6797f6ded501837fc759f2cbab05fe3d8f2489fdcb3e98edb992155"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/chelsea/A.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/chelsea/B.webp",
+      "bytes": 13022,
+      "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/chelsea/chelsea.png",
+      "bytes": 240512,
+      "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/chelsea/index.html",
+      "bytes": 1386,
+      "sha256": "6f0a4f8c7455eed6d8cd00be6519f03afa55d0f610c9cc4506193ca0e88af413"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/chelsea/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee/A.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee/B.webp",
+      "bytes": 13736,
+      "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee/coffee.png",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee/index.html",
+      "bytes": 1380,
+      "sha256": "ae8eea877b0dc345cbceb1c5d371ecc4bbbbf17cd3611e2fb96131a80209fb8c"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee-64/A.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee-64/B.webp",
+      "bytes": 1116,
+      "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee-64/coffee-64.png",
+      "bytes": 6293,
+      "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee-64/index.html",
+      "bytes": 1390,
+      "sha256": "41b563767f69cfd51366900902fc24554b44cdcabaaeae518a13f7bb5e5817b0"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/coffee-64/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/large/A.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/large/B.webp",
+      "bytes": 63286,
+      "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/large/index.html",
+      "bytes": 1374,
+      "sha256": "0a924ba36d07a77297b9d72a95507a49fd0a6352dc2d83aaabbc0abbf74789d8"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/large/large.jpg",
+      "bytes": 3371242,
+      "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/large/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/metadata-1/A.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/metadata-1/B.webp",
+      "bytes": 3062,
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/metadata-1/index.html",
+      "bytes": 1404,
+      "sha256": "30d09b8cac6ea60ebbda6d88900f311b28f6cd8792558873448e67d7e7b7713f"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/metadata-1/metadata-1.png",
+      "bytes": 19049,
+      "sha256": "2e8acd64e306a1eeef34716a2c4b481623cd759722ec673e1f03eb06d8af2715"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/metadata-1/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/ui-1/A.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/ui-1/B.webp",
+      "bytes": 2788,
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/ui-1/index.html",
+      "bytes": 1368,
+      "sha256": "6a248f5fff426ba25ad4fd4aba28dd7e4a02e2893869141132527f598f79f84f"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/ui-1/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality-single/ui-1/ui-1.png",
+      "bytes": 7610,
+      "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/quality.html",
+      "bytes": 5078,
+      "sha256": "8a219989299ccebc8208185edbe80cffb2f3b55829d6e7193f906b2c02fd6526"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/reference/chelsea.png",
+      "bytes": 240512,
+      "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/reference/coffee-64.png",
+      "bytes": 6293,
+      "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/reference/coffee.png",
+      "bytes": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/reference/large.jpg",
+      "bytes": 3371242,
+      "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/reference/metadata-1.png",
+      "bytes": 19049,
+      "sha256": "2e8acd64e306a1eeef34716a2c4b481623cd759722ec673e1f03eb06d8af2715"
+    },
+    {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/preview/reference/ui-1.png",
+      "bytes": 7610,
+      "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847"
+    }
+  ]
+}

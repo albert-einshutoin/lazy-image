@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "compiler": {
+    "name": "@alberteinshutoin/lazy-image",
+    "version": "1.5.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+  },
+  "policy": {
+    "preset": "publicUpload",
+    "fingerprint": "2b2c17ea6f01e2fbf8fb5e0112510080a5a0773403159ecf0afae72df90a5b83",
+    "widths": [
+      320
+    ],
+    "formats": [
+      "jpeg",
+      "webp"
+    ],
+    "placeholder": true
+  },
+  "source": {
+    "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+    "bytes": 7610,
+    "detectedFormat": "png",
+    "encodedWidth": 320,
+    "encodedHeight": 240,
+    "displayWidth": 320,
+    "displayHeight": 240,
+    "hasAlpha": false,
+    "orientation": null,
+    "orientationApplied": false
+  },
+  "metadata": {
+    "mode": "privacySafe",
+    "exif": "stripped",
+    "gps": "stripped",
+    "xmp": "stripped",
+    "comments": "stripped",
+    "unknownAncillary": "stripped",
+    "artifactIccPolicy": "preserve-if-safe",
+    "placeholderIccPolicy": "strip"
+  },
+  "artifacts": [
+    {
+      "id": "320/jpeg",
+      "path": "image-320.jpg",
+      "format": "jpeg",
+      "width": 320,
+      "height": 240,
+      "bytes": 5823,
+      "quality": 85,
+      "iccOutcome": "absent",
+      "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+    },
+    {
+      "id": "320/webp",
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 240,
+      "bytes": 2788,
+      "quality": 80,
+      "iccOutcome": "absent",
+      "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+    }
+  ],
+  "delivery": {
+    "srcsets": [
+      {
+        "format": "jpeg",
+        "value": "image-320.jpg 320w"
+      },
+      {
+        "format": "webp",
+        "value": "image-320.webp 320w"
+      }
+    ]
+  },
+  "placeholder": {
+    "path": "placeholder.webp",
+    "dataUrl": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADwAQCdASoQAAwAA4B8J4wCdH8AGBwqBgAA/sd2Ykb1Frq7zOIHBvPpSh2JC84AAAA=",
+    "format": "webp",
+    "width": 16,
+    "height": 12,
+    "bytes": 68,
+    "iccOutcome": "stripped-for-placeholder",
+    "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+  },
+  "cacheKey": "82a25b375a7f2875f56a059d73caa4bc42386d944f5e190283bfaabf200037c5"
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "file": "negative.mjs.txt",
+    "sha256": "1d472887d5383893909742fb03ff356b6482fa8dbf073ef6c954fa985d1093f2",
+    "purpose": "exact helper source used for the recorded original observations"
+  },
+  {
+    "file": "preview.mjs.txt",
+    "sha256": "6e36f2e59a3f471180d1b9eb081cc3334c1597497f388b5c2fac39f2169b904a",
+    "purpose": "exact helper source used for the recorded original observations"
+  },
+  {
+    "file": "quality-pages.mjs.txt",
+    "sha256": "117d4b3d2466e5e569d7b7b21ceec2807b3b501509a379087d5988927d42f323",
+    "purpose": "exact helper source used for the recorded original observations"
+  },
+  {
+    "file": "audit.mjs.txt",
+    "sha256": "f329cd3db68e3bbb06ad16a68fed79a90b034eb4fb24b8cb19018590051b19b9",
+    "purpose": "exact helper source used for the recorded original observations"
+  },
+  {
+    "file": "qa.js.txt",
+    "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df",
+    "purpose": "browser page observer used for final browser records"
+  }
+]

@@ -1,0 +1,717 @@
+{
+  "condition": "A",
+  "packageVersion": "1.5.0",
+  "rows": [
+    {
+      "id": "coffee",
+      "inputSha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "policy": {
+        "widths": [
+          320,
+          640,
+          960
+        ],
+        "formats": [
+          "webp",
+          "jpeg"
+        ],
+        "placeholder": true
+      },
+      "policySha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410",
+      "manifest": {
+        "schemaVersion": 1,
+        "compiler": {
+          "name": "@alberteinshutoin/lazy-image",
+          "version": "1.5.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+        },
+        "policy": {
+          "preset": "publicUpload",
+          "fingerprint": "2b2c17ea6f01e2fbf8fb5e0112510080a5a0773403159ecf0afae72df90a5b83",
+          "widths": [
+            320
+          ],
+          "formats": [
+            "jpeg",
+            "webp"
+          ],
+          "placeholder": true
+        },
+        "source": {
+          "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+          "bytes": 466706,
+          "detectedFormat": "png",
+          "encodedWidth": 600,
+          "encodedHeight": 400,
+          "displayWidth": 600,
+          "displayHeight": 400,
+          "hasAlpha": false,
+          "orientation": null,
+          "orientationApplied": false
+        },
+        "metadata": {
+          "mode": "privacySafe",
+          "exif": "stripped",
+          "gps": "stripped",
+          "xmp": "stripped",
+          "comments": "stripped",
+          "unknownAncillary": "stripped",
+          "artifactIccPolicy": "preserve-if-safe",
+          "placeholderIccPolicy": "strip"
+        },
+        "artifacts": [
+          {
+            "id": "320/jpeg",
+            "path": "image-320.jpg",
+            "format": "jpeg",
+            "width": 320,
+            "height": 213,
+            "bytes": 16069,
+            "quality": 85,
+            "iccOutcome": "absent",
+            "sha256": "5c69640931f0cd939ce6c91a5fdccbd76e4a3d5a1d4c3373992395d27eaf24e9"
+          },
+          {
+            "id": "320/webp",
+            "path": "image-320.webp",
+            "format": "webp",
+            "width": 320,
+            "height": 213,
+            "bytes": 13736,
+            "quality": 80,
+            "iccOutcome": "absent",
+            "sha256": "0c5df83bbbc3d1d4ffb6f22b9075205d0379a6754dd732a2b6efa92a858a0c98"
+          }
+        ],
+        "delivery": {
+          "srcsets": [
+            {
+              "format": "jpeg",
+              "value": "image-320.jpg 320w"
+            },
+            {
+              "format": "webp",
+              "value": "image-320.webp 320w"
+            }
+          ]
+        },
+        "placeholder": {
+          "path": "placeholder.webp",
+          "dataUrl": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAwAgCdASoQAAsAA4B8J7ACdAEYESha4QoFsAD+wGhAKaKWlEJmYmnb0SGjlvPMopDh4/J4G2U7rbEY+BWJPL7cnXbDM3Qneqqeazx7tUm7VN8AAAA=",
+          "format": "webp",
+          "width": 16,
+          "height": 11,
+          "bytes": 104,
+          "iccOutcome": "stripped-for-placeholder",
+          "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+        },
+        "cacheKey": "e7528104b4bcb3061cd11c8716d086c31045b8e8ec35b74bc080715e8f82caa7"
+      },
+      "success": true,
+      "wallMs": 75.35375
+    },
+    {
+      "id": "chelsea",
+      "inputSha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+      "policy": {
+        "widths": [
+          320,
+          640,
+          960
+        ],
+        "formats": [
+          "webp",
+          "jpeg"
+        ],
+        "placeholder": true
+      },
+      "policySha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410",
+      "manifest": {
+        "schemaVersion": 1,
+        "compiler": {
+          "name": "@alberteinshutoin/lazy-image",
+          "version": "1.5.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+        },
+        "policy": {
+          "preset": "publicUpload",
+          "fingerprint": "2b2c17ea6f01e2fbf8fb5e0112510080a5a0773403159ecf0afae72df90a5b83",
+          "widths": [
+            320
+          ],
+          "formats": [
+            "jpeg",
+            "webp"
+          ],
+          "placeholder": true
+        },
+        "source": {
+          "sha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+          "bytes": 240512,
+          "detectedFormat": "png",
+          "encodedWidth": 451,
+          "encodedHeight": 300,
+          "displayWidth": 451,
+          "displayHeight": 300,
+          "hasAlpha": false,
+          "orientation": null,
+          "orientationApplied": false
+        },
+        "metadata": {
+          "mode": "privacySafe",
+          "exif": "stripped",
+          "gps": "stripped",
+          "xmp": "stripped",
+          "comments": "stripped",
+          "unknownAncillary": "stripped",
+          "artifactIccPolicy": "preserve-if-safe",
+          "placeholderIccPolicy": "strip"
+        },
+        "artifacts": [
+          {
+            "id": "320/jpeg",
+            "path": "image-320.jpg",
+            "format": "jpeg",
+            "width": 320,
+            "height": 213,
+            "bytes": 15747,
+            "quality": 85,
+            "iccOutcome": "preserved",
+            "sha256": "f9acef527b6a71696e12984995a52c04f11a73214bfe2085239e2e6ee7d40abf"
+          },
+          {
+            "id": "320/webp",
+            "path": "image-320.webp",
+            "format": "webp",
+            "width": 320,
+            "height": 213,
+            "bytes": 13022,
+            "quality": 80,
+            "iccOutcome": "preserved",
+            "sha256": "36f84064566ada852d5ca0eed4b0bc22ccde5d9ebfce6dcda6ed958d2242646c"
+          }
+        ],
+        "delivery": {
+          "srcsets": [
+            {
+              "format": "jpeg",
+              "value": "image-320.jpg 320w"
+            },
+            {
+              "format": "webp",
+              "value": "image-320.webp 320w"
+            }
+          ]
+        },
+        "placeholder": {
+          "path": "placeholder.webp",
+          "dataUrl": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoQAAsAA4B8J6ACdADOGHhEAADMFkQ1KRC2/AxT2fnKUSm5YosmpEOiABQHKohX6+XvZByTQTWkoAAA",
+          "format": "webp",
+          "width": 16,
+          "height": 11,
+          "bytes": 84,
+          "iccOutcome": "stripped-for-placeholder",
+          "sha256": "43b5a1f21973707486cb21b282a617d91841d1205e8cf1d183972bfab5e61dab"
+        },
+        "cacheKey": "b6c8869c5c0d626c2b28f2557ae2b94da65f988c67af85cb3ddc3b398836a815"
+      },
+      "success": true,
+      "wallMs": 57.75420899999999
+    },
+    {
+      "id": "ui-1",
+      "inputSha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "policy": {
+        "widths": [
+          320,
+          640,
+          960
+        ],
+        "formats": [
+          "webp",
+          "jpeg"
+        ],
+        "placeholder": true
+      },
+      "policySha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410",
+      "manifest": {
+        "schemaVersion": 1,
+        "compiler": {
+          "name": "@alberteinshutoin/lazy-image",
+          "version": "1.5.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+        },
+        "policy": {
+          "preset": "publicUpload",
+          "fingerprint": "2b2c17ea6f01e2fbf8fb5e0112510080a5a0773403159ecf0afae72df90a5b83",
+          "widths": [
+            320
+          ],
+          "formats": [
+            "jpeg",
+            "webp"
+          ],
+          "placeholder": true
+        },
+        "source": {
+          "sha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+          "bytes": 7610,
+          "detectedFormat": "png",
+          "encodedWidth": 320,
+          "encodedHeight": 240,
+          "displayWidth": 320,
+          "displayHeight": 240,
+          "hasAlpha": false,
+          "orientation": null,
+          "orientationApplied": false
+        },
+        "metadata": {
+          "mode": "privacySafe",
+          "exif": "stripped",
+          "gps": "stripped",
+          "xmp": "stripped",
+          "comments": "stripped",
+          "unknownAncillary": "stripped",
+          "artifactIccPolicy": "preserve-if-safe",
+          "placeholderIccPolicy": "strip"
+        },
+        "artifacts": [
+          {
+            "id": "320/jpeg",
+            "path": "image-320.jpg",
+            "format": "jpeg",
+            "width": 320,
+            "height": 240,
+            "bytes": 5823,
+            "quality": 85,
+            "iccOutcome": "absent",
+            "sha256": "bfcdfed4a7446bd8fcae9ceada10c88f2a3aafdc546e521cb871186b0a1d08c3"
+          },
+          {
+            "id": "320/webp",
+            "path": "image-320.webp",
+            "format": "webp",
+            "width": 320,
+            "height": 240,
+            "bytes": 2788,
+            "quality": 80,
+            "iccOutcome": "absent",
+            "sha256": "fcbdb2c1336cdeca389a80b1ba5113d24f07d600796be3e0713e163fe3c2cb43"
+          }
+        ],
+        "delivery": {
+          "srcsets": [
+            {
+              "format": "jpeg",
+              "value": "image-320.jpg 320w"
+            },
+            {
+              "format": "webp",
+              "value": "image-320.webp 320w"
+            }
+          ]
+        },
+        "placeholder": {
+          "path": "placeholder.webp",
+          "dataUrl": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADwAQCdASoQAAwAA4B8J4wCdH8AGBwqBgAA/sd2Ykb1Frq7zOIHBvPpSh2JC84AAAA=",
+          "format": "webp",
+          "width": 16,
+          "height": 12,
+          "bytes": 68,
+          "iccOutcome": "stripped-for-placeholder",
+          "sha256": "5613d79abef2d7c08ec1c45f21eb3faacfd5726d05a98d3fd664430f2649ef5a"
+        },
+        "cacheKey": "82a25b375a7f2875f56a059d73caa4bc42386d944f5e190283bfaabf200037c5"
+      },
+      "success": true,
+      "wallMs": 41.989542
+    },
+    {
+      "id": "metadata-1",
+      "inputSha256": "ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d",
+      "policy": {
+        "widths": [
+          320,
+          640,
+          960
+        ],
+        "formats": [
+          "webp",
+          "jpeg"
+        ],
+        "placeholder": true
+      },
+      "policySha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410",
+      "manifest": {
+        "schemaVersion": 1,
+        "compiler": {
+          "name": "@alberteinshutoin/lazy-image",
+          "version": "1.5.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+        },
+        "policy": {
+          "preset": "publicUpload",
+          "fingerprint": "19143f874c511fc42be922654758a9a346dcd966439696f112d8754d4a8be638",
+          "widths": [
+            240
+          ],
+          "formats": [
+            "jpeg",
+            "webp"
+          ],
+          "placeholder": true
+        },
+        "source": {
+          "sha256": "ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d",
+          "bytes": 10386,
+          "detectedFormat": "jpeg",
+          "encodedWidth": 320,
+          "encodedHeight": 240,
+          "displayWidth": 240,
+          "displayHeight": 320,
+          "hasAlpha": false,
+          "orientation": 6,
+          "orientationApplied": true
+        },
+        "metadata": {
+          "mode": "privacySafe",
+          "exif": "stripped",
+          "gps": "stripped",
+          "xmp": "stripped",
+          "comments": "stripped",
+          "unknownAncillary": "stripped",
+          "artifactIccPolicy": "preserve-if-safe",
+          "placeholderIccPolicy": "strip"
+        },
+        "artifacts": [
+          {
+            "id": "240/jpeg",
+            "path": "image-240.jpg",
+            "format": "jpeg",
+            "width": 240,
+            "height": 320,
+            "bytes": 6826,
+            "quality": 85,
+            "iccOutcome": "preserved",
+            "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+          },
+          {
+            "id": "240/webp",
+            "path": "image-240.webp",
+            "format": "webp",
+            "width": 240,
+            "height": 320,
+            "bytes": 3062,
+            "quality": 80,
+            "iccOutcome": "preserved",
+            "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+          }
+        ],
+        "delivery": {
+          "srcsets": [
+            {
+              "format": "jpeg",
+              "value": "image-240.jpg 240w"
+            },
+            {
+              "format": "webp",
+              "value": "image-240.webp 240w"
+            }
+          ]
+        },
+        "placeholder": {
+          "path": "placeholder.webp",
+          "dataUrl": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAABQAwCdASoQABUAP1mKt0spCowCAGAKwnAF2AEN3Ni/btaTAAD+3sX5xeWe87NBW0NMYrSJpOu8TnutKk0tHEvoiDHK52aayvoAAA==",
+          "format": "webp",
+          "width": 16,
+          "height": 21,
+          "bytes": 94,
+          "iccOutcome": "stripped-for-placeholder",
+          "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+        },
+        "cacheKey": "b1dd56ca08273e3d176d2da0d3d8799bf8d5f7c3e387de0ef46fb20f3c70b83e"
+      },
+      "success": true,
+      "wallMs": 41.351166000000006
+    },
+    {
+      "id": "large",
+      "inputSha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+      "policy": {
+        "widths": [
+          320,
+          640,
+          960
+        ],
+        "formats": [
+          "webp",
+          "jpeg"
+        ],
+        "placeholder": true
+      },
+      "policySha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410",
+      "manifest": {
+        "schemaVersion": 1,
+        "compiler": {
+          "name": "@alberteinshutoin/lazy-image",
+          "version": "1.5.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+        },
+        "policy": {
+          "preset": "publicUpload",
+          "fingerprint": "b5e3f9da4f0a00d1dee6afaaeb4c07da0babd90c2dec32f350528a1442d7a043",
+          "widths": [
+            320,
+            640,
+            960
+          ],
+          "formats": [
+            "jpeg",
+            "webp"
+          ],
+          "placeholder": true
+        },
+        "source": {
+          "sha256": "fd44a839bbcf7b58ec257d970e7027bc15ba4ded1f47f2acc4629d5d0627ea96",
+          "bytes": 3371242,
+          "detectedFormat": "jpeg",
+          "encodedWidth": 5000,
+          "encodedHeight": 5000,
+          "displayWidth": 5000,
+          "displayHeight": 5000,
+          "hasAlpha": false,
+          "orientation": null,
+          "orientationApplied": false
+        },
+        "metadata": {
+          "mode": "privacySafe",
+          "exif": "stripped",
+          "gps": "stripped",
+          "xmp": "stripped",
+          "comments": "stripped",
+          "unknownAncillary": "stripped",
+          "artifactIccPolicy": "preserve-if-safe",
+          "placeholderIccPolicy": "strip"
+        },
+        "artifacts": [
+          {
+            "id": "320/jpeg",
+            "path": "image-320.jpg",
+            "format": "jpeg",
+            "width": 320,
+            "height": 320,
+            "bytes": 7989,
+            "quality": 85,
+            "iccOutcome": "absent",
+            "sha256": "be3bccc2788a2e766130a2228e87c237ac8cbffc8e2f2bf22de143941507f6dd"
+          },
+          {
+            "id": "640/jpeg",
+            "path": "image-640.jpg",
+            "format": "jpeg",
+            "width": 640,
+            "height": 640,
+            "bytes": 31495,
+            "quality": 85,
+            "iccOutcome": "absent",
+            "sha256": "82d78e1640acac0ee1587c22d72d737759e6b9cda9c7ccd57c7ac2e0547d3d00"
+          },
+          {
+            "id": "960/jpeg",
+            "path": "image-960.jpg",
+            "format": "jpeg",
+            "width": 960,
+            "height": 960,
+            "bytes": 86683,
+            "quality": 85,
+            "iccOutcome": "absent",
+            "sha256": "56aef447e4245d484ae923b7fffd9364ee21a5307f3ba13c88b50d6fc03ce473"
+          },
+          {
+            "id": "320/webp",
+            "path": "image-320.webp",
+            "format": "webp",
+            "width": 320,
+            "height": 320,
+            "bytes": 5170,
+            "quality": 80,
+            "iccOutcome": "absent",
+            "sha256": "05be16028698f908e06145342b6e2a62ac815f72b576d3862ef739b4d47e4682"
+          },
+          {
+            "id": "640/webp",
+            "path": "image-640.webp",
+            "format": "webp",
+            "width": 640,
+            "height": 640,
+            "bytes": 21812,
+            "quality": 80,
+            "iccOutcome": "absent",
+            "sha256": "a273c8d76c6f315da36b0dee08b0d37337a854449a955afb5e8dcadea69226a0"
+          },
+          {
+            "id": "960/webp",
+            "path": "image-960.webp",
+            "format": "webp",
+            "width": 960,
+            "height": 960,
+            "bytes": 63286,
+            "quality": 80,
+            "iccOutcome": "absent",
+            "sha256": "9322be94398bfbd750d3cd013df8f17c3f652e9ac2458ec6960eef2ac16c9d58"
+          }
+        ],
+        "delivery": {
+          "srcsets": [
+            {
+              "format": "jpeg",
+              "value": "image-320.jpg 320w, image-640.jpg 640w, image-960.jpg 960w"
+            },
+            {
+              "format": "webp",
+              "value": "image-320.webp 320w, image-640.webp 640w, image-960.webp 960w"
+            }
+          ]
+        },
+        "placeholder": {
+          "path": "placeholder.webp",
+          "dataUrl": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAgCdASoQABAAA4B8J7ACdDiM9wA/WYF2vpGsZYYgAPuNapZ4MtB/w1vWxoqNdPmBcHO+Nb1MEeNb1MEEgi2Rv9S6pH5qbP204DyAAAA=",
+          "format": "webp",
+          "width": 16,
+          "height": 16,
+          "bytes": 98,
+          "iccOutcome": "stripped-for-placeholder",
+          "sha256": "3f1ba72a899ec0bdb830c6bf36701a3b87227d042ae9a95edcaad1f26123b3e1"
+        },
+        "cacheKey": "d57efd00ec5861ca15ac6aeb95b5a1acdf2ed0c960736092f72e369beb1d347a"
+      },
+      "success": true,
+      "wallMs": 1717.355583
+    },
+    {
+      "id": "coffee-64",
+      "inputSha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d",
+      "policy": {
+        "widths": [
+          320,
+          640,
+          960
+        ],
+        "formats": [
+          "webp",
+          "jpeg"
+        ],
+        "placeholder": true
+      },
+      "policySha256": "a44d089ee78a51582827f797392d5faabb323d17d1401eb0f844b27216bf3410",
+      "manifest": {
+        "schemaVersion": 1,
+        "compiler": {
+          "name": "@alberteinshutoin/lazy-image",
+          "version": "1.5.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+        },
+        "policy": {
+          "preset": "publicUpload",
+          "fingerprint": "f3610265b591a7d873e6c58cb7b661479ad9b2a58846701a84549660311fc227",
+          "widths": [
+            64
+          ],
+          "formats": [
+            "jpeg",
+            "webp"
+          ],
+          "placeholder": true
+        },
+        "source": {
+          "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d",
+          "bytes": 6293,
+          "detectedFormat": "png",
+          "encodedWidth": 64,
+          "encodedHeight": 43,
+          "displayWidth": 64,
+          "displayHeight": 43,
+          "hasAlpha": false,
+          "orientation": null,
+          "orientationApplied": false
+        },
+        "metadata": {
+          "mode": "privacySafe",
+          "exif": "stripped",
+          "gps": "stripped",
+          "xmp": "stripped",
+          "comments": "stripped",
+          "unknownAncillary": "stripped",
+          "artifactIccPolicy": "preserve-if-safe",
+          "placeholderIccPolicy": "strip"
+        },
+        "artifacts": [
+          {
+            "id": "64/jpeg",
+            "path": "image-64.jpg",
+            "format": "jpeg",
+            "width": 64,
+            "height": 43,
+            "bytes": 1482,
+            "quality": 85,
+            "iccOutcome": "absent",
+            "sha256": "4f3261a37b0a5dc82716b0ffd162999802c62f426d8fdae9b907f45549f66ab1"
+          },
+          {
+            "id": "64/webp",
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 43,
+            "bytes": 1116,
+            "quality": 80,
+            "iccOutcome": "absent",
+            "sha256": "e205d670aac20dc3bb41408ac38ebfaed48997880362fdd78c66593269509654"
+          }
+        ],
+        "delivery": {
+          "srcsets": [
+            {
+              "format": "jpeg",
+              "value": "image-64.jpg 64w"
+            },
+            {
+              "format": "webp",
+              "value": "image-64.webp 64w"
+            }
+          ]
+        },
+        "placeholder": {
+          "path": "placeholder.webp",
+          "dataUrl": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAwAgCdASoQAAsAA4B8J7ACdAEYESha4QoFsAD+wGhAKaKWlEJmYmnb0SGjlvPMopDh4/J4G2U7rbEY+BWJPL7cnXbDM3Qneqqeazx7tUm7VN8AAAA=",
+          "format": "webp",
+          "width": 16,
+          "height": 11,
+          "bytes": 104,
+          "iccOutcome": "stripped-for-placeholder",
+          "sha256": "67eb88d5d5ac33618c76724e52cece6814adb25e43d26920e4c159bc66f8d3b0"
+        },
+        "cacheKey": "e207b9d520a2abd73f1233248cd4b77b2ba9113054570f3a207d6f48a4195552"
+      },
+      "success": true,
+      "wallMs": 28.215209000000186
+    }
+  ],
+  "nativeTotalMs": null,
+  "nativeMetricsReason": "compileImage public manifest does not expose native metrics",
+  "successPageCreated": true,
+  "success": true,
+  "pageWallMs": 1963.7139169999998
+}
