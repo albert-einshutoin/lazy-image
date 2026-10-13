@@ -1,0 +1,12 @@
+{
+  "widths": [
+    320,
+    640,
+    960
+  ],
+  "formats": [
+    "webp",
+    "jpeg"
+  ],
+  "placeholder": true
+}
