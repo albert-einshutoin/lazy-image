@@ -1,0 +1,18 @@
+{
+  "scope": "New adoption-guide SVG checked before compiler measurement",
+  "file": "docs/images/compiler-artifact-flow.svg",
+  "bytes": 4834,
+  "sha256": "71fb80cc85bcf53a9042234973d476638ae9338fc892bca8795714d66b89e7d8",
+  "license": "MIT",
+  "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+  "sourceSha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "viewBox": [
+    0,
+    0,
+    960,
+    1400
+  ],
+  "background": "#ffffff",
+  "fontFamily": "Arial",
+  "userQualityApproval": false
+}
