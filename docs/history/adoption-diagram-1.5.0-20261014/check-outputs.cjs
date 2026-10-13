@@ -8,14 +8,39 @@ const sharp = require(require.resolve('sharp', { paths: [path.resolve(repository
 const read = file => JSON.parse(fs.readFileSync(file));
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 (async () => {
+  const consumer = path.join(phase, '..', 'consumer');
+  const identity = read(path.join(consumer, 'identity.json')), input = read(path.join(consumer, 'input.json'));
+  const codeHashes = ['published.mjs', 'controls.mjs', 'compile.mjs', 'measure.mjs'].map(file => ({ file, sha256: hash(path.join(consumer, file)) }));
+  assert.equal(hash(path.join(consumer, 'package-lock.json')), identity.lockSha256);
+  assert.equal(hash(path.join(phase, 'raster/diagram-input.png')), input.sha256);
+  const saved = process.argv[4] === '--check';
+  const commandRoot = saved ? '<PRIVATE_CONSUMER>' : path.resolve(consumer);
+  const phaseRoot = saved ? '<PRIVATE_PHASE>' : path.resolve(phase);
+  const node = saved ? '<NODE_EXECUTABLE>' : process.execPath;
   const processes = read(path.join(phase, 'runs/processes.json'));
   assert.deepEqual(processes.map(row => row.name), ['A1', 'B1', 'B2', 'B3']);
   const summaries = [];
   for (const process of processes) {
     const report = read(path.join(phase, `runs/${process.name}.json`));
+    assert.equal(process.evaluationRevision, 'a8aa32716c8ce9fa4078808a9424e12969171a7f');
+    assert.deepEqual(process.codeHashes, codeHashes);
+    assert.deepEqual(process.command, [node, `${commandRoot}/compile.mjs`, process.name[0], `${phaseRoot}/raster/diagram-input.png`, `${phaseRoot}/runs/${process.name}`, `${phaseRoot}/runs/${process.name}.json`]);
+    assert.equal(process.spawnError, null);
+    assert.deepEqual(read(path.join(phase, `runs/${process.name}.process.json`)), process);
+    assert.equal(fs.readFileSync(path.join(phase, `runs/${process.name}.exit`), 'utf8').trim(), '0');
+    assert.equal(report.inputSha256, input.sha256);
+    const policyFile = path.join(consumer, `policy-${process.name[0]}.json`);
+    assert.equal(report.policySha256, hash(policyFile)); assert.deepEqual(report.policy, read(policyFile));
+    assert.equal(report.identity.sourceSha, identity.sourceSha); assert.equal(report.identity.version, '1.5.0');
+    assert.equal(report.identity.nativeSha256, identity.nativeSha256); assert.equal(report.identity.lockSha256, identity.lockSha256);
+    assert.deepEqual(report.identity.loadedJs, identity.loadedJs); assert.deepEqual(report.identity.overrides, []);
+    const actualFiles = fs.readdirSync(path.join(phase, 'runs', process.name)).map(file => ({ file,
+      bytes: fs.statSync(path.join(phase, 'runs', process.name, file)).size, sha256: hash(path.join(phase, 'runs', process.name, file)) }));
+    assert.deepEqual(process.files, actualFiles);
     assert.equal(process.exitCode, 0); assert.equal(process.signal, null);
     assert.equal(report.success, true); assert.deepEqual(report.remainingStaging, []);
     assert.equal(report.manifest.compiler.version, '1.5.0');
+    assert.deepEqual(report.manifest, read(path.join(phase, 'runs', process.name, 'manifest.json')));
     assert.equal(report.imageStageMs, process.imageStageMs);
     assert.ok(Number.isFinite(process.imageStageMs) && process.imageStageMs >= 0);
     if (process.name.startsWith('B')) assert.ok(process.imageStageMs <= 60000);

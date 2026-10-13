@@ -53,7 +53,7 @@ const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).di
   const result = { scope: 'Visible diagram only; native device-toolbar presentation is scaled, not a 1:1 source-pixel screenshot',
     method: 'cua App.getScreenshot, unchanged viewport/DPR, measured 100 CSS px ruler; PNG crop retains original capture compression',
     sourceFormat: metadata.format, publicFormat: 'png', scaleUncertaintyPixels: 2,
-    originalSha256: sha(original), originalPixels: { width: info.width, height: info.height },
+    originalSha256: sha(original), captureRecordSha256: sha(recordFile), originalPixels: { width: info.width, height: info.height },
     rulerPixels: ruler, pixelsPerCSSPixel: scale, cropPixels: pixels,
     cssVisibleBounds: { left, top, right, bottom }, cropSha256: sha(out) };
   fs.writeFileSync(out + '.json', JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });

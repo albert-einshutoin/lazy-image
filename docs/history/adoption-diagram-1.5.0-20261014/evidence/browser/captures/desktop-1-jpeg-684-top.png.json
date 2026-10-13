@@ -27,5 +27,6 @@
     "right": 1200,
     "bottom": 1000
   },
-  "cropSha256": "1c20fa977c210fe36b6cc0afb607616795a7a8222c1a8a38105cc5a6b1e35bf3"
+  "cropSha256": "1c20fa977c210fe36b6cc0afb607616795a7a8222c1a8a38105cc5a6b1e35bf3",
+  "captureRecordSha256": "abe2b568e005aa73104f4412dc23efd49ffef269c0b2a208da81f48aa9806974"
 }

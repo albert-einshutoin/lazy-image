@@ -35,6 +35,8 @@ BのimageStage中央値1.340秒、最大1.350秒、3/3で60秒以内。正常呼
 
 SVG＋3幅×PNG/WebP/JPEGの40 image loadとresponsive例4 loadがdecodeし、拡大SVGの4 page loadもdecodeした。通常66 frame、拡大24 frame、合計90記録で撮影前後のviewport/DPRを照合。[browser照合](browser-check.json)、[各観測JSONと画面crop](evidence/browser/)を保存。viewportを狭めただけのDPR2ではない。
 
+`qa`はページ読込・decode時の観測、`before/after`は各撮影時の実値である。拡大ページは同一画像を保持して表示条件を切り替えたため、読込時の`qa.viewport`/UAが後の撮影条件と異なる記録がある。撮影条件の判定は`before/after.viewport`、画像rect、panを使い、古い読込値を現在値として扱わない。
+
 browser zoomは100%。Device Toolbar表示は明示75%で、100 CSS pxの黒いrulerが75 pixelになることを各native画面で測定した。画面取得はcua App.getScreenshotのJPEG、公開PNG cropへ変換しても元の撮影圧縮は残る。これらは75%の画面記録で、等倍source-pixel/物理Retina画質の証拠ではない。補助として[実ファイルの1:1 decoded-pixel crop](evidence/file-crops/)をlossless PNGで保存し、撮影のJPEG損失とcodec差を混同しない。
 
 Agentは各表示記録とpixel cropで次を確認した。利用者本人の画質承認とは別。
@@ -65,3 +67,5 @@ naturalWidthはDesktop960、Mobile342でdensity補正済み。encoded幅1920と�
 初期拡大ページはMobile layout viewportが1560×3376へ広がって自動縮小したため不合格として[HTML/JSON](evidence/calibration/)を保持。scroll領域へ変更し、960px原図/2×/段階移動/左右操作を実キーボードで確認した。通常11 HTMLは修正前後でbyte同一、SVG/input/codec出力は不変なので画像処理は再実行していない。
 
 #902の18画像sheet decode失敗2件は今回再調査しておらず、未解明のまま。今回の48 page load成功を過去の解消として扱わない。原本画面はGit外保管、公開資料は図だけのcropとpath置換derivative。[対応hash](LOG_REDACTIONS.json)を保持する。
+
+専門レビュー後、測定の入力・policy・公開package・helper・実command・exit・ファイル一覧と、撮影の完全pose集合・pan・原本JPEG/capture JSON/cropのhashを対象checkerへ追加した。90 descriptorのcapture JSON hashは実原本と既存cropを再照合してから追加し、画像・撮影記録・時間を作り直していない。旧descriptorはローカルに保持した。検証結果は[VALIDATION](VALIDATION.md)を参照。

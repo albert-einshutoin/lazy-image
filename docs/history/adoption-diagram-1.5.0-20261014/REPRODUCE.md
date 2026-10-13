@@ -4,7 +4,7 @@
 
 ## 消費側と入力の同一性
 
-`REPOSITORY`はこのcheckout、`HISTORY`は本directory、`NEW_PHASE`と`NEW_CONSUMER`はcheckout外の新規directoryを指定する。既存出力先を削除して再利用しない。保存native hashはdarwin-arm64に限定し、他platformのbinaryを暗黙に同一扱いしない。
+`REPOSITORY`はこのcheckout、`HISTORY`は本directory、`NEW_PHASE`はcheckout外の新規directoryを指定する。checkerが使う`NEW_CONSUMER`は`NEW_PHASE`と同じ親directoryの`consumer`とする。既存出力先を削除して再利用しない。保存native hashはdarwin-arm64に限定し、他platformのbinaryを暗黙に同一扱いしない。
 
 ```sh
 cp -R "$HISTORY/consumer" "$NEW_CONSUMER"
@@ -31,11 +31,11 @@ node controls.mjs "$NEW_PHASE/raster/diagram-input.png" "$NEW_PHASE/controls"
 
 ## A1とB3trial
 
-測定時helperは `a8aa32716c8ce9fa4078808a9424e12969171a7f`の4ファイル。実行するcodeを保存したrevisionと実file hashへ結び付ける。今後変更したcodeに旧revisionを付けない。
+測定時helperは `a8aa32716c8ce9fa4078808a9424e12969171a7f`の4ファイルで、保存consumerの同4ファイルはそのbytesを保持している。以下はその凍結helperの再実行専用。実行前に`evidence/runs/processes.json`の`codeHashes`と実ファイルを照合する。今後変更したcodeに旧revisionを付けず、別の評価記録とcheckerの対象を明示する。
 
 ```sh
 cd "$NEW_CONSUMER"
-EVALUATION_REVISION=<actual-helper-revision> \
+EVALUATION_REVISION=a8aa32716c8ce9fa4078808a9424e12969171a7f \
   node measure.mjs "$NEW_PHASE/raster/diagram-input.png" "$NEW_PHASE/runs"
 node "$HISTORY/check-outputs.cjs" "$REPOSITORY" "$NEW_PHASE"
 ```
@@ -46,10 +46,11 @@ node "$HISTORY/check-outputs.cjs" "$REPOSITORY" "$NEW_PHASE"
 
 ```sh
 node "$HISTORY/check-outputs.cjs" "$REPOSITORY" "$HISTORY/evidence" --check
-node "$HISTORY/check-browser.cjs" "$REPOSITORY" "$HISTORY" --check
+node "$HISTORY/check-browser.cjs" "$REPOSITORY" "$HISTORY" "$ORIGINAL_PHASE" --check
+node "$HISTORY/check-bindings.test.cjs" "$REPOSITORY" "$HISTORY" "$ORIGINAL_PHASE"
 ```
 
-これらは今回の保存成功matrix/観測を対象とするチェック。異なる実行が失敗したらrawを保持し、保存成功の再現とは扱わない。
+これらは今回の保存成功matrix/観測を対象とするチェック。`ORIGINAL_PHASE`はGit外で保管する今回の原本directory。browser checkerは原本JPEGと元のcapture JSONをcropのhashへ結合するため、原本を取得できない第三者はこの原本対応を未確認とする。公開cropだけのhash照合を原本照合に読み替えない。binding testは使い捨てコピーでpose/撮影位置/hash/package/source/input/policy/helper/exitを改変して拒否を確認し、原本を変更しない。異なる実行が失敗したらrawを保持し、保存成功の再現とは扱わない。
 
 ## browser表示と原図拡大
 

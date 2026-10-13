@@ -1,0 +1,75 @@
+{
+  "scope": "Fresh separate loopback fetches, not browser transfer timings",
+  "rows": [
+    {
+      "url": "http://127.0.0.1:8876/final/compiler-artifact-flow.svg",
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bodyBytes": 4834,
+      "sha256": "71fb80cc85bcf53a9042234973d476638ae9338fc892bca8795714d66b89e7d8"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/control-1920.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bodyBytes": 326875,
+      "sha256": "42e493e3aa0b908cfddc66b950231f0e34235bbad464d0a337aba3efe109ab87"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/control-684.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bodyBytes": 217959,
+      "sha256": "ab1535acc013ae7df59abc81e8b46dc078b30ed351e4b9346afb3e1ed0efa163"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/control-960.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bodyBytes": 325656,
+      "sha256": "a33cb449da5541c8904699a1a3fcec27db7f617c6a11ffdefabd0f7177c90a99"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/image-1920.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bodyBytes": 406976,
+      "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/image-1920.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "bodyBytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/image-684.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bodyBytes": 105685,
+      "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/image-684.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "bodyBytes": 64168,
+      "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/image-960.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bodyBytes": 161979,
+      "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+    },
+    {
+      "url": "http://127.0.0.1:8876/final/image-960.webp",
+      "status": 200,
+      "contentType": "image/webp",
+      "bodyBytes": 95622,
+      "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+    }
+  ]
+}

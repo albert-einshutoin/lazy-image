@@ -1,0 +1,2135 @@
+{
+  "scope": "Delivery files excluding this manifest; current Git revision is recorded in PR/Issue. File hashes bind saved evidence, not new runtime executions.",
+  "files": [
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/DECISION.md",
+      "bytes": 2963,
+      "sha256": "0822eaf4fecc7db29fd0f8b9455f15edacee29eebe0353a6524990a3bea8e99e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/LOG_REDACTIONS.json",
+      "bytes": 134963,
+      "sha256": "2605ad4cf2ac6e4cfdd82cb3b1a02591694e3e4f3e564408580c83146ec085f8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/PLAN.md",
+      "bytes": 5655,
+      "sha256": "4d8f8251d7feadaa1b3ba966419bba5dde74b84495099e08424ccc1df2aa77c9"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/REPRODUCE.md",
+      "bytes": 8185,
+      "sha256": "07524dc43ce9f9faa1c93ba162c5c51533b16f472406ff372dad73e4aa39bf05"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/RESULTS.md",
+      "bytes": 8930,
+      "sha256": "4b288efe2373548f2e60c534f01a445b72fd025f24db9e99e11c9388c4971d14"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/VALIDATION.md",
+      "bytes": 3692,
+      "sha256": "e2bf009c6852a05e6fb8a4cd690370600944f3fc657c6990fdedee653009d701"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/browser-check.json",
+      "bytes": 1220,
+      "sha256": "1092cd5a05294baa3448a2693bdd1ee1a167c00e7932ad841ef121d5b4c52a5f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/check-bindings.test.cjs",
+      "bytes": 3469,
+      "sha256": "53aabbdbebfe3e0a3ce490c50d1bea1ac4c3233560dc19487a3914836d3ea21e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/check-browser.cjs",
+      "bytes": 5663,
+      "sha256": "d5c9123b51c49fa6d1389f4f279ffa2a5d4e2e276d6da813db0809262a2b3112"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/check-outputs.cjs",
+      "bytes": 6167,
+      "sha256": "89d42a6bd0530f3d957e397b49267b9e25c59a6b57ee83d4371aaa3137bfdf7b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/compile.mjs",
+      "bytes": 2050,
+      "sha256": "38df8797be2d6e9de8cb735f99c9f5cbd8214fadb29cf75b66999d44d41ad5f6"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/controls.mjs",
+      "bytes": 1099,
+      "sha256": "7dc0616a764483175052a2ba086c3c33c4c0529d6580f2b1a6d3c5be49238011"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/identity.json",
+      "bytes": 911,
+      "sha256": "e2f856ff5522bed499f693a5148047740c91a10677d715170e5d14901bad4ee3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/input.json",
+      "bytes": 251,
+      "sha256": "2cf94c93e9e2732262c81aeee650364257291c13dba5f1fb9d2dca5d6874f2e2"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/measure.mjs",
+      "bytes": 2384,
+      "sha256": "1f7aac471d9432689b0180db9d587af6b52c9f1c8fb96dc34d38d558830c19b7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/package-lock.json",
+      "bytes": 4371,
+      "sha256": "7fc9352d60ee21d7df35e3cc6a3b3b50dd5a01d918ba4154096ca598e0ebf042"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/package.json",
+      "bytes": 184,
+      "sha256": "9eaabe98819c911afb1b863991cbfcd227a215d424db91ce44034288022c8cb8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/policy-A.json",
+      "bytes": 116,
+      "sha256": "b4c3c9bcecf5fd0a3bc32c39b20f7ecfca48422d7086aa25d920382be7d83d24"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/policy-B.json",
+      "bytes": 773,
+      "sha256": "46faba48126216fe321767896af5b34e0dbbd00d992ec034fecfdbac93517380"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/consumer/published.mjs",
+      "bytes": 1724,
+      "sha256": "9d09713668867a9878fb85a55aad11b3691568517f3e8b611beeab6bd817b6ca"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/crop-files.cjs",
+      "bytes": 2184,
+      "sha256": "7cb83d4c171ad22a99c365deb096ee5f5432fe997185ec5c32cd5e4fffb07de8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/crop-native.cjs",
+      "bytes": 4637,
+      "sha256": "8b0e659196de7032ccc70720f0b7119f386d464e8960aa99bc92b8db422ced7a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/browser-zoom-100.png",
+      "bytes": 6516,
+      "sha256": "af45f77c939993983e0fd729e8cf37ff08c97304a5417e50170769892d3e67d4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-detail-svg-failure.png",
+      "bytes": 250951,
+      "sha256": "c466e3be5955fa5484389682955853dc97eaeaa27b4b616b357450b4acd11942"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-detail-svg-failure.png.json",
+      "bytes": 953,
+      "sha256": "a5701bb0508f153b6c466dedc9138c43315f66567023c5ec199f2b040df1df9e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-detail-svg-verify.png",
+      "bytes": 268461,
+      "sha256": "b4fa825648dfc63dcd074cab32bd679f527b7dbdfe58d06132a9a2807a93b4c4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-detail-svg-verify.png.json",
+      "bytes": 953,
+      "sha256": "9df8ee2ff5898ed62ef050057ed633f475e002b81d52fd577651a76a01b4102e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-detail-svg-zoom2-verify.png",
+      "bytes": 286591,
+      "sha256": "03087bfe99344de1b756dd3563d593c926fcf1683074503c38d118aa39f65a8e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-detail-svg-zoom2-verify.png.json",
+      "bytes": 953,
+      "sha256": "b3ca78d449ca755bc4a2cb75a1019528b315028d2c84ecda84d93c84872fc511"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-1920-bottom.png",
+      "bytes": 323973,
+      "sha256": "4654a99eed06e5f4f4cd81c13defab47caa54ea0fe5682ad5a2297449ee24ef0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-1920-bottom.png.json",
+      "bytes": 951,
+      "sha256": "b801733d64afb9b3f640529cbd58a4b14a9ee72fb4bdd806c025cd36882d65c4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-1920-top.png",
+      "bytes": 300491,
+      "sha256": "95afb00f7eb72cf44d90bb521dcb4a87495ae20f5c37db8e3e87e152bd48384e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-1920-top.png.json",
+      "bytes": 953,
+      "sha256": "964ca2c1edbe1d0e5f846bc3636604fbae9f4ddf637909a5bc5c13d94a966435"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-684-bottom.png",
+      "bytes": 395540,
+      "sha256": "134863fb47bbb78538b948f1be229d6c0c57fb814c8f259c76b83fe72683fc25"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-684-bottom.png.json",
+      "bytes": 956,
+      "sha256": "9ff528b45cfa0f7ed9f60469c63d03cdac2e9fb4d96a53be83d02d8a57082227"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-684-top.png",
+      "bytes": 368733,
+      "sha256": "1c20fa977c210fe36b6cc0afb607616795a7a8222c1a8a38105cc5a6b1e35bf3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-684-top.png.json",
+      "bytes": 953,
+      "sha256": "1cc2eb029b4e754c89acf10f0656984b032df9dbe61c60178f5ed26d7fcb0747"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-960-bottom.png",
+      "bytes": 355305,
+      "sha256": "a5dcff2f01123570fe95c6cb84815a6aa7344e0e30d2680d9e815e12cd987e1a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-960-bottom.png.json",
+      "bytes": 951,
+      "sha256": "86114793b8a12074838bd60b3ffc9dcec220cc5bebbdc7bcd4d27182cd579f97"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-960-top.png",
+      "bytes": 335173,
+      "sha256": "070a30e6e2be2962d52f782d4fa36ca5d2945a7458a90a607b79dce77a37fc7d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-jpeg-960-top.png.json",
+      "bytes": 953,
+      "sha256": "758eaf2d3e02317cef5486021470e9968971fd00e105e24597326e67dfdc4c86"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-picture-bottom.png",
+      "bytes": 319993,
+      "sha256": "bbecb693ae10e294c1dbd1f79e6cc3050cd5ae134a2634b0bfd7c5323a219ada"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-picture-bottom.png.json",
+      "bytes": 951,
+      "sha256": "f106b7dce8f4f9eee9d462917ec15001ee5a33a0e7aa85154f97e5601440fab6"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-picture-top.png",
+      "bytes": 303395,
+      "sha256": "06865e2b7951f9257afc22b0efe56d94f0082525a9eadd9bb82cb19ab0578892"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-picture-top.png.json",
+      "bytes": 953,
+      "sha256": "9256b45b5d5c3c0ca2d35768277d741106bc3a373b4ceb8f05d3035a44232d13"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-1920-bottom.png",
+      "bytes": 319103,
+      "sha256": "4cc188c66e2c7dfb007ea8234a13b948f11a6cad285d841fe6730275542c222e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-1920-bottom.png.json",
+      "bytes": 951,
+      "sha256": "9906aa860c0b5e0d3e91cc2f5be317e1ca9b88ac95e602fe99083cfa121bc12d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-1920-top.png",
+      "bytes": 295796,
+      "sha256": "bedcf6f51e96ee6ecaf3c40bfdaf0637fe26076ea96e15797952af3e1b62ddbb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-1920-top.png.json",
+      "bytes": 953,
+      "sha256": "c709e776e84ca47c2e4d645eeb20ef236ca21607994a97ba6c7626316b6a58a0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-684-bottom.png",
+      "bytes": 345252,
+      "sha256": "7609f426d3581cd261d063a2645d92fd355e7304f7bdd16a7e93c170d0db5302"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-684-bottom.png.json",
+      "bytes": 956,
+      "sha256": "b282d804cd05c9dcced331fe99406019aad2648dfe46cfa44677f004a526984b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-684-top.png",
+      "bytes": 323921,
+      "sha256": "3e6132e696e677d622b688ced5fe0e4ae4602d76ce808bd5438cc285754abebc"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-684-top.png.json",
+      "bytes": 953,
+      "sha256": "51169ff3143503b643e997b16c5981c4f3fd4bae6a99f4b079c119fde320d9d0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-960-bottom.png",
+      "bytes": 329022,
+      "sha256": "e7cd7d96580bb81f1c531ab2393da53fc583fe3df5217c85fd04e2403c4604b5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-960-bottom.png.json",
+      "bytes": 951,
+      "sha256": "8592a078151e12ba52663b3a278d5bfaa30f1e6186017b81ca9abc66df85876d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-960-top.png",
+      "bytes": 302577,
+      "sha256": "dd841e0f05edc0e37a5ef7f0d6355306bf4a6a1d3d4052eac721d347f3d79225"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-png-960-top.png.json",
+      "bytes": 953,
+      "sha256": "d4b3536425ae4e1c4cdeb0134b9478860e18e0180460354cea033134842f20e8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-svg-bottom.png",
+      "bytes": 307748,
+      "sha256": "d28020f57e0fd1d8895909a5c5ba53cc6eb7c849b1d0720d3548d1ad4dede51f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-svg-bottom.png.json",
+      "bytes": 951,
+      "sha256": "4e3b5665da44a9bd3ff4cf54131cbce2857dcbf4b6aa3da51286a849a1d78e9b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-svg-top.png",
+      "bytes": 285573,
+      "sha256": "68966624d4d136eabf558a42129d5c4f5a1e409433905287df8c6c5cb327f1c4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-svg-top.png.json",
+      "bytes": 953,
+      "sha256": "ec67f4c319b8f7f428c57d2910cb8319e026e1fe23490de8e1d3b8c869039e74"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-1920-bottom.png",
+      "bytes": 326184,
+      "sha256": "0d8108268a92886f25724b7e72222f33c7c5206d9522e35583257ef8c2f7ab3a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-1920-bottom.png.json",
+      "bytes": 951,
+      "sha256": "37f7cf9c934dad7ec6dcb1e28b65898a05128028ca4f2bb968a489b64bed313c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-1920-top.png",
+      "bytes": 302914,
+      "sha256": "49cd77d57773b78b825992de87d3181b846c94c89257ae43fb455b49b971ba71"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-1920-top.png.json",
+      "bytes": 953,
+      "sha256": "4f78590a59669f0d23f6000bdbd37cdbabe849e3e92dafd733ff0c40b6ac9c4e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-684-bottom.png",
+      "bytes": 382721,
+      "sha256": "5a5a9f23ced7eaaf19a5ac2cfdf306c94941c4e92fe3edbc26f5249c184a0760"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-684-bottom.png.json",
+      "bytes": 956,
+      "sha256": "748445189314c5f119ef08dd48e00c9466b04edbb6e1b1a32db715a17dd956c2"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-684-top.png",
+      "bytes": 366392,
+      "sha256": "6841a1e0be65f1a3a7b921c9c02ba54dff9fe55843aaa20bbf41cf8fdb527337"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-684-top.png.json",
+      "bytes": 953,
+      "sha256": "0d9428110cdc9579a732a836b1d3db1d9cc3566ccb36faadc04a06322545e39b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-960-bottom.png",
+      "bytes": 367964,
+      "sha256": "86bc18c442e8ec66b5380181bf694647c7f69906df69839ee93320f79060f05b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-960-bottom.png.json",
+      "bytes": 951,
+      "sha256": "36781f4567c33855a7f6a9e748afc4b013b86155e004fd093c1caa1d05e0a54c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-960-top.png",
+      "bytes": 337696,
+      "sha256": "aa477c205b133f4c13c1a6e5c1c4717dbed5c512924b88034da9e68967849972"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-1-webp-960-top.png.json",
+      "bytes": 953,
+      "sha256": "4b23a9bb98ab9b0ec8ab18859cbd6e652e5705519af7041b9a8f822fc890b12a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-detail-svg-failure.png",
+      "bytes": 250951,
+      "sha256": "c466e3be5955fa5484389682955853dc97eaeaa27b4b616b357450b4acd11942"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-detail-svg-failure.png.json",
+      "bytes": 953,
+      "sha256": "7cc755c6fd8e2babb59445dc54ea7ca863d44cb8376a06b3d715010c19f31870"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-detail-svg-verify.png",
+      "bytes": 268461,
+      "sha256": "b4fa825648dfc63dcd074cab32bd679f527b7dbdfe58d06132a9a2807a93b4c4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-detail-svg-verify.png.json",
+      "bytes": 953,
+      "sha256": "c4e5d0c5bdf428554fd6daa9870189eed493f7a0d78abf855f9f72ab4aec65b0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-detail-svg-zoom2-verify.png",
+      "bytes": 286577,
+      "sha256": "38aa3b51f6b98c6248ba0509a84727b4ed6d125f23cdb8d4de8359e870c3e2e7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-detail-svg-zoom2-verify.png.json",
+      "bytes": 953,
+      "sha256": "9a509cbe3c8131d7b7efdae59f31eed17735e2d001010227c94d22c313442339"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-1920-bottom.png",
+      "bytes": 323938,
+      "sha256": "5ee033bb99337b8b91d805bced3bf70910bed1cbb474ff5c82707b225ecd1e48"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-1920-bottom.png.json",
+      "bytes": 951,
+      "sha256": "aed7cf70defffb821b94d646ff4d18e695bffa42aa515415ac113b2b6f9e9d63"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-1920-top.png",
+      "bytes": 300491,
+      "sha256": "95afb00f7eb72cf44d90bb521dcb4a87495ae20f5c37db8e3e87e152bd48384e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-1920-top.png.json",
+      "bytes": 953,
+      "sha256": "e28f4e651181b07e161a849d44a00e6059d9eee5c3b0325a1ffe370be6c05f64"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-684-bottom.png",
+      "bytes": 395502,
+      "sha256": "fbd187808a18629445a3891288ccf88262c07807bb836f405daa0d046f75a1ac"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-684-bottom.png.json",
+      "bytes": 956,
+      "sha256": "68c5a6e5a1f0d4b7c7b7d5290d041f5e39feecbd78e41aa4cf66c10a76de78eb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-684-top.png",
+      "bytes": 368733,
+      "sha256": "1c20fa977c210fe36b6cc0afb607616795a7a8222c1a8a38105cc5a6b1e35bf3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-684-top.png.json",
+      "bytes": 953,
+      "sha256": "3a2d2ba32c578595fa0393064be7f08049abd481c170c5df8a1e4a3895961365"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-960-bottom.png",
+      "bytes": 355272,
+      "sha256": "bd52a76a099e1bd2ce457e0345887460fbfde12964595b62b0b4edd3aff6090c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-960-bottom.png.json",
+      "bytes": 951,
+      "sha256": "4a4407710fc48cfb3b8edaf19544fc0773379638fc1ed664ac93d66a90115e54"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-960-top.png",
+      "bytes": 335173,
+      "sha256": "070a30e6e2be2962d52f782d4fa36ca5d2945a7458a90a607b79dce77a37fc7d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-jpeg-960-top.png.json",
+      "bytes": 953,
+      "sha256": "36eb35f13e6516fc8bde4b18f2f1637903478ea7d74a9f53efc4c3cd37a4bccb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-picture-bottom.png",
+      "bytes": 319960,
+      "sha256": "a3c1728c9b1f9e273496ecf4af7276b5db47cce5f940b67cd6716abe44a035f7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-picture-bottom.png.json",
+      "bytes": 951,
+      "sha256": "107a7596826699d6b4232a9cf08409019ba7bf8d45116f58a71afaa4d2133db6"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-picture-top.png",
+      "bytes": 303395,
+      "sha256": "06865e2b7951f9257afc22b0efe56d94f0082525a9eadd9bb82cb19ab0578892"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-picture-top.png.json",
+      "bytes": 953,
+      "sha256": "a97693ed1bc64b6a38272b19872e91b62dba521db4247faee0a345f7badad233"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-1920-bottom.png",
+      "bytes": 319052,
+      "sha256": "010ec292e63b9dd0cc5fd383caa0df4f4187d96078d82162725b3e7086460537"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-1920-bottom.png.json",
+      "bytes": 951,
+      "sha256": "eff2e5a1d6db840cbc978776d1e0774917200b756e9be2bf245a89a197d8b80c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-1920-top.png",
+      "bytes": 295796,
+      "sha256": "bedcf6f51e96ee6ecaf3c40bfdaf0637fe26076ea96e15797952af3e1b62ddbb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-1920-top.png.json",
+      "bytes": 953,
+      "sha256": "8d96e6d5f34c99396ce69748f5c04a79c1ae56bc829bfac1c5664583bc462508"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-684-bottom.png",
+      "bytes": 345190,
+      "sha256": "397ba3743b6587baf84d1fa6afcf1d0d69d95ec54cc7782fbf99ef202396f465"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-684-bottom.png.json",
+      "bytes": 956,
+      "sha256": "905008e0c344428aad46dc0d675b954125d9ceb645523e1b7dcbeb8c08fd2ae2"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-684-top.png",
+      "bytes": 323921,
+      "sha256": "3e6132e696e677d622b688ced5fe0e4ae4602d76ce808bd5438cc285754abebc"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-684-top.png.json",
+      "bytes": 953,
+      "sha256": "1f707dcb186c49da18c4b89406c9c2a04ffa411d547785c60ef56d1da87ba2ac"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-960-bottom.png",
+      "bytes": 328971,
+      "sha256": "e6d7a289341eeafd8513843f77ddfb437810668a655438a4e67c1cc23e486a33"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-960-bottom.png.json",
+      "bytes": 951,
+      "sha256": "19c147e086761c27fdd8c73d6d297d03517277970e88391dddc5c183ad0c9eff"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-960-top.png",
+      "bytes": 302577,
+      "sha256": "dd841e0f05edc0e37a5ef7f0d6355306bf4a6a1d3d4052eac721d347f3d79225"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-png-960-top.png.json",
+      "bytes": 953,
+      "sha256": "aad4622d518da74a2860a9ed2d9cc81c7628627df54218331a74e024dce358df"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-svg-bottom.png",
+      "bytes": 307686,
+      "sha256": "e51e5e00d8fdfcfc60a595034f73e92da4212f3f8771d145fc7188b272316787"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-svg-bottom.png.json",
+      "bytes": 951,
+      "sha256": "4be022f1ef932d33a3fd4c1775cd752c66fdcc40c211b3b6aa8bffc17bda9256"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-svg-top.png",
+      "bytes": 285573,
+      "sha256": "68966624d4d136eabf558a42129d5c4f5a1e409433905287df8c6c5cb327f1c4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-svg-top.png.json",
+      "bytes": 953,
+      "sha256": "4e9bf6ee59a147dfbf5f249bd0a91d772190cc20dd12597a064f577278b78576"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-1920-bottom.png",
+      "bytes": 326137,
+      "sha256": "53f451e2462dd868dae30bd6aa52436a498581f9eeeb1a714632c468aa9db4fd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-1920-bottom.png.json",
+      "bytes": 951,
+      "sha256": "a6ca26989d15b7d924b4b4c18efa3bad6fb528bc7151553bf663a60e04a33067"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-1920-top.png",
+      "bytes": 302914,
+      "sha256": "49cd77d57773b78b825992de87d3181b846c94c89257ae43fb455b49b971ba71"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-1920-top.png.json",
+      "bytes": 953,
+      "sha256": "5c1ef5c364ca5808bc9f5ac82579a4d540af2e9b00f51767a636e45458d1275f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-684-bottom.png",
+      "bytes": 382681,
+      "sha256": "fee7bd2ba2bafe2383c11f128a98d97fdfb715eae6f0aa16e5d3cec4997cfc0b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-684-bottom.png.json",
+      "bytes": 956,
+      "sha256": "e05e281a36ff80c62bac47972184a60f6a9383e7a687798e620e5ef432dfe222"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-684-top.png",
+      "bytes": 366392,
+      "sha256": "6841a1e0be65f1a3a7b921c9c02ba54dff9fe55843aaa20bbf41cf8fdb527337"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-684-top.png.json",
+      "bytes": 953,
+      "sha256": "bc0553555e5eb9dec135fbeb2f00d4485969034650e16bfe36052b8dc5d28406"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-960-bottom.png",
+      "bytes": 367920,
+      "sha256": "450ad12306f05d16f8749cf01e47b4d5ef33b43a9f20ba02cf6d5aa22e2773e8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-960-bottom.png.json",
+      "bytes": 951,
+      "sha256": "2732665b39aec09b1f7227eee70a1cafd8b9806423b785f163e8bac2518e3668"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-960-top.png",
+      "bytes": 337696,
+      "sha256": "aa477c205b133f4c13c1a6e5c1c4717dbed5c512924b88034da9e68967849972"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/desktop-2-webp-960-top.png.json",
+      "bytes": 953,
+      "sha256": "8872c6fbedbf91768c08e560cd28a8a4120b3db2bcf38bf8b1b856b950b0d7d7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-end.png",
+      "bytes": 32668,
+      "sha256": "e884e207991c7325cc997a7d9c76d961f3d559d3e930de6819fead55fd9543b4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-end.png.json",
+      "bytes": 951,
+      "sha256": "144e3b8033c133378d7860ec5b59b3c622a6f8bb8844a83dcbeace8d57e539ac"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-left.png",
+      "bytes": 107837,
+      "sha256": "3ac6cb3a7c90d8ecd3f1d7d768bb85f96e9d739d180d54a65043cdae09e6370f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-left.png.json",
+      "bytes": 951,
+      "sha256": "69367180d741c56a81ba037bfcd35011e83240a64fb0afeebe46666bbdb75f53"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-middle.png",
+      "bytes": 103085,
+      "sha256": "159e8f32767594f65410b4ccd13fdbe81bd822d203726b859beb68d33274e0c5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-middle.png.json",
+      "bytes": 951,
+      "sha256": "45209eade98c8e6bd428976391e73a97275d6430f6e384a56aa922a2ae3b9d20"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-right.png",
+      "bytes": 37333,
+      "sha256": "af505bc72ff0dad4c1d74fde649cd424539a6ba6d9aa286a612c4d645f34fc64"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-failure-right.png.json",
+      "bytes": 951,
+      "sha256": "7dea23e8ae605034d240c3b496adb5edef0f7bf5dda99fb079353d52497f4a8f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-end.png",
+      "bytes": 30426,
+      "sha256": "a04fc56db05d454ea59eda55c53f8efbe410149e0170b55a3ce6f159d6fb433a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-end.png.json",
+      "bytes": 951,
+      "sha256": "2e2fa4e971e1bdda5285af0c64957c45a6898ebb3e8813c6aa87f7dbe5881c85"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-left.png",
+      "bytes": 122284,
+      "sha256": "18f0f1d9e2f0bb869af3b840825d1548c13b480de12cca0bae4a4e8bbc4926fc"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-left.png.json",
+      "bytes": 951,
+      "sha256": "f123798a63c421661b91c4337c0c83ee8986129446e319c0ce10f3cf9bbfc251"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-middle.png",
+      "bytes": 114175,
+      "sha256": "77125dc9ba33ef4cd1e4775e184cc25ef2bae35713e517e99842fce5050c15f0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-middle.png.json",
+      "bytes": 951,
+      "sha256": "4058145d817f7711c452cfdf5b36fb8cdb74e6c1253c54ccc04c5fcb5c175729"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-right.png",
+      "bytes": 29738,
+      "sha256": "71324ab2966ebe2bc46ed0b8ee7c7fdd089843fdf2fc0516eee39b2391d5b3ec"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-verify-right.png.json",
+      "bytes": 951,
+      "sha256": "ac04ba78fa9035de7f012ab3b26d1c99403c4883fb1762f37778427e2fd378a6"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-zoom2-verify.png",
+      "bytes": 77685,
+      "sha256": "d669beb24059f19d88e27470254e1f7b67f9ce424629f612b0d1397680ab79be"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-detail-svg-zoom2-verify.png.json",
+      "bytes": 951,
+      "sha256": "2cf2570d50d2b99cbb99f28f76bb4a9b489cab1b2a7f0e9b2d8149397d013c5c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-jpeg-1920-top.png",
+      "bytes": 100100,
+      "sha256": "501a87ff60c2ea27bea9463c621a27668b71c28de4c58bc9061df0d5b51ee4db"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-jpeg-1920-top.png.json",
+      "bytes": 954,
+      "sha256": "549a12dcc8017c1baebb917d9c932a2e9f8a29973088efcac1c9b1a8ca2a36ff"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-jpeg-684-top.png",
+      "bytes": 101015,
+      "sha256": "be8a20f24cded1cd5d426c64e14dae405d65204cb5be1e2455d5c7d5445fed60"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-jpeg-684-top.png.json",
+      "bytes": 951,
+      "sha256": "63539588366fd114918b04ade88df19ac382769413d48f5cbf1b804212901c20"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-jpeg-960-top.png",
+      "bytes": 100249,
+      "sha256": "111fbb5310f44bd46d0326ac36d0e4601a332aa4c60b68ef8692d3b63909914e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-jpeg-960-top.png.json",
+      "bytes": 954,
+      "sha256": "ffad314e9a1793dbbc246a6c1f9f6057a3c7aecd00e7233b2e1bdf4b063ce4ed"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-picture-top.png",
+      "bytes": 100633,
+      "sha256": "da179ae6a77d5ebcc409cc5aeda71d01bdb69b0c4f83416e88be19e644d9e3a7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-picture-top.png.json",
+      "bytes": 954,
+      "sha256": "0fac1df50895d30f6ecffdb70319d0e953dd7624edede19fd17f22859f9ae25f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-png-1920-top.png",
+      "bytes": 99754,
+      "sha256": "c6eba3972411ecae174e237f65c2e9864fc4d083dfcb23929669b31635ca4cc3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-png-1920-top.png.json",
+      "bytes": 954,
+      "sha256": "f018e3e396799a9818b757e0fb53326dd2b5cedf434024cf2a8acecfce8c457c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-png-684-top.png",
+      "bytes": 99208,
+      "sha256": "8548b52bf5487ad0f6231edc14a6fdbe7152237d28ccfb453c268cdf01e7fb56"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-png-684-top.png.json",
+      "bytes": 951,
+      "sha256": "ef7b87bf3c66812336821b8eb576dc7f38143f22fc6846335e7d11d8980f38c8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-png-960-top.png",
+      "bytes": 100612,
+      "sha256": "bb63de697eacfdabc74a1b589c9140877848a2584b52e1bd95df4f756d3e770e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-png-960-top.png.json",
+      "bytes": 954,
+      "sha256": "78bac5508c0f4c53fdf19488e964545f473aad53c3acda67ae2ccaef7a687184"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-svg-top.png",
+      "bytes": 93644,
+      "sha256": "d72f34b3c576dedd394d2d30020a7e73b3cb146e0ff1d3a8fc4fa2e09396bf8d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-svg-top.png.json",
+      "bytes": 954,
+      "sha256": "22f185b842bfa6c5e132c8c5753b25bb8c67e974125e6b401c4a49431068762c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-webp-1920-top.png",
+      "bytes": 100633,
+      "sha256": "da179ae6a77d5ebcc409cc5aeda71d01bdb69b0c4f83416e88be19e644d9e3a7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-webp-1920-top.png.json",
+      "bytes": 954,
+      "sha256": "0d063165f4ff0a5debfb8f5fab8c01614f84983dd87140b07f7f21024f37ec22"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-webp-684-top.png",
+      "bytes": 102437,
+      "sha256": "024572b1939ef07988e821e698d0c86e71fc2c8a0b0615177afd2264be95f28c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-webp-684-top.png.json",
+      "bytes": 951,
+      "sha256": "d2af5dc884ae79bef983140ffc0eff86c13a775721a7d8b088b62477d80fa8aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-webp-960-top.png",
+      "bytes": 104147,
+      "sha256": "978cb6630c23b4b9ad9269abd82c497a3eb49a04c6abaac27a6f078770b48b7b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-1-webp-960-top.png.json",
+      "bytes": 954,
+      "sha256": "f3c122dbc5d14faefc6e6894bc32d50812660944ebf50887dfe8779088897c20"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-end.png",
+      "bytes": 28241,
+      "sha256": "f49d368eb49b3d5c32cf667f02817fbfb402da52a93108f059c523c4f66aa61b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-end.png.json",
+      "bytes": 951,
+      "sha256": "4d10adb303af9e5473540dfc35421d51e94c238ff08cded2aa6838b9630258ea"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-left.png",
+      "bytes": 103515,
+      "sha256": "d6d38228121856418895db83ffec417e0112860fbf468e8ed155c91d91385043"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-left.png.json",
+      "bytes": 951,
+      "sha256": "2041ef240eecf28a236bf2b9d77f4ca748fccb5ace1169b6be40f8f04add6cfd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-middle.png",
+      "bytes": 98358,
+      "sha256": "45fb0287fb619d4e320137cdc8ba86f3fe7b34430731e326459dd4cae2cad11a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-middle.png.json",
+      "bytes": 951,
+      "sha256": "607cac9c1f07e52590dc5000f6973f09ccf665855583f4fce8a8dc3f047bd3f3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-right.png",
+      "bytes": 32742,
+      "sha256": "99136552b13c65dd341879ac2a6dd2b6fd1b9e507c41b691af70f6d2b6228789"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-failure-right.png.json",
+      "bytes": 951,
+      "sha256": "95eb03058e4a8da615574c300d9eae022663e35b0b0cb5d4e1b9eae97eb7f6fe"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-end.png",
+      "bytes": 28721,
+      "sha256": "de07882bdf3bcb95d26df7477c0f75ab24dff7be01ba4b550e0b2989125932fb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-end.png.json",
+      "bytes": 951,
+      "sha256": "9b1b7bdf7d83ae9013fb57341450c073f0eba420efc19b630e8f52fcdc32b9fe"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-left.png",
+      "bytes": 120547,
+      "sha256": "9d9029b53b403ee36be039a3659910396ed8f109c0739329630d7bfe005b5714"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-left.png.json",
+      "bytes": 951,
+      "sha256": "efe86996cac938ee4a794da1a7ef3340ab64825c65bb0a81f4a853d1b0638440"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-middle.png",
+      "bytes": 112343,
+      "sha256": "04f7f2edc0f9aaf657b6038a9eb56080ffea366952602f1ec122077eb42dcb45"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-middle.png.json",
+      "bytes": 951,
+      "sha256": "f544ded1cb694167cb91bbd535e404d77c34a91041ca86c632f1d52ca0fa9a91"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-right.png",
+      "bytes": 28255,
+      "sha256": "8d129ef633a692e61f071733f45349fc9a4f79160fa3c33b1e0c5b2a44b39fa0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-verify-right.png.json",
+      "bytes": 951,
+      "sha256": "637acab711df72280649ca1d9986b0be425089156d93e4eac6b2021101fc0b81"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-zoom2-verify.png",
+      "bytes": 74560,
+      "sha256": "b253832937734ecb9b7d7c7120f2878c5810f2583f00339f966cd241cd838f23"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-detail-svg-zoom2-verify.png.json",
+      "bytes": 951,
+      "sha256": "dc30c4a7ca56296a0e88dd4b94e6af63e22f2a5e20c7d55e99459d1612be4c6f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-jpeg-1920-top.png",
+      "bytes": 100570,
+      "sha256": "a04e4c414096e05fa766cf863fbf77e26a4c9d293b7a6f4608ba00d52b0a1c81"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-jpeg-1920-top.png.json",
+      "bytes": 954,
+      "sha256": "e4257fe1f4831f488fc81a809ad1a32cb0d80a105babf9ad30aa489d4e7218ea"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-jpeg-684-top.png",
+      "bytes": 100602,
+      "sha256": "55c49996ee705c18a33b4b9b5623598a129855e33e4654bab7a9fc80c7492331"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-jpeg-684-top.png.json",
+      "bytes": 951,
+      "sha256": "365d97c242c299326e81fc5893bba767ed95a1e1abb51a615931edeed7545380"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-jpeg-960-top.png",
+      "bytes": 100249,
+      "sha256": "111fbb5310f44bd46d0326ac36d0e4601a332aa4c60b68ef8692d3b63909914e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-jpeg-960-top.png.json",
+      "bytes": 954,
+      "sha256": "a44cc30a2eb8f2d3624691fb529704dea74ca24da01d502a3b418c9e194665a5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-picture-top.png",
+      "bytes": 100633,
+      "sha256": "da179ae6a77d5ebcc409cc5aeda71d01bdb69b0c4f83416e88be19e644d9e3a7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-picture-top.png.json",
+      "bytes": 954,
+      "sha256": "ffc7a7aeb6fbe53a9ed429ca17af16d857f13a2924b9ebf1418bb981235aef66"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-png-1920-top.png",
+      "bytes": 100084,
+      "sha256": "cdb20d1cf7a19beadf3effa628974616b4a7571834236e04c7da6cac60de4cbd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-png-1920-top.png.json",
+      "bytes": 954,
+      "sha256": "69dedd2d79e66ec3e9c1bb424fd672c02b656dc65a5f48bf2f4cf86c1c6a364d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-png-684-top.png",
+      "bytes": 99904,
+      "sha256": "67ed943a40c156d8cf5ca1de250d20a3f9f4bb2bdcd6ab15f5fb1d08f4bbd4c0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-png-684-top.png.json",
+      "bytes": 951,
+      "sha256": "5eeaf6b3871256838d016b2ebbda9bf2aa201358ee0dbc245b465468f0c4e858"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-png-960-top.png",
+      "bytes": 100937,
+      "sha256": "b5206b019e1fbe04cb2d446910cd3f6ed8c7f9a7e4a31d129dd49e51c133c3a0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-png-960-top.png.json",
+      "bytes": 954,
+      "sha256": "04ceb3de678c3ebb6a1fb9d8012c8d059705e244dff39affc3f1a815947c34b9"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-svg-top.png",
+      "bytes": 93644,
+      "sha256": "d72f34b3c576dedd394d2d30020a7e73b3cb146e0ff1d3a8fc4fa2e09396bf8d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-svg-top.png.json",
+      "bytes": 954,
+      "sha256": "e9430e3dfc0bd8c81521e9259044e5bdeb04df2ceed2cdcae61fa3ccfe8cd26b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-webp-1920-top.png",
+      "bytes": 100692,
+      "sha256": "4675dcfb53a1b2d280a218a46a17f07bb812216a18ea26cafe09f3ab8b6ec845"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-webp-1920-top.png.json",
+      "bytes": 954,
+      "sha256": "8c039b97172c1f1c59fb182a9c8cffd2aa4722f674877dc5e1b53360d763add3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-webp-684-top.png",
+      "bytes": 102273,
+      "sha256": "d61b5d135a90788a09719f5a7ee73b52c49ee0c5be426eaddc55e40d3edf486f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-webp-684-top.png.json",
+      "bytes": 951,
+      "sha256": "2cede1d95adff90b67a5bcfa1c62dd85b1e8a11e521757833fc09950b1302713"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-webp-960-top.png",
+      "bytes": 102854,
+      "sha256": "ee169843c617436a74cb35ec5809b44cbc4e32ecdcf32614c32b48d75f5d6281"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/captures/mobile-2-webp-960-top.png.json",
+      "bytes": 954,
+      "sha256": "e36ec16529f6f9946e466378fb2449b984029d5ef6a408069055e07a0e046421"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-detail-svg-failure.json",
+      "bytes": 4080,
+      "sha256": "42b9c18bca0e6573b6d641c61d6664bfb20cdcd2bc1cced96637ca789fbf88f4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-detail-svg-verify.json",
+      "bytes": 4081,
+      "sha256": "d1851762c8488c34c37699511b3db4e2d6189af7896b7b5fe8c2efd0be9bc364"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-detail-svg-zoom2-verify.json",
+      "bytes": 4089,
+      "sha256": "0126bda3f56616dd0b2e69ec45cb6cb32e5b06baac83333379262f4e0b7f8e5d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-jpeg-1920-bottom.json",
+      "bytes": 3601,
+      "sha256": "459f094046fcf0d14763e3ca948c33249bf1f2021097233ca8ac5418e582c937"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-jpeg-1920-top.json",
+      "bytes": 3588,
+      "sha256": "ddfc741da65f4516cdb6b31f1c6bf0822b551cb880943aacd2d6c085770163de"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-jpeg-684-bottom.json",
+      "bytes": 3610,
+      "sha256": "bdb0ebd9c9bb1835c8c4399688ef85b643076ccd818732c7458097c625167bae"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-jpeg-684-top.json",
+      "bytes": 3597,
+      "sha256": "abe2b568e005aa73104f4412dc23efd49ffef269c0b2a208da81f48aa9806974"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-jpeg-960-bottom.json",
+      "bytes": 3588,
+      "sha256": "ae28a7dfc5ff7e39cb8d4969040d501f6c3d65e300e1b7d8205a9066132bff6b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-jpeg-960-top.json",
+      "bytes": 3575,
+      "sha256": "73988a7e0a310632d152adada5fad5cd30caa7e6eee7d3c4a14969c9d12d47e4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-picture-bottom.json",
+      "bytes": 4376,
+      "sha256": "97c0187087ed3af5fc215b7937ac25cf1eb7b2d93e792f4edb1b661db66a8514"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-picture-top.json",
+      "bytes": 4363,
+      "sha256": "e253b640aa0b16fe575aedbc2c32a45a7a710101b645688f7ff8efff7b0f5b44"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-png-1920-bottom.json",
+      "bytes": 3606,
+      "sha256": "ef318e744e39ba9d6041a319aece00d683913834f8c2b53fa3961077d4488d07"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-png-1920-top.json",
+      "bytes": 3593,
+      "sha256": "22762890c9e31d4313844878d19a9bdbc10d5ffd482261082cc12f09a1d7bbd5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-png-684-bottom.json",
+      "bytes": 3617,
+      "sha256": "48122a3bdf77f1512d425436d4c1eed360112fd0278fb84a4a4004c078f5c43b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-png-684-top.json",
+      "bytes": 3604,
+      "sha256": "f0711b1312d5255264ba39fdaf146264f0f7b3be9eebb3bbecd02ef5792df2c2"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-png-960-bottom.json",
+      "bytes": 3593,
+      "sha256": "0e0fa1742ce1e126124a7b56f45d7db3cad650244fad39dd75ccba16594e9590"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-png-960-top.json",
+      "bytes": 3580,
+      "sha256": "fbdf39327dc009fa4c2bb666c817b9d48d761c02721ba539480fe5c359793ebe"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-svg-bottom.json",
+      "bytes": 3625,
+      "sha256": "f81d8000272d2423889b313a1cf6bda7888b00ac0896a8dbd0516f41f6d3ea1f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-svg-top.json",
+      "bytes": 3612,
+      "sha256": "555f4f0f4c3ca41140f1f5f5724e6290ccb5fed683e30af011d9cdfa9d8735b0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-webp-1920-bottom.json",
+      "bytes": 3606,
+      "sha256": "0c485cd79f8460c85bc422da85d56e3b9153e859c5b0b185ff117a39acb24c84"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-webp-1920-top.json",
+      "bytes": 3593,
+      "sha256": "32f5bef929e6ebfd8ca24e666e6894a1efababe068f86ae8111a3a9c27a7843b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-webp-684-bottom.json",
+      "bytes": 3612,
+      "sha256": "7ed3f0608ea36b3818406844a2629bbcbb8bf59783051e2fd6286c7c83cb12f2"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-webp-684-top.json",
+      "bytes": 3599,
+      "sha256": "9b122bc161fff692dccdbe77db58f8f654f1674483219d2882d18d69d263c339"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-webp-960-bottom.json",
+      "bytes": 3590,
+      "sha256": "e46d3dbab32cc90ea3739d2686947b532beacafa6958e9207fcb24e62734c5f4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-1-webp-960-top.json",
+      "bytes": 3577,
+      "sha256": "746e2fbb0f2e74101a9d04aa084f3d15908e1d5ed43ad8b8c2681a09c1a6853b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-detail-svg-failure.json",
+      "bytes": 4080,
+      "sha256": "4a20565ad289d907873f2685db456f7d8837df67f07d86641671aac557b9e85e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-detail-svg-verify.json",
+      "bytes": 4081,
+      "sha256": "bcbf6db7c6802e2b98591e057d72e709e234eb09ab2d9875fe73fee2ea7e0ce4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-detail-svg-zoom2-verify.json",
+      "bytes": 4089,
+      "sha256": "4a184c48cb45dd38ae4123b9352eae5b86aaf41a5c145fe213a151b7e5671392"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-jpeg-1920-bottom.json",
+      "bytes": 3596,
+      "sha256": "3d46ec96fc8474d0eb6a70c49e0f0e92da46ab49b0d74479ea3d9c8372ae975d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-jpeg-1920-top.json",
+      "bytes": 3583,
+      "sha256": "4b1d7e1be541703beeca62941f4845422b69812e9e8afbc1689ffa72388cd445"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-jpeg-684-bottom.json",
+      "bytes": 3605,
+      "sha256": "9b3d7f3e915ce2f96286b0cf607469cf1a43d5e5ecd58b1d6ca9c6519afe178b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-jpeg-684-top.json",
+      "bytes": 3592,
+      "sha256": "ea9233d5ed637e0327c34e0d2f4c971120eae4db5d28f07e693aa511f3401099"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-jpeg-960-bottom.json",
+      "bytes": 3583,
+      "sha256": "2158ee13b893472dfb0024000ba5a9af412a065ceb0bd6ddcad1b9fc9ecd67ff"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-jpeg-960-top.json",
+      "bytes": 3570,
+      "sha256": "af95df23f2d588b41aaa72e85b42423a6049f51c3664cfbee7e90ae3d6a74d97"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-picture-bottom.json",
+      "bytes": 4149,
+      "sha256": "3fd35feed859707d6bb43e0c9def541d68e73fa160a6fde5f78d6462248ff2b3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-picture-top.json",
+      "bytes": 4136,
+      "sha256": "8a9798e9d4315262cf6b1b40792793ffbd62571e18d86b8c6a4a21a76e57167f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-png-1920-bottom.json",
+      "bytes": 3601,
+      "sha256": "e76bb59fb949df0ffe1b9f5be9fb283b96d39b33610ee4729601cec5d1306b80"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-png-1920-top.json",
+      "bytes": 3588,
+      "sha256": "accd93ee9e5db8776d8f8fef4584043e76bfc78b257c30b6fabb5b668bcf8710"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-png-684-bottom.json",
+      "bytes": 3610,
+      "sha256": "5e6e7b7c96b449b33e5324dd55606c2727b3e1d7a354b788f604c463e4ce48f1"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-png-684-top.json",
+      "bytes": 3597,
+      "sha256": "b22f98221fbb001ae07d229f5f1069689d2af4f31df57349afe73061fb010301"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-png-960-bottom.json",
+      "bytes": 3588,
+      "sha256": "2ea0af78d37e2e8fcf8bfd0484ae65fcf3af1f7cfb6f4cb4e7656a923bc828c5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-png-960-top.json",
+      "bytes": 3575,
+      "sha256": "f1259a430fefe924f98e4cee469a74fd906b47ed22973f7f7fe270893547699c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-svg-bottom.json",
+      "bytes": 3621,
+      "sha256": "69c1c7688ad5e96f13941b00532e180bbcf194a86d80a5566ec070099762a5f0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-svg-top.json",
+      "bytes": 3608,
+      "sha256": "391539cf719780f6108f606774deab8e93d4c0adef27b9df6a7a2fd9f4aefcd2"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-webp-1920-bottom.json",
+      "bytes": 3601,
+      "sha256": "e0bbcebaf5fbe83cf1b19ac65d5b9e07f49314f98dc37fd6df71ef3470dda28a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-webp-1920-top.json",
+      "bytes": 3588,
+      "sha256": "4ab2e998a93f8e9d860cf96dc3eca67b0e9c1afb607c1180874f2e65fc31904b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-webp-684-bottom.json",
+      "bytes": 3608,
+      "sha256": "366c2939ec5041adad39519d4bf34b48e3b7d13ad29146bcb22ec1cb2d34009a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-webp-684-top.json",
+      "bytes": 3595,
+      "sha256": "cdf1988d52725c87158827b5ab5cdb7f54a97d2a5375a0ef5d61f0358da7da24"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-webp-960-bottom.json",
+      "bytes": 3586,
+      "sha256": "b878a02c3b5a51fdf327f7741ebf576158c2d74ce244290f3256853e5f273596"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/desktop-2-webp-960-top.json",
+      "bytes": 3573,
+      "sha256": "2f975840221db29f6d4dbde5a636f7ee9d1e7021110bb925bbfc92aa303eb12e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-failure-end.json",
+      "bytes": 4079,
+      "sha256": "25eac142abad34c939cf5f337360362a737f6c12d0f2b10314389eb9e7ce25a6"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-failure-left.json",
+      "bytes": 4068,
+      "sha256": "5763e1115586d2984bb148b3844bd0891f7ea8fbdf48db9bc87f928e6464fc03"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-failure-middle.json",
+      "bytes": 4082,
+      "sha256": "5d8773af686435a5d85c45c45a1b751f5d05e2193f31ae0e55254aee7e3f4a98"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-failure-right.json",
+      "bytes": 4081,
+      "sha256": "786e38559b80470e1765a947add03dbded00cd18dc235b863be99df570f00f32"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-verify-end.json",
+      "bytes": 4080,
+      "sha256": "d0d9999b88bec76a9646bc346c3e400b5c12d1d7eb326a4a57c3f58b21ba0527"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-verify-left.json",
+      "bytes": 4069,
+      "sha256": "682f0e2028d1fc68bdcf10b7cba4b6abac4447835ad2480d5c33fa89c56396ee"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-verify-middle.json",
+      "bytes": 4083,
+      "sha256": "683494a08b5181cd658dc80a053539fd38932c11b9a39a822e351f0434c1c340"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-verify-right.json",
+      "bytes": 4082,
+      "sha256": "b4e503aef660a3a0c97a02aac60f7b8aa645a143d2c277fd7b0c1777713927ce"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-detail-svg-zoom2-verify.json",
+      "bytes": 4074,
+      "sha256": "d9d9cd222a6dac2c2b227ca9a2d78f62fec61b671fb18920cac26ee49aeb5070"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-jpeg-1920-top.json",
+      "bytes": 3588,
+      "sha256": "3c805d9ab467dbedad61628059ba1eb2d06033fc96305aea3c9cfde04296f5ae"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-jpeg-684-top.json",
+      "bytes": 3557,
+      "sha256": "c5a00bf7bfbe11d725fc3e4f3784b48be4f799e638af1acef1689426eb76823c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-jpeg-960-top.json",
+      "bytes": 3575,
+      "sha256": "8f1810370324e73dd049112e8bff853be48bddd076a3ec02c567c14f481aeecc"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-picture-top.json",
+      "bytes": 4369,
+      "sha256": "e5a0e5c4d23b79bd14934751513cec82ba273c8338e71c452e2aed5c70d2d310"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-png-1920-top.json",
+      "bytes": 3593,
+      "sha256": "062ae607e4506669ecc77faf42b47e047f49d7de970a8bcd1cec0b7137723cf5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-png-684-top.json",
+      "bytes": 3562,
+      "sha256": "086e7ac52c301a90321ac9b1ee2107ecc88e174fbaa67eb79036aed64335122c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-png-960-top.json",
+      "bytes": 3580,
+      "sha256": "426da941f48060c5971e79f94b94d3b3ce001498c0afc4ec254b59f2df676d08"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-svg-top.json",
+      "bytes": 3607,
+      "sha256": "b40f6372586d759fe3495da2bd1feb3bf50df59bf44a851ba7d52469b6339c6c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-webp-1920-top.json",
+      "bytes": 3593,
+      "sha256": "820293638150ae9b613d3b0013c16310573ec0df02ac4f9b6f4ce561e6330392"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-webp-684-top.json",
+      "bytes": 3560,
+      "sha256": "3a7e4e9ffc60b7ff04b3df864c21bd0ad5a3fcac8131009512ea37863060a334"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-1-webp-960-top.json",
+      "bytes": 3578,
+      "sha256": "f284a9f75071601528cb83302b192918c0ccbb391005bdbb1a03c3605d4e53c5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-failure-end.json",
+      "bytes": 4079,
+      "sha256": "bd6a367868690323104ac1968fab59e3a67e12bbba011f59a017b73e7ccb76ee"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-failure-left.json",
+      "bytes": 4068,
+      "sha256": "3b46161a2705b795c87919038a15167856f34a288f9ca2f155d7728ec222fdd5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-failure-middle.json",
+      "bytes": 4082,
+      "sha256": "761ed828a621a37af2ade624fec7328c7e3a9b828d82476d51e37f14ddf1316d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-failure-right.json",
+      "bytes": 4081,
+      "sha256": "da2c12b879705a0742395cdc5d9b44ced15fc118d88b22d052d0170654097df9"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-verify-end.json",
+      "bytes": 4080,
+      "sha256": "05bbfe3fa04f55adcfebdff8619c1a81ca6ee9829999177dac4925a4d0d242f2"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-verify-left.json",
+      "bytes": 4069,
+      "sha256": "9e3772f1bc6710818de981630fe1d8d1ab687ad24bb0f4930bfae7282a3f1d5c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-verify-middle.json",
+      "bytes": 4083,
+      "sha256": "8ee6d02fd900bd6d10723c93af23ee03a53eb8d32192113e841ff89b0b0dfaab"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-verify-right.json",
+      "bytes": 4082,
+      "sha256": "62bbc6b9b19bfcd8905a80f9f5eba0da59cbb0cce3a845baa9a8c39cc75905c1"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-detail-svg-zoom2-verify.json",
+      "bytes": 4074,
+      "sha256": "eb6ea0cc7e5a54ab7a264976ba97ade74bdc2e17021acb02e0223462b384b212"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-jpeg-1920-top.json",
+      "bytes": 3586,
+      "sha256": "12a5adc94b7a057dc6f26902ddfd787b692ea6371585720dd978e716306ab322"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-jpeg-684-top.json",
+      "bytes": 3555,
+      "sha256": "7c5af07d0ff9285e344903cf602f633acfdbb8d7556f58a4720c3f85fad9856c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-jpeg-960-top.json",
+      "bytes": 3573,
+      "sha256": "ee37def3dc1dd37ff86d48c3cb7c513d8d3fd2f1d8e0ad991179aca19826740c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-picture-top.json",
+      "bytes": 4365,
+      "sha256": "f3a61436b043581b38092ccd3ac737e8f77034ab1682de6a0a3b14306307a339"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-png-1920-top.json",
+      "bytes": 3591,
+      "sha256": "1af6f2ff23008f1de97540cc9ea1fbe9b4d11552dfb8473495f8a828c7ad1110"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-png-684-top.json",
+      "bytes": 3560,
+      "sha256": "6746ff77748200dcbca7358a15bb479301fb10adaa1629a85bb39f7c6aeca5b5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-png-960-top.json",
+      "bytes": 3578,
+      "sha256": "b6f5e971294351e914127e90d23a1232c4d09620e29fcaa11ab4772d88cb15cf"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-svg-top.json",
+      "bytes": 3609,
+      "sha256": "e208eb3c2ed6a574eb45ed3ee742c79a60efb243298efe22bc2fad19d9173732"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-webp-1920-top.json",
+      "bytes": 3591,
+      "sha256": "3c55ae49c151fe1fd53fd54f3cb5647add5eae52b8ac143b349abfed4f2639ba"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-webp-684-top.json",
+      "bytes": 3560,
+      "sha256": "37d61958b14025f357b297b8a97d1d3214e06524cf7dec4bb395985215cdec42"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/browser/mobile-2-webp-960-top.json",
+      "bytes": 3576,
+      "sha256": "f44236c48e99325fd87e22550e981b3e97399ebeb52edb3bfb1906d615d490c1"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/calibration/FAILURES.md",
+      "bytes": 2577,
+      "sha256": "235113cb769b0dec0a4b04f725a89cf728198a36418dcf0e498f197baf01201a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/calibration/detail-auto-shrink.html",
+      "bytes": 1238,
+      "sha256": "b5a9c898e2db9e82e8e9ec46d318ddd7b34e5a881865d835961347890391fdc7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/calibration/detail-auto-shrink.json",
+      "bytes": 1016,
+      "sha256": "83a7b738d829da9fcc415ac1642ad11951b1f4c15043939ba43e15224edb923a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/calibration/green-marker-record.json",
+      "bytes": 3614,
+      "sha256": "fd12eb0d1018589c10a27ed7912405f7fd75ab5a17bb7f4c0e7072e3013cfb42"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/checks/binding-tamper-test.json",
+      "bytes": 1170,
+      "sha256": "2a74fe99da96d6150da521ee52789fc62ed7881f2411e40bb8d7464a9d1d5c57"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/checks/guard-rejection.json",
+      "bytes": 742,
+      "sha256": "ed2d4c73070cdd6fbfb6248552cae7e454130624822bd89625ae8e5bab682bc6"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/checks/guard.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/checks/guard.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/checks/guard.stdout.log",
+      "bytes": 201,
+      "sha256": "8c1b9e58dfe2ff5a58de3292918955295941f633a4aca50d0a192da1df507baa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/collector-detail-source.txt",
+      "bytes": 1466,
+      "sha256": "598bc6bda0ff7dffe16a907ec5f4428038caf50ed1d4e8b67fac13055e0e25c5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/collector-source-v2.txt",
+      "bytes": 2675,
+      "sha256": "29771a9a570d38e901bd79b9c97fbdaa4311d739f81cca159291e86c5d99d999"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/controls/control-1920.png",
+      "bytes": 326875,
+      "sha256": "42e493e3aa0b908cfddc66b950231f0e34235bbad464d0a337aba3efe109ab87"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/controls/control-684.png",
+      "bytes": 217959,
+      "sha256": "ab1535acc013ae7df59abc81e8b46dc078b30ed351e4b9346afb3e1ed0efa163"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/controls/control-960.png",
+      "bytes": 325656,
+      "sha256": "a33cb449da5541c8904699a1a3fcec27db7f617c6a11ffdefabd0f7177c90a99"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/controls/controls.json",
+      "bytes": 1786,
+      "sha256": "1701a202276014b9e18ec011103482309d4a7176c5da1008c0848062a1d82875"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/controls.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/controls.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/controls.stdout.log",
+      "bytes": 394,
+      "sha256": "d0b1c7fd51ae9cf89988ba6fee62d4c782859eaec6ed20223eec8c9e68c29dba"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/draft-svg-desktop.jpg",
+      "bytes": 198190,
+      "sha256": "e42b4eb33a0540cc3652237ba56723c21c23678b4a9da067582c2c0abec7af2d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/draft-svg-desktop.json",
+      "bytes": 1929,
+      "sha256": "dc3a147a0ceea05bcbd6b03723724267af9b5663861abdff4735158fbb45223d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/draft-svg-mobile.jpg",
+      "bytes": 48711,
+      "sha256": "bf1e4e772b0faa9c82e511c8a377edbed6cfd52fba80a580c162b1cc3869af0d"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/draft-svg-mobile.json",
+      "bytes": 1915,
+      "sha256": "75c783a95df1170522e2ca468d23d56e2c75e15ba3236232e77f5f6f22663161"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/environment.json",
+      "bytes": 542,
+      "sha256": "7de1d021c93dda995260435f45da61a7ec62eba98ca9031f7c54f3204d218589"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/crops.json",
+      "bytes": 9116,
+      "sha256": "bfb9e90460809aad6359229563cafa8e25c6d784ce1c4cea923fa8d91e07dce5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/jpeg-1920-failure.png",
+      "bytes": 222339,
+      "sha256": "292952b8136185b3dea6e64cd88e0264551ba6a3c5178eda1d408f2a755c0d77"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/jpeg-1920-verification.png",
+      "bytes": 498429,
+      "sha256": "17f8cb9a7339c5891bc344332600cfd87035267dbe1178d1bc7a583ad8e01647"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/jpeg-684-failure.png",
+      "bytes": 54731,
+      "sha256": "50d5ddd8f1c6d65dbb0f79ce0fd2ed7718dc0cd4ce1ede1162f426e86c5fa19b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/jpeg-684-verification.png",
+      "bytes": 112946,
+      "sha256": "94f246d5e9620716c2550b6d2b2be61628ddaf8ea9a09854e404ee8c33256ef8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/jpeg-960-failure.png",
+      "bytes": 86955,
+      "sha256": "14806e7da5b40a111389ec06350147d0b7f097b8b22aead67793c34abc071a5b"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/jpeg-960-verification.png",
+      "bytes": 188158,
+      "sha256": "f7df148ea27387938988acbbc9c7e490555005f6a20a1dab2c59aefefaed26bd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/png-1920-failure.png",
+      "bytes": 50327,
+      "sha256": "a5a9f73bec58c628dbd993e69fefbb8e198ebe0f8bf1051f20940c19c186b772"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/png-1920-verification.png",
+      "bytes": 110438,
+      "sha256": "e5606eedbbff8b2ed746c7fa0998ed540f27c9a90e0296ec81a2fa0ca9962558"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/png-684-failure.png",
+      "bytes": 30876,
+      "sha256": "6932b0da31b0dfce1c4129ba87b21b3d3520a389521e53d79cc904a8306204ed"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/png-684-verification.png",
+      "bytes": 66140,
+      "sha256": "d93a3e9b0dc9776ed1e4d64e06989c11d9661046fc5d2b09ea07c59f21ef8235"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/png-960-failure.png",
+      "bytes": 46979,
+      "sha256": "a815d959dd4c2f8a38c43ccbea3cc5febf556e94899f1046191a9c04df1cb664"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/png-960-verification.png",
+      "bytes": 102010,
+      "sha256": "2ba722349b90dc24aeae8d25cbecb568cce43251600b302225794998cfd22792"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/webp-1920-failure.png",
+      "bytes": 194500,
+      "sha256": "2bc632c839b5c09d5150b40d24beb6d97625fd8f62d4e262b41bcc82fcd595cd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/webp-1920-verification.png",
+      "bytes": 390201,
+      "sha256": "687de10f845a73b00840db615e5d6cf2857d65ac6fe171838c99a52069a411e5"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/webp-684-failure.png",
+      "bytes": 46440,
+      "sha256": "fea16244d462fda0b3543cd11484b882ade31e99565059b26672e68477fdac52"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/webp-684-verification.png",
+      "bytes": 99282,
+      "sha256": "6575785d48f8f326b883c8ad792485a2cfbd951b5ca6f0b53ad23efc61e33b2c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/webp-960-failure.png",
+      "bytes": 78285,
+      "sha256": "8619572a0646c3c00258d6120537a9ee157a02a0c15791b518ef5cb209acf2c7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/file-crops/webp-960-verification.png",
+      "bytes": 167010,
+      "sha256": "526cd1719faf4692dbf93ae6d4433ffe0756dcedc133f3585498c2c7803052e0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/http-check.json",
+      "bytes": 2486,
+      "sha256": "cf53994462e9179c6d124f761da4fc34f359e4757c805e780ee3abb712f7f756"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/measure.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/measure.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/measure.stdout.log",
+      "bytes": 333,
+      "sha256": "2928fee97850bdcbe585fe736ca2a84eb95c69d04dc272b97234266daba16a6a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/output-check.json",
+      "bytes": 21979,
+      "sha256": "4c401cb344b62abf0b182c83c48fc716df72ea95e1909bfb69653f83b05cf5e7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/prepare-copy-failure.json",
+      "bytes": 290,
+      "sha256": "e60a88c48adbc535e4cb00129b48d5de974da3dfb7695c6b156503d38619a9fa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/preview-normal-source.cjs.txt",
+      "bytes": 3991,
+      "sha256": "9f525dd880c51d29466aa807b56cd9e4fa53a08ecaf4f19ad1a0c6c9ffa69bc3"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/raster/diagram-input.png",
+      "bytes": 427223,
+      "sha256": "fd4966526149ea92d6dc0ec88bd01581c4ad2e0604c7fbac3e0f4ff2b9899504"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/raster/render.json",
+      "bytes": 1790,
+      "sha256": "70375ab9c36deafc3ffb6544bb7a0772d260dd0319278851ea3b8a17582edbf9"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/render.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/render.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/render.stdout.log",
+      "bytes": 1339,
+      "sha256": "fe3e9c0aa4b630c8d58793ad6ef2553b67a5a5cebb93079da9e442bd30847672"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1/image-1920.jpg",
+      "bytes": 406976,
+      "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1/image-1920.webp",
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1/image-684.jpg",
+      "bytes": 105685,
+      "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1/image-684.webp",
+      "bytes": 64168,
+      "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1/image-960.jpg",
+      "bytes": 161979,
+      "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1/image-960.webp",
+      "bytes": 95622,
+      "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1/manifest.json",
+      "bytes": 2425,
+      "sha256": "a15de305324838b455d5f8f7ab2ce922707163b6c35309244fc50d265644c670"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1.json",
+      "bytes": 5172,
+      "sha256": "3ad299ce431b8be8778aa3b97b80f76890b45ee901ee3a2e78b65ad38f326f96"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1.process.json",
+      "bytes": 2025,
+      "sha256": "16888a1340dc527a96a56a58143d5ab3507685987c52fc7eb47b1ce55be5dcdd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/A1.stdout.log",
+      "bytes": 73,
+      "sha256": "b89d2c4224319f2cb65167e37df259587b0c99ce8b01ef3f62f0afa285935696"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1/image-1920.jpg",
+      "bytes": 406976,
+      "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1/image-1920.webp",
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1/image-684.jpg",
+      "bytes": 105685,
+      "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1/image-684.webp",
+      "bytes": 64168,
+      "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1/image-960.jpg",
+      "bytes": 161979,
+      "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1/image-960.webp",
+      "bytes": 95622,
+      "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1/manifest.json",
+      "bytes": 2551,
+      "sha256": "7402c3dbad24a94ecb1a89f83501231b3b328137931ed6c9cf1e8071cb784a38"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1.json",
+      "bytes": 6098,
+      "sha256": "9e6119ce9a76cbff354703a011e5fc4ff4c7066a8dc6dd97f4b789cc243dd2c6"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1.process.json",
+      "bytes": 2039,
+      "sha256": "9cebc19a25219aaee597b5d22a748912685ef80fa467da7ff7d36065fe8fff23"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1.stdout.log",
+      "bytes": 80,
+      "sha256": "55085018e2bb28d2bbab6d419f050088757902397567c7ad55d1a9b27190605a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2/image-1920.jpg",
+      "bytes": 406976,
+      "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2/image-1920.webp",
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2/image-684.jpg",
+      "bytes": 105685,
+      "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2/image-684.webp",
+      "bytes": 64168,
+      "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2/image-960.jpg",
+      "bytes": 161979,
+      "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2/image-960.webp",
+      "bytes": 95622,
+      "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2/manifest.json",
+      "bytes": 2551,
+      "sha256": "7402c3dbad24a94ecb1a89f83501231b3b328137931ed6c9cf1e8071cb784a38"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2.json",
+      "bytes": 6091,
+      "sha256": "8426531aac3eb3861d1f9a7dd2746578391a9d4925bc9a7784543d47c5bcf08a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2.process.json",
+      "bytes": 2025,
+      "sha256": "55a640da8399e87d9d06b7fc8473d49b6f7afd6ddbc8b55c2cc96e14dfe44f43"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B2.stdout.log",
+      "bytes": 73,
+      "sha256": "2bef52bacab7c98fa9e313d5c66ec029392fecab013156189e6e4568f7663b48"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3/image-1920.jpg",
+      "bytes": 406976,
+      "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3/image-1920.webp",
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3/image-684.jpg",
+      "bytes": 105685,
+      "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3/image-684.webp",
+      "bytes": 64168,
+      "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3/image-960.jpg",
+      "bytes": 161979,
+      "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3/image-960.webp",
+      "bytes": 95622,
+      "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3/manifest.json",
+      "bytes": 2551,
+      "sha256": "7402c3dbad24a94ecb1a89f83501231b3b328137931ed6c9cf1e8071cb784a38"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3.json",
+      "bytes": 6091,
+      "sha256": "e3bac8dbd92e3777abca6ed4791e242c374cacf2979457e175b68b04d47fc008"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3.process.json",
+      "bytes": 2032,
+      "sha256": "13a0d5a6565ab76c87e659265285418aa2f83de0e5bcab840f69e94316c26216"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B3.stdout.log",
+      "bytes": 73,
+      "sha256": "8e52893f13a420f413acf565f967623074562cae44ab5ee9ff48e16ddd233e02"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/processes.json",
+      "bytes": 8712,
+      "sha256": "fb97723f405812d7eb758709b2b7bc73a241e1819254afe9429a8c96d0cb43c7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/compiler-artifact-flow.svg",
+      "bytes": 4834,
+      "sha256": "71fb80cc85bcf53a9042234973d476638ae9338fc892bca8795714d66b89e7d8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/control-1920.png",
+      "bytes": 326875,
+      "sha256": "42e493e3aa0b908cfddc66b950231f0e34235bbad464d0a337aba3efe109ab87"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/control-684.png",
+      "bytes": 217959,
+      "sha256": "ab1535acc013ae7df59abc81e8b46dc078b30ed351e4b9346afb3e1ed0efa163"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/control-960.png",
+      "bytes": 325656,
+      "sha256": "a33cb449da5541c8904699a1a3fcec27db7f617c6a11ffdefabd0f7177c90a99"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/detail-svg.html",
+      "bytes": 2489,
+      "sha256": "b041b60110279c7dda771d3655b17dd0f7d1522e5981bc5ade7ff662092f40d7"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/image-1920.jpg",
+      "bytes": 406976,
+      "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/image-1920.webp",
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/image-684.jpg",
+      "bytes": 105685,
+      "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/image-684.webp",
+      "bytes": 64168,
+      "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/image-960.jpg",
+      "bytes": 161979,
+      "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/image-960.webp",
+      "bytes": 95622,
+      "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/jpeg-1920.html",
+      "bytes": 1131,
+      "sha256": "9cf65baed2ed2fea4dd86438bea5ecf81589e6e47406de9511b31ac4f8af9f37"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/jpeg-684.html",
+      "bytes": 1125,
+      "sha256": "635d6b4a22de35dadfe009cb7460dd8abb9090cb474086586fc8fbe10090ffa9"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/jpeg-960.html",
+      "bytes": 1126,
+      "sha256": "efebaa836adb8a916f2e57aae90599f155a82250453d2eafff858fc2645f559a"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/manifest.json",
+      "bytes": 2551,
+      "sha256": "7402c3dbad24a94ecb1a89f83501231b3b328137931ed6c9cf1e8071cb784a38"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/pages.json",
+      "bytes": 993,
+      "sha256": "f45956935283529697eeb173950e245253296ce42814aff8b1b35aceb91bbd04"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/picture.html",
+      "bytes": 1398,
+      "sha256": "1aab2388875076f118867516cace2572b7304a0d015c84b640e07049800ecf4c"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/png-1920.html",
+      "bytes": 1130,
+      "sha256": "6e7ef3c65609f004f1fd050ceaab74ef34b57da82685d0a1ffd104173b62823e"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/png-684.html",
+      "bytes": 1124,
+      "sha256": "90c8b7276c733eef3d0cd48ce03cfca6826feebc42c5df6bd872a051902cfc36"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/png-960.html",
+      "bytes": 1125,
+      "sha256": "e7dc958c3badb67459150710ac588289a21c8702397c23b14b281a0d959cef49"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/qa.js",
+      "bytes": 1257,
+      "sha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/svg.html",
+      "bytes": 1124,
+      "sha256": "36469e2b74bc745a9d5d887f1555a600ba898c8fed69c714fb85cd09919d40fa"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/webp-1920.html",
+      "bytes": 1132,
+      "sha256": "26bf9fa9e626be342903afe97ad34bcf32863839985d056e12a7490720e4cf55"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/webp-684.html",
+      "bytes": 1126,
+      "sha256": "7d0339176c89c1c785ed484d493d75f6fa30e35e3889197b2f1f9851d4069fde"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview/webp-960.html",
+      "bytes": 1127,
+      "sha256": "525eb63bf930a87ec80549a29bd1b0e2d1aa7deacbb0248871d6edc206a742dd"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/preview.cjs",
+      "bytes": 5360,
+      "sha256": "6afbacb4f1baeb9d9c1694d5c1dcbba57e2902c7f06e3e54ae6451a5953e0cb4"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/render.cjs",
+      "bytes": 1632,
+      "sha256": "b0671e67c4e1d27a5a1411870e9d4d66e7d6386a0a1264f6b15fad2685112262"
+    },
+    {
+      "file": "docs/history/adoption-diagram-1.5.0-20261014/svg-freeze.json",
+      "bytes": 527,
+      "sha256": "5d1ca8c4896912fc1c724dbd74688f5cd57db21b866a0e558ea6ad7f6be84d25"
+    },
+    {
+      "file": "docs/ADOPTION_GUIDE.md",
+      "bytes": 17387,
+      "sha256": "8daf90d1fa11e022d166200a5f6ba4dc5f2edb9d4385f73c96029b9fa42f5228"
+    },
+    {
+      "file": "docs/images/compiler-artifact-flow.svg",
+      "bytes": 4834,
+      "sha256": "71fb80cc85bcf53a9042234973d476638ae9338fc892bca8795714d66b89e7d8"
+    }
+  ]
+}
