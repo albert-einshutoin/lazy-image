@@ -11,3 +11,5 @@
 セルフレビューは公開SDKと評価code、固定入力/予算と結果、module後/whole-process時間、生成容量/実取得容量、通常/拒否、正常記事/比較診断、主測定/補助code更新、原本/公開derivativeを分けて確認した。未観測native totalMs、XMP付き入力challenge、OS全tmp、細線保持、18画像同時比較の失敗原因を成功へ昇格していない。
 
 Companion GateとPRの最終HEAD・CI/merge対応はIssue #902 / 対応PRへ記録する。本体/公開API/CI変更はなく、文書完了確認だけの全build/全benchmark/公開release matrixの再実行は追加しない。
+
+初回Companion GateはNode execPathのCellar実体がsymlink用置換に一致せず残る点でBLOCK。原本を保持し、node_executable規則を実体/alias双方へ修正して公開derivative/ledger/hashを再生成。主測定/consumer主3code/数値/画像は変更せず、当該指摘範囲だけ最終確認する。

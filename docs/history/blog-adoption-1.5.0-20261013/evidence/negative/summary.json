@@ -2,7 +2,7 @@
   {
     "name": "invalid",
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "build.mjs",
       "A",
       "<PRIVATE_EVAL_ROOT>/negative/invalid",
@@ -40,7 +40,7 @@
   {
     "name": "strict",
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "build.mjs",
       "B",
       "<PRIVATE_EVAL_ROOT>/negative/strict",
@@ -78,7 +78,7 @@
   {
     "name": "existing",
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "build.mjs",
       "B",
       "<PRIVATE_EVAL_ROOT>/runs/B1",

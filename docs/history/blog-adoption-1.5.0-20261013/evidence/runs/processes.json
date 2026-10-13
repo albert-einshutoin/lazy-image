@@ -4,7 +4,7 @@
     "condition": "A",
     "trial": 1,
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "<PRIVATE_EVAL_ROOT>/consumer/build.mjs",
       "A",
       "<PRIVATE_EVAL_ROOT>/runs/A1",
@@ -185,7 +185,7 @@
     "condition": "B",
     "trial": 1,
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "<PRIVATE_EVAL_ROOT>/consumer/build.mjs",
       "B",
       "<PRIVATE_EVAL_ROOT>/runs/B1",
@@ -366,7 +366,7 @@
     "condition": "A",
     "trial": 2,
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "<PRIVATE_EVAL_ROOT>/consumer/build.mjs",
       "A",
       "<PRIVATE_EVAL_ROOT>/runs/A2",
@@ -547,7 +547,7 @@
     "condition": "B",
     "trial": 2,
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "<PRIVATE_EVAL_ROOT>/consumer/build.mjs",
       "B",
       "<PRIVATE_EVAL_ROOT>/runs/B2",
@@ -728,7 +728,7 @@
     "condition": "A",
     "trial": 3,
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "<PRIVATE_EVAL_ROOT>/consumer/build.mjs",
       "A",
       "<PRIVATE_EVAL_ROOT>/runs/A3",
@@ -909,7 +909,7 @@
     "condition": "B",
     "trial": 3,
     "command": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "<NODE_EXECUTABLE>",
       "<PRIVATE_EVAL_ROOT>/consumer/build.mjs",
       "B",
       "<PRIVATE_EVAL_ROOT>/runs/B3",

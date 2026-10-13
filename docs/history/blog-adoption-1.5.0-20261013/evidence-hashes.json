@@ -14,8 +14,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/LOG_REDACTIONS.json",
-      "bytes": 263265,
-      "sha256": "bf0a78606108dcc0d180df0d8a69835ea3b98a17e593246d6e577e2737408dec"
+      "bytes": 263916,
+      "sha256": "0ec46ebbd9e653f6f0c7425860682de52f9c64ec647120aa7863156d256ef796"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/PLAN.md",
@@ -34,8 +34,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/VALIDATION.md",
-      "bytes": 2630,
-      "sha256": "ecc7753f7344ed0bd3ff449b1c73d9d58fc4fc07bf773089addb7f6ac961e896"
+      "bytes": 2961,
+      "sha256": "3c0e24652c2de7d198cfe406e1baa51c348461f415f4905ad7bf60ccc32bb6be"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/consumer/CC0-1.0.txt",
@@ -423,6 +423,11 @@
       "sha256": "117d4b3d2466e5e569d7b7b21ceec2807b3b501509a379087d5988927d42f323"
     },
     {
+      "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/gate.json",
+      "bytes": 1106,
+      "sha256": "be951427b53f240b43909efbbfa498b31bb325dd695171f4f70a74fe8c957023"
+    },
+    {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/http-server.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -529,8 +534,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative/summary.json",
-      "bytes": 11872,
-      "sha256": "06c3e58136def9cdeb7ae573de2e06f7fe4826dc7a7a79a86b92ab351d0dea86"
+      "bytes": 11800,
+      "sha256": "4e697160bf5105e8f1cd627b9e13cbb2ebf59b4f0c0b79679755838f21aa0ab8"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/negative.exit",
@@ -749,8 +754,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1.process.json",
-      "bytes": 5615,
-      "sha256": "502c553f261f4ef7e3d295e724f276737d3d3568e32a7cfcbf66bb909ff36889"
+      "bytes": 5591,
+      "sha256": "ca0f623aa6f2f0f4995ded98d697b1f23d04eaf643cd0d9066526c8be279f9a8"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A1.stderr.log",
@@ -919,8 +924,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2.process.json",
-      "bytes": 5629,
-      "sha256": "87b923fbaf04c342f2cd6b1eb147c782e9b6ed689b90586004e2c04782f4d476"
+      "bytes": 5605,
+      "sha256": "4d2a25b2a50edba956558fbc8e76823134a489a2c12f32ec8b0f2f370a1b2ada"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A2.stderr.log",
@@ -1089,8 +1094,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3.process.json",
-      "bytes": 5621,
-      "sha256": "36fc83667a3f79216aeda45a34c0a1751aa7e740986a39df6791bf46c2fc7cf6"
+      "bytes": 5597,
+      "sha256": "0cdef8820aa2a6d793fdf52a0c1c3ae0a6adb3f9d2498c210369d002092e880a"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/A3.stderr.log",
@@ -1259,8 +1264,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1.process.json",
-      "bytes": 5629,
-      "sha256": "e16bb1cc39787e4dcfa669a2050dae0e6dae8d9d071f80dc97ebc6ee99e445c1"
+      "bytes": 5605,
+      "sha256": "90fc98d96f76f8780111b2c1c0969fab1bcbd0538bcbbc3166e7ef6e3099b351"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B1.stderr.log",
@@ -1429,8 +1434,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2.process.json",
-      "bytes": 5621,
-      "sha256": "6a7f3c5f2c7908b28a20340800bfee5c80b9f169b71d85507405b0bad4416949"
+      "bytes": 5597,
+      "sha256": "5de8a9e7484bfe13d8e7a8a580fb235d72616838eb43d5d94a6ceaebbc859107"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B2.stderr.log",
@@ -1599,8 +1604,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3.process.json",
-      "bytes": 5622,
-      "sha256": "4e29dc67cf7b8410f8e53572e6abd2af2d8906fc05f5e2ef2affd1baa7f18f1f"
+      "bytes": 5598,
+      "sha256": "4eb3612f721c3deddb68cb421de9a0662416cb5bd38298df857084ec8ebca56a"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/B3.stderr.log",
@@ -1614,8 +1619,8 @@
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/processes.json",
-      "bytes": 35918,
-      "sha256": "d018b5344cc1f092b71c700a2d14f72b6668dd214f48648f7a5f3528105de14f"
+      "bytes": 35774,
+      "sha256": "16ca1b64010fc2d84a14f80f333cae4288fbd7d8602d55b4fd137465bd5e3b74"
     },
     {
       "path": "docs/history/blog-adoption-1.5.0-20261013/evidence/runs/summary.json",

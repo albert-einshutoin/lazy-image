@@ -370,11 +370,12 @@
       "original": "runs/A2.process.json",
       "public": "evidence/runs/A2.process.json",
       "originalBytes": 5770,
-      "publicBytes": 5629,
+      "publicBytes": 5605,
       "originalSha256": "443e7c4a1b78626775ede5925950b856cf52e6b981998dab7872e96d4241f38f",
-      "publicSha256": "87b923fbaf04c342f2cd6b1eb147c782e9b6ed689b90586004e2c04782f4d476",
+      "publicSha256": "4d2a25b2a50edba956558fbc8e76823134a489a2c12f32ec8b0f2f370a1b2ada",
       "replacements": {
-        "evaluation_root": 3
+        "evaluation_root": 3,
+        "node_executable": 1
       }
     },
     {
@@ -399,11 +400,12 @@
       "original": "runs/B3.process.json",
       "public": "evidence/runs/B3.process.json",
       "originalBytes": 5763,
-      "publicBytes": 5622,
+      "publicBytes": 5598,
       "originalSha256": "923a31bf246c37550d68eef8e3a215138deef2edeec0cb8acade20a5e98b3869",
-      "publicSha256": "4e29dc67cf7b8410f8e53572e6abd2af2d8906fc05f5e2ef2affd1baa7f18f1f",
+      "publicSha256": "4eb3612f721c3deddb68cb421de9a0662416cb5bd38298df857084ec8ebca56a",
       "replacements": {
-        "evaluation_root": 3
+        "evaluation_root": 3,
+        "node_executable": 1
       }
     },
     {
@@ -419,11 +421,12 @@
       "original": "runs/A3.process.json",
       "public": "evidence/runs/A3.process.json",
       "originalBytes": 5762,
-      "publicBytes": 5621,
+      "publicBytes": 5597,
       "originalSha256": "2576c0316e5bcc15bd5e6030635c182b00bbf150bff4bcd6fef246ed170602f2",
-      "publicSha256": "36fc83667a3f79216aeda45a34c0a1751aa7e740986a39df6791bf46c2fc7cf6",
+      "publicSha256": "0cdef8820aa2a6d793fdf52a0c1c3ae0a6adb3f9d2498c210369d002092e880a",
       "replacements": {
-        "evaluation_root": 3
+        "evaluation_root": 3,
+        "node_executable": 1
       }
     },
     {
@@ -457,11 +460,12 @@
       "original": "runs/B2.process.json",
       "public": "evidence/runs/B2.process.json",
       "originalBytes": 5762,
-      "publicBytes": 5621,
+      "publicBytes": 5597,
       "originalSha256": "fd6e0fd5e6fd52e54ef2c4d5d81a04bb6c77310267ab2588be74627f7b8bebbe",
-      "publicSha256": "6a7f3c5f2c7908b28a20340800bfee5c80b9f169b71d85507405b0bad4416949",
+      "publicSha256": "5de8a9e7484bfe13d8e7a8a580fb235d72616838eb43d5d94a6ceaebbc859107",
       "replacements": {
-        "evaluation_root": 3
+        "evaluation_root": 3,
+        "node_executable": 1
       }
     },
     {
@@ -549,11 +553,12 @@
       "original": "runs/processes.json",
       "public": "evidence/runs/processes.json",
       "originalBytes": 36764,
-      "publicBytes": 35918,
+      "publicBytes": 35774,
       "originalSha256": "9f2b7abc93881328a138a72db6517e7afa7ca51a0eeb5206df9aa56e6fd55621",
-      "publicSha256": "d018b5344cc1f092b71c700a2d14f72b6668dd214f48648f7a5f3528105de14f",
+      "publicSha256": "16ca1b64010fc2d84a14f80f333cae4288fbd7d8602d55b4fd137465bd5e3b74",
       "replacements": {
-        "evaluation_root": 18
+        "evaluation_root": 18,
+        "node_executable": 6
       }
     },
     {
@@ -587,11 +592,12 @@
       "original": "runs/A1.process.json",
       "public": "evidence/runs/A1.process.json",
       "originalBytes": 5756,
-      "publicBytes": 5615,
+      "publicBytes": 5591,
       "originalSha256": "1d105117667d90303ffab358a30e58e43984335ecb2270df987f8f52123a628d",
-      "publicSha256": "502c553f261f4ef7e3d295e724f276737d3d3568e32a7cfcbf66bb909ff36889",
+      "publicSha256": "ca0f623aa6f2f0f4995ded98d697b1f23d04eaf643cd0d9066526c8be279f9a8",
       "replacements": {
-        "evaluation_root": 3
+        "evaluation_root": 3,
+        "node_executable": 1
       }
     },
     {
@@ -625,11 +631,12 @@
       "original": "runs/B1.process.json",
       "public": "evidence/runs/B1.process.json",
       "originalBytes": 5770,
-      "publicBytes": 5629,
+      "publicBytes": 5605,
       "originalSha256": "112a12b00b64898895f7cfc5c1f8e51a106d72db8deace69065761b62a343b69",
-      "publicSha256": "e16bb1cc39787e4dcfa669a2050dae0e6dae8d9d071f80dc97ebc6ee99e445c1",
+      "publicSha256": "90fc98d96f76f8780111b2c1c0969fab1bcbd0538bcbbc3166e7ef6e3099b351",
       "replacements": {
-        "evaluation_root": 3
+        "evaluation_root": 3,
+        "node_executable": 1
       }
     },
     {
@@ -2231,11 +2238,12 @@
       "original": "negative/summary.json",
       "public": "evidence/negative/summary.json",
       "originalBytes": 12201,
-      "publicBytes": 11872,
+      "publicBytes": 11800,
       "originalSha256": "0c6ae1a5559926718b284acd8ba72dbec34d39cdc17f1209ded0f0227de91f67",
-      "publicSha256": "06c3e58136def9cdeb7ae573de2e06f7fe4826dc7a7a79a86b92ab351d0dea86",
+      "publicSha256": "4e697160bf5105e8f1cd627b9e13cbb2ebf59b4f0c0b79679755838f21aa0ab8",
       "replacements": {
-        "evaluation_root": 7
+        "evaluation_root": 7,
+        "node_executable": 3
       }
     },
     {
@@ -2725,6 +2733,18 @@
       "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
       "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
       "replacements": {}
+    },
+    {
+      "original": "gate.json",
+      "public": "evidence/gate.json",
+      "originalBytes": 1139,
+      "publicBytes": 1106,
+      "originalSha256": "0346fb93c70c84b0881fc15f49c62829862953520d3f0858e794fe355e6175ac",
+      "publicSha256": "be951427b53f240b43909efbbfa498b31bb325dd695171f4f70a74fe8c957023",
+      "replacements": {
+        "node_executable": 1,
+        "local_workspace": 1
+      }
     },
     {
       "original": "negative.log",

@@ -1,0 +1,7 @@
+{
+  "status": 0,
+  "threadId": "01a133f7-fce1-7821-8436-9b4622f7ec93",
+  "rawOutput": "BLOCK: touched=[]\n\n指定scopeの静的レビュー結果です。\n\n- base/head、worktree clean、binary diff SHA256は指定値と一致。\n- consumer、identity、6試行、132画像、48 budget、負例、A/B同一hash、保存hashは整合。\n- ただし公開証拠にNode実行ファイルの絶対パスが残っています。\n\n`evidence/runs/processes.json`、各`*.process.json`、`evidence/negative/summary.json`に `<NODE_EXECUTABLE>` が残存しています。一方、[LOG_REDACTIONS.json](<LOCAL_WORKSPACE>/lazy-image/docs/history/blog-adoption-1.5.0-20261013/LOG_REDACTIONS.json:9) は`node_executable`を`<NODE_EXECUTABLE>`へ置換する規則を定義し、ledgerの該当エントリにはその置換実績がありません。\n\nこれは保存証拠のprivacy/provenance受入不一致のためBLOCKです。修正・再hash・再レビューが必要です。Hosted CI、PR merge、Issue/Goal完了は今回も未判定です。\n\n",
+  "touchedFiles": [],
+  "reasoningSummary": []
+}

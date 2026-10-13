@@ -3,7 +3,7 @@
   "condition": "A",
   "trial": 1,
   "command": [
-    "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+    "<NODE_EXECUTABLE>",
     "<PRIVATE_EVAL_ROOT>/consumer/build.mjs",
     "A",
     "<PRIVATE_EVAL_ROOT>/runs/A1",
