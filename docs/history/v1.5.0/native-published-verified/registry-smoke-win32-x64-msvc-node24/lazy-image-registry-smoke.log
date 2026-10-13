@@ -1,0 +1,60 @@
+11.19.0
+
+added 2 packages in 7s
+{
+  "shasum": "ae973e2e75fde11f5d32d3a4e07b53b97fb5c7fb",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.5.0.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg==",
+  "signatures": [
+    {
+      "sig": "MEQCIAMgxIR/gAOmcxZFAIccRwTlHvawkcg8QDGwPklvaqf+AiA2UQBKMZ1qZDUzOqR7sqZEZ9h8sJkMi4MBCpd14bsH+g==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIG3ZgjOLyRQDOQ/waEty7sucJbYpuISqRH7O5tXhrnQOAiEAnJ9UWVpgqnD4WT3H0gzTMyUMOUUXxSnB6cjg+wRDlJ4="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 238061
+}
+{
+  "shasum": "fb9f0c4b9bddd381bcf5a6e3872539567a47eebc",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-win32-x64-msvc/-/lazy-image-win32-x64-msvc-1.5.0.tgz",
+  "fileCount": 2,
+  "integrity": "sha512-IpYOXtlg1hqPHJwnRntrN+1kL7c/r03AE+rCMAMazEANEuFyYKI8bVuIeLnyg++KwSRWPvUm6ZD8Y4v7vqV+aA==",
+  "signatures": [
+    {
+      "sig": "MEUCIAiwuHGqBZXyHrUWKDJX+9GHxvpE+SwyyIUdyCtWPCOzAiEAvOaf5Lcq+SNtrIbpvgQrhyJfgJLknDWxgLAPq8ucYss=",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEYCIQDCbpT+EFmbldvt2hd1OsO2k/ut/hGGdzp+ZaorzbrVwAIhAKpRI3Qzzq+cgBASXc9Ay97HQHguD40ZONwEAKDE+ZCk"
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image-win32-x64-msvc@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 12764807
+}
+(node:6328) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.5.0","platform":"win32","arch":"x64","fingerprint":"16ce13e3c796475c8c9695e5f42d7cbf4b85f33f616eebdc116a563d595dcc36"},"policy":{"preset":"publicUpload","fingerprint":"7db6a8f434e6d7a3ddf10581f9ae7b664b78b2a5d0b9cf27d67b3631b7e7c9f8","widths":[320,640],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"320/webp","path":"image-320.webp","format":"webp","width":320,"height":320,"bytes":12746,"quality":80,"iccOutcome":"absent","sha256":"44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"},{"id":"640/webp","path":"image-640.webp","format":"webp","width":640,"height":640,"bytes":35890,"quality":80,"iccOutcome":"absent","sha256":"01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"}],"delivery":{"srcsets":[{"format":"webp","value":"image-320.webp 320w, image-640.webp 640w"}]},"cacheKey":"241a34dfa875a8b5efc0673cc8bd4d64ffcc5aea5d1f8067d5e2a8335a660ee2"}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.5.0","platform":"win32","arch":"x64","fingerprint":"16ce13e3c796475c8c9695e5f42d7cbf4b85f33f616eebdc116a563d595dcc36"},"policy":{"preset":"publicUpload","fingerprint":"c9005c3188288e6f24db64971971d7913ff37f0fd3f406b3581944906b823557","widths":[64],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"64/webp","path":"image-64.webp","format":"webp","width":64,"height":64,"bytes":460,"quality":30,"targetBytes":1048576,"iccOutcome":"absent","sha256":"4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea"}],"delivery":{"srcsets":[{"format":"webp","value":"image-64.webp 64w"}]},"cacheKey":"6eaea03a9cdadd01457a4c30887fe70b1fc051757cb07999da39969409c11bff"}
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+registry-native-smoke: PASS win32-x64-msvc v24.21.0

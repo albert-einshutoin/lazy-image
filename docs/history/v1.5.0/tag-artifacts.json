@@ -1,0 +1,425 @@
+{
+  "total_count": 21,
+  "artifacts": [
+    {
+      "id": 11787015323,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NzAxNTMyMw==",
+      "name": "candidate-smoke-linux-x64-gnu-node24",
+      "size_in_bytes": 3264,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787015323",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787015323/zip",
+      "expired": false,
+      "digest": "sha256:b0241f22af8acba8b767e6a97f177e2839f658f82e4a48bc3fd5198c96c90cd5",
+      "created_at": "2026-10-13T03:14:20Z",
+      "updated_at": "2026-10-13T03:14:20Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786980096,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4Njk4MDA5Ng==",
+      "name": "supply-chain-reports",
+      "size_in_bytes": 106617,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786980096",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786980096/zip",
+      "expired": false,
+      "digest": "sha256:c3368bc05cdd2935677bf78a52b409742d0ba2ac74e09cb501dda20d46155bc2",
+      "created_at": "2026-10-13T03:12:30Z",
+      "updated_at": "2026-10-13T03:12:30Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786965335,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4Njk2NTMzNQ==",
+      "name": "bindings-x86_64-unknown-linux-musl",
+      "size_in_bytes": 4173868,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786965335",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786965335/zip",
+      "expired": false,
+      "digest": "sha256:4e903d36be07a07ba82720a83395337726d1566ec6dc935bede2cf6ce3e8834b",
+      "created_at": "2026-10-13T03:13:42Z",
+      "updated_at": "2026-10-13T03:13:42Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786925488,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjkyNTQ4OA==",
+      "name": "candidate-smoke-linux-x64-musl-node22",
+      "size_in_bytes": 3616,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786925488",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786925488/zip",
+      "expired": false,
+      "digest": "sha256:c8ddc4069784204108276886c5afdc236ca6a191ee625c7fea6b994bba6706db",
+      "created_at": "2026-10-13T03:14:23Z",
+      "updated_at": "2026-10-13T03:14:23Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786788571,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4Njc4ODU3MQ==",
+      "name": "candidate-smoke-win32-x64-msvc-node22",
+      "size_in_bytes": 3315,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786788571",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786788571/zip",
+      "expired": false,
+      "digest": "sha256:cf525b3cd4741e9148f7732e82415387d828ba8fedbb4ea90bcc8bdf9b37fb10",
+      "created_at": "2026-10-13T03:14:32Z",
+      "updated_at": "2026-10-13T03:14:32Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786773911,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4Njc3MzkxMQ==",
+      "name": "release-candidate",
+      "size_in_bytes": 22410240,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786773911",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786773911/zip",
+      "expired": false,
+      "digest": "sha256:98ceff31fd327a95b5eebef210a0638d02d96cd59a0330edeebfe2861a4f5ba5",
+      "created_at": "2026-10-13T03:14:03Z",
+      "updated_at": "2026-10-13T03:14:03Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786732828,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjczMjgyOA==",
+      "name": "candidate-smoke-linux-x64-gnu-node22",
+      "size_in_bytes": 3263,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786732828",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786732828/zip",
+      "expired": false,
+      "digest": "sha256:acf98486ab160f0d14a173a75ddc019988323722d14ad4dc563cc2210b5d6225",
+      "created_at": "2026-10-13T03:14:17Z",
+      "updated_at": "2026-10-13T03:14:17Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786614515,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjYxNDUxNQ==",
+      "name": "candidate-smoke-win32-x64-msvc-node24",
+      "size_in_bytes": 3494,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786614515",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786614515/zip",
+      "expired": false,
+      "digest": "sha256:9cb0253cac997200581272f3ce58a86b5968b498ac85b09332726ec18fdc6996",
+      "created_at": "2026-10-13T03:14:33Z",
+      "updated_at": "2026-10-13T03:14:33Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786574557,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjU3NDU1Nw==",
+      "name": "candidate-smoke-darwin-arm64-node22",
+      "size_in_bytes": 3369,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786574557",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786574557/zip",
+      "expired": false,
+      "digest": "sha256:6e1ed29294843438e3336389f4edcd335dc3312d0f3f032e9145e06b58d358e5",
+      "created_at": "2026-10-13T03:14:27Z",
+      "updated_at": "2026-10-13T03:14:27Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786574206,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjU3NDIwNg==",
+      "name": "bindings-x86_64-apple-darwin",
+      "size_in_bytes": 3834832,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786574206",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786574206/zip",
+      "expired": false,
+      "digest": "sha256:33dfb919862e52798213f26f229d0d461081f8e76eec10d5c207ee2df40bfb7c",
+      "created_at": "2026-10-13T03:12:03Z",
+      "updated_at": "2026-10-13T03:12:03Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786564671,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjU2NDY3MQ==",
+      "name": "candidate-smoke-darwin-arm64-node24",
+      "size_in_bytes": 3369,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786564671",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786564671/zip",
+      "expired": false,
+      "digest": "sha256:3b0c16b5555821320e57e07849c478494b3f2f3b2d8937b53cf718c139dbee53",
+      "created_at": "2026-10-13T03:14:23Z",
+      "updated_at": "2026-10-13T03:14:23Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786548127,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjU0ODEyNw==",
+      "name": "candidate-smoke-darwin-x64-node22",
+      "size_in_bytes": 3362,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786548127",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786548127/zip",
+      "expired": false,
+      "digest": "sha256:6e8483ac4b26a90eb6e3bd86f65093a8f1deae7738327b8968e51984928551f7",
+      "created_at": "2026-10-13T03:14:58Z",
+      "updated_at": "2026-10-13T03:14:58Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786524749,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjUyNDc0OQ==",
+      "name": "candidate-smoke-darwin-x64-node24",
+      "size_in_bytes": 3360,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786524749",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786524749/zip",
+      "expired": false,
+      "digest": "sha256:6e4d2e783eb1eff5cd7eee05624b9df2094e9b6a5cc2c0935ece3cd32f44dc87",
+      "created_at": "2026-10-13T03:14:40Z",
+      "updated_at": "2026-10-13T03:14:40Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786274992,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjI3NDk5Mg==",
+      "name": "candidate-smoke-linux-arm64-gnu-node24",
+      "size_in_bytes": 3274,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786274992",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786274992/zip",
+      "expired": false,
+      "digest": "sha256:1520e3981cfdf5835e457c65f5cb7d3e2405aceff95a379fb9d837d4c994c269",
+      "created_at": "2026-10-13T03:14:22Z",
+      "updated_at": "2026-10-13T03:14:22Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786243988,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjI0Mzk4OA==",
+      "name": "bindings-aarch64-unknown-linux-gnu",
+      "size_in_bytes": 3416158,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786243988",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786243988/zip",
+      "expired": false,
+      "digest": "sha256:26984f9f6e7d93f872bacd4380ce0fc09d1fbc7b6276aeb4381edc6523e579a9",
+      "created_at": "2026-10-13T03:07:47Z",
+      "updated_at": "2026-10-13T03:07:47Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786207478,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjIwNzQ3OA==",
+      "name": "napi-boundary-stress",
+      "size_in_bytes": 1164,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786207478",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786207478/zip",
+      "expired": false,
+      "digest": "sha256:2566e13bd6bcdb028c061444a0d634c12f484732930e9292a9d87fc8ff5c306b",
+      "created_at": "2026-10-13T03:07:04Z",
+      "updated_at": "2026-10-13T03:07:04Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786168331,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjE2ODMzMQ==",
+      "name": "candidate-smoke-linux-arm64-gnu-node22",
+      "size_in_bytes": 3274,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786168331",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786168331/zip",
+      "expired": false,
+      "digest": "sha256:939ff6acddcbd1a11a37a0e095961adfde3a6c42586c55d89b45ffdbc9e9e551",
+      "created_at": "2026-10-13T03:14:19Z",
+      "updated_at": "2026-10-13T03:14:19Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11786137719,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NjEzNzcxOQ==",
+      "name": "bindings-aarch64-apple-darwin",
+      "size_in_bytes": 3138852,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786137719",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786137719/zip",
+      "expired": false,
+      "digest": "sha256:e845d7e01284013e30a579d28f07617c9e35fae2ccf6a58ac2620f752a6d6aab",
+      "created_at": "2026-10-13T03:08:08Z",
+      "updated_at": "2026-10-13T03:08:08Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11785943487,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NTk0MzQ4Nw==",
+      "name": "candidate-smoke-linux-x64-musl-node24",
+      "size_in_bytes": 3611,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11785943487",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11785943487/zip",
+      "expired": false,
+      "digest": "sha256:4dca3751ac96e4601a5062399299b6f3120d6f509e32ef9cea851619374eb70d",
+      "created_at": "2026-10-13T03:14:23Z",
+      "updated_at": "2026-10-13T03:14:23Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11785914768,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NTkxNDc2OA==",
+      "name": "bindings-x86_64-pc-windows-msvc",
+      "size_in_bytes": 3716535,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11785914768",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11785914768/zip",
+      "expired": false,
+      "digest": "sha256:0c6e36ac8e6f15d3fb0f831f0a0846933e1f71a2c02fd95e1e64be32afee8947",
+      "created_at": "2026-10-13T03:10:21Z",
+      "updated_at": "2026-10-13T03:10:21Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    },
+    {
+      "id": 11785808034,
+      "node_id": "MDg6QXJ0aWZhY3QxMTc4NTgwODAzNA==",
+      "name": "bindings-x86_64-unknown-linux-gnu",
+      "size_in_bytes": 4147838,
+      "url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11785808034",
+      "archive_download_url": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11785808034/zip",
+      "expired": false,
+      "digest": "sha256:686ef7243b398c6fa022d4d20e13236a2d5623213f42986263507bc277aaecca",
+      "created_at": "2026-10-13T03:08:03Z",
+      "updated_at": "2026-10-13T03:08:03Z",
+      "expires_at": "2027-01-11T03:05:37Z",
+      "workflow_run": {
+        "id": 38340048914,
+        "repository_id": 1105704937,
+        "head_repository_id": 1105704937,
+        "head_branch": "v1.5.0",
+        "head_sha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67"
+      }
+    }
+  ]
+}

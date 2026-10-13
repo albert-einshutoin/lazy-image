@@ -1,0 +1,65 @@
+Unable to find image 'node:22-alpine' locally
+22-alpine: Pulling from library/node
+e2de96513ba9: Already exists
+f7f2d304681a: Pulling fs layer
+e554276b05e6: Pulling fs layer
+d39db1cf9caa: Pulling fs layer
+d39db1cf9caa: Verifying Checksum
+d39db1cf9caa: Download complete
+e554276b05e6: Verifying Checksum
+e554276b05e6: Download complete
+f7f2d304681a: Verifying Checksum
+f7f2d304681a: Download complete
+f7f2d304681a: Pull complete
+e554276b05e6: Pull complete
+d39db1cf9caa: Pull complete
+Digest: sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+Status: Downloaded newer image for node:22-alpine
+10.9.9
+
+added 1 package in 809ms
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+{
+  "shasum": "ae973e2e75fde11f5d32d3a4e07b53b97fb5c7fb",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.5.0.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg==",
+  "signatures": [
+    {
+      "sig": "MEQCIAMgxIR/gAOmcxZFAIccRwTlHvawkcg8QDGwPklvaqf+AiA2UQBKMZ1qZDUzOqR7sqZEZ9h8sJkMi4MBCpd14bsH+g==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIG3ZgjOLyRQDOQ/waEty7sucJbYpuISqRH7O5tXhrnQOAiEAnJ9UWVpgqnD4WT3H0gzTMyUMOUUXxSnB6cjg+wRDlJ4="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 238061
+}
+Error: ENOENT: no such file or directory, open '<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/package.json'
+    at Object.readFileSync (node:fs:440:20)
+    at main (/source/scripts/registry-native-smoke.cjs:152:31)
+    at Object.<anonymous> (/source/scripts/registry-native-smoke.cjs:232:30)
+    at Module._compile (node:internal/modules/cjs/loader:1781:14)
+    at Object..js (node:internal/modules/cjs/loader:1913:10)
+    at Module.load (node:internal/modules/cjs/loader:1505:32)
+    at Function._load (node:internal/modules/cjs/loader:1309:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/package.json'
+}
+registry-native-smoke: FAIL linux-x64-musl v22.23.3

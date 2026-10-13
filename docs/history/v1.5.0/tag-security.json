@@ -1,0 +1,11 @@
+{
+  "conclusion": "success",
+  "createdAt": "2026-10-13T03:05:37Z",
+  "databaseId": 38340048912,
+  "event": "push",
+  "headBranch": "v1.5.0",
+  "headSha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "status": "completed",
+  "updatedAt": "2026-10-13T03:08:56Z",
+  "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048912"
+}

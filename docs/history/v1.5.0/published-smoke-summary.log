@@ -1,0 +1,26 @@
+node:assert:95
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+'FAIL' !== 'PASS'
+
+    at <LOCAL_WORKSPACE>/lazy-image/docs/history/v1.5.0/verification-tools/summarize-smoke.cjs:9:9
+    at Array.map (<anonymous>)
+    at Object.<anonymous> (<LOCAL_WORKSPACE>/lazy-image/docs/history/v1.5.0/verification-tools/summarize-smoke.cjs:6:20)
+    at Module._compile (node:internal/modules/cjs/loader:1734:14)
+    at Object..js (node:internal/modules/cjs/loader:1899:10)
+    at Module.load (node:internal/modules/cjs/loader:1469:32)
+    at Module._load (node:internal/modules/cjs/loader:1286:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'FAIL',
+  expected: 'PASS',
+  operator: 'strictEqual'
+}
+
+Node.js v24.2.0

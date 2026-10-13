@@ -1,0 +1,43 @@
+11.19.0
+
+added 1 package in 2s
+{
+  "shasum": "ae973e2e75fde11f5d32d3a4e07b53b97fb5c7fb",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.5.0.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg==",
+  "signatures": [
+    {
+      "sig": "MEQCIAMgxIR/gAOmcxZFAIccRwTlHvawkcg8QDGwPklvaqf+AiA2UQBKMZ1qZDUzOqR7sqZEZ9h8sJkMi4MBCpd14bsH+g==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIG3ZgjOLyRQDOQ/waEty7sucJbYpuISqRH7O5tXhrnQOAiEAnJ9UWVpgqnD4WT3H0gzTMyUMOUUXxSnB6cjg+wRDlJ4="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 238061
+}
+Error: ENOENT: no such file or directory, open '<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/package.json'
+    at Object.readFileSync (node:fs:483:20)
+    at main (/home/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:152:31)
+    at Object.<anonymous> (/home/runner/work/lazy-image/lazy-image/scripts/registry-native-smoke.cjs:232:30)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/package.json'
+}
+registry-native-smoke: FAIL linux-arm64-gnu v24.21.0

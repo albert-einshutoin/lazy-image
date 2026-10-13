@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "version": "1.5.0",
+  "sourceSha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "source": "published-registry",
+  "node": "v24.2.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mainEntry": "<LOCAL_WORKSPACE>/lazy-image-publication-150-evidence/module-published/node_modules/@alberteinshutoin/lazy-image/index.js",
+  "binding": "<LOCAL_WORKSPACE>/lazy-image-publication-150-evidence/module-published/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+  "bindingSha256": "d7b3871a3377f0add70a8058992505207e047728db0dcef8ff44654838b98055",
+  "inputSha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90",
+  "results": {
+    "cjs": {
+      "status": "PASS",
+      "output": "<LOCAL_WORKSPACE>/lazy-image-publication-150-evidence/module-published/cjs-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "metadata": {
+        "width": 157,
+        "height": 119,
+        "hasAlpha": false,
+        "isAnimated": false,
+        "orientationKnown": true,
+        "format": "png"
+      }
+    },
+    "esm": {
+      "status": "PASS",
+      "output": "<LOCAL_WORKSPACE>/lazy-image-publication-150-evidence/module-published/esm-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "metadata": {
+        "width": 157,
+        "height": 119,
+        "hasAlpha": false,
+        "isAnimated": false,
+        "orientationKnown": true,
+        "format": "png"
+      }
+    }
+  }
+}

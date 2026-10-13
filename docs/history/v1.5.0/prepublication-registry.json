@@ -1,0 +1,58 @@
+[
+  {
+    "name": "@alberteinshutoin/lazy-image-darwin-x64",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image-darwin-x64@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image-darwin-x64@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_50_191Z-debug-0.log\n"
+  },
+  {
+    "name": "@alberteinshutoin/lazy-image-darwin-arm64",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image-darwin-arm64@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image-darwin-arm64@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_51_060Z-debug-0.log\n"
+  },
+  {
+    "name": "@alberteinshutoin/lazy-image-win32-x64-msvc",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image-win32-x64-msvc@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image-win32-x64-msvc@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_51_825Z-debug-0.log\n"
+  },
+  {
+    "name": "@alberteinshutoin/lazy-image-linux-x64-gnu",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image-linux-x64-gnu@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image-linux-x64-gnu@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_52_623Z-debug-0.log\n"
+  },
+  {
+    "name": "@alberteinshutoin/lazy-image-linux-arm64-gnu",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image-linux-arm64-gnu@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image-linux-arm64-gnu@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_53_354Z-debug-0.log\n"
+  },
+  {
+    "name": "@alberteinshutoin/lazy-image-linux-x64-musl",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image-linux-x64-musl@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image-linux-x64-musl@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_54_138Z-debug-0.log\n"
+  },
+  {
+    "name": "@alberteinshutoin/lazy-image",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_54_957Z-debug-0.log\n"
+  },
+  {
+    "name": "@alberteinshutoin/lazy-image-wasm",
+    "exitCode": 1,
+    "outcome": "absent-E404",
+    "stdout": "{\n  \"error\": {\n    \"code\": \"E404\",\n    \"summary\": \"No match found for version 1.5.0\",\n    \"detail\": \"'@alberteinshutoin/lazy-image-wasm@1.5.0' is not in this registry.\\n\\nNote that you can also install from a\\ntarball, folder, http url, or git url.\"\n  }\n}\n",
+    "stderr": "npm error code E404\nnpm error 404 No match found for version 1.5.0\nnpm error 404\nnpm error 404  '@alberteinshutoin/lazy-image-wasm@1.5.0' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <LOCAL_CACHE>/npm/_logs/2026-10-13T03_01_55_756Z-debug-0.log\n"
+  }
+]

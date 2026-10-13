@@ -1,0 +1,291 @@
+{
+  "status": "PASS",
+  "startedAt": "2026-10-13T03:14:27.965Z",
+  "checkoutRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "eventRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "package": "@alberteinshutoin/lazy-image@1.5.0",
+  "registry": "https://registry.npmjs.org/",
+  "expectedPlatform": "win32-x64-msvc",
+  "source": "candidate-tarball",
+  "runtime": {
+    "platform": "win32",
+    "arch": "x64",
+    "osRelease": "10.0.20348",
+    "osVersion": "Windows Server 2022 Datacenter",
+    "node": "v24.21.0",
+    "libc": "not applicable",
+    "npm": "11.19.0"
+  },
+  "host": {
+    "runner": "windows-2022",
+    "os": "Windows",
+    "arch": "X64"
+  },
+  "fixture": {
+    "path": "test/fixtures/test_100KB_1057x1057.jpg",
+    "sha256": "6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90"
+  },
+  "policy": {
+    "widths": [
+      320,
+      640
+    ],
+    "formats": [
+      "webp"
+    ],
+    "placeholder": false
+  },
+  "commands": [
+    "npm.cmd --version",
+    "npm.cmd install --save-exact --omit=optional D:\\a\\lazy-image\\lazy-image\\candidate\\alberteinshutoin-lazy-image-1.5.0.tgz D:\\a\\lazy-image\\lazy-image\\candidate\\alberteinshutoin-lazy-image-win32-x64-msvc-1.5.0.tgz --registry=https://registry.npmjs.org/ --no-audit --no-fund",
+    "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd compile <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg --out-dir <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\cli-output --policy <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json",
+    "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd compile <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg --out-dir <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\max-quality-cli --policy <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json",
+    "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd compile <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg --out-dir <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\invalid-max-quality-cli-0 --policy <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json",
+    "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd compile <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg --out-dir <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\invalid-max-quality-cli-1 --policy <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json",
+    "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd compile <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg --out-dir <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\invalid-max-quality-cli-2 --policy <USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json"
+  ],
+  "commandResults": [
+    {
+      "command": [
+        "npm.cmd",
+        "--version"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "expectedExitCode": 0,
+      "error": null
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "install",
+        "--save-exact",
+        "--omit=optional",
+        "D:\\a\\lazy-image\\lazy-image\\candidate\\alberteinshutoin-lazy-image-1.5.0.tgz",
+        "D:\\a\\lazy-image\\lazy-image\\candidate\\alberteinshutoin-lazy-image-win32-x64-msvc-1.5.0.tgz",
+        "--registry=https://registry.npmjs.org/",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "expectedExitCode": 0,
+      "error": null
+    },
+    {
+      "command": [
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd",
+        "compile",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg",
+        "--out-dir",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\cli-output",
+        "--policy",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "expectedExitCode": 0,
+      "error": null
+    },
+    {
+      "command": [
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd",
+        "compile",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg",
+        "--out-dir",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\max-quality-cli",
+        "--policy",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "expectedExitCode": 0,
+      "error": null
+    },
+    {
+      "command": [
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd",
+        "compile",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg",
+        "--out-dir",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\invalid-max-quality-cli-0",
+        "--policy",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "expectedExitCode": 1,
+      "error": null
+    },
+    {
+      "command": [
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd",
+        "compile",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg",
+        "--out-dir",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\invalid-max-quality-cli-1",
+        "--policy",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "expectedExitCode": 1,
+      "error": null
+    },
+    {
+      "command": [
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd",
+        "compile",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\input.jpg",
+        "--out-dir",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\invalid-max-quality-cli-2",
+        "--policy",
+        "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\policy.json"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "expectedExitCode": 1,
+      "error": null
+    }
+  ],
+  "installDirectory": "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4",
+  "candidate": {
+    "revision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+    "tarballs": [
+      "D:\\a\\lazy-image\\lazy-image\\candidate\\alberteinshutoin-lazy-image-1.5.0.tgz",
+      "D:\\a\\lazy-image\\lazy-image\\candidate\\alberteinshutoin-lazy-image-win32-x64-msvc-1.5.0.tgz"
+    ]
+  },
+  "licenseSha256": "ff1b6da07c1a09446754bf5e0fe61a788fc6815c0ea0517d385df0b725b2b539",
+  "resolved": {
+    "@alberteinshutoin/lazy-image": {
+      "version": "1.5.0",
+      "tarball": "file:D:/a/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-1.5.0.tgz",
+      "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg=="
+    },
+    "@alberteinshutoin/lazy-image-win32-x64-msvc": {
+      "version": "1.5.0",
+      "tarball": "file:D:/a/lazy-image/lazy-image/candidate/alberteinshutoin-lazy-image-win32-x64-msvc-1.5.0.tgz",
+      "integrity": "sha512-IpYOXtlg1hqPHJwnRntrN+1kL7c/r03AE+rCMAMazEANEuFyYKI8bVuIeLnyg++KwSRWPvUm6ZD8Y4v7vqV+aA=="
+    }
+  },
+  "loaded": {
+    "entry": "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\@alberteinshutoin\\lazy-image\\index.js",
+    "binding": "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\lazy-image.win32-x64-msvc.node",
+    "bin": "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\.bin\\lazy-image.cmd",
+    "binTarget": "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\@alberteinshutoin\\lazy-image\\bin\\lazy-image.js"
+  },
+  "apiArtifacts": [
+    {
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 12746,
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "path": "image-640.webp",
+      "format": "webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 35890,
+      "sha256": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"
+    }
+  ],
+  "cliArtifacts": [
+    {
+      "path": "image-320.webp",
+      "format": "webp",
+      "width": 320,
+      "height": 320,
+      "bytes": 12746,
+      "sha256": "44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"
+    },
+    {
+      "path": "image-640.webp",
+      "format": "webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 35890,
+      "sha256": "01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"
+    }
+  ],
+  "results": {
+    "binding": "PASS",
+    "api": "PASS",
+    "cli": "PASS",
+    "artifacts": "PASS",
+    "apiCliParity": "PASS",
+    "maxQuality": "PASS",
+    "invalidMaxQuality": "PASS"
+  },
+  "maxQuality": {
+    "policy": {
+      "widths": [
+        64
+      ],
+      "formats": [
+        "webp"
+      ],
+      "placeholder": false,
+      "budgets": [
+        {
+          "width": 64,
+          "format": "webp",
+          "maxBytes": 1048576,
+          "maxQuality": 30
+        }
+      ]
+    },
+    "apiArtifacts": [
+      {
+        "path": "image-64.webp",
+        "format": "webp",
+        "width": 64,
+        "height": 64,
+        "bytes": 460,
+        "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+        "quality": 30,
+        "targetBytes": 1048576
+      }
+    ],
+    "cliArtifacts": [
+      {
+        "path": "image-64.webp",
+        "format": "webp",
+        "width": 64,
+        "height": 64,
+        "bytes": 460,
+        "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+        "quality": 30,
+        "targetBytes": 1048576
+      }
+    ],
+    "invalid": [
+      {
+        "maxQuality": 29,
+        "api": "E400",
+        "cli": "E400",
+        "unpublished": true,
+        "remainingSiblingStaging": []
+      },
+      {
+        "maxQuality": 101,
+        "api": "E400",
+        "cli": "E400",
+        "unpublished": true,
+        "remainingSiblingStaging": []
+      },
+      {
+        "maxQuality": "30",
+        "api": "E400",
+        "cli": "E400",
+        "unpublished": true,
+        "remainingSiblingStaging": []
+      }
+    ]
+  },
+  "finishedAt": "2026-10-13T03:14:32.683Z"
+}

@@ -1,0 +1,1338 @@
+{
+  "originalLocation": "private external evidence directory; original files retained unchanged",
+  "rules": [
+    {
+      "name": "local_cache",
+      "replacement": "<LOCAL_CACHE>"
+    },
+    {
+      "name": "local_workspace",
+      "replacement": "<LOCAL_WORKSPACE>"
+    },
+    {
+      "name": "local_home",
+      "replacement": "<USER_HOME>"
+    },
+    {
+      "name": "mac_temp",
+      "replacement": "<TEMP_ROOT>"
+    },
+    {
+      "name": "linux_temp",
+      "replacement": "<TEMP_ROOT>"
+    },
+    {
+      "name": "windows_home",
+      "replacement": "<USER_HOME>"
+    },
+    {
+      "name": "trailing_whitespace",
+      "replacement": "removed from text line ends; diagnostics retained"
+    }
+  ],
+  "files": [
+    {
+      "original": "tag-security.json",
+      "public": "tag-security.json",
+      "originalSha256": "691e0e07dc1343c4f340fe6d53b6c82e6ae5c0f0470f30b5746a90422c8e313c",
+      "publicSha256": "fcf182a434586dbbda1710f2bd16d25375dffa272c049841ca6d497b4f1b15e4",
+      "originalBytes": 312,
+      "publicBytes": 349,
+      "replacements": {}
+    },
+    {
+      "original": "record-validation.log",
+      "public": "record-validation.log",
+      "originalSha256": "e079293d63fd67e26c567c97de5f938a25ddb67ca2cf14c54d070249eea2e286",
+      "publicSha256": "e079293d63fd67e26c567c97de5f938a25ddb67ca2cf14c54d070249eea2e286",
+      "originalBytes": 452,
+      "publicBytes": 452,
+      "replacements": {}
+    },
+    {
+      "original": "record-validation.exit",
+      "public": "record-validation.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "tag-run.json",
+      "public": "tag-run.json",
+      "originalSha256": "dc331f8de650fce18eda68bc344b615de65a25b6a0bd422aab76cd39a4ecd794",
+      "publicSha256": "8207d765b1bda18de1e9d6907ba7f369c57d9bdff0744bd33cd3c7219328abb8",
+      "originalBytes": 83540,
+      "publicBytes": 125377,
+      "replacements": {}
+    },
+    {
+      "original": "tag-artifacts.json",
+      "public": "tag-artifacts.json",
+      "originalSha256": "dd0b45010aa0dc2f1d97672ad1ac87ea048383a8636d596cfd899fa3cc874f64",
+      "publicSha256": "b6337f52a101a34b781c179f0146c09c10a9aa1ef1386e21c4c69632d833a189",
+      "originalBytes": 15119,
+      "publicBytes": 18555,
+      "replacements": {}
+    },
+    {
+      "original": "github-release.json",
+      "public": "github-release.json",
+      "originalSha256": "93af9d637e93ecd24531602ce783f0a6eb1c22a81eb56e0ff818118159f6051d",
+      "publicSha256": "d41ad5ed4244364ca6a51c123bf1395ea562066b28194c3c69a7aad023a79ce4",
+      "originalBytes": 4160,
+      "publicBytes": 4185,
+      "replacements": {}
+    },
+    {
+      "original": "publish.log",
+      "public": "publish.log",
+      "originalSha256": "9b6f1d2cc0401d77d41b49060d66a60bd97d90ec4776e42b5ce7d77782de3b0b",
+      "publicSha256": "fad96e52141e21c72b7a0c44439d89cf1abfdb55c7e24ef2713e8c7fea561af0",
+      "originalBytes": 94351,
+      "publicBytes": 94331,
+      "replacements": {
+        "trailing_whitespace": 20
+      }
+    },
+    {
+      "original": "prepublication-registry.json",
+      "public": "prepublication-registry.json",
+      "originalSha256": "bb4804a69a4a69b109a551017d0c0788c41d90c4e02bf711172e4c7444c72344",
+      "publicSha256": "878e04aaacffa1f6c6d7e19d4e41d1ac69fde0c7d89dfbc8c051fa47588cdc02",
+      "originalBytes": 6846,
+      "publicBytes": 6766,
+      "replacements": {
+        "local_cache": 8
+      }
+    },
+    {
+      "original": "registry-compare.log",
+      "public": "registry-compare.log",
+      "originalSha256": "dab098ddaf13c2bc846f54dd6f19d6c50b9c86ef10ffcaa2de835ade788d39b3",
+      "publicSha256": "61041ce6bc53c8895f5f943e46e1c377a70af78300183f70f6a4351984dd22e2",
+      "originalBytes": 3378,
+      "publicBytes": 3320,
+      "replacements": {
+        "local_cache": 4,
+        "local_workspace": 2
+      }
+    },
+    {
+      "original": "registry-compare.exit",
+      "public": "registry-compare.exit",
+      "originalSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "publicSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "registry-compare-attempt2.log",
+      "public": "registry-compare-attempt2.log",
+      "originalSha256": "8bbc946f8bc6d29dad7a816ea26c95b5694e0db4429b039f79568a87e7251419",
+      "publicSha256": "8bbc946f8bc6d29dad7a816ea26c95b5694e0db4429b039f79568a87e7251419",
+      "originalBytes": 88,
+      "publicBytes": 88,
+      "replacements": {}
+    },
+    {
+      "original": "registry-compare-attempt2.exit",
+      "public": "registry-compare-attempt2.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "published-artifact-selection.json",
+      "public": "published-artifact-selection.json",
+      "originalSha256": "006565ff5d902cd5dc6bfbc0e52969e9495ea58bd3131613ba9659fa192d0af4",
+      "publicSha256": "006565ff5d902cd5dc6bfbc0e52969e9495ea58bd3131613ba9659fa192d0af4",
+      "originalBytes": 3915,
+      "publicBytes": 3915,
+      "replacements": {}
+    },
+    {
+      "original": "published-artifacts-all-attempts.json",
+      "public": "published-artifacts-all-attempts.json",
+      "originalSha256": "fce485fce135fd0f1bfd3c5ef4f6c544e5ded189658db7257b11f9cdb5bf136d",
+      "publicSha256": "fce485fce135fd0f1bfd3c5ef4f6c544e5ded189658db7257b11f9cdb5bf136d",
+      "originalBytes": 15947,
+      "publicBytes": 15947,
+      "replacements": {}
+    },
+    {
+      "original": "published-run-attempt.json",
+      "public": "published-run-attempt.json",
+      "originalSha256": "0eecc55be8caf15e7e89627b78d6d65354d6717232ea0eafa73ede43c21ea8b8",
+      "publicSha256": "ab48633f3a17d0eb8e566261213ca63c70f6dcb41d5401fb8d0adeeec8a02093",
+      "originalBytes": 314,
+      "publicBytes": 351,
+      "replacements": {}
+    },
+    {
+      "original": "published-attempt1-jobs.json",
+      "public": "published-attempt1-jobs.json",
+      "originalSha256": "39dba08bea336e333b46c43654723e08ffaa9994e911bff6c012f796bfb9db37",
+      "publicSha256": "eb2e59ec1ea03c18bb1a373d79377da2633523ecb95ff010b2771b9298986892",
+      "originalBytes": 1970,
+      "publicBytes": 2403,
+      "replacements": {}
+    },
+    {
+      "original": "published-attempt2-jobs.json",
+      "public": "published-attempt2-jobs.json",
+      "originalSha256": "85faffe42e9d25d6bacf12f0ff94efd9299c9f8d181e2c9696567936df8992d2",
+      "publicSha256": "5639a5af7fc198315f90260c88a93ca7e955a90d3df372fcce8108457d42f747",
+      "originalBytes": 1970,
+      "publicBytes": 2403,
+      "replacements": {}
+    },
+    {
+      "original": "published-smoke-run.json",
+      "public": "published-smoke-run.json",
+      "originalSha256": "aacc9d45bf194ed05feb83fe7946c37c2e1112b03f02f85cd490776a170a0033",
+      "publicSha256": "90aff15bdce833811fe3c6d5f2f233627890e137e473a0cd9970a6951444ffa5",
+      "originalBytes": 23812,
+      "publicBytes": 35436,
+      "replacements": {}
+    },
+    {
+      "original": "published-smoke-summary.log",
+      "public": "published-smoke-summary.log",
+      "originalSha256": "44f0426174ce3e4e65110dc1e8dd92f1c5ce80c0e9141dbc5d9b4eeaf51e5ced",
+      "publicSha256": "2df5a62eab5933ab23e585a85b50b4819062a2fbe41e2ca9545cedbdf6647bde",
+      "originalBytes": 1018,
+      "publicBytes": 1000,
+      "replacements": {
+        "local_workspace": 2
+      }
+    },
+    {
+      "original": "published-smoke-summary.exit",
+      "public": "published-smoke-summary.exit",
+      "originalSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "publicSha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "published-smoke-verified-summary.log",
+      "public": "published-smoke-verified-summary.log",
+      "originalSha256": "8a9739e51371d0698b950ec99a2b947708e94db06ea61f52ab6a4b94d96b0f53",
+      "publicSha256": "8a9739e51371d0698b950ec99a2b947708e94db06ea61f52ab6a4b94d96b0f53",
+      "originalBytes": 1508,
+      "publicBytes": 1508,
+      "replacements": {}
+    },
+    {
+      "original": "published-smoke-verified-summary.exit",
+      "public": "published-smoke-verified-summary.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "artifact-selection.log",
+      "public": "artifact-selection.log",
+      "originalSha256": "96a1b10b482460c74e24833cb58612d35b857121fba9563343a461a39d5d70bb",
+      "publicSha256": "96a1b10b482460c74e24833cb58612d35b857121fba9563343a461a39d5d70bb",
+      "originalBytes": 56,
+      "publicBytes": 56,
+      "replacements": {}
+    },
+    {
+      "original": "artifact-selection.exit",
+      "public": "artifact-selection.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "manifest-negative-check.json",
+      "public": "manifest-negative-check.json",
+      "originalSha256": "07a36f42955bf3e037d0c453249dc5b8be21318b5ccc9b465725c39c7f214cca",
+      "publicSha256": "69a0922201bacf1160ea6cc8c73edf7dfe03999347c86a831b0df54da31595e5",
+      "originalBytes": 3889,
+      "publicBytes": 3871,
+      "replacements": {
+        "local_workspace": 2
+      }
+    },
+    {
+      "original": "browser-npm-ci.log",
+      "public": "browser-npm-ci.log",
+      "originalSha256": "dd781dd2565fec17872dd47dbd4b4802e44483b65410e96d5fdf567a50556860",
+      "publicSha256": "dd781dd2565fec17872dd47dbd4b4802e44483b65410e96d5fdf567a50556860",
+      "originalBytes": 26,
+      "publicBytes": 26,
+      "replacements": {}
+    },
+    {
+      "original": "browser-npm-ci.exit",
+      "public": "browser-npm-ci.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default-run.log",
+      "public": "browser-default-run.log",
+      "originalSha256": "fdea34c5826232f7c90515f7d44f963449e0436f45a86ba66a24e61c85d4eca1",
+      "publicSha256": "fdea34c5826232f7c90515f7d44f963449e0436f45a86ba66a24e61c85d4eca1",
+      "originalBytes": 608,
+      "publicBytes": 608,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default-run.exit",
+      "public": "browser-default-run.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke-summary.log",
+      "public": "tag-smoke-summary.log",
+      "originalSha256": "8a9739e51371d0698b950ec99a2b947708e94db06ea61f52ab6a4b94d96b0f53",
+      "publicSha256": "8a9739e51371d0698b950ec99a2b947708e94db06ea61f52ab6a4b94d96b0f53",
+      "originalBytes": 1508,
+      "publicBytes": 1508,
+      "replacements": {}
+    },
+    {
+      "original": "tag-candidate/manifest.json",
+      "public": "tag-candidate-manifest.json",
+      "originalSha256": "631073e50105d8a1008743e06b1203ca2f334e968a68146786e391b4b69e5ce3",
+      "publicSha256": "631073e50105d8a1008743e06b1203ca2f334e968a68146786e391b4b69e5ce3",
+      "originalBytes": 7288,
+      "publicBytes": 7288,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/summary.json",
+      "public": "tag-smoke/summary.json",
+      "originalSha256": "95426a698f70a19f001a85a313ba2b26a86561391a3ace22c1a88fbcbbeda25c",
+      "publicSha256": "aa3289e4e1dfaef4063729855f2bf39ecda2ce3511d3a247aeb244235dad138a",
+      "originalBytes": 28938,
+      "publicBytes": 28454,
+      "replacements": {
+        "mac_temp": 4,
+        "linux_temp": 6,
+        "windows_home": 2
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.log",
+      "originalSha256": "29e96bbfabaab861192ef94ed00a90889615c0764104696fab67f49bdccdc4bd",
+      "publicSha256": "29e96bbfabaab861192ef94ed00a90889615c0764104696fab67f49bdccdc4bd",
+      "originalBytes": 3195,
+      "publicBytes": 3195,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.json",
+      "originalSha256": "713a5fe67f21e80f549952dde910654e08fc18473ddad5ff5366879f83648175",
+      "publicSha256": "f78b64f21586d8d6cb0cffc57d2a1b41f5488ede797c9442a9a837cee575d5a4",
+      "originalBytes": 11913,
+      "publicBytes": 8731,
+      "replacements": {
+        "local_home": 8,
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.log",
+      "originalSha256": "466c7785457916f2457a3891d67d16423b8fe6dc43785f3c3ebcf1fa4c4aca3b",
+      "publicSha256": "466c7785457916f2457a3891d67d16423b8fe6dc43785f3c3ebcf1fa4c4aca3b",
+      "originalBytes": 4015,
+      "publicBytes": 4015,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.json",
+      "originalSha256": "4cb211da06cdc8c4a053c215fde0d2f6a147e93c442ed26310ed67c19c8384dc",
+      "publicSha256": "7009011f8136f29ebf0099ed46dfc08d2e6d382fcaf2f063c56af5dbf73c4617",
+      "originalBytes": 9588,
+      "publicBytes": 8418,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.log",
+      "originalSha256": "073ab820914697378c10b319b5ca9886c4aceb1f27cb5e2dfc330b8841e49c9d",
+      "publicSha256": "073ab820914697378c10b319b5ca9886c4aceb1f27cb5e2dfc330b8841e49c9d",
+      "originalBytes": 3199,
+      "publicBytes": 3199,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.json",
+      "originalSha256": "b94361248323113ef7c92621df1ad9be6b762aa84761999dacce06f430958438",
+      "publicSha256": "af5ffb17a2c88237da6ddf7aff180bd99b0466813f407541598b3ea72b7f7069",
+      "originalBytes": 11914,
+      "publicBytes": 8732,
+      "replacements": {
+        "local_home": 8,
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.log",
+      "originalSha256": "59ccecf796339133768226c52122559f980d3f69757628842ca33a79f0c9c87c",
+      "publicSha256": "59ccecf796339133768226c52122559f980d3f69757628842ca33a79f0c9c87c",
+      "originalBytes": 3983,
+      "publicBytes": 3983,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.json",
+      "originalSha256": "0b628feaac37b83cec233440ec1cc2461450d412d6866b4346b80dc7f3f4b7fc",
+      "publicSha256": "b09fe8eb0806e8d68f56d2718ae3a5e2cc6127bc5b4288fde196fb0b5c0c0bd7",
+      "originalBytes": 9587,
+      "publicBytes": 8417,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.log",
+      "originalSha256": "0bc3024c7c3294623ccea28f1f6dccc440125b5db105ab5e52e4d01f7863049e",
+      "publicSha256": "0bc3024c7c3294623ccea28f1f6dccc440125b5db105ab5e52e4d01f7863049e",
+      "originalBytes": 3190,
+      "publicBytes": 3190,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.json",
+      "originalSha256": "1288f0b826dd13c51f0dc2a11360046a10014c58a26231d3447389196e80f887",
+      "publicSha256": "0c44f4bf35ea32f98e7086001daa9681f9130ff3f36fa15119a15a41a3a03fb0",
+      "originalBytes": 9825,
+      "publicBytes": 8655,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.log",
+      "originalSha256": "fc6bd4dc2ebe62f6589778cf5f98e2db46cb615e5d07a07242417c3bc9f51e22",
+      "publicSha256": "fc6bd4dc2ebe62f6589778cf5f98e2db46cb615e5d07a07242417c3bc9f51e22",
+      "originalBytes": 3191,
+      "publicBytes": 3191,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.json",
+      "originalSha256": "941c97f547c4011f064fe7a21eba609b95c24da59bfe5fee052499dc85b416a1",
+      "publicSha256": "c98290924ed4ae4df53bd2adcb01c87e668efa34788d174e88daa9f34dd1e464",
+      "originalBytes": 9826,
+      "publicBytes": 8656,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.log",
+      "originalSha256": "7417a7b0772a8ac45b8ffde80cc183c7a47302f32911aefa1175d2e996c6deb2",
+      "publicSha256": "7417a7b0772a8ac45b8ffde80cc183c7a47302f32911aefa1175d2e996c6deb2",
+      "originalBytes": 3191,
+      "publicBytes": 3191,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.json",
+      "originalSha256": "95b420cdc07a10a9b60e095c412ebd333da0c827e27f40e3fa35d1600511d646",
+      "publicSha256": "743b77797bccb3d0ad68e9a79aa2b5b3a67f8992f3a8ca0ce69b4084037dec36",
+      "originalBytes": 11581,
+      "publicBytes": 11221,
+      "replacements": {
+        "windows_home": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.log",
+      "originalSha256": "0f8a11b64cc172e442252becb5ac1f140b8b6eeacda026c7990ee30ccc9fabb6",
+      "publicSha256": "0f8a11b64cc172e442252becb5ac1f140b8b6eeacda026c7990ee30ccc9fabb6",
+      "originalBytes": 3455,
+      "publicBytes": 3455,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.json",
+      "originalSha256": "ed570e25e4b2ee30309693e19fc7d919b04afeab80caa5d2ad75e38751c00788",
+      "publicSha256": "8274ddb8b18972e11639b936e5e1bc587dbdedbd353682450e107cbb73e84170",
+      "originalBytes": 11582,
+      "publicBytes": 11222,
+      "replacements": {
+        "windows_home": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.log",
+      "originalSha256": "fea3f924e285c96e508fe26abf294d17a87949c7656f58818f5f96bd819f9b98",
+      "publicSha256": "fea3f924e285c96e508fe26abf294d17a87949c7656f58818f5f96bd819f9b98",
+      "originalBytes": 3197,
+      "publicBytes": 3197,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.json",
+      "originalSha256": "ee40a9c4943633bf969c7d334d3ff7d29899eec0805aa75c51c544e6b5a2da29",
+      "publicSha256": "f2ed2e45908b406b1591ada78c76c57ef7e3de48ef07c74cab5c8f8c44f0bf99",
+      "originalBytes": 9850,
+      "publicBytes": 8680,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.log",
+      "originalSha256": "7e8a586e57af8b24a22bb6f4ece9dda7ef46b21df1a2d5e024bbf88dc935e157",
+      "publicSha256": "7e8a586e57af8b24a22bb6f4ece9dda7ef46b21df1a2d5e024bbf88dc935e157",
+      "originalBytes": 3199,
+      "publicBytes": 3199,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.json",
+      "originalSha256": "c78ae075851772bdf8120667ca6be1608c45a14870d5af030063536fbc48751c",
+      "publicSha256": "cba7e14764a5d8b3a736b8e3e738ed04cb187d480b806e144771cbaff044d6a6",
+      "originalBytes": 9849,
+      "publicBytes": 8679,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.log",
+      "originalSha256": "844bc2abd5e7823943c192dad6293b283b6b16755f06d131191101f742b86dc2",
+      "publicSha256": "844bc2abd5e7823943c192dad6293b283b6b16755f06d131191101f742b86dc2",
+      "originalBytes": 3190,
+      "publicBytes": 3190,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.json",
+      "originalSha256": "7b05850b9077a5f69343e2f5ae111ae120e98ffa66b59e3f33ebed23c5786c8d",
+      "publicSha256": "755601bfe6c54c492159fabd7050d5d2dcea45aceb2ed50b1a175f44c01fdff5",
+      "originalBytes": 11894,
+      "publicBytes": 8712,
+      "replacements": {
+        "local_home": 8,
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.log",
+      "public": "tag-smoke/candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.log",
+      "originalSha256": "3d133cc470364c81d3dee49a6b02c376c73866cd48b9db6f4bc79b20fb8b85f0",
+      "publicSha256": "3d133cc470364c81d3dee49a6b02c376c73866cd48b9db6f4bc79b20fb8b85f0",
+      "originalBytes": 3189,
+      "publicBytes": 3189,
+      "replacements": {}
+    },
+    {
+      "original": "tag-smoke/candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.json",
+      "public": "tag-smoke/candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.json",
+      "originalSha256": "c59f3a7a67e023a7453047be8affc001328f46792f32bf6f290c79085fcc18c8",
+      "publicSha256": "bd9e6b287eef9743912a8b4dc245309397e4bc6e2ed849986c43a566cde621be",
+      "originalBytes": 11893,
+      "publicBytes": 8711,
+      "replacements": {
+        "local_home": 8,
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "c6f820b237d71e0d1353d43b3ab3607d6216cd30b31157bcfba09f09ada901aa",
+      "publicSha256": "c6f820b237d71e0d1353d43b3ab3607d6216cd30b31157bcfba09f09ada901aa",
+      "originalBytes": 5094,
+      "publicBytes": 5094,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "98aa1c563c760d049240886e806f4a67de9fea7f573ff71a681ee9f4661d9575",
+      "publicSha256": "8e05cbdd2ee9a3da40f7183dc883d8572b22f4f0875b86e23cb1a774ee9a08d7",
+      "originalBytes": 11993,
+      "publicBytes": 8827,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "f43c114d57fa572b79f998cf4422ee35ffc3c1d98960e4ad4a562d66ff7a4b09",
+      "publicSha256": "f43c114d57fa572b79f998cf4422ee35ffc3c1d98960e4ad4a562d66ff7a4b09",
+      "originalBytes": 5095,
+      "publicBytes": 5095,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "3df9775e86b131a82f795b36b85b58897fee72747783f9461b796ef6d3adcc92",
+      "publicSha256": "4a88e8e28fe6f9def584c0f4be60375dbfe669202ac9ac506a529bc65e5ab4e0",
+      "originalBytes": 11994,
+      "publicBytes": 8828,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "c4a2a5cb02fe854202ee4cca8645fdbebcf47cabf7255b80ff5a84ff92017e46",
+      "publicSha256": "f15deb8bd93f82c7decaccd704457edb3736a8e32b81fbb83d4b645c99165783",
+      "originalBytes": 2806,
+      "publicBytes": 2754,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "2ef12bd3d714a36b3cf64a46965c8c04142091af3232b1747a8d04fc86456d17",
+      "publicSha256": "0e860bba47c32e0f3810bff014e10c8513018fd27e546293934602ac6414312d",
+      "originalBytes": 3410,
+      "publicBytes": 3358,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "69132dcc1683ecc125f79907b2ba6a50292beb1d31270ccbf0c6e8fef31d5102",
+      "publicSha256": "bf28b67afb5f216f85a28554b7940b23851601cc33ff9f70987cb4dbfc1a0751",
+      "originalBytes": 2804,
+      "publicBytes": 2752,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "bf9463ceeedd9d70f8922b2cb27072286d0aacf8ff123924030609871a4bc8cb",
+      "publicSha256": "25e022cd645b0b73bd63aebd0afb95bcf81b23d72c4dd10525133858fe3f9c54",
+      "originalBytes": 3407,
+      "publicBytes": 3355,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "e801ab876f3499bc97d21407b3b1845cfacbfd6caf98a84231e0ab97e3506f18",
+      "publicSha256": "e801ab876f3499bc97d21407b3b1845cfacbfd6caf98a84231e0ab97e3506f18",
+      "originalBytes": 5083,
+      "publicBytes": 5083,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "a8a8e97af081d0f8d08a1e0823758cdb05aecadb0356c9bae8d070127ca649bb",
+      "publicSha256": "fcc8717ee72810467ef16e8d8aee1fcbd3ad13c1995df9652d156459c5076b71",
+      "originalBytes": 11973,
+      "publicBytes": 8807,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "49c4c4216050a19ac781e81104adbde3abbb2789ceac934f975b4bdf965eb6bb",
+      "publicSha256": "49c4c4216050a19ac781e81104adbde3abbb2789ceac934f975b4bdf965eb6bb",
+      "originalBytes": 5084,
+      "publicBytes": 5084,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "82a6b822a10d18c75eaea59b5928650aa5bc83ca5c1ddac1b96dafc1f2c189f3",
+      "publicSha256": "8d0bcf8b8997ffaa3db688f32b71d429ea3e14ad14da4a1b7312a234dc9f8961",
+      "originalBytes": 11974,
+      "publicBytes": 8808,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "bd3e23140ec4ad04074b17718f03faac62dc1b4ed773d31cac571b769ffa90a6",
+      "publicSha256": "13220f7cd0c224fd60e088a46034cfc1a21a3b578af4f86514d6dde8baba6bf2",
+      "originalBytes": 2045,
+      "publicBytes": 1993,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "54741d723baafd04426f4e8bce7440da9def2cbfb639ba520ed94b6d422f989f",
+      "publicSha256": "4abcfcd24ac01db2dba15d6f0abd49974ba36314b8a5f39dd0f154ad9f7ff1bd",
+      "originalBytes": 3509,
+      "publicBytes": 3457,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "66ae65ac912978e061433fe7d03e9bd17bac82b4188e647f8cb612a5de8ba3ca",
+      "publicSha256": "d6ea9fe4b6e6416cd7769248b0cfe55dddb2d8cb94f5fd05a03fe6f47da85bf8",
+      "originalBytes": 2048,
+      "publicBytes": 1996,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "420ed82b7062498a2def323e4285787887eab2e1f909fa5440a5271e9fb98297",
+      "publicSha256": "3e22f87d3d1c2115a47b18f0a373a1bd0a5bf48c00543d8fd594301b9cba7147",
+      "originalBytes": 3512,
+      "publicBytes": 3460,
+      "replacements": {
+        "linux_temp": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "0524be0e911270f5e950ff7f0c1c839cc42908581a4ff49313ea52e254097e1c",
+      "publicSha256": "b5ed31462fff07af49bc091b15ade693c33a64ae56340d8002fb409314625392",
+      "originalBytes": 2356,
+      "publicBytes": 2350,
+      "replacements": {
+        "windows_home": 1
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "dab7e37d0a135a2c5f564460620a346c9b3c39df76a7bc926a5425089eb0eb18",
+      "publicSha256": "83207943fe6fb814d5c0ce617bf8d4e272ffc56937e1ac87a3190ca8c260bb5a",
+      "originalBytes": 3573,
+      "publicBytes": 3557,
+      "replacements": {
+        "windows_home": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "a58da402cbed3ee23d458aee23005cbedd6600ad73ed7bece0aa3b0dc35cf946",
+      "publicSha256": "7ee62942a2cf16df5c0c8faeb5b0ecc81141b3fb4a308026d5e33fce1bd0a9c4",
+      "originalBytes": 2096,
+      "publicBytes": 2090,
+      "replacements": {
+        "windows_home": 1
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "efba2b0f6675be0a2408baf0b9ded13feceeed895ca2a08e94696b2139ac1005",
+      "publicSha256": "3ef46d7e0f27c8cf8e682f7c4955f90e75a6761162c5089b72372f101c3fb312",
+      "originalBytes": 3576,
+      "publicBytes": 3560,
+      "replacements": {
+        "windows_home": 2
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "5e6bd916d9b013d16bde2f54393ad9a341d32c4f9051c75d4eedce15082acc6f",
+      "publicSha256": "5e6bd916d9b013d16bde2f54393ad9a341d32c4f9051c75d4eedce15082acc6f",
+      "originalBytes": 5094,
+      "publicBytes": 5094,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "798b37a253f04327b71e2b384dcccd467fa582a722ce23f35de3c566f08b05d3",
+      "publicSha256": "f23ac54d460c8ca6461ac6bfdb354fc3abb4538b35c95d4198bd68988a2ba561",
+      "originalBytes": 9944,
+      "publicBytes": 8774,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "df30e34273b377788172b3029cd55b6aa29ce830ca2daac73c857808786e2b7b",
+      "publicSha256": "df30e34273b377788172b3029cd55b6aa29ce830ca2daac73c857808786e2b7b",
+      "originalBytes": 5093,
+      "publicBytes": 5093,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-attempt1/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-attempt1/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "f46beefca16923150fae21c1d78e07c31b54eba54e9abdc9db8313175c3ead7c",
+      "publicSha256": "a528530b09dc177d0ec0aa8518dfd7401a51c83ebcacf7846a29b5d44cd01a4f",
+      "originalBytes": 9943,
+      "publicBytes": 8773,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/summary.json",
+      "public": "native-published-verified/summary.json",
+      "originalSha256": "3cbc297509adc42846dd81113b75b1a42a8c9c112e49896593202e13da5a92a0",
+      "publicSha256": "1f49dcd50d788f2f668411878b5185c240573d912dae60b5e08b7b9d9bf23a1c",
+      "originalBytes": 28926,
+      "publicBytes": 28442,
+      "replacements": {
+        "mac_temp": 4,
+        "linux_temp": 6,
+        "windows_home": 2
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "c6f820b237d71e0d1353d43b3ab3607d6216cd30b31157bcfba09f09ada901aa",
+      "publicSha256": "c6f820b237d71e0d1353d43b3ab3607d6216cd30b31157bcfba09f09ada901aa",
+      "originalBytes": 5094,
+      "publicBytes": 5094,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "98aa1c563c760d049240886e806f4a67de9fea7f573ff71a681ee9f4661d9575",
+      "publicSha256": "8e05cbdd2ee9a3da40f7183dc883d8572b22f4f0875b86e23cb1a774ee9a08d7",
+      "originalBytes": 11993,
+      "publicBytes": 8827,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "f43c114d57fa572b79f998cf4422ee35ffc3c1d98960e4ad4a562d66ff7a4b09",
+      "publicSha256": "f43c114d57fa572b79f998cf4422ee35ffc3c1d98960e4ad4a562d66ff7a4b09",
+      "originalBytes": 5095,
+      "publicBytes": 5095,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "3df9775e86b131a82f795b36b85b58897fee72747783f9461b796ef6d3adcc92",
+      "publicSha256": "4a88e8e28fe6f9def584c0f4be60375dbfe669202ac9ac506a529bc65e5ab4e0",
+      "originalBytes": 11994,
+      "publicBytes": 8828,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "b594af4644e9d18c394eba9a91f6db39c478f1e14b0f89d07b7ac643ef9293d9",
+      "publicSha256": "b594af4644e9d18c394eba9a91f6db39c478f1e14b0f89d07b7ac643ef9293d9",
+      "originalBytes": 5922,
+      "publicBytes": 5922,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "417a1ed2740b480e3219413ab4f776d2f1ba48adffdea478505c38baa64bac37",
+      "publicSha256": "1bc51752e854de65136a4db2619ce026224a9b0bf79870c2596207f11863758f",
+      "originalBytes": 9923,
+      "publicBytes": 8753,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "b02e41eebf96b8260520033afa4e896fa020bebc9c6a3c1aef43a0279a063b87",
+      "publicSha256": "b02e41eebf96b8260520033afa4e896fa020bebc9c6a3c1aef43a0279a063b87",
+      "originalBytes": 5924,
+      "publicBytes": 5924,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "4d2ae1dcc67721d18d0e378848bb7def30cfb68c2201d7c0e6b9fca9c8e85795",
+      "publicSha256": "ba36140a8deb6bf6710cd38c0a60ec7623a280be4c0925829a5b7763a16ebfee",
+      "originalBytes": 9924,
+      "publicBytes": 8754,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "e801ab876f3499bc97d21407b3b1845cfacbfd6caf98a84231e0ab97e3506f18",
+      "publicSha256": "e801ab876f3499bc97d21407b3b1845cfacbfd6caf98a84231e0ab97e3506f18",
+      "originalBytes": 5083,
+      "publicBytes": 5083,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "a8a8e97af081d0f8d08a1e0823758cdb05aecadb0356c9bae8d070127ca649bb",
+      "publicSha256": "fcc8717ee72810467ef16e8d8aee1fcbd3ad13c1995df9652d156459c5076b71",
+      "originalBytes": 11973,
+      "publicBytes": 8807,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "49c4c4216050a19ac781e81104adbde3abbb2789ceac934f975b4bdf965eb6bb",
+      "publicSha256": "49c4c4216050a19ac781e81104adbde3abbb2789ceac934f975b4bdf965eb6bb",
+      "originalBytes": 5084,
+      "publicBytes": 5084,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "82a6b822a10d18c75eaea59b5928650aa5bc83ca5c1ddac1b96dafc1f2c189f3",
+      "publicSha256": "8d0bcf8b8997ffaa3db688f32b71d429ea3e14ad14da4a1b7312a234dc9f8961",
+      "originalBytes": 11974,
+      "publicBytes": 8808,
+      "replacements": {
+        "mac_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "7ed7e1dc55783b9ce1466e179b6bfece3ba90def9c25e04203a12e1d6d23a26d",
+      "publicSha256": "7ed7e1dc55783b9ce1466e179b6bfece3ba90def9c25e04203a12e1d6d23a26d",
+      "originalBytes": 5105,
+      "publicBytes": 5105,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "b1549a5085a66325abf3554648043e9eca3be0254a03153529c184f516695470",
+      "publicSha256": "10caa14100e532c3b1508c9a2fb77490e1ae513129fc84d583c171f8fa34c4b5",
+      "originalBytes": 9968,
+      "publicBytes": 8798,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "466158ff08f9451841c4077e1916ff5c1fae248c71f51c838a9059a1041fc466",
+      "publicSha256": "466158ff08f9451841c4077e1916ff5c1fae248c71f51c838a9059a1041fc466",
+      "originalBytes": 5104,
+      "publicBytes": 5104,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "d3e8af8567c2c668a992124040e777aae50f33cc4efa9247ad8136ba6c1c2484",
+      "publicSha256": "3c937e2a200168855c4e9c4998b5a445a74c0573343e1de2dd88d0b43664e19a",
+      "originalBytes": 9967,
+      "publicBytes": 8797,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "fc17016f73daf8c4ff87feeda3a0f20c1d16fe41246479db6424ea41a4dc9ee2",
+      "publicSha256": "fc17016f73daf8c4ff87feeda3a0f20c1d16fe41246479db6424ea41a4dc9ee2",
+      "originalBytes": 5361,
+      "publicBytes": 5361,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "892a1db01ab1ac649f967722878797f0f2b35a1baf8cfd4792e9877789dae5f6",
+      "publicSha256": "4bd00f6920c66cc307d21dbec8ed8b642f174f3613cc4c42a502cba60cf46670",
+      "originalBytes": 11800,
+      "publicBytes": 11440,
+      "replacements": {
+        "windows_home": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "33dc0156aed7408161e6c30bb9dcd4b8110046a5d0f5c514f9eda5126f68503d",
+      "publicSha256": "33dc0156aed7408161e6c30bb9dcd4b8110046a5d0f5c514f9eda5126f68503d",
+      "originalBytes": 5097,
+      "publicBytes": 5097,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "170a53666bb765c6f1215199ad49672b878aba4c06524d6b024f93c513e0ec71",
+      "publicSha256": "1d219a0504d1a4e8a533e08cc67f094c8fa983115258309de1d4216bbde7d455",
+      "originalBytes": 11799,
+      "publicBytes": 11439,
+      "replacements": {
+        "windows_home": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.log",
+      "originalSha256": "5e6bd916d9b013d16bde2f54393ad9a341d32c4f9051c75d4eedce15082acc6f",
+      "publicSha256": "5e6bd916d9b013d16bde2f54393ad9a341d32c4f9051c75d4eedce15082acc6f",
+      "originalBytes": 5094,
+      "publicBytes": 5094,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.json",
+      "originalSha256": "798b37a253f04327b71e2b384dcccd467fa582a722ce23f35de3c566f08b05d3",
+      "publicSha256": "f23ac54d460c8ca6461ac6bfdb354fc3abb4538b35c95d4198bd68988a2ba561",
+      "originalBytes": 9944,
+      "publicBytes": 8774,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.log",
+      "public": "native-published-verified/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.log",
+      "originalSha256": "df30e34273b377788172b3029cd55b6aa29ce830ca2daac73c857808786e2b7b",
+      "publicSha256": "df30e34273b377788172b3029cd55b6aa29ce830ca2daac73c857808786e2b7b",
+      "originalBytes": 5093,
+      "publicBytes": 5093,
+      "replacements": {}
+    },
+    {
+      "original": "native-published-verified/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.json",
+      "public": "native-published-verified/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.json",
+      "originalSha256": "f46beefca16923150fae21c1d78e07c31b54eba54e9abdc9db8313175c3ead7c",
+      "publicSha256": "a528530b09dc177d0ec0aa8518dfd7401a51c83ebcacf7846a29b5d44cd01a4f",
+      "originalBytes": 9943,
+      "publicBytes": 8773,
+      "replacements": {
+        "linux_temp": 45
+      }
+    },
+    {
+      "original": "module-published/report.json",
+      "public": "module-published/report.json",
+      "originalSha256": "59d748b3b804eda86102358ae88ff959e7cf867745381397704010c9f4afe95d",
+      "publicSha256": "e1e259799cdd6139ab170a1a59a093f3c07940908abed2245a2b039457d6c6f4",
+      "originalBytes": 1624,
+      "publicBytes": 1588,
+      "replacements": {
+        "local_workspace": 4
+      }
+    },
+    {
+      "original": "module-published/run.log",
+      "public": "module-published/run.log",
+      "originalSha256": "59d748b3b804eda86102358ae88ff959e7cf867745381397704010c9f4afe95d",
+      "publicSha256": "e1e259799cdd6139ab170a1a59a093f3c07940908abed2245a2b039457d6c6f4",
+      "originalBytes": 1624,
+      "publicBytes": 1588,
+      "replacements": {
+        "local_workspace": 4
+      }
+    },
+    {
+      "original": "module-published/cjs-resize.png",
+      "public": "module-published/cjs-resize.png",
+      "originalSha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "publicSha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "originalBytes": 28624,
+      "publicBytes": 28624,
+      "replacements": {}
+    },
+    {
+      "original": "module-published/package-lock.json",
+      "public": "module-published/package-lock.json",
+      "originalSha256": "31ebf02ec95738acb23974659f67ecd1d72d657e63720ad96220bdb97feab944",
+      "publicSha256": "31ebf02ec95738acb23974659f67ecd1d72d657e63720ad96220bdb97feab944",
+      "originalBytes": 3862,
+      "publicBytes": 3862,
+      "replacements": {}
+    },
+    {
+      "original": "module-published/package.json",
+      "public": "module-published/package.json",
+      "originalSha256": "2269a73b4896a366294c0df4f7585595407d3d3bf91bda748de44e86da346bca",
+      "publicSha256": "8d02880cf3fc224a2698f43f93650a3dbb663a06824e563e63f9c3a9bfe87a61",
+      "originalBytes": 88,
+      "publicBytes": 111,
+      "replacements": {}
+    },
+    {
+      "original": "module-published/run.exit",
+      "public": "module-published/run.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "module-published/install.exit",
+      "public": "module-published/install.exit",
+      "originalSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "publicSha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "originalBytes": 2,
+      "publicBytes": 2,
+      "replacements": {}
+    },
+    {
+      "original": "module-published/install.log",
+      "public": "module-published/install.log",
+      "originalSha256": "f0b44a1014bf1c576378afcc9ccd1ded28f66c17df52fc1470d49fbc65663c85",
+      "publicSha256": "f0b44a1014bf1c576378afcc9ccd1ded28f66c17df52fc1470d49fbc65663c85",
+      "originalBytes": 27,
+      "publicBytes": 27,
+      "replacements": {}
+    },
+    {
+      "original": "module-published/esm-resize.png",
+      "public": "module-published/esm-resize.png",
+      "originalSha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "publicSha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07",
+      "originalBytes": 28624,
+      "publicBytes": 28624,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-metadata-input.jpg",
+      "public": "browser-default/wasm-metadata-input.jpg",
+      "originalSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "publicSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "originalBytes": 7343,
+      "publicBytes": 7343,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-browser-default-jpeg-webp.webp",
+      "public": "browser-default/wasm-browser-default-jpeg-webp.webp",
+      "originalSha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec",
+      "publicSha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec",
+      "originalBytes": 328690,
+      "publicBytes": 328690,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-published-evidence.json",
+      "public": "browser-default/wasm-published-evidence.json",
+      "originalSha256": "25dbac3c4c7e8227e651b03f15025ddbc0f8973f02f86fe273112c52e4fb0e1d",
+      "publicSha256": "6c8e696102bb6bafe4085fd0a26d75cd3090599b2f8b4bb69f5a02790dedfcf9",
+      "originalBytes": 40830,
+      "publicBytes": 38451,
+      "replacements": {
+        "mac_temp": 31
+      }
+    },
+    {
+      "original": "browser-default/wasm-browser-default-probe-jpeg-webp.webp",
+      "public": "browser-default/wasm-browser-default-probe-jpeg-webp.webp",
+      "originalSha256": "81f5f0380cc1c0be8e391aa30d38065d7bf5afedd0fd0bb704c4098608cf80e3",
+      "publicSha256": "81f5f0380cc1c0be8e391aa30d38065d7bf5afedd0fd0bb704c4098608cf80e3",
+      "originalBytes": 17484,
+      "publicBytes": 17484,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-upload-summary.md",
+      "public": "browser-default/wasm-upload-summary.md",
+      "originalSha256": "8f2b3faaae909c334b494179a753e6006f5d873146ffb192597df520f4c3679e",
+      "publicSha256": "8f2b3faaae909c334b494179a753e6006f5d873146ffb192597df520f4c3679e",
+      "originalBytes": 5179,
+      "publicBytes": 5179,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-browser-default-metadata-budget-best-effort.jpg",
+      "public": "browser-default/wasm-browser-default-metadata-budget-best-effort.jpg",
+      "originalSha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
+      "publicSha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca",
+      "originalBytes": 3078,
+      "publicBytes": 3078,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-browser-default-metadata-budget.jpg",
+      "public": "browser-default/wasm-browser-default-metadata-budget.jpg",
+      "originalSha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0",
+      "publicSha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0",
+      "originalBytes": 5886,
+      "publicBytes": 5886,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-browser-default-png-jpeg.jpg",
+      "public": "browser-default/wasm-browser-default-png-jpeg.jpg",
+      "originalSha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a",
+      "publicSha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a",
+      "originalBytes": 430035,
+      "publicBytes": 430035,
+      "replacements": {}
+    },
+    {
+      "original": "browser-default/wasm-upload-summary.json",
+      "public": "browser-default/wasm-upload-summary.json",
+      "originalSha256": "59b9535f47461779dba6e38188e1519f4e0fc72dc81d3a2203b724e6b65caac1",
+      "publicSha256": "59b9535f47461779dba6e38188e1519f4e0fc72dc81d3a2203b724e6b65caac1",
+      "originalBytes": 17843,
+      "publicBytes": 17843,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/lazy-image-linux-x64-musl-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-linux-x64-musl-1.5.0.tgz.attestations.json",
+      "originalSha256": "857ae42c867ceac13271dc06445abe885c5f0686e1e686c7e0e6e33e0da8a491",
+      "publicSha256": "857ae42c867ceac13271dc06445abe885c5f0686e1e686c7e0e6e33e0da8a491",
+      "originalBytes": 17821,
+      "publicBytes": 17821,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/lazy-image-win32-x64-msvc-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-win32-x64-msvc-1.5.0.tgz.attestations.json",
+      "originalSha256": "f8e61a0653465f7ec07f43badde19801cb6cee3da9832afe2a69303aa91e41d3",
+      "publicSha256": "f8e61a0653465f7ec07f43badde19801cb6cee3da9832afe2a69303aa91e41d3",
+      "originalBytes": 17755,
+      "publicBytes": 17755,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/lazy-image-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-1.5.0.tgz.attestations.json",
+      "originalSha256": "6ef5447a6336b00dfb022e9f52a2e2fc93a318217b4a6f662716d0388c9c0761",
+      "publicSha256": "6ef5447a6336b00dfb022e9f52a2e2fc93a318217b4a6f662716d0388c9c0761",
+      "originalBytes": 17365,
+      "publicBytes": 17365,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/lazy-image-wasm-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-wasm-1.5.0.tgz.attestations.json",
+      "originalSha256": "225f2d48c2eb6449a9d6530ea6428ed79653f1505d65060de26cbd8ec1cdc65a",
+      "publicSha256": "225f2d48c2eb6449a9d6530ea6428ed79653f1505d65060de26cbd8ec1cdc65a",
+      "originalBytes": 17851,
+      "publicBytes": 17851,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/lazy-image-linux-arm64-gnu-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-linux-arm64-gnu-1.5.0.tgz.attestations.json",
+      "originalSha256": "1d27cc88d395208eb44c538cd9de14efaaaa2bee37dec8a6b1cda94a1cd517ac",
+      "publicSha256": "1d27cc88d395208eb44c538cd9de14efaaaa2bee37dec8a6b1cda94a1cd517ac",
+      "originalBytes": 17759,
+      "publicBytes": 17759,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/lazy-image-darwin-arm64-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-darwin-arm64-1.5.0.tgz.attestations.json",
+      "originalSha256": "0a6d4c6a657c631361f3f2658f861c4e641b019cd937bdc185eedf4a5f76e353",
+      "publicSha256": "0a6d4c6a657c631361f3f2658f861c4e641b019cd937bdc185eedf4a5f76e353",
+      "originalBytes": 17677,
+      "publicBytes": 17677,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/lazy-image-darwin-x64-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-darwin-x64-1.5.0.tgz.attestations.json",
+      "originalSha256": "105d5486678e6e53ad5c0d9e2923293e293ea9f7c8665da6f1ccb0dd37e3c1c0",
+      "publicSha256": "105d5486678e6e53ad5c0d9e2923293e293ea9f7c8665da6f1ccb0dd37e3c1c0",
+      "originalBytes": 17685,
+      "publicBytes": 17685,
+      "replacements": {}
+    },
+    {
+      "original": "registry-attempt2/registry-package-provenance.json",
+      "public": "registry/registry-package-provenance.json",
+      "originalSha256": "b36f50866c996b266782a82616b1cdbbdd0f055b91930c12c5c705dc638b5cfb",
+      "publicSha256": "83abfee3bccd00d4289ec1015cd9a8baea737bcabd447d10e8eba902d0a59a75",
+      "originalBytes": 15809,
+      "publicBytes": 15737,
+      "replacements": {
+        "local_workspace": 8
+      }
+    },
+    {
+      "original": "registry-attempt2/lazy-image-linux-x64-gnu-1.5.0.tgz.attestations.json",
+      "public": "registry/lazy-image-linux-x64-gnu-1.5.0.tgz.attestations.json",
+      "originalSha256": "ebf14f6073dd56732c53576c8888d327f29118f9af269dbee6a90eec5809557e",
+      "publicSha256": "ebf14f6073dd56732c53576c8888d327f29118f9af269dbee6a90eec5809557e",
+      "originalBytes": 17763,
+      "publicBytes": 17763,
+      "replacements": {}
+    }
+  ]
+}
