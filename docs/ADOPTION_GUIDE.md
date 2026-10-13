@@ -143,7 +143,7 @@ python3 -m http.server 8080 --bind 127.0.0.1 --directory ./site-v1
 ```
 
 `--self-test` uses repository fixtures and is intended for the checkout. The
-[recorded integration trial](./history/STATIC_SITE_ADOPTION.md) includes published
+[recorded 1.4.3 integration trial](./history/STATIC_SITE_ADOPTION.md) includes published
 installation provenance, commands, failures and browser evidence. It is a
 technical reproduction, not an independent user's adoption or performance claim.
 The [published 1.5.0 six-image blog evaluation](./history/blog-adoption-1.5.0-20261013/DECISION.md)
@@ -204,11 +204,11 @@ Runnable examples are maintained separately:
 
 ## Byte budgets and compute limits
 
-Version 1.5.0 contains a compiler quality ceiling and
-JPEG/byte-budget/metrics corrections;
-the published npm 1.4.3 package does not establish the same implementation.
-The pinned 1.4.3 static-page example above remains a published-version example.
-Use candidate tarballs until 1.5.0 is published, then pin that version explicitly.
+Published version 1.5.0 contains a compiler quality ceiling and
+JPEG/byte-budget/metrics corrections. The static-page install command above pins
+published 1.5.0; the recorded 1.4.3 integration trial remains historical evidence
+for that earlier implementation. See the [1.5.0 publication verification](./history/V1.5.0_VERIFICATION.md)
+for published-package provenance, runtime checks, and remaining limits.
 Read the [1.5.0 release notes](./history/V1.5.0_RELEASE_NOTES.md) and the
 [dated operational evaluation](./history/target-bytes-operational-20261012/EVALUATION.md).
 
