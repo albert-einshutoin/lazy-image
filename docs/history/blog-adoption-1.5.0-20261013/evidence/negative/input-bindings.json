@@ -1,0 +1,14 @@
+[
+  {
+    "case": "invalid",
+    "path": "consumer/inputs/not-image.txt",
+    "bytes": 12,
+    "sha256": "5464533c9647b67eb320c40ccc5959537c09102ae75388f6a7675b433e745c9d"
+  },
+  {
+    "case": "strict",
+    "path": "consumer/inputs/coffee-64.png",
+    "bytes": 6293,
+    "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d"
+  }
+]

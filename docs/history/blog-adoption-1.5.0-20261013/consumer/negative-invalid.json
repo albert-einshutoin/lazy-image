@@ -1,0 +1,8 @@
+[
+  {
+    "id": "not-image",
+    "file": "inputs/not-image.txt",
+    "A": "policies/A-coffee.json",
+    "B": "policies/A-coffee.json"
+  }
+]

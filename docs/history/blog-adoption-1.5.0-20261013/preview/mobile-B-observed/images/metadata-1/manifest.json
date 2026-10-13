@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "compiler": {
+    "name": "@alberteinshutoin/lazy-image",
+    "version": "1.5.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+  },
+  "policy": {
+    "preset": "publicUpload",
+    "fingerprint": "4be754ac77dd241c79a04f562b79a33e4a894c5180dc8ba04b324131282806a1",
+    "widths": [
+      240
+    ],
+    "formats": [
+      "jpeg",
+      "webp"
+    ],
+    "placeholder": true
+  },
+  "source": {
+    "sha256": "ff7c61bc5ba08c18ce0c57fa49d61dd6af0d5d1264f9dc398715af2d6ab01b6d",
+    "bytes": 10386,
+    "detectedFormat": "jpeg",
+    "encodedWidth": 320,
+    "encodedHeight": 240,
+    "displayWidth": 240,
+    "displayHeight": 320,
+    "hasAlpha": false,
+    "orientation": 6,
+    "orientationApplied": true
+  },
+  "metadata": {
+    "mode": "privacySafe",
+    "exif": "stripped",
+    "gps": "stripped",
+    "xmp": "stripped",
+    "comments": "stripped",
+    "unknownAncillary": "stripped",
+    "artifactIccPolicy": "preserve-if-safe",
+    "placeholderIccPolicy": "strip"
+  },
+  "artifacts": [
+    {
+      "id": "240/jpeg",
+      "path": "image-240.jpg",
+      "format": "jpeg",
+      "width": 240,
+      "height": 320,
+      "bytes": 6826,
+      "quality": 85,
+      "targetBytes": 61440,
+      "iccOutcome": "preserved",
+      "sha256": "944c9e0a64aa5573c44615770a7d2b3a035d5c3e8f05faa1b237c23ee3b7b393"
+    },
+    {
+      "id": "240/webp",
+      "path": "image-240.webp",
+      "format": "webp",
+      "width": 240,
+      "height": 320,
+      "bytes": 3062,
+      "quality": 80,
+      "targetBytes": 40960,
+      "iccOutcome": "preserved",
+      "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51"
+    }
+  ],
+  "delivery": {
+    "srcsets": [
+      {
+        "format": "jpeg",
+        "value": "image-240.jpg 240w"
+      },
+      {
+        "format": "webp",
+        "value": "image-240.webp 240w"
+      }
+    ]
+  },
+  "placeholder": {
+    "path": "placeholder.webp",
+    "dataUrl": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAABQAwCdASoQABUAP1mKt0spCowCAGAKwnAF2AEN3Ni/btaTAAD+3sX5xeWe87NBW0NMYrSJpOu8TnutKk0tHEvoiDHK52aayvoAAA==",
+    "format": "webp",
+    "width": 16,
+    "height": 21,
+    "bytes": 94,
+    "iccOutcome": "stripped-for-placeholder",
+    "sha256": "d601474d8b28998759b92de3900d398c4ed783947ebdc6fa2d925ffac5b6e515"
+  },
+  "cacheKey": "56b05ebbd0cd04deebdd59ff7e010c23147aa3bacd8b32efac07bb13fa84224b"
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "name": "invalid",
+    "exitCode": 1,
+    "observedError": {
+      "name": "ArtifactCompilationError",
+      "message": "Image artifact compilation failed during preflight",
+      "phase": "preflight",
+      "errorCode": "E131",
+      "code": "LAZY_IMAGE_CODEC_ERROR",
+      "recoveryHint": "Try opening the file in another viewer or re-encode the source image.",
+      "cause": {
+        "name": "Error",
+        "message": "[E131] Failed to decode image: failed to determine image format",
+        "phase": null,
+        "errorCode": "E131",
+        "code": "LAZY_IMAGE_CODEC_ERROR",
+        "recoveryHint": "Try opening the file in another viewer or re-encode the source image.",
+        "cause": null,
+        "cleanupError": null
+      },
+      "cleanupError": null
+    },
+    "files": 0,
+    "remainingImageParentStaging": []
+  },
+  {
+    "name": "strict",
+    "exitCode": 1,
+    "observedError": {
+      "name": "ArtifactCompilationError",
+      "message": "Image artifact compilation failed during processing (64/webp)",
+      "phase": "processing",
+      "errorCode": "E300",
+      "code": "LAZY_IMAGE_CODEC_ERROR",
+      "recoveryHint": "Adjust output format/quality or try re-encoding the source image.",
+      "cause": {
+        "name": "Error",
+        "message": "[E300] Failed to encode as webp: Unable to meet targetBytes=1 within quality range 30-30",
+        "phase": null,
+        "errorCode": "E300",
+        "code": "LAZY_IMAGE_CODEC_ERROR",
+        "recoveryHint": "Adjust output format/quality or try re-encoding the source image.",
+        "cause": null,
+        "cleanupError": null
+      },
+      "cleanupError": null
+    },
+    "files": 0,
+    "remainingImageParentStaging": []
+  },
+  {
+    "name": "existing",
+    "exitCode": 1,
+    "observedError": {
+      "name": "Error",
+      "message": "EEXIST: file already exists, mkdir '<PRIVATE_EVAL_ROOT>/runs/B1'",
+      "phase": null,
+      "errorCode": null,
+      "code": "EEXIST",
+      "recoveryHint": null,
+      "cause": null,
+      "cleanupError": null
+    },
+    "files": 29,
+    "remainingImageParentStaging": []
+  }
+]

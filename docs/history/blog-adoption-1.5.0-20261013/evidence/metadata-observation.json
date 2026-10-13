@@ -1,0 +1,11 @@
+{
+  "source": {
+    "exif": true,
+    "gpsIfdPointerPresent": true,
+    "gpsIfdPointer": 224,
+    "xmp": false,
+    "icc": true
+  },
+  "outputs": "all 132 normal images checked for EXIF/XMP absence and ICC presence matching manifest; GPS absence follows EXIF removal",
+  "xmpScope": "input has no XMP, so absence of XMP output is observed; not a new XMP-bearing-input deletion challenge"
+}

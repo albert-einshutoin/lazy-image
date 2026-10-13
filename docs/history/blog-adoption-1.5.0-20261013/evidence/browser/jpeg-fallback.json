@@ -1,0 +1,240 @@
+{
+  "url": "http://127.0.0.1:8875/desktop-B-observed/qa-jpeg.html",
+  "viewport": {
+    "width": 1440,
+    "height": 1000,
+    "dpr": 1
+  },
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+  "browserVersion": {
+    "brands": [
+      {
+        "brand": "Chromium",
+        "version": "154"
+      },
+      {
+        "brand": "Google Chrome",
+        "version": "154"
+      },
+      {
+        "brand": "Not A(Brand",
+        "version": "99"
+      }
+    ],
+    "fullVersionList": [
+      {
+        "brand": "Chromium",
+        "version": "154.0.8037.98"
+      },
+      {
+        "brand": "Google Chrome",
+        "version": "154.0.8037.98"
+      },
+      {
+        "brand": "Not A(Brand",
+        "version": "99.0.0.0"
+      }
+    ],
+    "mobile": false,
+    "platform": "macOS"
+  },
+  "decodeError": null,
+  "images": [
+    {
+      "id": "coffee",
+      "currentSrc": "http://127.0.0.1:8875/desktop-B-observed/images/coffee/image-320.jpg",
+      "src": "images/coffee/image-320.jpg",
+      "srcset": "images/coffee/image-320.jpg 320w",
+      "sizes": "(max-width: 368px) calc(100vw - 48px), 320px",
+      "complete": true,
+      "naturalWidth": 320,
+      "naturalHeight": 213,
+      "rect": {
+        "width": 320,
+        "height": 213
+      },
+      "placeholder": "url(\"http://127.0.0.1:8875/desktop-B-observed/images/coffee/placeholder.webp\")"
+    },
+    {
+      "id": "chelsea",
+      "currentSrc": "http://127.0.0.1:8875/desktop-B-observed/images/chelsea/image-320.jpg",
+      "src": "images/chelsea/image-320.jpg",
+      "srcset": "images/chelsea/image-320.jpg 320w",
+      "sizes": "(max-width: 368px) calc(100vw - 48px), 320px",
+      "complete": true,
+      "naturalWidth": 320,
+      "naturalHeight": 213,
+      "rect": {
+        "width": 320,
+        "height": 213
+      },
+      "placeholder": "url(\"http://127.0.0.1:8875/desktop-B-observed/images/chelsea/placeholder.webp\")"
+    },
+    {
+      "id": "ui-1",
+      "currentSrc": "http://127.0.0.1:8875/desktop-B-observed/images/ui-1/image-320.jpg",
+      "src": "images/ui-1/image-320.jpg",
+      "srcset": "images/ui-1/image-320.jpg 320w",
+      "sizes": "(max-width: 368px) calc(100vw - 48px), 320px",
+      "complete": true,
+      "naturalWidth": 320,
+      "naturalHeight": 240,
+      "rect": {
+        "width": 320,
+        "height": 240
+      },
+      "placeholder": "url(\"http://127.0.0.1:8875/desktop-B-observed/images/ui-1/placeholder.webp\")"
+    },
+    {
+      "id": "metadata-1",
+      "currentSrc": "http://127.0.0.1:8875/desktop-B-observed/images/metadata-1/image-240.jpg",
+      "src": "images/metadata-1/image-240.jpg",
+      "srcset": "images/metadata-1/image-240.jpg 240w",
+      "sizes": "(max-width: 288px) calc(100vw - 48px), 240px",
+      "complete": true,
+      "naturalWidth": 240,
+      "naturalHeight": 320,
+      "rect": {
+        "width": 240,
+        "height": 320
+      },
+      "placeholder": "url(\"http://127.0.0.1:8875/desktop-B-observed/images/metadata-1/placeholder.webp\")"
+    },
+    {
+      "id": "large",
+      "currentSrc": "http://127.0.0.1:8875/desktop-B-observed/images/large/image-960.jpg",
+      "src": "images/large/image-960.jpg",
+      "srcset": "images/large/image-320.jpg 320w, images/large/image-640.jpg 640w, images/large/image-960.jpg 960w",
+      "sizes": "(max-width: 1008px) calc(100vw - 48px), 960px",
+      "complete": true,
+      "naturalWidth": 960,
+      "naturalHeight": 960,
+      "rect": {
+        "width": 960,
+        "height": 960
+      },
+      "placeholder": "url(\"http://127.0.0.1:8875/desktop-B-observed/images/large/placeholder.webp\")"
+    },
+    {
+      "id": "coffee-64",
+      "currentSrc": "http://127.0.0.1:8875/desktop-B-observed/images/coffee-64/image-64.jpg",
+      "src": "images/coffee-64/image-64.jpg",
+      "srcset": "images/coffee-64/image-64.jpg 64w",
+      "sizes": "(max-width: 112px) calc(100vw - 48px), 64px",
+      "complete": true,
+      "naturalWidth": 64,
+      "naturalHeight": 43,
+      "rect": {
+        "width": 64,
+        "height": 43
+      },
+      "placeholder": "url(\"http://127.0.0.1:8875/desktop-B-observed/images/coffee-64/placeholder.webp\")"
+    }
+  ],
+  "resources": [
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/coffee/image-320.jpg",
+      "type": "img",
+      "transferSize": 16369,
+      "encodedBodySize": 16069,
+      "decodedBodySize": 16069,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/chelsea/image-320.jpg",
+      "type": "img",
+      "transferSize": 16047,
+      "encodedBodySize": 15747,
+      "decodedBodySize": 15747,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/ui-1/image-320.jpg",
+      "type": "img",
+      "transferSize": 6123,
+      "encodedBodySize": 5823,
+      "decodedBodySize": 5823,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/metadata-1/image-240.jpg",
+      "type": "img",
+      "transferSize": 7126,
+      "encodedBodySize": 6826,
+      "decodedBodySize": 6826,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/qa.js",
+      "type": "script",
+      "transferSize": 300,
+      "encodedBodySize": 0,
+      "decodedBodySize": 0,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/large/image-960.jpg",
+      "type": "img",
+      "transferSize": 86983,
+      "encodedBodySize": 86683,
+      "decodedBodySize": 86683,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/coffee-64/image-64.jpg",
+      "type": "img",
+      "transferSize": 1782,
+      "encodedBodySize": 1482,
+      "decodedBodySize": 1482,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/coffee/placeholder.webp",
+      "type": "css",
+      "transferSize": 300,
+      "encodedBodySize": 104,
+      "decodedBodySize": 104,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/chelsea/placeholder.webp",
+      "type": "css",
+      "transferSize": 300,
+      "encodedBodySize": 84,
+      "decodedBodySize": 84,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/ui-1/placeholder.webp",
+      "type": "css",
+      "transferSize": 300,
+      "encodedBodySize": 68,
+      "decodedBodySize": 68,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/large/placeholder.webp",
+      "type": "css",
+      "transferSize": 300,
+      "encodedBodySize": 98,
+      "decodedBodySize": 98,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/coffee-64/placeholder.webp",
+      "type": "css",
+      "transferSize": 300,
+      "encodedBodySize": 104,
+      "decodedBodySize": 104,
+      "responseStatus": 200
+    },
+    {
+      "name": "http://127.0.0.1:8875/desktop-B-observed/images/metadata-1/placeholder.webp",
+      "type": "css",
+      "transferSize": 300,
+      "encodedBodySize": 94,
+      "decodedBodySize": 94,
+      "responseStatus": 200
+    }
+  ]
+}
