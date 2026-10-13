@@ -1,0 +1,758 @@
+{
+  "scope": "Recorded four successful calls; failures remain in raw if a replay differs",
+  "normalCalls": 4,
+  "normalArtifacts": 24,
+  "budgetArtifacts": 18,
+  "budgetFits": 18,
+  "E123": 0,
+  "E300": 0,
+  "allImageHashesMatch": true,
+  "summaries": [
+    {
+      "name": "A1",
+      "exitCode": 0,
+      "imageStageMs": 1358.011291,
+      "processWallMs": 1445.581042,
+      "artifacts": [
+        {
+          "id": "684/jpeg",
+          "path": "image-684.jpg",
+          "format": "jpeg",
+          "width": 684,
+          "height": 998,
+          "bytes": 105685,
+          "quality": 85,
+          "iccOutcome": "absent",
+          "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/jpeg",
+          "path": "image-960.jpg",
+          "format": "jpeg",
+          "width": 960,
+          "height": 1400,
+          "bytes": 161979,
+          "quality": 85,
+          "iccOutcome": "absent",
+          "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/jpeg",
+          "path": "image-1920.jpg",
+          "format": "jpeg",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 406976,
+          "quality": 85,
+          "iccOutcome": "absent",
+          "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        },
+        {
+          "id": "684/webp",
+          "path": "image-684.webp",
+          "format": "webp",
+          "width": 684,
+          "height": 998,
+          "bytes": 64168,
+          "quality": 80,
+          "iccOutcome": "absent",
+          "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/webp",
+          "path": "image-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 1400,
+          "bytes": 95622,
+          "quality": 80,
+          "iccOutcome": "absent",
+          "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/webp",
+          "path": "image-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 185508,
+          "quality": 80,
+          "iccOutcome": "absent",
+          "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "B1",
+      "exitCode": 0,
+      "imageStageMs": 1340.1174580000002,
+      "processWallMs": 1392.3311669999998,
+      "artifacts": [
+        {
+          "id": "684/jpeg",
+          "path": "image-684.jpg",
+          "format": "jpeg",
+          "width": 684,
+          "height": 998,
+          "bytes": 105685,
+          "quality": 85,
+          "targetBytes": 153600,
+          "iccOutcome": "absent",
+          "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/jpeg",
+          "path": "image-960.jpg",
+          "format": "jpeg",
+          "width": 960,
+          "height": 1400,
+          "bytes": 161979,
+          "quality": 85,
+          "targetBytes": 307200,
+          "iccOutcome": "absent",
+          "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/jpeg",
+          "path": "image-1920.jpg",
+          "format": "jpeg",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 406976,
+          "quality": 85,
+          "targetBytes": 614400,
+          "iccOutcome": "absent",
+          "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        },
+        {
+          "id": "684/webp",
+          "path": "image-684.webp",
+          "format": "webp",
+          "width": 684,
+          "height": 998,
+          "bytes": 64168,
+          "quality": 80,
+          "targetBytes": 102400,
+          "iccOutcome": "absent",
+          "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/webp",
+          "path": "image-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 1400,
+          "bytes": 95622,
+          "quality": 80,
+          "targetBytes": 204800,
+          "iccOutcome": "absent",
+          "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/webp",
+          "path": "image-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 185508,
+          "quality": 80,
+          "targetBytes": 409600,
+          "iccOutcome": "absent",
+          "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "exitCode": 0,
+      "imageStageMs": 1350.398166,
+      "processWallMs": 1400.179666,
+      "artifacts": [
+        {
+          "id": "684/jpeg",
+          "path": "image-684.jpg",
+          "format": "jpeg",
+          "width": 684,
+          "height": 998,
+          "bytes": 105685,
+          "quality": 85,
+          "targetBytes": 153600,
+          "iccOutcome": "absent",
+          "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/jpeg",
+          "path": "image-960.jpg",
+          "format": "jpeg",
+          "width": 960,
+          "height": 1400,
+          "bytes": 161979,
+          "quality": 85,
+          "targetBytes": 307200,
+          "iccOutcome": "absent",
+          "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/jpeg",
+          "path": "image-1920.jpg",
+          "format": "jpeg",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 406976,
+          "quality": 85,
+          "targetBytes": 614400,
+          "iccOutcome": "absent",
+          "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        },
+        {
+          "id": "684/webp",
+          "path": "image-684.webp",
+          "format": "webp",
+          "width": 684,
+          "height": 998,
+          "bytes": 64168,
+          "quality": 80,
+          "targetBytes": 102400,
+          "iccOutcome": "absent",
+          "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/webp",
+          "path": "image-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 1400,
+          "bytes": 95622,
+          "quality": 80,
+          "targetBytes": 204800,
+          "iccOutcome": "absent",
+          "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/webp",
+          "path": "image-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 185508,
+          "quality": 80,
+          "targetBytes": 409600,
+          "iccOutcome": "absent",
+          "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "exitCode": 0,
+      "imageStageMs": 1331.978459,
+      "processWallMs": 1386.5045410000002,
+      "artifacts": [
+        {
+          "id": "684/jpeg",
+          "path": "image-684.jpg",
+          "format": "jpeg",
+          "width": 684,
+          "height": 998,
+          "bytes": 105685,
+          "quality": 85,
+          "targetBytes": 153600,
+          "iccOutcome": "absent",
+          "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/jpeg",
+          "path": "image-960.jpg",
+          "format": "jpeg",
+          "width": 960,
+          "height": 1400,
+          "bytes": 161979,
+          "quality": 85,
+          "targetBytes": 307200,
+          "iccOutcome": "absent",
+          "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/jpeg",
+          "path": "image-1920.jpg",
+          "format": "jpeg",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 406976,
+          "quality": 85,
+          "targetBytes": 614400,
+          "iccOutcome": "absent",
+          "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8",
+          "encodedMetadata": {
+            "format": "jpeg",
+            "mediaType": "image/jpeg",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "density": 72,
+            "chromaSubsampling": "4:2:0",
+            "isProgressive": true,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        },
+        {
+          "id": "684/webp",
+          "path": "image-684.webp",
+          "format": "webp",
+          "width": 684,
+          "height": 998,
+          "bytes": 64168,
+          "quality": 80,
+          "targetBytes": 102400,
+          "iccOutcome": "absent",
+          "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 684,
+            "height": 998,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 684,
+              "height": 998
+            }
+          }
+        },
+        {
+          "id": "960/webp",
+          "path": "image-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 1400,
+          "bytes": 95622,
+          "quality": 80,
+          "targetBytes": 204800,
+          "iccOutcome": "absent",
+          "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 960,
+            "height": 1400,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 960,
+              "height": 1400
+            }
+          }
+        },
+        {
+          "id": "1920/webp",
+          "path": "image-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2800,
+          "bytes": 185508,
+          "quality": 80,
+          "targetBytes": 409600,
+          "iccOutcome": "absent",
+          "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+          "encodedMetadata": {
+            "format": "webp",
+            "mediaType": "image/webp",
+            "width": 1920,
+            "height": 2800,
+            "space": "srgb",
+            "channels": 3,
+            "depth": "uchar",
+            "isProgressive": false,
+            "isPalette": false,
+            "hasProfile": false,
+            "hasAlpha": false,
+            "autoOrient": {
+              "width": 1920,
+              "height": 2800
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

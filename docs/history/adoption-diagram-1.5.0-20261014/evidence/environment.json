@@ -1,0 +1,27 @@
+{
+  "recordedAt": "2026-10-13T20:15:38.578Z",
+  "node": "v24.2.0",
+  "nodeExecPath": "<NODE_EXECUTABLE>",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4",
+  "cpuCount": 10,
+  "totalMemoryBytes": 34359738368,
+  "macOS": {
+    "command": [
+      "sw_vers"
+    ],
+    "exitCode": 0,
+    "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A428\n",
+    "stderr": ""
+  },
+  "npm": {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exitCode": 0,
+    "stdout": "11.3.0\n",
+    "stderr": ""
+  }
+}

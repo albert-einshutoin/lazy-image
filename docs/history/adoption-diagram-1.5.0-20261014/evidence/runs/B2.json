@@ -1,0 +1,226 @@
+{
+  "condition": "B",
+  "inputSha256": "fd4966526149ea92d6dc0ec88bd01581c4ad2e0604c7fbac3e0f4ff2b9899504",
+  "policy": {
+    "widths": [
+      684,
+      960,
+      1920
+    ],
+    "formats": [
+      "webp",
+      "jpeg"
+    ],
+    "placeholder": false,
+    "budgets": [
+      {
+        "width": 684,
+        "format": "webp",
+        "maxBytes": 102400,
+        "maxQuality": 80
+      },
+      {
+        "width": 684,
+        "format": "jpeg",
+        "maxBytes": 153600,
+        "maxQuality": 85
+      },
+      {
+        "width": 960,
+        "format": "webp",
+        "maxBytes": 204800,
+        "maxQuality": 80
+      },
+      {
+        "width": 960,
+        "format": "jpeg",
+        "maxBytes": 307200,
+        "maxQuality": 85
+      },
+      {
+        "width": 1920,
+        "format": "webp",
+        "maxBytes": 409600,
+        "maxQuality": 80
+      },
+      {
+        "width": 1920,
+        "format": "jpeg",
+        "maxBytes": 614400,
+        "maxQuality": 85
+      }
+    ]
+  },
+  "policySha256": "46faba48126216fe321767896af5b34e0dbbd00d992ec034fecfdbac93517380",
+  "success": true,
+  "imageStageMs": 1350.398166,
+  "nativeMetrics": null,
+  "nativeMetricsReason": "compileImage manifest does not expose native metrics",
+  "identity": {
+    "version": "1.5.0",
+    "sourceSha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+    "nativeSha256": "d7b3871a3377f0add70a8058992505207e047728db0dcef8ff44654838b98055",
+    "lockSha256": "7fc9352d60ee21d7df35e3cc6a3b3b50dd5a01d918ba4154096ca598e0ebf042",
+    "loadedJs": [
+      {
+        "file": "index.js",
+        "sha256": "e4d196650b52ca26f75cf5379437e73ae2fa3bd0be490a891245910ebb0feb89"
+      },
+      {
+        "file": "streaming/pipeline.js",
+        "sha256": "c5f12ba0746c9bba92a8d973ae3d3b566c9db38698f3003d1545b292fe610e9f"
+      },
+      {
+        "file": "lib/helpers.js",
+        "sha256": "e959ce2dedf0357b00a4d5454e886c39b53d4827f29d8e51d2db5d4eec459f08"
+      },
+      {
+        "file": "lib/artifact-policy.js",
+        "sha256": "a0648632a2255fdb92f0789f4043a4e14a5d97dda1b006c8a0179d7068bed2e6"
+      },
+      {
+        "file": "lib/artifact-compiler.js",
+        "sha256": "78467d5a71eb9615c41a8f675b24c73f7c0461ca7a8bb8a291e019a12a9362a2"
+      }
+    ],
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.2.0",
+    "overrides": []
+  },
+  "manifest": {
+    "schemaVersion": 1,
+    "compiler": {
+      "name": "@alberteinshutoin/lazy-image",
+      "version": "1.5.0",
+      "platform": "darwin",
+      "arch": "arm64",
+      "fingerprint": "d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"
+    },
+    "policy": {
+      "preset": "publicUpload",
+      "fingerprint": "856bd6d112a75f303e055b8c83da4155b9a53b9bbf3f2ab8870caed059667331",
+      "widths": [
+        684,
+        960,
+        1920
+      ],
+      "formats": [
+        "jpeg",
+        "webp"
+      ],
+      "placeholder": false
+    },
+    "source": {
+      "sha256": "fd4966526149ea92d6dc0ec88bd01581c4ad2e0604c7fbac3e0f4ff2b9899504",
+      "bytes": 427223,
+      "detectedFormat": "png",
+      "encodedWidth": 1920,
+      "encodedHeight": 2800,
+      "displayWidth": 1920,
+      "displayHeight": 2800,
+      "hasAlpha": false,
+      "orientation": null,
+      "orientationApplied": false
+    },
+    "metadata": {
+      "mode": "privacySafe",
+      "exif": "stripped",
+      "gps": "stripped",
+      "xmp": "stripped",
+      "comments": "stripped",
+      "unknownAncillary": "stripped",
+      "artifactIccPolicy": "preserve-if-safe",
+      "placeholderIccPolicy": "strip"
+    },
+    "artifacts": [
+      {
+        "id": "684/jpeg",
+        "path": "image-684.jpg",
+        "format": "jpeg",
+        "width": 684,
+        "height": 998,
+        "bytes": 105685,
+        "quality": 85,
+        "targetBytes": 153600,
+        "iccOutcome": "absent",
+        "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+      },
+      {
+        "id": "960/jpeg",
+        "path": "image-960.jpg",
+        "format": "jpeg",
+        "width": 960,
+        "height": 1400,
+        "bytes": 161979,
+        "quality": 85,
+        "targetBytes": 307200,
+        "iccOutcome": "absent",
+        "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+      },
+      {
+        "id": "1920/jpeg",
+        "path": "image-1920.jpg",
+        "format": "jpeg",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 406976,
+        "quality": 85,
+        "targetBytes": 614400,
+        "iccOutcome": "absent",
+        "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+      },
+      {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+      },
+      {
+        "id": "960/webp",
+        "path": "image-960.webp",
+        "format": "webp",
+        "width": 960,
+        "height": 1400,
+        "bytes": 95622,
+        "quality": 80,
+        "targetBytes": 204800,
+        "iccOutcome": "absent",
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+      },
+      {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+      }
+    ],
+    "delivery": {
+      "srcsets": [
+        {
+          "format": "jpeg",
+          "value": "image-684.jpg 684w, image-960.jpg 960w, image-1920.jpg 1920w"
+        },
+        {
+          "format": "webp",
+          "value": "image-684.webp 684w, image-960.webp 960w, image-1920.webp 1920w"
+        }
+      ]
+    },
+    "cacheKey": "a30db53e66bb7d6f98f46df6b264349e77bf127229bf18451a667cd62c6e2821"
+  },
+  "outputExists": true,
+  "remainingStaging": []
+}

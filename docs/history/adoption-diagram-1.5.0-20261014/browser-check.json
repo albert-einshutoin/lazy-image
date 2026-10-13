@@ -1,0 +1,46 @@
+{
+  "uniqueNormalImageLoads": 44,
+  "enlargementPageLoads": 4,
+  "captureRecords": 90,
+  "normalCaptureRecords": 66,
+  "enlargementCaptureRecords": 24,
+  "decodeErrors": 0,
+  "pictures": [
+    {
+      "case": "desktop-1",
+      "file": "image-1920.webp",
+      "encodedWidth": 1920,
+      "naturalWidth": 960,
+      "cssWidth": 960,
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "case": "desktop-2",
+      "file": "image-1920.webp",
+      "encodedWidth": 1920,
+      "naturalWidth": 960,
+      "cssWidth": 960,
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "case": "mobile-1",
+      "file": "image-1920.webp",
+      "encodedWidth": 1920,
+      "naturalWidth": 342,
+      "cssWidth": 342,
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    },
+    {
+      "case": "mobile-2",
+      "file": "image-1920.webp",
+      "encodedWidth": 1920,
+      "naturalWidth": 342,
+      "cssWidth": 342,
+      "bytes": 185508,
+      "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+    }
+  ]
+}

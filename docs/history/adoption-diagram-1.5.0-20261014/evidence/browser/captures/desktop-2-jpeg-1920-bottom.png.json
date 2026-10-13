@@ -1,0 +1,31 @@
+{
+  "scope": "Visible diagram only; native device-toolbar presentation is scaled, not a 1:1 source-pixel screenshot",
+  "method": "cua App.getScreenshot, unchanged viewport/DPR, measured 100 CSS px ruler; PNG crop retains original capture compression",
+  "sourceFormat": "jpeg",
+  "publicFormat": "png",
+  "scaleUncertaintyPixels": 2,
+  "originalSha256": "eab65d892d9376761371e55970b399745b4e751fa5aa89dec828d5c0da680af3",
+  "originalPixels": {
+    "width": 1920,
+    "height": 958
+  },
+  "rulerPixels": {
+    "x": 420,
+    "y": 123,
+    "width": 75
+  },
+  "pixelsPerCSSPixel": 0.75,
+  "cropPixels": {
+    "left": 600,
+    "top": 123,
+    "width": 720,
+    "height": 706
+  },
+  "cssVisibleBounds": {
+    "left": 240,
+    "top": 0,
+    "right": 1200,
+    "bottom": 942
+  },
+  "cropSha256": "5ee033bb99337b8b91d805bced3bf70910bed1cbb474ff5c82707b225ecd1e48"
+}

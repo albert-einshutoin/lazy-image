@@ -1,0 +1,294 @@
+[
+  {
+    "name": "A1",
+    "command": [
+      "<NODE_EXECUTABLE>",
+      "<PRIVATE_CONSUMER>/compile.mjs",
+      "A",
+      "<PRIVATE_PHASE>/raster/diagram-input.png",
+      "<PRIVATE_PHASE>/runs/A1",
+      "<PRIVATE_PHASE>/runs/A1.json"
+    ],
+    "evaluationRevision": "a8aa32716c8ce9fa4078808a9424e12969171a7f",
+    "codeHashes": [
+      {
+        "file": "published.mjs",
+        "sha256": "9d09713668867a9878fb85a55aad11b3691568517f3e8b611beeab6bd817b6ca"
+      },
+      {
+        "file": "controls.mjs",
+        "sha256": "7dc0616a764483175052a2ba086c3c33c4c0529d6580f2b1a6d3c5be49238011"
+      },
+      {
+        "file": "compile.mjs",
+        "sha256": "38df8797be2d6e9de8cb735f99c9f5cbd8214fadb29cf75b66999d44d41ad5f6"
+      },
+      {
+        "file": "measure.mjs",
+        "sha256": "1f7aac471d9432689b0180db9d587af6b52c9f1c8fb96dc34d38d558830c19b7"
+      }
+    ],
+    "processWallMs": 1445.581042,
+    "exitCode": 0,
+    "signal": null,
+    "spawnError": null,
+    "imageStageMs": 1358.011291,
+    "success": true,
+    "files": [
+      {
+        "file": "image-1920.jpg",
+        "bytes": 406976,
+        "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+      },
+      {
+        "file": "image-1920.webp",
+        "bytes": 185508,
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+      },
+      {
+        "file": "image-684.jpg",
+        "bytes": 105685,
+        "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+      },
+      {
+        "file": "image-684.webp",
+        "bytes": 64168,
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+      },
+      {
+        "file": "image-960.jpg",
+        "bytes": 161979,
+        "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+      },
+      {
+        "file": "image-960.webp",
+        "bytes": 95622,
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+      },
+      {
+        "file": "manifest.json",
+        "bytes": 2425,
+        "sha256": "a15de305324838b455d5f8f7ab2ce922707163b6c35309244fc50d265644c670"
+      }
+    ]
+  },
+  {
+    "name": "B1",
+    "command": [
+      "<NODE_EXECUTABLE>",
+      "<PRIVATE_CONSUMER>/compile.mjs",
+      "B",
+      "<PRIVATE_PHASE>/raster/diagram-input.png",
+      "<PRIVATE_PHASE>/runs/B1",
+      "<PRIVATE_PHASE>/runs/B1.json"
+    ],
+    "evaluationRevision": "a8aa32716c8ce9fa4078808a9424e12969171a7f",
+    "codeHashes": [
+      {
+        "file": "published.mjs",
+        "sha256": "9d09713668867a9878fb85a55aad11b3691568517f3e8b611beeab6bd817b6ca"
+      },
+      {
+        "file": "controls.mjs",
+        "sha256": "7dc0616a764483175052a2ba086c3c33c4c0529d6580f2b1a6d3c5be49238011"
+      },
+      {
+        "file": "compile.mjs",
+        "sha256": "38df8797be2d6e9de8cb735f99c9f5cbd8214fadb29cf75b66999d44d41ad5f6"
+      },
+      {
+        "file": "measure.mjs",
+        "sha256": "1f7aac471d9432689b0180db9d587af6b52c9f1c8fb96dc34d38d558830c19b7"
+      }
+    ],
+    "processWallMs": 1392.3311669999998,
+    "exitCode": 0,
+    "signal": null,
+    "spawnError": null,
+    "imageStageMs": 1340.1174580000002,
+    "success": true,
+    "files": [
+      {
+        "file": "image-1920.jpg",
+        "bytes": 406976,
+        "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+      },
+      {
+        "file": "image-1920.webp",
+        "bytes": 185508,
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+      },
+      {
+        "file": "image-684.jpg",
+        "bytes": 105685,
+        "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+      },
+      {
+        "file": "image-684.webp",
+        "bytes": 64168,
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+      },
+      {
+        "file": "image-960.jpg",
+        "bytes": 161979,
+        "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+      },
+      {
+        "file": "image-960.webp",
+        "bytes": 95622,
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+      },
+      {
+        "file": "manifest.json",
+        "bytes": 2551,
+        "sha256": "7402c3dbad24a94ecb1a89f83501231b3b328137931ed6c9cf1e8071cb784a38"
+      }
+    ]
+  },
+  {
+    "name": "B2",
+    "command": [
+      "<NODE_EXECUTABLE>",
+      "<PRIVATE_CONSUMER>/compile.mjs",
+      "B",
+      "<PRIVATE_PHASE>/raster/diagram-input.png",
+      "<PRIVATE_PHASE>/runs/B2",
+      "<PRIVATE_PHASE>/runs/B2.json"
+    ],
+    "evaluationRevision": "a8aa32716c8ce9fa4078808a9424e12969171a7f",
+    "codeHashes": [
+      {
+        "file": "published.mjs",
+        "sha256": "9d09713668867a9878fb85a55aad11b3691568517f3e8b611beeab6bd817b6ca"
+      },
+      {
+        "file": "controls.mjs",
+        "sha256": "7dc0616a764483175052a2ba086c3c33c4c0529d6580f2b1a6d3c5be49238011"
+      },
+      {
+        "file": "compile.mjs",
+        "sha256": "38df8797be2d6e9de8cb735f99c9f5cbd8214fadb29cf75b66999d44d41ad5f6"
+      },
+      {
+        "file": "measure.mjs",
+        "sha256": "1f7aac471d9432689b0180db9d587af6b52c9f1c8fb96dc34d38d558830c19b7"
+      }
+    ],
+    "processWallMs": 1400.179666,
+    "exitCode": 0,
+    "signal": null,
+    "spawnError": null,
+    "imageStageMs": 1350.398166,
+    "success": true,
+    "files": [
+      {
+        "file": "image-1920.jpg",
+        "bytes": 406976,
+        "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+      },
+      {
+        "file": "image-1920.webp",
+        "bytes": 185508,
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+      },
+      {
+        "file": "image-684.jpg",
+        "bytes": 105685,
+        "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+      },
+      {
+        "file": "image-684.webp",
+        "bytes": 64168,
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+      },
+      {
+        "file": "image-960.jpg",
+        "bytes": 161979,
+        "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+      },
+      {
+        "file": "image-960.webp",
+        "bytes": 95622,
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+      },
+      {
+        "file": "manifest.json",
+        "bytes": 2551,
+        "sha256": "7402c3dbad24a94ecb1a89f83501231b3b328137931ed6c9cf1e8071cb784a38"
+      }
+    ]
+  },
+  {
+    "name": "B3",
+    "command": [
+      "<NODE_EXECUTABLE>",
+      "<PRIVATE_CONSUMER>/compile.mjs",
+      "B",
+      "<PRIVATE_PHASE>/raster/diagram-input.png",
+      "<PRIVATE_PHASE>/runs/B3",
+      "<PRIVATE_PHASE>/runs/B3.json"
+    ],
+    "evaluationRevision": "a8aa32716c8ce9fa4078808a9424e12969171a7f",
+    "codeHashes": [
+      {
+        "file": "published.mjs",
+        "sha256": "9d09713668867a9878fb85a55aad11b3691568517f3e8b611beeab6bd817b6ca"
+      },
+      {
+        "file": "controls.mjs",
+        "sha256": "7dc0616a764483175052a2ba086c3c33c4c0529d6580f2b1a6d3c5be49238011"
+      },
+      {
+        "file": "compile.mjs",
+        "sha256": "38df8797be2d6e9de8cb735f99c9f5cbd8214fadb29cf75b66999d44d41ad5f6"
+      },
+      {
+        "file": "measure.mjs",
+        "sha256": "1f7aac471d9432689b0180db9d587af6b52c9f1c8fb96dc34d38d558830c19b7"
+      }
+    ],
+    "processWallMs": 1386.5045410000002,
+    "exitCode": 0,
+    "signal": null,
+    "spawnError": null,
+    "imageStageMs": 1331.978459,
+    "success": true,
+    "files": [
+      {
+        "file": "image-1920.jpg",
+        "bytes": 406976,
+        "sha256": "dfa8be3c3297addcab65a315bffbbcf6b89cb715d4a0f7e606c37e087cd5dff8"
+      },
+      {
+        "file": "image-1920.webp",
+        "bytes": 185508,
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb"
+      },
+      {
+        "file": "image-684.jpg",
+        "bytes": 105685,
+        "sha256": "5b4dc8cabf57c083c3f6775d2e7d487be73cdcaecd164b74ef6e0a22f127dd40"
+      },
+      {
+        "file": "image-684.webp",
+        "bytes": 64168,
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd"
+      },
+      {
+        "file": "image-960.jpg",
+        "bytes": 161979,
+        "sha256": "7f07f25fc0e0a8b7c5a5d57272b42ef06f1ce4dd91c3f4b9b0fb459d00a6fdc0"
+      },
+      {
+        "file": "image-960.webp",
+        "bytes": 95622,
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f"
+      },
+      {
+        "file": "manifest.json",
+        "bytes": 2551,
+        "sha256": "7402c3dbad24a94ecb1a89f83501231b3b328137931ed6c9cf1e8071cb784a38"
+      }
+    ]
+  }
+]

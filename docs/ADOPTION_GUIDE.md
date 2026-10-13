@@ -69,6 +69,69 @@ integration, then make their URLs available to consumers. That remote publicatio
 is separate from the compiler's local transaction. Map manifest-relative paths to
 a public prefix; never send private filesystem paths to a browser.
 
+### See the compiler/application boundary
+
+![Input image and policy enter compileImage, which generates and verifies private staging, commits one artifact directory locally, and returns images and a manifest. The application builds HTML and owns delivery; errors do not commit unverified artifacts.](./images/compiler-artifact-flow.svg)
+
+[Open the editable original SVG](./images/compiler-artifact-flow.svg) and zoom for
+the detailed labels. The diagram is an original MIT-licensed guide asset. The
+compiler commits the image/manifest directory; HTML generation, storage/CDN
+transfer, remote publication and whole-site rollback remain application work.
+
+Use SVG as the standard format for this diagram. The
+[published 1.5.0 evaluation](./history/adoption-diagram-1.5.0-20261014/DECISION.md)
+checked a planned desktop viewport of 1440×1000 with a 960px CSS image and a
+390×844 mobile viewport with 24px side padding (342px image), each at DPR 1/2.
+Mobile normal display communicates the six stages; detailed labels require opening
+and enlarging the original. These are the guide's chosen display conditions, not
+observations of a production site or physical phones.
+
+For example, a page that hosts the SVG can provide a direct original-image link:
+
+```html
+<style>
+  .compiler-diagram { max-width: 1008px; padding: 24px; margin: auto; box-sizing: border-box; }
+  .compiler-diagram img { display: block; width: 100%; max-width: 960px; height: auto; }
+</style>
+<div class="compiler-diagram">
+  <a href="compiler-artifact-flow.svg" target="_blank" rel="noopener">
+    <img src="compiler-artifact-flow.svg" width="960" height="1400"
+         alt="Input and policy → compiler → verified private staging → local artifact commit → images and manifest → application HTML and delivery.">
+  </a>
+  <p><a href="compiler-artifact-flow.svg">Open the original and zoom for details</a></p>
+</div>
+```
+
+If your publishing pipeline requires raster images, rasterize the white-background
+SVG to an opaque 1920px-wide PNG with an external tool first. `compileImage()`
+accepts static JPEG/PNG/WebP inputs; SVG/PDF input and PNG output are not compiler
+policy features. The [fixed comparison policy](./history/adoption-diagram-1.5.0-20261014/consumer/policy-B.json)
+produces WebP and JPEG at 684/960/1920px, with these explicit limits:
+
+| Width | WebP maxBytes / maxQuality | JPEG maxBytes / maxQuality |
+|---|---|---|
+| 684 | 102400 / 80 | 153600 / 85 |
+| 960 | 204800 / 80 | 307200 / 85 |
+| 1920 | 409600 / 80 | 614400 / 85 |
+
+WebP is the primary raster choice for this diagram; JPEG is an optional opaque
+fallback. 684px covers 342 CSS px at DPR2, 960px covers the desktop CSS width at
+DPR1, and 1920px covers it at DPR2. The smallest tested readable candidate was
+684px; it is enlarged when displayed at 960 CSS px, so retain the larger variants
+for desktop rather than treating that result as an optimum for all diagrams.
+Build raster `srcset` from the actual manifest and use CSS widths in
+`sizes="(max-width: 1008px) calc(100vw - 48px), 960px"`. Browser selection can reuse
+a larger cached variant; check `currentSrc` rather than assuming a particular file.
+
+The budgeted six-artifact call took about 1.33–1.35 seconds in three M4 trials;
+rendering the SVG and inspecting it were outside that timing. All 18 budgeted
+artifacts fit, and their image bytes/hashes matched the unbudgeted reference.
+This does not establish extra compression, universal acceptance or a latency SLA.
+`maxQuality` limits the search ceiling, not minimum perceptual quality or runtime.
+If a different input/budget changes the selected quality or bytes, check the final
+labels and arrows again. Preserve `E123`/`E300` failures; do not raise the compiler
+resource limit or publish a failed set to force success.
+
 ## Build a static page from the manifest
 
 The [static-site example](../examples/compile-image-static-site.mjs) compiles one

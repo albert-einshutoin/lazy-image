@@ -1,0 +1,8 @@
+{
+  "stage": "Preparation copy, not native compilation",
+  "exitCode": 1,
+  "errorCode": "EEXIST",
+  "existingFile": "consumer/package-lock.json",
+  "existingBytesUnchanged": true,
+  "recovery": "Validated already copied files; copied only published.mjs and policy A/B. No render rerun."
+}

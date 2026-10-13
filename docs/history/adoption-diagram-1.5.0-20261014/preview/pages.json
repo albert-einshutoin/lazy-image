@@ -1,0 +1,62 @@
+[
+  {
+    "id": "svg",
+    "file": "compiler-artifact-flow.svg",
+    "width": 960,
+    "height": 1400
+  },
+  {
+    "id": "png-684",
+    "file": "control-684.png",
+    "width": 684,
+    "height": 998
+  },
+  {
+    "id": "png-960",
+    "file": "control-960.png",
+    "width": 960,
+    "height": 1400
+  },
+  {
+    "id": "png-1920",
+    "file": "control-1920.png",
+    "width": 1920,
+    "height": 2800
+  },
+  {
+    "id": "jpeg-684",
+    "file": "image-684.jpg",
+    "width": 684,
+    "height": 998
+  },
+  {
+    "id": "jpeg-960",
+    "file": "image-960.jpg",
+    "width": 960,
+    "height": 1400
+  },
+  {
+    "id": "jpeg-1920",
+    "file": "image-1920.jpg",
+    "width": 1920,
+    "height": 2800
+  },
+  {
+    "id": "webp-684",
+    "file": "image-684.webp",
+    "width": 684,
+    "height": 998
+  },
+  {
+    "id": "webp-960",
+    "file": "image-960.webp",
+    "width": 960,
+    "height": 1400
+  },
+  {
+    "id": "webp-1920",
+    "file": "image-1920.webp",
+    "width": 1920,
+    "height": 2800
+  }
+]
