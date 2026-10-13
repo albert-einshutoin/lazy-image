@@ -1,0 +1,58 @@
+11.19.0
+
+added 2 packages in 1s
+{
+  "shasum": "ae973e2e75fde11f5d32d3a4e07b53b97fb5c7fb",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.5.0.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg==",
+  "signatures": [
+    {
+      "sig": "MEQCIAMgxIR/gAOmcxZFAIccRwTlHvawkcg8QDGwPklvaqf+AiA2UQBKMZ1qZDUzOqR7sqZEZ9h8sJkMi4MBCpd14bsH+g==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIG3ZgjOLyRQDOQ/waEty7sucJbYpuISqRH7O5tXhrnQOAiEAnJ9UWVpgqnD4WT3H0gzTMyUMOUUXxSnB6cjg+wRDlJ4="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 238061
+}
+{
+  "shasum": "17b418072bf233ccdb4fbe887d384b20daeba732",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-darwin-arm64/-/lazy-image-darwin-arm64-1.5.0.tgz",
+  "fileCount": 2,
+  "integrity": "sha512-CVC1vGRcZSwrZ973TR6r9iyVmq9/EwgC2+J22z/oPLlE7bEvlEQOiMqr97tWY3Vvs8KV3iZ4FL1C+SzOTVSopg==",
+  "signatures": [
+    {
+      "sig": "MEYCIQCTB3VJivF3odw/vnK1k9fiqjfANUAaPurfhUH+s6J9GAIhALuYxjAQbL65maCQkukeD1kmfFd7ya/GX3fp39A7ks8V",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEYCIQCV6F/qMz/BlP7Awk+2RghG25Xnf+Lx6X7zXLF46nqc3QIhAK5x6cbl4uuw0GgV3554eqMpX3xN3UExY5D+gh171rjF"
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image-darwin-arm64@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 8080500
+}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.5.0","platform":"darwin","arch":"arm64","fingerprint":"d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"},"policy":{"preset":"publicUpload","fingerprint":"7db6a8f434e6d7a3ddf10581f9ae7b664b78b2a5d0b9cf27d67b3631b7e7c9f8","widths":[320,640],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"320/webp","path":"image-320.webp","format":"webp","width":320,"height":320,"bytes":12746,"quality":80,"iccOutcome":"absent","sha256":"44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"},{"id":"640/webp","path":"image-640.webp","format":"webp","width":640,"height":640,"bytes":35890,"quality":80,"iccOutcome":"absent","sha256":"01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"}],"delivery":{"srcsets":[{"format":"webp","value":"image-320.webp 320w, image-640.webp 640w"}]},"cacheKey":"a4413671f47d07bcb90c94411ab16d6635baa1a7b6fb8dad343e769be7beae47"}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.5.0","platform":"darwin","arch":"arm64","fingerprint":"d152c66e49c5e296224eb336ad11a437aeb8dcf05113ba2d2d6ae356df3816c8"},"policy":{"preset":"publicUpload","fingerprint":"c9005c3188288e6f24db64971971d7913ff37f0fd3f406b3581944906b823557","widths":[64],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"64/webp","path":"image-64.webp","format":"webp","width":64,"height":64,"bytes":460,"quality":30,"targetBytes":1048576,"iccOutcome":"absent","sha256":"4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea"}],"delivery":{"srcsets":[{"format":"webp","value":"image-64.webp 64w"}]},"cacheKey":"9b142a4ddfa3aec533cb980286ba61210e23bffa6297d6b9e825735ed9923984"}
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+registry-native-smoke: PASS darwin-arm64 v24.20.0

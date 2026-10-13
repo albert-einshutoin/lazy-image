@@ -1,0 +1,6 @@
+tag/source/tree and all8 registry/candidate actual bytes/integrity/provenance PASS
+published 12 exact environments/source/maxQuality/invalid refusal/command exits PASS
+candidate 12 exact environments/source/maxQuality/invalid refusal/command exits PASS
+metadata budget keys ['bestEffort', 'strict']
+CJS/ESM actual images/binding + Wasm all5 files, metadata and saved process exits PASS
+public derivative/original ledger hashes and path/token scan PASS

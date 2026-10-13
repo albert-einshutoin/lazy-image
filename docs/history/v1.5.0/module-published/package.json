@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@alberteinshutoin/lazy-image": "1.5.0"
+  }
+}

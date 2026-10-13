@@ -1,0 +1,79 @@
+{
+  "pass": 12,
+  "fail": 0,
+  "blocked": 0,
+  "rows": [
+    {
+      "platform": "darwin-arm64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS"
+    },
+    {
+      "platform": "darwin-arm64",
+      "node": "v24.20.0",
+      "npm": "11.19.0",
+      "status": "PASS"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v24.19.0",
+      "npm": "11.17.0",
+      "status": "PASS"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS"
+    }
+  ]
+}

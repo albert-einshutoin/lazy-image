@@ -1,0 +1,110 @@
+[
+  {
+    "name": "registry-smoke-linux-arm64-gnu-node22",
+    "id": 11787370585,
+    "created_at": "2026-10-13T03:21:31Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:21:15Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787370585/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-win32-x64-msvc-node22",
+    "id": 11787076235,
+    "created_at": "2026-10-13T03:21:41Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:21:15Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787076235/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-win32-x64-msvc-node24",
+    "id": 11787350668,
+    "created_at": "2026-10-13T03:21:50Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:21:15Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787350668/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-linux-x64-musl-node22",
+    "id": 11785954328,
+    "created_at": "2026-10-13T03:21:29Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:21:15Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11785954328/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-linux-arm64-gnu-node24",
+    "id": 11787285657,
+    "created_at": "2026-10-13T03:21:30Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:21:15Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787285657/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-linux-x64-musl-node24",
+    "id": 11787111097,
+    "created_at": "2026-10-13T03:21:36Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:21:15Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787111097/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-darwin-x64-node22",
+    "id": 11787100636,
+    "created_at": "2026-10-13T03:17:58Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:17:28Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11787100636/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-darwin-arm64-node22",
+    "id": 11786891102,
+    "created_at": "2026-10-13T03:17:42Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:17:28Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786891102/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-darwin-arm64-node24",
+    "id": 11786851196,
+    "created_at": "2026-10-13T03:17:47Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:17:28Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786851196/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-linux-x64-gnu-node24",
+    "id": 11786754442,
+    "created_at": "2026-10-13T03:17:41Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:17:28Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786754442/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-darwin-x64-node24",
+    "id": 11786749597,
+    "created_at": "2026-10-13T03:17:51Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:17:28Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786749597/zip",
+    "downloadExitCode": 0
+  },
+  {
+    "name": "registry-smoke-linux-x64-gnu-node22",
+    "id": 11786724835,
+    "created_at": "2026-10-13T03:17:39Z",
+    "status": "PASS",
+    "expires_at": "2027-01-11T03:17:28Z",
+    "download": "https://api.github.com/repos/albert-einshutoin/lazy-image/actions/artifacts/11786724835/zip",
+    "downloadExitCode": 0
+  }
+]

@@ -1,0 +1,3859 @@
+{
+  "conclusion": "success",
+  "databaseId": 38340048914,
+  "headBranch": "v1.5.0",
+  "headSha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "jobs": [
+    {
+      "completedAt": "2026-10-13T03:05:54Z",
+      "conclusion": "success",
+      "databaseId": 115108762335,
+      "name": "Package Contract",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:41Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:44Z",
+          "conclusion": "success",
+          "name": "Verify npm token is unset before setup",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:46Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:46Z",
+          "conclusion": "success",
+          "name": "Verify unauthenticated npm registry setup",
+          "number": 5,
+          "startedAt": "2026-10-13T03:05:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:49Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:05:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:49Z",
+          "conclusion": "success",
+          "name": "Verify npm pack contract",
+          "number": 7,
+          "startedAt": "2026-10-13T03:05:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:49Z",
+          "conclusion": "success",
+          "name": "Verify Wasm workspace pack contract",
+          "number": 8,
+          "startedAt": "2026-10-13T03:05:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:52Z",
+          "conclusion": "success",
+          "name": "Run Wasm workspace tests",
+          "number": 9,
+          "startedAt": "2026-10-13T03:05:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:52Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:05:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:52Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:05:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:52Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:05:52Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762335"
+    },
+    {
+      "completedAt": "2026-10-13T03:06:10Z",
+      "conclusion": "success",
+      "databaseId": 115108762501,
+      "name": "Rust Quality",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:42Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:51Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:00Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:03Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 5,
+          "startedAt": "2026-10-13T03:06:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:03Z",
+          "conclusion": "success",
+          "name": "Check formatting",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:06Z",
+          "conclusion": "success",
+          "name": "Run Clippy (default features)",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:07Z",
+          "conclusion": "success",
+          "name": "Run Clippy (without default features)",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:08Z",
+          "conclusion": "success",
+          "name": "Check stress feature compiles",
+          "number": 9,
+          "startedAt": "2026-10-13T03:06:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:08Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 17,
+          "startedAt": "2026-10-13T03:06:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:08Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:06:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:08Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:06:08Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762501"
+    },
+    {
+      "completedAt": "2026-10-13T03:08:43Z",
+      "conclusion": "success",
+      "databaseId": 115108762507,
+      "name": "Rust Tests (ubuntu-latest)",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:42Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:45Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:51Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:00Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:06Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 5,
+          "startedAt": "2026-10-13T03:06:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:26Z",
+          "conclusion": "success",
+          "name": "Run Rust tests (without NAPI features)",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:38Z",
+          "conclusion": "success",
+          "name": "Run Rust tests (release mode, without NAPI features)",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:38Z",
+          "conclusion": "success",
+          "name": "Setup Node.js for selector contract validation",
+          "number": 8,
+          "startedAt": "2026-10-13T03:08:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:39Z",
+          "conclusion": "success",
+          "name": "Validate configured Rust test selectors",
+          "number": 9,
+          "startedAt": "2026-10-13T03:08:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:39Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js for selector contract validation",
+          "number": 16,
+          "startedAt": "2026-10-13T03:08:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:39Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 17,
+          "startedAt": "2026-10-13T03:08:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:39Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:08:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:39Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:08:39Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762507"
+    },
+    {
+      "completedAt": "2026-10-13T03:08:11Z",
+      "conclusion": "success",
+      "databaseId": 115108762510,
+      "name": "Build - aarch64-apple-darwin",
+      "startedAt": "2026-10-13T03:05:47Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:50Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:55Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:56Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:05Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:09Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:06:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:14Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:17Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:06Z",
+          "conclusion": "success",
+          "name": "Build",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:06Z",
+          "conclusion": "success",
+          "name": "Require exactly the target binary",
+          "number": 9,
+          "startedAt": "2026-10-13T03:08:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:06Z",
+          "conclusion": "skipped",
+          "name": "Verify committed NAPI artifacts are reproducible",
+          "number": 10,
+          "startedAt": "2026-10-13T03:08:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:06Z",
+          "conclusion": "skipped",
+          "name": "Verify package after canonical generation",
+          "number": 11,
+          "startedAt": "2026-10-13T03:08:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:08Z",
+          "conclusion": "success",
+          "name": "Upload artifact",
+          "number": 12,
+          "startedAt": "2026-10-13T03:08:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:08Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 22,
+          "startedAt": "2026-10-13T03:08:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:08Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 23,
+          "startedAt": "2026-10-13T03:08:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:09Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 24,
+          "startedAt": "2026-10-13T03:08:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:10Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-13T03:08:09Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762510"
+    },
+    {
+      "completedAt": "2026-10-13T03:13:44Z",
+      "conclusion": "success",
+      "databaseId": 115108762519,
+      "name": "Build - x86_64-unknown-linux-musl (Alpine)",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:41Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:40Z",
+          "conclusion": "success",
+          "name": "Build and load in native musl container",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:42Z",
+          "conclusion": "success",
+          "name": "Upload artifact",
+          "number": 4,
+          "startedAt": "2026-10-13T03:13:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:42Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 8,
+          "startedAt": "2026-10-13T03:13:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:42Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-10-13T03:13:42Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762519"
+    },
+    {
+      "completedAt": "2026-10-13T03:06:50Z",
+      "conclusion": "success",
+      "databaseId": 115108762529,
+      "name": "Coverage",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:42Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:54Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:55Z",
+          "conclusion": "success",
+          "name": "Install cargo-llvm-cov",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:04Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:05:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:08Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:09Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:13Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:45Z",
+          "conclusion": "success",
+          "name": "Generate coverage",
+          "number": 9,
+          "startedAt": "2026-10-13T03:06:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:45Z",
+          "conclusion": "success",
+          "name": "Verify LCOV report",
+          "number": 10,
+          "startedAt": "2026-10-13T03:06:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:47Z",
+          "conclusion": "success",
+          "name": "Upload to Codecov",
+          "number": 11,
+          "startedAt": "2026-10-13T03:06:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:47Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 20,
+          "startedAt": "2026-10-13T03:06:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:48Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 21,
+          "startedAt": "2026-10-13T03:06:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 22,
+          "startedAt": "2026-10-13T03:06:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:48Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 23,
+          "startedAt": "2026-10-13T03:06:48Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762529"
+    },
+    {
+      "completedAt": "2026-10-13T03:07:07Z",
+      "conclusion": "success",
+      "databaseId": 115108762566,
+      "name": "Memory Leak Detection (ASan)",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:42Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:46Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:59Z",
+          "conclusion": "success",
+          "name": "Install Rust (nightly, pinned for cache stability)",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:01Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:10Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:06:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:14Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:17Z",
+          "conclusion": "success",
+          "name": "Install npm dependencies",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:21Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:38Z",
+          "conclusion": "success",
+          "name": "Build with AddressSanitizer",
+          "number": 9,
+          "startedAt": "2026-10-13T03:06:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:43Z",
+          "conclusion": "success",
+          "name": "Generate NAPI bindings",
+          "number": 10,
+          "startedAt": "2026-10-13T03:06:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:03Z",
+          "conclusion": "success",
+          "name": "Run NAPI-boundary stress test",
+          "number": 11,
+          "startedAt": "2026-10-13T03:06:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:03Z",
+          "conclusion": "success",
+          "name": "Add NAPI stress summary",
+          "number": 12,
+          "startedAt": "2026-10-13T03:07:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:04Z",
+          "conclusion": "success",
+          "name": "Upload NAPI stress artifacts",
+          "number": 13,
+          "startedAt": "2026-10-13T03:07:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:04Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 24,
+          "startedAt": "2026-10-13T03:07:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:04Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 25,
+          "startedAt": "2026-10-13T03:07:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:05Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 26,
+          "startedAt": "2026-10-13T03:07:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:05Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 27,
+          "startedAt": "2026-10-13T03:07:05Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762566"
+    },
+    {
+      "completedAt": "2026-10-13T03:07:49Z",
+      "conclusion": "success",
+      "databaseId": 115108762604,
+      "name": "Build - aarch64-unknown-linux-gnu",
+      "startedAt": "2026-10-13T03:05:42Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:44Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:45Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:49Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:55Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:17Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:05:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:22Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:26Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:46Z",
+          "conclusion": "success",
+          "name": "Build",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:46Z",
+          "conclusion": "success",
+          "name": "Require exactly the target binary",
+          "number": 9,
+          "startedAt": "2026-10-13T03:07:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:46Z",
+          "conclusion": "skipped",
+          "name": "Verify committed NAPI artifacts are reproducible",
+          "number": 10,
+          "startedAt": "2026-10-13T03:07:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:46Z",
+          "conclusion": "skipped",
+          "name": "Verify package after canonical generation",
+          "number": 11,
+          "startedAt": "2026-10-13T03:07:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:47Z",
+          "conclusion": "success",
+          "name": "Upload artifact",
+          "number": 12,
+          "startedAt": "2026-10-13T03:07:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:47Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 22,
+          "startedAt": "2026-10-13T03:07:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:47Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 23,
+          "startedAt": "2026-10-13T03:07:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:47Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 24,
+          "startedAt": "2026-10-13T03:07:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:07:47Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-13T03:07:47Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762604"
+    },
+    {
+      "completedAt": "2026-10-13T03:10:05Z",
+      "conclusion": "success",
+      "databaseId": 115108762612,
+      "name": "Rust Tests (macos-14)",
+      "startedAt": "2026-10-13T03:05:45Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:48Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:52Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:01Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:05Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 4,
+          "startedAt": "2026-10-13T03:06:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:18Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 5,
+          "startedAt": "2026-10-13T03:06:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:42Z",
+          "conclusion": "success",
+          "name": "Run Rust tests (without NAPI features)",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:09:59Z",
+          "conclusion": "success",
+          "name": "Run Rust tests (release mode, without NAPI features)",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:09:59Z",
+          "conclusion": "skipped",
+          "name": "Setup Node.js for selector contract validation",
+          "number": 8,
+          "startedAt": "2026-10-13T03:09:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:09:59Z",
+          "conclusion": "skipped",
+          "name": "Validate configured Rust test selectors",
+          "number": 9,
+          "startedAt": "2026-10-13T03:09:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:00Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 17,
+          "startedAt": "2026-10-13T03:09:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:01Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:10:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:03Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:10:01Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762612"
+    },
+    {
+      "completedAt": "2026-10-13T03:10:26Z",
+      "conclusion": "success",
+      "databaseId": 115108762620,
+      "name": "Build - x86_64-pc-windows-msvc",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:42Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:49Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:57Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:09Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:10Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:27Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:35Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:19Z",
+          "conclusion": "success",
+          "name": "Build",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:19Z",
+          "conclusion": "success",
+          "name": "Require exactly the target binary",
+          "number": 9,
+          "startedAt": "2026-10-13T03:10:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:19Z",
+          "conclusion": "skipped",
+          "name": "Verify committed NAPI artifacts are reproducible",
+          "number": 10,
+          "startedAt": "2026-10-13T03:10:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:19Z",
+          "conclusion": "skipped",
+          "name": "Verify package after canonical generation",
+          "number": 11,
+          "startedAt": "2026-10-13T03:10:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:21Z",
+          "conclusion": "success",
+          "name": "Upload artifact",
+          "number": 12,
+          "startedAt": "2026-10-13T03:10:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:22Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 22,
+          "startedAt": "2026-10-13T03:10:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:22Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 23,
+          "startedAt": "2026-10-13T03:10:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:24Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 24,
+          "startedAt": "2026-10-13T03:10:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:10:24Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-13T03:10:24Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762620"
+    },
+    {
+      "completedAt": "2026-10-13T03:12:07Z",
+      "conclusion": "success",
+      "databaseId": 115108762640,
+      "name": "Build - x86_64-apple-darwin",
+      "startedAt": "2026-10-13T03:05:41Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:45Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:57Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:03Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:17Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 4,
+          "startedAt": "2026-10-13T03:06:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:25Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:06:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:39Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:47Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:01Z",
+          "conclusion": "success",
+          "name": "Build",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:01Z",
+          "conclusion": "success",
+          "name": "Require exactly the target binary",
+          "number": 9,
+          "startedAt": "2026-10-13T03:12:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:01Z",
+          "conclusion": "skipped",
+          "name": "Verify committed NAPI artifacts are reproducible",
+          "number": 10,
+          "startedAt": "2026-10-13T03:12:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:01Z",
+          "conclusion": "skipped",
+          "name": "Verify package after canonical generation",
+          "number": 11,
+          "startedAt": "2026-10-13T03:12:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:03Z",
+          "conclusion": "success",
+          "name": "Upload artifact",
+          "number": 12,
+          "startedAt": "2026-10-13T03:12:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:04Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 22,
+          "startedAt": "2026-10-13T03:12:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:04Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 23,
+          "startedAt": "2026-10-13T03:12:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:05Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 24,
+          "startedAt": "2026-10-13T03:12:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:05Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-13T03:12:05Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762640"
+    },
+    {
+      "completedAt": "2026-10-13T03:08:06Z",
+      "conclusion": "success",
+      "databaseId": 115108762650,
+      "name": "Build - x86_64-unknown-linux-gnu",
+      "startedAt": "2026-10-13T03:05:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:05:41Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:43Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:05:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:44Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:05:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:05:52Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 4,
+          "startedAt": "2026-10-13T03:05:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:01Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:05:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:04Z",
+          "conclusion": "success",
+          "name": "Cache Cargo dependencies",
+          "number": 6,
+          "startedAt": "2026-10-13T03:06:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:06:07Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 7,
+          "startedAt": "2026-10-13T03:06:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:02Z",
+          "conclusion": "success",
+          "name": "Build",
+          "number": 8,
+          "startedAt": "2026-10-13T03:06:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:02Z",
+          "conclusion": "success",
+          "name": "Require exactly the target binary",
+          "number": 9,
+          "startedAt": "2026-10-13T03:08:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:02Z",
+          "conclusion": "success",
+          "name": "Verify committed NAPI artifacts are reproducible",
+          "number": 10,
+          "startedAt": "2026-10-13T03:08:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:02Z",
+          "conclusion": "success",
+          "name": "Verify package after canonical generation",
+          "number": 11,
+          "startedAt": "2026-10-13T03:08:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:04Z",
+          "conclusion": "success",
+          "name": "Upload artifact",
+          "number": 12,
+          "startedAt": "2026-10-13T03:08:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:04Z",
+          "conclusion": "success",
+          "name": "Post Cache Cargo dependencies",
+          "number": 22,
+          "startedAt": "2026-10-13T03:08:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:04Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 23,
+          "startedAt": "2026-10-13T03:08:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:04Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 24,
+          "startedAt": "2026-10-13T03:08:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:08:04Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-13T03:08:04Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115108762650"
+    },
+    {
+      "completedAt": "2026-10-13T03:13:42Z",
+      "conclusion": "success",
+      "databaseId": 115110386006,
+      "name": "Test (Node 22)",
+      "startedAt": "2026-10-13T03:12:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:11Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:17Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:26Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:33Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:35Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:36Z",
+          "conclusion": "success",
+          "name": "Download artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:36Z",
+          "conclusion": "success",
+          "name": "Create test image",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:36Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:39Z",
+          "conclusion": "success",
+          "name": "Test",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:36Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:39Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 15,
+          "startedAt": "2026-10-13T03:13:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:40Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-13T03:13:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:40Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-13T03:13:40Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386006"
+    },
+    {
+      "completedAt": "2026-10-13T03:13:34Z",
+      "conclusion": "success",
+      "databaseId": 115110386010,
+      "name": "Test (Node 22)",
+      "startedAt": "2026-10-13T03:12:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:10Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:12Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:13Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:16Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:28Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:28Z",
+          "conclusion": "success",
+          "name": "Download artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:29Z",
+          "conclusion": "success",
+          "name": "Create test image",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:33Z",
+          "conclusion": "success",
+          "name": "Test",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:33Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 15,
+          "startedAt": "2026-10-13T03:13:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:33Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-13T03:13:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:33Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-13T03:13:33Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386010"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:23Z",
+      "conclusion": "success",
+      "databaseId": 115110386016,
+      "name": "Test (Node 24)",
+      "startedAt": "2026-10-13T03:12:10Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:12Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:19Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:27Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:37Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:38Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:40Z",
+          "conclusion": "success",
+          "name": "Download artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:40Z",
+          "conclusion": "success",
+          "name": "Create test image",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:18Z",
+          "conclusion": "success",
+          "name": "Test",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 15,
+          "startedAt": "2026-10-13T03:14:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386016"
+    },
+    {
+      "completedAt": "2026-10-13T03:12:32Z",
+      "conclusion": "success",
+      "databaseId": 115110386026,
+      "name": "Supply Chain",
+      "startedAt": "2026-10-13T03:12:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:11Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:13Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:15Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:21Z",
+          "conclusion": "success",
+          "name": "Install Rust",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:23Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:26Z",
+          "conclusion": "success",
+          "name": "Download all binding artifacts",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:29Z",
+          "conclusion": "success",
+          "name": "Generate SBOMs",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:29Z",
+          "conclusion": "success",
+          "name": "Hash compiled bindings",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:30Z",
+          "conclusion": "success",
+          "name": "Upload supply-chain reports",
+          "number": 9,
+          "startedAt": "2026-10-13T03:12:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:30Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:12:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:30Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:12:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:30Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:12:30Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386026"
+    },
+    {
+      "completedAt": "2026-10-13T03:12:40Z",
+      "conclusion": "success",
+      "databaseId": 115110386039,
+      "name": "Perf Safety Gate",
+      "startedAt": "2026-10-13T03:12:10Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:12Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:14Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:17Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:26Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:29Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:31Z",
+          "conclusion": "success",
+          "name": "Download Linux artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:37Z",
+          "conclusion": "success",
+          "name": "Run perf + memory regression gate",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:37Z",
+          "conclusion": "success",
+          "name": "Run edge-case safety suite (OOM/bounds)",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:37Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 15,
+          "startedAt": "2026-10-13T03:12:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:37Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-13T03:12:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:37Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-13T03:12:37Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386039"
+    },
+    {
+      "completedAt": "2026-10-13T03:13:46Z",
+      "conclusion": "success",
+      "databaseId": 115110386053,
+      "name": "Quality Regression",
+      "startedAt": "2026-10-13T03:12:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:10Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:13Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:14Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:27Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:29Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:29Z",
+          "conclusion": "success",
+          "name": "Download Linux artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:45Z",
+          "conclusion": "success",
+          "name": "Run golden quality suite (SSIM/PSNR)",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:45Z",
+          "conclusion": "success",
+          "name": "Run quality metrics smoke",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:51Z",
+          "conclusion": "success",
+          "name": "Run benchmark verification (size/quality guards)",
+          "number": 9,
+          "startedAt": "2026-10-13T03:12:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:45Z",
+          "conclusion": "success",
+          "name": "Run extended benchmark suite (AVIF/memory/cold-start)",
+          "number": 10,
+          "startedAt": "2026-10-13T03:12:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:45Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 19,
+          "startedAt": "2026-10-13T03:13:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:45Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 20,
+          "startedAt": "2026-10-13T03:13:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:45Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 21,
+          "startedAt": "2026-10-13T03:13:45Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386053"
+    },
+    {
+      "completedAt": "2026-10-13T03:13:45Z",
+      "conclusion": "success",
+      "databaseId": 115110386072,
+      "name": "Test (Node 24)",
+      "startedAt": "2026-10-13T03:12:14Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:15Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:19Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:20Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:22Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:26Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:26Z",
+          "conclusion": "success",
+          "name": "Download artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:26Z",
+          "conclusion": "success",
+          "name": "Create test image",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:41Z",
+          "conclusion": "success",
+          "name": "Test",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:42Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 15,
+          "startedAt": "2026-10-13T03:13:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:42Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-13T03:13:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:43Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-13T03:13:42Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386072"
+    },
+    {
+      "completedAt": "2026-10-13T03:13:54Z",
+      "conclusion": "success",
+      "databaseId": 115110386082,
+      "name": "Test (Node 22)",
+      "startedAt": "2026-10-13T03:12:15Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:17Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:20Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:24Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:27Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:31Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:34Z",
+          "conclusion": "success",
+          "name": "Download artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:34Z",
+          "conclusion": "success",
+          "name": "Create test image",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:49Z",
+          "conclusion": "success",
+          "name": "Test",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:50Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 15,
+          "startedAt": "2026-10-13T03:13:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:50Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-13T03:13:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:51Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-13T03:13:50Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386082"
+    },
+    {
+      "completedAt": "2026-10-13T03:13:48Z",
+      "conclusion": "success",
+      "databaseId": 115110386089,
+      "name": "Test (Node 24)",
+      "startedAt": "2026-10-13T03:12:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:12:11Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:12:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:13Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:12:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:15Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 3,
+          "startedAt": "2026-10-13T03:12:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:18Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-13T03:12:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:27Z",
+          "conclusion": "success",
+          "name": "Setup NASM",
+          "number": 5,
+          "startedAt": "2026-10-13T03:12:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:28Z",
+          "conclusion": "success",
+          "name": "Download artifact",
+          "number": 6,
+          "startedAt": "2026-10-13T03:12:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:12:28Z",
+          "conclusion": "success",
+          "name": "Create test image",
+          "number": 7,
+          "startedAt": "2026-10-13T03:12:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:46Z",
+          "conclusion": "success",
+          "name": "Test",
+          "number": 8,
+          "startedAt": "2026-10-13T03:12:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:46Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 15,
+          "startedAt": "2026-10-13T03:13:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:46Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-13T03:13:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:46Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-13T03:13:46Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110386089"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:05Z",
+      "conclusion": "success",
+      "databaseId": 115110780389,
+      "name": "Stage release candidate tarballs",
+      "startedAt": "2026-10-13T03:13:46Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:13:48Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:13:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:51Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:13:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:52Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 3,
+          "startedAt": "2026-10-13T03:13:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:13:53Z",
+          "conclusion": "success",
+          "name": "Download only native bindings from this run",
+          "number": 4,
+          "startedAt": "2026-10-13T03:13:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:02Z",
+          "conclusion": "success",
+          "name": "Verify binary identity and pack release candidate",
+          "number": 5,
+          "startedAt": "2026-10-13T03:13:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:03Z",
+          "conclusion": "success",
+          "name": "Upload exact release candidate",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:03Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 11,
+          "startedAt": "2026-10-13T03:14:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:04Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-13T03:14:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:04Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-13T03:14:04Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110780389"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:19Z",
+      "conclusion": "success",
+      "databaseId": 115110867428,
+      "name": "Candidate linux-x64-gnu / Node 22",
+      "startedAt": "2026-10-13T03:14:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:09Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:11Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:12Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:12Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:16Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:16Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:16Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:17Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:17Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:17Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:17Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867428"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:21Z",
+      "conclusion": "success",
+      "databaseId": 115110867439,
+      "name": "Candidate linux-arm64-gnu / Node 22",
+      "startedAt": "2026-10-13T03:14:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:11Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:18Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:18Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:18Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867439"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:31Z",
+      "conclusion": "success",
+      "databaseId": 115110867448,
+      "name": "Candidate darwin-arm64 / Node 22",
+      "startedAt": "2026-10-13T03:14:12Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:14Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:17Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:25Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:25Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:25Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:26Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:26Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:27Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:27Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:27Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867448"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:25Z",
+      "conclusion": "success",
+      "databaseId": 115110867461,
+      "name": "Candidate linux-x64-musl / Node 22",
+      "startedAt": "2026-10-13T03:14:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:09Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:11Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "skipped",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867461"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:24Z",
+      "conclusion": "success",
+      "databaseId": 115110867492,
+      "name": "Candidate linux-x64-gnu / Node 24",
+      "startedAt": "2026-10-13T03:14:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:10Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:12Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:16Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:20Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:20Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867492"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:25Z",
+      "conclusion": "success",
+      "databaseId": 115110867493,
+      "name": "Candidate linux-x64-musl / Node 24",
+      "startedAt": "2026-10-13T03:14:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:09Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:11Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "skipped",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867493"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:36Z",
+      "conclusion": "success",
+      "databaseId": 115110867516,
+      "name": "Candidate win32-x64-msvc / Node 22",
+      "startedAt": "2026-10-13T03:14:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:09Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:17Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:24Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:32Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:32Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:32Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:33Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:33Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:35Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:35Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:35Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867516"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:36Z",
+      "conclusion": "success",
+      "databaseId": 115110867524,
+      "name": "Candidate win32-x64-msvc / Node 24",
+      "startedAt": "2026-10-13T03:14:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:08Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:17Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:27Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:32Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:32Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:32Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:33Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:33Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:35Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:35Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:35Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867524"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:44Z",
+      "conclusion": "success",
+      "databaseId": 115110867526,
+      "name": "Candidate darwin-x64 / Node 24",
+      "startedAt": "2026-10-13T03:14:08Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:13:54Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:13:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:13:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:05Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:06Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:09Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:20Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:20Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867526"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:26Z",
+      "conclusion": "success",
+      "databaseId": 115110867534,
+      "name": "Candidate darwin-arm64 / Node 24",
+      "startedAt": "2026-10-13T03:14:11Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:15Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:19Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:20Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:24Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:24Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:24Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867534"
+    },
+    {
+      "completedAt": "2026-10-13T03:15:01Z",
+      "conclusion": "success",
+      "databaseId": 115110867549,
+      "name": "Candidate darwin-x64 / Node 22",
+      "startedAt": "2026-10-13T03:14:11Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:45Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:49Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:50Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:51Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:56Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:56Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:56Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:58Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:58Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:59Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:59Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:59Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867549"
+    },
+    {
+      "completedAt": "2026-10-13T03:14:24Z",
+      "conclusion": "success",
+      "databaseId": 115110867928,
+      "name": "Candidate linux-arm64-gnu / Node 24",
+      "startedAt": "2026-10-13T03:14:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:14:11Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:14:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:13Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:14:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:14Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "number": 3,
+          "startedAt": "2026-10-13T03:14:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:14Z",
+          "conclusion": "success",
+          "name": "Read candidate version",
+          "number": 4,
+          "startedAt": "2026-10-13T03:14:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:18Z",
+          "conclusion": "success",
+          "name": "Setup Node.js",
+          "number": 5,
+          "startedAt": "2026-10-13T03:14:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Smoke candidate on native runner",
+          "number": 6,
+          "startedAt": "2026-10-13T03:14:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "skipped",
+          "name": "Smoke candidate in Alpine musl container",
+          "number": 7,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:21Z",
+          "conclusion": "success",
+          "name": "Preserve setup failure as a result",
+          "number": 8,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Preserve report and execution log",
+          "number": 9,
+          "startedAt": "2026-10-13T03:14:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Post Setup Node.js",
+          "number": 17,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:22Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-13T03:14:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:14:23Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-13T03:14:23Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115110867928"
+    },
+    {
+      "completedAt": "2026-10-13T03:16:07Z",
+      "conclusion": "success",
+      "databaseId": 115111103938,
+      "name": "Publish to npm",
+      "startedAt": "2026-10-13T03:15:04Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-13T03:15:06Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-13T03:15:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:15:08Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-13T03:15:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:15:10Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 3,
+          "startedAt": "2026-10-13T03:15:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:15:13Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-13T03:15:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:15:13Z",
+          "conclusion": "success",
+          "name": "Verify release tag matches package version",
+          "number": 5,
+          "startedAt": "2026-10-13T03:15:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:15:15Z",
+          "conclusion": "success",
+          "name": "Download verified release candidate",
+          "number": 6,
+          "startedAt": "2026-10-13T03:15:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:15:55Z",
+          "conclusion": "success",
+          "name": "Publish candidate platform tarballs",
+          "number": 7,
+          "startedAt": "2026-10-13T03:15:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:15:59Z",
+          "conclusion": "success",
+          "name": "Publish verified Wasm tarball",
+          "number": 8,
+          "startedAt": "2026-10-13T03:15:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:16:02Z",
+          "conclusion": "success",
+          "name": "Publish verified main tarball",
+          "number": 9,
+          "startedAt": "2026-10-13T03:15:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:16:04Z",
+          "conclusion": "success",
+          "name": "Create or Update GitHub Release",
+          "number": 10,
+          "startedAt": "2026-10-13T03:16:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:16:04Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 19,
+          "startedAt": "2026-10-13T03:16:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:16:04Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 20,
+          "startedAt": "2026-10-13T03:16:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-13T03:16:04Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 21,
+          "startedAt": "2026-10-13T03:16:04Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914/job/115111103938"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/albert-einshutoin/lazy-image/actions/runs/38340048914"
+}

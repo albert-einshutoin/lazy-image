@@ -1,0 +1,43 @@
+10.9.9
+
+added 1 package in 3s
+{
+  "shasum": "ae973e2e75fde11f5d32d3a4e07b53b97fb5c7fb",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.5.0.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg==",
+  "signatures": [
+    {
+      "sig": "MEQCIAMgxIR/gAOmcxZFAIccRwTlHvawkcg8QDGwPklvaqf+AiA2UQBKMZ1qZDUzOqR7sqZEZ9h8sJkMi4MBCpd14bsH+g==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIG3ZgjOLyRQDOQ/waEty7sucJbYpuISqRH7O5tXhrnQOAiEAnJ9UWVpgqnD4WT3H0gzTMyUMOUUXxSnB6cjg+wRDlJ4="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 238061
+}
+Error: ENOENT: no such file or directory, open '<USER_HOME>\AppData\Local\Temp\lazy-image-registry-smoke-J3G32I\node_modules\@alberteinshutoin\lazy-image-win32-x64-msvc\package.json'
+    at Object.readFileSync (node:fs:440:20)
+    at main (D:\a\lazy-image\lazy-image\scripts\registry-native-smoke.cjs:152:31)
+    at Object.<anonymous> (D:\a\lazy-image\lazy-image\scripts\registry-native-smoke.cjs:232:30)
+    at Module._compile (node:internal/modules/cjs/loader:1781:14)
+    at Object..js (node:internal/modules/cjs/loader:1913:10)
+    at Module.load (node:internal/modules/cjs/loader:1505:32)
+    at Function._load (node:internal/modules/cjs/loader:1309:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\lazy-image-registry-smoke-J3G32I\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\package.json'
+}
+registry-native-smoke: FAIL win32-x64-msvc v22.23.3

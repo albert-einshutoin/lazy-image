@@ -1,0 +1,80 @@
+Unable to find image 'node:22-alpine' locally
+22-alpine: Pulling from library/node
+e2de96513ba9: Already exists
+f7f2d304681a: Pulling fs layer
+e554276b05e6: Pulling fs layer
+d39db1cf9caa: Pulling fs layer
+d39db1cf9caa: Verifying Checksum
+d39db1cf9caa: Download complete
+e554276b05e6: Verifying Checksum
+e554276b05e6: Download complete
+f7f2d304681a: Verifying Checksum
+f7f2d304681a: Download complete
+f7f2d304681a: Pull complete
+e554276b05e6: Pull complete
+d39db1cf9caa: Pull complete
+Digest: sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+Status: Downloaded newer image for node:22-alpine
+10.9.9
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+added 2 packages in 942ms
+{
+  "shasum": "ae973e2e75fde11f5d32d3a4e07b53b97fb5c7fb",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image/-/lazy-image-1.5.0.tgz",
+  "fileCount": 15,
+  "integrity": "sha512-gzFyPoFf8Otpww7iHIwEofcjGOluxhHW/L17kTUpOk6lHCzeYxuXy9wBjGxwEkBtCiiWGDG6RU63k+9XdaSFOg==",
+  "signatures": [
+    {
+      "sig": "MEQCIAMgxIR/gAOmcxZFAIccRwTlHvawkcg8QDGwPklvaqf+AiA2UQBKMZ1qZDUzOqR7sqZEZ9h8sJkMi4MBCpd14bsH+g==",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCIG3ZgjOLyRQDOQ/waEty7sucJbYpuISqRH7O5tXhrnQOAiEAnJ9UWVpgqnD4WT3H0gzTMyUMOUUXxSnB6cjg+wRDlJ4="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 238061
+}
+{
+  "shasum": "26a18c48eabaa02b7b85e527e6819d1982628e4b",
+  "tarball": "https://registry.npmjs.org/@alberteinshutoin/lazy-image-linux-x64-musl/-/lazy-image-linux-x64-musl-1.5.0.tgz",
+  "fileCount": 2,
+  "integrity": "sha512-R2xsC5tj1R0zXfwQAK4aclGHL0Bn+iX+UgnMvmSzttbQzCmiCHqQzAWzp0KTHH66m0d/25GK3zrhcHULh1n0XA==",
+  "signatures": [
+    {
+      "sig": "MEUCIQC4XK6aWKmkJUcsS6ql58jOdzPqKGTrIGJCrtcHtVbJ7gIgHGhwLmN+rszyhoe6Y6pwYKULSFrZsAYl36unHgXdY5E=",
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+    },
+    {
+      "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+      "sig": "MEUCID/ot9+xNhb6j7BHuajosgDsKKsuAU7uSlrh+KrAGqTrAiEA25KFoeFc0GlhFMiOG5Oe9w9JdH1cvoaE6f9mTwUpEU8="
+    }
+  ],
+  "attestations": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@alberteinshutoin%2flazy-image-linux-x64-musl@1.5.0",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unpackedSize": 13237979
+}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.5.0","platform":"linux","arch":"x64","fingerprint":"d8f4d9573d07ccdcacf3ac9b615d2c45714b747d7ddd6fb8d6ac1858f5c3d113"},"policy":{"preset":"publicUpload","fingerprint":"7db6a8f434e6d7a3ddf10581f9ae7b664b78b2a5d0b9cf27d67b3631b7e7c9f8","widths":[320,640],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"320/webp","path":"image-320.webp","format":"webp","width":320,"height":320,"bytes":12746,"quality":80,"iccOutcome":"absent","sha256":"44bcba6e698bc2bd0c3b93e2a43cbe66561ed900031d7caed24a1cdc2af80c1e"},{"id":"640/webp","path":"image-640.webp","format":"webp","width":640,"height":640,"bytes":35890,"quality":80,"iccOutcome":"absent","sha256":"01e51d72c685e64dc3d2d4c9969551a7ae059d609c4836a7a91e5bac86971e4c"}],"delivery":{"srcsets":[{"format":"webp","value":"image-320.webp 320w, image-640.webp 640w"}]},"cacheKey":"4601f8affc15b89ca80431a1c78e9fe989b6976a2443af3418a55335707072c8"}
+{"schemaVersion":1,"compiler":{"name":"@alberteinshutoin/lazy-image","version":"1.5.0","platform":"linux","arch":"x64","fingerprint":"d8f4d9573d07ccdcacf3ac9b615d2c45714b747d7ddd6fb8d6ac1858f5c3d113"},"policy":{"preset":"publicUpload","fingerprint":"c9005c3188288e6f24db64971971d7913ff37f0fd3f406b3581944906b823557","widths":[64],"formats":["webp"],"placeholder":false},"source":{"sha256":"6dd5004e9cecaaff5a9b315410b0762c4b27b495379f198bfbbfa496464b6f90","bytes":100055,"detectedFormat":"jpeg","encodedWidth":1057,"encodedHeight":1057,"displayWidth":1057,"displayHeight":1057,"hasAlpha":false,"orientation":null,"orientationApplied":false},"metadata":{"mode":"privacySafe","exif":"stripped","gps":"stripped","xmp":"stripped","comments":"stripped","unknownAncillary":"stripped","artifactIccPolicy":"preserve-if-safe","placeholderIccPolicy":"strip"},"artifacts":[{"id":"64/webp","path":"image-64.webp","format":"webp","width":64,"height":64,"bytes":460,"quality":30,"targetBytes":1048576,"iccOutcome":"absent","sha256":"4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea"}],"delivery":{"srcsets":[{"format":"webp","value":"image-64.webp 64w"}]},"cacheKey":"8eb8941042d569112b77adc7b0b2b633aa404ee97f66ccc21d00e716e40b22d1"}
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+[E400] Image artifact compilation failed during planning (planning)
+Hint: Provide validated source facts and a valid publicUpload policy.
+registry-native-smoke: PASS linux-x64-musl v22.23.3

@@ -1,0 +1,11 @@
+Scenario: Large JPEG upload -> WebP
+Scenario: Large PNG upload -> JPEG
+
+Wrote artifacts/benchmark/wasm-upload-summary.json
+Wrote artifacts/benchmark/wasm-upload-summary.md
+
+large-photo-upload-webp @alberteinshutoin/lazy-image: 330.1 KB in 669.5ms, targetHit=yes
+large-photo-upload-webp @alberteinshutoin/lazy-image-wasm@1.5.0: 321.0 KB in 3070.1ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image: 432.6 KB in 184.1ms, targetHit=yes
+large-png-upload-jpeg @alberteinshutoin/lazy-image-wasm@1.5.0: 420.0 KB in 2656.0ms, targetHit=yes
+Optional baselines: 6 unavailable, 2 installed but not run

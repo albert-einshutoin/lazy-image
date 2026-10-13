@@ -1,0 +1,696 @@
+{
+  "algorithm": "sha256",
+  "scope": "published verification record and tools; manifest itself excluded",
+  "files": [
+    {
+      "path": "docs/history/V1.5.0_VERIFICATION.md",
+      "bytes": 17507,
+      "sha256": "1eccfdd52f282152b29f10735cf586e4058ee18c4846173ad2cd0d4c23b255a7"
+    },
+    {
+      "path": "docs/history/v1.5.0/LOG_REDACTIONS.json",
+      "bytes": 61250,
+      "sha256": "f4870b0ba9a89eae1330b531f2d73091efad06ee57da632c3db95147ac70049d"
+    },
+    {
+      "path": "docs/history/v1.5.0/VALIDATION.md",
+      "bytes": 3504,
+      "sha256": "c1d635b4fe6292dbe1ee7732a7a0acb5573f080033ef1d345738dfbcc932bd92"
+    },
+    {
+      "path": "docs/history/v1.5.0/artifact-selection.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/artifact-selection.log",
+      "bytes": 56,
+      "sha256": "96a1b10b482460c74e24833cb58612d35b857121fba9563343a461a39d5d70bb"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-browser-default-jpeg-webp.webp",
+      "bytes": 328690,
+      "sha256": "cc80ef7b1bc8488ba195f9ad50e17af75c46dac8fdbb8f13f8f5b06644462eec"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-browser-default-metadata-budget-best-effort.jpg",
+      "bytes": 3078,
+      "sha256": "dacca84d74567f8adeb33bded841f6b10ed5c4bad5d2616b3b9433bf741224ca"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-browser-default-metadata-budget.jpg",
+      "bytes": 5886,
+      "sha256": "3d4de1967d2db5ff428ef4ce895aacc5d5c35e8c0d271043bdcb44f626b12ba0"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-browser-default-png-jpeg.jpg",
+      "bytes": 430035,
+      "sha256": "301fd3e0b8cbfb2d8c6b004efb54243fa7f5d9186a3f0bab569c5ff26d58b67a"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-browser-default-probe-jpeg-webp.webp",
+      "bytes": 17484,
+      "sha256": "81f5f0380cc1c0be8e391aa30d38065d7bf5afedd0fd0bb704c4098608cf80e3"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-metadata-input.jpg",
+      "bytes": 7343,
+      "sha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-published-evidence.json",
+      "bytes": 38451,
+      "sha256": "6c8e696102bb6bafe4085fd0a26d75cd3090599b2f8b4bb69f5a02790dedfcf9"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-upload-summary.json",
+      "bytes": 17843,
+      "sha256": "59b9535f47461779dba6e38188e1519f4e0fc72dc81d3a2203b724e6b65caac1"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default/wasm-upload-summary.md",
+      "bytes": 5179,
+      "sha256": "8f2b3faaae909c334b494179a753e6006f5d873146ffb192597df520f4c3679e"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default-run.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-default-run.log",
+      "bytes": 608,
+      "sha256": "fdea34c5826232f7c90515f7d44f963449e0436f45a86ba66a24e61c85d4eca1"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-npm-ci.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/browser-npm-ci.log",
+      "bytes": 26,
+      "sha256": "dd781dd2565fec17872dd47dbd4b4802e44483b65410e96d5fdf567a50556860"
+    },
+    {
+      "path": "docs/history/v1.5.0/github-release.json",
+      "bytes": 4185,
+      "sha256": "d41ad5ed4244364ca6a51c123bf1395ea562066b28194c3c69a7aad023a79ce4"
+    },
+    {
+      "path": "docs/history/v1.5.0/manifest-negative-check.json",
+      "bytes": 3871,
+      "sha256": "69a0922201bacf1160ea6cc8c73edf7dfe03999347c86a831b0df54da31595e5"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/cjs-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/esm-resize.png",
+      "bytes": 28624,
+      "sha256": "b2de7aee735a6ef3ca338a5609404ca3a09122ac480f4a0e0f14e6b7181e7a07"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/install.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/install.log",
+      "bytes": 27,
+      "sha256": "f0b44a1014bf1c576378afcc9ccd1ded28f66c17df52fc1470d49fbc65663c85"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/package-lock.json",
+      "bytes": 3862,
+      "sha256": "31ebf02ec95738acb23974659f67ecd1d72d657e63720ad96220bdb97feab944"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/package.json",
+      "bytes": 111,
+      "sha256": "8d02880cf3fc224a2698f43f93650a3dbb663a06824e563e63f9c3a9bfe87a61"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/report.json",
+      "bytes": 1588,
+      "sha256": "e1e259799cdd6139ab170a1a59a093f3c07940908abed2245a2b039457d6c6f4"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/run.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/module-published/run.log",
+      "bytes": 1588,
+      "sha256": "e1e259799cdd6139ab170a1a59a093f3c07940908abed2245a2b039457d6c6f4"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.json",
+      "bytes": 8827,
+      "sha256": "8e05cbdd2ee9a3da40f7183dc883d8572b22f4f0875b86e23cb1a774ee9a08d7"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.log",
+      "bytes": 5094,
+      "sha256": "c6f820b237d71e0d1353d43b3ab3607d6216cd30b31157bcfba09f09ada901aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.json",
+      "bytes": 8828,
+      "sha256": "4a88e8e28fe6f9def584c0f4be60375dbfe669202ac9ac506a529bc65e5ab4e0"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.log",
+      "bytes": 5095,
+      "sha256": "f43c114d57fa572b79f998cf4422ee35ffc3c1d98960e4ad4a562d66ff7a4b09"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.json",
+      "bytes": 8807,
+      "sha256": "fcc8717ee72810467ef16e8d8aee1fcbd3ad13c1995df9652d156459c5076b71"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.log",
+      "bytes": 5083,
+      "sha256": "e801ab876f3499bc97d21407b3b1845cfacbfd6caf98a84231e0ab97e3506f18"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.json",
+      "bytes": 8808,
+      "sha256": "8d0bcf8b8997ffaa3db688f32b71d429ea3e14ad14da4a1b7312a234dc9f8961"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.log",
+      "bytes": 5084,
+      "sha256": "49c4c4216050a19ac781e81104adbde3abbb2789ceac934f975b4bdf965eb6bb"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.json",
+      "bytes": 3460,
+      "sha256": "3e22f87d3d1c2115a47b18f0a373a1bd0a5bf48c00543d8fd594301b9cba7147"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.log",
+      "bytes": 1996,
+      "sha256": "d6ea9fe4b6e6416cd7769248b0cfe55dddb2d8cb94f5fd05a03fe6f47da85bf8"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.json",
+      "bytes": 3457,
+      "sha256": "4abcfcd24ac01db2dba15d6f0abd49974ba36314b8a5f39dd0f154ad9f7ff1bd"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.log",
+      "bytes": 1993,
+      "sha256": "13220f7cd0c224fd60e088a46034cfc1a21a3b578af4f86514d6dde8baba6bf2"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.json",
+      "bytes": 8773,
+      "sha256": "a528530b09dc177d0ec0aa8518dfd7401a51c83ebcacf7846a29b5d44cd01a4f"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.log",
+      "bytes": 5093,
+      "sha256": "df30e34273b377788172b3029cd55b6aa29ce830ca2daac73c857808786e2b7b"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.json",
+      "bytes": 8774,
+      "sha256": "f23ac54d460c8ca6461ac6bfdb354fc3abb4538b35c95d4198bd68988a2ba561"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.log",
+      "bytes": 5094,
+      "sha256": "5e6bd916d9b013d16bde2f54393ad9a341d32c4f9051c75d4eedce15082acc6f"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.json",
+      "bytes": 3358,
+      "sha256": "0e860bba47c32e0f3810bff014e10c8513018fd27e546293934602ac6414312d"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.log",
+      "bytes": 2754,
+      "sha256": "f15deb8bd93f82c7decaccd704457edb3736a8e32b81fbb83d4b645c99165783"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.json",
+      "bytes": 3355,
+      "sha256": "25e022cd645b0b73bd63aebd0afb95bcf81b23d72c4dd10525133858fe3f9c54"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.log",
+      "bytes": 2752,
+      "sha256": "bf28b67afb5f216f85a28554b7940b23851601cc33ff9f70987cb4dbfc1a0751"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.json",
+      "bytes": 3560,
+      "sha256": "3ef46d7e0f27c8cf8e682f7c4955f90e75a6761162c5089b72372f101c3fb312"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.log",
+      "bytes": 2090,
+      "sha256": "7ee62942a2cf16df5c0c8faeb5b0ecc81141b3fb4a308026d5e33fce1bd0a9c4"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.json",
+      "bytes": 3557,
+      "sha256": "83207943fe6fb814d5c0ce617bf8d4e272ffc56937e1ac87a3190ca8c260bb5a"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-attempt1/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.log",
+      "bytes": 2350,
+      "sha256": "b5ed31462fff07af49bc091b15ade693c33a64ae56340d8002fb409314625392"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.json",
+      "bytes": 8827,
+      "sha256": "8e05cbdd2ee9a3da40f7183dc883d8572b22f4f0875b86e23cb1a774ee9a08d7"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-arm64-node22/lazy-image-registry-smoke.log",
+      "bytes": 5094,
+      "sha256": "c6f820b237d71e0d1353d43b3ab3607d6216cd30b31157bcfba09f09ada901aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.json",
+      "bytes": 8828,
+      "sha256": "4a88e8e28fe6f9def584c0f4be60375dbfe669202ac9ac506a529bc65e5ab4e0"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-arm64-node24/lazy-image-registry-smoke.log",
+      "bytes": 5095,
+      "sha256": "f43c114d57fa572b79f998cf4422ee35ffc3c1d98960e4ad4a562d66ff7a4b09"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.json",
+      "bytes": 8807,
+      "sha256": "fcc8717ee72810467ef16e8d8aee1fcbd3ad13c1995df9652d156459c5076b71"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-x64-node22/lazy-image-registry-smoke.log",
+      "bytes": 5083,
+      "sha256": "e801ab876f3499bc97d21407b3b1845cfacbfd6caf98a84231e0ab97e3506f18"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.json",
+      "bytes": 8808,
+      "sha256": "8d0bcf8b8997ffaa3db688f32b71d429ea3e14ad14da4a1b7312a234dc9f8961"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-darwin-x64-node24/lazy-image-registry-smoke.log",
+      "bytes": 5084,
+      "sha256": "49c4c4216050a19ac781e81104adbde3abbb2789ceac934f975b4bdf965eb6bb"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.json",
+      "bytes": 8797,
+      "sha256": "3c937e2a200168855c4e9c4998b5a445a74c0573343e1de2dd88d0b43664e19a"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-arm64-gnu-node22/lazy-image-registry-smoke.log",
+      "bytes": 5104,
+      "sha256": "466158ff08f9451841c4077e1916ff5c1fae248c71f51c838a9059a1041fc466"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.json",
+      "bytes": 8798,
+      "sha256": "10caa14100e532c3b1508c9a2fb77490e1ae513129fc84d583c171f8fa34c4b5"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-arm64-gnu-node24/lazy-image-registry-smoke.log",
+      "bytes": 5105,
+      "sha256": "7ed7e1dc55783b9ce1466e179b6bfece3ba90def9c25e04203a12e1d6d23a26d"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.json",
+      "bytes": 8773,
+      "sha256": "a528530b09dc177d0ec0aa8518dfd7401a51c83ebcacf7846a29b5d44cd01a4f"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-gnu-node22/lazy-image-registry-smoke.log",
+      "bytes": 5093,
+      "sha256": "df30e34273b377788172b3029cd55b6aa29ce830ca2daac73c857808786e2b7b"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.json",
+      "bytes": 8774,
+      "sha256": "f23ac54d460c8ca6461ac6bfdb354fc3abb4538b35c95d4198bd68988a2ba561"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-gnu-node24/lazy-image-registry-smoke.log",
+      "bytes": 5094,
+      "sha256": "5e6bd916d9b013d16bde2f54393ad9a341d32c4f9051c75d4eedce15082acc6f"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.json",
+      "bytes": 8753,
+      "sha256": "1bc51752e854de65136a4db2619ce026224a9b0bf79870c2596207f11863758f"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-musl-node22/lazy-image-registry-smoke.log",
+      "bytes": 5922,
+      "sha256": "b594af4644e9d18c394eba9a91f6db39c478f1e14b0f89d07b7ac643ef9293d9"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.json",
+      "bytes": 8754,
+      "sha256": "ba36140a8deb6bf6710cd38c0a60ec7623a280be4c0925829a5b7763a16ebfee"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-linux-x64-musl-node24/lazy-image-registry-smoke.log",
+      "bytes": 5924,
+      "sha256": "b02e41eebf96b8260520033afa4e896fa020bebc9c6a3c1aef43a0279a063b87"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.json",
+      "bytes": 11439,
+      "sha256": "1d219a0504d1a4e8a533e08cc67f094c8fa983115258309de1d4216bbde7d455"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-win32-x64-msvc-node22/lazy-image-registry-smoke.log",
+      "bytes": 5097,
+      "sha256": "33dc0156aed7408161e6c30bb9dcd4b8110046a5d0f5c514f9eda5126f68503d"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.json",
+      "bytes": 11440,
+      "sha256": "4bd00f6920c66cc307d21dbec8ed8b642f174f3613cc4c42a502cba60cf46670"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/registry-smoke-win32-x64-msvc-node24/lazy-image-registry-smoke.log",
+      "bytes": 5361,
+      "sha256": "fc17016f73daf8c4ff87feeda3a0f20c1d16fe41246479db6424ea41a4dc9ee2"
+    },
+    {
+      "path": "docs/history/v1.5.0/native-published-verified/summary.json",
+      "bytes": 28442,
+      "sha256": "1f49dcd50d788f2f668411878b5185c240573d912dae60b5e08b7b9d9bf23a1c"
+    },
+    {
+      "path": "docs/history/v1.5.0/prepublication-registry.json",
+      "bytes": 6766,
+      "sha256": "878e04aaacffa1f6c6d7e19d4e41d1ac69fde0c7d89dfbc8c051fa47588cdc02"
+    },
+    {
+      "path": "docs/history/v1.5.0/publish.log",
+      "bytes": 94331,
+      "sha256": "fad96e52141e21c72b7a0c44439d89cf1abfdb55c7e24ef2713e8c7fea561af0"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-artifact-selection.json",
+      "bytes": 3915,
+      "sha256": "006565ff5d902cd5dc6bfbc0e52969e9495ea58bd3131613ba9659fa192d0af4"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-artifacts-all-attempts.json",
+      "bytes": 15947,
+      "sha256": "fce485fce135fd0f1bfd3c5ef4f6c544e5ded189658db7257b11f9cdb5bf136d"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-attempt1-jobs.json",
+      "bytes": 2403,
+      "sha256": "eb2e59ec1ea03c18bb1a373d79377da2633523ecb95ff010b2771b9298986892"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-attempt2-jobs.json",
+      "bytes": 2403,
+      "sha256": "5639a5af7fc198315f90260c88a93ca7e955a90d3df372fcce8108457d42f747"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-run-attempt.json",
+      "bytes": 351,
+      "sha256": "ab48633f3a17d0eb8e566261213ca63c70f6dcb41d5401fb8d0adeeec8a02093"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-smoke-run.json",
+      "bytes": 35436,
+      "sha256": "90aff15bdce833811fe3c6d5f2f233627890e137e473a0cd9970a6951444ffa5"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-smoke-summary.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-smoke-summary.log",
+      "bytes": 1000,
+      "sha256": "2df5a62eab5933ab23e585a85b50b4819062a2fbe41e2ca9545cedbdf6647bde"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-smoke-verified-summary.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/published-smoke-verified-summary.log",
+      "bytes": 1508,
+      "sha256": "8a9739e51371d0698b950ec99a2b947708e94db06ea61f52ab6a4b94d96b0f53"
+    },
+    {
+      "path": "docs/history/v1.5.0/record-validation.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/record-validation.log",
+      "bytes": 452,
+      "sha256": "e079293d63fd67e26c567c97de5f938a25ddb67ca2cf14c54d070249eea2e286"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-1.5.0.tgz.attestations.json",
+      "bytes": 17365,
+      "sha256": "6ef5447a6336b00dfb022e9f52a2e2fc93a318217b4a6f662716d0388c9c0761"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-darwin-arm64-1.5.0.tgz.attestations.json",
+      "bytes": 17677,
+      "sha256": "0a6d4c6a657c631361f3f2658f861c4e641b019cd937bdc185eedf4a5f76e353"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-darwin-x64-1.5.0.tgz.attestations.json",
+      "bytes": 17685,
+      "sha256": "105d5486678e6e53ad5c0d9e2923293e293ea9f7c8665da6f1ccb0dd37e3c1c0"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-linux-arm64-gnu-1.5.0.tgz.attestations.json",
+      "bytes": 17759,
+      "sha256": "1d27cc88d395208eb44c538cd9de14efaaaa2bee37dec8a6b1cda94a1cd517ac"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-linux-x64-gnu-1.5.0.tgz.attestations.json",
+      "bytes": 17763,
+      "sha256": "ebf14f6073dd56732c53576c8888d327f29118f9af269dbee6a90eec5809557e"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-linux-x64-musl-1.5.0.tgz.attestations.json",
+      "bytes": 17821,
+      "sha256": "857ae42c867ceac13271dc06445abe885c5f0686e1e686c7e0e6e33e0da8a491"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-wasm-1.5.0.tgz.attestations.json",
+      "bytes": 17851,
+      "sha256": "225f2d48c2eb6449a9d6530ea6428ed79653f1505d65060de26cbd8ec1cdc65a"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/lazy-image-win32-x64-msvc-1.5.0.tgz.attestations.json",
+      "bytes": 17755,
+      "sha256": "f8e61a0653465f7ec07f43badde19801cb6cee3da9832afe2a69303aa91e41d3"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry/registry-package-provenance.json",
+      "bytes": 15737,
+      "sha256": "83abfee3bccd00d4289ec1015cd9a8baea737bcabd447d10e8eba902d0a59a75"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry-compare-attempt2.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry-compare-attempt2.log",
+      "bytes": 88,
+      "sha256": "8bbc946f8bc6d29dad7a816ea26c95b5694e0db4429b039f79568a87e7251419"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry-compare.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "docs/history/v1.5.0/registry-compare.log",
+      "bytes": 3320,
+      "sha256": "61041ce6bc53c8895f5f943e46e1c377a70af78300183f70f6a4351984dd22e2"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-artifacts.json",
+      "bytes": 18555,
+      "sha256": "b6337f52a101a34b781c179f0146c09c10a9aa1ef1386e21c4c69632d833a189"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-candidate-manifest.json",
+      "bytes": 7288,
+      "sha256": "631073e50105d8a1008743e06b1203ca2f334e968a68146786e391b4b69e5ce3"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-run.json",
+      "bytes": 125377,
+      "sha256": "8207d765b1bda18de1e9d6907ba7f369c57d9bdff0744bd33cd3c7219328abb8"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-security.json",
+      "bytes": 349,
+      "sha256": "fcf182a434586dbbda1710f2bd16d25375dffa272c049841ca6d497b4f1b15e4"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.json",
+      "bytes": 8731,
+      "sha256": "f78b64f21586d8d6cb0cffc57d2a1b41f5488ede797c9442a9a837cee575d5a4"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.log",
+      "bytes": 3195,
+      "sha256": "29e96bbfabaab861192ef94ed00a90889615c0764104696fab67f49bdccdc4bd"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.json",
+      "bytes": 8732,
+      "sha256": "af5ffb17a2c88237da6ddf7aff180bd99b0466813f407541598b3ea72b7f7069"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.log",
+      "bytes": 3199,
+      "sha256": "073ab820914697378c10b319b5ca9886c4aceb1f27cb5e2dfc330b8841e49c9d"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.json",
+      "bytes": 8711,
+      "sha256": "bd9e6b287eef9743912a8b4dc245309397e4bc6e2ed849986c43a566cde621be"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.log",
+      "bytes": 3189,
+      "sha256": "3d133cc470364c81d3dee49a6b02c376c73866cd48b9db6f4bc79b20fb8b85f0"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.json",
+      "bytes": 8712,
+      "sha256": "755601bfe6c54c492159fabd7050d5d2dcea45aceb2ed50b1a175f44c01fdff5"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.log",
+      "bytes": 3190,
+      "sha256": "844bc2abd5e7823943c192dad6293b283b6b16755f06d131191101f742b86dc2"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.json",
+      "bytes": 8679,
+      "sha256": "cba7e14764a5d8b3a736b8e3e738ed04cb187d480b806e144771cbaff044d6a6"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.log",
+      "bytes": 3199,
+      "sha256": "7e8a586e57af8b24a22bb6f4ece9dda7ef46b21df1a2d5e024bbf88dc935e157"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.json",
+      "bytes": 8680,
+      "sha256": "f2ed2e45908b406b1591ada78c76c57ef7e3de48ef07c74cab5c8f8c44f0bf99"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.log",
+      "bytes": 3197,
+      "sha256": "fea3f924e285c96e508fe26abf294d17a87949c7656f58818f5f96bd819f9b98"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.json",
+      "bytes": 8655,
+      "sha256": "0c44f4bf35ea32f98e7086001daa9681f9130ff3f36fa15119a15a41a3a03fb0"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.log",
+      "bytes": 3190,
+      "sha256": "0bc3024c7c3294623ccea28f1f6dccc440125b5db105ab5e52e4d01f7863049e"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.json",
+      "bytes": 8656,
+      "sha256": "c98290924ed4ae4df53bd2adcb01c87e668efa34788d174e88daa9f34dd1e464"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.log",
+      "bytes": 3191,
+      "sha256": "fc6bd4dc2ebe62f6589778cf5f98e2db46cb615e5d07a07242417c3bc9f51e22"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.json",
+      "bytes": 8417,
+      "sha256": "b09fe8eb0806e8d68f56d2718ae3a5e2cc6127bc5b4288fde196fb0b5c0c0bd7"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.log",
+      "bytes": 3983,
+      "sha256": "59ccecf796339133768226c52122559f980d3f69757628842ca33a79f0c9c87c"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.json",
+      "bytes": 8418,
+      "sha256": "7009011f8136f29ebf0099ed46dfc08d2e6d382fcaf2f063c56af5dbf73c4617"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.log",
+      "bytes": 4015,
+      "sha256": "466c7785457916f2457a3891d67d16423b8fe6dc43785f3c3ebcf1fa4c4aca3b"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.json",
+      "bytes": 11221,
+      "sha256": "743b77797bccb3d0ad68e9a79aa2b5b3a67f8992f3a8ca0ce69b4084037dec36"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.log",
+      "bytes": 3191,
+      "sha256": "7417a7b0772a8ac45b8ffde80cc183c7a47302f32911aefa1175d2e996c6deb2"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.json",
+      "bytes": 11222,
+      "sha256": "8274ddb8b18972e11639b936e5e1bc587dbdedbd353682450e107cbb73e84170"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.log",
+      "bytes": 3455,
+      "sha256": "0f8a11b64cc172e442252becb5ac1f140b8b6eeacda026c7990ee30ccc9fabb6"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke/summary.json",
+      "bytes": 28454,
+      "sha256": "aa3289e4e1dfaef4063729855f2bf39ecda2ce3511d3a247aeb244235dad138a"
+    },
+    {
+      "path": "docs/history/v1.5.0/tag-smoke-summary.log",
+      "bytes": 1508,
+      "sha256": "8a9739e51371d0698b950ec99a2b947708e94db06ea61f52ab6a4b94d96b0f53"
+    },
+    {
+      "path": "docs/history/v1.5.0/verification-tools/compare-registry.mjs",
+      "bytes": 5443,
+      "sha256": "60dc63802181d71898f6b61489ae413eb4517866c6dbdec445185f90e7dc586e"
+    },
+    {
+      "path": "docs/history/v1.5.0/verification-tools/module-smoke.mjs",
+      "bytes": 1956,
+      "sha256": "5b5da12c5d085fd5cf78c287987e81250e0adc099ea670bd38e6ed1d96c2d94e"
+    },
+    {
+      "path": "docs/history/v1.5.0/verification-tools/summarize-smoke.cjs",
+      "bytes": 2393,
+      "sha256": "d241394c5976d3abe8db30c767fdad25617f1488768836a1d3db90123a598109"
+    }
+  ]
+}

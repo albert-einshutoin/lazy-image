@@ -1,0 +1,1031 @@
+{
+  "version": "1.5.0",
+  "sourceSha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+  "source": "candidate",
+  "status": "PASS",
+  "pass": 12,
+  "fail": 0,
+  "blocked": 0,
+  "rows": [
+    {
+      "platform": "darwin-arm64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-darwin-arm64-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "darwin-arm64",
+      "node": "v24.20.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-darwin-arm64/lazy-image.darwin-arm64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-darwin-arm64-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v22.23.2",
+      "npm": "10.9.8",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-darwin-x64-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "darwin-x64",
+      "node": "v24.19.0",
+      "npm": "11.17.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-darwin-x64/lazy-image.darwin-x64.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-darwin-x64-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/lazy-image.linux-arm64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-linux-arm64-gnu-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-arm64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-arm64-gnu/lazy-image.linux-arm64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-linux-arm64-gnu-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu/lazy-image.linux-x64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-linux-x64-gnu-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-gnu",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-x64-gnu/lazy-image.linux-x64-gnu.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-linux-x64-gnu-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/lazy-image.linux-x64-musl.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-linux-x64-musl-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "linux-x64-musl",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<TEMP_ROOT>/node_modules/@alberteinshutoin/lazy-image-linux-x64-musl/lazy-image.linux-x64-musl.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-linux-x64-musl-node24/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v22.23.3",
+      "npm": "10.9.9",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-khgHRM\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\lazy-image.win32-x64-msvc.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-win32-x64-msvc-node22/lazy-image-candidate-smoke.json"
+    },
+    {
+      "platform": "win32-x64-msvc",
+      "node": "v24.21.0",
+      "npm": "11.19.0",
+      "status": "PASS",
+      "source": "candidate-tarball",
+      "scriptRevision": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+      "binding": "<USER_HOME>\\AppData\\Local\\Temp\\lazy-image-registry-smoke-8AFOJ4\\node_modules\\@alberteinshutoin\\lazy-image-win32-x64-msvc\\lazy-image.win32-x64-msvc.node",
+      "results": {
+        "binding": "PASS",
+        "api": "PASS",
+        "cli": "PASS",
+        "artifacts": "PASS",
+        "apiCliParity": "PASS",
+        "maxQuality": "PASS",
+        "invalidMaxQuality": "PASS"
+      },
+      "maxQuality": {
+        "policy": {
+          "widths": [
+            64
+          ],
+          "formats": [
+            "webp"
+          ],
+          "placeholder": false,
+          "budgets": [
+            {
+              "width": 64,
+              "format": "webp",
+              "maxBytes": 1048576,
+              "maxQuality": 30
+            }
+          ]
+        },
+        "apiArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "cliArtifacts": [
+          {
+            "path": "image-64.webp",
+            "format": "webp",
+            "width": 64,
+            "height": 64,
+            "bytes": 460,
+            "sha256": "4e6c2ec28bbfeb4bef8c69339fc918badc2d65fc9b431a0d76a1b158d624edea",
+            "quality": 30,
+            "targetBytes": 1048576
+          }
+        ],
+        "invalid": [
+          {
+            "maxQuality": 29,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": 101,
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          },
+          {
+            "maxQuality": "30",
+            "api": "E400",
+            "cli": "E400",
+            "unpublished": true,
+            "remainingSiblingStaging": []
+          }
+        ]
+      },
+      "report": "candidate-smoke-win32-x64-msvc-node24/lazy-image-candidate-smoke.json"
+    }
+  ]
+}
