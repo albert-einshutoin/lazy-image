@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1400" viewBox="0 0 960 1400" role="img" aria-labelledby="title description">
+  <title id="title">From a local image to application delivery</title>
+  <desc id="description">Input image and policy enter compileImage. The compiler generates and verifies files in private staging, commits one artifact directory locally, and returns images and a manifest. The application builds HTML and owns remote delivery. On failure, unverified artifacts are not committed; inspect the error and any cleanupError. This is not a transaction for a whole site.</desc>
+  <!-- Original diagram for lazy-image's adoption guide. MIT; see ../../LICENSE. -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#334155"/></marker>
+    <marker id="error-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#a32424"/></marker>
+    <style>
+      text { font-family: Arial, sans-serif; fill: #172034; }
+      .label { font-size: 44px; font-weight: 700; }
+      .detail { font-size: 24px; }
+      .card { fill: #f5f7fa; stroke: #64748b; stroke-width: 2; }
+      .flow { fill: none; stroke: #334155; stroke-width: 4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="960" height="1400" fill="#fff"/>
+  <text x="64" y="61" font-size="40" font-weight="700">Compiler → application</text>
+  <rect x="40" y="100" width="880" height="880" rx="20" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="64" y="119" font-size="20">LOCAL COMPILER</text>
+  <g id="input">
+    <rect class="card" x="64" y="128" width="832" height="132" rx="12"/>
+    <text class="label" x="94" y="176">1  Input image + policy</text>
+    <text class="detail" x="94" y="214">Static JPEG / PNG / WebP</text>
+    <text class="detail" x="94" y="246">Widths, formats and optional byte budgets</text>
+  </g>
+  <path class="flow" d="M480 260V292"/>
+  <g id="compile">
+    <rect class="card" x="64" y="300" width="832" height="132" rx="12"/>
+    <text class="label" x="94" y="348">2  compileImage()</text>
+    <text class="detail" x="94" y="386">Inspect the input; build a deterministic artifact plan</text>
+    <text class="detail" x="94" y="418">Compiler preset: publicUpload</text>
+  </g>
+  <path class="flow" d="M480 432V464"/>
+  <g id="staging">
+    <rect class="card" x="64" y="472" width="832" height="132" rx="12"/>
+    <text class="label" x="94" y="520">3  Private staging</text>
+    <text class="detail" x="94" y="558">Generate files; verify hashes and metadata</text>
+    <text class="detail" x="94" y="590">Budgeted artifacts must meet maxBytes</text>
+  </g>
+  <path class="flow" d="M480 604V636"/>
+  <text x="516" y="630" font-size="22">verified only</text>
+  <g id="commit">
+    <rect class="card" x="64" y="644" width="832" height="132" rx="12"/>
+    <text class="label" x="94" y="692">4  Local commit</text>
+    <text class="detail" x="94" y="730">Rename the verified artifact directory once</text>
+    <text class="detail" x="94" y="762">Existing outputDir is rejected; use a trusted parent</text>
+  </g>
+  <path class="flow" d="M480 776V808"/>
+  <g id="artifacts">
+    <rect class="card" x="64" y="816" width="832" height="132" rx="12"/>
+    <text class="label" x="94" y="864">5  Images + manifest</text>
+    <text class="detail" x="94" y="902">Paths, dimensions, quality and hashes in the manifest</text>
+    <text class="detail" x="94" y="934">Artifact set only; no site-wide transaction</text>
+  </g>
+  <path class="flow" d="M480 948V1028"/>
+  <text x="516" y="1002" font-size="20">application consumes the manifest</text>
+  <text x="64" y="1023" font-size="20" fill="#174b96">APPLICATION RESPONSIBILITY</text>
+  <g id="application">
+    <rect x="64" y="1040" width="832" height="156" rx="12" fill="#edf5ff" stroke="#174b96" stroke-width="3"/>
+    <text class="label" x="94" y="1090">6  HTML + delivery</text>
+    <text class="detail" x="94" y="1130">Use the manifest for srcset / sizes and public URLs</text>
+    <text class="detail" x="94" y="1164">Storage, CDN, remote publish and site rollback: app-owned</text>
+  </g>
+  <path d="M64 548H24V1260H64" fill="none" stroke="#a32424" stroke-width="4" stroke-dasharray="8 6" marker-end="url(#error-arrow)"/>
+  <g id="failure">
+    <rect x="64" y="1220" width="832" height="128" rx="12" fill="#fff7f7" stroke="#a32424" stroke-width="3"/>
+    <text x="94" y="1264" font-size="32" font-weight="700" fill="#a32424">On failure: error + cleanup</text>
+    <text x="94" y="1302" font-size="24">Unverified artifacts are not committed.</text>
+    <text x="94" y="1334" font-size="24">Check any attached cleanupError before retrying.</text>
+  </g>
+</svg>

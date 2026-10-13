@@ -1,0 +1,32 @@
+{
+  "condition": "A",
+  "inputSha256": "71fb80cc85bcf53a9042234973d476638ae9338fc892bca8795714d66b89e7d8",
+  "policy": {
+    "widths": [
+      684,
+      960,
+      1920
+    ],
+    "formats": [
+      "webp",
+      "jpeg"
+    ],
+    "placeholder": false
+  },
+  "policySha256": "b4c3c9bcecf5fd0a3bc32c39b20f7ecfca48422d7086aa25d920382be7d83d24",
+  "success": false,
+  "imageStageMs": null,
+  "nativeMetrics": null,
+  "nativeMetricsReason": "compileImage manifest does not expose native metrics",
+  "error": {
+    "name": "Error",
+    "message": "Input hash differs from frozen PNG",
+    "phase": null,
+    "errorCode": null,
+    "code": null,
+    "cause": null,
+    "cleanupError": null
+  },
+  "outputExists": false,
+  "remainingStaging": []
+}

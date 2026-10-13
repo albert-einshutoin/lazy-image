@@ -1,0 +1,73 @@
+{
+  "scope": "Disposable metadata tampering only; no image generation or original mutation",
+  "results": [
+    {
+      "case": "valid-outputs",
+      "exit": 0
+    },
+    {
+      "case": "valid-browser",
+      "exit": 0
+    },
+    {
+      "case": "duplicate-pose",
+      "exit": 1
+    },
+    {
+      "case": "wrong-pan",
+      "exit": 1
+    },
+    {
+      "case": "duplicate-desktop-part",
+      "exit": 1
+    },
+    {
+      "case": "wrong-original-capture",
+      "exit": 1
+    },
+    {
+      "case": "wrong-capture-record",
+      "exit": 1
+    },
+    {
+      "case": "wrong-helper-revision",
+      "exit": 1
+    },
+    {
+      "case": "wrong-helper-hash",
+      "exit": 1
+    },
+    {
+      "case": "wrong-command",
+      "exit": 1
+    },
+    {
+      "case": "spawn-failure",
+      "exit": 1
+    },
+    {
+      "case": "missing-output-inventory",
+      "exit": 1
+    },
+    {
+      "case": "wrong-input",
+      "exit": 1
+    },
+    {
+      "case": "wrong-policy",
+      "exit": 1
+    },
+    {
+      "case": "wrong-source",
+      "exit": 1
+    },
+    {
+      "case": "wrong-native",
+      "exit": 1
+    },
+    {
+      "case": "wrong-lock",
+      "exit": 1
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "case": "desktop-2",
+  "page": "Responsive B1",
+  "part": "top",
+  "browserZoomPercent": 100,
+  "deviceToolbarZoomPercent": 75,
+  "qa": {
+    "url": "http://127.0.0.1:8876/final/picture.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 2
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "browserVersion": {
+      "brands": [
+        {
+          "brand": "Chromium",
+          "version": "154"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99"
+        }
+      ],
+      "fullVersionList": [
+        {
+          "brand": "Chromium",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99.0.0.0"
+        }
+      ],
+      "mobile": false,
+      "platform": "macOS"
+    },
+    "decodeError": null,
+    "images": [
+      {
+        "id": "responsive-B1",
+        "currentSrc": "http://127.0.0.1:8876/final/image-1920.webp",
+        "src": "image-1920.jpg",
+        "srcset": "image-684.jpg 684w, image-960.jpg 960w, image-1920.jpg 1920w",
+        "sizes": "(max-width: 1008px) calc(100vw - 48px), 960px",
+        "complete": true,
+        "naturalWidth": 960,
+        "naturalHeight": 1400,
+        "rect": {
+          "width": 960,
+          "height": 1400
+        },
+        "placeholder": "none"
+      }
+    ],
+    "resources": [
+      {
+        "name": "http://127.0.0.1:8876/final/image-1920.webp",
+        "type": "img",
+        "transferSize": 0,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8876/final/qa.js",
+        "type": "script",
+        "transferSize": 0,
+        "encodedBodySize": 0,
+        "decodedBodySize": 0,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8876/final/image-1920.jpg",
+        "type": "img",
+        "transferSize": 0,
+        "encodedBodySize": 406976,
+        "decodedBodySize": 406976,
+        "responseStatus": 200
+      }
+    ]
+  },
+  "before": {
+    "images": [
+      {
+        "complete": true,
+        "currentSrc": "http://127.0.0.1:8876/final/image-1920.webp",
+        "id": "responsive-B1",
+        "naturalHeight": 1400,
+        "naturalWidth": 960,
+        "rect": {
+          "bottom": 1497,
+          "height": 1400,
+          "left": 240,
+          "right": 1200,
+          "top": 97,
+          "width": 960,
+          "x": 240,
+          "y": 97
+        },
+        "sizes": "(max-width: 1008px) calc(100vw - 48px), 960px",
+        "srcset": "image-684.jpg 684w, image-960.jpg 960w, image-1920.jpg 1920w",
+        "decodeError": null
+      }
+    ],
+    "ruler": {
+      "bottom": 24,
+      "height": 24,
+      "left": 0,
+      "right": 100,
+      "top": 0,
+      "width": 100,
+      "x": 0,
+      "y": 0
+    },
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "viewport": {
+      "dpr": 2,
+      "height": 1000,
+      "width": 1440
+    }
+  },
+  "after": {
+    "images": [
+      {
+        "complete": true,
+        "currentSrc": "http://127.0.0.1:8876/final/image-1920.webp",
+        "id": "responsive-B1",
+        "naturalHeight": 1400,
+        "naturalWidth": 960,
+        "rect": {
+          "bottom": 1497,
+          "height": 1400,
+          "left": 240,
+          "right": 1200,
+          "top": 97,
+          "width": 960,
+          "x": 240,
+          "y": 97
+        },
+        "sizes": "(max-width: 1008px) calc(100vw - 48px), 960px",
+        "srcset": "image-684.jpg 684w, image-960.jpg 960w, image-1920.jpg 1920w"
+      }
+    ],
+    "ruler": {
+      "bottom": 24,
+      "height": 24,
+      "left": 0,
+      "right": 100,
+      "top": 0,
+      "width": 100,
+      "x": 0,
+      "y": 0
+    },
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "viewport": {
+      "dpr": 2,
+      "height": 1000,
+      "width": 1440
+    }
+  }
+}

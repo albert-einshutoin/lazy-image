@@ -1,0 +1,56 @@
+{
+  "scope": "Lossless low-level PNG controls, outside compiler timing",
+  "identity": {
+    "version": "1.5.0",
+    "sourceSha": "023a8c9368eef58f17ecc6f412363d24e5aa9b67",
+    "nativeSha256": "d7b3871a3377f0add70a8058992505207e047728db0dcef8ff44654838b98055",
+    "lockSha256": "7fc9352d60ee21d7df35e3cc6a3b3b50dd5a01d918ba4154096ca598e0ebf042",
+    "loadedJs": [
+      {
+        "file": "index.js",
+        "sha256": "e4d196650b52ca26f75cf5379437e73ae2fa3bd0be490a891245910ebb0feb89"
+      },
+      {
+        "file": "streaming/pipeline.js",
+        "sha256": "c5f12ba0746c9bba92a8d973ae3d3b566c9db38698f3003d1545b292fe610e9f"
+      },
+      {
+        "file": "lib/helpers.js",
+        "sha256": "e959ce2dedf0357b00a4d5454e886c39b53d4827f29d8e51d2db5d4eec459f08"
+      },
+      {
+        "file": "lib/artifact-policy.js",
+        "sha256": "a0648632a2255fdb92f0789f4043a4e14a5d97dda1b006c8a0179d7068bed2e6"
+      },
+      {
+        "file": "lib/artifact-compiler.js",
+        "sha256": "78467d5a71eb9615c41a8f675b24c73f7c0461ca7a8bb8a291e019a12a9362a2"
+      }
+    ],
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.2.0",
+    "overrides": []
+  },
+  "inputSha256": "fd4966526149ea92d6dc0ec88bd01581c4ad2e0604c7fbac3e0f4ff2b9899504",
+  "rows": [
+    {
+      "file": "control-684.png",
+      "width": 684,
+      "bytes": 217959,
+      "sha256": "ab1535acc013ae7df59abc81e8b46dc078b30ed351e4b9346afb3e1ed0efa163"
+    },
+    {
+      "file": "control-960.png",
+      "width": 960,
+      "bytes": 325656,
+      "sha256": "a33cb449da5541c8904699a1a3fcec27db7f617c6a11ffdefabd0f7177c90a99"
+    },
+    {
+      "file": "control-1920.png",
+      "width": 1920,
+      "bytes": 326875,
+      "sha256": "42e493e3aa0b908cfddc66b950231f0e34235bbad464d0a337aba3efe109ab87"
+    }
+  ]
+}

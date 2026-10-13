@@ -1,0 +1,50 @@
+{
+  "widths": [
+    684,
+    960,
+    1920
+  ],
+  "formats": [
+    "webp",
+    "jpeg"
+  ],
+  "placeholder": false,
+  "budgets": [
+    {
+      "width": 684,
+      "format": "webp",
+      "maxBytes": 102400,
+      "maxQuality": 80
+    },
+    {
+      "width": 684,
+      "format": "jpeg",
+      "maxBytes": 153600,
+      "maxQuality": 85
+    },
+    {
+      "width": 960,
+      "format": "webp",
+      "maxBytes": 204800,
+      "maxQuality": 80
+    },
+    {
+      "width": 960,
+      "format": "jpeg",
+      "maxBytes": 307200,
+      "maxQuality": 85
+    },
+    {
+      "width": 1920,
+      "format": "webp",
+      "maxBytes": 409600,
+      "maxQuality": 80
+    },
+    {
+      "width": 1920,
+      "format": "jpeg",
+      "maxBytes": 614400,
+      "maxQuality": 85
+    }
+  ]
+}
