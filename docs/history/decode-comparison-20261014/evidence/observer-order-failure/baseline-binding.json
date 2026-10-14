@@ -1,0 +1,37 @@
+{
+  "evaluationCommit": "a3c3d187f29762fe5548b63223e168adb4e14be6",
+  "collectorSha256": "1c556abc0a986abab206c0fac121881f86aa116c0f270a5aa5922a2b3c0f61aa",
+  "conditions": [
+    {
+      "id": "single-webp",
+      "path": "single-webp.html",
+      "htmlSha256": "b51028735b93255038dd83b55fe8227eac32dfc66e8999eab85c935e74a339e9"
+    },
+    {
+      "id": "single-png",
+      "path": "single-png.html",
+      "htmlSha256": "fb72d82fe6da2fa46ca99c8035e558981438395bf5e693d7cbd945b98a3f6639"
+    },
+    {
+      "id": "triple-metadata",
+      "path": "quality-single/metadata-1/index.html",
+      "htmlSha256": "30d09b8cac6ea60ebbda6d88900f311b28f6cd8792558873448e67d7e7b7713f"
+    },
+    {
+      "id": "triple-coffee64",
+      "path": "quality-single/coffee-64/index.html",
+      "htmlSha256": "41b563767f69cfd51366900902fc24554b44cdcabaaeae518a13f7bb5e5817b0"
+    },
+    {
+      "id": "sheet",
+      "path": "quality.html",
+      "htmlSha256": "8a219989299ccebc8208185edbe80cffb2f3b55829d6e7193f906b2c02fd6526"
+    },
+    {
+      "id": "sheet-fresh",
+      "path": "quality-fresh.html",
+      "htmlSha256": "66f35537a6797f6ded501837fc759f2cbab05fe3d8f2489fdcb3e98edb992155"
+    }
+  ],
+  "calibration": "Initial 1920x958 tab load excluded; viewport override1440x1000/DPR1 verified after reload; Cmd+0 reset zoom before matrix."
+}

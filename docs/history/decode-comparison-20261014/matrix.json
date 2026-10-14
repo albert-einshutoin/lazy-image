@@ -1,0 +1,38 @@
+[
+  {
+    "id": "single-webp",
+    "path": "single-webp.html",
+    "images": 1,
+    "trials": 3
+  },
+  {
+    "id": "single-png",
+    "path": "single-png.html",
+    "images": 1,
+    "trials": 3
+  },
+  {
+    "id": "triple-metadata",
+    "path": "quality-single/metadata-1/index.html",
+    "images": 3,
+    "trials": 3
+  },
+  {
+    "id": "triple-coffee64",
+    "path": "quality-single/coffee-64/index.html",
+    "images": 3,
+    "trials": 3
+  },
+  {
+    "id": "sheet",
+    "path": "quality.html",
+    "images": 18,
+    "trials": 3
+  },
+  {
+    "id": "sheet-fresh",
+    "path": "quality-fresh.html",
+    "images": 18,
+    "trials": 3
+  }
+]

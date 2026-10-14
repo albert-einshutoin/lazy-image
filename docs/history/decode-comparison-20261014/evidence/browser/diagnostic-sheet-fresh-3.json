@@ -1,0 +1,1048 @@
+{
+  "case": "sheet-fresh",
+  "trial": 3,
+  "url": "http://127.0.0.1:8877/diagnostic-quality-fresh.html?diagnosticTrial=3",
+  "observedAt": "2026-10-14T05:20:41.017Z",
+  "browserZoom": {
+    "percent": 100,
+    "method": "Cmd+0 on owned tab"
+  },
+  "pending": false,
+  "live": {
+    "dpr": 1,
+    "height": 1000,
+    "width": 1440
+  },
+  "qa": {
+    "urlBefore": "http://127.0.0.1:8877/diagnostic-quality-fresh.html?diagnosticTrial=3",
+    "urlAfter": "http://127.0.0.1:8877/diagnostic-quality-fresh.html?diagnosticTrial=3",
+    "viewportBefore": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 1
+    },
+    "viewportAfter": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 1
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "browserVersion": {
+      "brands": [
+        {
+          "brand": "Chromium",
+          "version": "154"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99"
+        }
+      ],
+      "fullVersionList": [
+        {
+          "brand": "Chromium",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99.0.0.0"
+        }
+      ],
+      "mobile": false,
+      "platform": "macOS"
+    },
+    "images": [
+      {
+        "id": "coffee Original",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "reference/coffee.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/coffee.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 600,
+          "naturalHeight": 400,
+          "rect": {
+            "width": 320,
+            "height": 213.328125
+          }
+        },
+        "after": {
+          "src": "reference/coffee.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/coffee.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 600,
+          "naturalHeight": 400,
+          "rect": {
+            "width": 320,
+            "height": 213.328125
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "coffee A",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-A-quality-fresh/images/coffee/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "after": {
+          "src": "desktop-A-quality-fresh/images/coffee/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "coffee B",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-B-quality-fresh/images/coffee/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "after": {
+          "src": "desktop-B-quality-fresh/images/coffee/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "chelsea Original",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "reference/chelsea.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/chelsea.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 451,
+          "naturalHeight": 300,
+          "rect": {
+            "width": 320,
+            "height": 212.859375
+          }
+        },
+        "after": {
+          "src": "reference/chelsea.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/chelsea.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 451,
+          "naturalHeight": 300,
+          "rect": {
+            "width": 320,
+            "height": 212.859375
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "chelsea A",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-A-quality-fresh/images/chelsea/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/chelsea/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "after": {
+          "src": "desktop-A-quality-fresh/images/chelsea/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/chelsea/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "chelsea B",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-B-quality-fresh/images/chelsea/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/chelsea/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "after": {
+          "src": "desktop-B-quality-fresh/images/chelsea/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/chelsea/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 213,
+          "rect": {
+            "width": 320,
+            "height": 213
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "ui-1 Original",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "reference/ui-1.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/ui-1.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 240,
+          "rect": {
+            "width": 320,
+            "height": 240
+          }
+        },
+        "after": {
+          "src": "reference/ui-1.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/ui-1.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 240,
+          "rect": {
+            "width": 320,
+            "height": 240
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "ui-1 A",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-A-quality-fresh/images/ui-1/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/ui-1/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 240,
+          "rect": {
+            "width": 320,
+            "height": 240
+          }
+        },
+        "after": {
+          "src": "desktop-A-quality-fresh/images/ui-1/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/ui-1/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 240,
+          "rect": {
+            "width": 320,
+            "height": 240
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "ui-1 B",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-B-quality-fresh/images/ui-1/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/ui-1/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 240,
+          "rect": {
+            "width": 320,
+            "height": 240
+          }
+        },
+        "after": {
+          "src": "desktop-B-quality-fresh/images/ui-1/image-320.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/ui-1/image-320.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 320,
+          "naturalHeight": 240,
+          "rect": {
+            "width": 320,
+            "height": 240
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "metadata-1 Original",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "reference/metadata-1.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/metadata-1.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 240,
+          "naturalHeight": 320,
+          "rect": {
+            "width": 240,
+            "height": 320
+          }
+        },
+        "after": {
+          "src": "reference/metadata-1.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/metadata-1.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 240,
+          "naturalHeight": 320,
+          "rect": {
+            "width": 240,
+            "height": 320
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "metadata-1 A",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 240,
+          "naturalHeight": 320,
+          "rect": {
+            "width": 240,
+            "height": 320
+          }
+        },
+        "after": {
+          "src": "desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 240,
+          "naturalHeight": 320,
+          "rect": {
+            "width": 240,
+            "height": 320
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "metadata-1 B",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-B-quality-fresh/images/metadata-1/image-240.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/metadata-1/image-240.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 240,
+          "naturalHeight": 320,
+          "rect": {
+            "width": 240,
+            "height": 320
+          }
+        },
+        "after": {
+          "src": "desktop-B-quality-fresh/images/metadata-1/image-240.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/metadata-1/image-240.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 240,
+          "naturalHeight": 320,
+          "rect": {
+            "width": 240,
+            "height": 320
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "large Original",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "reference/large.jpg",
+          "currentSrc": "http://127.0.0.1:8877/reference/large.jpg",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 5000,
+          "naturalHeight": 5000,
+          "rect": {
+            "width": 960,
+            "height": 960
+          }
+        },
+        "after": {
+          "src": "reference/large.jpg",
+          "currentSrc": "http://127.0.0.1:8877/reference/large.jpg",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 5000,
+          "naturalHeight": 5000,
+          "rect": {
+            "width": 960,
+            "height": 960
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "large A",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-A-quality-fresh/images/large/image-960.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/large/image-960.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 960,
+          "naturalHeight": 960,
+          "rect": {
+            "width": 960,
+            "height": 960
+          }
+        },
+        "after": {
+          "src": "desktop-A-quality-fresh/images/large/image-960.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/large/image-960.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 960,
+          "naturalHeight": 960,
+          "rect": {
+            "width": 960,
+            "height": 960
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "large B",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-B-quality-fresh/images/large/image-960.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/large/image-960.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 960,
+          "naturalHeight": 960,
+          "rect": {
+            "width": 960,
+            "height": 960
+          }
+        },
+        "after": {
+          "src": "desktop-B-quality-fresh/images/large/image-960.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/large/image-960.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 960,
+          "naturalHeight": 960,
+          "rect": {
+            "width": 960,
+            "height": 960
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "coffee-64 Original",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "reference/coffee-64.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/coffee-64.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 64,
+          "naturalHeight": 43,
+          "rect": {
+            "width": 64,
+            "height": 43
+          }
+        },
+        "after": {
+          "src": "reference/coffee-64.png",
+          "currentSrc": "http://127.0.0.1:8877/reference/coffee-64.png",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 64,
+          "naturalHeight": 43,
+          "rect": {
+            "width": 64,
+            "height": 43
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "coffee-64 A",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-A-quality-fresh/images/coffee-64/image-64.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee-64/image-64.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 64,
+          "naturalHeight": 43,
+          "rect": {
+            "width": 64,
+            "height": 43
+          }
+        },
+        "after": {
+          "src": "desktop-A-quality-fresh/images/coffee-64/image-64.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee-64/image-64.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 64,
+          "naturalHeight": 43,
+          "rect": {
+            "width": 64,
+            "height": 43
+          }
+        },
+        "timeoutMs": 10000
+      },
+      {
+        "id": "coffee-64 B",
+        "status": "success",
+        "error": null,
+        "reason": null,
+        "before": {
+          "src": "desktop-B-quality-fresh/images/coffee-64/image-64.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee-64/image-64.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 64,
+          "naturalHeight": 43,
+          "rect": {
+            "width": 64,
+            "height": 43
+          }
+        },
+        "after": {
+          "src": "desktop-B-quality-fresh/images/coffee-64/image-64.webp",
+          "currentSrc": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee-64/image-64.webp",
+          "srcset": null,
+          "sizes": "",
+          "complete": true,
+          "naturalWidth": 64,
+          "naturalHeight": 43,
+          "rect": {
+            "width": 64,
+            "height": 43
+          }
+        },
+        "timeoutMs": 10000
+      }
+    ],
+    "probes": [
+      {
+        "url": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+        "responseUrl": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+        "redirected": false,
+        "httpStatus": 200,
+        "headers": {
+          "content-type": "image/webp",
+          "content-length": "3062",
+          "last-modified": "Tue, 13 Oct 2026 07:01:14 GMT",
+          "cache-control": null,
+          "etag": null
+        },
+        "bytes": 3062,
+        "sha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51",
+        "expectedSha256": "e28df97d900d85c7a7aef5a04c599e7041f619163560b852d00104ceceee5b51",
+        "hashMatches": true,
+        "scope": "Independent no-store fetch after DOM decode; not the original img request body",
+        "status": "body-matches",
+        "blobDecode": {
+          "id": "metadata-1 A independent body",
+          "status": "success",
+          "error": null,
+          "reason": null,
+          "before": {
+            "src": "blob:http://127.0.0.1:8877/a4314213-4cbf-435d-8c1f-f914b2a5f70d",
+            "currentSrc": "blob:http://127.0.0.1:8877/a4314213-4cbf-435d-8c1f-f914b2a5f70d",
+            "srcset": null,
+            "sizes": "",
+            "complete": false,
+            "naturalWidth": 0,
+            "naturalHeight": 0,
+            "rect": {
+              "width": 0,
+              "height": 0
+            }
+          },
+          "after": {
+            "src": "blob:http://127.0.0.1:8877/a4314213-4cbf-435d-8c1f-f914b2a5f70d",
+            "currentSrc": "blob:http://127.0.0.1:8877/a4314213-4cbf-435d-8c1f-f914b2a5f70d",
+            "srcset": null,
+            "sizes": "",
+            "complete": true,
+            "naturalWidth": 240,
+            "naturalHeight": 320,
+            "rect": {
+              "width": 0,
+              "height": 0
+            }
+          },
+          "timeoutMs": 10000
+        }
+      },
+      {
+        "url": "http://127.0.0.1:8877/reference/coffee-64.png",
+        "responseUrl": "http://127.0.0.1:8877/reference/coffee-64.png",
+        "redirected": false,
+        "httpStatus": 200,
+        "headers": {
+          "content-type": "image/png",
+          "content-length": "6293",
+          "last-modified": "Tue, 13 Oct 2026 07:01:14 GMT",
+          "cache-control": null,
+          "etag": null
+        },
+        "bytes": 6293,
+        "sha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d",
+        "expectedSha256": "0face9591e51f0ee8342ba48f047c1881e03e5c4ba1e59477129e4f9c1ed6d8d",
+        "hashMatches": true,
+        "scope": "Independent no-store fetch after DOM decode; not the original img request body",
+        "status": "body-matches",
+        "blobDecode": {
+          "id": "coffee-64 Original independent body",
+          "status": "success",
+          "error": null,
+          "reason": null,
+          "before": {
+            "src": "blob:http://127.0.0.1:8877/c1471577-2a99-45fa-bb98-63d1de3c1461",
+            "currentSrc": "blob:http://127.0.0.1:8877/c1471577-2a99-45fa-bb98-63d1de3c1461",
+            "srcset": null,
+            "sizes": "",
+            "complete": false,
+            "naturalWidth": 0,
+            "naturalHeight": 0,
+            "rect": {
+              "width": 0,
+              "height": 0
+            }
+          },
+          "after": {
+            "src": "blob:http://127.0.0.1:8877/c1471577-2a99-45fa-bb98-63d1de3c1461",
+            "currentSrc": "blob:http://127.0.0.1:8877/c1471577-2a99-45fa-bb98-63d1de3c1461",
+            "srcset": null,
+            "sizes": "",
+            "complete": true,
+            "naturalWidth": 64,
+            "naturalHeight": 43,
+            "rect": {
+              "width": 0,
+              "height": 0
+            }
+          },
+          "timeoutMs": 10000
+        }
+      }
+    ],
+    "events": [
+      {
+        "type": "load",
+        "id": "coffee Original",
+        "src": "http://127.0.0.1:8877/reference/coffee.png",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "coffee A",
+        "src": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee/image-320.webp",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "coffee B",
+        "src": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee/image-320.webp",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "chelsea Original",
+        "src": "http://127.0.0.1:8877/reference/chelsea.png",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "chelsea A",
+        "src": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/chelsea/image-320.webp",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "chelsea B",
+        "src": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/chelsea/image-320.webp",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "ui-1 Original",
+        "src": "http://127.0.0.1:8877/reference/ui-1.png",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "ui-1 A",
+        "src": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/ui-1/image-320.webp",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "ui-1 B",
+        "src": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/ui-1/image-320.webp",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "metadata-1 Original",
+        "src": "http://127.0.0.1:8877/reference/metadata-1.png",
+        "atMs": 13.899999976158142
+      },
+      {
+        "type": "load",
+        "id": "metadata-1 B",
+        "src": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/metadata-1/image-240.webp",
+        "atMs": 14
+      },
+      {
+        "type": "load",
+        "id": "large Original",
+        "src": "http://127.0.0.1:8877/reference/large.jpg",
+        "atMs": 14
+      },
+      {
+        "type": "load",
+        "id": "large A",
+        "src": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/large/image-960.webp",
+        "atMs": 14
+      },
+      {
+        "type": "load",
+        "id": "large B",
+        "src": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/large/image-960.webp",
+        "atMs": 14
+      },
+      {
+        "type": "load",
+        "id": "coffee-64 A",
+        "src": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee-64/image-64.webp",
+        "atMs": 14
+      },
+      {
+        "type": "load",
+        "id": "coffee-64 B",
+        "src": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee-64/image-64.webp",
+        "atMs": 14
+      },
+      {
+        "type": "load",
+        "id": "metadata-1 A",
+        "src": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+        "atMs": 27.599999964237213
+      },
+      {
+        "type": "load",
+        "id": "coffee-64 Original",
+        "src": "http://127.0.0.1:8877/reference/coffee-64.png",
+        "atMs": 27.599999964237213
+      }
+    ],
+    "resources": [
+      {
+        "name": "http://127.0.0.1:8877/diagnose.js",
+        "type": "script",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 0,
+        "decodedBodySize": 0
+      },
+      {
+        "name": "http://127.0.0.1:8877/reference/coffee.png",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 466706,
+        "decodedBodySize": 466706
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee/image-320.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 13736,
+        "decodedBodySize": 13736
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee/image-320.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 13736,
+        "decodedBodySize": 13736
+      },
+      {
+        "name": "http://127.0.0.1:8877/reference/chelsea.png",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 240512,
+        "decodedBodySize": 240512
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/chelsea/image-320.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 13022,
+        "decodedBodySize": 13022
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/chelsea/image-320.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 13022,
+        "decodedBodySize": 13022
+      },
+      {
+        "name": "http://127.0.0.1:8877/reference/ui-1.png",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 7610,
+        "decodedBodySize": 7610
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/ui-1/image-320.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 2788,
+        "decodedBodySize": 2788
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/ui-1/image-320.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 2788,
+        "decodedBodySize": 2788
+      },
+      {
+        "name": "http://127.0.0.1:8877/reference/metadata-1.png",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 19049,
+        "decodedBodySize": 19049
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 3062,
+        "decodedBodySize": 3062
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/metadata-1/image-240.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 3062,
+        "decodedBodySize": 3062
+      },
+      {
+        "name": "http://127.0.0.1:8877/reference/large.jpg",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 3371242,
+        "decodedBodySize": 3371242
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/large/image-960.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 63286,
+        "decodedBodySize": 63286
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/large/image-960.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 63286,
+        "decodedBodySize": 63286
+      },
+      {
+        "name": "http://127.0.0.1:8877/reference/coffee-64.png",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 6293,
+        "decodedBodySize": 6293
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/coffee-64/image-64.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 1116,
+        "decodedBodySize": 1116
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-B-quality-fresh/images/coffee-64/image-64.webp",
+        "type": "img",
+        "responseStatus": 200,
+        "transferSize": 0,
+        "encodedBodySize": 1116,
+        "decodedBodySize": 1116
+      },
+      {
+        "name": "http://127.0.0.1:8877/desktop-A-quality-fresh/images/metadata-1/image-240.webp",
+        "type": "fetch",
+        "responseStatus": 200,
+        "transferSize": 3362,
+        "encodedBodySize": 3062,
+        "decodedBodySize": 3062
+      },
+      {
+        "name": "http://127.0.0.1:8877/reference/coffee-64.png",
+        "type": "fetch",
+        "responseStatus": 200,
+        "transferSize": 6593,
+        "encodedBodySize": 6293,
+        "decodedBodySize": 6293
+      }
+    ]
+  },
+  "htmlSha256": "3bb8d41ba4e459a7c1fe356e3799ee3809f10709d92c64461056acce0d807cd0",
+  "observerSha256": "c9df4470f735f70d73d0f34be62fad345242b5eb1dd299ae3a395317042c5a0d",
+  "collectorSha256": "32d39ff2f523ea15666e7baea9a4d2de407d4b1b128db4030a5a9e9d06e06b6f"
+}

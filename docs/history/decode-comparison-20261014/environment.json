@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-14 Asia/Tokyo",
+  "platform": "Darwin",
+  "macOS": "27.0",
+  "arch": "arm64",
+  "node": "v24.2.0",
+  "server": "Python standard-library http.server on127.0.0.1:8877",
+  "browser": "Google Chrome154.0.8037.98 actual observed UA",
+  "viewport": {
+    "width": 1440,
+    "height": 1000,
+    "dpr": 1
+  },
+  "browserZoom": "100%, Cmd+0 reset",
+  "cache": "Existing browser cache; HTML queries differ but asset URLs reused; independent diagnostic fetch uses no-store",
+  "compilerReexecuted": false
+}

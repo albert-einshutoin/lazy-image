@@ -1,0 +1,18 @@
+{
+  "scope": "Result-table illustration only, after all matrix measurements; not image decode/quality evidence",
+  "method": "CUA Tab.screenshot",
+  "format": "jpeg",
+  "before": {
+    "dpr": 1,
+    "height": 1000,
+    "url": "http://127.0.0.1:8877/summary.html",
+    "width": 1440
+  },
+  "after": {
+    "dpr": 1,
+    "height": 1000,
+    "url": "http://127.0.0.1:8877/summary.html",
+    "width": 1440
+  },
+  "sha256": "a185e45db9f850015bf19e66d73dbe512d489b2a6afb9e7153d072ab3c9de4b7"
+}

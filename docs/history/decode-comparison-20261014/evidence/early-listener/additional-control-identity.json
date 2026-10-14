@@ -1,0 +1,42 @@
+{
+  "reason": "Chrome accepted the 64-byte PNG truncation; keep that observation and add an unequivocal non-image body under HTTP200",
+  "unchanged": [
+    {
+      "file": "diagnostic-quality.html",
+      "sha256": "e1bdf38a0b4430794422e64ac577c503de49c8629e206abab8f309abf85bfaf0",
+      "unchanged": true
+    },
+    {
+      "file": "diagnostic-quality-fresh.html",
+      "sha256": "0c8adfb2c6255073065127329803e4299cb0856c29e6f1e41ece1a487930273c",
+      "unchanged": true
+    },
+    {
+      "file": "control-broken.html",
+      "sha256": "9b983a2578bcb8949be6ea5718b453f1c7175c0945c3fd0c41e101c676fc3ba8",
+      "unchanged": true
+    },
+    {
+      "file": "control-missing.html",
+      "sha256": "fafd019097d722572f57cb28992056a31d8ade4d86fa1ebf9436740b59f5f7ef",
+      "unchanged": true
+    },
+    {
+      "file": "diagnose.js",
+      "sha256": "c9df4470f735f70d73d0f34be62fad345242b5eb1dd299ae3a395317042c5a0d",
+      "unchanged": true
+    }
+  ],
+  "new": [
+    {
+      "file": "invalid.png",
+      "bytes": 36,
+      "sha256": "26134c43b39b48d0713cfe8d0c324e7cda2b7e16186ea7b46056bfe4821e9fd0"
+    },
+    {
+      "file": "control-invalid.html",
+      "bytes": 625,
+      "sha256": "0e51880ecb9d22adab49a7d3e0ebaa2ee6fe4e60bb422be2ac7f9f7a2c60f817"
+    }
+  ]
+}

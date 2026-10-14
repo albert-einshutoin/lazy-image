@@ -1,0 +1,425 @@
+{
+  "scope": "New #906 delivery files excluding this hash manifest; current delivery revision is recorded in Issue/PR",
+  "files": [
+    {
+      "file": "docs/history/decode-comparison-20261014/LOG_REDACTIONS.json",
+      "bytes": 21188,
+      "sha256": "80d93b212d778187be10414ac99788659dccf971f6b57fe0873acd23242cd33e"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/PLAN.md",
+      "bytes": 3820,
+      "sha256": "6fec11d9028906fde40ad6b4022a57ba60ab093c005ba503a2e61cc71f41c853"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/REPRODUCE.md",
+      "bytes": 3144,
+      "sha256": "b8f268490190a17a9d6b9d273a90498ccec13972c85d43bdf533bcf8eddd886e"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/RESULTS.md",
+      "bytes": 5844,
+      "sha256": "15ee9674613ab6b1301d00cf6897f1fe5c11bf7fbafaf84f93955acd899d533f"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/VALIDATION.md",
+      "bytes": 2359,
+      "sha256": "00df694a563ce2a9f90129ce8332dba2d8dffa912b3a538ea7392e39df0fbf08"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/check-observer.test.cjs",
+      "bytes": 2790,
+      "sha256": "000819db18d7f98030a38c3b8b152f0c494f4ceaffefd8c90050aa1ce52abca3"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/check-prepare.test.cjs",
+      "bytes": 1562,
+      "sha256": "47205a4917ba21229eb737c52411783e9db7e612583959cee0f9379cc4897e57"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/check-records.cjs",
+      "bytes": 6976,
+      "sha256": "e3cd90656fc2b4690b6e4024114339067210a4a4e520d99b68decb9ba6840f8b"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/check-records.test.cjs",
+      "bytes": 2331,
+      "sha256": "7dd2852abf80af96f75871cf0287fa9925c77f05f9eb2a3b5047bf559968ef4a"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/collector-baseline-source.txt",
+      "bytes": 1709,
+      "sha256": "cc6ccd820382ed69ce9602a8c386ba55d10cde7da759785d34b7e7b36d6be2bb"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/collector-diagnostic-source.txt",
+      "bytes": 1472,
+      "sha256": "32d39ff2f523ea15666e7baea9a4d2de407d4b1b128db4030a5a9e9d06e06b6f"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/diagnose.js",
+      "bytes": 4589,
+      "sha256": "c9df4470f735f70d73d0f34be62fad345242b5eb1dd299ae3a395317042c5a0d"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/environment.json",
+      "bytes": 517,
+      "sha256": "726913307d5276b5ef0886ae0a9ac4839da69d8d0ae44fe701a050be38fd8ac3"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/baseline-binding.json",
+      "bytes": 1326,
+      "sha256": "f75dd05c8544693e6c21a8a6d242dc6a1c1392170f67f379139be0a8fd00d394"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-sheet-1.json",
+      "bytes": 13685,
+      "sha256": "c9d7e11d2bb482c2e1538396e51e6d4024ea0a7969124b42e0b4033daafbf2f6"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-sheet-2.json",
+      "bytes": 13623,
+      "sha256": "c41137ac8af57232adebc6a161885687e7037b2c353b1a12fc0633bd18a9da27"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-sheet-3.json",
+      "bytes": 13623,
+      "sha256": "8be70b0b898299f93167938fb0f3f965ae46a9d9e9c1bf25cc61caa8b5e3df2d"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-sheet-fresh-1.json",
+      "bytes": 14187,
+      "sha256": "f717be200dbf899898bfc8282a7ba0e9f9f6aab9460e390b33b2053a13621607"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-sheet-fresh-2.json",
+      "bytes": 14145,
+      "sha256": "102669699d56774f32b6468e1ab51e3e031544221dcb5974a19b70b488f2a20e"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-sheet-fresh-3.json",
+      "bytes": 14145,
+      "sha256": "17d410814e0074688cb1dd987f06b537ac3255a06a334731c3eda4c37987cd5a"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-single-png-1.json",
+      "bytes": 2464,
+      "sha256": "2aa9392ebc877c18468a0d6d8a5f15aaec127c96cef857793f4b08794157eb7f"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-single-png-2.json",
+      "bytes": 2461,
+      "sha256": "45fce824d3bf0b49d07110542553f1dd56627b2b3db37bb1ae057f8f1034e07f"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-single-png-3.json",
+      "bytes": 2461,
+      "sha256": "944ce72caa0aaec487efef90fbfb753e94012d4a7060200ae40c05d4cff424ad"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-single-webp-1.json",
+      "bytes": 2526,
+      "sha256": "2f90012fb9a494ff60cf24a452505a964f9c5f6236153832cc58ac16e5a24db4"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-single-webp-2.json",
+      "bytes": 2526,
+      "sha256": "c9d02d149dd7a7be374c66cd38bb2e58675a9bdfaa460488504ce3863d3fd679"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-single-webp-3.json",
+      "bytes": 2526,
+      "sha256": "80aefd57eef6c55dac6b93707a10c835029f034a61306a034fef4f63c18a266a"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-triple-coffee64-1.json",
+      "bytes": 3809,
+      "sha256": "13b27d5c742f8f63dcfe7f211a2e6723f7207db5cf14fba8deca49253af3f5fc"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-triple-coffee64-2.json",
+      "bytes": 3797,
+      "sha256": "b295fee6b339848a422cf2eecf8ee95ec34d5e4cb1ddddf7a185b3b9ac6f1c6d"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-triple-coffee64-3.json",
+      "bytes": 3797,
+      "sha256": "06fe2b863eefbd736424748344081e6f7d1216914f0c167298bf1f895e11be6e"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-triple-metadata-1.json",
+      "bytes": 3839,
+      "sha256": "f615ae6c83e983a2a544891276234478d2231009b366c5045cf48ed0c762d0b6"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-triple-metadata-2.json",
+      "bytes": 3826,
+      "sha256": "fd310a1989cc365c6b6269c89e03ccbb1eafcd3b4a44787dcd3a2f2eb9250426"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/baseline-triple-metadata-3.json",
+      "bytes": 3826,
+      "sha256": "61529018292fbfffbe8b7b7c1304e628b9acb05bdc1ae0d18627a94d40de0bc1"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-control-broken-1.json",
+      "bytes": 12282,
+      "sha256": "9d919730cd5dea25c7a6d9999b251bcf8d033bd54ce1a81ee65acbe7613df548"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-control-invalid-1.json",
+      "bytes": 12555,
+      "sha256": "00411acc1709d61ad5f411ae8dc99d0f972bb1fb0ce365c38a663074d7f69917"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-control-missing-1.json",
+      "bytes": 11445,
+      "sha256": "9446b8f7b03ed4b0859e2e5382eece612e89de6c36a57e582ef650c061bcda96"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-sheet-1.json",
+      "bytes": 30601,
+      "sha256": "74a77742d0b341aa107ef132b1a7d2ddc1b65fd173b1f6c71ee18044f993a3bb"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-sheet-2.json",
+      "bytes": 30616,
+      "sha256": "4cf7948d51b1dbefbabe00f41a05427d38a880fc254dba0e64ef1f88dd1a1e3c"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-sheet-3.json",
+      "bytes": 30564,
+      "sha256": "389af525d7ba1f1c2e368b5fb6c8e072c50ad92e08af54539b12cc4c0f49a0ac"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-sheet-fresh-1.json",
+      "bytes": 31638,
+      "sha256": "a19bc8d600d1271cd05563f0b451be33a102c717795140de5585c937bb401073"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-sheet-fresh-2.json",
+      "bytes": 31718,
+      "sha256": "9a2eb80d153e76ac5f2954e3dc99be54469639c3c75ae94498bd5eec237367a2"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/browser/diagnostic-sheet-fresh-3.json",
+      "bytes": 31622,
+      "sha256": "6104c5bb6cc45796f7772e271d10908146bf08849ee393a933a6f994530ac37d"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/commands.json",
+      "bytes": 1110,
+      "sha256": "d8e65f7c77ea1e1ee8ccb7c8b383fcdf9d0a18111977bf4ff7bdabe97e829145"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/diagnostic-binding.json",
+      "bytes": 1391,
+      "sha256": "c35b5809093a38997b22cb8848d75954480b0168dbb2b49f34df5ecb8b4a9ad5"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/additional-control-identity.json",
+      "bytes": 1267,
+      "sha256": "abd2497e0e6790abb2d7e130e91142b4f04647243390b83591b02da0d5c8c5f0"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-control-broken-1.json",
+      "bytes": 11804,
+      "sha256": "2d3cc65b6679b921c946cd81919e3ddcbc6b9d2964b914b6f5487a1a6493dca0"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-control-invalid-1.json",
+      "bytes": 12028,
+      "sha256": "9e1a36e5bff2cefde88ab1e1f4b4b8947212b419ca6bcce3037f7751de53adc5"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-control-missing-1.json",
+      "bytes": 11431,
+      "sha256": "c11e812064ecca8070ea16fccac77d311173ae7c8853e3b896367e519a8210c0"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-sheet-1.json",
+      "bytes": 27429,
+      "sha256": "5a1a6d0f47fc04f12c009b2fa66c65fb07c4c5b59688b9a0aa642754f3278452"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-sheet-2.json",
+      "bytes": 30648,
+      "sha256": "3a6b015fca4a0b06b9d474ca3d85a91600fea5a3ef24de4e2d9b34c669097483"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-sheet-3.json",
+      "bytes": 30584,
+      "sha256": "1afcce20640f368c87fd750a6056d3024161d8a7c13dbef383002ccd4bab03db"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-sheet-fresh-1.json",
+      "bytes": 31625,
+      "sha256": "1164c01be8c4093358d44071aa208f8a8569468025ae5f3ffab501594447de80"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-sheet-fresh-2.json",
+      "bytes": 31696,
+      "sha256": "abb1e680248e110a6b564f0c60bd0918905cb5b939dbb7d1f58d403a0fc904cc"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/browser/diagnostic-sheet-fresh-3.json",
+      "bytes": 28328,
+      "sha256": "fbcb0867118028b07dfba5092c930c244adb78cebff5c3806ef0e2474705ff78"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/diagnostic-binding.json",
+      "bytes": 1093,
+      "sha256": "4028ce943374320a0c4b2b3d8bb280f6eeba9f52fce9045477b3c367d8c8d91c"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/pages/control-broken.html",
+      "bytes": 621,
+      "sha256": "9b983a2578bcb8949be6ea5718b453f1c7175c0945c3fd0c41e101c676fc3ba8"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/pages/control-invalid.html",
+      "bytes": 625,
+      "sha256": "0e51880ecb9d22adab49a7d3e0ebaa2ee6fe4e60bb422be2ac7f9f7a2c60f817"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/pages/control-missing.html",
+      "bytes": 632,
+      "sha256": "fafd019097d722572f57cb28992056a31d8ade4d86fa1ebf9436740b59f5f7ef"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/pages/diagnostic-quality-fresh.html",
+      "bytes": 5420,
+      "sha256": "0c8adfb2c6255073065127329803e4299cb0856c29e6f1e41ece1a487930273c"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/early-listener/pages/diagnostic-quality.html",
+      "bytes": 5252,
+      "sha256": "e1bdf38a0b4430794422e64ac577c503de49c8629e206abab8f309abf85bfaf0"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/http-server.log",
+      "bytes": 13204,
+      "sha256": "ef65121dc02cad1553582a308c47deafeb3c7482d6ef8f3871ed7ec99696fa33"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/legacy-test.stderr.log",
+      "bytes": 562,
+      "sha256": "b85db22c8d2549f98918eb53ea4d336376ee42a12c3962b5a6002cd2a187b74f"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/legacy-test.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/observer-order-failure/baseline-binding.json",
+      "bytes": 1326,
+      "sha256": "36b6a0080fbf9bd8b5e0952a6e0e08df0f3eb246b5b76f8135429d05d43f589d"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/observer-order-failure/baseline-single-webp-1.json",
+      "bytes": 2526,
+      "sha256": "a689fcb8dde7641c6f9ea065c5c0d4404c263a4f63e7bc4735e2a0e283ed8cd5"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/observer-order-failure/collector-baseline-source.txt",
+      "bytes": 1703,
+      "sha256": "1c556abc0a986abab206c0fac121881f86aa116c0f270a5aa5922a2b3c0f61aa"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/observer-order-failure/failure.json",
+      "bytes": 323,
+      "sha256": "abdefdd83ceb436997747eff10ac6b63932ccfebaeccca50e4d3726b64cfa2df"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/observer-test.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/observer-test.stdout.log",
+      "bytes": 149,
+      "sha256": "f5a62f4a2a9b7c54ef51954aee6bdb700e2e99bdc70f4c476e96430417b427e8"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/prepare-test.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/prepare-test.stdout.log",
+      "bytes": 116,
+      "sha256": "3607fe7302d510e1e747bcfb1a8d0b90ce3c91aeb4a4004e217e953a01aa72d7"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/record-check.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/record-check.stdout.log",
+      "bytes": 257,
+      "sha256": "5c67bb8e3ecb1b93e32fe35da4b97331558cf82be04924251dd7d64c78923c4d"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/record-tamper.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/record-tamper.stdout.log",
+      "bytes": 159,
+      "sha256": "23b69be09213d9cf385aa71e81daf747205c6fdec8a5597727f0eb5e6cad0926"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/summary-capture.json",
+      "bytes": 487,
+      "sha256": "e86260cab94428d523fc064a5314eae0f7af76b79398977ff9a11e0a65c422ce"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/evidence/summary-screen.jpg",
+      "bytes": 125412,
+      "sha256": "a185e45db9f850015bf19e66d73dbe512d489b2a6afb9e7153d072ab3c9de4b7"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/fixtures/single-png.html",
+      "bytes": 242,
+      "sha256": "fb72d82fe6da2fa46ca99c8035e558981438395bf5e693d7cbd945b98a3f6639"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/fixtures/single-webp.html",
+      "bytes": 264,
+      "sha256": "b51028735b93255038dd83b55fe8227eac32dfc66e8999eab85c935e74a339e9"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/image-check.json",
+      "bytes": 2032,
+      "sha256": "930ed09d1b02ccf24b31dc5b57b6ffc4bdaef556bbf488541429914818fc6132"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/matrix.json",
+      "bytes": 636,
+      "sha256": "ecb2978098d87925d3af2cbfabc2ca4a684039b7c58027d45603825ba0b3e604"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/prepare.cjs",
+      "bytes": 2846,
+      "sha256": "04fe10517842104dae42dda3b09cfca1939bb0be9acc24fdec63865a2133c0f2"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/source-manifest.json",
+      "bytes": 145699,
+      "sha256": "e76792878e9f254fb7a0cec96afaa6b3265eb23c774f4409702504198706674c"
+    },
+    {
+      "file": "docs/history/decode-comparison-20261014/summary.html",
+      "bytes": 1629,
+      "sha256": "124568c9a42d93593a4a67237867a8a5a11cc71a7d3c11664ff02b7e80d93bb3"
+    },
+    {
+      "file": "docs/ADOPTION_GUIDE.md",
+      "bytes": 17988,
+      "sha256": "16d79bbda1f3102e56d1185621770b6a154dc2fa1e2507679c4ccde77a62e4a8"
+    }
+  ]
+}

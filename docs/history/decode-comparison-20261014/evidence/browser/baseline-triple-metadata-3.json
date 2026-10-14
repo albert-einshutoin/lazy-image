@@ -1,0 +1,142 @@
+{
+  "case": "triple-metadata",
+  "trial": 3,
+  "url": "http://127.0.0.1:8877/quality-single/metadata-1/index.html?trial=3",
+  "browserZoom": {
+    "percent": 100,
+    "method": "Cmd+0 on owned tab; observed DPR1 and visualViewport.scale1"
+  },
+  "observedAt": "2026-10-14T05:09:53.469Z",
+  "qa": {
+    "url": "http://127.0.0.1:8877/quality-single/metadata-1/index.html?trial=3",
+    "viewport": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 1
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "browserVersion": {
+      "brands": [
+        {
+          "brand": "Chromium",
+          "version": "154"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99"
+        }
+      ],
+      "fullVersionList": [
+        {
+          "brand": "Chromium",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99.0.0.0"
+        }
+      ],
+      "mobile": false,
+      "platform": "macOS"
+    },
+    "decodeError": null,
+    "images": [
+      {
+        "id": "metadata-1 Original",
+        "currentSrc": "http://127.0.0.1:8877/quality-single/metadata-1/metadata-1.png",
+        "src": "metadata-1.png",
+        "srcset": null,
+        "sizes": "",
+        "complete": true,
+        "naturalWidth": 240,
+        "naturalHeight": 320,
+        "rect": {
+          "width": 240,
+          "height": 320
+        },
+        "placeholder": "none"
+      },
+      {
+        "id": "metadata-1 A",
+        "currentSrc": "http://127.0.0.1:8877/quality-single/metadata-1/A.webp",
+        "src": "A.webp",
+        "srcset": null,
+        "sizes": "",
+        "complete": true,
+        "naturalWidth": 240,
+        "naturalHeight": 320,
+        "rect": {
+          "width": 240,
+          "height": 320
+        },
+        "placeholder": "none"
+      },
+      {
+        "id": "metadata-1 B",
+        "currentSrc": "http://127.0.0.1:8877/quality-single/metadata-1/B.webp",
+        "src": "B.webp",
+        "srcset": null,
+        "sizes": "",
+        "complete": true,
+        "naturalWidth": 240,
+        "naturalHeight": 320,
+        "rect": {
+          "width": 240,
+          "height": 320
+        },
+        "placeholder": "none"
+      }
+    ],
+    "resources": [
+      {
+        "name": "http://127.0.0.1:8877/quality-single/metadata-1/metadata-1.png",
+        "type": "img",
+        "transferSize": 0,
+        "encodedBodySize": 19049,
+        "decodedBodySize": 19049,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8877/quality-single/metadata-1/A.webp",
+        "type": "img",
+        "transferSize": 0,
+        "encodedBodySize": 3062,
+        "decodedBodySize": 3062,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8877/quality-single/metadata-1/B.webp",
+        "type": "img",
+        "transferSize": 0,
+        "encodedBodySize": 3062,
+        "decodedBodySize": 3062,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8877/quality-single/metadata-1/qa.js",
+        "type": "script",
+        "transferSize": 0,
+        "encodedBodySize": 1257,
+        "decodedBodySize": 1257,
+        "responseStatus": 200
+      }
+    ]
+  },
+  "live": {
+    "dpr": 1,
+    "height": 1000,
+    "width": 1440
+  },
+  "pending": false,
+  "htmlSha256": "30d09b8cac6ea60ebbda6d88900f311b28f6cd8792558873448e67d7e7b7713f",
+  "qaSha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df",
+  "collectorSha256": "cc6ccd820382ed69ce9602a8c386ba55d10cde7da759785d34b7e7b36d6be2bb"
+}
