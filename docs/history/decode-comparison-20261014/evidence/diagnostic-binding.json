@@ -1,0 +1,46 @@
+{
+  "evaluationCommit": "e1bfcf508fc3adab080dfe6049c168f9da23ce95",
+  "collectorSha256": "32d39ff2f523ea15666e7baea9a4d2de407d4b1b128db4030a5a9e9d06e06b6f",
+  "files": [
+    {
+      "file": "broken.png",
+      "bytes": 64,
+      "sha256": "12b0c79e5a16d84808d9e371251eea11f42e88ebe24efbbac3cf599b97a30abc"
+    },
+    {
+      "file": "control-broken.html",
+      "bytes": 621,
+      "sha256": "9f5414bebdad3f3e7c62d7c120c29043dd8abe8a6a1d09d1b7bcae0437fffa7c"
+    },
+    {
+      "file": "control-invalid.html",
+      "bytes": 625,
+      "sha256": "d1a063499eef17974dac2992c154181077961a42d59f452ad086a351cb2c3963"
+    },
+    {
+      "file": "control-missing.html",
+      "bytes": 632,
+      "sha256": "4239dd22ffcae8fe7adbf82421340971c0637a50c84c6b83bff502c848a3e74e"
+    },
+    {
+      "file": "diagnose.js",
+      "bytes": 4589,
+      "sha256": "c9df4470f735f70d73d0f34be62fad345242b5eb1dd299ae3a395317042c5a0d"
+    },
+    {
+      "file": "diagnostic-quality-fresh.html",
+      "bytes": 5420,
+      "sha256": "3bb8d41ba4e459a7c1fe356e3799ee3809f10709d92c64461056acce0d807cd0"
+    },
+    {
+      "file": "diagnostic-quality.html",
+      "bytes": 5252,
+      "sha256": "ac6dba8f7c64f0406b6b27aa23145c683c6882b794e29d06c33a5bd29ed58a88"
+    },
+    {
+      "file": "invalid.png",
+      "bytes": 36,
+      "sha256": "26134c43b39b48d0713cfe8d0c324e7cda2b7e16186ea7b46056bfe4821e9fd0"
+    }
+  ]
+}

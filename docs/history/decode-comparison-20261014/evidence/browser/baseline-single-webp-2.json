@@ -1,0 +1,96 @@
+{
+  "case": "single-webp",
+  "trial": 2,
+  "url": "http://127.0.0.1:8877/single-webp.html?trial=2",
+  "browserZoom": {
+    "percent": 100,
+    "method": "Cmd+0 on owned tab; observed DPR1 and visualViewport.scale1"
+  },
+  "observedAt": "2026-10-14T05:09:52.529Z",
+  "qa": {
+    "url": "http://127.0.0.1:8877/single-webp.html?trial=2",
+    "viewport": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 1
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "browserVersion": {
+      "brands": [
+        {
+          "brand": "Chromium",
+          "version": "154"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99"
+        }
+      ],
+      "fullVersionList": [
+        {
+          "brand": "Chromium",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99.0.0.0"
+        }
+      ],
+      "mobile": false,
+      "platform": "macOS"
+    },
+    "decodeError": null,
+    "images": [
+      {
+        "id": "single-webp",
+        "currentSrc": "http://127.0.0.1:8877/desktop-A/images/metadata-1/image-240.webp",
+        "src": "desktop-A/images/metadata-1/image-240.webp",
+        "srcset": null,
+        "sizes": "",
+        "complete": true,
+        "naturalWidth": 240,
+        "naturalHeight": 320,
+        "rect": {
+          "width": 240,
+          "height": 320
+        },
+        "placeholder": "none"
+      }
+    ],
+    "resources": [
+      {
+        "name": "http://127.0.0.1:8877/desktop-A/images/metadata-1/image-240.webp",
+        "type": "img",
+        "transferSize": 0,
+        "encodedBodySize": 3062,
+        "decodedBodySize": 3062,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8877/qa.js",
+        "type": "script",
+        "transferSize": 0,
+        "encodedBodySize": 1257,
+        "decodedBodySize": 1257,
+        "responseStatus": 200
+      }
+    ]
+  },
+  "live": {
+    "dpr": 1,
+    "height": 1000,
+    "width": 1440
+  },
+  "pending": false,
+  "htmlSha256": "b51028735b93255038dd83b55fe8227eac32dfc66e8999eab85c935e74a339e9",
+  "qaSha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df",
+  "collectorSha256": "cc6ccd820382ed69ce9602a8c386ba55d10cde7da759785d34b7e7b36d6be2bb"
+}

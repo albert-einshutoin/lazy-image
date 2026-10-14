@@ -218,6 +218,15 @@ Adoption is conditional on checking real inputs and fine-line diagrams at their
 actual display sizes. This is a laboratory reproduction, not an independent user's
 adoption or a processing-time guarantee.
 
+If a comparison page reports `EncodingError`, inspect each image's decode result,
+selected URL, HTTP response and body identity. `complete=true` and HTTP 200 alone
+do not prove successful decoding. Register load/error observers before image
+requests, and keep timeout or source changes separate from success. The
+[decode investigation](./history/decode-comparison-20261014/RESULTS.md) could not
+reproduce the earlier two failures with the stored bytes and pages; their
+historical causes remain unknown. Its independent fetch/Blob checks do not prove
+what the original failed image requests received.
+
 The [existing build-time batch example](../examples/build-time-optimize.mjs)
 optimizes several files using `ImageEngine` and reports metrics; it does not
 provide the compiler manifest-to-page flow demonstrated here.

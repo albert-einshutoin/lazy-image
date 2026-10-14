@@ -1,0 +1,11 @@
+{
+  "scope": "Auxiliary collector validation failure, not image decode failure",
+  "observedError": "Viewport mismatch retained in raw",
+  "cause": "Compared JSON object key order instead of numeric dimensions",
+  "observedViewport": {
+    "width": 1440,
+    "height": 1000,
+    "dpr": 1
+  },
+  "nativeDecodeError": null
+}

@@ -1,0 +1,142 @@
+{
+  "case": "triple-coffee64",
+  "trial": 1,
+  "url": "http://127.0.0.1:8877/quality-single/coffee-64/index.html?trial=1",
+  "browserZoom": {
+    "percent": 100,
+    "method": "Cmd+0 on owned tab; observed DPR1 and visualViewport.scale1"
+  },
+  "observedAt": "2026-10-14T05:09:47.057Z",
+  "qa": {
+    "url": "http://127.0.0.1:8877/quality-single/coffee-64/index.html?trial=1",
+    "viewport": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 1
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "browserVersion": {
+      "brands": [
+        {
+          "brand": "Chromium",
+          "version": "154"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99"
+        }
+      ],
+      "fullVersionList": [
+        {
+          "brand": "Chromium",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Google Chrome",
+          "version": "154.0.8037.98"
+        },
+        {
+          "brand": "Not A(Brand",
+          "version": "99.0.0.0"
+        }
+      ],
+      "mobile": false,
+      "platform": "macOS"
+    },
+    "decodeError": null,
+    "images": [
+      {
+        "id": "coffee-64 Original",
+        "currentSrc": "http://127.0.0.1:8877/quality-single/coffee-64/coffee-64.png",
+        "src": "coffee-64.png",
+        "srcset": null,
+        "sizes": "",
+        "complete": true,
+        "naturalWidth": 64,
+        "naturalHeight": 43,
+        "rect": {
+          "width": 64,
+          "height": 43
+        },
+        "placeholder": "none"
+      },
+      {
+        "id": "coffee-64 A",
+        "currentSrc": "http://127.0.0.1:8877/quality-single/coffee-64/A.webp",
+        "src": "A.webp",
+        "srcset": null,
+        "sizes": "",
+        "complete": true,
+        "naturalWidth": 64,
+        "naturalHeight": 43,
+        "rect": {
+          "width": 64,
+          "height": 43
+        },
+        "placeholder": "none"
+      },
+      {
+        "id": "coffee-64 B",
+        "currentSrc": "http://127.0.0.1:8877/quality-single/coffee-64/B.webp",
+        "src": "B.webp",
+        "srcset": null,
+        "sizes": "",
+        "complete": true,
+        "naturalWidth": 64,
+        "naturalHeight": 43,
+        "rect": {
+          "width": 64,
+          "height": 43
+        },
+        "placeholder": "none"
+      }
+    ],
+    "resources": [
+      {
+        "name": "http://127.0.0.1:8877/quality-single/coffee-64/coffee-64.png",
+        "type": "img",
+        "transferSize": 6593,
+        "encodedBodySize": 6293,
+        "decodedBodySize": 6293,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8877/quality-single/coffee-64/B.webp",
+        "type": "img",
+        "transferSize": 1416,
+        "encodedBodySize": 1116,
+        "decodedBodySize": 1116,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8877/quality-single/coffee-64/A.webp",
+        "type": "img",
+        "transferSize": 1416,
+        "encodedBodySize": 1116,
+        "decodedBodySize": 1116,
+        "responseStatus": 200
+      },
+      {
+        "name": "http://127.0.0.1:8877/quality-single/coffee-64/qa.js",
+        "type": "script",
+        "transferSize": 1557,
+        "encodedBodySize": 1257,
+        "decodedBodySize": 1257,
+        "responseStatus": 200
+      }
+    ]
+  },
+  "live": {
+    "dpr": 1,
+    "height": 1000,
+    "width": 1440
+  },
+  "pending": false,
+  "htmlSha256": "41b563767f69cfd51366900902fc24554b44cdcabaaeae518a13f7bb5e5817b0",
+  "qaSha256": "e482e1fb4b6e384c416802b1c67faa9fa1e2bce4e6321abbfc6823657e6d34df",
+  "collectorSha256": "cc6ccd820382ed69ce9602a8c386ba55d10cde7da759785d34b7e7b36d6be2bb"
+}

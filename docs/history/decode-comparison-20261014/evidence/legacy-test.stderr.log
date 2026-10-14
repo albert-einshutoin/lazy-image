@@ -1,0 +1,33 @@
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  [
+    [
+      'good',
++     undefined
+-     'success'
+    ],
+    [
+      'broken-1',
++     undefined
+-     'error'
+    ],
+    [
+      'broken-2',
++     undefined
+-     'error'
+    ],
+    [
+      'pending',
++     undefined
+-     'timeout'
+    ]
+  ]
+
+    at <REPOSITORY>/docs/history/decode-comparison-20261014/check-observer.test.cjs:26:10 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [Array],
+  expected: [Array],
+  operator: 'deepStrictEqual'
+}

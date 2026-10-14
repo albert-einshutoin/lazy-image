@@ -1,0 +1,38 @@
+{
+  "scope": "Observed commands and statuses; no compiler/build/benchmark executed",
+  "commands": [
+    {
+      "command": "node check-observer.test.cjs <old-qa.js>",
+      "exitCode": 1,
+      "meaning": "Expected assertion failure: aggregate-only observer cannot report individual statuses"
+    },
+    {
+      "command": "node check-observer.test.cjs",
+      "exitCode": 0,
+      "checks": 5
+    },
+    {
+      "command": "node check-prepare.test.cjs",
+      "exitCode": 0,
+      "checks": 3
+    },
+    {
+      "command": "node prepare.cjs <repository> <new-preview>",
+      "exitCode": 0
+    },
+    {
+      "command": "node check-records.cjs <repository> <history>",
+      "exitCode": 0
+    },
+    {
+      "command": "node with existing sharp: full raw decode of two stored target files",
+      "exitCode": 0,
+      "method": "sharp(file).raw().toBuffer({resolveWithObject:true})"
+    },
+    {
+      "command": "node check-records.test.cjs",
+      "exitCode": 0,
+      "meaning": "Valid records pass; five semantically altered copies fail even after their disposable ledger hashes are updated"
+    }
+  ]
+}
