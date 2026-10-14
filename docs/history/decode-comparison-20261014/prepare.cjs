@@ -20,12 +20,14 @@ for (const name of ['quality', 'quality-fresh']) {
 }
 // Controlled truncation is a negative fixture, never a replacement for saved bytes.
 const broken = png.subarray(0, 64); fs.writeFileSync(path.join(destination, 'broken.png'), broken, { flag: 'wx' });
-for (const [name, bad] of [['broken', 'broken.png'], ['missing', 'absent-control.png']]) {
+const invalid = Buffer.from('This is intentionally not an image.\n');
+fs.writeFileSync(path.join(destination, 'invalid.png'), invalid, { flag: 'wx' });
+for (const [name, bad, expected] of [['broken', 'broken.png', broken], ['missing', 'absent-control.png', broken], ['invalid', 'invalid.png', invalid]]) {
   const imgs = [
     `<img alt="metadata-1 A" src="desktop-A/images/metadata-1/image-240.webp" data-probe-sha="${hash(webp)}">`,
     `<img alt="coffee-64 Original" src="reference/coffee-64.png" data-probe-sha="${hash(png)}">`,
-    `<img alt="control-${name}" src="${bad}" data-probe-sha="${hash(broken)}">`,
+    `<img alt="control-${name}" src="${bad}" data-probe-sha="${hash(expected)}">`,
   ].join('\n');
   fs.writeFileSync(path.join(destination, `control-${name}.html`), `<!doctype html><html><meta charset="utf-8"><title>${name} negative control</title><h1>${name} negative control</h1>${imgs}<pre id="decode-observation">loading</pre><script src="diagnose.js"></script></html>`, { flag: 'wx' });
 }
-console.log(JSON.stringify({ scope: 'Stored bytes copied; compiler not executed', diagnosticPages: 2, controlPages: 2 }));
+console.log(JSON.stringify({ scope: 'Stored bytes copied; compiler not executed', diagnosticPages: 2, controlPages: 3 }));
