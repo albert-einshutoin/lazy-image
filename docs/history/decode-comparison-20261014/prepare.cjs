@@ -14,7 +14,9 @@ for (const name of ['quality', 'quality-fresh']) {
   const html = fs.readFileSync(path.join(old, name + '.html'), 'utf8')
     .replace('alt="metadata-1 A"', `alt="metadata-1 A" data-probe-sha="${hash(webp)}"`)
     .replace('alt="coffee-64 Original"', `alt="coffee-64 Original" data-probe-sha="${hash(png)}"`)
-    .replace('<script src="qa.js"></script>', '<script src="diagnose.js"></script>')
+    .replace('<script src="qa.js"></script>', '')
+    // Register load/error listeners before the parser starts image requests.
+    .replace('<title>', '<script src="diagnose.js"></script><title>')
     .replace('id="qa-observation"', 'id="decode-observation"');
   fs.writeFileSync(path.join(destination, 'diagnostic-' + name + '.html'), html, { flag: 'wx' });
 }
@@ -28,6 +30,6 @@ for (const [name, bad, expected] of [['broken', 'broken.png', broken], ['missing
     `<img alt="coffee-64 Original" src="reference/coffee-64.png" data-probe-sha="${hash(png)}">`,
     `<img alt="control-${name}" src="${bad}" data-probe-sha="${hash(expected)}">`,
   ].join('\n');
-  fs.writeFileSync(path.join(destination, `control-${name}.html`), `<!doctype html><html><meta charset="utf-8"><title>${name} negative control</title><h1>${name} negative control</h1>${imgs}<pre id="decode-observation">loading</pre><script src="diagnose.js"></script></html>`, { flag: 'wx' });
+  fs.writeFileSync(path.join(destination, `control-${name}.html`), `<!doctype html><html><meta charset="utf-8"><script src="diagnose.js"></script><title>${name} negative control</title><h1>${name} negative control</h1>${imgs}<pre id="decode-observation">loading</pre></html>`, { flag: 'wx' });
 }
 console.log(JSON.stringify({ scope: 'Stored bytes copied; compiler not executed', diagnosticPages: 2, controlPages: 3 }));
