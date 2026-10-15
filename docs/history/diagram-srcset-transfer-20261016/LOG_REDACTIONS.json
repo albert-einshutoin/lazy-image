@@ -1,0 +1,158 @@
+{
+  "scope": "New #908 preparation only; test logs and explicitly labelled infrastructure summary, not browser measurement",
+  "files": [
+    {
+      "file": "evidence/preparation/setup-before.stdout.log",
+      "originalFile": "setup-before.stdout.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicBytes": 0,
+      "publicSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/setup-before.stderr.log",
+      "originalFile": "setup-before.stderr.log",
+      "originalBytes": 1710,
+      "originalSha256": "2460ef79b1fef262f1e4052b72b900950115464ff2e8fb056e33d9d81a9d725d",
+      "publicBytes": 1635,
+      "publicSha256": "5cf0548f64b3d9c3ef47d3ffce177295526d87c862b3922d87570f45e0203b94",
+      "redacted": true
+    },
+    {
+      "file": "evidence/preparation/setup-after.stdout.log",
+      "originalFile": "setup-after.stdout.log",
+      "originalBytes": 253,
+      "originalSha256": "182ce2d3dd9a82a7ba2fc7fd749d3efb4ad93b18b78e5a4af54e98a180704d06",
+      "publicBytes": 253,
+      "publicSha256": "182ce2d3dd9a82a7ba2fc7fd749d3efb4ad93b18b78e5a4af54e98a180704d06",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/setup-after.stderr.log",
+      "originalFile": "setup-after.stderr.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicBytes": 0,
+      "publicSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/observe-test.stdout.log",
+      "originalFile": "observe-test.stdout.log",
+      "originalBytes": 172,
+      "originalSha256": "07a047edad30a5684bd77209d648076bcd5add5acdf3f69abfce6e5bba6f5d10",
+      "publicBytes": 172,
+      "publicSha256": "07a047edad30a5684bd77209d648076bcd5add5acdf3f69abfce6e5bba6f5d10",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/observe-test.stderr.log",
+      "originalFile": "observe-test.stderr.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicBytes": 0,
+      "publicSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/observe-scope-before.stdout.log",
+      "originalFile": "observe-scope-before.stdout.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicBytes": 0,
+      "publicSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/observe-scope-before.stderr.log",
+      "originalFile": "observe-scope-before.stderr.log",
+      "originalBytes": 181,
+      "originalSha256": "ad0a1b18ceaab30c582472d4e5691dd39b1272c494d41449876f3b998100a043",
+      "publicBytes": 156,
+      "publicSha256": "9ba77b5dca56ad42b43208c1b2230cbc545e1efb17a9f0fd051a47bf54b68e93",
+      "redacted": true
+    },
+    {
+      "file": "evidence/preparation/observe-scope-after.stdout.log",
+      "originalFile": "observe-scope-after.stdout.log",
+      "originalBytes": 231,
+      "originalSha256": "bcfb0438ae516a95306f8739c1d41d01da037652e1343dd54df3adc4c82dcae6",
+      "publicBytes": 231,
+      "publicSha256": "bcfb0438ae516a95306f8739c1d41d01da037652e1343dd54df3adc4c82dcae6",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/observe-scope-after.stderr.log",
+      "originalFile": "observe-scope-after.stderr.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicBytes": 0,
+      "publicSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/validation-v1-setup.stdout.log",
+      "originalFile": "validation-v1-setup.stdout.log",
+      "originalBytes": 253,
+      "originalSha256": "182ce2d3dd9a82a7ba2fc7fd749d3efb4ad93b18b78e5a4af54e98a180704d06",
+      "publicBytes": 253,
+      "publicSha256": "182ce2d3dd9a82a7ba2fc7fd749d3efb4ad93b18b78e5a4af54e98a180704d06",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/validation-v1-setup.stderr.log",
+      "originalFile": "validation-v1-setup.stderr.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicBytes": 0,
+      "publicSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/validation-v1-observer.stdout.log",
+      "originalFile": "validation-v1-observer.stdout.log",
+      "originalBytes": 231,
+      "originalSha256": "bcfb0438ae516a95306f8739c1d41d01da037652e1343dd54df3adc4c82dcae6",
+      "publicBytes": 231,
+      "publicSha256": "bcfb0438ae516a95306f8739c1d41d01da037652e1343dd54df3adc4c82dcae6",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/validation-v1-observer.stderr.log",
+      "originalFile": "validation-v1-observer.stderr.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "publicBytes": 0,
+      "publicSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/commands.json",
+      "originalFile": "validation-v1-commands.json",
+      "originalBytes": 3853,
+      "originalSha256": "79360c509a0b3b12da46420e51dc50e926ccc0bf405cb99c8e02180716a4b15c",
+      "publicBytes": 3853,
+      "publicSha256": "79360c509a0b3b12da46420e51dc50e926ccc0bf405cb99c8e02180716a4b15c",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/browser-error-after-preparation.json",
+      "originalFile": "browser-error-after-preparation.json",
+      "originalBytes": 507,
+      "originalSha256": "398ab85808f5b63c966311a0f94addd2e8c5b7437c4abc0da6e691120d3d2a8e",
+      "publicBytes": 507,
+      "publicSha256": "398ab85808f5b63c966311a0f94addd2e8c5b7437c4abc0da6e691120d3d2a8e",
+      "redacted": false
+    },
+    {
+      "file": "evidence/preparation/environment-v2.json",
+      "originalFile": "environment-v2.json",
+      "originalBytes": 239,
+      "originalSha256": "a43349b1f5d32f7f5bc5b78521cfb131631c72b0e4f367bd44001f804ed4d51d",
+      "publicBytes": 239,
+      "publicSha256": "a43349b1f5d32f7f5bc5b78521cfb131631c72b0e4f367bd44001f804ed4d51d",
+      "redacted": false
+    }
+  ]
+}
