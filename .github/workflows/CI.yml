@@ -86,7 +86,7 @@ jobs:
         uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           cache-on-failure: true
           shared-key: build-${{ matrix.settings.target }}
@@ -179,7 +179,7 @@ jobs:
         uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           cache-on-failure: true
 
@@ -220,7 +220,7 @@ jobs:
         uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           cache-on-failure: true
 
@@ -475,7 +475,7 @@ jobs:
         uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           cache-on-failure: true
 
@@ -538,7 +538,7 @@ jobs:
 
       # Cache Cargo dependencies to speed up builds
       - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
         with:
           prefix-key: "v5-asan"
           cache-on-failure: true
