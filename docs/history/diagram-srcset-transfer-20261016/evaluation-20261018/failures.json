@@ -1,0 +1,78 @@
+{
+  "original": "<LOCAL_PHASE>/tool-failures-final-original.json",
+  "originalBytes": 6809,
+  "originalSha256": "a731b4d5152853442b0f5e59f7a5742d00362b83f2d5dfc1216fb650be45a4b8",
+  "transformation": "Keep timestamp, call ID and error output only; remove arguments and replace local app paths. No private AX snapshots/screenshots.",
+  "failures": [
+    {
+      "recordedAt": "2026-10-18T12:53:32.944Z",
+      "callId": "call_ea7419eb02434f3094440caf64db11ad",
+      "diagnostic": "Wall time: 0.0423 seconds\nOutput:\nTypeError: Cannot read properties of undefined (reading 'userAgent')\n    at __playwrightEvaluate (<anonymous>:2686:238)\n    at <anonymous>:2687:14\n    at runUserScript (<anonymous>:2688:10)\n    at <anonymous>:2692:10\n    at <anonymous>:2693:3"
+    },
+    {
+      "recordedAt": "2026-10-18T12:53:46.224Z",
+      "callId": "call_e0fef6c57874476c90fb11089b7965cc",
+      "diagnostic": "Wall time: 0.0408 seconds\nOutput:\nAmbiguous app identifier 'com.google.Chrome'. Multiple apps share this bundle identifier: <CHROME_APP>, <MOUNTED_CHROME_APP>. Use an app name or full app path instead."
+    },
+    {
+      "recordedAt": "2026-10-18T12:54:49.539Z",
+      "callId": "call_8ffc3b86ee3d4517bed230b9bee2310b",
+      "diagnostic": "Wall time: 30.0294 seconds\nOutput:\njs execution timed out; kernel reset, rerun your request"
+    },
+    {
+      "recordedAt": "2026-10-18T12:56:37.011Z",
+      "callId": "call_55f6196853dc448ea037555f2bdbd6a6",
+      "diagnostic": "Wall time: 0.0333 seconds\nOutput:\nComputer Use server error -10005: windowNotFoundAtPosition((280.0, 192.0))"
+    },
+    {
+      "recordedAt": "2026-10-18T12:57:00.769Z",
+      "callId": "call_0573dd33176e4412bde2df0d6d81f03b",
+      "diagnostic": "Wall time: 0.0201 seconds\nOutput:\nComputer Use server error -10005: Could not find the requested text to select in the element"
+    },
+    {
+      "recordedAt": "2026-10-18T12:58:03.257Z",
+      "callId": "call_dfeffd2ad8514749b5fbfd308527a947",
+      "diagnostic": "Wall time: 0.0106 seconds\nOutput:\nComputer Use server error -10005: windowNotFoundAtPosition((303.0, 192.0))"
+    },
+    {
+      "recordedAt": "2026-10-18T12:59:19.862Z",
+      "callId": "call_871e7a7b6f7d43ddbedca11fe48e426f",
+      "diagnostic": "Wall time: 0.0402 seconds\nOutput:\nComputer Use server error -10005: windowNotFoundAtPosition((385.0, 222.0))"
+    },
+    {
+      "recordedAt": "2026-10-18T13:01:15.125Z",
+      "callId": "call_8126485de8194614845257439d37b9ab",
+      "diagnostic": "Wall time: 10.0338 seconds\nOutput:\njs execution timed out; kernel reset, rerun your request"
+    },
+    {
+      "recordedAt": "2026-10-18T13:05:24.742Z",
+      "callId": "call_ff9de4943a74478c8fc9498f195cfa03",
+      "diagnostic": "Wall time: 0.5053 seconds\nOutput:\nComputer Use server error -10005: windowNotFoundAtPosition((1369.0, 500.0))"
+    },
+    {
+      "recordedAt": "2026-10-18T13:06:33.700Z",
+      "callId": "call_882362b8f17c432485119f97f8c37908",
+      "diagnostic": "Wall time: 2.0337 seconds\nOutput:\nComputer Use server error -10005: timeoutReached"
+    },
+    {
+      "recordedAt": "2026-10-18T13:17:41.396Z",
+      "callId": "call_8cfbee120e024657889440d55dff517d",
+      "diagnostic": "Wall time: 0.6188 seconds\nOutput:\nBrowser Use rejected this action due to browser security policy. Reason: The browser URL policy blocks this action. Browser use could not acquire authority to trigger network egress. The URL policy gate did not grant access. The requested URL protocol is not allowed. Allowed protocols: \"http:\", \"https:\". The agent must not attempt to achieve the same outcome via workaround, indirect execution, raw CDP or browser commands, alternate browser surfaces, or policy circumvention. Proceed only with a materially safer alternative that does not require this blocked browser action; if none exists, stop and request user input."
+    }
+  ],
+  "additionalSetupFailures": [
+    {
+      "kind": "invalid mobile viewport",
+      "evidence": "initial/invalid-mobile-pilot.json",
+      "outcome": "excluded; unknown empty-natural-dimensions retained; no codec cause inferred"
+    },
+    {
+      "kind": "foreground window competition",
+      "outcome": "paused until user explicitly stopped other Chrome UI work; one wrong-window DevTools opening was closed immediately; measured tab then selected and verified before setup"
+    },
+    {
+      "kind": "chrome://version URL policy rejection",
+      "outcome": "not bypassed; same-session pre-emulation UAData supplies full browser version; emulated blank hints remain unknown"
+    }
+  ]
+}

@@ -1,0 +1,503 @@
+{
+  "issue": 908,
+  "executionRevision": "027b0cd9cd5a004161dc83206cdb3d14895f14d4",
+  "baseRevision": "795de3966ce120830a23309fa37a15910aa9ebc9",
+  "measurementCodeChanged": false,
+  "compilerRendererSdkExecuted": false,
+  "originalFilesProtected": 1171,
+  "originalBytesProtected": 52992821,
+  "catalogSha256": "4f91301496c1decee70a2eebd8eac32da360ea6353442c987a8493289309caae",
+  "sourceHashes": {
+    "docs/history/diagram-srcset-transfer-20261016/prepare.cjs": "08a89963db573da64608667d03ac058014198dd773c17b0fcc9f1e63c61630ad",
+    "docs/history/diagram-srcset-transfer-20261016/server.cjs": "910410113f59116e35d4f9c940f19971cd37a18115a1bbadd536b9b3fd21449c",
+    "docs/history/diagram-srcset-transfer-20261016/observe.js": "4b0454d7c465e7a5c2fa50db2549ca033a81eba8e3412cf4224578cef0b8aa77",
+    "docs/history/diagram-srcset-transfer-20261016/check-setup.cjs": "f4154b894e485599952b80c19652bfdfa0fced8211bdfe5555aa698ed7350513",
+    "docs/history/diagram-srcset-transfer-20261016/check-observe.cjs": "eddacd6128ca75aaae209e1809473b8d3c079c46f69c80d3ab9a53d495a191ec",
+    "docs/history/diagram-srcset-transfer-20261016/source-manifest.json": "ad7deea73aca30d563be29f20146bbfbe9c68d4cf48a8c50d158209e03f80db6",
+    "docs/history/decode-comparison-20261014/diagnose.js": "c9df4470f735f70d73d0f34be62fad345242b5eb1dd299ae3a395317042c5a0d"
+  },
+  "assetDirectory": "docs/history/adoption-diagram-1.5.0-20261014/evidence/runs/B1",
+  "copyMap": [
+    {
+      "file": "raw/001.json",
+      "bytes": 6671,
+      "originalSha256": "6dde3f2b42512ff0b4f3f106ed499a9dd1c72c19b59c3139bbda05860a95a3e4",
+      "publicSha256": "6dde3f2b42512ff0b4f3f106ed499a9dd1c72c19b59c3139bbda05860a95a3e4",
+      "original": "<LOCAL_PHASE>/attempt2/batches/001.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/002.json",
+      "bytes": 7254,
+      "originalSha256": "8d68c0283c7aed52f2090e7bea9e20d1cac52888dd3a97adb398f1b987c50baf",
+      "publicSha256": "8d68c0283c7aed52f2090e7bea9e20d1cac52888dd3a97adb398f1b987c50baf",
+      "original": "<LOCAL_PHASE>/attempt2/batches/002.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/003.json",
+      "bytes": 6688,
+      "originalSha256": "15fd3516f15ae939464618f76db35e3ffff330667a1bb26aba5f393ea9d38905",
+      "publicSha256": "15fd3516f15ae939464618f76db35e3ffff330667a1bb26aba5f393ea9d38905",
+      "original": "<LOCAL_PHASE>/attempt2/batches/003.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/004.json",
+      "bytes": 5989,
+      "originalSha256": "284c28e4a75c33634d15a38a4d9fa1d81b73496ea7ece524edd79b381e606804",
+      "publicSha256": "284c28e4a75c33634d15a38a4d9fa1d81b73496ea7ece524edd79b381e606804",
+      "original": "<LOCAL_PHASE>/attempt2/batches/004.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/005.json",
+      "bytes": 9455,
+      "originalSha256": "f73a34f627bb1dac73ab096c543602614c0c76c54536201a8215b34a7d7cf3c8",
+      "publicSha256": "f73a34f627bb1dac73ab096c543602614c0c76c54536201a8215b34a7d7cf3c8",
+      "original": "<LOCAL_PHASE>/attempt2/batches/005.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/006.json",
+      "bytes": 9459,
+      "originalSha256": "dd3e8ae3db42184d1e0e1fac33bd0051e3815e5034ed608049087d55a7b971f8",
+      "publicSha256": "dd3e8ae3db42184d1e0e1fac33bd0051e3815e5034ed608049087d55a7b971f8",
+      "original": "<LOCAL_PHASE>/attempt2/batches/006.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/007.json",
+      "bytes": 9549,
+      "originalSha256": "b6c6afd99982ea68f14968b382e7dd9c64e021435e184448e1295a757fd3913a",
+      "publicSha256": "b6c6afd99982ea68f14968b382e7dd9c64e021435e184448e1295a757fd3913a",
+      "original": "<LOCAL_PHASE>/attempt2/batches/007.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/008.json",
+      "bytes": 4419,
+      "originalSha256": "0412425d6931b608997289a4778994864063561a8ff9f050ce7821e28704f81d",
+      "publicSha256": "0412425d6931b608997289a4778994864063561a8ff9f050ce7821e28704f81d",
+      "original": "<LOCAL_PHASE>/attempt2/batches/008.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/009.json",
+      "bytes": 10163,
+      "originalSha256": "b60e6d95fcb5993a694f17d14a20dc74b3ed721c9b39e13874ba6511e57bf3af",
+      "publicSha256": "b60e6d95fcb5993a694f17d14a20dc74b3ed721c9b39e13874ba6511e57bf3af",
+      "original": "<LOCAL_PHASE>/attempt2/batches/009.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/010.json",
+      "bytes": 10290,
+      "originalSha256": "ae02c62e592452fe55d113919aee4bd7d54e52cc49769b0a529289d4e8fa3d85",
+      "publicSha256": "ae02c62e592452fe55d113919aee4bd7d54e52cc49769b0a529289d4e8fa3d85",
+      "original": "<LOCAL_PHASE>/attempt2/batches/010.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/011.json",
+      "bytes": 5941,
+      "originalSha256": "505b037a79eb3b2234a0845b8df37a03835b0c4a0d4ce3db51f273a2118448c4",
+      "publicSha256": "505b037a79eb3b2234a0845b8df37a03835b0c4a0d4ce3db51f273a2118448c4",
+      "original": "<LOCAL_PHASE>/attempt2/batches/011.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/012.json",
+      "bytes": 9601,
+      "originalSha256": "b78c8364a38158a15f67d518a5e9fca1ed6a450e85120642c8037d777daa151c",
+      "publicSha256": "b78c8364a38158a15f67d518a5e9fca1ed6a450e85120642c8037d777daa151c",
+      "original": "<LOCAL_PHASE>/attempt2/batches/012.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/013.json",
+      "bytes": 9424,
+      "originalSha256": "25eeb6ccc92a2ffc1b271de9cc73e4248850f6575d6a2869338150822a5d1041",
+      "publicSha256": "25eeb6ccc92a2ffc1b271de9cc73e4248850f6575d6a2869338150822a5d1041",
+      "original": "<LOCAL_PHASE>/attempt2/batches/013.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/014.json",
+      "bytes": 9559,
+      "originalSha256": "13bb9fdfb3539d4ae7cc4743d298c80ac4af351b1f45799fdddcd7346bf41032",
+      "publicSha256": "13bb9fdfb3539d4ae7cc4743d298c80ac4af351b1f45799fdddcd7346bf41032",
+      "original": "<LOCAL_PHASE>/attempt2/batches/014.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/015.json",
+      "bytes": 9550,
+      "originalSha256": "c87b77209eea4341aff86ac9914f4b30a05c214d114720b92666e16fd8e76aaa",
+      "publicSha256": "c87b77209eea4341aff86ac9914f4b30a05c214d114720b92666e16fd8e76aaa",
+      "original": "<LOCAL_PHASE>/attempt2/batches/015.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/016.json",
+      "bytes": 9611,
+      "originalSha256": "a3b4aea550a4c00c465e10ff2fc72b439eaf14eda5c3f1d7bc4fc00e4a87ac50",
+      "publicSha256": "a3b4aea550a4c00c465e10ff2fc72b439eaf14eda5c3f1d7bc4fc00e4a87ac50",
+      "original": "<LOCAL_PHASE>/attempt2/batches/016.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/017.json",
+      "bytes": 9595,
+      "originalSha256": "f304a67bf6e6ab04808eddced41203954015bd9a89bdd5c4acb8575aeb228d4f",
+      "publicSha256": "f304a67bf6e6ab04808eddced41203954015bd9a89bdd5c4acb8575aeb228d4f",
+      "original": "<LOCAL_PHASE>/attempt2/batches/017.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/018.json",
+      "bytes": 9561,
+      "originalSha256": "fa2b1b58d61b44126211c96f55cc92f08f0983567acaafd923da1e4f6d8fbd4d",
+      "publicSha256": "fa2b1b58d61b44126211c96f55cc92f08f0983567acaafd923da1e4f6d8fbd4d",
+      "original": "<LOCAL_PHASE>/attempt2/batches/018.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/019.json",
+      "bytes": 9469,
+      "originalSha256": "635591ffbfd9a594b1c38afa5f8a1d8e8a883946b73a465003f906231de659be",
+      "publicSha256": "635591ffbfd9a594b1c38afa5f8a1d8e8a883946b73a465003f906231de659be",
+      "original": "<LOCAL_PHASE>/attempt2/batches/019.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "raw/020.json",
+      "bytes": 9512,
+      "originalSha256": "7b6cd71e5ff8ea3ae1eae3d338df52a69c7f315af7081416546fa0ea6ab5ae93",
+      "publicSha256": "7b6cd71e5ff8ea3ae1eae3d338df52a69c7f315af7081416546fa0ea6ab5ae93",
+      "original": "<LOCAL_PHASE>/attempt2/batches/020.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "catalog.json",
+      "bytes": 99826,
+      "originalSha256": "4f91301496c1decee70a2eebd8eac32da360ea6353442c987a8493289309caae",
+      "publicSha256": "4f91301496c1decee70a2eebd8eac32da360ea6353442c987a8493289309caae",
+      "original": "<LOCAL_PHASE>/attempt2/preview/catalog.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/idle.html",
+      "bytes": 172,
+      "originalSha256": "9339dbaf9e7f46bc458612a1485283ebe970d27604d133c0962e4bf0dcd318a0",
+      "publicSha256": "9339dbaf9e7f46bc458612a1485283ebe970d27604d133c0962e4bf0dcd318a0",
+      "original": "<LOCAL_PHASE>/attempt2/preview/idle.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d1-fixed-cold-1.html",
+      "bytes": 2166,
+      "originalSha256": "c4c9a7c4976e303e93b00964d51189b83c5380bbcf5720c6388edd06623615c0",
+      "publicSha256": "c4c9a7c4976e303e93b00964d51189b83c5380bbcf5720c6388edd06623615c0",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d1-fixed-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d1-fixed-cold-2.html",
+      "bytes": 2166,
+      "originalSha256": "67f567fcac0dbc3c15486739894f49251804bd54494d022f143658abdd6eaa5e",
+      "publicSha256": "67f567fcac0dbc3c15486739894f49251804bd54494d022f143658abdd6eaa5e",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d1-fixed-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d1-fixed-cold-3.html",
+      "bytes": 2166,
+      "originalSha256": "e8b76d233653bd31234bac3dd0d820097c6a56ef32333bb2d49655655dc43cb8",
+      "publicSha256": "e8b76d233653bd31234bac3dd0d820097c6a56ef32333bb2d49655655dc43cb8",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d1-fixed-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d1-responsive-cold-1.html",
+      "bytes": 2510,
+      "originalSha256": "b6a84c61447989f049c641e2183906978c58ec40105a8a74bea9ede11e9b863f",
+      "publicSha256": "b6a84c61447989f049c641e2183906978c58ec40105a8a74bea9ede11e9b863f",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d1-responsive-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d1-responsive-cold-2.html",
+      "bytes": 2510,
+      "originalSha256": "c156fc97a2e08a0deb2e1c2f05b8403f8e36339a047a22f6f533b89f04e22334",
+      "publicSha256": "c156fc97a2e08a0deb2e1c2f05b8403f8e36339a047a22f6f533b89f04e22334",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d1-responsive-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d1-responsive-cold-3.html",
+      "bytes": 2510,
+      "originalSha256": "562dd0814eb6f86a829d91b5fde10b7181cd26cafb60414733c0f37d09688ed9",
+      "publicSha256": "562dd0814eb6f86a829d91b5fde10b7181cd26cafb60414733c0f37d09688ed9",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d1-responsive-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d2-fixed-cold-1.html",
+      "bytes": 2166,
+      "originalSha256": "b0e213a8b56cef9f5fff48f484ba907e87f82d62f5346ec3fc8d6376199b2b38",
+      "publicSha256": "b0e213a8b56cef9f5fff48f484ba907e87f82d62f5346ec3fc8d6376199b2b38",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d2-fixed-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d2-fixed-cold-2.html",
+      "bytes": 2166,
+      "originalSha256": "ca5080b2f9243d627c3b68b8e28beefc6e7ad521c34a50fc47cc0a93b3a5b3e3",
+      "publicSha256": "ca5080b2f9243d627c3b68b8e28beefc6e7ad521c34a50fc47cc0a93b3a5b3e3",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d2-fixed-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d2-fixed-cold-3.html",
+      "bytes": 2166,
+      "originalSha256": "fed97dcdb4e410d03189773c926e052458d91e1ce2a7f95fe998ff4f6d21ef33",
+      "publicSha256": "fed97dcdb4e410d03189773c926e052458d91e1ce2a7f95fe998ff4f6d21ef33",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d2-fixed-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d2-responsive-cold-1.html",
+      "bytes": 2510,
+      "originalSha256": "8721521114e1708158d3490e89c84b6f18a9326d94e5c6e363ff98141afe9b4b",
+      "publicSha256": "8721521114e1708158d3490e89c84b6f18a9326d94e5c6e363ff98141afe9b4b",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d2-responsive-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d2-responsive-cold-2.html",
+      "bytes": 2510,
+      "originalSha256": "5837003a16939c4a064c85a61b91103ebc686a51889bbf133c832976cb6e2454",
+      "publicSha256": "5837003a16939c4a064c85a61b91103ebc686a51889bbf133c832976cb6e2454",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d2-responsive-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-d2-responsive-cold-3.html",
+      "bytes": 2510,
+      "originalSha256": "37516f35e4983a6b994fe0a9ce93ede251b3abc4ae660966537290c3bcd3925a",
+      "publicSha256": "37516f35e4983a6b994fe0a9ce93ede251b3abc4ae660966537290c3bcd3925a",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-d2-responsive-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m1-fixed-cold-1.html",
+      "bytes": 2164,
+      "originalSha256": "633066e6208b1f60a69f342417c2e717071209df63c41d95ee0688ae5e901304",
+      "publicSha256": "633066e6208b1f60a69f342417c2e717071209df63c41d95ee0688ae5e901304",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m1-fixed-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m1-fixed-cold-2.html",
+      "bytes": 2164,
+      "originalSha256": "fd27bd8496bbde3c6ed2be6f3cd71d62cd41417c85020444c43470043af27a9d",
+      "publicSha256": "fd27bd8496bbde3c6ed2be6f3cd71d62cd41417c85020444c43470043af27a9d",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m1-fixed-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m1-fixed-cold-3.html",
+      "bytes": 2164,
+      "originalSha256": "9460964f4f2e15f1fc7636d20695e8477674a8237ac4d178c2912c6886ba3c79",
+      "publicSha256": "9460964f4f2e15f1fc7636d20695e8477674a8237ac4d178c2912c6886ba3c79",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m1-fixed-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m1-responsive-cold-1.html",
+      "bytes": 2508,
+      "originalSha256": "021bada73342a5be8a435448134f983ec6498775ea6c2042038da7405e4f8cde",
+      "publicSha256": "021bada73342a5be8a435448134f983ec6498775ea6c2042038da7405e4f8cde",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m1-responsive-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m1-responsive-cold-2.html",
+      "bytes": 2508,
+      "originalSha256": "943e0823b40062cf44974055afbd43484b591766071cc63fc9dcc33a396ef0c3",
+      "publicSha256": "943e0823b40062cf44974055afbd43484b591766071cc63fc9dcc33a396ef0c3",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m1-responsive-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m1-responsive-cold-3.html",
+      "bytes": 2508,
+      "originalSha256": "00598553fc284f01189ebac0603acca2a1540293d10946d42a399c7cacfc16b2",
+      "publicSha256": "00598553fc284f01189ebac0603acca2a1540293d10946d42a399c7cacfc16b2",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m1-responsive-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-fixed-cold-1.html",
+      "bytes": 2164,
+      "originalSha256": "7c38ae6eb1ca8e9eb8fbdd4c45c2090ceed37af150d24c1bc82d474dcd9a4175",
+      "publicSha256": "7c38ae6eb1ca8e9eb8fbdd4c45c2090ceed37af150d24c1bc82d474dcd9a4175",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-fixed-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-fixed-cold-2.html",
+      "bytes": 2164,
+      "originalSha256": "99f5a740c23d0af7156a5f3e08a65004c20b917fd569eb5eece3a09becd60b12",
+      "publicSha256": "99f5a740c23d0af7156a5f3e08a65004c20b917fd569eb5eece3a09becd60b12",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-fixed-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-fixed-cold-3.html",
+      "bytes": 2164,
+      "originalSha256": "05b921cd38e7842604388dd26ca7541940b1bf3dc2a31bf03e59872b13011d0d",
+      "publicSha256": "05b921cd38e7842604388dd26ca7541940b1bf3dc2a31bf03e59872b13011d0d",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-fixed-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-fixed-prime-1.html",
+      "bytes": 2145,
+      "originalSha256": "00299c55e347ae2cc1a8d49a11ac8a96c3fcd36a79765c6b8335770ebb8bfa57",
+      "publicSha256": "00299c55e347ae2cc1a8d49a11ac8a96c3fcd36a79765c6b8335770ebb8bfa57",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-fixed-prime-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-fixed-prime-2.html",
+      "bytes": 2145,
+      "originalSha256": "38b2d29eb16a4bb49aa94afca85aeb9a0784d2e610a8f8be22d452ffe245d0fa",
+      "publicSha256": "38b2d29eb16a4bb49aa94afca85aeb9a0784d2e610a8f8be22d452ffe245d0fa",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-fixed-prime-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-fixed-prime-3.html",
+      "bytes": 2145,
+      "originalSha256": "6583b2d57f7d76409fff6b31af9cc6641e1750a1431569ac915047261892a94a",
+      "publicSha256": "6583b2d57f7d76409fff6b31af9cc6641e1750a1431569ac915047261892a94a",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-fixed-prime-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-responsive-cold-1.html",
+      "bytes": 2508,
+      "originalSha256": "d20aa030ca05ea678b3aca54d528ffb3fc9bfcd329a05a42aa71f02ee3b40012",
+      "publicSha256": "d20aa030ca05ea678b3aca54d528ffb3fc9bfcd329a05a42aa71f02ee3b40012",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-responsive-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-responsive-cold-2.html",
+      "bytes": 2508,
+      "originalSha256": "eb02198145c23a8c1fc6285f5213f088945d3c1bf991ac0d4408aef343c9035e",
+      "publicSha256": "eb02198145c23a8c1fc6285f5213f088945d3c1bf991ac0d4408aef343c9035e",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-responsive-cold-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-responsive-cold-3.html",
+      "bytes": 2508,
+      "originalSha256": "09dbcf766a21f45d4ca271807a251abf03e0efcf7d4bf173476b81e798b3e0c6",
+      "publicSha256": "09dbcf766a21f45d4ca271807a251abf03e0efcf7d4bf173476b81e798b3e0c6",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-responsive-cold-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-responsive-warm-1.html",
+      "bytes": 2427,
+      "originalSha256": "9dee237cba65d5d5c4dc6be30e78a46f14271f4738b459fc7b072243320fcdc1",
+      "publicSha256": "9dee237cba65d5d5c4dc6be30e78a46f14271f4738b459fc7b072243320fcdc1",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-responsive-warm-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-responsive-warm-2.html",
+      "bytes": 2427,
+      "originalSha256": "0d175b3a514428ae64d81b6475ad12d182c87a912be07a299eef81dbe2c86454",
+      "publicSha256": "0d175b3a514428ae64d81b6475ad12d182c87a912be07a299eef81dbe2c86454",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-responsive-warm-2.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/formal-m2-responsive-warm-3.html",
+      "bytes": 2427,
+      "originalSha256": "974c44858b1aaa7d0d778361093fc8ee1d1aa7239fa9422bf47f087c917a2533",
+      "publicSha256": "974c44858b1aaa7d0d778361093fc8ee1d1aa7239fa9422bf47f087c917a2533",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/formal-m2-responsive-warm-3.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/pilot-d1-fixed-cold-1.html",
+      "bytes": 2186,
+      "originalSha256": "df92542923b4129644926f5072a1b41997bc78df497e8a0b6a8da25d93a40f23",
+      "publicSha256": "df92542923b4129644926f5072a1b41997bc78df497e8a0b6a8da25d93a40f23",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/pilot-d1-fixed-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/pilot-m2-fixed-prime-1.html",
+      "bytes": 2177,
+      "originalSha256": "19a8f0ef18faabbbde47414c746145cd1feac83c87a8642730f5afac40313283",
+      "publicSha256": "19a8f0ef18faabbbde47414c746145cd1feac83c87a8642730f5afac40313283",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/pilot-m2-fixed-prime-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/pilot-m2-responsive-cold-1.html",
+      "bytes": 2540,
+      "originalSha256": "9d2d99591cffac5d616e1a48158c71d9a745399da1d1b2a9496cae9019f94197",
+      "publicSha256": "9d2d99591cffac5d616e1a48158c71d9a745399da1d1b2a9496cae9019f94197",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/pilot-m2-responsive-cold-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "html/pilot-m2-responsive-warm-1.html",
+      "bytes": 2477,
+      "originalSha256": "f5340e8e1d79df41af0acf96f6ebcef4c430a8dcf5b66f9efc2812edf3e134ab",
+      "publicSha256": "f5340e8e1d79df41af0acf96f6ebcef4c430a8dcf5b66f9efc2812edf3e134ab",
+      "original": "<LOCAL_PHASE>/attempt2/preview/pages/pilot-m2-responsive-warm-1.html",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "server.jsonl",
+      "bytes": 195454,
+      "originalSha256": "7a467a461272374d48d1277f518f41f0b644db89c1381339bbd7c323b3788cb3",
+      "publicSha256": "7a467a461272374d48d1277f518f41f0b644db89c1381339bbd7c323b3788cb3",
+      "original": "<LOCAL_PHASE>/attempt2/server.jsonl",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "initial/desktop-pilot.json",
+      "bytes": 7082,
+      "originalSha256": "8b89a8d892d4ac756dbcb88e55a374a463c104151045b6bf44a18a000fed3ef2",
+      "publicSha256": "8b89a8d892d4ac756dbcb88e55a374a463c104151045b6bf44a18a000fed3ef2",
+      "original": "<LOCAL_PHASE>/raw/pilot-d1-fixed-cold-1.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "initial/invalid-mobile-pilot.json",
+      "bytes": 7704,
+      "originalSha256": "0dfdb2c47d0584d2c9aed7bf83c9ccd7c60aad74134672dcda40fece16e08a77",
+      "publicSha256": "0dfdb2c47d0584d2c9aed7bf83c9ccd7c60aad74134672dcda40fece16e08a77",
+      "original": "<LOCAL_PHASE>/raw/pilot-m2-responsive-cold-1.json",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "initial/server.jsonl",
+      "bytes": 14696,
+      "originalSha256": "e15adc4141b76a6fed1cda25010f7c90c3c16ad6984dba54a816cfc53ee2cf5f",
+      "publicSha256": "e15adc4141b76a6fed1cda25010f7c90c3c16ad6984dba54a816cfc53ee2cf5f",
+      "original": "<LOCAL_PHASE>/server.jsonl",
+      "transformation": "byte-identical copy"
+    }
+  ],
+  "scope": "Stored public npm 1.5.0 WebP outputs; current Chrome observation. Server finish is an OS handoff, not client-body hash proof."
+}

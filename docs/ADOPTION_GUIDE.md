@@ -123,6 +123,36 @@ Build raster `srcset` from the actual manifest and use CSS widths in
 `sizes="(max-width: 1008px) calc(100vw - 48px), 960px"`. Browser selection can reuse
 a larger cached variant; check `currentSrc` rather than assuming a particular file.
 
+For a raster-only page, keep the CSS slot and `sizes` in agreement (the paths
+below stand for the corresponding manifest artifacts):
+
+```html
+<style>
+  body { margin: 0; }
+  main { box-sizing: border-box; max-width: 1008px; margin: auto; padding: 0 24px; }
+  img { display: block; width: 100%; max-width: 960px; height: auto; }
+</style>
+<main>
+  <img src="image-1920.webp"
+       srcset="image-684.webp 684w, image-960.webp 960w, image-1920.webp 1920w"
+       sizes="(max-width: 1008px) calc(100vw - 48px), 960px"
+       alt="Compiler artifact flow">
+</main>
+```
+
+In the [saved Chrome evaluation](./history/diagram-srcset-transfer-20261016/evaluation-20261018/RESULTS.md),
+three cold trials per condition selected 684px at mobile CSS342/DPR1–2,
+960px at desktop CSS960/DPR1, and 1920px at desktop DPR2. Image response bodies
+were 65.41%, 48.45%, and 0% smaller respectively than the fixed 1920px control.
+These are this diagram's observed body-byte comparisons, separate from its
+345,298-byte three-candidate storage and from Resource Timing `transferSize`.
+After priming 1920px, all three mobile DPR2 trials selected that cached image
+but also downloaded 684px (64,168 body bytes). Account for every candidate
+request, including extra downloads; `currentSrc` or its zero `transferSize`
+alone does not establish total page image transfer. This desktop Chrome
+emulation on loopback establishes neither phone/all-browser behavior nor
+speed, LCP, CDN savings or an SLA.
+
 The budgeted six-artifact call took about 1.33–1.35 seconds in three M4 trials;
 rendering the SVG and inspecting it were outside that timing. All 18 budgeted
 artifacts fit, and their image bytes/hashes matched the unbudgeted reference.

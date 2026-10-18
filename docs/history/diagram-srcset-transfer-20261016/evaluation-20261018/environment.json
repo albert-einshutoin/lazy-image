@@ -1,0 +1,72 @@
+{
+  "observedAt": "2026-10-18T12:55:17.146Z",
+  "browserFullVersionSource": "initial/desktop-pilot.json: pre-emulation UAData from this same browser session",
+  "browserFullVersionList": [
+    {
+      "brand": "Google Chrome",
+      "version": "155.0.8059.85"
+    },
+    {
+      "brand": "Chromium",
+      "version": "155.0.8059.85"
+    },
+    {
+      "brand": "Not(A:Brand",
+      "version": "24.0.0.0"
+    }
+  ],
+  "nativeOS": "macOS",
+  "nativeOSVersion": "27.0",
+  "nativeOSBuild": "26A428",
+  "nativeArchitecture": "arm64",
+  "browserZoomPercent": 100,
+  "browserZoomEvidence": "Native Chrome actual-size command plus reset on the owned idle tab before the repeated pilot; all measured visualViewport.scale values are 1. Device Toolbar fit-to-window is a separate display scale.",
+  "deviceToolbarDisplayScale": "Fit to window; no image-quality or pixel-scale screenshots claimed",
+  "customDevices": {
+    "d1": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 1,
+      "type": "Desktop"
+    },
+    "d2": {
+      "width": 1440,
+      "height": 1000,
+      "dpr": 2,
+      "type": "Desktop"
+    },
+    "m1": {
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "type": "Mobile"
+    },
+    "m2": {
+      "width": 390,
+      "height": 844,
+      "dpr": 2,
+      "type": "Mobile"
+    }
+  },
+  "emulatedUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "emulatedClientHints": "Custom profiles retained the reduced Mac UA string and set mobile true/false by type. Brands/platform/fullVersionList are blank in these profiles and remain unknown per case; browser version above was observed before emulation. This is desktop Chrome emulation, not physical phone acceptance.",
+  "operationOrder": [
+    "pilot d1 fixed",
+    "pilot m2 responsive cold",
+    "pilot m2 prime then warm",
+    "formal m2 cold trials 1-3 responsive then fixed",
+    "formal m2 prime then warm trials 1-3",
+    "idle; formal d1 trials 1-3 responsive then fixed",
+    "idle; formal d2 trials 1-3 responsive then fixed",
+    "idle; formal m1 trials 1-3 responsive then fixed",
+    "idle; emulation disabled; four owned profiles removed; tab/server closed"
+  ],
+  "cleanup": {
+    "profilesRemoved": 4,
+    "deviceEmulationDisabled": true,
+    "viewportOverrideReset": true,
+    "ownedTabClosed": true,
+    "serverStopped": true
+  },
+  "cachePolicy": "No global cache clearing. Each cold group has fresh candidate URLs; only prime/warm share candidates. Disable cache unchecked; no throttling; no diagnostic fetch."
+}
