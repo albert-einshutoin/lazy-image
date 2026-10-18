@@ -1,0 +1,56 @@
+{
+  "baseHead": "795de3966ce120830a23309fa37a15910aa9ebc9",
+  "sourceState": "Uncommitted worktree, exact before/after source hashes recorded; not a claimed commit execution",
+  "commands": [
+    {
+      "command": [
+        "node",
+        "docs/history/diagram-srcset-transfer-20261016/check-setup.cjs"
+      ],
+      "cwd": "<REPOSITORY>",
+      "startedAt": "2026-10-15T16:02:10.088303+00:00",
+      "finishedAt": "2026-10-15T16:02:10.794486+00:00",
+      "exitCode": 0,
+      "sourceHashesBefore": {
+        "docs/history/diagram-srcset-transfer-20261016/prepare.cjs": "08a89963db573da64608667d03ac058014198dd773c17b0fcc9f1e63c61630ad",
+        "docs/history/diagram-srcset-transfer-20261016/server.cjs": "910410113f59116e35d4f9c940f19971cd37a18115a1bbadd536b9b3fd21449c",
+        "docs/history/diagram-srcset-transfer-20261016/observe.js": "4b0454d7c465e7a5c2fa50db2549ca033a81eba8e3412cf4224578cef0b8aa77",
+        "docs/history/diagram-srcset-transfer-20261016/check-setup.cjs": "f4154b894e485599952b80c19652bfdfa0fced8211bdfe5555aa698ed7350513",
+        "docs/history/diagram-srcset-transfer-20261016/check-observe.cjs": "eddacd6128ca75aaae209e1809473b8d3c079c46f69c80d3ab9a53d495a191ec"
+      },
+      "sourceHashesAfter": {
+        "docs/history/diagram-srcset-transfer-20261016/prepare.cjs": "08a89963db573da64608667d03ac058014198dd773c17b0fcc9f1e63c61630ad",
+        "docs/history/diagram-srcset-transfer-20261016/server.cjs": "910410113f59116e35d4f9c940f19971cd37a18115a1bbadd536b9b3fd21449c",
+        "docs/history/diagram-srcset-transfer-20261016/observe.js": "4b0454d7c465e7a5c2fa50db2549ca033a81eba8e3412cf4224578cef0b8aa77",
+        "docs/history/diagram-srcset-transfer-20261016/check-setup.cjs": "f4154b894e485599952b80c19652bfdfa0fced8211bdfe5555aa698ed7350513",
+        "docs/history/diagram-srcset-transfer-20261016/check-observe.cjs": "eddacd6128ca75aaae209e1809473b8d3c079c46f69c80d3ab9a53d495a191ec"
+      },
+      "scope": "Disposable local HTTP / VM checks, not browser measurement"
+    },
+    {
+      "command": [
+        "node",
+        "docs/history/diagram-srcset-transfer-20261016/check-observe.cjs"
+      ],
+      "cwd": "<REPOSITORY>",
+      "startedAt": "2026-10-15T16:02:10.794980+00:00",
+      "finishedAt": "2026-10-15T16:02:10.875592+00:00",
+      "exitCode": 0,
+      "sourceHashesBefore": {
+        "docs/history/diagram-srcset-transfer-20261016/prepare.cjs": "08a89963db573da64608667d03ac058014198dd773c17b0fcc9f1e63c61630ad",
+        "docs/history/diagram-srcset-transfer-20261016/server.cjs": "910410113f59116e35d4f9c940f19971cd37a18115a1bbadd536b9b3fd21449c",
+        "docs/history/diagram-srcset-transfer-20261016/observe.js": "4b0454d7c465e7a5c2fa50db2549ca033a81eba8e3412cf4224578cef0b8aa77",
+        "docs/history/diagram-srcset-transfer-20261016/check-setup.cjs": "f4154b894e485599952b80c19652bfdfa0fced8211bdfe5555aa698ed7350513",
+        "docs/history/diagram-srcset-transfer-20261016/check-observe.cjs": "eddacd6128ca75aaae209e1809473b8d3c079c46f69c80d3ab9a53d495a191ec"
+      },
+      "sourceHashesAfter": {
+        "docs/history/diagram-srcset-transfer-20261016/prepare.cjs": "08a89963db573da64608667d03ac058014198dd773c17b0fcc9f1e63c61630ad",
+        "docs/history/diagram-srcset-transfer-20261016/server.cjs": "910410113f59116e35d4f9c940f19971cd37a18115a1bbadd536b9b3fd21449c",
+        "docs/history/diagram-srcset-transfer-20261016/observe.js": "4b0454d7c465e7a5c2fa50db2549ca033a81eba8e3412cf4224578cef0b8aa77",
+        "docs/history/diagram-srcset-transfer-20261016/check-setup.cjs": "f4154b894e485599952b80c19652bfdfa0fced8211bdfe5555aa698ed7350513",
+        "docs/history/diagram-srcset-transfer-20261016/check-observe.cjs": "eddacd6128ca75aaae209e1809473b8d3c079c46f69c80d3ab9a53d495a191ec"
+      },
+      "scope": "Disposable local HTTP / VM checks, not browser measurement"
+    }
+  ]
+}

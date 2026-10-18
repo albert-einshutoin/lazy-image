@@ -1,0 +1,2457 @@
+{
+  "issue": 908,
+  "executionRevision": "027b0cd9cd5a004161dc83206cdb3d14895f14d4",
+  "scope": "Saved Chrome observations; server body is OS handoff; Resource Timing is not packet capture; cached encoded sizes are not network bytes.",
+  "status": "complete",
+  "counts": {
+    "pilot": 4,
+    "formalCold": 24,
+    "formalPrime": 3,
+    "formalWarm": 3
+  },
+  "storageBytesAllCandidates": 345298,
+  "comparisons": [
+    {
+      "condition": "d1",
+      "trials": [
+        {
+          "trial": 1,
+          "responsive": "formal-d1-responsive-cold-1",
+          "fixed": "formal-d1-fixed-cold-1",
+          "selectedWidth": 960,
+          "bodyReductionPercent": 48.45397503072644,
+          "transferReductionPercent": 48.37574270214415
+        },
+        {
+          "trial": 2,
+          "responsive": "formal-d1-responsive-cold-2",
+          "fixed": "formal-d1-fixed-cold-2",
+          "selectedWidth": 960,
+          "bodyReductionPercent": 48.45397503072644,
+          "transferReductionPercent": 48.37574270214415
+        },
+        {
+          "trial": 3,
+          "responsive": "formal-d1-responsive-cold-3",
+          "fixed": "formal-d1-fixed-cold-3",
+          "selectedWidth": 960,
+          "bodyReductionPercent": 48.45397503072644,
+          "transferReductionPercent": 48.37574270214415
+        }
+      ]
+    },
+    {
+      "condition": "d2",
+      "trials": [
+        {
+          "trial": 1,
+          "responsive": "formal-d2-responsive-cold-1",
+          "fixed": "formal-d2-fixed-cold-1",
+          "selectedWidth": 1920,
+          "bodyReductionPercent": 0,
+          "transferReductionPercent": 0
+        },
+        {
+          "trial": 2,
+          "responsive": "formal-d2-responsive-cold-2",
+          "fixed": "formal-d2-fixed-cold-2",
+          "selectedWidth": 1920,
+          "bodyReductionPercent": 0,
+          "transferReductionPercent": 0
+        },
+        {
+          "trial": 3,
+          "responsive": "formal-d2-responsive-cold-3",
+          "fixed": "formal-d2-fixed-cold-3",
+          "selectedWidth": 1920,
+          "bodyReductionPercent": 0,
+          "transferReductionPercent": 0
+        }
+      ]
+    },
+    {
+      "condition": "m1",
+      "trials": [
+        {
+          "trial": 1,
+          "responsive": "formal-m1-responsive-cold-1",
+          "fixed": "formal-m1-fixed-cold-1",
+          "selectedWidth": 684,
+          "bodyReductionPercent": 65.40957802358928,
+          "transferReductionPercent": 65.30396968914147
+        },
+        {
+          "trial": 2,
+          "responsive": "formal-m1-responsive-cold-2",
+          "fixed": "formal-m1-fixed-cold-2",
+          "selectedWidth": 684,
+          "bodyReductionPercent": 65.40957802358928,
+          "transferReductionPercent": 65.30396968914147
+        },
+        {
+          "trial": 3,
+          "responsive": "formal-m1-responsive-cold-3",
+          "fixed": "formal-m1-fixed-cold-3",
+          "selectedWidth": 684,
+          "bodyReductionPercent": 65.40957802358928,
+          "transferReductionPercent": 65.30396968914147
+        }
+      ]
+    },
+    {
+      "condition": "m2",
+      "trials": [
+        {
+          "trial": 1,
+          "responsive": "formal-m2-responsive-cold-1",
+          "fixed": "formal-m2-fixed-cold-1",
+          "selectedWidth": 684,
+          "bodyReductionPercent": 65.40957802358928,
+          "transferReductionPercent": 65.30396968914147
+        },
+        {
+          "trial": 2,
+          "responsive": "formal-m2-responsive-cold-2",
+          "fixed": "formal-m2-fixed-cold-2",
+          "selectedWidth": 684,
+          "bodyReductionPercent": 65.40957802358928,
+          "transferReductionPercent": 65.30396968914147
+        },
+        {
+          "trial": 3,
+          "responsive": "formal-m2-responsive-cold-3",
+          "fixed": "formal-m2-fixed-cold-3",
+          "selectedWidth": 684,
+          "bodyReductionPercent": 65.40957802358928,
+          "transferReductionPercent": 65.30396968914147
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "pilot-d1-fixed-cold-1",
+      "phase": "pilot",
+      "condition": "d1",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/001.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-d1-fixed/fixed-cold.html",
+      "htmlSha256": "df92542923b4129644926f5072a1b41997bc78df497e8a0b6a8da25d93a40f23",
+      "htmlRequestId": 4,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-d1-fixed/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-d1-fixed/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        8
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-d1-fixed/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 38.900000005960464,
+          "requestStart": 117,
+          "responseStart": 125.5,
+          "responseEnd": 129.59999999403954,
+          "duration": 90.69999998807907,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 8,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "pilot-m2-responsive-cold-1",
+      "phase": "pilot",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/002.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-m2-responsive/responsive-cold.html",
+      "htmlSha256": "9d2d99591cffac5d616e1a48158c71d9a745399da1d1b2a9496cae9019f94197",
+      "htmlRequestId": 13,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-m2-responsive/image-684.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-m2-responsive/image-684.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 499,
+      "status": "complete",
+      "serverImageRequestIds": [
+        17
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 64168,
+        "decodedBodySize": 64168
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-m2-responsive/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 42.5,
+          "requestStart": 112,
+          "responseStart": 121.2999999821186,
+          "responseEnd": 134.59999999403954,
+          "duration": 92.09999999403954,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 17,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "pilot-m2-fixed-prime-1",
+      "phase": "pilot",
+      "condition": "m2",
+      "mode": "fixed",
+      "cache": "prime",
+      "trial": 1,
+      "raw": "raw/003.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/fixed-prime.html",
+      "htmlSha256": "19a8f0ef18faabbbde47414c746145cd1feac83c87a8642730f5afac40313283",
+      "htmlRequestId": 20,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        24
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 39.099999994039536,
+          "requestStart": 123.5,
+          "responseStart": 126.80000001192093,
+          "responseEnd": 140.80000001192093,
+          "duration": 101.7000000178814,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 24,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "pilot-m2-responsive-warm-1",
+      "phase": "pilot",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "warm",
+      "trial": 1,
+      "raw": "raw/004.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/responsive-warm.html",
+      "htmlSha256": "f5340e8e1d79df41af0acf96f6ebcef4c430a8dcf5b66f9efc2812edf3e134ab",
+      "htmlRequestId": 27,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/image-1920.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 498,
+      "status": "complete",
+      "serverImageRequestIds": [
+        31
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 249676,
+        "decodedBodySize": 249676
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 69,
+          "requestStart": 172,
+          "responseStart": 174.19999998807907,
+          "responseEnd": 187.5,
+          "duration": 118.5,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 31,
+          "primeRequestId": null,
+          "cacheReuse": false
+        },
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/pilot-warm-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 195.19999998807907,
+          "requestStart": 195.19999998807907,
+          "responseStart": 195.19999998807907,
+          "responseEnd": 195.19999998807907,
+          "duration": 0,
+          "transferSize": 0,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "cache",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": null,
+          "primeRequestId": 24,
+          "cacheReuse": true
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-responsive-cold-1",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/005.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-1/responsive-cold.html",
+      "htmlSha256": "d20aa030ca05ea678b3aca54d528ffb3fc9bfcd329a05a42aa71f02ee3b40012",
+      "htmlRequestId": 34,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-1/image-684.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-1/image-684.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 499,
+      "status": "complete",
+      "serverImageRequestIds": [
+        38
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 64168,
+        "decodedBodySize": 64168
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-1/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 80.5,
+          "requestStart": 181.5,
+          "responseStart": 187.30000001192093,
+          "responseEnd": 190.40000000596046,
+          "duration": 109.90000000596046,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 38,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-fixed-cold-1",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/005.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-1/fixed-cold.html",
+      "htmlSha256": "7c38ae6eb1ca8e9eb8fbdd4c45c2090ceed37af150d24c1bc82d474dcd9a4175",
+      "htmlRequestId": 41,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-1/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        45
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 18.599999994039536,
+          "requestStart": 47.400000005960464,
+          "responseStart": 51.5,
+          "responseEnd": 68.09999999403954,
+          "duration": 49.5,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 45,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-responsive-cold-2",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/006.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-2/responsive-cold.html",
+      "htmlSha256": "eb02198145c23a8c1fc6285f5213f088945d3c1bf991ac0d4408aef343c9035e",
+      "htmlRequestId": 48,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-2/image-684.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-2/image-684.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 499,
+      "status": "complete",
+      "serverImageRequestIds": [
+        52
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 64168,
+        "decodedBodySize": 64168
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-2/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 39.29999998211861,
+          "requestStart": 116.90000000596046,
+          "responseStart": 120.69999998807907,
+          "responseEnd": 137,
+          "duration": 97.7000000178814,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 52,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-fixed-cold-2",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/006.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-2/fixed-cold.html",
+      "htmlSha256": "99f5a740c23d0af7156a5f3e08a65004c20b917fd569eb5eece3a09becd60b12",
+      "htmlRequestId": 55,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-2/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-2/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        59
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-2/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 30,
+          "requestStart": 57.80000001192093,
+          "responseStart": 62.099999994039536,
+          "responseEnd": 79,
+          "duration": 49,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 59,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-responsive-cold-3",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/007.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-3/responsive-cold.html",
+      "htmlSha256": "09dbcf766a21f45d4ca271807a251abf03e0efcf7d4bf173476b81e798b3e0c6",
+      "htmlRequestId": 62,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-3/image-684.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-3/image-684.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 499,
+      "status": "complete",
+      "serverImageRequestIds": [
+        66
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 64168,
+        "decodedBodySize": 64168
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-responsive-3/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 54.80000001192093,
+          "requestStart": 132.90000000596046,
+          "responseStart": 136.90000000596046,
+          "responseEnd": 148.40000000596046,
+          "duration": 93.59999999403954,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 66,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-fixed-cold-3",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/007.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-3/fixed-cold.html",
+      "htmlSha256": "05b921cd38e7842604388dd26ca7541940b1bf3dc2a31bf03e59872b13011d0d",
+      "htmlRequestId": 69,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-3/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-3/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        73
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m2-fixed-3/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 22.19999998807907,
+          "requestStart": 46.79999998211861,
+          "responseStart": 48.29999998211861,
+          "responseEnd": 53.89999997615814,
+          "duration": 31.69999998807907,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 73,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-fixed-prime-1",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "fixed",
+      "cache": "prime",
+      "trial": 1,
+      "raw": "raw/008.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/fixed-prime.html",
+      "htmlSha256": "00299c55e347ae2cc1a8d49a11ac8a96c3fcd36a79765c6b8335770ebb8bfa57",
+      "htmlRequestId": 76,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        80
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 39.79999998211861,
+          "requestStart": 115.89999997615814,
+          "responseStart": 119.69999998807907,
+          "responseEnd": 129.69999998807907,
+          "duration": 89.90000000596046,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 80,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-responsive-warm-1",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "warm",
+      "trial": 1,
+      "raw": "raw/009.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/responsive-warm.html",
+      "htmlSha256": "9dee237cba65d5d5c4dc6be30e78a46f14271f4738b459fc7b072243320fcdc1",
+      "htmlRequestId": 83,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/image-1920.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 498,
+      "status": "complete",
+      "serverImageRequestIds": [
+        87
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 249676,
+        "decodedBodySize": 249676
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 34,
+          "requestStart": 84,
+          "responseStart": 97.59999999403954,
+          "responseEnd": 108.59999999403954,
+          "duration": 74.59999999403954,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 87,
+          "primeRequestId": null,
+          "cacheReuse": false
+        },
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 122,
+          "requestStart": 122,
+          "responseStart": 122,
+          "responseEnd": 122,
+          "duration": 0,
+          "transferSize": 0,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "cache",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": null,
+          "primeRequestId": 80,
+          "cacheReuse": true
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-fixed-prime-2",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "fixed",
+      "cache": "prime",
+      "trial": 2,
+      "raw": "raw/009.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/fixed-prime.html",
+      "htmlSha256": "38b2d29eb16a4bb49aa94afca85aeb9a0784d2e610a8f8be22d452ffe245d0fa",
+      "htmlRequestId": 90,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        94
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 19.80000001192093,
+          "requestStart": 62.099999994039536,
+          "responseStart": 69.40000000596046,
+          "responseEnd": 75,
+          "duration": 55.19999998807907,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 94,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-responsive-warm-2",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "warm",
+      "trial": 2,
+      "raw": "raw/010.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/responsive-warm.html",
+      "htmlSha256": "0d175b3a514428ae64d81b6475ad12d182c87a912be07a299eef81dbe2c86454",
+      "htmlRequestId": 97,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/image-1920.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 498,
+      "status": "complete",
+      "serverImageRequestIds": [
+        101
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 249676,
+        "decodedBodySize": 249676
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 37.60000002384186,
+          "requestStart": 77.2000000178814,
+          "responseStart": 93.7000000178814,
+          "responseEnd": 105.90000000596046,
+          "duration": 68.2999999821186,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 101,
+          "primeRequestId": null,
+          "cacheReuse": false
+        },
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-2/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 109,
+          "requestStart": 109,
+          "responseStart": 109,
+          "responseEnd": 109,
+          "duration": 0,
+          "transferSize": 0,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "cache",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": null,
+          "primeRequestId": 94,
+          "cacheReuse": true
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-fixed-prime-3",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "fixed",
+      "cache": "prime",
+      "trial": 3,
+      "raw": "raw/010.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/fixed-prime.html",
+      "htmlSha256": "6583b2d57f7d76409fff6b31af9cc6641e1750a1431569ac915047261892a94a",
+      "htmlRequestId": 104,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        108
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 20.19999998807907,
+          "requestStart": 86.30000001192093,
+          "responseStart": 89.09999999403954,
+          "responseEnd": 94.09999999403954,
+          "duration": 73.90000000596046,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 108,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m2-responsive-warm-3",
+      "phase": "formal",
+      "condition": "m2",
+      "mode": "responsive",
+      "cache": "warm",
+      "trial": 3,
+      "raw": "raw/011.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/responsive-warm.html",
+      "htmlSha256": "974c44858b1aaa7d0d778361093fc8ee1d1aa7239fa9422bf47f087c917a2533",
+      "htmlRequestId": 111,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 2
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/image-1920.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 498,
+      "status": "complete",
+      "serverImageRequestIds": [
+        115
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 249676,
+        "decodedBodySize": 249676
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 48.30000001192093,
+          "requestStart": 119.80000001192093,
+          "responseStart": 122.09999999403954,
+          "responseEnd": 124.2000000178814,
+          "duration": 75.90000000596046,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 115,
+          "primeRequestId": null,
+          "cacheReuse": false
+        },
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/warm-3/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 128.40000000596046,
+          "requestStart": 128.40000000596046,
+          "responseStart": 128.40000000596046,
+          "responseEnd": 128.40000000596046,
+          "duration": 0,
+          "transferSize": 0,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "cache",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": null,
+          "primeRequestId": 108,
+          "cacheReuse": true
+        }
+      ]
+    },
+    {
+      "id": "formal-d1-responsive-cold-1",
+      "phase": "formal",
+      "condition": "d1",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/012.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-1/responsive-cold.html",
+      "htmlSha256": "b6a84c61447989f049c641e2183906978c58ec40105a8a74bea9ede11e9b863f",
+      "htmlRequestId": 120,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "960/webp",
+        "path": "image-960.webp",
+        "format": "webp",
+        "width": 960,
+        "height": 1400,
+        "bytes": 95622,
+        "quality": 80,
+        "targetBytes": 204800,
+        "iccOutcome": "absent",
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-1/image-960.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-1/image-960.webp"
+      },
+      "naturalWidth": 960,
+      "naturalHeight": 1400,
+      "status": "complete",
+      "serverImageRequestIds": [
+        124
+      ],
+      "serverBodyBytes": 95622,
+      "resourceTiming": {
+        "transferSize": 95922,
+        "encodedBodySize": 95622,
+        "decodedBodySize": 95622
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-1/image-960.webp",
+          "initiatorType": "img",
+          "startTime": 55.400000005960464,
+          "requestStart": 131.59999999403954,
+          "responseStart": 136.09999999403954,
+          "responseEnd": 141.80000001192093,
+          "duration": 86.40000000596046,
+          "transferSize": 95922,
+          "encodedBodySize": 95622,
+          "decodedBodySize": 95622,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 960,
+          "serverRequestId": 124,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d1-fixed-cold-1",
+      "phase": "formal",
+      "condition": "d1",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/012.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-1/fixed-cold.html",
+      "htmlSha256": "c4c9a7c4976e303e93b00964d51189b83c5380bbcf5720c6388edd06623615c0",
+      "htmlRequestId": 127,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-1/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        131
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 13.199999988079071,
+          "requestStart": 65.09999999403954,
+          "responseStart": 68.80000001192093,
+          "responseEnd": 88.40000000596046,
+          "duration": 75.2000000178814,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 131,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d1-responsive-cold-2",
+      "phase": "formal",
+      "condition": "d1",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/013.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-2/responsive-cold.html",
+      "htmlSha256": "c156fc97a2e08a0deb2e1c2f05b8403f8e36339a047a22f6f533b89f04e22334",
+      "htmlRequestId": 134,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "960/webp",
+        "path": "image-960.webp",
+        "format": "webp",
+        "width": 960,
+        "height": 1400,
+        "bytes": 95622,
+        "quality": 80,
+        "targetBytes": 204800,
+        "iccOutcome": "absent",
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-2/image-960.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-2/image-960.webp"
+      },
+      "naturalWidth": 960,
+      "naturalHeight": 1400,
+      "status": "complete",
+      "serverImageRequestIds": [
+        138
+      ],
+      "serverBodyBytes": 95622,
+      "resourceTiming": {
+        "transferSize": 95922,
+        "encodedBodySize": 95622,
+        "decodedBodySize": 95622
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-2/image-960.webp",
+          "initiatorType": "img",
+          "startTime": 29.099999994039536,
+          "requestStart": 86.40000000596046,
+          "responseStart": 88,
+          "responseEnd": 92.19999998807907,
+          "duration": 63.099999994039536,
+          "transferSize": 95922,
+          "encodedBodySize": 95622,
+          "decodedBodySize": 95622,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 960,
+          "serverRequestId": 138,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d1-fixed-cold-2",
+      "phase": "formal",
+      "condition": "d1",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/013.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-2/fixed-cold.html",
+      "htmlSha256": "67f567fcac0dbc3c15486739894f49251804bd54494d022f143658abdd6eaa5e",
+      "htmlRequestId": 141,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-2/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-2/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        145
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-2/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 18,
+          "requestStart": 55.30000001192093,
+          "responseStart": 78.59999999403954,
+          "responseEnd": 100.2000000178814,
+          "duration": 82.2000000178814,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 145,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d1-responsive-cold-3",
+      "phase": "formal",
+      "condition": "d1",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/014.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-3/responsive-cold.html",
+      "htmlSha256": "562dd0814eb6f86a829d91b5fde10b7181cd26cafb60414733c0f37d09688ed9",
+      "htmlRequestId": 148,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "960/webp",
+        "path": "image-960.webp",
+        "format": "webp",
+        "width": 960,
+        "height": 1400,
+        "bytes": 95622,
+        "quality": 80,
+        "targetBytes": 204800,
+        "iccOutcome": "absent",
+        "sha256": "5f2dd3407615f098572e228e6994bc137253c37379cff914c057d54617239c9f",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-3/image-960.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-3/image-960.webp"
+      },
+      "naturalWidth": 960,
+      "naturalHeight": 1400,
+      "status": "complete",
+      "serverImageRequestIds": [
+        152
+      ],
+      "serverBodyBytes": 95622,
+      "resourceTiming": {
+        "transferSize": 95922,
+        "encodedBodySize": 95622,
+        "decodedBodySize": 95622
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-responsive-3/image-960.webp",
+          "initiatorType": "img",
+          "startTime": 38,
+          "requestStart": 93.90000000596046,
+          "responseStart": 96.10000002384186,
+          "responseEnd": 101.7000000178814,
+          "duration": 63.70000001788139,
+          "transferSize": 95922,
+          "encodedBodySize": 95622,
+          "decodedBodySize": 95622,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 960,
+          "serverRequestId": 152,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d1-fixed-cold-3",
+      "phase": "formal",
+      "condition": "d1",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/014.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-3/fixed-cold.html",
+      "htmlSha256": "e8b76d233653bd31234bac3dd0d820097c6a56ef32333bb2d49655655dc43cb8",
+      "htmlRequestId": 155,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-3/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-3/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        159
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d1-fixed-3/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 19.100000023841858,
+          "requestStart": 55.80000001192093,
+          "responseStart": 58.400000005960464,
+          "responseEnd": 62.80000001192093,
+          "duration": 43.69999998807907,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 159,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d2-responsive-cold-1",
+      "phase": "formal",
+      "condition": "d2",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/015.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-1/responsive-cold.html",
+      "htmlSha256": "8721521114e1708158d3490e89c84b6f18a9326d94e5c6e363ff98141afe9b4b",
+      "htmlRequestId": 164,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 2
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-1/image-1920.webp"
+      },
+      "naturalWidth": 960,
+      "naturalHeight": 1400,
+      "status": "complete",
+      "serverImageRequestIds": [
+        168
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 65.59999999403954,
+          "requestStart": 202.7000000178814,
+          "responseStart": 206,
+          "responseEnd": 227.2000000178814,
+          "duration": 161.60000002384186,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 168,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d2-fixed-cold-1",
+      "phase": "formal",
+      "condition": "d2",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/015.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-1/fixed-cold.html",
+      "htmlSha256": "b0e213a8b56cef9f5fff48f484ba907e87f82d62f5346ec3fc8d6376199b2b38",
+      "htmlRequestId": 171,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 2
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-1/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        175
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 17.900000005960464,
+          "requestStart": 64.2999999821186,
+          "responseStart": 73.19999998807907,
+          "responseEnd": 91,
+          "duration": 73.09999999403954,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 175,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d2-responsive-cold-2",
+      "phase": "formal",
+      "condition": "d2",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/016.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-2/responsive-cold.html",
+      "htmlSha256": "5837003a16939c4a064c85a61b91103ebc686a51889bbf133c832976cb6e2454",
+      "htmlRequestId": 178,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 2
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-2/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-2/image-1920.webp"
+      },
+      "naturalWidth": 960,
+      "naturalHeight": 1400,
+      "status": "complete",
+      "serverImageRequestIds": [
+        182
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-2/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 56.69999998807907,
+          "requestStart": 118.09999999403954,
+          "responseStart": 121.80000001192093,
+          "responseEnd": 141.40000000596046,
+          "duration": 84.7000000178814,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 182,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d2-fixed-cold-2",
+      "phase": "formal",
+      "condition": "d2",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/016.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-2/fixed-cold.html",
+      "htmlSha256": "ca5080b2f9243d627c3b68b8e28beefc6e7ad521c34a50fc47cc0a93b3a5b3e3",
+      "htmlRequestId": 185,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 2
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-2/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-2/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        189
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-2/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 20.799999982118607,
+          "requestStart": 45.69999998807907,
+          "responseStart": 48.69999998807907,
+          "responseEnd": 60.599999994039536,
+          "duration": 39.80000001192093,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 189,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d2-responsive-cold-3",
+      "phase": "formal",
+      "condition": "d2",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/017.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-3/responsive-cold.html",
+      "htmlSha256": "37516f35e4983a6b994fe0a9ce93ede251b3abc4ae660966537290c3bcd3925a",
+      "htmlRequestId": 192,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 2
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-3/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-3/image-1920.webp"
+      },
+      "naturalWidth": 960,
+      "naturalHeight": 1400,
+      "status": "complete",
+      "serverImageRequestIds": [
+        196
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-responsive-3/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 32.80000001192093,
+          "requestStart": 90.60000002384186,
+          "responseStart": 102.90000000596046,
+          "responseEnd": 140.10000002384186,
+          "duration": 107.30000001192093,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 196,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-d2-fixed-cold-3",
+      "phase": "formal",
+      "condition": "d2",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/017.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-3/fixed-cold.html",
+      "htmlSha256": "fed97dcdb4e410d03189773c926e052458d91e1ce2a7f95fe998ff4f6d21ef33",
+      "htmlRequestId": 199,
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 2
+      },
+      "cssWidth": 960,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-3/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-3/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        203
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/d2-fixed-3/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 27.400000005960464,
+          "requestStart": 101.60000002384186,
+          "responseStart": 103.90000000596046,
+          "responseEnd": 110,
+          "duration": 82.59999999403954,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 203,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m1-responsive-cold-1",
+      "phase": "formal",
+      "condition": "m1",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/018.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-1/responsive-cold.html",
+      "htmlSha256": "021bada73342a5be8a435448134f983ec6498775ea6c2042038da7405e4f8cde",
+      "htmlRequestId": 208,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-1/image-684.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-1/image-684.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 499,
+      "status": "complete",
+      "serverImageRequestIds": [
+        212
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 64168,
+        "decodedBodySize": 64168
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-1/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 45.19999998807907,
+          "requestStart": 133.40000000596046,
+          "responseStart": 136.19999998807907,
+          "responseEnd": 156.30000001192093,
+          "duration": 111.10000002384186,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 212,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m1-fixed-cold-1",
+      "phase": "formal",
+      "condition": "m1",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 1,
+      "raw": "raw/018.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-1/fixed-cold.html",
+      "htmlSha256": "633066e6208b1f60a69f342417c2e717071209df63c41d95ee0688ae5e901304",
+      "htmlRequestId": 215,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-1/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-1/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        219
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-1/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 19.600000023841858,
+          "requestStart": 61.900000005960464,
+          "responseStart": 64.30000001192093,
+          "responseEnd": 77.5,
+          "duration": 57.89999997615814,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 219,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m1-responsive-cold-2",
+      "phase": "formal",
+      "condition": "m1",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/019.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-2/responsive-cold.html",
+      "htmlSha256": "943e0823b40062cf44974055afbd43484b591766071cc63fc9dcc33a396ef0c3",
+      "htmlRequestId": 222,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-2/image-684.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-2/image-684.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 499,
+      "status": "complete",
+      "serverImageRequestIds": [
+        226
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 64168,
+        "decodedBodySize": 64168
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-2/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 63.099999994039536,
+          "requestStart": 128.19999998807907,
+          "responseStart": 129.19999998807907,
+          "responseEnd": 136,
+          "duration": 72.90000000596046,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 226,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m1-fixed-cold-2",
+      "phase": "formal",
+      "condition": "m1",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 2,
+      "raw": "raw/019.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-2/fixed-cold.html",
+      "htmlSha256": "fd27bd8496bbde3c6ed2be6f3cd71d62cd41417c85020444c43470043af27a9d",
+      "htmlRequestId": 229,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-2/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-2/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        233
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-2/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 23.80000001192093,
+          "requestStart": 73.90000000596046,
+          "responseStart": 88.5,
+          "responseEnd": 101.30000001192093,
+          "duration": 77.5,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 233,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m1-responsive-cold-3",
+      "phase": "formal",
+      "condition": "m1",
+      "mode": "responsive",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/020.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-3/responsive-cold.html",
+      "htmlSha256": "00598553fc284f01189ebac0603acca2a1540293d10946d42a399c7cacfc16b2",
+      "htmlRequestId": 236,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "684/webp",
+        "path": "image-684.webp",
+        "format": "webp",
+        "width": 684,
+        "height": 998,
+        "bytes": 64168,
+        "quality": 80,
+        "targetBytes": 102400,
+        "iccOutcome": "absent",
+        "sha256": "b9d11809d6064ced77de3773db84b555731b3466fc30e6a49f7e842cde3293bd",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-3/image-684.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-3/image-684.webp"
+      },
+      "naturalWidth": 342,
+      "naturalHeight": 499,
+      "status": "complete",
+      "serverImageRequestIds": [
+        240
+      ],
+      "serverBodyBytes": 64168,
+      "resourceTiming": {
+        "transferSize": 64468,
+        "encodedBodySize": 64168,
+        "decodedBodySize": 64168
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-responsive-3/image-684.webp",
+          "initiatorType": "img",
+          "startTime": 52.5,
+          "requestStart": 99.5,
+          "responseStart": 101.80000001192093,
+          "responseEnd": 116.59999999403954,
+          "duration": 64.09999999403954,
+          "transferSize": 64468,
+          "encodedBodySize": 64168,
+          "decodedBodySize": 64168,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 684,
+          "serverRequestId": 240,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    },
+    {
+      "id": "formal-m1-fixed-cold-3",
+      "phase": "formal",
+      "condition": "m1",
+      "mode": "fixed",
+      "cache": "cold",
+      "trial": 3,
+      "raw": "raw/020.json",
+      "page": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-3/fixed-cold.html",
+      "htmlSha256": "9460964f4f2e15f1fc7636d20695e8477674a8237ac4d178c2912c6886ba3c79",
+      "htmlRequestId": 243,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "cssWidth": 342,
+      "selected": {
+        "id": "1920/webp",
+        "path": "image-1920.webp",
+        "format": "webp",
+        "width": 1920,
+        "height": 2800,
+        "bytes": 185508,
+        "quality": 80,
+        "targetBytes": 409600,
+        "iccOutcome": "absent",
+        "sha256": "327dc0be93aca3660e70180e6c48e7fbc68f805d703fb0ca506d3643f4e76ceb",
+        "url": "/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-3/image-1920.webp",
+        "currentSrc": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-3/image-1920.webp"
+      },
+      "naturalWidth": 1920,
+      "naturalHeight": 2800,
+      "status": "complete",
+      "serverImageRequestIds": [
+        247
+      ],
+      "serverBodyBytes": 185508,
+      "resourceTiming": {
+        "transferSize": 185808,
+        "encodedBodySize": 185508,
+        "decodedBodySize": 185508
+      },
+      "imageRequests": [
+        {
+          "name": "http://127.0.0.1:8880/0b91e082-429b-42d5-b671-c7c1d4278a37/m1-fixed-3/image-1920.webp",
+          "initiatorType": "img",
+          "startTime": 21.30000001192093,
+          "requestStart": 65.69999998807907,
+          "responseStart": 91.40000000596046,
+          "responseEnd": 101.69999998807907,
+          "duration": 80.39999997615814,
+          "transferSize": 185808,
+          "encodedBodySize": 185508,
+          "decodedBodySize": 185508,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1",
+          "workerStart": 0,
+          "width": 1920,
+          "serverRequestId": 247,
+          "primeRequestId": null,
+          "cacheReuse": false
+        }
+      ]
+    }
+  ]
+}

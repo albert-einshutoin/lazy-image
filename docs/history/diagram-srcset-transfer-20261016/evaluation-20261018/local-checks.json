@@ -1,0 +1,25 @@
+{
+  "recordedAt": "2026-10-18T13:37:44.239244+00:00",
+  "runtime": "Node v24.2.0",
+  "scope": "Actual local command outputs recorded after the last helper/guide edits; no browser/compiler/native execution. Review and hosted delivery are separate.",
+  "helperSha256": "9a83d01acac28cd618af6f7d080a3ff473b73414894912affd12968e26ea0f90",
+  "summarySha256": "913fd9a9968f691129e617c01bf9f744681f07d6b532bce96db4e4069ecee616",
+  "inputsSha256": "edeeb8c1c8351146cad78a4c43b8d8ec1e8b2d7a864f3feea6ad798272db2d08",
+  "checks": [
+    {
+      "command": "node docs/history/diagram-srcset-transfer-20261016/evaluation-20261018/summarize.cjs --self-test",
+      "exitCode": 0,
+      "stdout": "PASS: zero/unknown separation, rejected invalid viewport, retained warm additional request; 34 cases and protected inputs verified\n"
+    },
+    {
+      "command": "node docs/history/diagram-srcset-transfer-20261016/evaluation-20261018/summarize.cjs --check",
+      "exitCode": 0,
+      "stdout": "PASS: 34 cases, 34 network image requests, 1171 protected files; summary matches raw\n"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "stdout": ""
+    }
+  ]
+}

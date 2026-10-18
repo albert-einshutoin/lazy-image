@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-10-15T16:03:27.407910+00:00",
+  "scope": "Agent summary transcribed from actual CUA errors, not full raw browser trace or image observation",
+  "operation": "Normal Chrome browser.nameSession setup",
+  "attemptCount": 3,
+  "error": "Unable to load browser request-header policy. Retry the browser command.",
+  "browserMeasurementsExecuted": false,
+  "policyBypassAttempted": false,
+  "requiredRecovery": "Normal browser API policy/session setup must become available before pilot"
+}
