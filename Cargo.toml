@@ -1,6 +1,6 @@
 [package]
 name = "lazy-image"
-version = "1.5.0"
+version = "2.0.0"
 edition = "2021"
 description = "Web image optimization engine for Node.js with secure defaults and smaller browser-facing JPEG outputs, powered by Rust + mozjpeg"
 license = "MIT"
@@ -59,7 +59,7 @@ zune-png = "0.5"
 
 # AVIF encoding via libavif - AOMedia reference implementation with full ICC profile support
 # Disable default features to avoid dav1d (requires meson build), only enable rav1e for encoding
-libavif-sys = { version = "0.17", default-features = false, features = ["codec-rav1e"], optional = true }
+libavif-sys = { path = "vendor/libavif-sys", default-features = false, features = ["codec-rav1e"], optional = true }
 
 # Debug/logging (only used when cow-debug feature is enabled)
 tracing = { version = "0.1", default-features = false, features = ["std"], optional = true }

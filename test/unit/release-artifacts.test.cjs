@@ -57,7 +57,11 @@ const wasmOutput = path.join(temp, 'wasm-candidate');
 fs.mkdirSync(wasmOutput);
 const wasm = stageWasm(wasmOutput);
 assert.equal(wasm.name, '@alberteinshutoin/lazy-image-wasm');
-assert.equal(wasm.files.length, 12);
+assert.equal(wasm.files.length, 28);
+for (const codec of ['dec/webp_dec', 'enc/webp_enc', 'enc/webp_enc_simd']) {
+  assert.ok(wasm.files.some(file => file.path === `vendor/webp/codec/${codec}.wasm`),
+    `patched WebP codec missing from candidate: ${codec}`);
+}
 assert.equal(wasm.tarballSha256, createHash('sha256').update(fs.readFileSync(path.join(wasmOutput, wasm.tarball))).digest('hex'));
 const altered = path.join(temp, 'altered');
 fs.mkdirSync(altered);

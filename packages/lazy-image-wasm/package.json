@@ -1,6 +1,6 @@
 {
   "name": "@alberteinshutoin/lazy-image-wasm",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "Browser and Edge upload-preflight optimizer for lazy-image policy APIs",
   "type": "module",
   "sideEffects": false,
@@ -32,7 +32,8 @@
     "shared.d.ts",
     "worker.js",
     "worker.d.ts",
-    "examples/"
+    "examples/",
+    "vendor/webp/"
   ],
   "scripts": {
     "test": "node test/run.mjs"
@@ -41,7 +42,7 @@
     "@jsquash/jpeg": "1.6.0",
     "@jsquash/png": "3.1.1",
     "@jsquash/resize": "2.1.1",
-    "@jsquash/webp": "1.5.0"
+    "wasm-feature-detect": "1.8.0"
   },
   "engines": {
     "node": ">= 22"

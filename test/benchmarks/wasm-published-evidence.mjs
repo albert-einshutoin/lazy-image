@@ -19,7 +19,7 @@ const codecFiles = {
   'mozjpeg_enc.wasm': ['@jsquash/jpeg', 'codec/enc/mozjpeg_enc.wasm'],
   'squoosh_png_bg.wasm': ['@jsquash/png', 'codec/pkg/squoosh_png_bg.wasm'],
   'squoosh_resize_bg.wasm': ['@jsquash/resize', 'lib/resize/pkg/squoosh_resize_bg.wasm'],
-  'webp_enc.wasm': ['@jsquash/webp', 'codec/enc/webp_enc.wasm'],
+  'webp_enc.wasm': [packageName, 'vendor/webp/codec/enc/webp_enc.wasm'],
 };
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 export function assertMetadataInput(metadata) {
@@ -78,7 +78,7 @@ async function installPublished(version, directory, runtime, candidateTarball) {
   if (runtime === 'edge' || runtime === 'all') requested.push('workerd@1.20260924.1');
   command('npm', ['install', '--registry', registry, '--save-exact', ...requested], directory);
   const lock = JSON.parse(await fs.readFile(path.join(directory, 'package-lock.json'), 'utf8'));
-  const names = [packageName, '@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', '@jsquash/webp',
+  const names = [packageName, '@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', 'wasm-feature-detect',
     'esbuild', ...(runtime === 'edge' || runtime === 'all' ? ['workerd'] : [])];
   const installedOptional = async (prefix) => {
     const candidates = Object.keys(lock.packages).filter((key) => key.startsWith(`node_modules/${prefix}`));
@@ -100,7 +100,8 @@ async function installPublished(version, directory, runtime, candidateTarball) {
     const candidateEntry = name === packageName && candidateTarball;
     assert(entry?.integrity && (candidateEntry
       ? entry.resolved?.startsWith('file:') &&
-        await fs.realpath(fileURLToPath(entry.resolved)) === candidateTarball
+        await fs.realpath(fileURLToPath(new URL(entry.resolved,
+          pathToFileURL(path.join(directory, 'package-lock.json'))))) === candidateTarball
       : entry.resolved?.startsWith(registry)), `package provenance missing: ${name}`);
     const packageDirectory = path.join(directory, 'node_modules', name);
     const manifestBytes = await fs.readFile(path.join(packageDirectory, 'package.json'));
@@ -369,7 +370,7 @@ async function bundleBrowser(directory, packageDir, browserLoad) {
     assetSources[url] = { package: codec, path: relative, sha256: sha256(await fs.readFile(source)) };
   };
   if (browserLoad === 'default') {
-    for (const codec of ['@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', '@jsquash/webp']) {
+    for (const codec of ['@jsquash/jpeg', '@jsquash/png', '@jsquash/resize', packageName]) {
       const packageRoot = path.join(directory, 'node_modules', codec);
       const visit = async (current) => {
         for (const entry of await fs.readdir(current, { withFileTypes: true })) {

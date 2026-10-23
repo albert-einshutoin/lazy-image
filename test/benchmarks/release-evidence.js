@@ -34,7 +34,7 @@ function validateEvidence(compiler, quality) {
 
 function writeReport(compiler, quality) {
   validateEvidence(compiler, quality);
-  const lines = ['# v1.3.0 release evidence', '',
+  const lines = [`# v${require('../../package.json').version} release evidence`, '',
     `Revision: ${quality.environment.revision}; dirty: ${quality.environment.dirty}.`, '',
     `Compiler: ${compiler.summary.accepted}/${compiler.summary.supportedCases} supported inputs accepted; ${compiler.summary.expectedRejections} expected rejections.`,
     `Strict compiler budgets: ${compiler.summary.strictBudget.met}/${compiler.summary.strictBudget.cases}.`,

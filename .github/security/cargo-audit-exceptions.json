@@ -3,12 +3,12 @@
     {
       "advisory": "RUSTSEC-2024-0436",
       "package": "paste",
-      "reason": "libavif-sys 0.17.0 constrains the production AVIF backend to rav1e 0.7.x, while paste was removed only from the newer rav1e line.",
-      "impact": "This is an unmaintained proc-macro warning, not a known runtime vulnerability. The root graph compiles it through the pinned AVIF backend; the fuzz lock also resolves it through image/exr metadata even though those optional runtime features are disabled. It is not exposed to image input at runtime.",
-      "remediation": "Re-evaluate libavif-sys or a compatible AVIF backend update, then remove this exception once rav1e 0.7.x leaves the production dependency graph.",
+      "reason": "Reviewed 2026-10-22: the vendored libavif-sys keeps rav1e 0.7.1 to preserve the encoder ABI and output behavior. Both rav1e 0.7.1 and the available 0.8.1 still depend on paste; upgrading alone does not remove this warning.",
+      "impact": "This is an unmaintained proc-macro warning, not a known runtime vulnerability. The root graph compiles it through the pinned AVIF backend; the fuzz lock also resolves it through optional image/ravif/rav1e metadata even though those runtime features are disabled. It is not exposed to image input at runtime.",
+      "remediation": "Remove this exception when a reviewed rav1e release replaces paste and image/ravif no longer retains it in either lockfile. Re-check the active root and fuzz graphs before the review deadline; do not extend without reassessing them.",
       "owner": "lazy-image maintainers",
       "upstream": "https://github.com/xiph/rav1e/issues/3418",
-      "reviewBy": "2026-10-19",
+      "reviewBy": "2027-01-20",
       "lockfiles": ["Cargo.lock", "fuzz/Cargo.lock"]
     }
   ]

@@ -2,8 +2,8 @@ import jpegDecode, { init as initJpegDecode } from '@jsquash/jpeg/decode.js';
 import jpegEncode, { init as initJpegEncode } from '@jsquash/jpeg/encode.js';
 import pngDecode, { init as initPngDecode } from '@jsquash/png/decode.js';
 import resizeImage, { initResize } from '@jsquash/resize';
-import webpDecode, { init as initWebpDecode } from '@jsquash/webp/decode.js';
-import webpEncode, { init as initWebpEncode } from '@jsquash/webp/encode.js';
+import webpDecode, { init as initWebpDecode } from './vendor/webp/decode.js';
+import webpEncode, { init as initWebpEncode } from './vendor/webp/encode.js';
 
 import {
   LazyImageWasmError,
