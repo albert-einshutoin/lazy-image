@@ -822,7 +822,7 @@ dependencies = [
 
 [[package]]
 name = "lazy-image"
-version = "1.5.0"
+version = "2.0.0"
 dependencies = [
  "bitflags",
  "criterion",
@@ -859,9 +859,7 @@ checksum = "7a79a3332a6609480d7d0c9eab957bca6b455b91bb84e66d19f5ff66294b85b8"
 
 [[package]]
 name = "libavif-sys"
-version = "0.17.0+libavif.1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "490ca74b61e773140bebb086c81facb23273a99364a9ab0c92ab1532b90ade35"
+version = "0.17.0+libavif.1.0.4.lazy-image.1"
 dependencies = [
  "cmake",
  "libc",
@@ -1946,9 +1944,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.49.0"
+version = "1.51.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72a2903cd7736441aac9df9d7688bd0ce48edccaadf181c3b90be801e81d3d86"
+checksum = "a13e32eacd0222f9658be2ccbd83b718bfd9bfb0d54b5921913c184cb86124a5"
 dependencies = [
  "pin-project-lite",
 ]

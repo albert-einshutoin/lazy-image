@@ -24,10 +24,10 @@ Node.js 22+。対応環境では native binary を自動インストールしま
 npm install @alberteinshutoin/lazy-image
 ```
 
-更新前に[1.5.0のリリース説明](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/V1.5.0_RELEASE_NOTES.md)で、
-JPEG出力の変化、容量探索のコスト、quality上限を明示するpolicyを確認してください。
-1.5.0を指定してインストールする前にregistry上の公開状況を確認してください。
-checkoutや配布候補の検証成功だけでは、npm公開を確認できません。
+次のセキュリティ候補は **2.0.0（未公開）** です。
+[修正内容とWasm移行手順](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/V2.0.0_RELEASE_NOTES.md)を確認してください。
+手動配信するWebP assetのコピー元がWasmパッケージ内へ移ります。
+公開済み1.5.0には今回の候補修正は含まれません。候補の検証成功だけではnpm公開を確認できません。
 
 ## クイックスタート
 

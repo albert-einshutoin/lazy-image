@@ -9,7 +9,7 @@ const files = [
   ['@jsquash/jpeg', 'codec/enc/mozjpeg_enc.wasm'],
   ['@jsquash/png', 'codec/pkg/squoosh_png_bg.wasm'],
   ['@jsquash/resize', 'lib/resize/pkg/squoosh_resize_bg.wasm'],
-  ['@jsquash/webp', 'codec/enc/webp_enc.wasm'],
+  ['@alberteinshutoin/lazy-image-wasm', 'vendor/webp/codec/enc/webp_enc.wasm'],
 ];
 
 async function main() {

@@ -50,7 +50,7 @@ const SCENARIOS = [
 const WASM_CODEC_BASELINES = [
   {
     packageName: 'jSquash',
-    packages: ['@jsquash/jpeg', '@jsquash/webp', '@jsquash/resize'],
+    packages: ['@jsquash/jpeg', '@jsquash/resize'],
     reason: 'Optional jSquash packages are not installed in this workspace.',
   },
   {

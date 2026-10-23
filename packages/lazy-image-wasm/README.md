@@ -95,17 +95,24 @@ The codec loader resolves Wasm with `new URL(..., import.meta.url)`; the tested
 esbuild ESM bundle emits those URLs relative to `worker.js`.
 
 ```bash
-npm install @alberteinshutoin/lazy-image-wasm@1.5.0
+npm install @alberteinshutoin/lazy-image-wasm@2.0.0
 npm install --save-dev esbuild@0.25.10
 ./node_modules/.bin/esbuild worker.mjs --bundle --format=esm --platform=browser --target=es2022 --outfile=dist/worker.js
-find node_modules/@jsquash/{jpeg,png,resize,webp} -name '*.wasm' -exec cp {} dist/ \;
+find node_modules/@jsquash/{jpeg,png,resize} node_modules/@alberteinshutoin/lazy-image-wasm/vendor/webp -name '*.wasm' -exec cp {} dist/ \;
 ```
 
-The version-pinned command requires 1.5.0 to be available in the registry.
+The version-pinned command requires 2.0.0 to be available in the registry.
 During release preparation, use the packed workspace candidate tarball; candidate
 verification does not establish npm publication.
-This version synchronizes with the native packages and does not add the native
-compiler or its `maxQuality` policy to Wasm. Codec/runtime behavior is unchanged.
+2.0.0 replaces the removed `@jsquash/webp` dependency with patched vendored
+libwebp 1.6.0. Update the copy source shown above and deploy all three WebP Wasm
+files together with the new Worker bundle. Keep their filenames unchanged and
+invalidate any cached old bundle/assets. Explicit `wasmModules` bindings must
+also use the patched decoder and encoder; initialization rejects versions below
+1.3.2 or an unknown version before processing image bytes.
+This deployment change requires a major version under the project's SemVer
+policy. The JS API is unchanged; native `compileImage` and its `maxQuality`
+policy remain separate from Wasm.
 
 `worker.mjs`:
 

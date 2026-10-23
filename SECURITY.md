@@ -4,9 +4,14 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.14.x  | :white_check_mark: |
-| 0.13.x  | :white_check_mark: |
-| < 0.13  | :x:                |
+| 1.5.x   | :white_check_mark: |
+| < 1.5   | :x:                |
+
+2.0.0 is an **unpublished security candidate**. The fixes described below are
+in candidate source/assets; installing published 1.5.0 does not obtain them.
+The candidate changes the manual Wasm asset-copy location; follow the
+[migration notes](docs/history/V2.0.0_RELEASE_NOTES.md). This table identifies
+the currently published support line, not a claim that 1.5.0 contains these fixes.
 
 ## Reporting a Vulnerability
 
@@ -60,13 +65,29 @@ lazy-image implements several security measures to protect against common vulner
   - Critical/High: security patch release within 14 days of confirmation.
   - Medium: patch in the next scheduled minor/patch release (target ≤ 30 days).
   - Low: fixed opportunistically in a regular release.
-- **Backports**: Security fixes are backported to all supported lines (0.14.x and 0.13.x). Unsupported versions (<0.13) are not patched; users must upgrade.
+- **Backports**: The bundled WebP/libavif fixes in this candidate will be delivered in 2.0.0, including the required Wasm asset migration. These fixes are not backported to 1.5.x; users must migrate after 2.0.0 is published. Published 1.5.0 does not contain them.
 - **Disclosure**: Public disclosure occurs after a fix is released and packages are available. If coordinated disclosure is requested, we honor reasonable embargoes up to 90 days.
 - **Credit**: We credit reporters in the advisory unless anonymity is requested.
 
 ## Dependency Security Updates
 
 Key upstreams: mozjpeg, libwebp, libavif-sys/rav1e, image crate.
+
+### Bundled native and Wasm code
+
+Package-manager audits do not cover every C library embedded in a crate or
+Wasm binary. The browser/Edge WebP codecs ship in
+`packages/lazy-image-wasm/vendor/webp` and use libwebp 1.6.0. Rebuild them with
+`npm run build:webp-wasm`; its source checksum and compiler image digest are
+pinned. The package tests check the version reported by all three codecs.
+
+`vendor/libavif-sys` retains libavif 1.0.4 with the upstream fixes for
+CVE-2025-48174 and CVE-2025-48175 backported. See its `SECURITY-PATCHES.md`
+for source provenance and patch references. Review these vendors against
+upstream advisories even when npm and Cargo audits pass.
+
+Keep the host Node.js runtime patched as well. The October 21, 2026 security
+releases are 22.23.4, 24.22.1 and 26.12.1; use an up-to-date supported line.
 
 ### Cargo audit exceptions
 
@@ -139,7 +160,7 @@ lazy-image uses the following image processing libraries:
 |---------|---------|----------|
 | mozjpeg | JPEG encoding | Actively maintained, fuzzing tested |
 | libwebp | WebP encoding | Google-maintained, part of Chrome |
-| ravif | AVIF encoding | Pure Rust, memory-safe |
+| libavif / rav1e | AVIF encoding and ICC handling | C library with documented security backports; Rust AV1 encoder |
 | image | Image decoding | Rust ecosystem, security-focused |
 
 We monitor security advisories for all dependencies and update promptly when vulnerabilities are discovered.

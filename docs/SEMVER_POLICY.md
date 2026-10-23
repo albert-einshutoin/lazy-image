@@ -84,3 +84,18 @@ Each PR that changes user-visible behavior must update `CHANGELOG.md` accordingl
 Existing output convenience APIs such as `toBufferWithMetrics()` remain supported
 within v1.x; removal requires a major release. Metrics aliases removed before v1
 are not part of this contract.
+
+## 2.0.0 security candidate decision (2026-10-24)
+
+1.5.0 is already published on GitHub and npm. 1.5.1 was considered, but the
+security update removes `@jsquash/webp` and moves the documented manually copied
+WebP assets into the Wasm package's `vendor/webp` directory. Existing Worker
+deployment scripts must change their copy source and replace cached assets.
+Under "requires code changes for existing consumers" above this is a breaking
+distribution change, so the synchronized eight npm packages use 2.0.0.
+Keeping the vulnerable dependency to preserve that layout is not an acceptable
+compatibility adapter. The JS/TypeScript API, native ABI, Node >=22 support,
+compiler policy, metadata defaults, and error taxonomy remain unchanged.
+Rejecting stale/unknown explicitly injected WebP codecs corrects the security
+boundary; consumers must supply patched modules. See the migration instructions
+in [the candidate notes](history/V2.0.0_RELEASE_NOTES.md).

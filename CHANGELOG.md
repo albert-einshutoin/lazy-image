@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - Unreleased candidate
+
+### Changed (BREAKING)
+- Move WebP Wasm assets from the removed `@jsquash/webp` dependency into `@alberteinshutoin/lazy-image-wasm/vendor/webp`. Browser/Worker deployments must update their asset-copy source and replace decoder, baseline encoder, and SIMD encoder together. See the [migration and release notes](docs/history/V2.0.0_RELEASE_NOTES.md). The JavaScript API, native ABI, supported Node versions, and compiler policy are unchanged.
+
+### Security
+- Rebuild the browser/Edge WebP codecs with libwebp 1.6.0 to include the CVE-2023-4863 fix. The WebP Wasm assets now ship inside the Wasm package; update asset-copy commands accordingly.
+- Backport the CVE-2025-48174 and CVE-2025-48175 fixes into the vendored libavif backend, preserving its existing ABI and encoder behavior.
+- Update development-only sharp to 0.35.5 or newer for the librsvg CVE-2026-96889 fix. Reassess the compile-time paste advisory exception through 2027-01-20.
+- Update the N-API Tokio lockfile dependency to 1.51.6 for the AsyncFd I/O-safety advisory RUSTSEC-2026-0386; no advisory exception is added.
+
 ## [1.5.0]
 
 This MINOR release adds a native compiler policy option. Wasm is version-synchronized without new compiler functionality or codec changes. During preparation, a versioned checkout or candidate PASS does not establish publication; install 1.5.0 only after checking its registry availability.

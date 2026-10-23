@@ -8,6 +8,7 @@ import { createUploadOptimizer } from '../browser.js';
 import { createUploadOptimizer as createEdgeUploadOptimizer } from '../edge.js';
 import { createUploadWorkerHandler } from '../worker.js';
 import edgeExampleHandler from '../examples/edge.mjs';
+import { initEmscriptenModule as initWebpModule } from '../vendor/webp/utils.js';
 import {
   categoryForCode,
   ERROR_CATEGORIES,
@@ -45,8 +46,8 @@ async function loadWasmModules() {
     jpegEncode: await readWasm('@jsquash/jpeg', 'codec/enc/mozjpeg_enc.wasm'),
     pngDecode: await readWasm('@jsquash/png', 'codec/pkg/squoosh_png_bg.wasm'),
     resize: await readWasm('@jsquash/resize', 'lib/resize/pkg/squoosh_resize_bg.wasm'),
-    webpDecode: await readWasm('@jsquash/webp', 'codec/dec/webp_dec.wasm'),
-    webpEncode: await readWasm('@jsquash/webp', 'codec/enc/webp_enc.wasm'),
+    webpDecode: await fs.readFile(new URL('../vendor/webp/codec/dec/webp_dec.wasm', import.meta.url)),
+    webpEncode: await fs.readFile(new URL('../vendor/webp/codec/enc/webp_enc.wasm', import.meta.url)),
   };
 }
 
@@ -64,10 +65,56 @@ async function test(name, fn) {
   }
 }
 
+await test('WebP initialization rejects stale and unversioned codec bindings', async () => {
+  for (const module of [{ version: () => 0x010100 }, { version: () => NaN }, {}]) {
+    await assert.rejects(() => initWebpModule(() => module), /requires libwebp >= 1\.3\.2/);
+  }
+  const patched = { version: () => 0x010302 };
+  assert.equal(await initWebpModule(() => patched), patched);
+});
+
+await test('WebP codecs include the CVE-2023-4863 fix', async () => {
+  for (const codec of ['dec/webp_dec', 'enc/webp_enc', 'enc/webp_enc_simd']) {
+    const { default: factory } = await import(`../vendor/webp/codec/${codec}.js`);
+    const module = await factory({
+      wasmBinary: await fs.readFile(new URL(`../vendor/webp/codec/${codec}.wasm`, import.meta.url)),
+    });
+    assert.ok(module.version() >= 0x010302, `${codec} requires libwebp >= 1.3.2`);
+  }
+});
+
 const wasmModules = await loadWasmModules();
 const optimizer = await createUploadOptimizer({
   wasmModules,
   defaultOutput: 'arrayBuffer',
+});
+
+await test('WebP input is accepted by browser, edge and Worker entrypoints', async () => {
+  const input = await fixture('test_90KB_1471x1471.webp');
+  const options = { format: 'webp', maxWidth: 128, maxHeight: 128, output: 'arrayBuffer' };
+  const edge = await createEdgeUploadOptimizer({ wasmModules });
+  for (const instance of [optimizer, edge]) {
+    const result = await instance.optimizeUpload(input, options);
+    assert.equal(result.metrics.formatIn, 'webp');
+    assert.equal(result.metrics.widthIn, 1471);
+    assert.ok(result.metrics.widthOut <= 128);
+    assert.ok(result.bytesOut > 0);
+  }
+  let response;
+  const handler = createUploadWorkerHandler({ wasmModules });
+  await handler({ data: { id: 23, input, options }, target: {
+    postMessage(value) { response = structuredClone(value); },
+  } });
+  assert.equal(response.id, 23);
+  assert.equal(response.ok, true);
+});
+
+await test('truncated WebP fails at the decoder with E131', async () => {
+  const input = (await fixture('test_90KB_1471x1471.webp')).subarray(0, 24);
+  await assert.rejects(
+    () => optimizer.optimizeUpload(input, { format: 'webp', output: 'arrayBuffer' }),
+    (error) => error instanceof LazyImageWasmError && error.code === 'E131'
+  );
 });
 
 await test('exports the workspace package version', async () => {
