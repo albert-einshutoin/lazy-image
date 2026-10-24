@@ -13,7 +13,7 @@ use super::super::firewall::FirewallConfig;
 use crate::engine::io::{extract_exif_raw, extract_icc_profile_lossy, load_file_safe, Source};
 #[cfg(feature = "napi")]
 use crate::error::LazyImageError;
-use crate::ops::{Operation, PresetConfig};
+use crate::ops::Operation;
 use image::DynamicImage;
 use std::sync::Arc;
 use std::sync::OnceLock;
@@ -93,8 +93,6 @@ pub struct ImageEngine {
     pub(crate) decoded: Option<Arc<DynamicImage>>,
     /// Queued operations
     pub(crate) ops: Vec<Operation>,
-    /// Last applied preset (used by toPresetBuffer/toPresetFile convenience APIs)
-    pub(crate) last_preset: Option<PresetConfig>,
     /// ICC color profile extracted from source image (lazy: extracted on first access)
     pub(crate) icc_profile: OnceLock<Option<Arc<Vec<u8>>>>,
     /// Raw EXIF data extracted from source image (lazy: extracted on first access)
@@ -184,7 +182,6 @@ impl ImageEngine {
             source: self.source.clone(),
             decoded: self.decoded.clone(),
             ops: self.ops.clone(),
-            last_preset: self.last_preset.clone(),
             icc_profile,
             exif_data,
             auto_orient: self.auto_orient,
@@ -206,7 +203,6 @@ impl ImageEngine {
             source: Some(source),
             decoded: None,
             ops: Vec::new(),
-            last_preset: None,
             icc_profile: OnceLock::new(),
             exif_data: OnceLock::new(),
             auto_orient: true,
@@ -264,7 +260,6 @@ mod tests {
         assert!(engine.source.is_some());
         assert!(engine.decoded.is_none());
         assert!(engine.ops.is_empty());
-        assert!(engine.last_preset.is_none());
         assert!(engine.icc_profile.get().is_none());
         assert!(engine.exif_data.get().is_none());
         assert!(engine.auto_orient);

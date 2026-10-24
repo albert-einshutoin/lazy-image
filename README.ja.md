@@ -27,6 +27,8 @@ npm install @alberteinshutoin/lazy-image
 次のセキュリティ候補は **2.0.0（未公開）** です。
 [修正内容とWasm移行手順](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/V2.0.0_RELEASE_NOTES.md)を確認してください。
 手動配信するWebP assetのコピー元がWasmパッケージ内へ移ります。
+deprecatedな`preset()` / `EncodeOptions`を削除します。既存のpreset出力APIと
+`EncodeOptionsInput`への移行手順も説明に記載しています。
 公開済み1.5.0には今回の候補修正は含まれません。候補の検証成功だけではnpm公開を確認できません。
 
 ## クイックスタート

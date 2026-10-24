@@ -446,7 +446,10 @@ impl ImageEngine {
     /// take precedence over format/quality/fastMode.
     ///
     /// Returns `EncodeResult { data, metrics? }`.
-    #[napi(ts_return_type = "Promise<EncodeResult>")]
+    #[napi(
+        ts_args_type = "options: EncodeOptionsInput",
+        ts_return_type = "Promise<EncodeResult>"
+    )]
     pub fn encode(
         &mut self,
         env: Env,
@@ -480,7 +483,11 @@ impl ImageEngine {
     ///
     /// Same options as `encode()`, but writes the result directly to `path`.
     /// Returns `FileEncodeResult { bytesWritten, metrics? }`.
-    #[napi(js_name = "encodeToFile", ts_return_type = "Promise<FileEncodeResult>")]
+    #[napi(
+        js_name = "encodeToFile",
+        ts_args_type = "path: string, options: EncodeOptionsInput",
+        ts_return_type = "Promise<FileEncodeResult>"
+    )]
     pub fn encode_to_file(
         &mut self,
         env: Env,

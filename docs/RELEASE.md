@@ -12,7 +12,7 @@ Related docs:
 - [v1.4.2 verification](history/V1.4.2_VERIFICATION.md) — FIR/loader/tooling patch, candidate and published npm evidence
 - [v1.4.3 verification](history/V1.4.3_VERIFICATION.md) — libc 0.2.189 patch, candidate and published npm evidence
 - [v1.5.0 preparation](history/V1.5.0_PREPARATION.md) — unpublished scope, compatibility, and candidate-evidence handoff
-- [v2.0.0 candidate](history/V2.0.0_RELEASE_NOTES.md) — security changes, Wasm migration, limits, and publication handoff; 1.5.0 was published on 2026-10-13
+- [v2.0.0 candidate](history/V2.0.0_RELEASE_NOTES.md) — security changes, deprecated API removal (#680), native/Wasm migration, limits, and publication handoff; 1.5.0 was published on 2026-10-13
 
 ---
 

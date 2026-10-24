@@ -261,7 +261,7 @@ export interface ImageEngine {
   toFilesResponsive(pattern: string, options: ResponsiveSetOptions, srcsetPattern?: string): Promise<ResponsiveFilesOutput>
   toPlaceholder(options?: PlaceholderOptions): Promise<PlaceholderResult>
   // Note: encode() / encodeToFile() are declared on the ImageEngine class
-  // (see patchIndexDts patches that retype them to EncodeOptionsInput) and
+  // (the native declarations select EncodeOptionsInput) and
   // are deliberately NOT re-declared here to avoid duplicate signatures.
 }
 
@@ -476,7 +476,13 @@ if (nativeBinding && nativeBinding.ImageEngine) {
 function patchIndexDts() {
   let content = restoreDtsIfGeneratedEmpty(fs.readFileSync(indexDtsPath, 'utf8'));
 
-  content = replaceIfNeeded(content, '  preset(name: string): PresetResult', '  preset(name: PresetName): PresetResult');
+  // The pinned N-API generator cannot hide object types. Public method signatures
+  // already use EncodeOptionsInput; only Rust's internal conversion type is removed.
+  content = content.replace(/^export interface EncodeOptions \{[\s\S]*?^\}\n?/m, '');
+  if (/\bEncodeOptions\b/.test(content)) {
+    throw new Error('Unexpected internal EncodeOptions reference in generated public types');
+  }
+
   content = replaceIfNeeded(content, '  toBuffer(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>', '  toBuffer(format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<Buffer>');
   content = replaceIfNeeded(content, '  toBufferWithPreset(presetName: string): Promise<Buffer>', '  toBufferWithPreset(presetName: PresetName): Promise<Buffer>');
   content = replaceIfNeeded(content, '  toBufferWithMetrics(format: string, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>', '  toBufferWithMetrics(format: OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null): Promise<OutputWithMetrics>');
@@ -486,24 +492,10 @@ function patchIndexDts() {
   content = replaceIfNeeded(content, '  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | string, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>', '  processBatch(inputs: Array<string>, outputDir: string, optionsOrFormat: BatchOptions | OutputFormat, quality?: number | undefined | null, fastMode?: boolean | undefined | null, concurrency?: number | undefined | null): Promise<BatchResult[]>');
   content = replaceIfNeeded(content, '  /** Output format ("jpeg", "png", "webp", "avif") */\n  format: string', '  /** Output format ("jpeg", "jpg", "png", "webp", "avif") */\n  format: OutputFormat');
   content = patchImageMetadataFormat(content);
-  content = replaceIfNeeded(content, '  /** Recommended output format */\n  format: string', '  /** Recommended output format */\n  format: CanonicalOutputFormat');
-  content = replaceIfNeeded(content, 'export interface PresetResult {\n  /** Recommended output format */\n  format: string', 'export interface PresetResult {\n  /** Recommended output format */\n  format: CanonicalOutputFormat');
   content = replaceIfNeeded(content, '  /** Detected input format (lowercase: jpeg, png, webp, avif, etc.) */\n  formatIn?: string', '  /** Detected input format reported by runtime metrics */\n  formatIn?: InputFormat');
   content = replaceIfNeeded(content, '  /** Output format */\n  formatOut: string', '  /** Output format */\n  formatOut: CanonicalOutputFormat');
   content = replaceIfNeeded(content, '  iccOutcome: string', '  iccOutcome: IccOutcome');
   content = replaceIfNeeded(content, '  toFileWithMetrics(path: string, format: string,', '  toFileWithMetrics(path: string, format: OutputFormat,');
-  content = replaceIfNeeded(content, '  encode(options: EncodeOptions): Promise<EncodeResult>', '  encode(options: EncodeOptionsInput): Promise<EncodeResult>');
-  content = replaceIfNeeded(content, '  encodeToFile(path: string, options: EncodeOptions): Promise<FileEncodeResult>', '  encodeToFile(path: string, options: EncodeOptionsInput): Promise<FileEncodeResult>');
-  // Mark the NAPI-generated `EncodeOptions` interface as deprecated.
-  // The exported type uses `format?: string` (weak typing); consumers should
-  // import `EncodeOptionsInput` instead, which uses `format?: OutputFormat`.
-  // We patch the JSDoc rather than removing the export because the interface
-  // is still the NAPI ABI type for `encode()` / `encodeToFile()` at runtime.
-  content = replaceIfNeeded(
-    content,
-    '/** Options object for the unified `encode()` / `encodeToFile()` methods. */\nexport interface EncodeOptions {',
-    '/**\n * Options object for the unified `encode()` / `encodeToFile()` methods.\n *\n * @deprecated Use `EncodeOptionsInput` instead — this interface uses `format?: string`,\n * whereas `EncodeOptionsInput` is strongly typed (`format?: OutputFormat`). The class\n * methods on `ImageEngine` accept `EncodeOptionsInput`; this type is retained only for\n * the NAPI ABI signature.\n */\nexport interface EncodeOptions {',
-  );
   content = replaceIfNeeded(content, '  fit?: string', '  fit?: ResizeFit');
   content = replaceIfNeeded(content, '  policy?: string', '  policy?: FirewallPolicy');
   content = replaceIfNeeded(content, 'export declare function supportedInputFormats(): Array<string>', 'export declare function supportedInputFormats(): Array<CanonicalInputFormat>');

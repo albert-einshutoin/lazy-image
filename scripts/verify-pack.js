@@ -1,6 +1,7 @@
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 
 const root = path.resolve(__dirname, '..');
 const requiredPackFiles = [
@@ -15,7 +16,7 @@ const requiredPackFiles = [
   'streaming/pipeline.js',
 ];
 
-function readPackedFiles() {
+function readPackedFiles(directory) {
   const npmExecPath = process.env.npm_execpath;
   const command = npmExecPath
     ? process.execPath
@@ -23,13 +24,25 @@ function readPackedFiles() {
       ? 'npm.cmd'
       : 'npm';
   const args = npmExecPath
-    ? [npmExecPath, 'pack', '--dry-run', '--json']
-    : ['pack', '--dry-run', '--json'];
+    ? [npmExecPath, 'pack', '--ignore-scripts', '--json', '--pack-destination', directory]
+    : ['pack', '--ignore-scripts', '--json', '--pack-destination', directory];
   const stdout = execFileSync(command, args, {
     cwd: root,
     encoding: 'utf8',
   });
   const [summary] = JSON.parse(stdout);
+  execFileSync('tar', ['-xzf', path.join(directory, summary.filename), '-C', directory]);
+  const fixtureDirectory = path.join(directory, 'package', 'test', 'type-safety');
+  fs.mkdirSync(fixtureDirectory, { recursive: true });
+  const fixture = path.join(fixtureDirectory, 'typescript-typecheck.test.ts');
+  fs.copyFileSync(path.join(root, 'test/type-safety/typescript-typecheck.test.ts'), fixture);
+  const config = path.join(directory, 'tsconfig.json');
+  fs.writeFileSync(config, JSON.stringify({
+    extends: path.join(root, 'tsconfig.json'),
+    compilerOptions: { typeRoots: [path.join(root, 'node_modules/@types')] },
+    include: [fixture],
+  }));
+  execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '--project', config], { stdio: 'inherit' });
   return new Set(summary.files.map((entry) => entry.path));
 }
 
@@ -46,7 +59,13 @@ function ensurePackedFile(packedFiles, relPath, context) {
 }
 
 function main() {
-  const packedFiles = readPackedFiles();
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lazy-image-pack-'));
+  let packedFiles;
+  try {
+    packedFiles = readPackedFiles(directory);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
 
   for (const relPath of requiredPackFiles) {
     ensurePackedFile(packedFiles, relPath, 'required file');

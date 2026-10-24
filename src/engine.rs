@@ -103,7 +103,7 @@ pub use resize::{calc_resize_dimensions, fast_resize, fast_resize_owned};
 
 // Re-export types from api.rs and tasks.rs
 #[cfg(feature = "napi")]
-pub use api::{Dimensions, PresetResult};
+pub use api::Dimensions;
 #[cfg(feature = "napi")]
 pub use tasks::BatchResult;
 
