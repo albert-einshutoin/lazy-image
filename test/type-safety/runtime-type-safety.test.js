@@ -4,6 +4,7 @@
 
 const { resolveFixture, resolveRoot } = require('../helpers/paths');
 const { ImageEngine } = require(resolveRoot('index'));
+const assert = require('node:assert/strict');
 
 async function testTypeSafetyInPractice() {
     if (process.env.LAZY_IMAGE_FORCE_RUNTIME_TYPE_SAFETY_FAILURE === '1') {
@@ -35,24 +36,12 @@ async function testTypeSafetyInPractice() {
     const validPresets = ['thumbnail', 'avatar', 'hero', 'social'];
     
     for (const presetName of validPresets) {
-        try {
-            const engine = ImageEngine.fromPath(imagePath);
-            const preset = engine.preset(presetName);
-            
-            console.log(`  ${presetName}:`);
-            console.log(`    Format: ${preset.format}`);
-            console.log(`    Quality: ${preset.quality}`);
-            console.log(`    Size: ${preset.width}x${preset.height}`);
-            
-            // Type-safe in TypeScript; runtime checks in JavaScript
-            const buffer = await engine.toBuffer(preset.format, preset.quality);
-            console.log(`    Result: ${buffer.length} bytes`);
-
-            const convenience = await ImageEngine.fromPath(imagePath).toBufferWithPreset(presetName);
-            console.log(`    Convenience result: ${convenience.length} bytes`);
-        } catch (e) {
-            console.log(`  ${presetName}: Error - ${e.message}`);
-        }
+        const engine = ImageEngine.fromPath(imagePath);
+        const result = await engine.encode({ preset: presetName });
+        assert(Buffer.isBuffer(result.data) && result.data.length > 0);
+        const convenience = await engine.toBufferWithPreset(presetName);
+        assert(Buffer.isBuffer(convenience) && convenience.length > 0);
+        console.log(`  ${presetName}: ${result.data.length} bytes; convenience ${convenience.length} bytes`);
     }
     
     // Invalid values test (should fail at runtime)
@@ -66,13 +55,8 @@ async function testTypeSafetyInPractice() {
         console.log('  ✅ Invalid format correctly rejected:', e.message.substring(0, 100) + '...');
     }
     
-    try {
-        const engine = ImageEngine.fromPath(imagePath);
-        engine.preset('invalid_preset');
-        console.log('  ❌ Should not reach here - invalid preset was accepted');
-    } catch (e) {
-        console.log('  ✅ Invalid preset correctly rejected:', e.message.substring(0, 100) + '...');
-    }
+    await assert.rejects(async () => ImageEngine.fromPath(imagePath).encode({ preset: 'invalid_preset' }), /preset/i);
+    console.log('  ✅ Invalid preset correctly rejected');
     
     console.log('\n📋 Type Safety Benefits:');
     console.log('1. ✅ IDE autocomplete for format strings');

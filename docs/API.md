@@ -35,11 +35,12 @@ const bytes = await engine.resize(800).toFile('output.jpg', 'jpeg', 80);
 | `.brightness(value)` | Adjust brightness (-100 to 100) |
 | `.contrast(value)` | Adjust contrast (-100 to 100) |
 | `.normalizePixelFormat()` | Normalize pixel format to RGB/RGBA without color space conversion. |
-| `.preset(name)` | ⚠️ **DEPRECATED** - Applies a preset (`'thumbnail'`, `'avatar'`, `'hero'`, `'social'`) by mutating the pipeline and returning a separate `PresetResult`. Prefer `encode({ preset: name })`, `.toBufferWithPreset(name)`, or `.toFileWithPreset(path, name)` for self-contained preset output. |
 | `.sanitize({ policy? })` | Image Firewall: apply `strict`, `lenient`, or `public-upload`. The public-upload policy keeps strict resource limits, preserves only validated ICC up to 512 KiB, and always strips EXIF/GPS/XMP. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md). |
 | `.limits({ maxPixels?, maxBytes?, timeoutMs? })` | Override firewall limits. |
 
-For preset-based output, prefer the self-contained APIs above the deprecated `.preset(name)` command/query mix:
+In 2.0.0, the deprecated mutating `.preset(name)` method and its `PresetResult`
+type are removed. Use a self-contained preset output call instead; it leaves
+the engine's queued operations unchanged for later outputs:
 
 ```javascript
 const { data } = await ImageEngine.fromPath('photo.jpg').encode({ preset: 'thumbnail' });
@@ -54,13 +55,13 @@ const bytes = await ImageEngine.fromPath('photo.jpg').toFileWithPreset('thumb.we
 | `.encode({ format?, quality?, fastMode?, preset?, metrics? })` | Unified encode-to-buffer API. Use `preset` for self-contained preset output; when `preset` is set it takes precedence over `format`, `quality`, and `fastMode`. Returns `{ data, metrics? }`. |
 | `.encodeToFile(path, { format?, quality?, fastMode?, preset?, metrics? })` | Unified encode-to-file API. Same options as `.encode()`, returning `{ bytesWritten, metrics? }`. |
 | `.toBuffer(format, quality?)` | Encode to Buffer. Format: `'jpeg'`, `'png'`, `'webp'`, `'avif'` (AVIF requires build feature `avif`). Default quality: JPEG=85, WebP=80, AVIF=60. |
-| `.toBufferWithPreset(name)` | Self-contained preset buffer output. Prefer this over deprecated `.preset(name)` when writing a preset result to a Buffer. |
+| `.toBufferWithPreset(name)` | Self-contained preset buffer output without changing queued operations. |
 | `.toBufferProfile(format, profile, quality?)` | Encode using high-level profile: `'size-first'`, `'balanced'`, `'speed-first'`. |
 | `.toBufferWithMetrics(format, quality?)` | Encode with performance metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
 | `.toBufferWithMetricsPreset(name)` | Self-contained preset buffer output with metrics. Returns `{ data: Buffer, metrics: ProcessingMetrics }`. |
 | `.toBufferWithMetricsProfile(format, profile, quality?)` | Profile-based encode with metrics. |
 | `.toFile(path, format, quality?)` | **Recommended**: Write directly to file (memory-efficient). Returns bytes written. |
-| `.toFileWithPreset(path, name)` | Self-contained preset file output. Prefer this over deprecated `.preset(name)` when writing a preset result to a file. |
+| `.toFileWithPreset(path, name)` | Self-contained preset file output without changing queued operations. |
 | `.toFileWithMetrics(path, format, quality?)` | File output with metrics. Returns `{ bytesWritten, metrics }`. |
 | `.toBufferTargetBytes(format, options)` | Searches quality to stay under a byte budget. Returns `{ data, quality, bytesOut, budgetMet, targetBytes, metrics }`. |
 | `.toFileTargetBytes(path, format, options)` | Native file variant of byte-budget encoding. Search candidates stay Rust-owned and the winner is atomically written without crossing V8 as a Buffer. Returns metadata only: `{ bytesWritten, quality, budgetMet, targetBytes, metrics }`. The current byte/count contract is `u32`; outputs above 4 GiB fail explicitly. |
@@ -323,13 +324,6 @@ interface EncodeResult {
 interface FileEncodeResult {
   bytesWritten: number;
   metrics?: ProcessingMetrics;
-}
-
-interface PresetResult {
-  format: string;
-  quality?: number;
-  width?: number;
-  height?: number;
 }
 
 interface ProcessingMetrics {

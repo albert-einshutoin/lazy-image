@@ -3,6 +3,11 @@
  * Verifies that type definitions work correctly.
  */
 import * as path from 'path';
+// @ts-expect-error EncodeOptions is not exported in v2; use EncodeOptionsInput.
+import type { EncodeOptions } from '../../index';
+// @ts-expect-error The removed preset() result has no remaining public producer.
+import type { PresetResult } from '../../index';
+
 import {
     ArtifactPlan,
     ArtifactSourceFacts,
@@ -11,6 +16,9 @@ import {
     CompileImageOptions,
     compileArtifactPlan,
     compileImage,
+    EncodeOptionsInput,
+    EncodeResult,
+    FileEncodeResult,
     ImageEngine,
     ImageArtifactManifest,
     ImageMetadata,
@@ -19,7 +27,7 @@ import {
     PlaceholderResult,
     PublicUploadPolicy,
     PresetName,
-    PresetResult,
+    OutputWithMetrics,
     ResponsiveFilesOutput,
     ResponsiveSetOptions,
     ResponsiveVariant,
@@ -120,23 +128,19 @@ async function testTypeSafety() {
     
     for (const presetName of validPresets) {
         const engine = ImageEngine.fromPath(imagePath);
-        const preset: PresetResult = engine.preset(presetName);
-        
-        console.log(`Preset ${presetName}:`);
-        console.log(`  Format: ${preset.format}`);
-        console.log(`  Quality: ${preset.quality}`);
-        console.log(`  Size: ${preset.width}x${preset.height}`);
-        
-        // Use preset result
-        const buffer = await engine.toBuffer(preset.format, preset.quality || undefined);
-        console.log(`✅ ${presetName}: ${buffer.length} bytes`);
+        const options: EncodeOptionsInput = { preset: presetName, metrics: true };
+        const preset: EncodeResult = await engine.encode(options);
+        const file: FileEncodeResult = await engine.encodeToFile('preset.webp', options);
+        const metrics: OutputWithMetrics = await engine.toBufferWithMetricsPreset(presetName);
+        const written: number = await engine.toFileWithPreset('preset.webp', presetName);
+        console.log(`✅ ${presetName}: ${preset.data.length} bytes, ${file.bytesWritten}, ${metrics.metrics.version}, ${written}`);
 
         const convenience = await ImageEngine.fromPath(imagePath).toBufferWithPreset(presetName);
         console.log(`✅ convenience ${presetName}: ${convenience.length} bytes`);
     }
 
     // Uppercase preset name is also accepted
-    ImageEngine.fromPath(imagePath).preset('Avatar');
+    await ImageEngine.fromPath(imagePath).toBufferWithPreset('Avatar');
     
     // Metadata inspection is also type-safe
     const metadata: ImageMetadata = await import('../../index').then(m => m.inspectFile(imagePath));
@@ -184,7 +188,7 @@ async function testTypeSafety() {
     await ImageEngine.fromPath(imagePath).toBuffer('invalid_format', 80);
 
     // @ts-expect-error invalid preset must fail at compile time
-    ImageEngine.fromPath(imagePath).preset('invalid_preset');
+    ImageEngine.fromPath(imagePath).toBufferWithPreset('invalid_preset');
     
     console.log('✅ All type safety tests passed!');
 }
@@ -195,10 +199,13 @@ function testIDECompletion() {
     
     // These should trigger IDE autocomplete (use valid values in real usage)
     engine.toBuffer('jpeg', 80); // Autocomplete: 'jpeg', 'png', 'webp', 'avif'
-    engine.preset('thumbnail'); // Autocomplete: 'thumbnail', 'avatar', 'hero', 'social'
+    // @ts-expect-error v2 removes preset() even when the preset name is valid.
+    engine.preset('thumbnail');
     
-    // Type inference test: preset.format inferred as canonical output format, preset.quality as number | undefined
-    const preset = engine.preset('thumbnail');
+    const preset: Promise<EncodeResult> = engine.encode({ preset: 'thumbnail' });
+    // @ts-expect-error EncodeOptionsInput must retain format validation.
+    engine.encode({ format: 'invalid_format' });
+    console.log(preset);
 }
 
 // Error handling test

@@ -572,50 +572,41 @@ async function runTests() {
     // In normal usage, InternalBug errors should not occur.
 
     // Preset tests
-    await asyncTest('preset("thumbnail") works', async () => {
+    await asyncTest('toBufferWithPreset("thumbnail") works', async () => {
         const engine = ImageEngine.from(buffer);
-        const preset = engine.preset('thumbnail');
+        const result = await engine.toBufferWithPreset('thumbnail');
+        const preset = inspect(result);
         assert(preset.format === 'webp', 'thumbnail format should be webp');
-        assert(preset.quality === 75, 'thumbnail quality should be 75');
-        assert(preset.width === 150, 'thumbnail width should be 150');
-        assert(preset.height === 150, 'thumbnail height should be 150');
-        const result = await engine.toBuffer(preset.format, preset.quality);
+        assert(preset.width > 0 && preset.width <= 150, 'thumbnail width must fit 150px');
+        assert(preset.height > 0 && preset.height <= 150, 'thumbnail height must fit 150px');
         assert(result.length > 0, 'output should have content');
     });
 
-    await asyncTest('preset("avatar") works', async () => {
+    await asyncTest('toBufferWithPreset("avatar") works', async () => {
         const engine = ImageEngine.from(buffer);
-        const preset = engine.preset('avatar');
+        const preset = inspect(await engine.toBufferWithPreset('avatar'));
         assert(preset.format === 'webp', 'avatar format should be webp');
-        assert(preset.quality === 80, 'avatar quality should be 80');
-        assert(preset.width === 200, 'avatar width should be 200');
+        assert(preset.width > 0 && preset.width <= 200, 'avatar width must fit 200px');
+        assert(preset.height > 0 && preset.height <= 200, 'avatar height must fit 200px');
     });
 
-    await asyncTest('preset("hero") works', async () => {
+    await asyncTest('toBufferWithPreset("hero") works', async () => {
         const engine = ImageEngine.from(buffer);
-        const preset = engine.preset('hero');
+        const preset = inspect(await engine.toBufferWithPreset('hero'));
         assert(preset.format === 'jpeg', 'hero format should be jpeg');
-        assert(preset.quality === 85, 'hero quality should be 85');
-        assert(preset.width === 1920, 'hero width should be 1920');
+        assert(preset.width > 0 && preset.width <= 1920, 'hero width must fit 1920px');
     });
 
-    await asyncTest('preset("social") works', async () => {
+    await asyncTest('toBufferWithPreset("social") works', async () => {
         const engine = ImageEngine.from(buffer);
-        const preset = engine.preset('social');
+        const preset = inspect(await engine.toBufferWithPreset('social'));
         assert(preset.format === 'jpeg', 'social format should be jpeg');
-        assert(preset.width === 1200, 'social width should be 1200');
-        assert(preset.height === 630, 'social height should be 630');
+        assert(preset.width > 0 && preset.width <= 1200, 'social width must fit 1200px');
+        assert(preset.height > 0 && preset.height <= 630, 'social height must fit 630px');
     });
 
     await asyncTest('invalid preset throws error', async () => {
-        let threw = false;
-        try {
-            ImageEngine.from(buffer).preset('invalid_preset');
-        } catch (e) {
-            threw = true;
-            assert(e.message.includes('preset') || e.message.includes('unknown'), 'error should mention unknown preset');
-        }
-        assert(threw, 'should have thrown an error');
+        await assert.rejects(async () => ImageEngine.from(buffer).encode({ preset: 'invalid_preset' }), /preset/i);
     });
 
     // Default quality tests (v0.7.2+)

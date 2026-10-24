@@ -9,8 +9,7 @@
 //                          lazy accessors, shared `napi_err` helper, and the
 //                          `MetadataPolicy` re-export
 //   - `types.rs`         — `#[napi(object)]` parameter/result structs
-//   - `pipeline_ops.rs`  — queued pipeline ops (resize/crop/rotate/...) plus
-//                          presets
+//   - `pipeline_ops.rs`  — queued pipeline ops (resize/crop/rotate/...)
 //   - `output_ops.rs`    — async output methods (`toBuffer`, `toFile`,
 //                          unified `encode`/`encodeToFile`)
 //   - `batch_ops.rs`     — sync inspection + parallel batch processing
@@ -37,8 +36,8 @@ pub use engine::{ImageEngine, MetadataPolicy};
 #[cfg(feature = "napi")]
 #[allow(unused_imports)]
 pub use types::{
-    BatchOptions, Dimensions, FirewallLimitOptions, KeepMetadataOptions, PresetResult,
-    ResizeOptions, SanitizeOptions,
+    BatchOptions, Dimensions, FirewallLimitOptions, KeepMetadataOptions, ResizeOptions,
+    SanitizeOptions,
 };
 
 #[cfg(test)]

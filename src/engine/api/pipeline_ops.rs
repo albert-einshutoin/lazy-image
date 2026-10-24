@@ -3,15 +3,12 @@
 // src/engine/api/pipeline_ops.rs
 //
 // Pipeline operations that mutate the queued op list (resize/crop/rotate/etc.)
-// plus the `preset()` entry point. These all return `Reference<ImageEngine>`
-// for JS-side method chaining.
+// return `Reference<ImageEngine>` for JS-side method chaining.
 
 #[cfg(feature = "napi")]
 use super::engine::{napi_err, ImageEngine, MetadataPolicy};
 #[cfg(feature = "napi")]
-use super::types::{
-    FirewallLimitOptions, KeepMetadataOptions, PresetResult, ResizeOptions, SanitizeOptions,
-};
+use super::types::{FirewallLimitOptions, KeepMetadataOptions, ResizeOptions, SanitizeOptions};
 #[cfg(feature = "napi")]
 use crate::engine::firewall::{FirewallConfig, FirewallPolicy};
 #[cfg(feature = "napi")]
@@ -19,7 +16,7 @@ use crate::engine::validation;
 #[cfg(feature = "napi")]
 use crate::error::LazyImageError;
 #[cfg(feature = "napi")]
-use crate::ops::{Operation, OutputFormat, PresetConfig, ResizeFit, RotationAngle};
+use crate::ops::{Operation, ResizeFit, RotationAngle};
 
 #[cfg(feature = "napi")]
 use image::ImageReader;
@@ -367,65 +364,5 @@ impl ImageEngine {
             target: crate::ops::ColorSpace::Srgb,
         });
         Ok(this)
-    }
-
-    // =========================================================================
-    // PRESETS - Common configurations for web optimization
-    // =========================================================================
-
-    /// Apply a built-in preset for common use cases.
-    ///
-    /// Available presets:
-    /// - "thumbnail": 150x150, WebP quality 75 (gallery thumbnails)
-    /// - "avatar": 200x200, WebP quality 80 (profile pictures)
-    /// - "hero": 1920 width, JPEG quality 85 (hero images, banners)
-    /// - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
-    ///
-    /// Returns the preset configuration for use with toBuffer/toFile.
-    ///
-    /// @deprecated This method both mutates engine state (queues the preset's
-    /// resize) *and* returns a value for a separate output call, violating
-    /// command-query separation — a footgun if the returned config is ignored or
-    /// reused. Prefer the self-contained `encode({ preset: 'thumbnail' })` /
-    /// `toBufferWithPreset(name)` / `toFileWithPreset(name)` APIs instead.
-    #[napi]
-    pub fn preset(
-        &mut self,
-        env: Env,
-        _this: Reference<ImageEngine>,
-        name: String,
-    ) -> Result<PresetResult> {
-        let config = match PresetConfig::get(&name) {
-            Some(config) => config,
-            None => {
-                let lazy_err = LazyImageError::invalid_preset(name.clone());
-                return Err(crate::error::napi_error_with_code(&env, lazy_err)?);
-            }
-        };
-
-        // Apply resize operation
-        self.ops.push(Operation::Resize {
-            width: config.width,
-            height: config.height,
-            fit: ResizeFit::Inside,
-        });
-
-        // Return preset info for the user to use with toBuffer/toFile
-        let (format_str, quality) = match &config.format {
-            OutputFormat::Jpeg { quality, .. } => ("jpeg", Some(quality.get())),
-            OutputFormat::Png => ("png", None),
-            OutputFormat::WebP { quality } => ("webp", Some(quality.get())),
-            OutputFormat::Avif { quality } => ("avif", Some(quality.get())),
-        };
-
-        // Store last preset for convenience helpers
-        self.last_preset = Some(config.clone());
-
-        Ok(PresetResult {
-            format: format_str.to_string(),
-            quality,
-            width: config.width,
-            height: config.height,
-        })
     }
 }

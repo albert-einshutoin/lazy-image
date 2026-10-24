@@ -250,7 +250,8 @@ pub struct OutputWithMetrics {
     pub metrics: ProcessingMetrics,
 }
 
-/// Options object for the unified `encode()` / `encodeToFile()` methods.
+// N-API input conversion for the public TypeScript EncodeOptionsInput.
+// The generated internal declaration is removed by postbuild-fixup.js.
 #[cfg(feature = "napi")]
 #[napi(object)]
 pub struct EncodeOptions {

@@ -198,24 +198,6 @@ export declare class ImageEngine {
    * Use a dedicated color management library for true color space conversions.
    */
   normalizePixelFormat(): ImageEngine
-  /**
-   * Apply a built-in preset for common use cases.
-   *
-   * Available presets:
-   * - "thumbnail": 150x150, WebP quality 75 (gallery thumbnails)
-   * - "avatar": 200x200, WebP quality 80 (profile pictures)
-   * - "hero": 1920 width, JPEG quality 85 (hero images, banners)
-   * - "social": 1200x630, JPEG quality 80 (OGP/Twitter cards)
-   *
-   * Returns the preset configuration for use with toBuffer/toFile.
-   *
-   * @deprecated This method both mutates engine state (queues the preset's
-   * resize) *and* returns a value for a separate output call, violating
-   * command-query separation — a footgun if the returned config is ignored or
-   * reused. Prefer the self-contained `encode({ preset: 'thumbnail' })` /
-   * `toBufferWithPreset(name)` / `toFileWithPreset(name)` APIs instead.
-   */
-  preset(name: PresetName): PresetResult
 }
 
 export interface BatchMetricsSummary {
@@ -283,30 +265,6 @@ export interface Dimensions {
   height: number
 }
 
-/**
- * Options object for the unified `encode()` / `encodeToFile()` methods.
- *
- * @deprecated Use `EncodeOptionsInput` instead — this interface uses `format?: string`,
- * whereas `EncodeOptionsInput` is strongly typed (`format?: OutputFormat`). The class
- * methods on `ImageEngine` accept `EncodeOptionsInput`; this type is retained only for
- * the NAPI ABI signature.
- */
-export interface EncodeOptions {
-  /** Output format: "jpeg", "jpg", "png", "webp", "avif" */
-  format?: string
-  /** Quality 1-100 for lossy formats (default: JPEG=85, WebP=80, AVIF=60). Omit for PNG. */
-  quality?: number
-  /** If true, uses faster JPEG encoding (2-4x faster, slightly larger files). Default: false. */
-  fastMode?: boolean
-  /**
-   * Preset name ("thumbnail", "avatar", "hero", "social").
-   * When specified, format/quality/fastMode are ignored and the preset's
-   * recommended settings are used instead.
-   */
-  preset?: string
-  /** If true, include ProcessingMetrics in the result. Default: false. */
-  metrics?: boolean
-}
 
 /** Result from `encode()`. */
 export interface EncodeResult {
@@ -462,18 +420,6 @@ export interface KeepMetadataOptions {
 export interface OutputWithMetrics {
   data: Buffer
   metrics: ProcessingMetrics
-}
-
-/** Result of applying a preset, contains recommended output settings */
-export interface PresetResult {
-  /** Recommended output format */
-  format: CanonicalOutputFormat
-  /** Recommended quality (None for PNG) */
-  quality?: number
-  /** Target width (None if aspect ratio preserved) */
-  width?: number
-  /** Target height (None if aspect ratio preserved) */
-  height?: number
 }
 
 /** Processing metrics for performance monitoring */
@@ -815,7 +761,7 @@ export interface ImageEngine {
   toFilesResponsive(pattern: string, options: ResponsiveSetOptions, srcsetPattern?: string): Promise<ResponsiveFilesOutput>
   toPlaceholder(options?: PlaceholderOptions): Promise<PlaceholderResult>
   // Note: encode() / encodeToFile() are declared on the ImageEngine class
-  // (see patchIndexDts patches that retype them to EncodeOptionsInput) and
+  // (the native declarations select EncodeOptionsInput) and
   // are deliberately NOT re-declared here to avoid duplicate signatures.
 }
 

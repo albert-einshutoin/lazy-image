@@ -25,6 +25,8 @@ function assertDimensions(actual, expected, message) {
 }
 
 async function run() {
+  assert.equal('preset' in ImageEngine.prototype, false, 'v2 removes the mutating preset() method')
+
   {
     const engine = ImageEngine.fromPath(INPUT)
     const preset = await engine.encode({ preset: 'thumbnail' })
@@ -118,16 +120,6 @@ async function run() {
       fs.rmSync(presetPath, { force: true })
       fs.rmSync(plainPath, { force: true })
     }
-  }
-
-  {
-    const engine = ImageEngine.fromPath(INPUT)
-    engine.preset('thumbnail')
-    assertDimensions(
-      await plainDimensions(engine),
-      { width: 150, height: 150 },
-      'deprecated preset() remains an explicitly mutating pipeline API',
-    )
   }
 
   console.log('preset output isolation tests passed')

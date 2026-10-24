@@ -37,6 +37,29 @@ import type {
 } from '@alberteinshutoin/lazy-image';
 ```
 
+## 2.0.0 migration
+
+`EncodeOptions` is no longer exported. Import `EncodeOptionsInput`; the
+`encode()` and `encodeToFile()` input and result shapes are unchanged:
+
+```typescript
+import { ImageEngine } from '@alberteinshutoin/lazy-image';
+import type { EncodeOptionsInput } from '@alberteinshutoin/lazy-image';
+
+const engine = ImageEngine.fromPath('photo.jpg');
+const options: EncodeOptionsInput = { preset: 'thumbnail', metrics: true };
+const { data, metrics } = await engine.encode(options);
+const { bytesWritten } = await engine.encodeToFile('thumb.webp', options);
+```
+
+The deprecated `engine.preset(name)` and its `PresetResult` type are removed.
+Replace the old `preset()` followed by a separate encode with one of
+`engine.encode({ preset: name })`, `engine.toBufferWithPreset(name)`, or
+`engine.toFileWithPreset(path, name)`. These calls do not queue a resize for
+subsequent outputs. Use an explicit `resize()` if a persistent pipeline change
+is intended. `toBufferWithMetricsPreset()` and the other output helpers remain;
+`compileImage()` and metrics schema 1.1.0 are unchanged.
+
 ## Type-Safe Error Handling
 
 lazy-image uses a 4-tier `ErrorCategory` enum. The `getErrorCategory()` helper extracts it from any thrown error:

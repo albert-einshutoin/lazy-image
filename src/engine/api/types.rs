@@ -56,20 +56,6 @@ pub struct Dimensions {
 }
 
 #[cfg(feature = "napi")]
-/// Result of applying a preset, contains recommended output settings
-#[napi(object)]
-pub struct PresetResult {
-    /// Recommended output format
-    pub format: String,
-    /// Recommended quality (None for PNG)
-    pub quality: Option<u8>,
-    /// Target width (None if aspect ratio preserved)
-    pub width: Option<u32>,
-    /// Target height (None if aspect ratio preserved)
-    pub height: Option<u32>,
-}
-
-#[cfg(feature = "napi")]
 #[napi(object)]
 pub struct BatchOptions {
     /// Output format ("jpeg", "png", "webp", "avif")

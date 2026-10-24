@@ -177,6 +177,28 @@ async function main() {
   assert.ok(fs.realpathSync(binding).startsWith(fs.realpathSync(platformDir) + path.sep));
   report.loaded = { entry: mainEntry, binding };
 
+  assert.equal('preset' in lib.ImageEngine.prototype, false, 'v2 removed the mutating preset() method');
+  const engine = lib.ImageEngine.fromPath(inputPath);
+  const encoded = await engine.encode({ preset: 'thumbnail', metrics: true });
+  assert.ok(Buffer.isBuffer(encoded.data) && encoded.data.length > 0);
+  assert.equal(encoded.metrics.version, '1.1.0');
+  const thumbnail = lib.inspect(encoded.data);
+  assert.deepEqual([thumbnail.format, thumbnail.width, thumbnail.height], ['webp', 150, 150]);
+  const avatar = lib.inspect(await engine.toBufferWithPreset('avatar'));
+  assert.deepEqual([avatar.format, avatar.width, avatar.height], ['webp', 200, 200]);
+  const metricsPreset = await engine.toBufferWithMetricsPreset('thumbnail');
+  assert.equal(metricsPreset.metrics.version, '1.1.0');
+  const encodedPath = path.join(temp, 'encode-preset.webp');
+  const file = await engine.encodeToFile(encodedPath, { preset: 'avatar', metrics: true });
+  assert.equal(file.bytesWritten, fs.statSync(encodedPath).size);
+  const helperPath = path.join(temp, 'helper-preset.webp');
+  assert.equal(await engine.toFileWithPreset(helperPath, 'thumbnail'), fs.statSync(helperPath).size);
+  const reused = lib.inspect(await engine.toBuffer('webp', 80));
+  assert.deepEqual([reused.width, reused.height], [1057, 1057], 'preset outputs must not leak resize state');
+  report.v2Migration = { removedPreset: true, encode: true, encodeToFile: true,
+    toBufferWithPreset: true, toBufferWithMetricsPreset: true, toFileWithPreset: true,
+    reusedDimensions: [reused.width, reused.height], metricsVersion: encoded.metrics.version };
+
   const cli = path.join(mainDir, 'bin', 'lazy-image.js');
   const bin = path.join(temp, 'node_modules', '.bin', process.platform === 'win32' ? 'lazy-image.cmd' : 'lazy-image');
   assert.ok(fs.existsSync(bin), 'installed bin shim missing');

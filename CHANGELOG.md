@@ -10,7 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - Unreleased candidate
 
 ### Changed (BREAKING)
-- Move WebP Wasm assets from the removed `@jsquash/webp` dependency into `@alberteinshutoin/lazy-image-wasm/vendor/webp`. Browser/Worker deployments must update their asset-copy source and replace decoder, baseline encoder, and SIMD encoder together. See the [migration and release notes](docs/history/V2.0.0_RELEASE_NOTES.md). The JavaScript API, native ABI, supported Node versions, and compiler policy are unchanged.
+- Move WebP Wasm assets from the removed `@jsquash/webp` dependency into `@alberteinshutoin/lazy-image-wasm/vendor/webp`. Browser/Worker deployments must update their asset-copy source and replace decoder, baseline encoder, and SIMD encoder together. See the [migration and release notes](docs/history/V2.0.0_RELEASE_NOTES.md). Supported Node versions and compiler policy are unchanged.
+
+### Removed
+- Remove deprecated `ImageEngine.preset()` and its now-unused `PresetResult` type (#680). Use `encode({ preset: name })`, `toBufferWithPreset(name)`, or `toFileWithPreset(path, name)`; these output calls leave the caller's pipeline unchanged. `toBufferWithMetricsPreset` and the other non-destructive output APIs remain supported.
+- Remove the deprecated TypeScript export `EncodeOptions` (#680). Import `EncodeOptionsInput` for the existing `encode()` / `encodeToFile()` input contract. The internal Rust/N-API input converter remains; it is not a public TypeScript type. Metrics schema stays at 1.1.0.
 
 ### Security
 - Rebuild the browser/Edge WebP codecs with libwebp 1.6.0 to include the CVE-2023-4863 fix. The WebP Wasm assets now ship inside the Wasm package; update asset-copy commands accordingly.

@@ -85,7 +85,7 @@ Existing output convenience APIs such as `toBufferWithMetrics()` remain supporte
 within v1.x; removal requires a major release. Metrics aliases removed before v1
 are not part of this contract.
 
-## 2.0.0 security candidate decision (2026-10-24)
+## Initial 2.0.0 security candidate decision (2026-10-24, PR #911)
 
 1.5.0 is already published on GitHub and npm. 1.5.1 was considered, but the
 security update removes `@jsquash/webp` and moves the documented manually copied
@@ -94,8 +94,21 @@ deployment scripts must change their copy source and replace cached assets.
 Under "requires code changes for existing consumers" above this is a breaking
 distribution change, so the synchronized eight npm packages use 2.0.0.
 Keeping the vulnerable dependency to preserve that layout is not an acceptable
-compatibility adapter. The JS/TypeScript API, native ABI, Node >=22 support,
-compiler policy, metadata defaults, and error taxonomy remain unchanged.
+compatibility adapter. At PR #911's revision, the JS/TypeScript API, native ABI,
+Node >=22 support, compiler policy, metadata defaults, and error taxonomy were
+unchanged. That fixed candidate evidence remains a record of that revision.
 Rejecting stale/unknown explicitly injected WebP codecs corrects the security
 boundary; consumers must supply patched modules. See the migration instructions
 in [the candidate notes](history/V2.0.0_RELEASE_NOTES.md).
+
+## 2.0.0 deprecated API removal decision (2026-10-25, Issue #680)
+
+While 2.0.0 remains unpublished, remove deprecated `ImageEngine.preset()` and
+the TypeScript export `EncodeOptions` at this already-planned major boundary.
+`PresetResult` is removed with its sole producer. No compatibility shim is
+introduced. Use the existing non-destructive preset output APIs and
+`EncodeOptionsInput`; see [TypeScript migration](TYPESCRIPT.md#200-migration).
+The native compiler, supported Node versions, privacy/resource policies,
+remaining output APIs and metrics schema 1.1.0 are unchanged. The final
+candidate requires new evidence bound to its new merge SHA and tarball hashes;
+PR #911's evidence is retained as historical evidence, not relabelled.
