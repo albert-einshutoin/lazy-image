@@ -7,6 +7,7 @@ Use the existing package scripts and GitHub workflows; do not duplicate their im
 | Native build | `npm run build` |
 | Complete local tests | `npm test` |
 | Existing benchmark and claim checks | `npm run test:bench` |
+| Bounded same-host A/B timing diagnostic (#913) | `npm run test:bench:paired -- --base <isolated-checkout> --candidate <isolated-checkout> --output <new-directory>`; manual `.github/workflows/benchmark-regression.yml`, `matched_diagnostic: true` |
 | Compiler/quality release evidence | `npm run test:bench:release` |
 | PR impact plan and execution | `npm run ci:plan-tests`, `npm run ci:run-tests` |
 | Complete hosted validation | `.github/workflows/CI.yml`, `full_validation: true` on manual runs |

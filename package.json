@@ -73,6 +73,7 @@
     "test:examples": "node examples/run-all.mjs",
     "test:bench": "npm run test:bench:compare && npm run test:bench:verify && npm run test:bench:smoke",
     "test:bench:compare": "node test/benchmarks/sharp-comparison.bench.js",
+    "test:bench:paired": "node scripts/bench/paired-comparison.cjs",
     "test:bench:verify": "node test/benchmarks/readme-verification.bench.js",
     "test:bench:smoke": "node test/benchmarks/pipeline-smoke.bench.js",
     "test:bench:avif": "node test/benchmarks/avif-comparison.bench.js",

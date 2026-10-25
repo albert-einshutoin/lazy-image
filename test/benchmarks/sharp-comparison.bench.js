@@ -108,7 +108,7 @@ async function createSharpAdapter() {
         .greyscale()
         .jpeg({ quality: 75, mozjpeg: true })
         .toBuffer()
-      return { size: buffer.length, time: Date.now() - start }
+      return { size: buffer.length, time: Date.now() - start, buffer }
     },
   }
 }
@@ -196,6 +196,9 @@ async function runBenchmark(options = {}) {
         sizeDifferencePercent: calcDiff(lazy.size, sharpResult.size),
       })
 
+      // Evidence collection runs after both timers and the quality gate.
+      await options.onOutput?.({ name: testCase.name, lazy: lazy.buffer, sharp: sharpResult.buffer })
+
       summaryMetrics.push(
         { name: `${testCase.name} size (lazy-image)`, value: lazy.size, unit: 'bytes' },
         { name: `${testCase.name} time (lazy-image)`, value: lazy.time, unit: 'ms' },
@@ -218,10 +221,11 @@ async function runBenchmark(options = {}) {
         .toBuffer('jpeg', 75)
       const lazyTime = Date.now() - start
       const sharpResult = await sharpAdapter.complex()
+      await options.onOutput?.({ name: 'Complex Pipeline', lazy, sharp: sharpResult.buffer })
       performanceOnly.push({
         name: 'Complex Pipeline',
         lazy: { size: lazy.length, time: lazyTime },
-        sharp: sharpResult,
+        sharp: { size: sharpResult.size, time: sharpResult.time },
       })
       summaryMetrics.push(
         { name: 'Complex pipeline size (lazy-image)', value: lazy.length, unit: 'bytes' },

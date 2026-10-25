@@ -1,0 +1,234 @@
+{
+  "runs": [
+    39988612791,
+    40117957006
+  ],
+  "observations": [
+    {
+      "sha": "a0db8d7f2471c037c10dc2cdd521f2098ea4edae",
+      "tree": "c783b6ff1c703ab30ec0d8a35d2819ff85175e0f",
+      "comparisonTimings": [
+        {
+          "name": "JPEG",
+          "lazy": {
+            "size": 39576,
+            "time": 73
+          },
+          "sharp": {
+            "size": 39419,
+            "time": 102
+          }
+        },
+        {
+          "name": "WebP",
+          "lazy": {
+            "size": 32448,
+            "time": 228
+          },
+          "sharp": {
+            "size": 29686,
+            "time": 116
+          }
+        },
+        {
+          "name": "AVIF",
+          "lazy": {
+            "size": 28666,
+            "time": 499
+          },
+          "sharp": {
+            "size": 26102,
+            "time": 883
+          }
+        },
+        {
+          "name": "Complex Pipeline",
+          "lazy": {
+            "size": 27129,
+            "time": 78
+          },
+          "sharp": {
+            "size": 24650,
+            "time": 172
+          }
+        }
+      ],
+      "reportedSameJobNode": "v22.23.3",
+      "reportedSameJobParallelism": 4,
+      "unknown": [
+        "comparison loaded binding hash",
+        "CPU model",
+        "effective per-comparison process thread counts",
+        "frequency/thermal/CPU contention",
+        "OS page-cache state",
+        "warmup samples",
+        "comparison-process SDK/compiler invocation"
+      ]
+    },
+    {
+      "sha": "eafc2dfc48e19ed1af15f1f344583c2ae2d79961",
+      "tree": "9599a0de44ae85b24c0d576e153b064f56bf41c4",
+      "comparisonTimings": [
+        {
+          "name": "JPEG",
+          "lazy": {
+            "size": 39576,
+            "time": 110
+          },
+          "sharp": {
+            "size": 39419,
+            "time": 168
+          }
+        },
+        {
+          "name": "WebP",
+          "lazy": {
+            "size": 32448,
+            "time": 409
+          },
+          "sharp": {
+            "size": 29686,
+            "time": 170
+          }
+        },
+        {
+          "name": "AVIF",
+          "lazy": {
+            "size": 28666,
+            "time": 807
+          },
+          "sharp": {
+            "size": 26102,
+            "time": 1553
+          }
+        },
+        {
+          "name": "Complex Pipeline",
+          "lazy": {
+            "size": 27129,
+            "time": 126
+          },
+          "sharp": {
+            "size": 24650,
+            "time": 292
+          }
+        }
+      ],
+      "reportedSameJobNode": "v22.23.3",
+      "reportedSameJobParallelism": 4,
+      "unknown": [
+        "comparison loaded binding hash",
+        "CPU model",
+        "effective per-comparison process thread counts",
+        "frequency/thermal/CPU contention",
+        "OS page-cache state",
+        "warmup samples",
+        "comparison-process SDK/compiler invocation"
+      ]
+    }
+  ],
+  "baseline": {
+    "version": 1,
+    "metrics": {
+      "JPEG size (lazy-image)": 31518,
+      "JPEG time (lazy-image)": 87,
+      "WebP size (lazy-image)": 32448,
+      "WebP time (lazy-image)": 176,
+      "AVIF size (lazy-image)": 28678,
+      "AVIF time (lazy-image)": 535,
+      "Complex pipeline size (lazy-image)": 27129,
+      "Complex pipeline time (lazy-image)": 84
+    }
+  },
+  "flags": {
+    "old": [
+      "JPEG size (lazy-image)",
+      "WebP time (lazy-image)"
+    ],
+    "previousFinal": [
+      "JPEG size (lazy-image)",
+      "JPEG time (lazy-image)",
+      "WebP time (lazy-image)",
+      "AVIF time (lazy-image)",
+      "Complex pipeline time (lazy-image)"
+    ]
+  },
+  "sourceAndLockHashes": {
+    "a0db8d7f2471c037c10dc2cdd521f2098ea4edae": {
+      "Cargo.toml": {
+        "bytes": 5571,
+        "sha256": "3623095957d153e2ee201164152f76ae1eed347d96ea14b43e49bb593d3e3e18"
+      },
+      "Cargo.lock": {
+        "bytes": 57736,
+        "sha256": "e7a39e6de128d1d75f7b129826143240f6f1c17c5d8c4ea7c4186ddeecc44dfc"
+      },
+      "package.json": {
+        "bytes": 7085,
+        "sha256": "54c63dbea0f8c0989adfbdb2a59fe8c3723212b39515bb74f0c09b4b7eb73362"
+      },
+      "package-lock.json": {
+        "bytes": 84781,
+        "sha256": "4c969ae9ce4fc2ffefe1628dd547c99f8299f20191fae9ed1df04b4001be6802"
+      },
+      "build.rs": {
+        "bytes": 12440,
+        "sha256": "dea60600f98eee524ca023219c173638f003320d0d8ee7b48505e838fb52ff68"
+      },
+      "scripts/build-native.cjs": {
+        "bytes": 919,
+        "sha256": "976decb29035eb280ea9e223b1e8f58c0b249100eaa7543df974c5bcf3465f67"
+      },
+      "test/benchmarks/sharp-comparison.bench.js": {
+        "bytes": 8952,
+        "sha256": "faf9d36103fe6eb6af62d0815b0760c0d51f22ec83858035d350ae80f2462f35"
+      },
+      "test/fixtures/test_4.5MB_5000x5000.png": {
+        "bytes": 4702925,
+        "sha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5"
+      },
+      ".cargo/config.toml": {
+        "bytes": 329,
+        "sha256": "ae46116fb7a4b49c9a4956500086b678e7bafa6dce8759cf8759d0bbaecc3cc8"
+      }
+    },
+    "eafc2dfc48e19ed1af15f1f344583c2ae2d79961": {
+      "Cargo.toml": {
+        "bytes": 5571,
+        "sha256": "3623095957d153e2ee201164152f76ae1eed347d96ea14b43e49bb593d3e3e18"
+      },
+      "Cargo.lock": {
+        "bytes": 57736,
+        "sha256": "e7a39e6de128d1d75f7b129826143240f6f1c17c5d8c4ea7c4186ddeecc44dfc"
+      },
+      "package.json": {
+        "bytes": 7085,
+        "sha256": "54c63dbea0f8c0989adfbdb2a59fe8c3723212b39515bb74f0c09b4b7eb73362"
+      },
+      "package-lock.json": {
+        "bytes": 84781,
+        "sha256": "4c969ae9ce4fc2ffefe1628dd547c99f8299f20191fae9ed1df04b4001be6802"
+      },
+      "build.rs": {
+        "bytes": 12440,
+        "sha256": "dea60600f98eee524ca023219c173638f003320d0d8ee7b48505e838fb52ff68"
+      },
+      "scripts/build-native.cjs": {
+        "bytes": 919,
+        "sha256": "976decb29035eb280ea9e223b1e8f58c0b249100eaa7543df974c5bcf3465f67"
+      },
+      "test/benchmarks/sharp-comparison.bench.js": {
+        "bytes": 8952,
+        "sha256": "faf9d36103fe6eb6af62d0815b0760c0d51f22ec83858035d350ae80f2462f35"
+      },
+      "test/fixtures/test_4.5MB_5000x5000.png": {
+        "bytes": 4702925,
+        "sha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5"
+      },
+      ".cargo/config.toml": {
+        "bytes": 329,
+        "sha256": "ae46116fb7a4b49c9a4956500086b678e7bafa6dce8759cf8759d0bbaecc3cc8"
+      }
+    }
+  }
+}
