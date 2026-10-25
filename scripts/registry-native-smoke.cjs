@@ -105,6 +105,10 @@ async function main() {
   const [platform, arch, packageSuffix] = PLATFORMS[expected];
   assert.equal(process.platform, platform);
   assert.equal(process.arch, arch);
+  const [major, minor, patch] = process.versions.node.split('.').map(Number);
+  const minimum = major === 22 ? [23, 4] : major === 24 ? [22, 1] : null;
+  assert.ok(minimum && (minor > minimum[0] || (minor === minimum[0] && patch >= minimum[1])),
+    'Native release smoke requires patched Node 22.23.4+ or 24.22.1+');
   const glibc = process.report?.getReport()?.header?.glibcVersionRuntime;
   report.runtime.libc = platform === 'linux' ? (glibc ? `glibc ${glibc}` :
     fs.existsSync('/etc/alpine-release') ? `musl (Alpine ${fs.readFileSync('/etc/alpine-release', 'utf8').trim()})` : 'unknown') : 'not applicable';
@@ -248,6 +252,31 @@ async function main() {
   }
   report.results.maxQuality = 'PASS';
   report.results.invalidMaxQuality = 'PASS';
+  // Use the actual published old platform artifact, and intercept the .node
+  // evaluation boundary. No old native initializer is allowed to run.
+  const negative = path.join(temp, 'stale-consumer');
+  fs.mkdirSync(negative);
+  fs.writeFileSync(path.join(negative, 'package.json'), '{"private":true}\n');
+  const oldName = `${NAME}-${packageSuffix}`;
+  run(npm, ['install', '--save-exact', '--ignore-scripts', '--omit=optional', `${oldName}@1.5.0`,
+    `--registry=${REGISTRY}`, '--no-audit', '--no-fund'], negative);
+  const oldLock = JSON.parse(fs.readFileSync(path.join(negative, 'package-lock.json'))).packages[`node_modules/${oldName}`];
+  const oldDist = JSON.parse(run(npm, ['view', `${oldName}@1.5.0`, 'dist', '--json', `--registry=${REGISTRY}`], negative));
+  assert.equal(oldLock.integrity, oldDist.integrity);
+  assert.equal(oldLock.resolved, oldDist.tarball);
+  const oldDir = path.join(negative, 'node_modules', '@alberteinshutoin', `lazy-image-${packageSuffix}`);
+  const oldPackage = JSON.parse(fs.readFileSync(path.join(oldDir, 'package.json')));
+  assert.equal(oldPackage.version, '1.5.0');
+  fs.cpSync(mainDir, path.join(negative, 'node_modules', '@alberteinshutoin', 'lazy-image'), { recursive: true });
+  const probe = `const assert = require('node:assert/strict'); let evaluated = 0;
+    delete process.env.NAPI_RS_ENFORCE_VERSION_CHECK;
+    require('node:module')._extensions['.node'] = () => { evaluated++; throw Error('old addon evaluated'); };
+    assert.throws(() => require(${JSON.stringify(NAME)}), /Native binding package version mismatch/);
+    assert.equal(evaluated, 0); console.log('stale native rejected before evaluation');`;
+  run(process.execPath, ['-e', probe], negative);
+  report.staleNative = { version: oldPackage.version, package: oldName, tarball: oldDist.tarball, integrity: oldDist.integrity,
+    binarySha256: sha256(fs.readFileSync(path.join(oldDir, oldPackage.main))), addonEvaluations: 0, defaultEnvironment: true };
+  report.results.staleNative = 'PASS';
   report.status = 'PASS';
 }
 

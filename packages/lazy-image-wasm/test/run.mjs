@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { createUploadOptimizer } from '../browser.js';
 import { createUploadOptimizer as createEdgeUploadOptimizer } from '../edge.js';
 import { createUploadWorkerHandler } from '../worker.js';
-import edgeExampleHandler from '../examples/edge.mjs';
+import unconfiguredEdgeHandler, { handleOptimizeRequest } from '../examples/edge.mjs';
+const edgeExampleHandler = { fetch: (request, env) => handleOptimizeRequest(request, env, async () => true) };
 import { initEmscriptenModule as initWebpModule } from '../vendor/webp/utils.js';
 import {
   categoryForCode,
@@ -89,6 +90,26 @@ const optimizer = await createUploadOptimizer({
   defaultOutput: 'arrayBuffer',
 });
 
+await test('input limits reject declared large images and Blob sizes before decode/read', async () => {
+  const hugeHeader = Buffer.alloc(33);
+  Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex').copy(hugeHeader);
+  hugeHeader.writeUInt32BE(100_000, 16);
+  hugeHeader.writeUInt32BE(100_000, 20);
+  await assert.rejects(() => optimizer.optimizeUpload(hugeHeader, { format: 'jpeg' }), error => error.code === 'E122');
+  let read = false;
+  await assert.rejects(() => optimizer.optimizeUpload({ size: 33 * 1024 * 1024, arrayBuffer() { read = true; throw new Error('read'); } }, { format: 'jpeg' }), error => error.code === 'E123');
+  assert.equal(read, false);
+  const jpeg = Buffer.from('ffd8ffc0000b082710271001011100ffd9', 'hex');
+  await assert.rejects(() => optimizer.optimizeUpload(jpeg, { format: 'jpeg' }), error => error.code === 'E122');
+  const webp = Buffer.alloc(26);
+  webp.write('RIFF', 0); webp.writeUInt32LE(18, 4); webp.write('WEBPVP8L', 8);
+  webp.writeUInt32LE(5, 16); webp[20] = 0x2f; webp.writeUInt32LE(0x0fffffff, 21);
+  await assert.rejects(() => optimizer.optimizeUpload(webp, { format: 'jpeg' }), error => error.code === 'E122');
+  await assert.rejects(async () => optimizer.optimizeUpload(await fixture('test_input.jpg'), {
+    format: 'jpeg', fit: 'fill', maxWidth: 100_000, maxHeight: 100_000,
+  }), error => error.code === 'E122');
+});
+
 await test('WebP input is accepted by browser, edge and Worker entrypoints', async () => {
   const input = await fixture('test_90KB_1471x1471.webp');
   const options = { format: 'webp', maxWidth: 128, maxHeight: 128, output: 'arrayBuffer' };
@@ -109,11 +130,11 @@ await test('WebP input is accepted by browser, edge and Worker entrypoints', asy
   assert.equal(response.ok, true);
 });
 
-await test('truncated WebP fails at the decoder with E131', async () => {
+await test('truncated WebP fails during header admission with E111', async () => {
   const input = (await fixture('test_90KB_1471x1471.webp')).subarray(0, 24);
   await assert.rejects(
     () => optimizer.optimizeUpload(input, { format: 'webp', output: 'arrayBuffer' }),
-    (error) => error instanceof LazyImageWasmError && error.code === 'E131'
+    (error) => error instanceof LazyImageWasmError && error.code === 'E111'
   );
 });
 
@@ -310,7 +331,7 @@ await test('unsupported input format fails with native E111 semantics', async ()
 
 await test('decode diagnosis leaves Wasm delivery and input corruption as separate checks', async () => {
   await assert.rejects(
-    () => optimizer.optimizeUpload(new Uint8Array([0xff, 0xd8, 0xff, 0, 0, 0]), {
+    () => optimizer.optimizeUpload(Buffer.from('ffd8ffc0000b080001000101011100ffd9', 'hex'), {
       format: 'jpeg', output: 'arrayBuffer',
     }),
     (error) => error instanceof LazyImageWasmError && error.code === 'E131' &&
@@ -342,7 +363,7 @@ await test('Worker sends a cloneable diagnosis for unknown throw values', async 
   const handler = createUploadWorkerHandler({ wasmModules });
   for (const thrown of [undefined, { name: 'Unknown', message: { uncloneable() {} }, code: { bad: true } }]) {
     let response;
-    await handler({ data: { id: 17, input: { async arrayBuffer() { throw thrown; } },
+    await handler({ data: { id: 17, input: { size: 1, async arrayBuffer() { throw thrown; } },
       options: { format: 'jpeg', output: 'arrayBuffer' } },
     target: { postMessage(value) { response = structuredClone(value); } } });
     assert.equal(response.id, 17);
@@ -390,6 +411,18 @@ await test('edge optimizer accepts precompiled WebAssembly.Module inputs', async
 });
 
 await test('edge example handler guards method and maps input errors to HTTP statuses', async () => {
+  const request = () => new Request('https://example.test/', { method: 'POST' });
+  assert.equal((await unconfiguredEdgeHandler.fetch(request(), {})).status, 503);
+  assert.equal((await handleOptimizeRequest(request(), {}, async () => false)).status, 401);
+  let cancelled = false;
+  const body = new ReadableStream({
+    pull(controller) { controller.enqueue(new Uint8Array(1024 * 1024)); },
+    cancel() { cancelled = true; },
+  });
+  const tooLarge = await edgeExampleHandler.fetch(new Request('https://example.test/', { method: 'POST', body, duplex: 'half' }), {});
+  assert.equal(tooLarge.status, 413);
+  assert.equal(cancelled, true);
+  assert.equal((await edgeExampleHandler.fetch(new Request('https://example.test/', { method: 'POST', headers: { 'content-length': '33554433' } }), {})).status, 413);
   const env = {
     JSQUASH_JPEG_DECODER: wasmModules.jpegDecode,
     JSQUASH_JPEG_ENCODER: wasmModules.jpegEncode,
@@ -446,5 +479,5 @@ await test('edge example handler guards method and maps input errors to HTTP sta
     env
   );
   assert.equal(corruptJpegResponse.status, 400);
-  assert.match(await corruptJpegResponse.text(), /^\[E131\]/);
+  assert.match(await corruptJpegResponse.text(), /^\[E111\]/);
 });

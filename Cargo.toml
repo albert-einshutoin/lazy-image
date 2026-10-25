@@ -2,7 +2,7 @@
 name = "lazy-image"
 version = "2.0.0"
 edition = "2021"
-description = "Web image optimization engine for Node.js with secure defaults and smaller browser-facing JPEG outputs, powered by Rust + mozjpeg"
+description = "Local image compiler with explicit security/resource policies and metadata controls, powered by Rust + mozjpeg"
 license = "MIT"
 repository = "https://github.com/albert-einshutoin/lazy-image"
 keywords = ["image", "resize", "jpeg", "avif", "image-optimization"]

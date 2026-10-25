@@ -22,18 +22,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { platform: darwin-arm64, runner: macos-14, node: '22' }
-          - { platform: darwin-arm64, runner: macos-14, node: '24' }
-          - { platform: darwin-x64, runner: macos-15-intel, node: '22' }
-          - { platform: darwin-x64, runner: macos-15-intel, node: '24' }
-          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '22' }
-          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '24' }
-          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '22' }
-          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '24' }
-          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '22' }
-          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '24' }
-          - { platform: win32-x64-msvc, runner: windows-2022, node: '22' }
-          - { platform: win32-x64-msvc, runner: windows-2022, node: '24' }
+          - { platform: darwin-arm64, runner: macos-14, node: '22.23.4' }
+          - { platform: darwin-arm64, runner: macos-14, node: '24.22.1' }
+          - { platform: darwin-x64, runner: macos-15-intel, node: '22.23.4' }
+          - { platform: darwin-x64, runner: macos-15-intel, node: '24.22.1' }
+          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '22.23.4' }
+          - { platform: linux-x64-gnu, runner: ubuntu-24.04, node: '24.22.1' }
+          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '22.23.4' }
+          - { platform: linux-arm64-gnu, runner: ubuntu-24.04-arm, node: '24.22.1' }
+          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '22.23.4' }
+          - { platform: linux-x64-musl, runner: ubuntu-24.04, node: '24.22.1' }
+          - { platform: win32-x64-msvc, runner: windows-2022, node: '22.23.4' }
+          - { platform: win32-x64-msvc, runner: windows-2022, node: '24.22.1' }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     env:

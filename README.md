@@ -38,13 +38,13 @@ npm install @alberteinshutoin/lazy-image
 
 Prebuilt native binaries are installed automatically on supported platforms.
 
-The next security candidate is **2.0.0 (unpublished)**. Read its
+**2.0.0** introduces security fixes and breaking changes. Read the
 [security and Wasm migration notes](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/history/V2.0.0_RELEASE_NOTES.md)
 before updating; manually deployed WebP assets move into the Wasm package,
 and deprecated `preset()` / `EncodeOptions` are removed. Use the existing
 preset output methods and `EncodeOptionsInput` described in the migration notes.
-Published 1.5.0 does not contain these candidate fixes. Candidate verification
-does not establish npm publication.
+1.5.0 does not contain these fixes. Check the npm registry and GitHub Release
+for version availability; source or candidate verification alone does not establish publication.
 
 ## Quick Start
 

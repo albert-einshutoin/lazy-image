@@ -6,6 +6,21 @@ const os = require('node:os');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '../..');
+const { verifyNoticeBinding } = require('../../scripts/native-notices.cjs');
+const currentNotices = require('../../native-manifest.json');
+verifyNoticeBinding(currentNotices);
+for (const checksum of [null, '0'.repeat(64)]) {
+  const invalid = structuredClone(currentNotices);
+  invalid.packages.find(pkg => pkg.source?.startsWith('registry+')).crateChecksum = checksum;
+  assert.throws(() => verifyNoticeBinding(invalid), /registry.*checksum/i,
+    'staging must reject absent or incorrect registry crate provenance');
+}
+for (const changes of [{ source: 'git+https://example.invalid/repository' }, { crateChecksum: '0'.repeat(64) }, { version: '0.0.0' }]) {
+  const invalid = structuredClone(currentNotices);
+  Object.assign(invalid.packages.find(pkg => pkg.name === 'libavif-sys'), changes);
+  assert.throws(() => verifyNoticeBinding(invalid), /path dependency|vendored.*version/i,
+    'the explicit path-only exception must reject another source, checksum or version');
+}
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'lazy-image-release-guard-'));
 const artifacts = path.join(temp, 'artifacts');
 fs.mkdirSync(artifacts);
@@ -31,6 +46,7 @@ assert.notEqual(result.status, 0);
 assert.match(result.stderr, /missing or multiple binary candidates/);
 
 fs.unlinkSync(path.join(first, 'old.node'));
+fs.writeFileSync(path.join(first, 'lazy-image.darwin-x64.node.json'), '{}');
 if (process.platform !== 'win32') {
   result = stage();
   assert.notEqual(result.status, 0);
@@ -57,7 +73,8 @@ const wasmOutput = path.join(temp, 'wasm-candidate');
 fs.mkdirSync(wasmOutput);
 const wasm = stageWasm(wasmOutput);
 assert.equal(wasm.name, '@alberteinshutoin/lazy-image-wasm');
-assert.equal(wasm.files.length, 28);
+assert.equal(wasm.files.length, 29);
+assert.ok(wasm.files.some(file => file.path === 'LICENSE'));
 for (const codec of ['dec/webp_dec', 'enc/webp_enc', 'enc/webp_enc_simd']) {
   assert.ok(wasm.files.some(file => file.path === `vendor/webp/codec/${codec}.wasm`),
     `patched WebP codec missing from candidate: ${codec}`);
@@ -73,6 +90,25 @@ result = spawnSync('tar', ['-czf', alteredTarball, '-C', altered, 'package'], { 
 assert.equal(result.status, 0);
 assert.throws(() => verifyWasmTarball(alteredTarball, wasm.files), /Wasm candidate differs from source/);
 console.log('Wasm candidate is retained with content hashes and rejects altered payloads');
+
+const legal = path.join(temp, 'legal', 'package');
+fs.mkdirSync(legal, { recursive: true });
+for (const name of ['LICENSE', 'THIRD_PARTY_NOTICES.txt', 'RUST_STD_NOTICES.html', 'native-manifest.json']) fs.copyFileSync(path.join(root, name), path.join(legal, name));
+const legalTar = path.join(temp, 'legal.tgz');
+function packLegal() {
+  const result = spawnSync('tar', ['-czf', legalTar, '-C', path.dirname(legal), 'package'], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+}
+packLegal();
+const { verifyLegalFiles } = require('../../scripts/stage-release-artifacts.cjs');
+assert.equal(verifyLegalFiles(legalTar).length, 4);
+fs.appendFileSync(path.join(legal, 'THIRD_PARTY_NOTICES.txt'), 'altered');
+packLegal();
+assert.throws(() => verifyLegalFiles(legalTar), /legal file differs/);
+fs.rmSync(path.join(legal, 'LICENSE'));
+packLegal();
+assert.throws(() => verifyLegalFiles(legalTar));
+console.log('candidate legal content validation rejects altered notices and missing project license');
 
 const { selectPackages } = require('../../scripts/publish-release-candidate.cjs');
 const mainName = require('../../package.json').name;

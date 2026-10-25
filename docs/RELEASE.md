@@ -12,7 +12,7 @@ Related docs:
 - [v1.4.2 verification](history/V1.4.2_VERIFICATION.md) — FIR/loader/tooling patch, candidate and published npm evidence
 - [v1.4.3 verification](history/V1.4.3_VERIFICATION.md) — libc 0.2.189 patch, candidate and published npm evidence
 - [v1.5.0 preparation](history/V1.5.0_PREPARATION.md) — unpublished scope, compatibility, and candidate-evidence handoff
-- [v2.0.0 candidate](history/V2.0.0_RELEASE_NOTES.md) — security changes, deprecated API removal (#680), native/Wasm migration, limits, and publication handoff; 1.5.0 was published on 2026-10-13
+- [v2.0.0 changes](history/V2.0.0_RELEASE_NOTES.md) — security changes, deprecated API removal (#680), native/Wasm migration, limits, and publication handoff; 1.5.0 was published on 2026-10-13
 
 ---
 
@@ -38,6 +38,36 @@ Key rules:
 ---
 
 ## Prerequisites
+
+For 2.x, use patched Node 22.23.4+ or 24.22.1+ for the twelve candidate/native
+smokes. Every smoke also installs the actual published 1.5.0 platform package
+and confirms that its addon is never evaluated by the current main loader.
+The build's binary/hash sidecar travels with the CI binding artifact; staging
+rejects a missing/stale sidecar. All eight candidate tarballs must include the
+project MIT license; main/native notices and license-manifest contents are
+byte-checked. `npm run licenses:generate` updates the notices after a dependency
+change; `npm run licenses:check` verifies the source/lock/license graph.
+
+Before a publication decision, manually dispatch `publication-auth-check.yml`
+on main. It makes only authenticated GET requests using the existing injected
+secret and retains a credential-free report. Its BLOCKED result deliberately
+preserves unverified direct-publish/stage-only scope and 2FA settings; whoami,
+GitHub secret existence and account/package access are insufficient. The owner
+must inspect the corresponding token's name, expiry, package/scope coverage,
+direct-publish permission and noninteractive 2FA settings without sharing its value.
+The workflow cannot create/update tokens or publish a package. Recheck just before
+publication because credentials and permissions can expire or be revoked.
+
+Tag CI rebuilds the tagged revision. A prior non-tag candidate hash does not
+predict that new build's bytes: retain the new manifest and twelve smoke reports,
+then publish only that run's exact tested tarballs. For a partial publication,
+rerun the failed publish job with the same retained candidate artifact; existing
+versions are skipped only when their SHA-512 integrity matches. Different bytes
+or a non-404 lookup error fail closed; do not delete/reuse an issued version.
+After publication, compare all eight registry integrities to the published
+candidate, verify registry Sigstore provenance/signatures, run the twelve native
+registry smokes and actual Wasm Node/Chrome DedicatedWorker/workerd checks against
+the published Wasm tarball. Candidate checks cannot stand in for these results.
 
 Before starting a release:
 

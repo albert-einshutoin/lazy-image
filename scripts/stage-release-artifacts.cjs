@@ -16,6 +16,17 @@ const platforms = {
   'x86_64-unknown-linux-musl': ['linux-x64-musl', /ELF 64-bit.*x86-64/],
 };
 const pkg = require('../package.json');
+const { verifyNoticeBinding } = require('./native-notices.cjs');
+const legalFiles = ['LICENSE', 'THIRD_PARTY_NOTICES.txt', 'RUST_STD_NOTICES.html', 'native-manifest.json'];
+
+function verifyLegalFiles(tarball, directory = root) {
+  return legalFiles.map(name => {
+    const source = path.join(directory, name);
+    const bytes = tarEntry(tarball, `package/${name}`);
+    assert.ok(bytes.equals(fs.readFileSync(source)), `candidate legal file differs from source: ${name}`);
+    return { path: name, sha256: createHash('sha256').update(bytes).digest('hex') };
+  });
+}
 
 function sha256(file) { return createHash('sha256').update(fs.readFileSync(file)).digest('hex'); }
 function command(executable, args, cwd) {
@@ -34,6 +45,8 @@ function verifyWasmTarball(tarball, files) {
   assert.deepEqual(JSON.parse(tarEntry(tarball, 'package/package.json')), sourcePackage);
   assert.ok(tarEntry(tarball, 'package/shared.js').toString().startsWith(`export const VERSION = '${pkg.version}';`),
     'Wasm VERSION differs from package version');
+  assert.ok(files.some(file => file.path === 'LICENSE'), 'Wasm candidate is missing project LICENSE');
+  assert.ok(tarEntry(tarball, 'package/LICENSE').equals(fs.readFileSync(path.join(root, 'LICENSE'))), 'Wasm project license differs from root');
   return files.map(({ path: name }) => {
     const source = path.resolve(wasmRoot, name);
     assert.ok(source.startsWith(wasmRoot + path.sep), 'Wasm package path escaped workspace');
@@ -75,6 +88,7 @@ function inspect(file, target, pattern) {
 }
 
 function main() {
+  verifyNoticeBinding();
   assert.deepEqual(pkg.napi.targets.slice().sort(), Object.keys(platforms).sort());
   assert.deepEqual(Object.keys(pkg.optionalDependencies).sort(), Object.values(platforms)
     .map(([platform]) => `${pkg.name}-${platform}`).sort());
@@ -88,16 +102,21 @@ function main() {
   for (const [target, [platform, pattern]] of Object.entries(platforms)) {
     const dir = path.join(artifacts, `bindings-${target}`);
     const binaryName = `lazy-image.${platform}.node`;
-    assert.deepEqual(fs.readdirSync(dir), [binaryName], `${target}: missing or multiple binary candidates`);
+    assert.deepEqual(fs.readdirSync(dir).sort(), [binaryName, `${binaryName}.json`], `${target}: missing or multiple binary candidates/metadata`);
     const source = path.join(dir, binaryName);
     const inspection = inspect(source, target, pattern);
+    assert.deepEqual(JSON.parse(fs.readFileSync(`${source}.json`)), { version: pkg.version, sha256: sha256(source) }, `${target}: stale build metadata`);
     const platformDir = path.join(root, 'npm', platform);
     fs.mkdirSync(platformDir, { recursive: true });
     fs.copyFileSync(source, path.join(platformDir, binaryName));
+    fs.copyFileSync(path.join(root, 'LICENSE'), path.join(platformDir, 'LICENSE'));
+    fs.copyFileSync(path.join(root, 'THIRD_PARTY_NOTICES.txt'), path.join(platformDir, 'THIRD_PARTY_NOTICES.txt'));
+    fs.copyFileSync(path.join(root, 'RUST_STD_NOTICES.html'), path.join(platformDir, 'RUST_STD_NOTICES.html'));
+    fs.copyFileSync(path.join(root, 'native-manifest.json'), path.join(platformDir, 'native-manifest.json'));
     const name = `${pkg.name}-${platform}`;
     fs.writeFileSync(path.join(platformDir, 'package.json'), `${JSON.stringify({
       name, version: pkg.version, description: pkg.description, main: binaryName,
-      os: [platform.split('-')[0]], cpu: [platform.split('-')[1]], files: [binaryName],
+      os: [platform.split('-')[0]], cpu: [platform.split('-')[1]], files: [binaryName, ...legalFiles],
       ...(platform.endsWith('-gnu') ? { libc: ['glibc'] } : platform.endsWith('-musl') ? { libc: ['musl'] } : {}),
       license: pkg.license, publishConfig: { access: 'public' }, repository: pkg.repository,
       engines: pkg.engines,
@@ -114,7 +133,7 @@ function main() {
     if (platform.endsWith('-gnu')) assert.deepEqual(packedPackage.libc, ['glibc']);
     if (platform.endsWith('-musl')) assert.deepEqual(packedPackage.libc, ['musl']);
     packages.push({ name, target, platform, binary: binaryName, binarySha256: sha256(source),
-      tarball: packed.filename, tarballSha256: sha256(tarball), inspection });
+      tarball: packed.filename, tarballSha256: sha256(tarball), inspection, legalFiles: verifyLegalFiles(tarball) });
   }
   const [packed] = JSON.parse(command('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', output], root));
   const packedMain = JSON.parse(tarEntry(path.join(output, packed.filename), 'package/package.json'));
@@ -126,7 +145,7 @@ function main() {
     path.join(output, packed.filename), 'package/LICENSE')).digest('hex'),
     'main tarball license differs from source');
   packages.push({ name: pkg.name, tarball: packed.filename,
-    tarballSha256: sha256(path.join(output, packed.filename)) });
+    tarballSha256: sha256(path.join(output, packed.filename)), legalFiles: verifyLegalFiles(path.join(output, packed.filename)) });
   packages.push(stageWasm(output));
   fs.writeFileSync(path.join(output, 'manifest.json'), `${JSON.stringify({
     revision: process.env.GITHUB_SHA || command('git', ['rev-parse', 'HEAD'], root),
@@ -137,4 +156,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { inspect, tarEntry, stageWasm, verifyWasmTarball };
+module.exports = { inspect, tarEntry, stageWasm, verifyWasmTarball, verifyLegalFiles };

@@ -4,6 +4,7 @@
 # Node
 node_modules/
 *.node
+*.node.json
 
 # Test outputs and temporary files (Unified)
 .tmp/

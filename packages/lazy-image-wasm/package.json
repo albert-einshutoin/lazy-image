@@ -23,6 +23,7 @@
     }
   },
   "files": [
+    "LICENSE",
     "README.md",
     "browser.js",
     "browser.d.ts",

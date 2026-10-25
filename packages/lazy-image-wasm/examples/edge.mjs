@@ -2,7 +2,7 @@
 // imports to the package specifiers '@alberteinshutoin/lazy-image-wasm/edge'
 // and '@alberteinshutoin/lazy-image-wasm/shared'.
 import { createUploadOptimizer } from '../edge.js';
-import { LazyImageWasmError } from '../shared.js';
+import { DEFAULT_LIMITS, LazyImageWasmError } from '../shared.js';
 
 let optimizerPromise;
 
@@ -38,7 +38,7 @@ export function getEdgeUploadOptimizer(env = {}) {
   return optimizerPromise;
 }
 
-export async function handleOptimizeRequest(request, env = {}) {
+export async function handleOptimizeRequest(request, env = {}, authorize) {
   if (request.method !== 'POST') {
     return new Response('POST a binary image body to optimize', {
       status: 405,
@@ -46,17 +46,44 @@ export async function handleOptimizeRequest(request, env = {}) {
     });
   }
 
-  const data = new Uint8Array(await request.arrayBuffer());
-  if (data.byteLength === 0) {
-    return new Response('Request body is empty', { status: 400 });
-  }
-
+  // The application supplies its authentication/admission decision. Refuse to
+  // turn the copied example into an anonymous public codec endpoint by default.
+  if (typeof authorize !== 'function') return new Response('Upload authorization is not configured', { status: 503 });
+  if (await authorize(request) !== true) return new Response('Unauthorized', { status: 401 });
   try {
+    const length = request.headers.get('content-length');
+    if (length !== null && (!/^\d+$/.test(length) || !Number.isSafeInteger(Number(length)))) {
+      return new Response('Invalid Content-Length', { status: 400 });
+    }
+    if (length !== null && Number(length) > DEFAULT_LIMITS.maxBytes) return new Response('Request body exceeds 32 MiB', { status: 413 });
+    if (!request.body) return new Response('Request body is empty', { status: 400 });
+    const reader = request.body.getReader();
+    const chunks = [];
+    let size = 0;
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > DEFAULT_LIMITS.maxBytes) {
+          await reader.cancel();
+          return new Response('Request body exceeds 32 MiB', { status: 413 });
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    if (!size) return new Response('Request body is empty', { status: 400 });
+    const data = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) { data.set(chunk, offset); offset += chunk.byteLength; }
     const optimizer = await getEdgeUploadOptimizer(env);
     const result = await optimizer.optimizeUpload(data, {
       format: 'jpeg',
       maxWidth: 1600,
       maxHeight: 1600,
+      limits: DEFAULT_LIMITS,
     });
 
     return new Response(result.data, {
@@ -74,7 +101,7 @@ export async function handleOptimizeRequest(request, env = {}) {
       const isCallerError =
         error.category === 'UserError' || error.code === 'E111' || error.code === 'E131';
       return new Response(`[${error.code}] ${error.message}`, {
-        status: isCallerError ? 400 : 500,
+        status: error.category === 'ResourceLimit' ? 413 : isCallerError ? 400 : 500,
       });
     }
     throw error;
