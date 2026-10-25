@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "registeredAt": "2026-10-25T04:25:27.189Z",
+  "issue": 913,
+  "base": "a0db8d7f2471c037c10dc2cdd521f2098ea4edae",
+  "candidate": "eafc2dfc48e19ed1af15f1f344583c2ae2d79961",
+  "environments": [
+    "local macOS arm64",
+    "one same-job hosted Linux x64 diagnostic"
+  ],
+  "pairs": {
+    "initial": 5,
+    "additional": 5,
+    "max": 10,
+    "order": "odd AB; even BA",
+    "parallel": false,
+    "extension": "Only if any target paired-median bootstrap interval includes the 1.15 boundary after five pairs; no second extension"
+  },
+  "process": {
+    "suites": [
+      "first",
+      "warm1",
+      "warm2",
+      "warm3"
+    ],
+    "warmStatistic": "median of three warm suite timings per independent process; retain all three",
+    "firstMeaning": "first canonical suite after module loading, fixture hashing and canonical lossless reference preparation; not OS-cold I/O or process startup latency",
+    "caseOrder": [
+      "JPEG",
+      "WebP",
+      "AVIF",
+      "Complex Pipeline"
+    ]
+  },
+  "targets": [
+    "JPEG",
+    "AVIF",
+    "Complex Pipeline"
+  ],
+  "controls": [
+    "WebP",
+    "sharp for each case"
+  ],
+  "thresholds": {
+    "speedRatio": 1.15,
+    "sizeIncreasePercent": 5,
+    "historyBaselineUnchanged": true
+  },
+  "statistics": {
+    "paired": "B/A for each pair; first and warm separate",
+    "summary": "all raw timings, paired ratios, median, min/max, MAD",
+    "interval": "seeded percentile bootstrap of the paired median, 20000 resamples, 95% interval; exploratory small-sample uncertainty only",
+    "pass": "all three targets in both phases have upper interval <= 1.15; all output and quality contracts match",
+    "regression": "any target/phase has lower interval > 1.15",
+    "inconclusive": "interval still overlaps 1.15 at ten pairs or any unaccounted contract/measurement defect"
+  },
+  "outputs": "Every sampled output records bytes, SHA256, decoded dimensions/format/metadata; A/B hashes and existing quality axes must match. No output policy/quality/security changes.",
+  "build": "npm ci and npm run build per isolated checkout; Rust 1.88.0 release lto/codegen-units=1/opt-level=3/strip; distinct Cargo targets; dependency cache shared only for downloads",
+  "local": {
+    "node": "24.22.1",
+    "sdk": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+    "UV_THREADPOOL_SIZE": "4",
+    "cpu": "Mac16,10; 10 physical CPUs; no thermal/frequency guarantee"
+  },
+  "limits": [
+    "Original hosted single-shot values cannot prove causal regression.",
+    "Historical CPU contention and original binary hashes are unknown unless retained logs supply them.",
+    "No p90 or universal production performance claim from five or ten pairs.",
+    "No favorable-run selection, threshold changes, baseline overwrite or case removal."
+  ]
+}

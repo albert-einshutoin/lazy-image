@@ -7,9 +7,11 @@ const {
   assertRequiredCasesPassed,
   runBenchmark,
 } = require('../benchmarks/sharp-comparison.bench')
+const { analyzePairs } = require('../../scripts/bench/paired-comparison.cjs')
 
 const outputPath = resolveTemp('benchmark-quality-gate-test.json')
 const attempted = []
+const observed = []
 const cases = [
   { name: 'Pass', format: 'pass', quality: 80, required: true },
   { name: 'Regression', format: 'regression', quality: 80, required: true },
@@ -49,6 +51,9 @@ async function main() {
         left.toString() === 'lazy:regression'
           ? { ssim: 0.5, psnr: 10 }
           : { ssim: 0.99, psnr: 40 },
+      onOutput: async ({ name, lazy, sharp }) => {
+        observed.push({ name, lazy: lazy.toString(), sharp: sharp.toString() })
+      },
       qualityOutputPath: outputPath,
       metricsOutputPath: null,
       includeComplex: false,
@@ -74,11 +79,27 @@ async function main() {
     ['pass', 'quality-regression', 'unsupported', 'benchmark-failure', 'skipped'],
   )
   assert(artifact.results[0].axes.lazyVsReference)
+  assert.deepEqual(observed, [
+    { name: 'Pass', lazy: 'lazy:pass', sharp: 'sharp:pass' },
+    { name: 'Regression', lazy: 'lazy:regression', sharp: 'sharp:regression' },
+  ])
   assert.throws(
     () => assertRequiredCasesPassed(artifact.results),
     /Regression: quality-regression/,
   )
   fs.rmSync(outputPath, { force: true })
+  const sample = (value, webp = value) => ({ samples: ['first', 'warm1', 'warm2', 'warm3'].map(phase => ({
+    phase,
+    timings: Object.fromEntries(['JPEG', 'WebP', 'AVIF', 'Complex Pipeline'].map(name => [name, {
+      lazy: name === 'WebP' ? webp : value, sharp: value,
+    }])),
+  })) })
+  const pairs = values => values.map(value => ({ a: sample(100), b: sample(value) }))
+  assert.equal(analyzePairs(pairs([110, 110, 110, 110, 110])).verdict, 'PASS')
+  assert.equal(analyzePairs(pairs([116, 116, 116, 116, 116])).verdict, 'REGRESSION')
+  assert.equal(analyzePairs(pairs([100, 100, 120, 120, 120])).verdict, 'INCONCLUSIVE')
+  assert.equal(analyzePairs(Array.from({ length: 5 }, () => ({ a: sample(100), b: sample(100, 200) }))).verdict, 'PASS')
+  assert.throws(() => analyzePairs(pairs([0, 100, 100, 100, 100])), /invalid timing/)
   console.log('benchmark quality gate test passed')
 }
 

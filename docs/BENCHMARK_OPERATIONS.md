@@ -58,6 +58,30 @@ The baseline file is the single source of truth for threshold comparison.
 
 Regression means "current metric value is higher than baseline by more than threshold".
 
+## Bounded matched diagnostic (#913)
+
+The manual `matched_diagnostic: true` option in `benchmark-regression.yml` compares the patched
+`a0db8d7f` reference and the selected workflow revision in one Linux job. It runs
+`npm ci` and the canonical native build in separate checkouts/target directories,
+then delegates to `npm run test:bench:paired -- --base <checkout> --candidate
+<checkout> --output <new-directory>`. It does not update the historical baseline
+or change the scheduled workflow's warning policy.
+
+The wrapper applies the same canonical measurement runner to both checkouts and
+records that overlay separately from each product revision. Five sequential AB/BA
+pairs each run one first-use suite and three warm suites in a fresh process. The
+first-use timers exclude module loading, fixture hashing, and reference creation;
+they are not OS-cold or process-startup measurements. Warm timings use the three
+suite median per process. Every suite, output hash/metadata/quality result, actual
+loaded binding hash, toolchain/host context and pair ratio is retained.
+
+JPEG, AVIF and complex-pipeline lazy-image timings use the existing +15% threshold.
+An exploratory seeded paired-median bootstrap interval must lie entirely below
+that boundary to pass. A straddling interval permits one additional five-pair
+batch, up to ten pairs; unresolved uncertainty fails the diagnostic. Sharp and
+WebP remain recorded controls. This small experiment is not a universal latency
+guarantee, and a successful warn-mode historical comparison is a separate result.
+
 ## Failure Handling Policy
 
 - Scheduled runs: `warn` mode (do not fail workflow on regression).
