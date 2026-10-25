@@ -1,0 +1,73 @@
+[
+  {
+    "name": "libavif-sys",
+    "version": "0.17.0+libavif.1.0.4.lazy-image.1",
+    "source": "https://raw.githubusercontent.com/njaard/libavif-rs/c39a91dbf6c9414298d0066e5335c5312287af02/LICENSE",
+    "file": "libavif-sys-0.17.0+libavif.1.0.4.lazy-image.1.txt",
+    "sha256": "fe490679de7d4c113698ef4a4f130b10c2b561f6b847db87efbaefa64b9ac057"
+  },
+  {
+    "name": "napi",
+    "version": "3.12.2",
+    "source": "https://raw.githubusercontent.com/napi-rs/napi-rs/444bf29b8534216dd1cec4695a71e5996a173e87/LICENSE",
+    "file": "napi-3.12.2.txt",
+    "sha256": "3f1ce66533302df3a32edbfdfc0b78f0dd34659e4c1f5817162e5ea3c2297215"
+  },
+  {
+    "name": "napi-build",
+    "version": "2.4.1",
+    "source": "https://raw.githubusercontent.com/napi-rs/napi-rs/956e4525fea6a676ea3680b711382f167b899af9/LICENSE",
+    "file": "napi-build-2.4.1.txt",
+    "sha256": "3f1ce66533302df3a32edbfdfc0b78f0dd34659e4c1f5817162e5ea3c2297215"
+  },
+  {
+    "name": "napi-derive",
+    "version": "3.6.3",
+    "source": "https://raw.githubusercontent.com/napi-rs/napi-rs/956e4525fea6a676ea3680b711382f167b899af9/LICENSE",
+    "file": "napi-derive-3.6.3.txt",
+    "sha256": "3f1ce66533302df3a32edbfdfc0b78f0dd34659e4c1f5817162e5ea3c2297215"
+  },
+  {
+    "name": "napi-derive-backend",
+    "version": "6.1.2",
+    "source": "https://raw.githubusercontent.com/napi-rs/napi-rs/956e4525fea6a676ea3680b711382f167b899af9/LICENSE",
+    "file": "napi-derive-backend-6.1.2.txt",
+    "sha256": "3f1ce66533302df3a32edbfdfc0b78f0dd34659e4c1f5817162e5ea3c2297215"
+  },
+  {
+    "name": "napi-sys",
+    "version": "3.3.0",
+    "source": "https://raw.githubusercontent.com/napi-rs/napi-rs/679eb79f5cf3c7c6b2850f4ab46092126f23dc5c/LICENSE",
+    "file": "napi-sys-3.3.0.txt",
+    "sha256": "3f1ce66533302df3a32edbfdfc0b78f0dd34659e4c1f5817162e5ea3c2297215"
+  },
+  {
+    "name": "profiling",
+    "version": "1.0.17",
+    "source": "https://raw.githubusercontent.com/aclysma/profiling/740d74c82212f1f0584cfa5c6d884c5ab5367101/LICENSE-MIT",
+    "file": "profiling-1.0.17.txt",
+    "sha256": "c8167fdeeed46d3f244d3f85c5bf998ce889343691c32be2c61a8bc4b5c08333"
+  },
+  {
+    "name": "profiling-procmacros",
+    "version": "1.0.17",
+    "source": "https://raw.githubusercontent.com/aclysma/profiling/740d74c82212f1f0584cfa5c6d884c5ab5367101/LICENSE-MIT",
+    "file": "profiling-procmacros-1.0.17.txt",
+    "sha256": "c8167fdeeed46d3f244d3f85c5bf998ce889343691c32be2c61a8bc4b5c08333"
+  },
+  {
+    "name": "zune-inflate",
+    "version": "0.2.54",
+    "source": "https://raw.githubusercontent.com/etemesi254/zune-image/69502ce83fdfecdd0beefd677e2abb3781b29d98/LICENSE.md",
+    "file": "zune-inflate-0.2.54.txt",
+    "sha256": "e870d7fd7819a9f0453c62798cb52ae95d148a8c91dc2de1d983f997143c72de"
+  },
+  {
+    "name": "rust-standard-library",
+    "version": "1.88.0",
+    "kind": "toolchain",
+    "source": "rustup toolchain 1.88.0/share/doc/rust/COPYRIGHT-library.html",
+    "file": "rust-stdlib-1.88.0.html",
+    "sha256": "3d3f60160f5214efa0a7fd804102d02ce9ea6af04b5249a19eeb243450246ae9"
+  }
+]

@@ -1,7 +1,7 @@
 {
   "name": "@alberteinshutoin/lazy-image",
   "version": "2.0.0",
-  "description": "Web image optimization engine for Node.js with Image Firewall-backed secure upload defaults and smaller JPEG outputs in canonical PNG → JPEG benchmarks, powered by Rust + mozjpeg",
+  "description": "Local image compiler for Node.js with Image Firewall upload resource policies, metadata controls and verified file outputs, powered by Rust + mozjpeg",
   "main": "index.js",
   "bin": {
     "lazy-image": "./bin/lazy-image.js"
@@ -54,7 +54,9 @@
     "build:webp-wasm": "bash scripts/build-webp-wasm.sh",
     "test": "npm run test:js && npm run test:ci-planner:rust-targets && npm run test:rust && npm run test:wasm:package",
     "test:js": "npm run test:ci-planner && npm run test:js:specs && npm run test:js:type-safety && npm run test:pack-contract && npm run test:pack-metadata && npm run test:release-policy && npm run test:release-artifacts && npm run test:generated-artifact-policy && npm run test:security-audit-notification && npm run test:cargo-audit-policy && npm run test:npm-audit-policy && npm run test:benchmark-quality-gate && npm run test:types && npm run test:examples",
-    "test:release-artifacts": "node test/unit/release-artifacts.test.cjs && node test/unit/registry-native-smoke.test.cjs",
+    "test:release-artifacts": "node test/unit/native-loader.test.cjs && node test/unit/release-artifacts.test.cjs && node test/unit/registry-native-smoke.test.cjs && node test/unit/npm-publication-auth.test.cjs",
+    "licenses:generate": "node scripts/native-notices.cjs",
+    "licenses:check": "node scripts/native-notices.cjs --check",
     "test:ci-planner": "node test/unit/selective-test-planner.test.js",
     "test:ci-planner:rust-targets": "node test/unit/selective-rust-targets.test.js",
     "ci:plan-tests": "node ci/plan-tests.js",
@@ -143,7 +145,10 @@
     "README.md",
     "README.ja.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.txt",
+    "RUST_STD_NOTICES.html",
+    "native-manifest.json"
   ],
   "types": "index.d.ts",
   "homepage": "https://github.com/albert-einshutoin/lazy-image#readme"

@@ -79,7 +79,9 @@ export function throwWasmError(code, message, options) {
   throw new LazyImageWasmError(code, message, options);
 }
 
-export async function inputToBytes(input) {
+export const DEFAULT_LIMITS = Object.freeze({ maxBytes: 32 * 1024 * 1024, maxPixels: 40_000_000, timeoutMs: 5000 });
+
+export async function inputToBytes(input, maxBytes = DEFAULT_LIMITS.maxBytes) {
   if (input instanceof ArrayBuffer) {
     return new Uint8Array(input);
   }
@@ -87,6 +89,10 @@ export async function inputToBytes(input) {
     return new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
   }
   if (input && typeof input.arrayBuffer === 'function') {
+    if (!Number.isSafeInteger(input.size) || input.size < 0) {
+      throwWasmError('E400', 'Blob/File input requires a finite byte size. Pass bounded bytes for other inputs.');
+    }
+    if (input.size > maxBytes) throwWasmError('E123', `Input exceeds limits.maxBytes (${maxBytes}).`);
     const buffer = await input.arrayBuffer();
     return new Uint8Array(buffer);
   }
@@ -174,11 +180,10 @@ export function normalizeOptions(options = {}, runtimeDefaults = {}) {
     }
   }
 
-  const limits = normalized.limits ?? {};
+  const limits = { ...normalized.limits };
   for (const key of ['maxBytes', 'maxPixels', 'timeoutMs']) {
-    if (limits[key] !== undefined) {
-      limits[key] = normalizePositiveInteger(limits[key], `limits.${key}`);
-    }
+    if (limits[key] === undefined) limits[key] = DEFAULT_LIMITS[key];
+    limits[key] = normalizePositiveInteger(limits[key], `limits.${key}`);
   }
   normalized.limits = limits;
 
@@ -192,10 +197,83 @@ export function validateInputLimits(bytes, options) {
 }
 
 export function validatePixelLimits(width, height, options) {
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0 || width > 32768 || height > 32768) {
+    throwWasmError('E122', 'Image dimensions must be positive integers at most 32768.');
+  }
   const pixels = width * height;
   if (options.limits.maxPixels !== undefined && pixels > options.limits.maxPixels) {
     throwWasmError('E122', `Input exceeds limits.maxPixels (${options.limits.maxPixels}).`);
   }
+}
+
+// Read container dimensions before handing bytes to an allocating codec. This
+// bounds admission; it is not a cap on a codec's working memory or CPU time.
+export function preflightDimensions(bytes, format, options) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const invalid = () => throwWasmError('E111', 'Malformed or unsupported image dimension header.');
+  let width;
+  let height;
+  if (format === 'png') {
+    if (bytes.length < 33 || view.getUint32(8) !== 13 || view.getUint32(12) !== 0x49484452) invalid();
+    width = view.getUint32(16);
+    height = view.getUint32(20);
+  } else if (format === 'jpeg') {
+    let offset = 2;
+    while (offset < bytes.length) {
+      if (bytes[offset++] !== 0xff) invalid();
+      while (offset < bytes.length && bytes[offset] === 0xff) offset++;
+      if (offset >= bytes.length) invalid();
+      const marker = bytes[offset++];
+      if (marker === 0xda || marker === 0xd9 || marker === 0x00) invalid();
+      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (offset + 2 > bytes.length) invalid();
+      const length = view.getUint16(offset);
+      if (length < 2 || offset + length > bytes.length) invalid();
+      if ((marker >= 0xc0 && marker <= 0xcf) && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+        if (length < 8) invalid();
+        height = view.getUint16(offset + 3);
+        width = view.getUint16(offset + 5);
+        break;
+      }
+      offset += length;
+    }
+  } else if (format === 'webp') {
+    if (bytes.length < 20 || view.getUint32(4, true) + 8 !== bytes.length) invalid();
+    let canvas;
+    for (let offset = 12; offset < bytes.length;) {
+      if (offset + 8 > bytes.length) invalid();
+      const tag = view.getUint32(offset);
+      const length = view.getUint32(offset + 4, true);
+      const start = offset + 8;
+      const end = start + length;
+      if (end > bytes.length) invalid();
+      if (tag === 0x414e494d || tag === 0x414e4d46) invalid(); // ANIM / ANMF
+      if (tag === 0x56503858) { // VP8X
+        if (length !== 10 || canvas || (bytes[start] & 2)) invalid();
+        const u24 = i => bytes[i] + bytes[i + 1] * 256 + bytes[i + 2] * 65536;
+        canvas = [u24(start + 4) + 1, u24(start + 7) + 1];
+        validatePixelLimits(...canvas, options);
+      } else if (tag === 0x56503820 || tag === 0x5650384c) { // VP8 / VP8L
+        if (width !== undefined) invalid();
+        if (tag === 0x56503820) {
+          if (length < 10 || bytes[start + 3] !== 0x9d || bytes[start + 4] !== 1 || bytes[start + 5] !== 0x2a) invalid();
+          width = view.getUint16(start + 6, true) & 0x3fff;
+          height = view.getUint16(start + 8, true) & 0x3fff;
+        } else {
+          if (length < 5 || bytes[start] !== 0x2f) invalid();
+          const bits = view.getUint32(start + 1, true);
+          width = (bits & 0x3fff) + 1;
+          height = ((bits >>> 14) & 0x3fff) + 1;
+        }
+      }
+      offset = end + (length & 1);
+      if (offset > bytes.length) invalid();
+    }
+    if (canvas && (canvas[0] !== width || canvas[1] !== height)) invalid();
+  } else invalid();
+  if (width === undefined || height === undefined) invalid();
+  validatePixelLimits(width, height, options);
+  return { width, height };
 }
 
 export function resolveTargetDimensions(width, height, options) {
@@ -296,7 +374,7 @@ function normalizeQuality(value, key) {
 
 function normalizePositiveInteger(value, key) {
   const normalized = Number(value);
-  if (!Number.isInteger(normalized) || normalized <= 0) {
+  if (!Number.isSafeInteger(normalized) || normalized <= 0) {
     throwWasmError('E400', `${key} must be a positive integer.`);
   }
   return normalized;

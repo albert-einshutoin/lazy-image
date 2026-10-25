@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.0] - Unreleased candidate
+## [2.0.0]
 
 ### Changed (BREAKING)
 - Move WebP Wasm assets from the removed `@jsquash/webp` dependency into `@alberteinshutoin/lazy-image-wasm/vendor/webp`. Browser/Worker deployments must update their asset-copy source and replace decoder, baseline encoder, and SIMD encoder together. See the [migration and release notes](docs/history/V2.0.0_RELEASE_NOTES.md). Supported Node versions and compiler policy are unchanged.
@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove the deprecated TypeScript export `EncodeOptions` (#680). Import `EncodeOptionsInput` for the existing `encode()` / `encodeToFile()` input contract. The internal Rust/N-API input converter remains; it is not a public TypeScript type. Metrics schema stays at 1.1.0.
 
 ### Security
+- Reject stale or unverifiable native package versions before addon evaluation. Local/override binaries require the version and SHA-256 sidecar produced by the successful native build; native initialization errors never fall through to an older binary.
+- Bound Wasm input admission to 32 MiB / 40 MP by default and inspect JPEG/PNG/static WebP dimensions before decode. Decoded/output dimensions are checked too. The 5-second default timeout is cooperative. The Edge example requires an application authorization decision and reads request streams with a byte cap.
+- Include the project MIT license in all eight distributions and compiled-dependency notices in native packages, with source/license hashes checked during staging.
 - Rebuild the browser/Edge WebP codecs with libwebp 1.6.0 to include the CVE-2023-4863 fix. The WebP Wasm assets now ship inside the Wasm package; update asset-copy commands accordingly.
 - Backport the CVE-2025-48174 and CVE-2025-48175 fixes into the vendored libavif backend, preserving its existing ABI and encoder behavior.
 - Update development-only sharp to 0.35.5 or newer for the librsvg CVE-2026-96889 fix. Reassess the compile-time paste advisory exception through 2027-01-20.

@@ -42,8 +42,11 @@ export interface WasmOptimizeOptions {
 }
 
 export interface WasmLimits {
+  /** Defaults to 32 MiB; checked before Blob reads and codec decode. */
   maxBytes?: number;
+  /** Defaults to 40 MP; header admission and decoded/output dimensions are checked. */
   maxPixels?: number;
+  /** Defaults to 5000 ms; cooperative, not codec preemption or an HTTP body deadline. */
   timeoutMs?: number;
 }
 
@@ -102,3 +105,4 @@ export declare const ERROR_CATEGORIES: Readonly<{
 export declare function categoryForCode(code: string): WasmErrorCategory;
 
 export declare const VERSION: string;
+export declare const DEFAULT_LIMITS: Readonly<{ maxBytes: number; maxPixels: number; timeoutMs: number }>;

@@ -4,14 +4,14 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.5.x   | :white_check_mark: |
-| < 1.5   | :x:                |
+| 2.x     | :white_check_mark: |
+| < 2.0   | :x:                |
 
-2.0.0 is an **unpublished security candidate**. The fixes described below are
-in candidate source/assets; installing published 1.5.0 does not obtain them.
-The candidate changes the manual Wasm asset-copy location; follow the
-[migration notes](docs/history/V2.0.0_RELEASE_NOTES.md). This table identifies
-the currently published support line, not a claim that 1.5.0 contains these fixes.
+The maintained security line starts at 2.0.0. This support policy does not assert
+registry availability: check the exact npm version and GitHub Release before
+installing. The fixes below are not in 1.5.0 and are not backported to 1.x.
+2.0.0 changes the manual Wasm asset-copy location; follow the
+[migration notes](docs/history/V2.0.0_RELEASE_NOTES.md).
 
 ## Reporting a Vulnerability
 
@@ -65,7 +65,7 @@ lazy-image implements several security measures to protect against common vulner
   - Critical/High: security patch release within 14 days of confirmation.
   - Medium: patch in the next scheduled minor/patch release (target ≤ 30 days).
   - Low: fixed opportunistically in a regular release.
-- **Backports**: The bundled WebP/libavif fixes in this candidate will be delivered in 2.0.0, including the required Wasm asset migration. These fixes are not backported to 1.5.x; users must migrate after 2.0.0 is published. Published 1.5.0 does not contain them.
+- **Backports**: The bundled WebP/libavif fixes are part of 2.0.0, including the required Wasm asset migration. They are not backported to 1.x. Use the verified 2.x package/assets when available; 1.5.0 does not contain these fixes.
 - **Disclosure**: Public disclosure occurs after a fix is released and packages are available. If coordinated disclosure is requested, we honor reasonable embargoes up to 90 days.
 - **Credit**: We credit reporters in the advisory unless anonymity is requested.
 

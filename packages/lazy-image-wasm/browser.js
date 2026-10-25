@@ -16,6 +16,7 @@ import {
   makeResultData,
   normalizeOptions,
   nowMs,
+  preflightDimensions,
   resolveTargetDimensions,
   throwWasmError,
   validateInputLimits,
@@ -73,20 +74,25 @@ async function optimizeUploadWithRuntime(input, options, runtimeOptions) {
   const normalized = normalizeOptions(options, { output: runtimeOptions.defaultOutput });
 
   checkAbort(normalized.signal);
-  const bytes = await inputToBytes(input);
+  const bytes = await inputToBytes(input, normalized.limits.maxBytes);
   checkTimeout(totalStart, 'input-read', normalized, runtimeOptions.now);
   validateInputLimits(bytes, normalized);
 
   const inputFormat = detectInputFormat(bytes);
+  const dimensions = preflightDimensions(bytes, inputFormat, normalized);
   const decodeStart = nowMs(runtimeOptions.now);
   const imageData = await decodeImage(bytes, inputFormat);
   const decodeMs = nowMs(runtimeOptions.now) - decodeStart;
   checkTimeout(totalStart, 'decode', normalized, runtimeOptions.now);
   validatePixelLimits(imageData.width, imageData.height, normalized);
+  if (imageData.width !== dimensions.width || imageData.height !== dimensions.height) {
+    throwWasmError('E111', 'Decoded dimensions differ from the admitted header.');
+  }
 
   checkAbort(normalized.signal);
   const opsStart = nowMs(runtimeOptions.now);
   const targetDimensions = resolveTargetDimensions(imageData.width, imageData.height, normalized);
+  validatePixelLimits(targetDimensions.width, targetDimensions.height, normalized);
   const processed =
     targetDimensions.width === imageData.width && targetDimensions.height === imageData.height
       ? imageData

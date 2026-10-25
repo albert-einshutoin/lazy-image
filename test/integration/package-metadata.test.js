@@ -146,7 +146,7 @@ function test(name, fn) {
     assert.match(contributing, /\*\*Node\.js\*\*: >= 22/);
     assert.match(compatibility, /Node\.js 22 or newer/);
     assert.match(troubleshooting, /Node\.js 22\+/);
-    assert.match(ciWorkflow, /node: \[22, 24\]/);
+    assert.match(ciWorkflow, /node: \['22\.23\.4', '24\.22\.1'\]/);
     assert.doesNotMatch(nodeWorkflows, /node-version: (?:18|20)\b/);
     assert.match(ciWorkflow, /node scripts\/stage-release-artifacts\.cjs/);
     assert.match(releaseStaging, /engines: pkg\.engines/);

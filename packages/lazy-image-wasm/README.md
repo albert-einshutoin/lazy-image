@@ -29,7 +29,8 @@ Edge runtimes often need explicit Wasm module loading. Pass compiled
 import { createUploadOptimizer } from '@alberteinshutoin/lazy-image-wasm/edge';
 
 const optimizer = await createUploadOptimizer({ wasmModules });
-const result = await optimizer.optimizeUpload(new Uint8Array(await request.arrayBuffer()), {
+// Use bounded bytes admitted by your authenticated HTTP handler (see below).
+const result = await optimizer.optimizeUpload(admittedBytes, {
   format: 'jpeg',
   maxWidth: 1200,
   maxHeight: 1200,
@@ -39,10 +40,13 @@ const result = await optimizer.optimizeUpload(new Uint8Array(await request.array
 
 ### Example (Cloudflare Workers / V8 isolate)
 
-`examples/edge.mjs` (shipped in this package) is a small runtime-safe pattern:
+`examples/edge.mjs` (shipped in this package) demonstrates bounded request admission:
 it caches one optimizer per isolate, reads `@jsquash` Wasm bindings from
 `env.JSQUASH_*` keys, and maps caller-correctable `LazyImageWasmError` values
-to HTTP 400. Wasm errors use the native package categories
+to HTTP 400 and resource limits to HTTP 413. It refuses processing with HTTP 503
+until the application supplies an authorization function, and HTTP 401 unless
+that function returns exactly `true`. It reads streams incrementally up to 32 MiB,
+including requests without Content-Length. Wasm errors use the native package categories
 (`UserError`, `CodecError`, `ResourceLimit`, `InternalBug`); see
 [`docs/WASM_PACKAGE_API.md`](https://github.com/albert-einshutoin/lazy-image/blob/main/docs/WASM_PACKAGE_API.md#errors) for the
 cross-package code table.
@@ -56,7 +60,9 @@ import { handleOptimizeRequest } from './lazy-image-edge.mjs';
 
 export default {
   async fetch(request, env) {
-    return handleOptimizeRequest(request, env);
+    // Implement with your application's session/auth and quota checks.
+    // Do not replace this with an unconditional true in a public service.
+    return handleOptimizeRequest(request, env, authorizeUpload);
   },
 };
 ```
@@ -175,3 +181,15 @@ stripping by default; best-effort and strict target-byte policies; and metrics
 compatible with the native lazy-image vocabulary where possible. Resize policies
 support `inside`, `cover`, and `fill`; `limits.timeoutMs` is enforced between
 input, decode, resize, and encode stages as a best-effort checkpoint.
+
+By default all profiles admit at most **32 MiB / 40 MP**, with a **5000 ms**
+cooperative timeout. JPEG, PNG and static WebP dimensions are inspected before
+codec decode; malformed/unsupported headers and animated WebP are rejected.
+Decoded and requested output dimensions are checked too (each dimension at most
+32768). Explicit positive safe-integer `limits` override the defaults; `undefined`
+keeps the default. Blob/File `size` is checked before `arrayBuffer()`.
+These admission checks do not cap codec working memory or preempt its CPU use.
+Your HTTP server still needs body-read deadlines, concurrency/queue/quotas and
+isolation appropriate to its deployment. Avoid unbounded `request.arrayBuffer()`
+in the caller. The example's default export remains closed until wrapped with
+your authorization decision.

@@ -163,6 +163,19 @@ Default policy:
 - `stripMetadata`: `true`
 - `qualityFloorPolicy`: `best-effort`
 - `profile`: `upload-safe`
+- `limits`: 32 MiB input, 40 MP input/output, 5000 ms cooperative timeout.
+
+Header admission checks JPEG/PNG/static WebP dimensions before codec decode,
+then compares decoded dimensions with the admitted header and checks resize output.
+Each dimension is at most 32768. Malformed or unsupported dimension headers and
+animated WebP fail with `E111`; pixel/dimension limits use `E122` and byte limits
+use `E123`. Positive safe-integer overrides are explicit; `undefined` keeps defaults.
+Blob/File size is checked before its body is copied. Pass bounded byte arrays for
+other producers. These checks are not a codec working-memory cap or process isolation.
+The Edge example requires an application authorization function returning exactly
+`true` and reads bodies with a 32 MiB stream cap (HTTP 413 on overflow, including
+missing or understated Content-Length). The application supplies HTTP read deadlines,
+rate/queue limits and authentication; an unconfigured example refuses work (503).
 
 `fit: "inside"` preserves aspect ratio within the provided max dimensions.
 `fit: "cover"` crops and resizes to exact `maxWidth` and `maxHeight`.
