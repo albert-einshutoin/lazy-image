@@ -36,7 +36,7 @@ function interval(ratios) {
 }
 
 function analyzePairs(pairs) {
-  assert.ok(pairs.length >= 5 && pairs.length <= 10, 'Expected five to ten independent pairs');
+  assert.ok(pairs.length >= 5 && pairs.length <= 40, 'Expected five to forty independent pairs');
   const rows = [];
   for (const name of CASES) for (const engine of ['lazy', 'sharp']) for (const phase of ['first', 'warm']) {
     const times = { a: [], b: [] };
@@ -61,12 +61,12 @@ function analyzePairs(pairs) {
 
 function optionalFile(file) { return fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trim() : null; }
 
-async function sample(root, output) {
+async function sample(root, output, { isolated = false } = {}) {
   fs.mkdirSync(output);
   const report = { startedAt: new Date().toISOString(), samples: [] };
   try {
     // Only the identical measurement overlay may differ from each reviewed revision.
-    const protectedPaths = ['src', 'Cargo.toml', 'Cargo.lock', 'package.json', 'package-lock.json', 'build.rs', 'scripts/build-native.cjs', 'scripts/postbuild-fixup.js', 'index.js', 'index.d.ts'];
+    const protectedPaths = ['src', 'Cargo.toml', 'Cargo.lock', 'package.json', 'package-lock.json', 'build.rs', 'scripts/build-native.cjs', 'scripts/postbuild-fixup.js', 'index.js', 'index.d.ts', 'test/helpers/quality.js', 'test/helpers/paths.js'];
     cp.execFileSync('git', ['diff', '--quiet', 'HEAD', '--', ...protectedPaths], { cwd: root });
     const local = createRequire(path.join(root, 'package.json'));
     const loadStart = performance.now();
@@ -80,18 +80,21 @@ async function sample(root, output) {
     assert.equal(fs.realpathSync(path.dirname(bindings[0])), fs.realpathSync(root));
     Object.assign(report, { revision: git(root, 'rev-parse', 'HEAD'), sourceTree: git(root, 'rev-parse', 'HEAD^{tree}'),
       sourceHashes, sourceHashesSha256: hash(JSON.stringify(sourceHashes)), dirtyPaths: git(root, 'status', '--porcelain'),
+      modifiedPaths: git(root, 'diff', '--name-only', '-z', 'HEAD').split('\0').filter(Boolean),
+      untrackedPaths: git(root, 'ls-files', '--others', '--exclude-standard', '-z').split('\0').filter(Boolean),
       runnerSha256: hash(fs.readFileSync(path.join(root, RUNNER))), harnessSha256: hash(fs.readFileSync(__filename)),
       binding: { path: bindings[0], sha256: hash(fs.readFileSync(bindings[0])) },
       fixture: { path: fixture, sha256: hash(fs.readFileSync(fixture)) },
       runtime: { node: process.version, executable: process.execPath, os: os.type(), release: os.release(), version: os.version(), arch: os.arch(), cpus: os.cpus().map(c => ({ model: c.model, speed: c.speed })), parallelism: os.availableParallelism(), sharpVersions: sharp.versions, sharpConcurrency: sharp.concurrency(), sharpCache: sharp.cache(),
         env: Object.fromEntries(['UV_THREADPOOL_SIZE', 'RAYON_NUM_THREADS', 'RUSTUP_TOOLCHAIN', 'SDKROOT', 'RUSTFLAGS', 'CARGO_ENCODED_RUSTFLAGS', 'CFLAGS', 'CXXFLAGS', 'MACOSX_DEPLOYMENT_TARGET', 'ImageOS', 'ImageVersion', 'RUNNER_OS', 'RUNNER_ARCH', 'RUNNER_NAME'].map(k => [k, process.env[k] ?? null])), cpuQuota: optionalFile('/sys/fs/cgroup/cpu.max'), cpuStatBefore: optionalFile('/sys/fs/cgroup/cpu.stat'), loadBefore: os.loadavg() },
       setupMs: performance.now() - loadStart,
+      isolated,
       timingScope: 'Canonical Date.now operation timers; first after module/fixture/reference preparation, warm median of three subsequent suites; not process startup or OS-cold I/O' });
     fs.mkdirSync(path.join(output, 'objects'));
     for (const phase of PHASES) {
       const outputs = [];
       const started = performance.now();
-      await runBenchmark({ metricsOutputPath: path.join(output, phase + '-metrics.json'), qualityOutputPath: path.join(output, phase + '-quality.json'),
+      await runBenchmark({ ...(isolated ? { cases: [] } : {}), metricsOutputPath: path.join(output, phase + '-metrics.json'), qualityOutputPath: path.join(output, phase + '-quality.json'),
         onOutput: async ({ name, ...buffers }) => {
           for (const [engine, buffer] of Object.entries(buffers)) {
             assert.ok(Buffer.isBuffer(buffer));
@@ -104,9 +107,9 @@ async function sample(root, output) {
           }
         } });
       const quality = read(path.join(output, phase + '-quality.json'));
-      assert.equal(outputs.length, 8, 'All four outputs from both engines must be observed');
+      assert.equal(outputs.length, isolated ? 2 : 8, 'Every selected output from both engines must be observed');
       const cases = [...quality.results, ...quality.performanceOnly];
-      assert.deepEqual(cases.map(r => r.name), CASES);
+      assert.deepEqual(cases.map(r => r.name), isolated ? ['Complex Pipeline'] : CASES);
       report.samples.push({ phase, suiteWallMs: performance.now() - started,
         timings: Object.fromEntries(cases.map(r => [r.name, { lazy: r.lazy.time, sharp: r.sharp.time }])),
         qualityAxes: quality.results.map(r => ({ name: r.name, status: r.status, axes: r.axes })), outputs });
@@ -179,4 +182,4 @@ if (require.main === module) {
   task.catch(error => { console.error(error); process.exitCode = 1; });
 }
 
-module.exports = { analyzePairs };
+module.exports = { analyzePairs, sample };

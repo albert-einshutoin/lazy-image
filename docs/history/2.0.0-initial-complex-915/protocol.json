@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "registeredAt": "2026-10-25T08:49:53.189Z",
+  "issue": 915,
+  "base": "a0db8d7f2471c037c10dc2cdd521f2098ea4edae",
+  "candidate": "eafc2dfc48e19ed1af15f1f344583c2ae2d79961",
+  "priorEvidence": "/Volumes/Satechi/Developer/lazy-image-evidence/2.0.0-perf-3warnings-cpy3xf",
+  "diagnosis": {
+    "pairsPerArm": 4,
+    "arms": [
+      "original-passive",
+      "original-observed",
+      "isolated-passive",
+      "isolated-observed"
+    ],
+    "order": "Each pair cycle visits all arms; odd forward, even reverse; A/B odd AB even BA, sequential fresh processes",
+    "suites": [
+      "first",
+      "warm1",
+      "warm2",
+      "warm3"
+    ],
+    "observations": [
+      "monotonic native toBuffer and quality intervals",
+      "process CPU/resourceUsage context switches/page faults",
+      "heap/external/arrayBuffers/rss",
+      "V8 GC trace NVP and PerformanceObserver entries",
+      "event-loop utilization and delay",
+      "power/thermal/idle/load"
+    ],
+    "limits": "Process counters aggregate threads. GC duration is not assumed entirely stop-the-world. No per-core scheduling or worker queue timestamp unless supplied by a later native-metrics control.",
+    "purpose": "Causal localization only; observed runs never performance acceptance",
+    "optionalNativeControl": {
+      "trigger": "Original/isolated contrast and GC timeline do not localize timing variation",
+      "pairs": 4,
+      "method": "diagnostic-only toBufferWithMetrics through the same native process_and_encode; retain total/decode/ops/encode and wall-minus-total, with exact scope limits; compare hashes"
+    }
+  },
+  "ordinary": {
+    "initialPairs": 20,
+    "additionalPairs": 20,
+    "extension": "Once only if any target paired median interval includes 1.15 at 20; never complete Goal on remaining uncertainty",
+    "order": "odd AB even BA; sequential fresh processes",
+    "suites": [
+      "first",
+      "warm1",
+      "warm2",
+      "warm3"
+    ],
+    "profiler": false,
+    "targets": [
+      "JPEG",
+      "AVIF",
+      "Complex Pipeline"
+    ],
+    "controls": [
+      "WebP",
+      "sharp"
+    ],
+    "threshold": 1.15,
+    "sizeThresholdPercent": 5,
+    "baselineUnchanged": true,
+    "statistic": "B/A paired median; warm median of three; seeded 913 percentile bootstrap 20000 resamples, nominal 95 percent exploratory uncertainty; preserve all ratios/min/max/MAD",
+    "pass": "All target first/warm upper intervals <=1.15 and exact output/quality contracts match",
+    "regression": "Any target lower interval >1.15",
+    "unresolved": "Continue one cause-driven finite phase in this Issue; no favorable sample selection or completed Goal"
+  },
+  "preconditions": {
+    "power": "AC, low-power false, thermalState 0 before each batch",
+    "cpu": "two one-second aggregate CPU idle probes >=0.60 before batch, maximum five minute finite wait; retain probes; do not discard outcomes after measurement",
+    "threads": "UV_THREADPOOL_SIZE=4; default sharp concurrency/cache and Rayon, recorded",
+    "build": "Two fresh isolated checkouts; npm ci and canonical npm run build; Rust1.88.0, SDK26.5, distinct external Cargo targets and shared download cache only"
+  },
+  "invariants": [
+    "No forced GC or extra pipeline warmup",
+    "No case removal, timer narrowing, baseline reset or threshold relaxation",
+    "All original raw/FAIL/unmet immutable",
+    "Causal measurement fix only after evidence; no speculative codec change",
+    "Normal confirmation uses fixed source and no diagnostic observers; all output hashes/metadata/quality gates retained",
+    "Final reviewed exact source must have full hosted CI/security/release benchmark and non-tag eight-package candidate/native twelve reports plus explicit Wasm verification or hash-bound reuse",
+    "No tag, publish, Release, deploy, deprecate, force push or branch deletion"
+  ]
+}
