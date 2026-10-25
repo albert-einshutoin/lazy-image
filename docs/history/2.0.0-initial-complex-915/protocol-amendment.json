@@ -1,0 +1,17 @@
+{
+  "registeredAt": "2026-10-25T08:57:02.169Z",
+  "issue": 915,
+  "reason": "Specialist initial review: fail-closed expected identities, ordinary/native cross-arm contracts and fixed diagnostic summaries; no acceptance threshold or sample-count change",
+  "originalProtocolSha256": "8858e77f4e6c691f3fa58f16f3e5aca419cc4589188add1113098dc716768c9b",
+  "rejectedBatch": "diagnosis/rejected-batch.json",
+  "acceptedDiagnosticOutput": "diagnosis-verified",
+  "fixtureSha256": "1e007789d755ec4a14753e350284950b6f227a467143cd433bb2c993d20174a5",
+  "bindings": {
+    "a": "b5f6a45afa38f3dd51e398780ccc631b615e93d74e79bd0bc7fbe522dd3ff70b",
+    "b": "632703459f1a1cdc87f5056c27060e512dbb49b2d5df8ef6efaf36f11cfead0e"
+  },
+  "identity": "Require expected HEAD/tree, only identical runner overlay dirty, no untracked files, direct helper hashes/clean guard and pinned fixture/native binding; validate each process before accepting",
+  "contracts": "All full arms share exact outputs/metadata/quality; isolated complex equals same ordinary subset; native must import ordinary contracts from verified diagnosis",
+  "nativeScope": "Native total starts after memory admission; wall-minus-total combines queue/admission/API/JS scheduling/observer overhead; not precise worker wait. Finite nonnegative stage/total chronology checked.",
+  "summary": "Every arm first/warm B/A raw ratios, times and order; observed/passive and original/isolated ratio of medians plus cycle-paired ratios for each side, no causal-proof claim from four pairs"
+}

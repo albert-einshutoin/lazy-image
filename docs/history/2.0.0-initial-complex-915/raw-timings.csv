@@ -1,0 +1,2177 @@
+batch,arm,pair,side,phase,name,engine,ms
+diagnosis-verified,isolated-observed,1,a,first,Complex Pipeline,lazy,84
+diagnosis-verified,isolated-observed,1,a,first,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-observed,1,a,warm1,Complex Pipeline,lazy,94
+diagnosis-verified,isolated-observed,1,a,warm1,Complex Pipeline,sharp,132
+diagnosis-verified,isolated-observed,1,a,warm2,Complex Pipeline,lazy,91
+diagnosis-verified,isolated-observed,1,a,warm2,Complex Pipeline,sharp,117
+diagnosis-verified,isolated-observed,1,a,warm3,Complex Pipeline,lazy,99
+diagnosis-verified,isolated-observed,1,a,warm3,Complex Pipeline,sharp,122
+diagnosis-verified,isolated-observed,1,b,first,Complex Pipeline,lazy,84
+diagnosis-verified,isolated-observed,1,b,first,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-observed,1,b,warm1,Complex Pipeline,lazy,100
+diagnosis-verified,isolated-observed,1,b,warm1,Complex Pipeline,sharp,116
+diagnosis-verified,isolated-observed,1,b,warm2,Complex Pipeline,lazy,94
+diagnosis-verified,isolated-observed,1,b,warm2,Complex Pipeline,sharp,115
+diagnosis-verified,isolated-observed,1,b,warm3,Complex Pipeline,lazy,84
+diagnosis-verified,isolated-observed,1,b,warm3,Complex Pipeline,sharp,116
+diagnosis-verified,isolated-observed,2,a,first,Complex Pipeline,lazy,91
+diagnosis-verified,isolated-observed,2,a,first,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-observed,2,a,warm1,Complex Pipeline,lazy,88
+diagnosis-verified,isolated-observed,2,a,warm1,Complex Pipeline,sharp,121
+diagnosis-verified,isolated-observed,2,a,warm2,Complex Pipeline,lazy,89
+diagnosis-verified,isolated-observed,2,a,warm2,Complex Pipeline,sharp,127
+diagnosis-verified,isolated-observed,2,a,warm3,Complex Pipeline,lazy,153
+diagnosis-verified,isolated-observed,2,a,warm3,Complex Pipeline,sharp,130
+diagnosis-verified,isolated-observed,2,b,first,Complex Pipeline,lazy,83
+diagnosis-verified,isolated-observed,2,b,first,Complex Pipeline,sharp,121
+diagnosis-verified,isolated-observed,2,b,warm1,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-observed,2,b,warm1,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-observed,2,b,warm2,Complex Pipeline,lazy,92
+diagnosis-verified,isolated-observed,2,b,warm2,Complex Pipeline,sharp,122
+diagnosis-verified,isolated-observed,2,b,warm3,Complex Pipeline,lazy,84
+diagnosis-verified,isolated-observed,2,b,warm3,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-observed,3,a,first,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-observed,3,a,first,Complex Pipeline,sharp,117
+diagnosis-verified,isolated-observed,3,a,warm1,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-observed,3,a,warm1,Complex Pipeline,sharp,117
+diagnosis-verified,isolated-observed,3,a,warm2,Complex Pipeline,lazy,78
+diagnosis-verified,isolated-observed,3,a,warm2,Complex Pipeline,sharp,116
+diagnosis-verified,isolated-observed,3,a,warm3,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-observed,3,a,warm3,Complex Pipeline,sharp,117
+diagnosis-verified,isolated-observed,3,b,first,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-observed,3,b,first,Complex Pipeline,sharp,121
+diagnosis-verified,isolated-observed,3,b,warm1,Complex Pipeline,lazy,76
+diagnosis-verified,isolated-observed,3,b,warm1,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-observed,3,b,warm2,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-observed,3,b,warm2,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-observed,3,b,warm3,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-observed,3,b,warm3,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-observed,4,a,first,Complex Pipeline,lazy,81
+diagnosis-verified,isolated-observed,4,a,first,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-observed,4,a,warm1,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-observed,4,a,warm1,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-observed,4,a,warm2,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-observed,4,a,warm2,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-observed,4,a,warm3,Complex Pipeline,lazy,81
+diagnosis-verified,isolated-observed,4,a,warm3,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-observed,4,b,first,Complex Pipeline,lazy,82
+diagnosis-verified,isolated-observed,4,b,first,Complex Pipeline,sharp,125
+diagnosis-verified,isolated-observed,4,b,warm1,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-observed,4,b,warm1,Complex Pipeline,sharp,122
+diagnosis-verified,isolated-observed,4,b,warm2,Complex Pipeline,lazy,82
+diagnosis-verified,isolated-observed,4,b,warm2,Complex Pipeline,sharp,127
+diagnosis-verified,isolated-observed,4,b,warm3,Complex Pipeline,lazy,85
+diagnosis-verified,isolated-observed,4,b,warm3,Complex Pipeline,sharp,123
+diagnosis-verified,isolated-passive,1,a,first,Complex Pipeline,lazy,81
+diagnosis-verified,isolated-passive,1,a,first,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-passive,1,a,warm1,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-passive,1,a,warm1,Complex Pipeline,sharp,115
+diagnosis-verified,isolated-passive,1,a,warm2,Complex Pipeline,lazy,80
+diagnosis-verified,isolated-passive,1,a,warm2,Complex Pipeline,sharp,116
+diagnosis-verified,isolated-passive,1,a,warm3,Complex Pipeline,lazy,80
+diagnosis-verified,isolated-passive,1,a,warm3,Complex Pipeline,sharp,117
+diagnosis-verified,isolated-passive,1,b,first,Complex Pipeline,lazy,81
+diagnosis-verified,isolated-passive,1,b,first,Complex Pipeline,sharp,135
+diagnosis-verified,isolated-passive,1,b,warm1,Complex Pipeline,lazy,76
+diagnosis-verified,isolated-passive,1,b,warm1,Complex Pipeline,sharp,116
+diagnosis-verified,isolated-passive,1,b,warm2,Complex Pipeline,lazy,83
+diagnosis-verified,isolated-passive,1,b,warm2,Complex Pipeline,sharp,128
+diagnosis-verified,isolated-passive,1,b,warm3,Complex Pipeline,lazy,95
+diagnosis-verified,isolated-passive,1,b,warm3,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-passive,2,a,first,Complex Pipeline,lazy,82
+diagnosis-verified,isolated-passive,2,a,first,Complex Pipeline,sharp,123
+diagnosis-verified,isolated-passive,2,a,warm1,Complex Pipeline,lazy,82
+diagnosis-verified,isolated-passive,2,a,warm1,Complex Pipeline,sharp,124
+diagnosis-verified,isolated-passive,2,a,warm2,Complex Pipeline,lazy,87
+diagnosis-verified,isolated-passive,2,a,warm2,Complex Pipeline,sharp,128
+diagnosis-verified,isolated-passive,2,a,warm3,Complex Pipeline,lazy,84
+diagnosis-verified,isolated-passive,2,a,warm3,Complex Pipeline,sharp,125
+diagnosis-verified,isolated-passive,2,b,first,Complex Pipeline,lazy,83
+diagnosis-verified,isolated-passive,2,b,first,Complex Pipeline,sharp,127
+diagnosis-verified,isolated-passive,2,b,warm1,Complex Pipeline,lazy,81
+diagnosis-verified,isolated-passive,2,b,warm1,Complex Pipeline,sharp,122
+diagnosis-verified,isolated-passive,2,b,warm2,Complex Pipeline,lazy,91
+diagnosis-verified,isolated-passive,2,b,warm2,Complex Pipeline,sharp,124
+diagnosis-verified,isolated-passive,2,b,warm3,Complex Pipeline,lazy,82
+diagnosis-verified,isolated-passive,2,b,warm3,Complex Pipeline,sharp,123
+diagnosis-verified,isolated-passive,3,a,first,Complex Pipeline,lazy,78
+diagnosis-verified,isolated-passive,3,a,first,Complex Pipeline,sharp,135
+diagnosis-verified,isolated-passive,3,a,warm1,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-passive,3,a,warm1,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-passive,3,a,warm2,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-passive,3,a,warm2,Complex Pipeline,sharp,123
+diagnosis-verified,isolated-passive,3,a,warm3,Complex Pipeline,lazy,78
+diagnosis-verified,isolated-passive,3,a,warm3,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-passive,3,b,first,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-passive,3,b,first,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-passive,3,b,warm1,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-passive,3,b,warm1,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-passive,3,b,warm2,Complex Pipeline,lazy,75
+diagnosis-verified,isolated-passive,3,b,warm2,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-passive,3,b,warm3,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-passive,3,b,warm3,Complex Pipeline,sharp,131
+diagnosis-verified,isolated-passive,4,a,first,Complex Pipeline,lazy,79
+diagnosis-verified,isolated-passive,4,a,first,Complex Pipeline,sharp,120
+diagnosis-verified,isolated-passive,4,a,warm1,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-passive,4,a,warm1,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-passive,4,a,warm2,Complex Pipeline,lazy,76
+diagnosis-verified,isolated-passive,4,a,warm2,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-passive,4,a,warm3,Complex Pipeline,lazy,81
+diagnosis-verified,isolated-passive,4,a,warm3,Complex Pipeline,sharp,118
+diagnosis-verified,isolated-passive,4,b,first,Complex Pipeline,lazy,80
+diagnosis-verified,isolated-passive,4,b,first,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-passive,4,b,warm1,Complex Pipeline,lazy,74
+diagnosis-verified,isolated-passive,4,b,warm1,Complex Pipeline,sharp,119
+diagnosis-verified,isolated-passive,4,b,warm2,Complex Pipeline,lazy,77
+diagnosis-verified,isolated-passive,4,b,warm2,Complex Pipeline,sharp,126
+diagnosis-verified,isolated-passive,4,b,warm3,Complex Pipeline,lazy,78
+diagnosis-verified,isolated-passive,4,b,warm3,Complex Pipeline,sharp,119
+diagnosis-verified,original-observed,1,a,first,JPEG,lazy,81
+diagnosis-verified,original-observed,1,a,first,JPEG,sharp,96
+diagnosis-verified,original-observed,1,a,first,WebP,lazy,199
+diagnosis-verified,original-observed,1,a,first,WebP,sharp,121
+diagnosis-verified,original-observed,1,a,first,AVIF,lazy,607
+diagnosis-verified,original-observed,1,a,first,AVIF,sharp,250
+diagnosis-verified,original-observed,1,a,first,Complex Pipeline,lazy,106
+diagnosis-verified,original-observed,1,a,first,Complex Pipeline,sharp,127
+diagnosis-verified,original-observed,1,a,warm1,JPEG,lazy,103
+diagnosis-verified,original-observed,1,a,warm1,JPEG,sharp,88
+diagnosis-verified,original-observed,1,a,warm1,WebP,lazy,178
+diagnosis-verified,original-observed,1,a,warm1,WebP,sharp,84
+diagnosis-verified,original-observed,1,a,warm1,AVIF,lazy,574
+diagnosis-verified,original-observed,1,a,warm1,AVIF,sharp,277
+diagnosis-verified,original-observed,1,a,warm1,Complex Pipeline,lazy,104
+diagnosis-verified,original-observed,1,a,warm1,Complex Pipeline,sharp,156
+diagnosis-verified,original-observed,1,a,warm2,JPEG,lazy,92
+diagnosis-verified,original-observed,1,a,warm2,JPEG,sharp,111
+diagnosis-verified,original-observed,1,a,warm2,WebP,lazy,226
+diagnosis-verified,original-observed,1,a,warm2,WebP,sharp,105
+diagnosis-verified,original-observed,1,a,warm2,AVIF,lazy,613
+diagnosis-verified,original-observed,1,a,warm2,AVIF,sharp,238
+diagnosis-verified,original-observed,1,a,warm2,Complex Pipeline,lazy,78
+diagnosis-verified,original-observed,1,a,warm2,Complex Pipeline,sharp,122
+diagnosis-verified,original-observed,1,a,warm3,JPEG,lazy,75
+diagnosis-verified,original-observed,1,a,warm3,JPEG,sharp,82
+diagnosis-verified,original-observed,1,a,warm3,WebP,lazy,196
+diagnosis-verified,original-observed,1,a,warm3,WebP,sharp,105
+diagnosis-verified,original-observed,1,a,warm3,AVIF,lazy,576
+diagnosis-verified,original-observed,1,a,warm3,AVIF,sharp,425
+diagnosis-verified,original-observed,1,a,warm3,Complex Pipeline,lazy,94
+diagnosis-verified,original-observed,1,a,warm3,Complex Pipeline,sharp,153
+diagnosis-verified,original-observed,1,b,first,JPEG,lazy,71
+diagnosis-verified,original-observed,1,b,first,JPEG,sharp,79
+diagnosis-verified,original-observed,1,b,first,WebP,lazy,180
+diagnosis-verified,original-observed,1,b,first,WebP,sharp,104
+diagnosis-verified,original-observed,1,b,first,AVIF,lazy,500
+diagnosis-verified,original-observed,1,b,first,AVIF,sharp,234
+diagnosis-verified,original-observed,1,b,first,Complex Pipeline,lazy,96
+diagnosis-verified,original-observed,1,b,first,Complex Pipeline,sharp,190
+diagnosis-verified,original-observed,1,b,warm1,JPEG,lazy,72
+diagnosis-verified,original-observed,1,b,warm1,JPEG,sharp,93
+diagnosis-verified,original-observed,1,b,warm1,WebP,lazy,172
+diagnosis-verified,original-observed,1,b,warm1,WebP,sharp,99
+diagnosis-verified,original-observed,1,b,warm1,AVIF,lazy,542
+diagnosis-verified,original-observed,1,b,warm1,AVIF,sharp,418
+diagnosis-verified,original-observed,1,b,warm1,Complex Pipeline,lazy,97
+diagnosis-verified,original-observed,1,b,warm1,Complex Pipeline,sharp,138
+diagnosis-verified,original-observed,1,b,warm2,JPEG,lazy,111
+diagnosis-verified,original-observed,1,b,warm2,JPEG,sharp,110
+diagnosis-verified,original-observed,1,b,warm2,WebP,lazy,276
+diagnosis-verified,original-observed,1,b,warm2,WebP,sharp,139
+diagnosis-verified,original-observed,1,b,warm2,AVIF,lazy,768
+diagnosis-verified,original-observed,1,b,warm2,AVIF,sharp,312
+diagnosis-verified,original-observed,1,b,warm2,Complex Pipeline,lazy,89
+diagnosis-verified,original-observed,1,b,warm2,Complex Pipeline,sharp,136
+diagnosis-verified,original-observed,1,b,warm3,JPEG,lazy,73
+diagnosis-verified,original-observed,1,b,warm3,JPEG,sharp,88
+diagnosis-verified,original-observed,1,b,warm3,WebP,lazy,187
+diagnosis-verified,original-observed,1,b,warm3,WebP,sharp,92
+diagnosis-verified,original-observed,1,b,warm3,AVIF,lazy,1157
+diagnosis-verified,original-observed,1,b,warm3,AVIF,sharp,240
+diagnosis-verified,original-observed,1,b,warm3,Complex Pipeline,lazy,89
+diagnosis-verified,original-observed,1,b,warm3,Complex Pipeline,sharp,125
+diagnosis-verified,original-observed,2,a,first,JPEG,lazy,74
+diagnosis-verified,original-observed,2,a,first,JPEG,sharp,84
+diagnosis-verified,original-observed,2,a,first,WebP,lazy,176
+diagnosis-verified,original-observed,2,a,first,WebP,sharp,88
+diagnosis-verified,original-observed,2,a,first,AVIF,lazy,519
+diagnosis-verified,original-observed,2,a,first,AVIF,sharp,206
+diagnosis-verified,original-observed,2,a,first,Complex Pipeline,lazy,79
+diagnosis-verified,original-observed,2,a,first,Complex Pipeline,sharp,124
+diagnosis-verified,original-observed,2,a,warm1,JPEG,lazy,69
+diagnosis-verified,original-observed,2,a,warm1,JPEG,sharp,82
+diagnosis-verified,original-observed,2,a,warm1,WebP,lazy,176
+diagnosis-verified,original-observed,2,a,warm1,WebP,sharp,90
+diagnosis-verified,original-observed,2,a,warm1,AVIF,lazy,491
+diagnosis-verified,original-observed,2,a,warm1,AVIF,sharp,205
+diagnosis-verified,original-observed,2,a,warm1,Complex Pipeline,lazy,77
+diagnosis-verified,original-observed,2,a,warm1,Complex Pipeline,sharp,125
+diagnosis-verified,original-observed,2,a,warm2,JPEG,lazy,66
+diagnosis-verified,original-observed,2,a,warm2,JPEG,sharp,80
+diagnosis-verified,original-observed,2,a,warm2,WebP,lazy,173
+diagnosis-verified,original-observed,2,a,warm2,WebP,sharp,89
+diagnosis-verified,original-observed,2,a,warm2,AVIF,lazy,500
+diagnosis-verified,original-observed,2,a,warm2,AVIF,sharp,207
+diagnosis-verified,original-observed,2,a,warm2,Complex Pipeline,lazy,79
+diagnosis-verified,original-observed,2,a,warm2,Complex Pipeline,sharp,127
+diagnosis-verified,original-observed,2,a,warm3,JPEG,lazy,67
+diagnosis-verified,original-observed,2,a,warm3,JPEG,sharp,81
+diagnosis-verified,original-observed,2,a,warm3,WebP,lazy,177
+diagnosis-verified,original-observed,2,a,warm3,WebP,sharp,90
+diagnosis-verified,original-observed,2,a,warm3,AVIF,lazy,538
+diagnosis-verified,original-observed,2,a,warm3,AVIF,sharp,258
+diagnosis-verified,original-observed,2,a,warm3,Complex Pipeline,lazy,80
+diagnosis-verified,original-observed,2,a,warm3,Complex Pipeline,sharp,128
+diagnosis-verified,original-observed,2,b,first,JPEG,lazy,72
+diagnosis-verified,original-observed,2,b,first,JPEG,sharp,84
+diagnosis-verified,original-observed,2,b,first,WebP,lazy,180
+diagnosis-verified,original-observed,2,b,first,WebP,sharp,89
+diagnosis-verified,original-observed,2,b,first,AVIF,lazy,495
+diagnosis-verified,original-observed,2,b,first,AVIF,sharp,206
+diagnosis-verified,original-observed,2,b,first,Complex Pipeline,lazy,85
+diagnosis-verified,original-observed,2,b,first,Complex Pipeline,sharp,125
+diagnosis-verified,original-observed,2,b,warm1,JPEG,lazy,67
+diagnosis-verified,original-observed,2,b,warm1,JPEG,sharp,81
+diagnosis-verified,original-observed,2,b,warm1,WebP,lazy,185
+diagnosis-verified,original-observed,2,b,warm1,WebP,sharp,89
+diagnosis-verified,original-observed,2,b,warm1,AVIF,lazy,493
+diagnosis-verified,original-observed,2,b,warm1,AVIF,sharp,206
+diagnosis-verified,original-observed,2,b,warm1,Complex Pipeline,lazy,84
+diagnosis-verified,original-observed,2,b,warm1,Complex Pipeline,sharp,131
+diagnosis-verified,original-observed,2,b,warm2,JPEG,lazy,76
+diagnosis-verified,original-observed,2,b,warm2,JPEG,sharp,79
+diagnosis-verified,original-observed,2,b,warm2,WebP,lazy,178
+diagnosis-verified,original-observed,2,b,warm2,WebP,sharp,88
+diagnosis-verified,original-observed,2,b,warm2,AVIF,lazy,492
+diagnosis-verified,original-observed,2,b,warm2,AVIF,sharp,207
+diagnosis-verified,original-observed,2,b,warm2,Complex Pipeline,lazy,78
+diagnosis-verified,original-observed,2,b,warm2,Complex Pipeline,sharp,125
+diagnosis-verified,original-observed,2,b,warm3,JPEG,lazy,68
+diagnosis-verified,original-observed,2,b,warm3,JPEG,sharp,80
+diagnosis-verified,original-observed,2,b,warm3,WebP,lazy,177
+diagnosis-verified,original-observed,2,b,warm3,WebP,sharp,88
+diagnosis-verified,original-observed,2,b,warm3,AVIF,lazy,493
+diagnosis-verified,original-observed,2,b,warm3,AVIF,sharp,224
+diagnosis-verified,original-observed,2,b,warm3,Complex Pipeline,lazy,113
+diagnosis-verified,original-observed,2,b,warm3,Complex Pipeline,sharp,127
+diagnosis-verified,original-observed,3,a,first,JPEG,lazy,69
+diagnosis-verified,original-observed,3,a,first,JPEG,sharp,78
+diagnosis-verified,original-observed,3,a,first,WebP,lazy,171
+diagnosis-verified,original-observed,3,a,first,WebP,sharp,86
+diagnosis-verified,original-observed,3,a,first,AVIF,lazy,517
+diagnosis-verified,original-observed,3,a,first,AVIF,sharp,198
+diagnosis-verified,original-observed,3,a,first,Complex Pipeline,lazy,78
+diagnosis-verified,original-observed,3,a,first,Complex Pipeline,sharp,123
+diagnosis-verified,original-observed,3,a,warm1,JPEG,lazy,69
+diagnosis-verified,original-observed,3,a,warm1,JPEG,sharp,79
+diagnosis-verified,original-observed,3,a,warm1,WebP,lazy,187
+diagnosis-verified,original-observed,3,a,warm1,WebP,sharp,87
+diagnosis-verified,original-observed,3,a,warm1,AVIF,lazy,492
+diagnosis-verified,original-observed,3,a,warm1,AVIF,sharp,260
+diagnosis-verified,original-observed,3,a,warm1,Complex Pipeline,lazy,83
+diagnosis-verified,original-observed,3,a,warm1,Complex Pipeline,sharp,123
+diagnosis-verified,original-observed,3,a,warm2,JPEG,lazy,78
+diagnosis-verified,original-observed,3,a,warm2,JPEG,sharp,78
+diagnosis-verified,original-observed,3,a,warm2,WebP,lazy,169
+diagnosis-verified,original-observed,3,a,warm2,WebP,sharp,84
+diagnosis-verified,original-observed,3,a,warm2,AVIF,lazy,490
+diagnosis-verified,original-observed,3,a,warm2,AVIF,sharp,194
+diagnosis-verified,original-observed,3,a,warm2,Complex Pipeline,lazy,76
+diagnosis-verified,original-observed,3,a,warm2,Complex Pipeline,sharp,118
+diagnosis-verified,original-observed,3,a,warm3,JPEG,lazy,66
+diagnosis-verified,original-observed,3,a,warm3,JPEG,sharp,76
+diagnosis-verified,original-observed,3,a,warm3,WebP,lazy,169
+diagnosis-verified,original-observed,3,a,warm3,WebP,sharp,84
+diagnosis-verified,original-observed,3,a,warm3,AVIF,lazy,477
+diagnosis-verified,original-observed,3,a,warm3,AVIF,sharp,196
+diagnosis-verified,original-observed,3,a,warm3,Complex Pipeline,lazy,75
+diagnosis-verified,original-observed,3,a,warm3,Complex Pipeline,sharp,118
+diagnosis-verified,original-observed,3,b,first,JPEG,lazy,66
+diagnosis-verified,original-observed,3,b,first,JPEG,sharp,77
+diagnosis-verified,original-observed,3,b,first,WebP,lazy,169
+diagnosis-verified,original-observed,3,b,first,WebP,sharp,84
+diagnosis-verified,original-observed,3,b,first,AVIF,lazy,473
+diagnosis-verified,original-observed,3,b,first,AVIF,sharp,196
+diagnosis-verified,original-observed,3,b,first,Complex Pipeline,lazy,78
+diagnosis-verified,original-observed,3,b,first,Complex Pipeline,sharp,118
+diagnosis-verified,original-observed,3,b,warm1,JPEG,lazy,67
+diagnosis-verified,original-observed,3,b,warm1,JPEG,sharp,78
+diagnosis-verified,original-observed,3,b,warm1,WebP,lazy,173
+diagnosis-verified,original-observed,3,b,warm1,WebP,sharp,84
+diagnosis-verified,original-observed,3,b,warm1,AVIF,lazy,500
+diagnosis-verified,original-observed,3,b,warm1,AVIF,sharp,207
+diagnosis-verified,original-observed,3,b,warm1,Complex Pipeline,lazy,79
+diagnosis-verified,original-observed,3,b,warm1,Complex Pipeline,sharp,122
+diagnosis-verified,original-observed,3,b,warm2,JPEG,lazy,70
+diagnosis-verified,original-observed,3,b,warm2,JPEG,sharp,81
+diagnosis-verified,original-observed,3,b,warm2,WebP,lazy,178
+diagnosis-verified,original-observed,3,b,warm2,WebP,sharp,90
+diagnosis-verified,original-observed,3,b,warm2,AVIF,lazy,485
+diagnosis-verified,original-observed,3,b,warm2,AVIF,sharp,193
+diagnosis-verified,original-observed,3,b,warm2,Complex Pipeline,lazy,78
+diagnosis-verified,original-observed,3,b,warm2,Complex Pipeline,sharp,119
+diagnosis-verified,original-observed,3,b,warm3,JPEG,lazy,69
+diagnosis-verified,original-observed,3,b,warm3,JPEG,sharp,78
+diagnosis-verified,original-observed,3,b,warm3,WebP,lazy,179
+diagnosis-verified,original-observed,3,b,warm3,WebP,sharp,87
+diagnosis-verified,original-observed,3,b,warm3,AVIF,lazy,473
+diagnosis-verified,original-observed,3,b,warm3,AVIF,sharp,195
+diagnosis-verified,original-observed,3,b,warm3,Complex Pipeline,lazy,80
+diagnosis-verified,original-observed,3,b,warm3,Complex Pipeline,sharp,121
+diagnosis-verified,original-observed,4,a,first,JPEG,lazy,69
+diagnosis-verified,original-observed,4,a,first,JPEG,sharp,87
+diagnosis-verified,original-observed,4,a,first,WebP,lazy,180
+diagnosis-verified,original-observed,4,a,first,WebP,sharp,96
+diagnosis-verified,original-observed,4,a,first,AVIF,lazy,482
+diagnosis-verified,original-observed,4,a,first,AVIF,sharp,202
+diagnosis-verified,original-observed,4,a,first,Complex Pipeline,lazy,73
+diagnosis-verified,original-observed,4,a,first,Complex Pipeline,sharp,120
+diagnosis-verified,original-observed,4,a,warm1,JPEG,lazy,64
+diagnosis-verified,original-observed,4,a,warm1,JPEG,sharp,82
+diagnosis-verified,original-observed,4,a,warm1,WebP,lazy,178
+diagnosis-verified,original-observed,4,a,warm1,WebP,sharp,88
+diagnosis-verified,original-observed,4,a,warm1,AVIF,lazy,479
+diagnosis-verified,original-observed,4,a,warm1,AVIF,sharp,194
+diagnosis-verified,original-observed,4,a,warm1,Complex Pipeline,lazy,82
+diagnosis-verified,original-observed,4,a,warm1,Complex Pipeline,sharp,122
+diagnosis-verified,original-observed,4,a,warm2,JPEG,lazy,84
+diagnosis-verified,original-observed,4,a,warm2,JPEG,sharp,94
+diagnosis-verified,original-observed,4,a,warm2,WebP,lazy,181
+diagnosis-verified,original-observed,4,a,warm2,WebP,sharp,88
+diagnosis-verified,original-observed,4,a,warm2,AVIF,lazy,490
+diagnosis-verified,original-observed,4,a,warm2,AVIF,sharp,195
+diagnosis-verified,original-observed,4,a,warm2,Complex Pipeline,lazy,77
+diagnosis-verified,original-observed,4,a,warm2,Complex Pipeline,sharp,119
+diagnosis-verified,original-observed,4,a,warm3,JPEG,lazy,68
+diagnosis-verified,original-observed,4,a,warm3,JPEG,sharp,87
+diagnosis-verified,original-observed,4,a,warm3,WebP,lazy,176
+diagnosis-verified,original-observed,4,a,warm3,WebP,sharp,88
+diagnosis-verified,original-observed,4,a,warm3,AVIF,lazy,485
+diagnosis-verified,original-observed,4,a,warm3,AVIF,sharp,195
+diagnosis-verified,original-observed,4,a,warm3,Complex Pipeline,lazy,112
+diagnosis-verified,original-observed,4,a,warm3,Complex Pipeline,sharp,118
+diagnosis-verified,original-observed,4,b,first,JPEG,lazy,72
+diagnosis-verified,original-observed,4,b,first,JPEG,sharp,82
+diagnosis-verified,original-observed,4,b,first,WebP,lazy,178
+diagnosis-verified,original-observed,4,b,first,WebP,sharp,86
+diagnosis-verified,original-observed,4,b,first,AVIF,lazy,488
+diagnosis-verified,original-observed,4,b,first,AVIF,sharp,227
+diagnosis-verified,original-observed,4,b,first,Complex Pipeline,lazy,80
+diagnosis-verified,original-observed,4,b,first,Complex Pipeline,sharp,126
+diagnosis-verified,original-observed,4,b,warm1,JPEG,lazy,67
+diagnosis-verified,original-observed,4,b,warm1,JPEG,sharp,79
+diagnosis-verified,original-observed,4,b,warm1,WebP,lazy,181
+diagnosis-verified,original-observed,4,b,warm1,WebP,sharp,87
+diagnosis-verified,original-observed,4,b,warm1,AVIF,lazy,497
+diagnosis-verified,original-observed,4,b,warm1,AVIF,sharp,205
+diagnosis-verified,original-observed,4,b,warm1,Complex Pipeline,lazy,81
+diagnosis-verified,original-observed,4,b,warm1,Complex Pipeline,sharp,124
+diagnosis-verified,original-observed,4,b,warm2,JPEG,lazy,64
+diagnosis-verified,original-observed,4,b,warm2,JPEG,sharp,77
+diagnosis-verified,original-observed,4,b,warm2,WebP,lazy,167
+diagnosis-verified,original-observed,4,b,warm2,WebP,sharp,84
+diagnosis-verified,original-observed,4,b,warm2,AVIF,lazy,468
+diagnosis-verified,original-observed,4,b,warm2,AVIF,sharp,199
+diagnosis-verified,original-observed,4,b,warm2,Complex Pipeline,lazy,78
+diagnosis-verified,original-observed,4,b,warm2,Complex Pipeline,sharp,117
+diagnosis-verified,original-observed,4,b,warm3,JPEG,lazy,69
+diagnosis-verified,original-observed,4,b,warm3,JPEG,sharp,76
+diagnosis-verified,original-observed,4,b,warm3,WebP,lazy,167
+diagnosis-verified,original-observed,4,b,warm3,WebP,sharp,83
+diagnosis-verified,original-observed,4,b,warm3,AVIF,lazy,499
+diagnosis-verified,original-observed,4,b,warm3,AVIF,sharp,227
+diagnosis-verified,original-observed,4,b,warm3,Complex Pipeline,lazy,81
+diagnosis-verified,original-observed,4,b,warm3,Complex Pipeline,sharp,129
+diagnosis-verified,original-passive,1,a,first,JPEG,lazy,74
+diagnosis-verified,original-passive,1,a,first,JPEG,sharp,78
+diagnosis-verified,original-passive,1,a,first,WebP,lazy,187
+diagnosis-verified,original-passive,1,a,first,WebP,sharp,110
+diagnosis-verified,original-passive,1,a,first,AVIF,lazy,583
+diagnosis-verified,original-passive,1,a,first,AVIF,sharp,215
+diagnosis-verified,original-passive,1,a,first,Complex Pipeline,lazy,137
+diagnosis-verified,original-passive,1,a,first,Complex Pipeline,sharp,121
+diagnosis-verified,original-passive,1,a,warm1,JPEG,lazy,75
+diagnosis-verified,original-passive,1,a,warm1,JPEG,sharp,75
+diagnosis-verified,original-passive,1,a,warm1,WebP,lazy,167
+diagnosis-verified,original-passive,1,a,warm1,WebP,sharp,83
+diagnosis-verified,original-passive,1,a,warm1,AVIF,lazy,475
+diagnosis-verified,original-passive,1,a,warm1,AVIF,sharp,192
+diagnosis-verified,original-passive,1,a,warm1,Complex Pipeline,lazy,74
+diagnosis-verified,original-passive,1,a,warm1,Complex Pipeline,sharp,118
+diagnosis-verified,original-passive,1,a,warm2,JPEG,lazy,64
+diagnosis-verified,original-passive,1,a,warm2,JPEG,sharp,75
+diagnosis-verified,original-passive,1,a,warm2,WebP,lazy,167
+diagnosis-verified,original-passive,1,a,warm2,WebP,sharp,83
+diagnosis-verified,original-passive,1,a,warm2,AVIF,lazy,496
+diagnosis-verified,original-passive,1,a,warm2,AVIF,sharp,190
+diagnosis-verified,original-passive,1,a,warm2,Complex Pipeline,lazy,73
+diagnosis-verified,original-passive,1,a,warm2,Complex Pipeline,sharp,121
+diagnosis-verified,original-passive,1,a,warm3,JPEG,lazy,63
+diagnosis-verified,original-passive,1,a,warm3,JPEG,sharp,75
+diagnosis-verified,original-passive,1,a,warm3,WebP,lazy,166
+diagnosis-verified,original-passive,1,a,warm3,WebP,sharp,82
+diagnosis-verified,original-passive,1,a,warm3,AVIF,lazy,485
+diagnosis-verified,original-passive,1,a,warm3,AVIF,sharp,191
+diagnosis-verified,original-passive,1,a,warm3,Complex Pipeline,lazy,74
+diagnosis-verified,original-passive,1,a,warm3,Complex Pipeline,sharp,119
+diagnosis-verified,original-passive,1,b,first,JPEG,lazy,66
+diagnosis-verified,original-passive,1,b,first,JPEG,sharp,77
+diagnosis-verified,original-passive,1,b,first,WebP,lazy,166
+diagnosis-verified,original-passive,1,b,first,WebP,sharp,85
+diagnosis-verified,original-passive,1,b,first,AVIF,lazy,467
+diagnosis-verified,original-passive,1,b,first,AVIF,sharp,222
+diagnosis-verified,original-passive,1,b,first,Complex Pipeline,lazy,75
+diagnosis-verified,original-passive,1,b,first,Complex Pipeline,sharp,120
+diagnosis-verified,original-passive,1,b,warm1,JPEG,lazy,73
+diagnosis-verified,original-passive,1,b,warm1,JPEG,sharp,76
+diagnosis-verified,original-passive,1,b,warm1,WebP,lazy,165
+diagnosis-verified,original-passive,1,b,warm1,WebP,sharp,83
+diagnosis-verified,original-passive,1,b,warm1,AVIF,lazy,472
+diagnosis-verified,original-passive,1,b,warm1,AVIF,sharp,192
+diagnosis-verified,original-passive,1,b,warm1,Complex Pipeline,lazy,74
+diagnosis-verified,original-passive,1,b,warm1,Complex Pipeline,sharp,117
+diagnosis-verified,original-passive,1,b,warm2,JPEG,lazy,65
+diagnosis-verified,original-passive,1,b,warm2,JPEG,sharp,75
+diagnosis-verified,original-passive,1,b,warm2,WebP,lazy,167
+diagnosis-verified,original-passive,1,b,warm2,WebP,sharp,83
+diagnosis-verified,original-passive,1,b,warm2,AVIF,lazy,468
+diagnosis-verified,original-passive,1,b,warm2,AVIF,sharp,191
+diagnosis-verified,original-passive,1,b,warm2,Complex Pipeline,lazy,74
+diagnosis-verified,original-passive,1,b,warm2,Complex Pipeline,sharp,119
+diagnosis-verified,original-passive,1,b,warm3,JPEG,lazy,68
+diagnosis-verified,original-passive,1,b,warm3,JPEG,sharp,75
+diagnosis-verified,original-passive,1,b,warm3,WebP,lazy,170
+diagnosis-verified,original-passive,1,b,warm3,WebP,sharp,86
+diagnosis-verified,original-passive,1,b,warm3,AVIF,lazy,479
+diagnosis-verified,original-passive,1,b,warm3,AVIF,sharp,204
+diagnosis-verified,original-passive,1,b,warm3,Complex Pipeline,lazy,78
+diagnosis-verified,original-passive,1,b,warm3,Complex Pipeline,sharp,122
+diagnosis-verified,original-passive,2,a,first,JPEG,lazy,106
+diagnosis-verified,original-passive,2,a,first,JPEG,sharp,112
+diagnosis-verified,original-passive,2,a,first,WebP,lazy,225
+diagnosis-verified,original-passive,2,a,first,WebP,sharp,117
+diagnosis-verified,original-passive,2,a,first,AVIF,lazy,586
+diagnosis-verified,original-passive,2,a,first,AVIF,sharp,301
+diagnosis-verified,original-passive,2,a,first,Complex Pipeline,lazy,93
+diagnosis-verified,original-passive,2,a,first,Complex Pipeline,sharp,138
+diagnosis-verified,original-passive,2,a,warm1,JPEG,lazy,75
+diagnosis-verified,original-passive,2,a,warm1,JPEG,sharp,84
+diagnosis-verified,original-passive,2,a,warm1,WebP,lazy,201
+diagnosis-verified,original-passive,2,a,warm1,WebP,sharp,129
+diagnosis-verified,original-passive,2,a,warm1,AVIF,lazy,880
+diagnosis-verified,original-passive,2,a,warm1,AVIF,sharp,242
+diagnosis-verified,original-passive,2,a,warm1,Complex Pipeline,lazy,93
+diagnosis-verified,original-passive,2,a,warm1,Complex Pipeline,sharp,142
+diagnosis-verified,original-passive,2,a,warm2,JPEG,lazy,80
+diagnosis-verified,original-passive,2,a,warm2,JPEG,sharp,90
+diagnosis-verified,original-passive,2,a,warm2,WebP,lazy,196
+diagnosis-verified,original-passive,2,a,warm2,WebP,sharp,98
+diagnosis-verified,original-passive,2,a,warm2,AVIF,lazy,600
+diagnosis-verified,original-passive,2,a,warm2,AVIF,sharp,273
+diagnosis-verified,original-passive,2,a,warm2,Complex Pipeline,lazy,91
+diagnosis-verified,original-passive,2,a,warm2,Complex Pipeline,sharp,142
+diagnosis-verified,original-passive,2,a,warm3,JPEG,lazy,77
+diagnosis-verified,original-passive,2,a,warm3,JPEG,sharp,95
+diagnosis-verified,original-passive,2,a,warm3,WebP,lazy,207
+diagnosis-verified,original-passive,2,a,warm3,WebP,sharp,103
+diagnosis-verified,original-passive,2,a,warm3,AVIF,lazy,542
+diagnosis-verified,original-passive,2,a,warm3,AVIF,sharp,235
+diagnosis-verified,original-passive,2,a,warm3,Complex Pipeline,lazy,75
+diagnosis-verified,original-passive,2,a,warm3,Complex Pipeline,sharp,119
+diagnosis-verified,original-passive,2,b,first,JPEG,lazy,77
+diagnosis-verified,original-passive,2,b,first,JPEG,sharp,91
+diagnosis-verified,original-passive,2,b,first,WebP,lazy,184
+diagnosis-verified,original-passive,2,b,first,WebP,sharp,96
+diagnosis-verified,original-passive,2,b,first,AVIF,lazy,568
+diagnosis-verified,original-passive,2,b,first,AVIF,sharp,233
+diagnosis-verified,original-passive,2,b,first,Complex Pipeline,lazy,86
+diagnosis-verified,original-passive,2,b,first,Complex Pipeline,sharp,130
+diagnosis-verified,original-passive,2,b,warm1,JPEG,lazy,95
+diagnosis-verified,original-passive,2,b,warm1,JPEG,sharp,104
+diagnosis-verified,original-passive,2,b,warm1,WebP,lazy,216
+diagnosis-verified,original-passive,2,b,warm1,WebP,sharp,119
+diagnosis-verified,original-passive,2,b,warm1,AVIF,lazy,576
+diagnosis-verified,original-passive,2,b,warm1,AVIF,sharp,364
+diagnosis-verified,original-passive,2,b,warm1,Complex Pipeline,lazy,99
+diagnosis-verified,original-passive,2,b,warm1,Complex Pipeline,sharp,134
+diagnosis-verified,original-passive,2,b,warm2,JPEG,lazy,82
+diagnosis-verified,original-passive,2,b,warm2,JPEG,sharp,89
+diagnosis-verified,original-passive,2,b,warm2,WebP,lazy,204
+diagnosis-verified,original-passive,2,b,warm2,WebP,sharp,104
+diagnosis-verified,original-passive,2,b,warm2,AVIF,lazy,573
+diagnosis-verified,original-passive,2,b,warm2,AVIF,sharp,259
+diagnosis-verified,original-passive,2,b,warm2,Complex Pipeline,lazy,101
+diagnosis-verified,original-passive,2,b,warm2,Complex Pipeline,sharp,142
+diagnosis-verified,original-passive,2,b,warm3,JPEG,lazy,84
+diagnosis-verified,original-passive,2,b,warm3,JPEG,sharp,104
+diagnosis-verified,original-passive,2,b,warm3,WebP,lazy,227
+diagnosis-verified,original-passive,2,b,warm3,WebP,sharp,102
+diagnosis-verified,original-passive,2,b,warm3,AVIF,lazy,577
+diagnosis-verified,original-passive,2,b,warm3,AVIF,sharp,239
+diagnosis-verified,original-passive,2,b,warm3,Complex Pipeline,lazy,88
+diagnosis-verified,original-passive,2,b,warm3,Complex Pipeline,sharp,180
+diagnosis-verified,original-passive,3,a,first,JPEG,lazy,69
+diagnosis-verified,original-passive,3,a,first,JPEG,sharp,77
+diagnosis-verified,original-passive,3,a,first,WebP,lazy,169
+diagnosis-verified,original-passive,3,a,first,WebP,sharp,86
+diagnosis-verified,original-passive,3,a,first,AVIF,lazy,508
+diagnosis-verified,original-passive,3,a,first,AVIF,sharp,212
+diagnosis-verified,original-passive,3,a,first,Complex Pipeline,lazy,76
+diagnosis-verified,original-passive,3,a,first,Complex Pipeline,sharp,121
+diagnosis-verified,original-passive,3,a,warm1,JPEG,lazy,67
+diagnosis-verified,original-passive,3,a,warm1,JPEG,sharp,77
+diagnosis-verified,original-passive,3,a,warm1,WebP,lazy,171
+diagnosis-verified,original-passive,3,a,warm1,WebP,sharp,86
+diagnosis-verified,original-passive,3,a,warm1,AVIF,lazy,476
+diagnosis-verified,original-passive,3,a,warm1,AVIF,sharp,202
+diagnosis-verified,original-passive,3,a,warm1,Complex Pipeline,lazy,76
+diagnosis-verified,original-passive,3,a,warm1,Complex Pipeline,sharp,118
+diagnosis-verified,original-passive,3,a,warm2,JPEG,lazy,67
+diagnosis-verified,original-passive,3,a,warm2,JPEG,sharp,80
+diagnosis-verified,original-passive,3,a,warm2,WebP,lazy,179
+diagnosis-verified,original-passive,3,a,warm2,WebP,sharp,85
+diagnosis-verified,original-passive,3,a,warm2,AVIF,lazy,476
+diagnosis-verified,original-passive,3,a,warm2,AVIF,sharp,195
+diagnosis-verified,original-passive,3,a,warm2,Complex Pipeline,lazy,75
+diagnosis-verified,original-passive,3,a,warm2,Complex Pipeline,sharp,119
+diagnosis-verified,original-passive,3,a,warm3,JPEG,lazy,65
+diagnosis-verified,original-passive,3,a,warm3,JPEG,sharp,79
+diagnosis-verified,original-passive,3,a,warm3,WebP,lazy,172
+diagnosis-verified,original-passive,3,a,warm3,WebP,sharp,84
+diagnosis-verified,original-passive,3,a,warm3,AVIF,lazy,478
+diagnosis-verified,original-passive,3,a,warm3,AVIF,sharp,196
+diagnosis-verified,original-passive,3,a,warm3,Complex Pipeline,lazy,74
+diagnosis-verified,original-passive,3,a,warm3,Complex Pipeline,sharp,120
+diagnosis-verified,original-passive,3,b,first,JPEG,lazy,68
+diagnosis-verified,original-passive,3,b,first,JPEG,sharp,77
+diagnosis-verified,original-passive,3,b,first,WebP,lazy,170
+diagnosis-verified,original-passive,3,b,first,WebP,sharp,86
+diagnosis-verified,original-passive,3,b,first,AVIF,lazy,477
+diagnosis-verified,original-passive,3,b,first,AVIF,sharp,209
+diagnosis-verified,original-passive,3,b,first,Complex Pipeline,lazy,73
+diagnosis-verified,original-passive,3,b,first,Complex Pipeline,sharp,117
+diagnosis-verified,original-passive,3,b,warm1,JPEG,lazy,66
+diagnosis-verified,original-passive,3,b,warm1,JPEG,sharp,77
+diagnosis-verified,original-passive,3,b,warm1,WebP,lazy,170
+diagnosis-verified,original-passive,3,b,warm1,WebP,sharp,86
+diagnosis-verified,original-passive,3,b,warm1,AVIF,lazy,471
+diagnosis-verified,original-passive,3,b,warm1,AVIF,sharp,193
+diagnosis-verified,original-passive,3,b,warm1,Complex Pipeline,lazy,76
+diagnosis-verified,original-passive,3,b,warm1,Complex Pipeline,sharp,118
+diagnosis-verified,original-passive,3,b,warm2,JPEG,lazy,65
+diagnosis-verified,original-passive,3,b,warm2,JPEG,sharp,78
+diagnosis-verified,original-passive,3,b,warm2,WebP,lazy,165
+diagnosis-verified,original-passive,3,b,warm2,WebP,sharp,85
+diagnosis-verified,original-passive,3,b,warm2,AVIF,lazy,468
+diagnosis-verified,original-passive,3,b,warm2,AVIF,sharp,202
+diagnosis-verified,original-passive,3,b,warm2,Complex Pipeline,lazy,72
+diagnosis-verified,original-passive,3,b,warm2,Complex Pipeline,sharp,117
+diagnosis-verified,original-passive,3,b,warm3,JPEG,lazy,66
+diagnosis-verified,original-passive,3,b,warm3,JPEG,sharp,78
+diagnosis-verified,original-passive,3,b,warm3,WebP,lazy,168
+diagnosis-verified,original-passive,3,b,warm3,WebP,sharp,85
+diagnosis-verified,original-passive,3,b,warm3,AVIF,lazy,472
+diagnosis-verified,original-passive,3,b,warm3,AVIF,sharp,194
+diagnosis-verified,original-passive,3,b,warm3,Complex Pipeline,lazy,75
+diagnosis-verified,original-passive,3,b,warm3,Complex Pipeline,sharp,118
+diagnosis-verified,original-passive,4,a,first,JPEG,lazy,71
+diagnosis-verified,original-passive,4,a,first,JPEG,sharp,81
+diagnosis-verified,original-passive,4,a,first,WebP,lazy,173
+diagnosis-verified,original-passive,4,a,first,WebP,sharp,85
+diagnosis-verified,original-passive,4,a,first,AVIF,lazy,492
+diagnosis-verified,original-passive,4,a,first,AVIF,sharp,200
+diagnosis-verified,original-passive,4,a,first,Complex Pipeline,lazy,82
+diagnosis-verified,original-passive,4,a,first,Complex Pipeline,sharp,119
+diagnosis-verified,original-passive,4,a,warm1,JPEG,lazy,73
+diagnosis-verified,original-passive,4,a,warm1,JPEG,sharp,80
+diagnosis-verified,original-passive,4,a,warm1,WebP,lazy,175
+diagnosis-verified,original-passive,4,a,warm1,WebP,sharp,99
+diagnosis-verified,original-passive,4,a,warm1,AVIF,lazy,529
+diagnosis-verified,original-passive,4,a,warm1,AVIF,sharp,209
+diagnosis-verified,original-passive,4,a,warm1,Complex Pipeline,lazy,84
+diagnosis-verified,original-passive,4,a,warm1,Complex Pipeline,sharp,125
+diagnosis-verified,original-passive,4,a,warm2,JPEG,lazy,74
+diagnosis-verified,original-passive,4,a,warm2,JPEG,sharp,85
+diagnosis-verified,original-passive,4,a,warm2,WebP,lazy,195
+diagnosis-verified,original-passive,4,a,warm2,WebP,sharp,100
+diagnosis-verified,original-passive,4,a,warm2,AVIF,lazy,519
+diagnosis-verified,original-passive,4,a,warm2,AVIF,sharp,202
+diagnosis-verified,original-passive,4,a,warm2,Complex Pipeline,lazy,84
+diagnosis-verified,original-passive,4,a,warm2,Complex Pipeline,sharp,119
+diagnosis-verified,original-passive,4,a,warm3,JPEG,lazy,79
+diagnosis-verified,original-passive,4,a,warm3,JPEG,sharp,82
+diagnosis-verified,original-passive,4,a,warm3,WebP,lazy,194
+diagnosis-verified,original-passive,4,a,warm3,WebP,sharp,87
+diagnosis-verified,original-passive,4,a,warm3,AVIF,lazy,507
+diagnosis-verified,original-passive,4,a,warm3,AVIF,sharp,220
+diagnosis-verified,original-passive,4,a,warm3,Complex Pipeline,lazy,85
+diagnosis-verified,original-passive,4,a,warm3,Complex Pipeline,sharp,133
+diagnosis-verified,original-passive,4,b,first,JPEG,lazy,73
+diagnosis-verified,original-passive,4,b,first,JPEG,sharp,82
+diagnosis-verified,original-passive,4,b,first,WebP,lazy,177
+diagnosis-verified,original-passive,4,b,first,WebP,sharp,90
+diagnosis-verified,original-passive,4,b,first,AVIF,lazy,496
+diagnosis-verified,original-passive,4,b,first,AVIF,sharp,212
+diagnosis-verified,original-passive,4,b,first,Complex Pipeline,lazy,82
+diagnosis-verified,original-passive,4,b,first,Complex Pipeline,sharp,121
+diagnosis-verified,original-passive,4,b,warm1,JPEG,lazy,74
+diagnosis-verified,original-passive,4,b,warm1,JPEG,sharp,80
+diagnosis-verified,original-passive,4,b,warm1,WebP,lazy,185
+diagnosis-verified,original-passive,4,b,warm1,WebP,sharp,92
+diagnosis-verified,original-passive,4,b,warm1,AVIF,lazy,498
+diagnosis-verified,original-passive,4,b,warm1,AVIF,sharp,204
+diagnosis-verified,original-passive,4,b,warm1,Complex Pipeline,lazy,75
+diagnosis-verified,original-passive,4,b,warm1,Complex Pipeline,sharp,117
+diagnosis-verified,original-passive,4,b,warm2,JPEG,lazy,66
+diagnosis-verified,original-passive,4,b,warm2,JPEG,sharp,77
+diagnosis-verified,original-passive,4,b,warm2,WebP,lazy,172
+diagnosis-verified,original-passive,4,b,warm2,WebP,sharp,86
+diagnosis-verified,original-passive,4,b,warm2,AVIF,lazy,470
+diagnosis-verified,original-passive,4,b,warm2,AVIF,sharp,194
+diagnosis-verified,original-passive,4,b,warm2,Complex Pipeline,lazy,76
+diagnosis-verified,original-passive,4,b,warm2,Complex Pipeline,sharp,118
+diagnosis-verified,original-passive,4,b,warm3,JPEG,lazy,65
+diagnosis-verified,original-passive,4,b,warm3,JPEG,sharp,78
+diagnosis-verified,original-passive,4,b,warm3,WebP,lazy,169
+diagnosis-verified,original-passive,4,b,warm3,WebP,sharp,84
+diagnosis-verified,original-passive,4,b,warm3,AVIF,lazy,470
+diagnosis-verified,original-passive,4,b,warm3,AVIF,sharp,194
+diagnosis-verified,original-passive,4,b,warm3,Complex Pipeline,lazy,78
+diagnosis-verified,original-passive,4,b,warm3,Complex Pipeline,sharp,118
+native-control,native,1,a,first,JPEG,lazy,92
+native-control,native,1,a,first,JPEG,sharp,102
+native-control,native,1,a,first,WebP,lazy,191
+native-control,native,1,a,first,WebP,sharp,98
+native-control,native,1,a,first,AVIF,lazy,524
+native-control,native,1,a,first,AVIF,sharp,278
+native-control,native,1,a,first,Complex Pipeline,lazy,82
+native-control,native,1,a,first,Complex Pipeline,sharp,125
+native-control,native,1,a,warm1,JPEG,lazy,73
+native-control,native,1,a,warm1,JPEG,sharp,89
+native-control,native,1,a,warm1,WebP,lazy,186
+native-control,native,1,a,warm1,WebP,sharp,91
+native-control,native,1,a,warm1,AVIF,lazy,498
+native-control,native,1,a,warm1,AVIF,sharp,225
+native-control,native,1,a,warm1,Complex Pipeline,lazy,84
+native-control,native,1,a,warm1,Complex Pipeline,sharp,122
+native-control,native,1,a,warm2,JPEG,lazy,68
+native-control,native,1,a,warm2,JPEG,sharp,80
+native-control,native,1,a,warm2,WebP,lazy,176
+native-control,native,1,a,warm2,WebP,sharp,89
+native-control,native,1,a,warm2,AVIF,lazy,497
+native-control,native,1,a,warm2,AVIF,sharp,224
+native-control,native,1,a,warm2,Complex Pipeline,lazy,88
+native-control,native,1,a,warm2,Complex Pipeline,sharp,123
+native-control,native,1,a,warm3,JPEG,lazy,72
+native-control,native,1,a,warm3,JPEG,sharp,82
+native-control,native,1,a,warm3,WebP,lazy,176
+native-control,native,1,a,warm3,WebP,sharp,89
+native-control,native,1,a,warm3,AVIF,lazy,498
+native-control,native,1,a,warm3,AVIF,sharp,223
+native-control,native,1,a,warm3,Complex Pipeline,lazy,85
+native-control,native,1,a,warm3,Complex Pipeline,sharp,126
+native-control,native,1,b,first,JPEG,lazy,73
+native-control,native,1,b,first,JPEG,sharp,84
+native-control,native,1,b,first,WebP,lazy,178
+native-control,native,1,b,first,WebP,sharp,90
+native-control,native,1,b,first,AVIF,lazy,495
+native-control,native,1,b,first,AVIF,sharp,266
+native-control,native,1,b,first,Complex Pipeline,lazy,80
+native-control,native,1,b,first,Complex Pipeline,sharp,122
+native-control,native,1,b,warm1,JPEG,lazy,68
+native-control,native,1,b,warm1,JPEG,sharp,81
+native-control,native,1,b,warm1,WebP,lazy,186
+native-control,native,1,b,warm1,WebP,sharp,89
+native-control,native,1,b,warm1,AVIF,lazy,503
+native-control,native,1,b,warm1,AVIF,sharp,231
+native-control,native,1,b,warm1,Complex Pipeline,lazy,80
+native-control,native,1,b,warm1,Complex Pipeline,sharp,123
+native-control,native,1,b,warm2,JPEG,lazy,68
+native-control,native,1,b,warm2,JPEG,sharp,81
+native-control,native,1,b,warm2,WebP,lazy,177
+native-control,native,1,b,warm2,WebP,sharp,87
+native-control,native,1,b,warm2,AVIF,lazy,493
+native-control,native,1,b,warm2,AVIF,sharp,222
+native-control,native,1,b,warm2,Complex Pipeline,lazy,82
+native-control,native,1,b,warm2,Complex Pipeline,sharp,126
+native-control,native,1,b,warm3,JPEG,lazy,71
+native-control,native,1,b,warm3,JPEG,sharp,81
+native-control,native,1,b,warm3,WebP,lazy,177
+native-control,native,1,b,warm3,WebP,sharp,91
+native-control,native,1,b,warm3,AVIF,lazy,490
+native-control,native,1,b,warm3,AVIF,sharp,220
+native-control,native,1,b,warm3,Complex Pipeline,lazy,79
+native-control,native,1,b,warm3,Complex Pipeline,sharp,126
+native-control,native,2,a,first,JPEG,lazy,73
+native-control,native,2,a,first,JPEG,sharp,82
+native-control,native,2,a,first,WebP,lazy,177
+native-control,native,2,a,first,WebP,sharp,91
+native-control,native,2,a,first,AVIF,lazy,497
+native-control,native,2,a,first,AVIF,sharp,244
+native-control,native,2,a,first,Complex Pipeline,lazy,79
+native-control,native,2,a,first,Complex Pipeline,sharp,126
+native-control,native,2,a,warm1,JPEG,lazy,70
+native-control,native,2,a,warm1,JPEG,sharp,81
+native-control,native,2,a,warm1,WebP,lazy,183
+native-control,native,2,a,warm1,WebP,sharp,89
+native-control,native,2,a,warm1,AVIF,lazy,496
+native-control,native,2,a,warm1,AVIF,sharp,226
+native-control,native,2,a,warm1,Complex Pipeline,lazy,81
+native-control,native,2,a,warm1,Complex Pipeline,sharp,131
+native-control,native,2,a,warm2,JPEG,lazy,70
+native-control,native,2,a,warm2,JPEG,sharp,80
+native-control,native,2,a,warm2,WebP,lazy,175
+native-control,native,2,a,warm2,WebP,sharp,88
+native-control,native,2,a,warm2,AVIF,lazy,495
+native-control,native,2,a,warm2,AVIF,sharp,222
+native-control,native,2,a,warm2,Complex Pipeline,lazy,79
+native-control,native,2,a,warm2,Complex Pipeline,sharp,128
+native-control,native,2,a,warm3,JPEG,lazy,68
+native-control,native,2,a,warm3,JPEG,sharp,80
+native-control,native,2,a,warm3,WebP,lazy,177
+native-control,native,2,a,warm3,WebP,sharp,89
+native-control,native,2,a,warm3,AVIF,lazy,494
+native-control,native,2,a,warm3,AVIF,sharp,222
+native-control,native,2,a,warm3,Complex Pipeline,lazy,79
+native-control,native,2,a,warm3,Complex Pipeline,sharp,128
+native-control,native,2,b,first,JPEG,lazy,74
+native-control,native,2,b,first,JPEG,sharp,80
+native-control,native,2,b,first,WebP,lazy,185
+native-control,native,2,b,first,WebP,sharp,90
+native-control,native,2,b,first,AVIF,lazy,493
+native-control,native,2,b,first,AVIF,sharp,223
+native-control,native,2,b,first,Complex Pipeline,lazy,80
+native-control,native,2,b,first,Complex Pipeline,sharp,122
+native-control,native,2,b,warm1,JPEG,lazy,70
+native-control,native,2,b,warm1,JPEG,sharp,81
+native-control,native,2,b,warm1,WebP,lazy,180
+native-control,native,2,b,warm1,WebP,sharp,89
+native-control,native,2,b,warm1,AVIF,lazy,499
+native-control,native,2,b,warm1,AVIF,sharp,226
+native-control,native,2,b,warm1,Complex Pipeline,lazy,81
+native-control,native,2,b,warm1,Complex Pipeline,sharp,127
+native-control,native,2,b,warm2,JPEG,lazy,68
+native-control,native,2,b,warm2,JPEG,sharp,80
+native-control,native,2,b,warm2,WebP,lazy,177
+native-control,native,2,b,warm2,WebP,sharp,89
+native-control,native,2,b,warm2,AVIF,lazy,493
+native-control,native,2,b,warm2,AVIF,sharp,220
+native-control,native,2,b,warm2,Complex Pipeline,lazy,83
+native-control,native,2,b,warm2,Complex Pipeline,sharp,124
+native-control,native,2,b,warm3,JPEG,lazy,69
+native-control,native,2,b,warm3,JPEG,sharp,80
+native-control,native,2,b,warm3,WebP,lazy,179
+native-control,native,2,b,warm3,WebP,sharp,89
+native-control,native,2,b,warm3,AVIF,lazy,496
+native-control,native,2,b,warm3,AVIF,sharp,224
+native-control,native,2,b,warm3,Complex Pipeline,lazy,82
+native-control,native,2,b,warm3,Complex Pipeline,sharp,127
+native-control,native,3,a,first,JPEG,lazy,73
+native-control,native,3,a,first,JPEG,sharp,81
+native-control,native,3,a,first,WebP,lazy,185
+native-control,native,3,a,first,WebP,sharp,97
+native-control,native,3,a,first,AVIF,lazy,529
+native-control,native,3,a,first,AVIF,sharp,225
+native-control,native,3,a,first,Complex Pipeline,lazy,80
+native-control,native,3,a,first,Complex Pipeline,sharp,128
+native-control,native,3,a,warm1,JPEG,lazy,75
+native-control,native,3,a,warm1,JPEG,sharp,82
+native-control,native,3,a,warm1,WebP,lazy,183
+native-control,native,3,a,warm1,WebP,sharp,90
+native-control,native,3,a,warm1,AVIF,lazy,493
+native-control,native,3,a,warm1,AVIF,sharp,224
+native-control,native,3,a,warm1,Complex Pipeline,lazy,77
+native-control,native,3,a,warm1,Complex Pipeline,sharp,128
+native-control,native,3,a,warm2,JPEG,lazy,67
+native-control,native,3,a,warm2,JPEG,sharp,80
+native-control,native,3,a,warm2,WebP,lazy,174
+native-control,native,3,a,warm2,WebP,sharp,88
+native-control,native,3,a,warm2,AVIF,lazy,496
+native-control,native,3,a,warm2,AVIF,sharp,223
+native-control,native,3,a,warm2,Complex Pipeline,lazy,77
+native-control,native,3,a,warm2,Complex Pipeline,sharp,128
+native-control,native,3,a,warm3,JPEG,lazy,68
+native-control,native,3,a,warm3,JPEG,sharp,81
+native-control,native,3,a,warm3,WebP,lazy,177
+native-control,native,3,a,warm3,WebP,sharp,89
+native-control,native,3,a,warm3,AVIF,lazy,493
+native-control,native,3,a,warm3,AVIF,sharp,222
+native-control,native,3,a,warm3,Complex Pipeline,lazy,77
+native-control,native,3,a,warm3,Complex Pipeline,sharp,125
+native-control,native,3,b,first,JPEG,lazy,69
+native-control,native,3,b,first,JPEG,sharp,81
+native-control,native,3,b,first,WebP,lazy,176
+native-control,native,3,b,first,WebP,sharp,90
+native-control,native,3,b,first,AVIF,lazy,491
+native-control,native,3,b,first,AVIF,sharp,261
+native-control,native,3,b,first,Complex Pipeline,lazy,79
+native-control,native,3,b,first,Complex Pipeline,sharp,122
+native-control,native,3,b,warm1,JPEG,lazy,67
+native-control,native,3,b,warm1,JPEG,sharp,82
+native-control,native,3,b,warm1,WebP,lazy,174
+native-control,native,3,b,warm1,WebP,sharp,88
+native-control,native,3,b,warm1,AVIF,lazy,490
+native-control,native,3,b,warm1,AVIF,sharp,226
+native-control,native,3,b,warm1,Complex Pipeline,lazy,78
+native-control,native,3,b,warm1,Complex Pipeline,sharp,122
+native-control,native,3,b,warm2,JPEG,lazy,67
+native-control,native,3,b,warm2,JPEG,sharp,81
+native-control,native,3,b,warm2,WebP,lazy,176
+native-control,native,3,b,warm2,WebP,sharp,89
+native-control,native,3,b,warm2,AVIF,lazy,488
+native-control,native,3,b,warm2,AVIF,sharp,226
+native-control,native,3,b,warm2,Complex Pipeline,lazy,78
+native-control,native,3,b,warm2,Complex Pipeline,sharp,122
+native-control,native,3,b,warm3,JPEG,lazy,68
+native-control,native,3,b,warm3,JPEG,sharp,81
+native-control,native,3,b,warm3,WebP,lazy,176
+native-control,native,3,b,warm3,WebP,sharp,89
+native-control,native,3,b,warm3,AVIF,lazy,488
+native-control,native,3,b,warm3,AVIF,sharp,223
+native-control,native,3,b,warm3,Complex Pipeline,lazy,76
+native-control,native,3,b,warm3,Complex Pipeline,sharp,123
+native-control,native,4,a,first,JPEG,lazy,72
+native-control,native,4,a,first,JPEG,sharp,80
+native-control,native,4,a,first,WebP,lazy,177
+native-control,native,4,a,first,WebP,sharp,89
+native-control,native,4,a,first,AVIF,lazy,495
+native-control,native,4,a,first,AVIF,sharp,225
+native-control,native,4,a,first,Complex Pipeline,lazy,79
+native-control,native,4,a,first,Complex Pipeline,sharp,129
+native-control,native,4,a,warm1,JPEG,lazy,71
+native-control,native,4,a,warm1,JPEG,sharp,81
+native-control,native,4,a,warm1,WebP,lazy,178
+native-control,native,4,a,warm1,WebP,sharp,90
+native-control,native,4,a,warm1,AVIF,lazy,510
+native-control,native,4,a,warm1,AVIF,sharp,246
+native-control,native,4,a,warm1,Complex Pipeline,lazy,79
+native-control,native,4,a,warm1,Complex Pipeline,sharp,137
+native-control,native,4,a,warm2,JPEG,lazy,74
+native-control,native,4,a,warm2,JPEG,sharp,83
+native-control,native,4,a,warm2,WebP,lazy,173
+native-control,native,4,a,warm2,WebP,sharp,88
+native-control,native,4,a,warm2,AVIF,lazy,497
+native-control,native,4,a,warm2,AVIF,sharp,223
+native-control,native,4,a,warm2,Complex Pipeline,lazy,82
+native-control,native,4,a,warm2,Complex Pipeline,sharp,138
+native-control,native,4,a,warm3,JPEG,lazy,71
+native-control,native,4,a,warm3,JPEG,sharp,80
+native-control,native,4,a,warm3,WebP,lazy,177
+native-control,native,4,a,warm3,WebP,sharp,88
+native-control,native,4,a,warm3,AVIF,lazy,501
+native-control,native,4,a,warm3,AVIF,sharp,228
+native-control,native,4,a,warm3,Complex Pipeline,lazy,79
+native-control,native,4,a,warm3,Complex Pipeline,sharp,126
+native-control,native,4,b,first,JPEG,lazy,68
+native-control,native,4,b,first,JPEG,sharp,81
+native-control,native,4,b,first,WebP,lazy,176
+native-control,native,4,b,first,WebP,sharp,92
+native-control,native,4,b,first,AVIF,lazy,494
+native-control,native,4,b,first,AVIF,sharp,224
+native-control,native,4,b,first,Complex Pipeline,lazy,80
+native-control,native,4,b,first,Complex Pipeline,sharp,124
+native-control,native,4,b,warm1,JPEG,lazy,67
+native-control,native,4,b,warm1,JPEG,sharp,80
+native-control,native,4,b,warm1,WebP,lazy,175
+native-control,native,4,b,warm1,WebP,sharp,89
+native-control,native,4,b,warm1,AVIF,lazy,488
+native-control,native,4,b,warm1,AVIF,sharp,221
+native-control,native,4,b,warm1,Complex Pipeline,lazy,78
+native-control,native,4,b,warm1,Complex Pipeline,sharp,122
+native-control,native,4,b,warm2,JPEG,lazy,66
+native-control,native,4,b,warm2,JPEG,sharp,80
+native-control,native,4,b,warm2,WebP,lazy,176
+native-control,native,4,b,warm2,WebP,sharp,88
+native-control,native,4,b,warm2,AVIF,lazy,485
+native-control,native,4,b,warm2,AVIF,sharp,220
+native-control,native,4,b,warm2,Complex Pipeline,lazy,82
+native-control,native,4,b,warm2,Complex Pipeline,sharp,125
+native-control,native,4,b,warm3,JPEG,lazy,67
+native-control,native,4,b,warm3,JPEG,sharp,80
+native-control,native,4,b,warm3,WebP,lazy,176
+native-control,native,4,b,warm3,WebP,sharp,90
+native-control,native,4,b,warm3,AVIF,lazy,491
+native-control,native,4,b,warm3,AVIF,sharp,230
+native-control,native,4,b,warm3,Complex Pipeline,lazy,79
+native-control,native,4,b,warm3,Complex Pipeline,sharp,123
+confirmation,original-passive,1,a,first,JPEG,lazy,72
+confirmation,original-passive,1,a,first,JPEG,sharp,81
+confirmation,original-passive,1,a,first,WebP,lazy,177
+confirmation,original-passive,1,a,first,WebP,sharp,89
+confirmation,original-passive,1,a,first,AVIF,lazy,498
+confirmation,original-passive,1,a,first,AVIF,sharp,224
+confirmation,original-passive,1,a,first,Complex Pipeline,lazy,81
+confirmation,original-passive,1,a,first,Complex Pipeline,sharp,121
+confirmation,original-passive,1,a,warm1,JPEG,lazy,70
+confirmation,original-passive,1,a,warm1,JPEG,sharp,80
+confirmation,original-passive,1,a,warm1,WebP,lazy,175
+confirmation,original-passive,1,a,warm1,WebP,sharp,89
+confirmation,original-passive,1,a,warm1,AVIF,lazy,497
+confirmation,original-passive,1,a,warm1,AVIF,sharp,221
+confirmation,original-passive,1,a,warm1,Complex Pipeline,lazy,80
+confirmation,original-passive,1,a,warm1,Complex Pipeline,sharp,130
+confirmation,original-passive,1,a,warm2,JPEG,lazy,72
+confirmation,original-passive,1,a,warm2,JPEG,sharp,82
+confirmation,original-passive,1,a,warm2,WebP,lazy,185
+confirmation,original-passive,1,a,warm2,WebP,sharp,91
+confirmation,original-passive,1,a,warm2,AVIF,lazy,522
+confirmation,original-passive,1,a,warm2,AVIF,sharp,228
+confirmation,original-passive,1,a,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,1,a,warm2,Complex Pipeline,sharp,123
+confirmation,original-passive,1,a,warm3,JPEG,lazy,68
+confirmation,original-passive,1,a,warm3,JPEG,sharp,80
+confirmation,original-passive,1,a,warm3,WebP,lazy,175
+confirmation,original-passive,1,a,warm3,WebP,sharp,88
+confirmation,original-passive,1,a,warm3,AVIF,lazy,497
+confirmation,original-passive,1,a,warm3,AVIF,sharp,222
+confirmation,original-passive,1,a,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,1,a,warm3,Complex Pipeline,sharp,122
+confirmation,original-passive,1,b,first,JPEG,lazy,72
+confirmation,original-passive,1,b,first,JPEG,sharp,81
+confirmation,original-passive,1,b,first,WebP,lazy,178
+confirmation,original-passive,1,b,first,WebP,sharp,89
+confirmation,original-passive,1,b,first,AVIF,lazy,490
+confirmation,original-passive,1,b,first,AVIF,sharp,223
+confirmation,original-passive,1,b,first,Complex Pipeline,lazy,77
+confirmation,original-passive,1,b,first,Complex Pipeline,sharp,125
+confirmation,original-passive,1,b,warm1,JPEG,lazy,68
+confirmation,original-passive,1,b,warm1,JPEG,sharp,81
+confirmation,original-passive,1,b,warm1,WebP,lazy,175
+confirmation,original-passive,1,b,warm1,WebP,sharp,89
+confirmation,original-passive,1,b,warm1,AVIF,lazy,491
+confirmation,original-passive,1,b,warm1,AVIF,sharp,248
+confirmation,original-passive,1,b,warm1,Complex Pipeline,lazy,85
+confirmation,original-passive,1,b,warm1,Complex Pipeline,sharp,143
+confirmation,original-passive,1,b,warm2,JPEG,lazy,94
+confirmation,original-passive,1,b,warm2,JPEG,sharp,102
+confirmation,original-passive,1,b,warm2,WebP,lazy,204
+confirmation,original-passive,1,b,warm2,WebP,sharp,93
+confirmation,original-passive,1,b,warm2,AVIF,lazy,546
+confirmation,original-passive,1,b,warm2,AVIF,sharp,308
+confirmation,original-passive,1,b,warm2,Complex Pipeline,lazy,90
+confirmation,original-passive,1,b,warm2,Complex Pipeline,sharp,134
+confirmation,original-passive,1,b,warm3,JPEG,lazy,73
+confirmation,original-passive,1,b,warm3,JPEG,sharp,90
+confirmation,original-passive,1,b,warm3,WebP,lazy,233
+confirmation,original-passive,1,b,warm3,WebP,sharp,115
+confirmation,original-passive,1,b,warm3,AVIF,lazy,712
+confirmation,original-passive,1,b,warm3,AVIF,sharp,399
+confirmation,original-passive,1,b,warm3,Complex Pipeline,lazy,112
+confirmation,original-passive,1,b,warm3,Complex Pipeline,sharp,263
+confirmation,original-passive,10,a,first,JPEG,lazy,87
+confirmation,original-passive,10,a,first,JPEG,sharp,81
+confirmation,original-passive,10,a,first,WebP,lazy,179
+confirmation,original-passive,10,a,first,WebP,sharp,90
+confirmation,original-passive,10,a,first,AVIF,lazy,505
+confirmation,original-passive,10,a,first,AVIF,sharp,238
+confirmation,original-passive,10,a,first,Complex Pipeline,lazy,82
+confirmation,original-passive,10,a,first,Complex Pipeline,sharp,126
+confirmation,original-passive,10,a,warm1,JPEG,lazy,70
+confirmation,original-passive,10,a,warm1,JPEG,sharp,82
+confirmation,original-passive,10,a,warm1,WebP,lazy,183
+confirmation,original-passive,10,a,warm1,WebP,sharp,91
+confirmation,original-passive,10,a,warm1,AVIF,lazy,503
+confirmation,original-passive,10,a,warm1,AVIF,sharp,237
+confirmation,original-passive,10,a,warm1,Complex Pipeline,lazy,83
+confirmation,original-passive,10,a,warm1,Complex Pipeline,sharp,126
+confirmation,original-passive,10,a,warm2,JPEG,lazy,68
+confirmation,original-passive,10,a,warm2,JPEG,sharp,83
+confirmation,original-passive,10,a,warm2,WebP,lazy,179
+confirmation,original-passive,10,a,warm2,WebP,sharp,91
+confirmation,original-passive,10,a,warm2,AVIF,lazy,506
+confirmation,original-passive,10,a,warm2,AVIF,sharp,235
+confirmation,original-passive,10,a,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,10,a,warm2,Complex Pipeline,sharp,128
+confirmation,original-passive,10,a,warm3,JPEG,lazy,67
+confirmation,original-passive,10,a,warm3,JPEG,sharp,83
+confirmation,original-passive,10,a,warm3,WebP,lazy,179
+confirmation,original-passive,10,a,warm3,WebP,sharp,92
+confirmation,original-passive,10,a,warm3,AVIF,lazy,505
+confirmation,original-passive,10,a,warm3,AVIF,sharp,237
+confirmation,original-passive,10,a,warm3,Complex Pipeline,lazy,79
+confirmation,original-passive,10,a,warm3,Complex Pipeline,sharp,127
+confirmation,original-passive,10,b,first,JPEG,lazy,113
+confirmation,original-passive,10,b,first,JPEG,sharp,101
+confirmation,original-passive,10,b,first,WebP,lazy,228
+confirmation,original-passive,10,b,first,WebP,sharp,105
+confirmation,original-passive,10,b,first,AVIF,lazy,581
+confirmation,original-passive,10,b,first,AVIF,sharp,264
+confirmation,original-passive,10,b,first,Complex Pipeline,lazy,82
+confirmation,original-passive,10,b,first,Complex Pipeline,sharp,125
+confirmation,original-passive,10,b,warm1,JPEG,lazy,73
+confirmation,original-passive,10,b,warm1,JPEG,sharp,82
+confirmation,original-passive,10,b,warm1,WebP,lazy,178
+confirmation,original-passive,10,b,warm1,WebP,sharp,89
+confirmation,original-passive,10,b,warm1,AVIF,lazy,497
+confirmation,original-passive,10,b,warm1,AVIF,sharp,234
+confirmation,original-passive,10,b,warm1,Complex Pipeline,lazy,80
+confirmation,original-passive,10,b,warm1,Complex Pipeline,sharp,125
+confirmation,original-passive,10,b,warm2,JPEG,lazy,70
+confirmation,original-passive,10,b,warm2,JPEG,sharp,82
+confirmation,original-passive,10,b,warm2,WebP,lazy,175
+confirmation,original-passive,10,b,warm2,WebP,sharp,88
+confirmation,original-passive,10,b,warm2,AVIF,lazy,492
+confirmation,original-passive,10,b,warm2,AVIF,sharp,235
+confirmation,original-passive,10,b,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,10,b,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,10,b,warm3,JPEG,lazy,69
+confirmation,original-passive,10,b,warm3,JPEG,sharp,82
+confirmation,original-passive,10,b,warm3,WebP,lazy,178
+confirmation,original-passive,10,b,warm3,WebP,sharp,89
+confirmation,original-passive,10,b,warm3,AVIF,lazy,492
+confirmation,original-passive,10,b,warm3,AVIF,sharp,245
+confirmation,original-passive,10,b,warm3,Complex Pipeline,lazy,82
+confirmation,original-passive,10,b,warm3,Complex Pipeline,sharp,125
+confirmation,original-passive,11,a,first,JPEG,lazy,70
+confirmation,original-passive,11,a,first,JPEG,sharp,82
+confirmation,original-passive,11,a,first,WebP,lazy,180
+confirmation,original-passive,11,a,first,WebP,sharp,93
+confirmation,original-passive,11,a,first,AVIF,lazy,503
+confirmation,original-passive,11,a,first,AVIF,sharp,238
+confirmation,original-passive,11,a,first,Complex Pipeline,lazy,81
+confirmation,original-passive,11,a,first,Complex Pipeline,sharp,129
+confirmation,original-passive,11,a,warm1,JPEG,lazy,71
+confirmation,original-passive,11,a,warm1,JPEG,sharp,82
+confirmation,original-passive,11,a,warm1,WebP,lazy,179
+confirmation,original-passive,11,a,warm1,WebP,sharp,90
+confirmation,original-passive,11,a,warm1,AVIF,lazy,505
+confirmation,original-passive,11,a,warm1,AVIF,sharp,234
+confirmation,original-passive,11,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,11,a,warm1,Complex Pipeline,sharp,128
+confirmation,original-passive,11,a,warm2,JPEG,lazy,71
+confirmation,original-passive,11,a,warm2,JPEG,sharp,82
+confirmation,original-passive,11,a,warm2,WebP,lazy,177
+confirmation,original-passive,11,a,warm2,WebP,sharp,91
+confirmation,original-passive,11,a,warm2,AVIF,lazy,500
+confirmation,original-passive,11,a,warm2,AVIF,sharp,234
+confirmation,original-passive,11,a,warm2,Complex Pipeline,lazy,80
+confirmation,original-passive,11,a,warm2,Complex Pipeline,sharp,127
+confirmation,original-passive,11,a,warm3,JPEG,lazy,71
+confirmation,original-passive,11,a,warm3,JPEG,sharp,81
+confirmation,original-passive,11,a,warm3,WebP,lazy,178
+confirmation,original-passive,11,a,warm3,WebP,sharp,89
+confirmation,original-passive,11,a,warm3,AVIF,lazy,501
+confirmation,original-passive,11,a,warm3,AVIF,sharp,229
+confirmation,original-passive,11,a,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,11,a,warm3,Complex Pipeline,sharp,130
+confirmation,original-passive,11,b,first,JPEG,lazy,87
+confirmation,original-passive,11,b,first,JPEG,sharp,81
+confirmation,original-passive,11,b,first,WebP,lazy,178
+confirmation,original-passive,11,b,first,WebP,sharp,90
+confirmation,original-passive,11,b,first,AVIF,lazy,497
+confirmation,original-passive,11,b,first,AVIF,sharp,239
+confirmation,original-passive,11,b,first,Complex Pipeline,lazy,80
+confirmation,original-passive,11,b,first,Complex Pipeline,sharp,123
+confirmation,original-passive,11,b,warm1,JPEG,lazy,68
+confirmation,original-passive,11,b,warm1,JPEG,sharp,83
+confirmation,original-passive,11,b,warm1,WebP,lazy,178
+confirmation,original-passive,11,b,warm1,WebP,sharp,92
+confirmation,original-passive,11,b,warm1,AVIF,lazy,498
+confirmation,original-passive,11,b,warm1,AVIF,sharp,260
+confirmation,original-passive,11,b,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,11,b,warm1,Complex Pipeline,sharp,124
+confirmation,original-passive,11,b,warm2,JPEG,lazy,69
+confirmation,original-passive,11,b,warm2,JPEG,sharp,82
+confirmation,original-passive,11,b,warm2,WebP,lazy,178
+confirmation,original-passive,11,b,warm2,WebP,sharp,90
+confirmation,original-passive,11,b,warm2,AVIF,lazy,496
+confirmation,original-passive,11,b,warm2,AVIF,sharp,237
+confirmation,original-passive,11,b,warm2,Complex Pipeline,lazy,80
+confirmation,original-passive,11,b,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,11,b,warm3,JPEG,lazy,67
+confirmation,original-passive,11,b,warm3,JPEG,sharp,85
+confirmation,original-passive,11,b,warm3,WebP,lazy,178
+confirmation,original-passive,11,b,warm3,WebP,sharp,91
+confirmation,original-passive,11,b,warm3,AVIF,lazy,497
+confirmation,original-passive,11,b,warm3,AVIF,sharp,232
+confirmation,original-passive,11,b,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,11,b,warm3,Complex Pipeline,sharp,125
+confirmation,original-passive,12,a,first,JPEG,lazy,81
+confirmation,original-passive,12,a,first,JPEG,sharp,82
+confirmation,original-passive,12,a,first,WebP,lazy,180
+confirmation,original-passive,12,a,first,WebP,sharp,90
+confirmation,original-passive,12,a,first,AVIF,lazy,502
+confirmation,original-passive,12,a,first,AVIF,sharp,238
+confirmation,original-passive,12,a,first,Complex Pipeline,lazy,82
+confirmation,original-passive,12,a,first,Complex Pipeline,sharp,125
+confirmation,original-passive,12,a,warm1,JPEG,lazy,70
+confirmation,original-passive,12,a,warm1,JPEG,sharp,83
+confirmation,original-passive,12,a,warm1,WebP,lazy,179
+confirmation,original-passive,12,a,warm1,WebP,sharp,90
+confirmation,original-passive,12,a,warm1,AVIF,lazy,518
+confirmation,original-passive,12,a,warm1,AVIF,sharp,304
+confirmation,original-passive,12,a,warm1,Complex Pipeline,lazy,86
+confirmation,original-passive,12,a,warm1,Complex Pipeline,sharp,125
+confirmation,original-passive,12,a,warm2,JPEG,lazy,81
+confirmation,original-passive,12,a,warm2,JPEG,sharp,86
+confirmation,original-passive,12,a,warm2,WebP,lazy,196
+confirmation,original-passive,12,a,warm2,WebP,sharp,93
+confirmation,original-passive,12,a,warm2,AVIF,lazy,699
+confirmation,original-passive,12,a,warm2,AVIF,sharp,301
+confirmation,original-passive,12,a,warm2,Complex Pipeline,lazy,124
+confirmation,original-passive,12,a,warm2,Complex Pipeline,sharp,169
+confirmation,original-passive,12,a,warm3,JPEG,lazy,90
+confirmation,original-passive,12,a,warm3,JPEG,sharp,107
+confirmation,original-passive,12,a,warm3,WebP,lazy,182
+confirmation,original-passive,12,a,warm3,WebP,sharp,91
+confirmation,original-passive,12,a,warm3,AVIF,lazy,554
+confirmation,original-passive,12,a,warm3,AVIF,sharp,244
+confirmation,original-passive,12,a,warm3,Complex Pipeline,lazy,82
+confirmation,original-passive,12,a,warm3,Complex Pipeline,sharp,132
+confirmation,original-passive,12,b,first,JPEG,lazy,92
+confirmation,original-passive,12,b,first,JPEG,sharp,83
+confirmation,original-passive,12,b,first,WebP,lazy,196
+confirmation,original-passive,12,b,first,WebP,sharp,91
+confirmation,original-passive,12,b,first,AVIF,lazy,504
+confirmation,original-passive,12,b,first,AVIF,sharp,238
+confirmation,original-passive,12,b,first,Complex Pipeline,lazy,80
+confirmation,original-passive,12,b,first,Complex Pipeline,sharp,131
+confirmation,original-passive,12,b,warm1,JPEG,lazy,68
+confirmation,original-passive,12,b,warm1,JPEG,sharp,84
+confirmation,original-passive,12,b,warm1,WebP,lazy,181
+confirmation,original-passive,12,b,warm1,WebP,sharp,91
+confirmation,original-passive,12,b,warm1,AVIF,lazy,499
+confirmation,original-passive,12,b,warm1,AVIF,sharp,240
+confirmation,original-passive,12,b,warm1,Complex Pipeline,lazy,78
+confirmation,original-passive,12,b,warm1,Complex Pipeline,sharp,131
+confirmation,original-passive,12,b,warm2,JPEG,lazy,70
+confirmation,original-passive,12,b,warm2,JPEG,sharp,83
+confirmation,original-passive,12,b,warm2,WebP,lazy,177
+confirmation,original-passive,12,b,warm2,WebP,sharp,90
+confirmation,original-passive,12,b,warm2,AVIF,lazy,507
+confirmation,original-passive,12,b,warm2,AVIF,sharp,258
+confirmation,original-passive,12,b,warm2,Complex Pipeline,lazy,84
+confirmation,original-passive,12,b,warm2,Complex Pipeline,sharp,160
+confirmation,original-passive,12,b,warm3,JPEG,lazy,83
+confirmation,original-passive,12,b,warm3,JPEG,sharp,93
+confirmation,original-passive,12,b,warm3,WebP,lazy,177
+confirmation,original-passive,12,b,warm3,WebP,sharp,104
+confirmation,original-passive,12,b,warm3,AVIF,lazy,528
+confirmation,original-passive,12,b,warm3,AVIF,sharp,263
+confirmation,original-passive,12,b,warm3,Complex Pipeline,lazy,99
+confirmation,original-passive,12,b,warm3,Complex Pipeline,sharp,131
+confirmation,original-passive,13,a,first,JPEG,lazy,90
+confirmation,original-passive,13,a,first,JPEG,sharp,89
+confirmation,original-passive,13,a,first,WebP,lazy,180
+confirmation,original-passive,13,a,first,WebP,sharp,91
+confirmation,original-passive,13,a,first,AVIF,lazy,511
+confirmation,original-passive,13,a,first,AVIF,sharp,238
+confirmation,original-passive,13,a,first,Complex Pipeline,lazy,82
+confirmation,original-passive,13,a,first,Complex Pipeline,sharp,126
+confirmation,original-passive,13,a,warm1,JPEG,lazy,70
+confirmation,original-passive,13,a,warm1,JPEG,sharp,82
+confirmation,original-passive,13,a,warm1,WebP,lazy,181
+confirmation,original-passive,13,a,warm1,WebP,sharp,91
+confirmation,original-passive,13,a,warm1,AVIF,lazy,506
+confirmation,original-passive,13,a,warm1,AVIF,sharp,242
+confirmation,original-passive,13,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,13,a,warm1,Complex Pipeline,sharp,124
+confirmation,original-passive,13,a,warm2,JPEG,lazy,69
+confirmation,original-passive,13,a,warm2,JPEG,sharp,82
+confirmation,original-passive,13,a,warm2,WebP,lazy,179
+confirmation,original-passive,13,a,warm2,WebP,sharp,90
+confirmation,original-passive,13,a,warm2,AVIF,lazy,509
+confirmation,original-passive,13,a,warm2,AVIF,sharp,302
+confirmation,original-passive,13,a,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,13,a,warm2,Complex Pipeline,sharp,128
+confirmation,original-passive,13,a,warm3,JPEG,lazy,69
+confirmation,original-passive,13,a,warm3,JPEG,sharp,82
+confirmation,original-passive,13,a,warm3,WebP,lazy,178
+confirmation,original-passive,13,a,warm3,WebP,sharp,91
+confirmation,original-passive,13,a,warm3,AVIF,lazy,509
+confirmation,original-passive,13,a,warm3,AVIF,sharp,234
+confirmation,original-passive,13,a,warm3,Complex Pipeline,lazy,80
+confirmation,original-passive,13,a,warm3,Complex Pipeline,sharp,124
+confirmation,original-passive,13,b,first,JPEG,lazy,74
+confirmation,original-passive,13,b,first,JPEG,sharp,83
+confirmation,original-passive,13,b,first,WebP,lazy,180
+confirmation,original-passive,13,b,first,WebP,sharp,89
+confirmation,original-passive,13,b,first,AVIF,lazy,492
+confirmation,original-passive,13,b,first,AVIF,sharp,250
+confirmation,original-passive,13,b,first,Complex Pipeline,lazy,85
+confirmation,original-passive,13,b,first,Complex Pipeline,sharp,128
+confirmation,original-passive,13,b,warm1,JPEG,lazy,73
+confirmation,original-passive,13,b,warm1,JPEG,sharp,83
+confirmation,original-passive,13,b,warm1,WebP,lazy,177
+confirmation,original-passive,13,b,warm1,WebP,sharp,89
+confirmation,original-passive,13,b,warm1,AVIF,lazy,507
+confirmation,original-passive,13,b,warm1,AVIF,sharp,267
+confirmation,original-passive,13,b,warm1,Complex Pipeline,lazy,82
+confirmation,original-passive,13,b,warm1,Complex Pipeline,sharp,126
+confirmation,original-passive,13,b,warm2,JPEG,lazy,74
+confirmation,original-passive,13,b,warm2,JPEG,sharp,84
+confirmation,original-passive,13,b,warm2,WebP,lazy,180
+confirmation,original-passive,13,b,warm2,WebP,sharp,89
+confirmation,original-passive,13,b,warm2,AVIF,lazy,494
+confirmation,original-passive,13,b,warm2,AVIF,sharp,230
+confirmation,original-passive,13,b,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,13,b,warm2,Complex Pipeline,sharp,140
+confirmation,original-passive,13,b,warm3,JPEG,lazy,69
+confirmation,original-passive,13,b,warm3,JPEG,sharp,82
+confirmation,original-passive,13,b,warm3,WebP,lazy,182
+confirmation,original-passive,13,b,warm3,WebP,sharp,97
+confirmation,original-passive,13,b,warm3,AVIF,lazy,496
+confirmation,original-passive,13,b,warm3,AVIF,sharp,257
+confirmation,original-passive,13,b,warm3,Complex Pipeline,lazy,84
+confirmation,original-passive,13,b,warm3,Complex Pipeline,sharp,140
+confirmation,original-passive,14,a,first,JPEG,lazy,72
+confirmation,original-passive,14,a,first,JPEG,sharp,83
+confirmation,original-passive,14,a,first,WebP,lazy,183
+confirmation,original-passive,14,a,first,WebP,sharp,91
+confirmation,original-passive,14,a,first,AVIF,lazy,508
+confirmation,original-passive,14,a,first,AVIF,sharp,238
+confirmation,original-passive,14,a,first,Complex Pipeline,lazy,79
+confirmation,original-passive,14,a,first,Complex Pipeline,sharp,130
+confirmation,original-passive,14,a,warm1,JPEG,lazy,73
+confirmation,original-passive,14,a,warm1,JPEG,sharp,82
+confirmation,original-passive,14,a,warm1,WebP,lazy,181
+confirmation,original-passive,14,a,warm1,WebP,sharp,91
+confirmation,original-passive,14,a,warm1,AVIF,lazy,505
+confirmation,original-passive,14,a,warm1,AVIF,sharp,249
+confirmation,original-passive,14,a,warm1,Complex Pipeline,lazy,80
+confirmation,original-passive,14,a,warm1,Complex Pipeline,sharp,133
+confirmation,original-passive,14,a,warm2,JPEG,lazy,71
+confirmation,original-passive,14,a,warm2,JPEG,sharp,83
+confirmation,original-passive,14,a,warm2,WebP,lazy,179
+confirmation,original-passive,14,a,warm2,WebP,sharp,91
+confirmation,original-passive,14,a,warm2,AVIF,lazy,509
+confirmation,original-passive,14,a,warm2,AVIF,sharp,246
+confirmation,original-passive,14,a,warm2,Complex Pipeline,lazy,80
+confirmation,original-passive,14,a,warm2,Complex Pipeline,sharp,130
+confirmation,original-passive,14,a,warm3,JPEG,lazy,72
+confirmation,original-passive,14,a,warm3,JPEG,sharp,83
+confirmation,original-passive,14,a,warm3,WebP,lazy,181
+confirmation,original-passive,14,a,warm3,WebP,sharp,91
+confirmation,original-passive,14,a,warm3,AVIF,lazy,507
+confirmation,original-passive,14,a,warm3,AVIF,sharp,236
+confirmation,original-passive,14,a,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,14,a,warm3,Complex Pipeline,sharp,129
+confirmation,original-passive,14,b,first,JPEG,lazy,78
+confirmation,original-passive,14,b,first,JPEG,sharp,84
+confirmation,original-passive,14,b,first,WebP,lazy,178
+confirmation,original-passive,14,b,first,WebP,sharp,92
+confirmation,original-passive,14,b,first,AVIF,lazy,498
+confirmation,original-passive,14,b,first,AVIF,sharp,235
+confirmation,original-passive,14,b,first,Complex Pipeline,lazy,81
+confirmation,original-passive,14,b,first,Complex Pipeline,sharp,128
+confirmation,original-passive,14,b,warm1,JPEG,lazy,72
+confirmation,original-passive,14,b,warm1,JPEG,sharp,82
+confirmation,original-passive,14,b,warm1,WebP,lazy,181
+confirmation,original-passive,14,b,warm1,WebP,sharp,90
+confirmation,original-passive,14,b,warm1,AVIF,lazy,495
+confirmation,original-passive,14,b,warm1,AVIF,sharp,237
+confirmation,original-passive,14,b,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,14,b,warm1,Complex Pipeline,sharp,125
+confirmation,original-passive,14,b,warm2,JPEG,lazy,71
+confirmation,original-passive,14,b,warm2,JPEG,sharp,82
+confirmation,original-passive,14,b,warm2,WebP,lazy,178
+confirmation,original-passive,14,b,warm2,WebP,sharp,91
+confirmation,original-passive,14,b,warm2,AVIF,lazy,494
+confirmation,original-passive,14,b,warm2,AVIF,sharp,256
+confirmation,original-passive,14,b,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,14,b,warm2,Complex Pipeline,sharp,137
+confirmation,original-passive,14,b,warm3,JPEG,lazy,73
+confirmation,original-passive,14,b,warm3,JPEG,sharp,89
+confirmation,original-passive,14,b,warm3,WebP,lazy,190
+confirmation,original-passive,14,b,warm3,WebP,sharp,92
+confirmation,original-passive,14,b,warm3,AVIF,lazy,502
+confirmation,original-passive,14,b,warm3,AVIF,sharp,247
+confirmation,original-passive,14,b,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,14,b,warm3,Complex Pipeline,sharp,128
+confirmation,original-passive,15,a,first,JPEG,lazy,73
+confirmation,original-passive,15,a,first,JPEG,sharp,85
+confirmation,original-passive,15,a,first,WebP,lazy,179
+confirmation,original-passive,15,a,first,WebP,sharp,95
+confirmation,original-passive,15,a,first,AVIF,lazy,508
+confirmation,original-passive,15,a,first,AVIF,sharp,240
+confirmation,original-passive,15,a,first,Complex Pipeline,lazy,79
+confirmation,original-passive,15,a,first,Complex Pipeline,sharp,125
+confirmation,original-passive,15,a,warm1,JPEG,lazy,72
+confirmation,original-passive,15,a,warm1,JPEG,sharp,83
+confirmation,original-passive,15,a,warm1,WebP,lazy,181
+confirmation,original-passive,15,a,warm1,WebP,sharp,90
+confirmation,original-passive,15,a,warm1,AVIF,lazy,506
+confirmation,original-passive,15,a,warm1,AVIF,sharp,244
+confirmation,original-passive,15,a,warm1,Complex Pipeline,lazy,98
+confirmation,original-passive,15,a,warm1,Complex Pipeline,sharp,139
+confirmation,original-passive,15,a,warm2,JPEG,lazy,76
+confirmation,original-passive,15,a,warm2,JPEG,sharp,87
+confirmation,original-passive,15,a,warm2,WebP,lazy,185
+confirmation,original-passive,15,a,warm2,WebP,sharp,101
+confirmation,original-passive,15,a,warm2,AVIF,lazy,656
+confirmation,original-passive,15,a,warm2,AVIF,sharp,301
+confirmation,original-passive,15,a,warm2,Complex Pipeline,lazy,110
+confirmation,original-passive,15,a,warm2,Complex Pipeline,sharp,141
+confirmation,original-passive,15,a,warm3,JPEG,lazy,80
+confirmation,original-passive,15,a,warm3,JPEG,sharp,90
+confirmation,original-passive,15,a,warm3,WebP,lazy,189
+confirmation,original-passive,15,a,warm3,WebP,sharp,93
+confirmation,original-passive,15,a,warm3,AVIF,lazy,501
+confirmation,original-passive,15,a,warm3,AVIF,sharp,232
+confirmation,original-passive,15,a,warm3,Complex Pipeline,lazy,79
+confirmation,original-passive,15,a,warm3,Complex Pipeline,sharp,128
+confirmation,original-passive,15,b,first,JPEG,lazy,85
+confirmation,original-passive,15,b,first,JPEG,sharp,82
+confirmation,original-passive,15,b,first,WebP,lazy,179
+confirmation,original-passive,15,b,first,WebP,sharp,88
+confirmation,original-passive,15,b,first,AVIF,lazy,517
+confirmation,original-passive,15,b,first,AVIF,sharp,236
+confirmation,original-passive,15,b,first,Complex Pipeline,lazy,83
+confirmation,original-passive,15,b,first,Complex Pipeline,sharp,125
+confirmation,original-passive,15,b,warm1,JPEG,lazy,70
+confirmation,original-passive,15,b,warm1,JPEG,sharp,83
+confirmation,original-passive,15,b,warm1,WebP,lazy,180
+confirmation,original-passive,15,b,warm1,WebP,sharp,89
+confirmation,original-passive,15,b,warm1,AVIF,lazy,502
+confirmation,original-passive,15,b,warm1,AVIF,sharp,236
+confirmation,original-passive,15,b,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,15,b,warm1,Complex Pipeline,sharp,123
+confirmation,original-passive,15,b,warm2,JPEG,lazy,68
+confirmation,original-passive,15,b,warm2,JPEG,sharp,87
+confirmation,original-passive,15,b,warm2,WebP,lazy,180
+confirmation,original-passive,15,b,warm2,WebP,sharp,90
+confirmation,original-passive,15,b,warm2,AVIF,lazy,493
+confirmation,original-passive,15,b,warm2,AVIF,sharp,237
+confirmation,original-passive,15,b,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,15,b,warm2,Complex Pipeline,sharp,127
+confirmation,original-passive,15,b,warm3,JPEG,lazy,70
+confirmation,original-passive,15,b,warm3,JPEG,sharp,83
+confirmation,original-passive,15,b,warm3,WebP,lazy,183
+confirmation,original-passive,15,b,warm3,WebP,sharp,90
+confirmation,original-passive,15,b,warm3,AVIF,lazy,496
+confirmation,original-passive,15,b,warm3,AVIF,sharp,243
+confirmation,original-passive,15,b,warm3,Complex Pipeline,lazy,78
+confirmation,original-passive,15,b,warm3,Complex Pipeline,sharp,125
+confirmation,original-passive,16,a,first,JPEG,lazy,80
+confirmation,original-passive,16,a,first,JPEG,sharp,82
+confirmation,original-passive,16,a,first,WebP,lazy,189
+confirmation,original-passive,16,a,first,WebP,sharp,91
+confirmation,original-passive,16,a,first,AVIF,lazy,565
+confirmation,original-passive,16,a,first,AVIF,sharp,264
+confirmation,original-passive,16,a,first,Complex Pipeline,lazy,83
+confirmation,original-passive,16,a,first,Complex Pipeline,sharp,127
+confirmation,original-passive,16,a,warm1,JPEG,lazy,74
+confirmation,original-passive,16,a,warm1,JPEG,sharp,82
+confirmation,original-passive,16,a,warm1,WebP,lazy,176
+confirmation,original-passive,16,a,warm1,WebP,sharp,90
+confirmation,original-passive,16,a,warm1,AVIF,lazy,501
+confirmation,original-passive,16,a,warm1,AVIF,sharp,229
+confirmation,original-passive,16,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,16,a,warm1,Complex Pipeline,sharp,124
+confirmation,original-passive,16,a,warm2,JPEG,lazy,73
+confirmation,original-passive,16,a,warm2,JPEG,sharp,82
+confirmation,original-passive,16,a,warm2,WebP,lazy,177
+confirmation,original-passive,16,a,warm2,WebP,sharp,89
+confirmation,original-passive,16,a,warm2,AVIF,lazy,501
+confirmation,original-passive,16,a,warm2,AVIF,sharp,228
+confirmation,original-passive,16,a,warm2,Complex Pipeline,lazy,80
+confirmation,original-passive,16,a,warm2,Complex Pipeline,sharp,127
+confirmation,original-passive,16,a,warm3,JPEG,lazy,71
+confirmation,original-passive,16,a,warm3,JPEG,sharp,81
+confirmation,original-passive,16,a,warm3,WebP,lazy,180
+confirmation,original-passive,16,a,warm3,WebP,sharp,91
+confirmation,original-passive,16,a,warm3,AVIF,lazy,503
+confirmation,original-passive,16,a,warm3,AVIF,sharp,242
+confirmation,original-passive,16,a,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,16,a,warm3,Complex Pipeline,sharp,123
+confirmation,original-passive,16,b,first,JPEG,lazy,74
+confirmation,original-passive,16,b,first,JPEG,sharp,83
+confirmation,original-passive,16,b,first,WebP,lazy,180
+confirmation,original-passive,16,b,first,WebP,sharp,91
+confirmation,original-passive,16,b,first,AVIF,lazy,493
+confirmation,original-passive,16,b,first,AVIF,sharp,237
+confirmation,original-passive,16,b,first,Complex Pipeline,lazy,257
+confirmation,original-passive,16,b,first,Complex Pipeline,sharp,127
+confirmation,original-passive,16,b,warm1,JPEG,lazy,71
+confirmation,original-passive,16,b,warm1,JPEG,sharp,80
+confirmation,original-passive,16,b,warm1,WebP,lazy,178
+confirmation,original-passive,16,b,warm1,WebP,sharp,90
+confirmation,original-passive,16,b,warm1,AVIF,lazy,497
+confirmation,original-passive,16,b,warm1,AVIF,sharp,252
+confirmation,original-passive,16,b,warm1,Complex Pipeline,lazy,83
+confirmation,original-passive,16,b,warm1,Complex Pipeline,sharp,129
+confirmation,original-passive,16,b,warm2,JPEG,lazy,69
+confirmation,original-passive,16,b,warm2,JPEG,sharp,81
+confirmation,original-passive,16,b,warm2,WebP,lazy,179
+confirmation,original-passive,16,b,warm2,WebP,sharp,94
+confirmation,original-passive,16,b,warm2,AVIF,lazy,507
+confirmation,original-passive,16,b,warm2,AVIF,sharp,240
+confirmation,original-passive,16,b,warm2,Complex Pipeline,lazy,83
+confirmation,original-passive,16,b,warm2,Complex Pipeline,sharp,128
+confirmation,original-passive,16,b,warm3,JPEG,lazy,68
+confirmation,original-passive,16,b,warm3,JPEG,sharp,83
+confirmation,original-passive,16,b,warm3,WebP,lazy,179
+confirmation,original-passive,16,b,warm3,WebP,sharp,89
+confirmation,original-passive,16,b,warm3,AVIF,lazy,494
+confirmation,original-passive,16,b,warm3,AVIF,sharp,235
+confirmation,original-passive,16,b,warm3,Complex Pipeline,lazy,83
+confirmation,original-passive,16,b,warm3,Complex Pipeline,sharp,128
+confirmation,original-passive,17,a,first,JPEG,lazy,76
+confirmation,original-passive,17,a,first,JPEG,sharp,83
+confirmation,original-passive,17,a,first,WebP,lazy,189
+confirmation,original-passive,17,a,first,WebP,sharp,95
+confirmation,original-passive,17,a,first,AVIF,lazy,510
+confirmation,original-passive,17,a,first,AVIF,sharp,238
+confirmation,original-passive,17,a,first,Complex Pipeline,lazy,81
+confirmation,original-passive,17,a,first,Complex Pipeline,sharp,127
+confirmation,original-passive,17,a,warm1,JPEG,lazy,70
+confirmation,original-passive,17,a,warm1,JPEG,sharp,82
+confirmation,original-passive,17,a,warm1,WebP,lazy,180
+confirmation,original-passive,17,a,warm1,WebP,sharp,90
+confirmation,original-passive,17,a,warm1,AVIF,lazy,505
+confirmation,original-passive,17,a,warm1,AVIF,sharp,237
+confirmation,original-passive,17,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,17,a,warm1,Complex Pipeline,sharp,126
+confirmation,original-passive,17,a,warm2,JPEG,lazy,70
+confirmation,original-passive,17,a,warm2,JPEG,sharp,81
+confirmation,original-passive,17,a,warm2,WebP,lazy,180
+confirmation,original-passive,17,a,warm2,WebP,sharp,90
+confirmation,original-passive,17,a,warm2,AVIF,lazy,501
+confirmation,original-passive,17,a,warm2,AVIF,sharp,238
+confirmation,original-passive,17,a,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,17,a,warm2,Complex Pipeline,sharp,127
+confirmation,original-passive,17,a,warm3,JPEG,lazy,71
+confirmation,original-passive,17,a,warm3,JPEG,sharp,81
+confirmation,original-passive,17,a,warm3,WebP,lazy,175
+confirmation,original-passive,17,a,warm3,WebP,sharp,90
+confirmation,original-passive,17,a,warm3,AVIF,lazy,503
+confirmation,original-passive,17,a,warm3,AVIF,sharp,236
+confirmation,original-passive,17,a,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,17,a,warm3,Complex Pipeline,sharp,127
+confirmation,original-passive,17,b,first,JPEG,lazy,91
+confirmation,original-passive,17,b,first,JPEG,sharp,84
+confirmation,original-passive,17,b,first,WebP,lazy,196
+confirmation,original-passive,17,b,first,WebP,sharp,98
+confirmation,original-passive,17,b,first,AVIF,lazy,508
+confirmation,original-passive,17,b,first,AVIF,sharp,234
+confirmation,original-passive,17,b,first,Complex Pipeline,lazy,84
+confirmation,original-passive,17,b,first,Complex Pipeline,sharp,122
+confirmation,original-passive,17,b,warm1,JPEG,lazy,71
+confirmation,original-passive,17,b,warm1,JPEG,sharp,83
+confirmation,original-passive,17,b,warm1,WebP,lazy,181
+confirmation,original-passive,17,b,warm1,WebP,sharp,90
+confirmation,original-passive,17,b,warm1,AVIF,lazy,497
+confirmation,original-passive,17,b,warm1,AVIF,sharp,236
+confirmation,original-passive,17,b,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,17,b,warm1,Complex Pipeline,sharp,124
+confirmation,original-passive,17,b,warm2,JPEG,lazy,68
+confirmation,original-passive,17,b,warm2,JPEG,sharp,82
+confirmation,original-passive,17,b,warm2,WebP,lazy,180
+confirmation,original-passive,17,b,warm2,WebP,sharp,89
+confirmation,original-passive,17,b,warm2,AVIF,lazy,497
+confirmation,original-passive,17,b,warm2,AVIF,sharp,236
+confirmation,original-passive,17,b,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,17,b,warm2,Complex Pipeline,sharp,123
+confirmation,original-passive,17,b,warm3,JPEG,lazy,70
+confirmation,original-passive,17,b,warm3,JPEG,sharp,82
+confirmation,original-passive,17,b,warm3,WebP,lazy,183
+confirmation,original-passive,17,b,warm3,WebP,sharp,90
+confirmation,original-passive,17,b,warm3,AVIF,lazy,492
+confirmation,original-passive,17,b,warm3,AVIF,sharp,239
+confirmation,original-passive,17,b,warm3,Complex Pipeline,lazy,84
+confirmation,original-passive,17,b,warm3,Complex Pipeline,sharp,123
+confirmation,original-passive,18,a,first,JPEG,lazy,77
+confirmation,original-passive,18,a,first,JPEG,sharp,85
+confirmation,original-passive,18,a,first,WebP,lazy,180
+confirmation,original-passive,18,a,first,WebP,sharp,90
+confirmation,original-passive,18,a,first,AVIF,lazy,509
+confirmation,original-passive,18,a,first,AVIF,sharp,233
+confirmation,original-passive,18,a,first,Complex Pipeline,lazy,81
+confirmation,original-passive,18,a,first,Complex Pipeline,sharp,124
+confirmation,original-passive,18,a,warm1,JPEG,lazy,68
+confirmation,original-passive,18,a,warm1,JPEG,sharp,83
+confirmation,original-passive,18,a,warm1,WebP,lazy,180
+confirmation,original-passive,18,a,warm1,WebP,sharp,90
+confirmation,original-passive,18,a,warm1,AVIF,lazy,508
+confirmation,original-passive,18,a,warm1,AVIF,sharp,233
+confirmation,original-passive,18,a,warm1,Complex Pipeline,lazy,84
+confirmation,original-passive,18,a,warm1,Complex Pipeline,sharp,123
+confirmation,original-passive,18,a,warm2,JPEG,lazy,71
+confirmation,original-passive,18,a,warm2,JPEG,sharp,82
+confirmation,original-passive,18,a,warm2,WebP,lazy,180
+confirmation,original-passive,18,a,warm2,WebP,sharp,91
+confirmation,original-passive,18,a,warm2,AVIF,lazy,504
+confirmation,original-passive,18,a,warm2,AVIF,sharp,233
+confirmation,original-passive,18,a,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,18,a,warm2,Complex Pipeline,sharp,128
+confirmation,original-passive,18,a,warm3,JPEG,lazy,70
+confirmation,original-passive,18,a,warm3,JPEG,sharp,84
+confirmation,original-passive,18,a,warm3,WebP,lazy,180
+confirmation,original-passive,18,a,warm3,WebP,sharp,91
+confirmation,original-passive,18,a,warm3,AVIF,lazy,498
+confirmation,original-passive,18,a,warm3,AVIF,sharp,238
+confirmation,original-passive,18,a,warm3,Complex Pipeline,lazy,79
+confirmation,original-passive,18,a,warm3,Complex Pipeline,sharp,125
+confirmation,original-passive,18,b,first,JPEG,lazy,88
+confirmation,original-passive,18,b,first,JPEG,sharp,82
+confirmation,original-passive,18,b,first,WebP,lazy,183
+confirmation,original-passive,18,b,first,WebP,sharp,92
+confirmation,original-passive,18,b,first,AVIF,lazy,498
+confirmation,original-passive,18,b,first,AVIF,sharp,250
+confirmation,original-passive,18,b,first,Complex Pipeline,lazy,80
+confirmation,original-passive,18,b,first,Complex Pipeline,sharp,126
+confirmation,original-passive,18,b,warm1,JPEG,lazy,70
+confirmation,original-passive,18,b,warm1,JPEG,sharp,83
+confirmation,original-passive,18,b,warm1,WebP,lazy,180
+confirmation,original-passive,18,b,warm1,WebP,sharp,92
+confirmation,original-passive,18,b,warm1,AVIF,lazy,495
+confirmation,original-passive,18,b,warm1,AVIF,sharp,236
+confirmation,original-passive,18,b,warm1,Complex Pipeline,lazy,80
+confirmation,original-passive,18,b,warm1,Complex Pipeline,sharp,126
+confirmation,original-passive,18,b,warm2,JPEG,lazy,71
+confirmation,original-passive,18,b,warm2,JPEG,sharp,82
+confirmation,original-passive,18,b,warm2,WebP,lazy,178
+confirmation,original-passive,18,b,warm2,WebP,sharp,91
+confirmation,original-passive,18,b,warm2,AVIF,lazy,494
+confirmation,original-passive,18,b,warm2,AVIF,sharp,232
+confirmation,original-passive,18,b,warm2,Complex Pipeline,lazy,80
+confirmation,original-passive,18,b,warm2,Complex Pipeline,sharp,128
+confirmation,original-passive,18,b,warm3,JPEG,lazy,71
+confirmation,original-passive,18,b,warm3,JPEG,sharp,84
+confirmation,original-passive,18,b,warm3,WebP,lazy,177
+confirmation,original-passive,18,b,warm3,WebP,sharp,90
+confirmation,original-passive,18,b,warm3,AVIF,lazy,496
+confirmation,original-passive,18,b,warm3,AVIF,sharp,232
+confirmation,original-passive,18,b,warm3,Complex Pipeline,lazy,80
+confirmation,original-passive,18,b,warm3,Complex Pipeline,sharp,128
+confirmation,original-passive,19,a,first,JPEG,lazy,73
+confirmation,original-passive,19,a,first,JPEG,sharp,84
+confirmation,original-passive,19,a,first,WebP,lazy,181
+confirmation,original-passive,19,a,first,WebP,sharp,91
+confirmation,original-passive,19,a,first,AVIF,lazy,505
+confirmation,original-passive,19,a,first,AVIF,sharp,234
+confirmation,original-passive,19,a,first,Complex Pipeline,lazy,81
+confirmation,original-passive,19,a,first,Complex Pipeline,sharp,125
+confirmation,original-passive,19,a,warm1,JPEG,lazy,73
+confirmation,original-passive,19,a,warm1,JPEG,sharp,82
+confirmation,original-passive,19,a,warm1,WebP,lazy,179
+confirmation,original-passive,19,a,warm1,WebP,sharp,90
+confirmation,original-passive,19,a,warm1,AVIF,lazy,502
+confirmation,original-passive,19,a,warm1,AVIF,sharp,231
+confirmation,original-passive,19,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,19,a,warm1,Complex Pipeline,sharp,126
+confirmation,original-passive,19,a,warm2,JPEG,lazy,70
+confirmation,original-passive,19,a,warm2,JPEG,sharp,81
+confirmation,original-passive,19,a,warm2,WebP,lazy,177
+confirmation,original-passive,19,a,warm2,WebP,sharp,90
+confirmation,original-passive,19,a,warm2,AVIF,lazy,503
+confirmation,original-passive,19,a,warm2,AVIF,sharp,238
+confirmation,original-passive,19,a,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,19,a,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,19,a,warm3,JPEG,lazy,69
+confirmation,original-passive,19,a,warm3,JPEG,sharp,80
+confirmation,original-passive,19,a,warm3,WebP,lazy,176
+confirmation,original-passive,19,a,warm3,WebP,sharp,89
+confirmation,original-passive,19,a,warm3,AVIF,lazy,503
+confirmation,original-passive,19,a,warm3,AVIF,sharp,235
+confirmation,original-passive,19,a,warm3,Complex Pipeline,lazy,82
+confirmation,original-passive,19,a,warm3,Complex Pipeline,sharp,150
+confirmation,original-passive,19,b,first,JPEG,lazy,80
+confirmation,original-passive,19,b,first,JPEG,sharp,85
+confirmation,original-passive,19,b,first,WebP,lazy,179
+confirmation,original-passive,19,b,first,WebP,sharp,91
+confirmation,original-passive,19,b,first,AVIF,lazy,515
+confirmation,original-passive,19,b,first,AVIF,sharp,237
+confirmation,original-passive,19,b,first,Complex Pipeline,lazy,82
+confirmation,original-passive,19,b,first,Complex Pipeline,sharp,126
+confirmation,original-passive,19,b,warm1,JPEG,lazy,70
+confirmation,original-passive,19,b,warm1,JPEG,sharp,83
+confirmation,original-passive,19,b,warm1,WebP,lazy,180
+confirmation,original-passive,19,b,warm1,WebP,sharp,91
+confirmation,original-passive,19,b,warm1,AVIF,lazy,497
+confirmation,original-passive,19,b,warm1,AVIF,sharp,235
+confirmation,original-passive,19,b,warm1,Complex Pipeline,lazy,82
+confirmation,original-passive,19,b,warm1,Complex Pipeline,sharp,125
+confirmation,original-passive,19,b,warm2,JPEG,lazy,127
+confirmation,original-passive,19,b,warm2,JPEG,sharp,134
+confirmation,original-passive,19,b,warm2,WebP,lazy,313
+confirmation,original-passive,19,b,warm2,WebP,sharp,123
+confirmation,original-passive,19,b,warm2,AVIF,lazy,906
+confirmation,original-passive,19,b,warm2,AVIF,sharp,638
+confirmation,original-passive,19,b,warm2,Complex Pipeline,lazy,118
+confirmation,original-passive,19,b,warm2,Complex Pipeline,sharp,163
+confirmation,original-passive,19,b,warm3,JPEG,lazy,98
+confirmation,original-passive,19,b,warm3,JPEG,sharp,102
+confirmation,original-passive,19,b,warm3,WebP,lazy,222
+confirmation,original-passive,19,b,warm3,WebP,sharp,91
+confirmation,original-passive,19,b,warm3,AVIF,lazy,496
+confirmation,original-passive,19,b,warm3,AVIF,sharp,238
+confirmation,original-passive,19,b,warm3,Complex Pipeline,lazy,80
+confirmation,original-passive,19,b,warm3,Complex Pipeline,sharp,129
+confirmation,original-passive,2,a,first,JPEG,lazy,77
+confirmation,original-passive,2,a,first,JPEG,sharp,85
+confirmation,original-passive,2,a,first,WebP,lazy,195
+confirmation,original-passive,2,a,first,WebP,sharp,94
+confirmation,original-passive,2,a,first,AVIF,lazy,552
+confirmation,original-passive,2,a,first,AVIF,sharp,264
+confirmation,original-passive,2,a,first,Complex Pipeline,lazy,86
+confirmation,original-passive,2,a,first,Complex Pipeline,sharp,130
+confirmation,original-passive,2,a,warm1,JPEG,lazy,73
+confirmation,original-passive,2,a,warm1,JPEG,sharp,97
+confirmation,original-passive,2,a,warm1,WebP,lazy,186
+confirmation,original-passive,2,a,warm1,WebP,sharp,92
+confirmation,original-passive,2,a,warm1,AVIF,lazy,522
+confirmation,original-passive,2,a,warm1,AVIF,sharp,314
+confirmation,original-passive,2,a,warm1,Complex Pipeline,lazy,93
+confirmation,original-passive,2,a,warm1,Complex Pipeline,sharp,132
+confirmation,original-passive,2,a,warm2,JPEG,lazy,76
+confirmation,original-passive,2,a,warm2,JPEG,sharp,88
+confirmation,original-passive,2,a,warm2,WebP,lazy,188
+confirmation,original-passive,2,a,warm2,WebP,sharp,99
+confirmation,original-passive,2,a,warm2,AVIF,lazy,537
+confirmation,original-passive,2,a,warm2,AVIF,sharp,304
+confirmation,original-passive,2,a,warm2,Complex Pipeline,lazy,83
+confirmation,original-passive,2,a,warm2,Complex Pipeline,sharp,130
+confirmation,original-passive,2,a,warm3,JPEG,lazy,77
+confirmation,original-passive,2,a,warm3,JPEG,sharp,91
+confirmation,original-passive,2,a,warm3,WebP,lazy,186
+confirmation,original-passive,2,a,warm3,WebP,sharp,93
+confirmation,original-passive,2,a,warm3,AVIF,lazy,540
+confirmation,original-passive,2,a,warm3,AVIF,sharp,258
+confirmation,original-passive,2,a,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,2,a,warm3,Complex Pipeline,sharp,121
+confirmation,original-passive,2,b,first,JPEG,lazy,74
+confirmation,original-passive,2,b,first,JPEG,sharp,84
+confirmation,original-passive,2,b,first,WebP,lazy,195
+confirmation,original-passive,2,b,first,WebP,sharp,93
+confirmation,original-passive,2,b,first,AVIF,lazy,525
+confirmation,original-passive,2,b,first,AVIF,sharp,258
+confirmation,original-passive,2,b,first,Complex Pipeline,lazy,82
+confirmation,original-passive,2,b,first,Complex Pipeline,sharp,131
+confirmation,original-passive,2,b,warm1,JPEG,lazy,76
+confirmation,original-passive,2,b,warm1,JPEG,sharp,86
+confirmation,original-passive,2,b,warm1,WebP,lazy,185
+confirmation,original-passive,2,b,warm1,WebP,sharp,94
+confirmation,original-passive,2,b,warm1,AVIF,lazy,513
+confirmation,original-passive,2,b,warm1,AVIF,sharp,304
+confirmation,original-passive,2,b,warm1,Complex Pipeline,lazy,82
+confirmation,original-passive,2,b,warm1,Complex Pipeline,sharp,135
+confirmation,original-passive,2,b,warm2,JPEG,lazy,71
+confirmation,original-passive,2,b,warm2,JPEG,sharp,85
+confirmation,original-passive,2,b,warm2,WebP,lazy,217
+confirmation,original-passive,2,b,warm2,WebP,sharp,95
+confirmation,original-passive,2,b,warm2,AVIF,lazy,538
+confirmation,original-passive,2,b,warm2,AVIF,sharp,259
+confirmation,original-passive,2,b,warm2,Complex Pipeline,lazy,84
+confirmation,original-passive,2,b,warm2,Complex Pipeline,sharp,131
+confirmation,original-passive,2,b,warm3,JPEG,lazy,72
+confirmation,original-passive,2,b,warm3,JPEG,sharp,83
+confirmation,original-passive,2,b,warm3,WebP,lazy,181
+confirmation,original-passive,2,b,warm3,WebP,sharp,93
+confirmation,original-passive,2,b,warm3,AVIF,lazy,519
+confirmation,original-passive,2,b,warm3,AVIF,sharp,255
+confirmation,original-passive,2,b,warm3,Complex Pipeline,lazy,82
+confirmation,original-passive,2,b,warm3,Complex Pipeline,sharp,139
+confirmation,original-passive,20,a,first,JPEG,lazy,78
+confirmation,original-passive,20,a,first,JPEG,sharp,83
+confirmation,original-passive,20,a,first,WebP,lazy,182
+confirmation,original-passive,20,a,first,WebP,sharp,91
+confirmation,original-passive,20,a,first,AVIF,lazy,507
+confirmation,original-passive,20,a,first,AVIF,sharp,239
+confirmation,original-passive,20,a,first,Complex Pipeline,lazy,80
+confirmation,original-passive,20,a,first,Complex Pipeline,sharp,136
+confirmation,original-passive,20,a,warm1,JPEG,lazy,72
+confirmation,original-passive,20,a,warm1,JPEG,sharp,83
+confirmation,original-passive,20,a,warm1,WebP,lazy,179
+confirmation,original-passive,20,a,warm1,WebP,sharp,91
+confirmation,original-passive,20,a,warm1,AVIF,lazy,503
+confirmation,original-passive,20,a,warm1,AVIF,sharp,233
+confirmation,original-passive,20,a,warm1,Complex Pipeline,lazy,80
+confirmation,original-passive,20,a,warm1,Complex Pipeline,sharp,133
+confirmation,original-passive,20,a,warm2,JPEG,lazy,71
+confirmation,original-passive,20,a,warm2,JPEG,sharp,83
+confirmation,original-passive,20,a,warm2,WebP,lazy,178
+confirmation,original-passive,20,a,warm2,WebP,sharp,92
+confirmation,original-passive,20,a,warm2,AVIF,lazy,503
+confirmation,original-passive,20,a,warm2,AVIF,sharp,238
+confirmation,original-passive,20,a,warm2,Complex Pipeline,lazy,84
+confirmation,original-passive,20,a,warm2,Complex Pipeline,sharp,134
+confirmation,original-passive,20,a,warm3,JPEG,lazy,69
+confirmation,original-passive,20,a,warm3,JPEG,sharp,82
+confirmation,original-passive,20,a,warm3,WebP,lazy,176
+confirmation,original-passive,20,a,warm3,WebP,sharp,94
+confirmation,original-passive,20,a,warm3,AVIF,lazy,500
+confirmation,original-passive,20,a,warm3,AVIF,sharp,234
+confirmation,original-passive,20,a,warm3,Complex Pipeline,lazy,79
+confirmation,original-passive,20,a,warm3,Complex Pipeline,sharp,132
+confirmation,original-passive,20,b,first,JPEG,lazy,85
+confirmation,original-passive,20,b,first,JPEG,sharp,81
+confirmation,original-passive,20,b,first,WebP,lazy,180
+confirmation,original-passive,20,b,first,WebP,sharp,92
+confirmation,original-passive,20,b,first,AVIF,lazy,664
+confirmation,original-passive,20,b,first,AVIF,sharp,254
+confirmation,original-passive,20,b,first,Complex Pipeline,lazy,82
+confirmation,original-passive,20,b,first,Complex Pipeline,sharp,124
+confirmation,original-passive,20,b,warm1,JPEG,lazy,68
+confirmation,original-passive,20,b,warm1,JPEG,sharp,83
+confirmation,original-passive,20,b,warm1,WebP,lazy,180
+confirmation,original-passive,20,b,warm1,WebP,sharp,92
+confirmation,original-passive,20,b,warm1,AVIF,lazy,504
+confirmation,original-passive,20,b,warm1,AVIF,sharp,239
+confirmation,original-passive,20,b,warm1,Complex Pipeline,lazy,84
+confirmation,original-passive,20,b,warm1,Complex Pipeline,sharp,126
+confirmation,original-passive,20,b,warm2,JPEG,lazy,69
+confirmation,original-passive,20,b,warm2,JPEG,sharp,82
+confirmation,original-passive,20,b,warm2,WebP,lazy,179
+confirmation,original-passive,20,b,warm2,WebP,sharp,90
+confirmation,original-passive,20,b,warm2,AVIF,lazy,497
+confirmation,original-passive,20,b,warm2,AVIF,sharp,234
+confirmation,original-passive,20,b,warm2,Complex Pipeline,lazy,83
+confirmation,original-passive,20,b,warm2,Complex Pipeline,sharp,126
+confirmation,original-passive,20,b,warm3,JPEG,lazy,68
+confirmation,original-passive,20,b,warm3,JPEG,sharp,84
+confirmation,original-passive,20,b,warm3,WebP,lazy,178
+confirmation,original-passive,20,b,warm3,WebP,sharp,90
+confirmation,original-passive,20,b,warm3,AVIF,lazy,495
+confirmation,original-passive,20,b,warm3,AVIF,sharp,236
+confirmation,original-passive,20,b,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,20,b,warm3,Complex Pipeline,sharp,123
+confirmation,original-passive,3,a,first,JPEG,lazy,72
+confirmation,original-passive,3,a,first,JPEG,sharp,81
+confirmation,original-passive,3,a,first,WebP,lazy,175
+confirmation,original-passive,3,a,first,WebP,sharp,89
+confirmation,original-passive,3,a,first,AVIF,lazy,497
+confirmation,original-passive,3,a,first,AVIF,sharp,225
+confirmation,original-passive,3,a,first,Complex Pipeline,lazy,80
+confirmation,original-passive,3,a,first,Complex Pipeline,sharp,122
+confirmation,original-passive,3,a,warm1,JPEG,lazy,69
+confirmation,original-passive,3,a,warm1,JPEG,sharp,80
+confirmation,original-passive,3,a,warm1,WebP,lazy,176
+confirmation,original-passive,3,a,warm1,WebP,sharp,90
+confirmation,original-passive,3,a,warm1,AVIF,lazy,500
+confirmation,original-passive,3,a,warm1,AVIF,sharp,226
+confirmation,original-passive,3,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,3,a,warm1,Complex Pipeline,sharp,123
+confirmation,original-passive,3,a,warm2,JPEG,lazy,68
+confirmation,original-passive,3,a,warm2,JPEG,sharp,80
+confirmation,original-passive,3,a,warm2,WebP,lazy,175
+confirmation,original-passive,3,a,warm2,WebP,sharp,88
+confirmation,original-passive,3,a,warm2,AVIF,lazy,496
+confirmation,original-passive,3,a,warm2,AVIF,sharp,221
+confirmation,original-passive,3,a,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,3,a,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,3,a,warm3,JPEG,lazy,67
+confirmation,original-passive,3,a,warm3,JPEG,sharp,81
+confirmation,original-passive,3,a,warm3,WebP,lazy,174
+confirmation,original-passive,3,a,warm3,WebP,sharp,89
+confirmation,original-passive,3,a,warm3,AVIF,lazy,497
+confirmation,original-passive,3,a,warm3,AVIF,sharp,228
+confirmation,original-passive,3,a,warm3,Complex Pipeline,lazy,79
+confirmation,original-passive,3,a,warm3,Complex Pipeline,sharp,123
+confirmation,original-passive,3,b,first,JPEG,lazy,70
+confirmation,original-passive,3,b,first,JPEG,sharp,81
+confirmation,original-passive,3,b,first,WebP,lazy,179
+confirmation,original-passive,3,b,first,WebP,sharp,89
+confirmation,original-passive,3,b,first,AVIF,lazy,489
+confirmation,original-passive,3,b,first,AVIF,sharp,224
+confirmation,original-passive,3,b,first,Complex Pipeline,lazy,79
+confirmation,original-passive,3,b,first,Complex Pipeline,sharp,122
+confirmation,original-passive,3,b,warm1,JPEG,lazy,69
+confirmation,original-passive,3,b,warm1,JPEG,sharp,80
+confirmation,original-passive,3,b,warm1,WebP,lazy,182
+confirmation,original-passive,3,b,warm1,WebP,sharp,98
+confirmation,original-passive,3,b,warm1,AVIF,lazy,600
+confirmation,original-passive,3,b,warm1,AVIF,sharp,522
+confirmation,original-passive,3,b,warm1,Complex Pipeline,lazy,80
+confirmation,original-passive,3,b,warm1,Complex Pipeline,sharp,124
+confirmation,original-passive,3,b,warm2,JPEG,lazy,67
+confirmation,original-passive,3,b,warm2,JPEG,sharp,83
+confirmation,original-passive,3,b,warm2,WebP,lazy,187
+confirmation,original-passive,3,b,warm2,WebP,sharp,91
+confirmation,original-passive,3,b,warm2,AVIF,lazy,499
+confirmation,original-passive,3,b,warm2,AVIF,sharp,270
+confirmation,original-passive,3,b,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,3,b,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,3,b,warm3,JPEG,lazy,68
+confirmation,original-passive,3,b,warm3,JPEG,sharp,83
+confirmation,original-passive,3,b,warm3,WebP,lazy,187
+confirmation,original-passive,3,b,warm3,WebP,sharp,91
+confirmation,original-passive,3,b,warm3,AVIF,lazy,497
+confirmation,original-passive,3,b,warm3,AVIF,sharp,327
+confirmation,original-passive,3,b,warm3,Complex Pipeline,lazy,131
+confirmation,original-passive,3,b,warm3,Complex Pipeline,sharp,349
+confirmation,original-passive,4,a,first,JPEG,lazy,77
+confirmation,original-passive,4,a,first,JPEG,sharp,84
+confirmation,original-passive,4,a,first,WebP,lazy,180
+confirmation,original-passive,4,a,first,WebP,sharp,92
+confirmation,original-passive,4,a,first,AVIF,lazy,502
+confirmation,original-passive,4,a,first,AVIF,sharp,235
+confirmation,original-passive,4,a,first,Complex Pipeline,lazy,84
+confirmation,original-passive,4,a,first,Complex Pipeline,sharp,125
+confirmation,original-passive,4,a,warm1,JPEG,lazy,68
+confirmation,original-passive,4,a,warm1,JPEG,sharp,82
+confirmation,original-passive,4,a,warm1,WebP,lazy,179
+confirmation,original-passive,4,a,warm1,WebP,sharp,90
+confirmation,original-passive,4,a,warm1,AVIF,lazy,505
+confirmation,original-passive,4,a,warm1,AVIF,sharp,237
+confirmation,original-passive,4,a,warm1,Complex Pipeline,lazy,82
+confirmation,original-passive,4,a,warm1,Complex Pipeline,sharp,122
+confirmation,original-passive,4,a,warm2,JPEG,lazy,69
+confirmation,original-passive,4,a,warm2,JPEG,sharp,83
+confirmation,original-passive,4,a,warm2,WebP,lazy,180
+confirmation,original-passive,4,a,warm2,WebP,sharp,90
+confirmation,original-passive,4,a,warm2,AVIF,lazy,502
+confirmation,original-passive,4,a,warm2,AVIF,sharp,240
+confirmation,original-passive,4,a,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,4,a,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,4,a,warm3,JPEG,lazy,67
+confirmation,original-passive,4,a,warm3,JPEG,sharp,87
+confirmation,original-passive,4,a,warm3,WebP,lazy,179
+confirmation,original-passive,4,a,warm3,WebP,sharp,91
+confirmation,original-passive,4,a,warm3,AVIF,lazy,501
+confirmation,original-passive,4,a,warm3,AVIF,sharp,238
+confirmation,original-passive,4,a,warm3,Complex Pipeline,lazy,89
+confirmation,original-passive,4,a,warm3,Complex Pipeline,sharp,124
+confirmation,original-passive,4,b,first,JPEG,lazy,83
+confirmation,original-passive,4,b,first,JPEG,sharp,82
+confirmation,original-passive,4,b,first,WebP,lazy,183
+confirmation,original-passive,4,b,first,WebP,sharp,90
+confirmation,original-passive,4,b,first,AVIF,lazy,497
+confirmation,original-passive,4,b,first,AVIF,sharp,236
+confirmation,original-passive,4,b,first,Complex Pipeline,lazy,83
+confirmation,original-passive,4,b,first,Complex Pipeline,sharp,129
+confirmation,original-passive,4,b,warm1,JPEG,lazy,70
+confirmation,original-passive,4,b,warm1,JPEG,sharp,81
+confirmation,original-passive,4,b,warm1,WebP,lazy,184
+confirmation,original-passive,4,b,warm1,WebP,sharp,89
+confirmation,original-passive,4,b,warm1,AVIF,lazy,498
+confirmation,original-passive,4,b,warm1,AVIF,sharp,234
+confirmation,original-passive,4,b,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,4,b,warm1,Complex Pipeline,sharp,128
+confirmation,original-passive,4,b,warm2,JPEG,lazy,70
+confirmation,original-passive,4,b,warm2,JPEG,sharp,83
+confirmation,original-passive,4,b,warm2,WebP,lazy,179
+confirmation,original-passive,4,b,warm2,WebP,sharp,91
+confirmation,original-passive,4,b,warm2,AVIF,lazy,497
+confirmation,original-passive,4,b,warm2,AVIF,sharp,237
+confirmation,original-passive,4,b,warm2,Complex Pipeline,lazy,80
+confirmation,original-passive,4,b,warm2,Complex Pipeline,sharp,128
+confirmation,original-passive,4,b,warm3,JPEG,lazy,69
+confirmation,original-passive,4,b,warm3,JPEG,sharp,83
+confirmation,original-passive,4,b,warm3,WebP,lazy,177
+confirmation,original-passive,4,b,warm3,WebP,sharp,97
+confirmation,original-passive,4,b,warm3,AVIF,lazy,508
+confirmation,original-passive,4,b,warm3,AVIF,sharp,235
+confirmation,original-passive,4,b,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,4,b,warm3,Complex Pipeline,sharp,128
+confirmation,original-passive,5,a,first,JPEG,lazy,75
+confirmation,original-passive,5,a,first,JPEG,sharp,83
+confirmation,original-passive,5,a,first,WebP,lazy,178
+confirmation,original-passive,5,a,first,WebP,sharp,89
+confirmation,original-passive,5,a,first,AVIF,lazy,502
+confirmation,original-passive,5,a,first,AVIF,sharp,238
+confirmation,original-passive,5,a,first,Complex Pipeline,lazy,84
+confirmation,original-passive,5,a,first,Complex Pipeline,sharp,128
+confirmation,original-passive,5,a,warm1,JPEG,lazy,71
+confirmation,original-passive,5,a,warm1,JPEG,sharp,82
+confirmation,original-passive,5,a,warm1,WebP,lazy,183
+confirmation,original-passive,5,a,warm1,WebP,sharp,89
+confirmation,original-passive,5,a,warm1,AVIF,lazy,504
+confirmation,original-passive,5,a,warm1,AVIF,sharp,231
+confirmation,original-passive,5,a,warm1,Complex Pipeline,lazy,83
+confirmation,original-passive,5,a,warm1,Complex Pipeline,sharp,126
+confirmation,original-passive,5,a,warm2,JPEG,lazy,70
+confirmation,original-passive,5,a,warm2,JPEG,sharp,82
+confirmation,original-passive,5,a,warm2,WebP,lazy,178
+confirmation,original-passive,5,a,warm2,WebP,sharp,91
+confirmation,original-passive,5,a,warm2,AVIF,lazy,507
+confirmation,original-passive,5,a,warm2,AVIF,sharp,242
+confirmation,original-passive,5,a,warm2,Complex Pipeline,lazy,91
+confirmation,original-passive,5,a,warm2,Complex Pipeline,sharp,129
+confirmation,original-passive,5,a,warm3,JPEG,lazy,69
+confirmation,original-passive,5,a,warm3,JPEG,sharp,82
+confirmation,original-passive,5,a,warm3,WebP,lazy,177
+confirmation,original-passive,5,a,warm3,WebP,sharp,91
+confirmation,original-passive,5,a,warm3,AVIF,lazy,506
+confirmation,original-passive,5,a,warm3,AVIF,sharp,237
+confirmation,original-passive,5,a,warm3,Complex Pipeline,lazy,84
+confirmation,original-passive,5,a,warm3,Complex Pipeline,sharp,127
+confirmation,original-passive,5,b,first,JPEG,lazy,74
+confirmation,original-passive,5,b,first,JPEG,sharp,84
+confirmation,original-passive,5,b,first,WebP,lazy,181
+confirmation,original-passive,5,b,first,WebP,sharp,91
+confirmation,original-passive,5,b,first,AVIF,lazy,495
+confirmation,original-passive,5,b,first,AVIF,sharp,233
+confirmation,original-passive,5,b,first,Complex Pipeline,lazy,84
+confirmation,original-passive,5,b,first,Complex Pipeline,sharp,125
+confirmation,original-passive,5,b,warm1,JPEG,lazy,71
+confirmation,original-passive,5,b,warm1,JPEG,sharp,81
+confirmation,original-passive,5,b,warm1,WebP,lazy,180
+confirmation,original-passive,5,b,warm1,WebP,sharp,89
+confirmation,original-passive,5,b,warm1,AVIF,lazy,495
+confirmation,original-passive,5,b,warm1,AVIF,sharp,241
+confirmation,original-passive,5,b,warm1,Complex Pipeline,lazy,89
+confirmation,original-passive,5,b,warm1,Complex Pipeline,sharp,130
+confirmation,original-passive,5,b,warm2,JPEG,lazy,67
+confirmation,original-passive,5,b,warm2,JPEG,sharp,81
+confirmation,original-passive,5,b,warm2,WebP,lazy,176
+confirmation,original-passive,5,b,warm2,WebP,sharp,90
+confirmation,original-passive,5,b,warm2,AVIF,lazy,492
+confirmation,original-passive,5,b,warm2,AVIF,sharp,234
+confirmation,original-passive,5,b,warm2,Complex Pipeline,lazy,79
+confirmation,original-passive,5,b,warm2,Complex Pipeline,sharp,129
+confirmation,original-passive,5,b,warm3,JPEG,lazy,67
+confirmation,original-passive,5,b,warm3,JPEG,sharp,83
+confirmation,original-passive,5,b,warm3,WebP,lazy,175
+confirmation,original-passive,5,b,warm3,WebP,sharp,89
+confirmation,original-passive,5,b,warm3,AVIF,lazy,495
+confirmation,original-passive,5,b,warm3,AVIF,sharp,241
+confirmation,original-passive,5,b,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,5,b,warm3,Complex Pipeline,sharp,127
+confirmation,original-passive,6,a,first,JPEG,lazy,83
+confirmation,original-passive,6,a,first,JPEG,sharp,83
+confirmation,original-passive,6,a,first,WebP,lazy,179
+confirmation,original-passive,6,a,first,WebP,sharp,93
+confirmation,original-passive,6,a,first,AVIF,lazy,504
+confirmation,original-passive,6,a,first,AVIF,sharp,236
+confirmation,original-passive,6,a,first,Complex Pipeline,lazy,82
+confirmation,original-passive,6,a,first,Complex Pipeline,sharp,128
+confirmation,original-passive,6,a,warm1,JPEG,lazy,70
+confirmation,original-passive,6,a,warm1,JPEG,sharp,81
+confirmation,original-passive,6,a,warm1,WebP,lazy,177
+confirmation,original-passive,6,a,warm1,WebP,sharp,90
+confirmation,original-passive,6,a,warm1,AVIF,lazy,500
+confirmation,original-passive,6,a,warm1,AVIF,sharp,237
+confirmation,original-passive,6,a,warm1,Complex Pipeline,lazy,85
+confirmation,original-passive,6,a,warm1,Complex Pipeline,sharp,123
+confirmation,original-passive,6,a,warm2,JPEG,lazy,70
+confirmation,original-passive,6,a,warm2,JPEG,sharp,81
+confirmation,original-passive,6,a,warm2,WebP,lazy,179
+confirmation,original-passive,6,a,warm2,WebP,sharp,90
+confirmation,original-passive,6,a,warm2,AVIF,lazy,503
+confirmation,original-passive,6,a,warm2,AVIF,sharp,239
+confirmation,original-passive,6,a,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,6,a,warm2,Complex Pipeline,sharp,127
+confirmation,original-passive,6,a,warm3,JPEG,lazy,67
+confirmation,original-passive,6,a,warm3,JPEG,sharp,82
+confirmation,original-passive,6,a,warm3,WebP,lazy,177
+confirmation,original-passive,6,a,warm3,WebP,sharp,90
+confirmation,original-passive,6,a,warm3,AVIF,lazy,501
+confirmation,original-passive,6,a,warm3,AVIF,sharp,236
+confirmation,original-passive,6,a,warm3,Complex Pipeline,lazy,84
+confirmation,original-passive,6,a,warm3,Complex Pipeline,sharp,123
+confirmation,original-passive,6,b,first,JPEG,lazy,74
+confirmation,original-passive,6,b,first,JPEG,sharp,83
+confirmation,original-passive,6,b,first,WebP,lazy,178
+confirmation,original-passive,6,b,first,WebP,sharp,91
+confirmation,original-passive,6,b,first,AVIF,lazy,496
+confirmation,original-passive,6,b,first,AVIF,sharp,231
+confirmation,original-passive,6,b,first,Complex Pipeline,lazy,80
+confirmation,original-passive,6,b,first,Complex Pipeline,sharp,127
+confirmation,original-passive,6,b,warm1,JPEG,lazy,70
+confirmation,original-passive,6,b,warm1,JPEG,sharp,84
+confirmation,original-passive,6,b,warm1,WebP,lazy,177
+confirmation,original-passive,6,b,warm1,WebP,sharp,89
+confirmation,original-passive,6,b,warm1,AVIF,lazy,497
+confirmation,original-passive,6,b,warm1,AVIF,sharp,235
+confirmation,original-passive,6,b,warm1,Complex Pipeline,lazy,83
+confirmation,original-passive,6,b,warm1,Complex Pipeline,sharp,123
+confirmation,original-passive,6,b,warm2,JPEG,lazy,67
+confirmation,original-passive,6,b,warm2,JPEG,sharp,83
+confirmation,original-passive,6,b,warm2,WebP,lazy,179
+confirmation,original-passive,6,b,warm2,WebP,sharp,90
+confirmation,original-passive,6,b,warm2,AVIF,lazy,497
+confirmation,original-passive,6,b,warm2,AVIF,sharp,235
+confirmation,original-passive,6,b,warm2,Complex Pipeline,lazy,79
+confirmation,original-passive,6,b,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,6,b,warm3,JPEG,lazy,67
+confirmation,original-passive,6,b,warm3,JPEG,sharp,82
+confirmation,original-passive,6,b,warm3,WebP,lazy,178
+confirmation,original-passive,6,b,warm3,WebP,sharp,92
+confirmation,original-passive,6,b,warm3,AVIF,lazy,502
+confirmation,original-passive,6,b,warm3,AVIF,sharp,240
+confirmation,original-passive,6,b,warm3,Complex Pipeline,lazy,80
+confirmation,original-passive,6,b,warm3,Complex Pipeline,sharp,124
+confirmation,original-passive,7,a,first,JPEG,lazy,72
+confirmation,original-passive,7,a,first,JPEG,sharp,83
+confirmation,original-passive,7,a,first,WebP,lazy,180
+confirmation,original-passive,7,a,first,WebP,sharp,90
+confirmation,original-passive,7,a,first,AVIF,lazy,506
+confirmation,original-passive,7,a,first,AVIF,sharp,243
+confirmation,original-passive,7,a,first,Complex Pipeline,lazy,86
+confirmation,original-passive,7,a,first,Complex Pipeline,sharp,128
+confirmation,original-passive,7,a,warm1,JPEG,lazy,72
+confirmation,original-passive,7,a,warm1,JPEG,sharp,84
+confirmation,original-passive,7,a,warm1,WebP,lazy,180
+confirmation,original-passive,7,a,warm1,WebP,sharp,96
+confirmation,original-passive,7,a,warm1,AVIF,lazy,587
+confirmation,original-passive,7,a,warm1,AVIF,sharp,267
+confirmation,original-passive,7,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,7,a,warm1,Complex Pipeline,sharp,124
+confirmation,original-passive,7,a,warm2,JPEG,lazy,72
+confirmation,original-passive,7,a,warm2,JPEG,sharp,87
+confirmation,original-passive,7,a,warm2,WebP,lazy,176
+confirmation,original-passive,7,a,warm2,WebP,sharp,91
+confirmation,original-passive,7,a,warm2,AVIF,lazy,501
+confirmation,original-passive,7,a,warm2,AVIF,sharp,239
+confirmation,original-passive,7,a,warm2,Complex Pipeline,lazy,79
+confirmation,original-passive,7,a,warm2,Complex Pipeline,sharp,124
+confirmation,original-passive,7,a,warm3,JPEG,lazy,66
+confirmation,original-passive,7,a,warm3,JPEG,sharp,82
+confirmation,original-passive,7,a,warm3,WebP,lazy,179
+confirmation,original-passive,7,a,warm3,WebP,sharp,91
+confirmation,original-passive,7,a,warm3,AVIF,lazy,505
+confirmation,original-passive,7,a,warm3,AVIF,sharp,234
+confirmation,original-passive,7,a,warm3,Complex Pipeline,lazy,77
+confirmation,original-passive,7,a,warm3,Complex Pipeline,sharp,127
+confirmation,original-passive,7,b,first,JPEG,lazy,72
+confirmation,original-passive,7,b,first,JPEG,sharp,83
+confirmation,original-passive,7,b,first,WebP,lazy,180
+confirmation,original-passive,7,b,first,WebP,sharp,91
+confirmation,original-passive,7,b,first,AVIF,lazy,493
+confirmation,original-passive,7,b,first,AVIF,sharp,238
+confirmation,original-passive,7,b,first,Complex Pipeline,lazy,80
+confirmation,original-passive,7,b,first,Complex Pipeline,sharp,133
+confirmation,original-passive,7,b,warm1,JPEG,lazy,72
+confirmation,original-passive,7,b,warm1,JPEG,sharp,81
+confirmation,original-passive,7,b,warm1,WebP,lazy,176
+confirmation,original-passive,7,b,warm1,WebP,sharp,90
+confirmation,original-passive,7,b,warm1,AVIF,lazy,492
+confirmation,original-passive,7,b,warm1,AVIF,sharp,234
+confirmation,original-passive,7,b,warm1,Complex Pipeline,lazy,80
+confirmation,original-passive,7,b,warm1,Complex Pipeline,sharp,127
+confirmation,original-passive,7,b,warm2,JPEG,lazy,71
+confirmation,original-passive,7,b,warm2,JPEG,sharp,80
+confirmation,original-passive,7,b,warm2,WebP,lazy,179
+confirmation,original-passive,7,b,warm2,WebP,sharp,93
+confirmation,original-passive,7,b,warm2,AVIF,lazy,496
+confirmation,original-passive,7,b,warm2,AVIF,sharp,232
+confirmation,original-passive,7,b,warm2,Complex Pipeline,lazy,82
+confirmation,original-passive,7,b,warm2,Complex Pipeline,sharp,126
+confirmation,original-passive,7,b,warm3,JPEG,lazy,70
+confirmation,original-passive,7,b,warm3,JPEG,sharp,81
+confirmation,original-passive,7,b,warm3,WebP,lazy,177
+confirmation,original-passive,7,b,warm3,WebP,sharp,89
+confirmation,original-passive,7,b,warm3,AVIF,lazy,496
+confirmation,original-passive,7,b,warm3,AVIF,sharp,235
+confirmation,original-passive,7,b,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,7,b,warm3,Complex Pipeline,sharp,128
+confirmation,original-passive,8,a,first,JPEG,lazy,71
+confirmation,original-passive,8,a,first,JPEG,sharp,83
+confirmation,original-passive,8,a,first,WebP,lazy,180
+confirmation,original-passive,8,a,first,WebP,sharp,90
+confirmation,original-passive,8,a,first,AVIF,lazy,500
+confirmation,original-passive,8,a,first,AVIF,sharp,235
+confirmation,original-passive,8,a,first,Complex Pipeline,lazy,81
+confirmation,original-passive,8,a,first,Complex Pipeline,sharp,123
+confirmation,original-passive,8,a,warm1,JPEG,lazy,74
+confirmation,original-passive,8,a,warm1,JPEG,sharp,81
+confirmation,original-passive,8,a,warm1,WebP,lazy,178
+confirmation,original-passive,8,a,warm1,WebP,sharp,89
+confirmation,original-passive,8,a,warm1,AVIF,lazy,502
+confirmation,original-passive,8,a,warm1,AVIF,sharp,238
+confirmation,original-passive,8,a,warm1,Complex Pipeline,lazy,83
+confirmation,original-passive,8,a,warm1,Complex Pipeline,sharp,123
+confirmation,original-passive,8,a,warm2,JPEG,lazy,68
+confirmation,original-passive,8,a,warm2,JPEG,sharp,81
+confirmation,original-passive,8,a,warm2,WebP,lazy,177
+confirmation,original-passive,8,a,warm2,WebP,sharp,89
+confirmation,original-passive,8,a,warm2,AVIF,lazy,506
+confirmation,original-passive,8,a,warm2,AVIF,sharp,423
+confirmation,original-passive,8,a,warm2,Complex Pipeline,lazy,83
+confirmation,original-passive,8,a,warm2,Complex Pipeline,sharp,129
+confirmation,original-passive,8,a,warm3,JPEG,lazy,69
+confirmation,original-passive,8,a,warm3,JPEG,sharp,85
+confirmation,original-passive,8,a,warm3,WebP,lazy,180
+confirmation,original-passive,8,a,warm3,WebP,sharp,92
+confirmation,original-passive,8,a,warm3,AVIF,lazy,504
+confirmation,original-passive,8,a,warm3,AVIF,sharp,236
+confirmation,original-passive,8,a,warm3,Complex Pipeline,lazy,80
+confirmation,original-passive,8,a,warm3,Complex Pipeline,sharp,125
+confirmation,original-passive,8,b,first,JPEG,lazy,86
+confirmation,original-passive,8,b,first,JPEG,sharp,81
+confirmation,original-passive,8,b,first,WebP,lazy,177
+confirmation,original-passive,8,b,first,WebP,sharp,90
+confirmation,original-passive,8,b,first,AVIF,lazy,500
+confirmation,original-passive,8,b,first,AVIF,sharp,247
+confirmation,original-passive,8,b,first,Complex Pipeline,lazy,87
+confirmation,original-passive,8,b,first,Complex Pipeline,sharp,122
+confirmation,original-passive,8,b,warm1,JPEG,lazy,70
+confirmation,original-passive,8,b,warm1,JPEG,sharp,84
+confirmation,original-passive,8,b,warm1,WebP,lazy,178
+confirmation,original-passive,8,b,warm1,WebP,sharp,89
+confirmation,original-passive,8,b,warm1,AVIF,lazy,497
+confirmation,original-passive,8,b,warm1,AVIF,sharp,233
+confirmation,original-passive,8,b,warm1,Complex Pipeline,lazy,84
+confirmation,original-passive,8,b,warm1,Complex Pipeline,sharp,125
+confirmation,original-passive,8,b,warm2,JPEG,lazy,74
+confirmation,original-passive,8,b,warm2,JPEG,sharp,90
+confirmation,original-passive,8,b,warm2,WebP,lazy,179
+confirmation,original-passive,8,b,warm2,WebP,sharp,91
+confirmation,original-passive,8,b,warm2,AVIF,lazy,495
+confirmation,original-passive,8,b,warm2,AVIF,sharp,242
+confirmation,original-passive,8,b,warm2,Complex Pipeline,lazy,79
+confirmation,original-passive,8,b,warm2,Complex Pipeline,sharp,123
+confirmation,original-passive,8,b,warm3,JPEG,lazy,68
+confirmation,original-passive,8,b,warm3,JPEG,sharp,83
+confirmation,original-passive,8,b,warm3,WebP,lazy,177
+confirmation,original-passive,8,b,warm3,WebP,sharp,93
+confirmation,original-passive,8,b,warm3,AVIF,lazy,496
+confirmation,original-passive,8,b,warm3,AVIF,sharp,234
+confirmation,original-passive,8,b,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,8,b,warm3,Complex Pipeline,sharp,124
+confirmation,original-passive,9,a,first,JPEG,lazy,73
+confirmation,original-passive,9,a,first,JPEG,sharp,83
+confirmation,original-passive,9,a,first,WebP,lazy,179
+confirmation,original-passive,9,a,first,WebP,sharp,91
+confirmation,original-passive,9,a,first,AVIF,lazy,510
+confirmation,original-passive,9,a,first,AVIF,sharp,239
+confirmation,original-passive,9,a,first,Complex Pipeline,lazy,77
+confirmation,original-passive,9,a,first,Complex Pipeline,sharp,126
+confirmation,original-passive,9,a,warm1,JPEG,lazy,68
+confirmation,original-passive,9,a,warm1,JPEG,sharp,83
+confirmation,original-passive,9,a,warm1,WebP,lazy,179
+confirmation,original-passive,9,a,warm1,WebP,sharp,90
+confirmation,original-passive,9,a,warm1,AVIF,lazy,504
+confirmation,original-passive,9,a,warm1,AVIF,sharp,236
+confirmation,original-passive,9,a,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,9,a,warm1,Complex Pipeline,sharp,124
+confirmation,original-passive,9,a,warm2,JPEG,lazy,74
+confirmation,original-passive,9,a,warm2,JPEG,sharp,82
+confirmation,original-passive,9,a,warm2,WebP,lazy,178
+confirmation,original-passive,9,a,warm2,WebP,sharp,91
+confirmation,original-passive,9,a,warm2,AVIF,lazy,502
+confirmation,original-passive,9,a,warm2,AVIF,sharp,238
+confirmation,original-passive,9,a,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,9,a,warm2,Complex Pipeline,sharp,125
+confirmation,original-passive,9,a,warm3,JPEG,lazy,69
+confirmation,original-passive,9,a,warm3,JPEG,sharp,82
+confirmation,original-passive,9,a,warm3,WebP,lazy,177
+confirmation,original-passive,9,a,warm3,WebP,sharp,91
+confirmation,original-passive,9,a,warm3,AVIF,lazy,501
+confirmation,original-passive,9,a,warm3,AVIF,sharp,238
+confirmation,original-passive,9,a,warm3,Complex Pipeline,lazy,81
+confirmation,original-passive,9,a,warm3,Complex Pipeline,sharp,125
+confirmation,original-passive,9,b,first,JPEG,lazy,72
+confirmation,original-passive,9,b,first,JPEG,sharp,81
+confirmation,original-passive,9,b,first,WebP,lazy,176
+confirmation,original-passive,9,b,first,WebP,sharp,90
+confirmation,original-passive,9,b,first,AVIF,lazy,491
+confirmation,original-passive,9,b,first,AVIF,sharp,234
+confirmation,original-passive,9,b,first,Complex Pipeline,lazy,82
+confirmation,original-passive,9,b,first,Complex Pipeline,sharp,123
+confirmation,original-passive,9,b,warm1,JPEG,lazy,69
+confirmation,original-passive,9,b,warm1,JPEG,sharp,90
+confirmation,original-passive,9,b,warm1,WebP,lazy,182
+confirmation,original-passive,9,b,warm1,WebP,sharp,89
+confirmation,original-passive,9,b,warm1,AVIF,lazy,493
+confirmation,original-passive,9,b,warm1,AVIF,sharp,235
+confirmation,original-passive,9,b,warm1,Complex Pipeline,lazy,81
+confirmation,original-passive,9,b,warm1,Complex Pipeline,sharp,123
+confirmation,original-passive,9,b,warm2,JPEG,lazy,67
+confirmation,original-passive,9,b,warm2,JPEG,sharp,82
+confirmation,original-passive,9,b,warm2,WebP,lazy,179
+confirmation,original-passive,9,b,warm2,WebP,sharp,89
+confirmation,original-passive,9,b,warm2,AVIF,lazy,494
+confirmation,original-passive,9,b,warm2,AVIF,sharp,234
+confirmation,original-passive,9,b,warm2,Complex Pipeline,lazy,81
+confirmation,original-passive,9,b,warm2,Complex Pipeline,sharp,123
+confirmation,original-passive,9,b,warm3,JPEG,lazy,68
+confirmation,original-passive,9,b,warm3,JPEG,sharp,83
+confirmation,original-passive,9,b,warm3,WebP,lazy,179
+confirmation,original-passive,9,b,warm3,WebP,sharp,90
+confirmation,original-passive,9,b,warm3,AVIF,lazy,520
+confirmation,original-passive,9,b,warm3,AVIF,sharp,259
+confirmation,original-passive,9,b,warm3,Complex Pipeline,lazy,84
+confirmation,original-passive,9,b,warm3,Complex Pipeline,sharp,140

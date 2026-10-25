@@ -8,6 +8,7 @@ const {
   runBenchmark,
 } = require('../benchmarks/sharp-comparison.bench')
 const { analyzePairs } = require('../../scripts/bench/paired-comparison.cjs')
+const { assertIdentity, assertContract, nativeTiming, diagnosisSummary } = require('../../docs/history/2.0.0-initial-complex-915/measure.cjs')
 
 const outputPath = resolveTemp('benchmark-quality-gate-test.json')
 const attempted = []
@@ -100,6 +101,30 @@ async function main() {
   assert.equal(analyzePairs(pairs([100, 100, 120, 120, 120])).verdict, 'INCONCLUSIVE')
   assert.equal(analyzePairs(Array.from({ length: 5 }, () => ({ a: sample(100), b: sample(100, 200) }))).verdict, 'PASS')
   assert.throws(() => analyzePairs(pairs([0, 100, 100, 100, 100])), /invalid timing/)
+  assert.equal(analyzePairs(pairs(Array(20).fill(110))).verdict, 'PASS')
+  assert.equal(analyzePairs(pairs(Array(40).fill(116))).verdict, 'REGRESSION')
+  assert.throws(() => analyzePairs(pairs(Array(41).fill(100))), /pairs/)
+  const expected = { revision: 'a', sourceTree: 'tree', runnerSha256: 'runner', fixtureSha256: 'fixture', bindingSha256: 'binding' }
+  const identity = { revision: 'a', sourceTree: 'tree', modifiedPaths: ['test/benchmarks/sharp-comparison.bench.js'], untrackedPaths: [], runnerSha256: 'runner', fixture: { sha256: 'fixture' }, binding: { sha256: 'binding' } }
+  assertIdentity(identity, expected)
+  assert.throws(() => assertIdentity({ ...identity, revision: 'other' }, expected), /revision/)
+  assert.throws(() => assertIdentity({ ...identity, modifiedPaths: ['test/helpers/quality.js'] }, expected), /Dirty/)
+  assert.throws(() => assertIdentity({ ...identity, untrackedPaths: ['test/helpers/injected.js'] }, expected), /Untracked/)
+  assert.throws(() => assertIdentity({ ...identity, fixture: { sha256: 'other' } }, expected), /fixture/)
+  assert.throws(() => assertIdentity({ ...identity, binding: { sha256: 'other' } }, expected), /binding/)
+  const suite = { outputs: ['lazy', 'sharp'].map(engine => ({ name: 'Complex Pipeline', engine, sha256: 'ordinary' })), qualityAxes: [] }
+  const contracts = {}
+  assertContract(suite, contracts, false)
+  assertContract(suite, contracts, true)
+  assert.throws(() => assertContract({ ...suite, outputs: suite.outputs.map(o => ({ ...o, sha256: 'different-native' })) }, contracts, false), /differs/)
+  const native = { decodeMs: 2, opsMs: 3, encodeMs: 4, totalMs: 10 }
+  assert.equal(nativeTiming(native, 12).wallMinusNativeTotalMs, 2)
+  assert.throws(() => nativeTiming({ ...native, decodeMs: NaN }, 12), /Invalid/)
+  assert.throws(() => nativeTiming({ ...native, totalMs: 5 }, 12), /chronology/)
+  assert.throws(() => nativeTiming(native, 9), /exceeds/)
+  const diagnostic = diagnosisSummary(['original-passive', 'original-observed', 'isolated-passive', 'isolated-observed'].flatMap(arm => Array.from({ length: 4 }, (_, i) => ({ arm, order: i % 2 ? 'BA' : 'AB', a: sample(arm.endsWith('observed') ? 120 : 100), b: sample(arm.endsWith('observed') ? 120 : 100) }))))
+  assert.equal(diagnostic.rows.length, 8)
+  assert.equal(diagnostic.contrasts.find(c => c.numerator === 'original-observed').ratioOfMedians, 1.2)
   console.log('benchmark quality gate test passed')
 }
 
