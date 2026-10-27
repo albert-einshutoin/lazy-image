@@ -1,2 +1,12 @@
 LICENSE text eol=lf
 test/benchmarks/corpus/CC0-1.0.txt text eol=lf
+
+# License provenance hashes bind the committed bytes, including upstream EOLs.
+Cargo.toml -text
+Cargo.lock -text
+THIRD_PARTY_NOTICES.txt -text
+RUST_STD_NOTICES.html -text
+native-manifest.json -text
+vendor/third-party-licenses/** -text
+vendor/libavif-sys/** -text
+packages/lazy-image-wasm/LICENSE text eol=lf

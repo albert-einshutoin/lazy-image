@@ -22,6 +22,31 @@ for (const changes of [{ source: 'git+https://example.invalid/repository' }, { c
     'the explicit path-only exception must reject another source, checksum or version');
 }
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'lazy-image-release-guard-'));
+const checkout = path.join(temp, 'crlf-checkout');
+fs.mkdirSync(checkout);
+const vendored = spawnSync('git', ['ls-files', '-z', 'vendor/libavif-sys'], { cwd: root, encoding: 'utf8' });
+assert.equal(vendored.status, 0, vendored.stderr);
+const boundFiles = [...new Set([
+  '.gitattributes', 'THIRD_PARTY_NOTICES.txt', 'RUST_STD_NOTICES.html', 'native-manifest.json',
+  ...currentNotices.inputs.map(input => input.path), ...vendored.stdout.split('\0').filter(Boolean),
+])];
+for (const name of boundFiles) {
+  fs.mkdirSync(path.dirname(path.join(checkout, name)), { recursive: true });
+  fs.copyFileSync(path.join(root, name), path.join(checkout, name));
+}
+for (const args of [['init', '--quiet'], ['-c', 'core.autocrlf=false', 'add', '--force', '--all']]) {
+  const result = spawnSync('git', args, { cwd: checkout, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+}
+for (const name of boundFiles) fs.unlinkSync(path.join(checkout, name));
+const restored = spawnSync('git', ['-c', 'core.autocrlf=true', 'checkout-index', '--all'], { cwd: checkout, encoding: 'utf8' });
+assert.equal(restored.status, 0, restored.stderr);
+for (const name of boundFiles.filter(name => name !== '.gitattributes')) {
+  assert.ok(fs.readFileSync(path.join(checkout, name)).equals(fs.readFileSync(path.join(root, name))),
+    `CRLF checkout changed byte-bound source: ${name}`);
+}
+console.log('CRLF checkout preserves all byte-bound notice inputs and vendored sources');
+
 const artifacts = path.join(temp, 'artifacts');
 fs.mkdirSync(artifacts);
 let attempt = 0;

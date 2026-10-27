@@ -1034,7 +1034,7 @@
       "crateChecksum": null,
       "sourceTree": {
         "path": "vendor/libavif-sys",
-        "sha256": "18c0763ce04326da605722250085b2ff53d9e51e4519173b9f2130b527595ffd"
+        "sha256": "4fd29aa738da1fb6c04f743632264398e2d5468882664c428f855e9e9b1d9346"
       },
       "procMacroOnly": false,
       "files": [
