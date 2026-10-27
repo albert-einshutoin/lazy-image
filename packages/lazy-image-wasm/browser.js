@@ -85,7 +85,11 @@ async function optimizeUploadWithRuntime(input, options, runtimeOptions) {
   const decodeMs = nowMs(runtimeOptions.now) - decodeStart;
   checkTimeout(totalStart, 'decode', normalized, runtimeOptions.now);
   validatePixelLimits(imageData.width, imageData.height, normalized);
-  if (imageData.width !== dimensions.width || imageData.height !== dimensions.height) {
+  // The JPEG codec preserves EXIF display orientation, which can swap the SOF
+  // axes without changing the admitted pixel count or maximum dimension.
+  const rotatedJpeg = inputFormat === 'jpeg' &&
+    imageData.width === dimensions.height && imageData.height === dimensions.width;
+  if (!rotatedJpeg && (imageData.width !== dimensions.width || imageData.height !== dimensions.height)) {
     throwWasmError('E111', 'Decoded dimensions differ from the admitted header.');
   }
 

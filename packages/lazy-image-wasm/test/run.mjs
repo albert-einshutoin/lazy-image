@@ -90,6 +90,18 @@ const optimizer = await createUploadOptimizer({
   defaultOutput: 'arrayBuffer',
 });
 
+await test('JPEG admission preserves EXIF rotation within the same pixel limit', async () => {
+  const input = await fs.readFile(path.join(repoRoot, 'test/benchmarks/corpus/images/metadata-1.jpg'));
+  const result = await optimizer.optimizeUpload(input, { format: 'jpeg' });
+  assert.equal(result.metrics.widthIn, 240);
+  assert.equal(result.metrics.heightIn, 320);
+  assert.equal(result.metrics.widthOut, 240);
+  assert.equal(result.metrics.heightOut, 320);
+  await assert.rejects(() => optimizer.optimizeUpload(input, {
+    format: 'jpeg', limits: { maxPixels: 240 * 320 - 1 },
+  }), error => error.code === 'E122');
+});
+
 await test('input limits reject declared large images and Blob sizes before decode/read', async () => {
   const hugeHeader = Buffer.alloc(33);
   Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex').copy(hugeHeader);
