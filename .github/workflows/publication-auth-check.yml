@@ -19,7 +19,7 @@ jobs:
         run: node scripts/check-npm-publication-auth.cjs npm-auth-report.json
       - name: Retain credential-free report
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: npm-auth-report
           path: npm-auth-report.json
