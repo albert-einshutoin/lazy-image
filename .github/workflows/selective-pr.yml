@@ -80,7 +80,7 @@ jobs:
         uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo dependencies and build outputs
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
         with:
           cache-on-failure: true
           shared-key: pr-canonical-linux
@@ -132,7 +132,7 @@ jobs:
         uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo test outputs
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
         with:
           cache-on-failure: true
           shared-key: pr-tests-linux
@@ -195,7 +195,7 @@ jobs:
         uses: ./.github/actions/setup-nasm
 
       - name: Cache Cargo test outputs
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
         with:
           cache-on-failure: true
           shared-key: pr-shadow-full-linux
