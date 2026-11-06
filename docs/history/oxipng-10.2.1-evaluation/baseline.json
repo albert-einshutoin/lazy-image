@@ -1,0 +1,390 @@
+{
+  "label": "baseline",
+  "revision": "3ffc865739268ae7bd8afa4c0a6882c67a640f12",
+  "runtime": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.2.0",
+    "sharp": "0.35.4",
+    "binding": "lazy-image.darwin-arm64.node",
+    "bindingSha256": "1bd476004c53ad06cae6afb00e0cd42bc851f23e2e030e09f0efa2eab8d26743",
+    "rust": "1.88.0",
+    "sdk": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+    "normalization": "sharp 0.35.4 toColourspace(srgb) ensureAlpha raw 8-bit uchar",
+    "timing": "ImageEngine.from(input) through awaited toBuffer(png), first cold then 5 sequential warm; process.hrtime.bigint"
+  },
+  "metadataInput": {
+    "sha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+    "exif": true,
+    "gpsTag": true,
+    "xmp": true,
+    "iccSha256": "c56e1685d888f5edb92fe07f2750f387f8fe8e91b32ff8fb0b56bfbbb9458353"
+  },
+  "cases": [
+    {
+      "id": "photo",
+      "inputBytes": 240512,
+      "inputSha256": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+      "inputPixels": {
+        "width": 451,
+        "height": 300,
+        "hash": "64fe24103e06b43e8610a29557ae4ffb479e8ed4d420c82d7a144f4c688270f7",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 135300,
+        "hiddenRgb": 0
+      },
+      "outputBytes": 213300,
+      "outputSha256": "cf50f8397859e9ed0f8a4c5dfdd91ff7a52be91eb2d215a4904f8fd3d6b350c0",
+      "outputPixels": {
+        "width": 451,
+        "height": 300,
+        "hash": "64fe24103e06b43e8610a29557ae4ffb479e8ed4d420c82d7a144f4c688270f7",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 135300,
+        "hiddenRgb": 0
+      },
+      "pixelEqualsInput": true,
+      "outputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false,
+        "iccSha256": null,
+        "chunks": [
+          "IHDR",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      "coldMs": 91.752167,
+      "warmMs": [
+        81.842792,
+        81.0705,
+        81.63375,
+        83.615333,
+        83.68025
+      ],
+      "warmMedianMs": 81.842792,
+      "warmMinMs": 81.0705,
+      "warmMaxMs": 83.68025,
+      "file": null
+    },
+    {
+      "id": "gradient",
+      "inputBytes": 7450,
+      "inputSha256": "88ec37d80833096b1c820e3cb2a18058924b0d2dbc2e674d496c788f4f0fe9e0",
+      "inputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "df2debaac9d38a45f133286ebbd704a29aa3af991f4b13119bea3d4ec4979a8a",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "outputBytes": 4944,
+      "outputSha256": "547482c892eb0dc4ad63607d04ba96dc0a82590f5663812470e97bbd4c5f4f7e",
+      "outputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "df2debaac9d38a45f133286ebbd704a29aa3af991f4b13119bea3d4ec4979a8a",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "pixelEqualsInput": true,
+      "outputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false,
+        "iccSha256": null,
+        "chunks": [
+          "IHDR",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      "coldMs": 84.325833,
+      "warmMs": [
+        84.4775,
+        85.014333,
+        86.14775,
+        85.059,
+        85.127084
+      ],
+      "warmMedianMs": 85.059,
+      "warmMinMs": 84.4775,
+      "warmMaxMs": 86.14775,
+      "file": null
+    },
+    {
+      "id": "ui",
+      "inputBytes": 7610,
+      "inputSha256": "9ae7039efea687f92b5b1a0c99600b6e037be34cd6b1ccfb333ca265f646e847",
+      "inputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "dbd9d57259a4bb55537e6a2af48ca5267dd8fb81da1bc66ca99f306b5bc63cad",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "outputBytes": 3538,
+      "outputSha256": "d30ebda473c69898b655f9babbab0e173cff74d487bde96790ce732c423e1e78",
+      "outputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "dbd9d57259a4bb55537e6a2af48ca5267dd8fb81da1bc66ca99f306b5bc63cad",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "pixelEqualsInput": true,
+      "outputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false,
+        "iccSha256": null,
+        "chunks": [
+          "IHDR",
+          "PLTE",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      "coldMs": 20.524292,
+      "warmMs": [
+        19.636167,
+        20.878833,
+        19.9455,
+        19.62775,
+        20.025334
+      ],
+      "warmMedianMs": 19.9455,
+      "warmMinMs": 19.62775,
+      "warmMaxMs": 20.878833,
+      "file": {
+        "reportedBytes": 3538,
+        "actualBytes": 3538,
+        "sha256": "d30ebda473c69898b655f9babbab0e173cff74d487bde96790ce732c423e1e78",
+        "pixels": {
+          "width": 320,
+          "height": 240,
+          "hash": "dbd9d57259a4bb55537e6a2af48ca5267dd8fb81da1bc66ca99f306b5bc63cad",
+          "transparent": 0,
+          "semi": 0,
+          "opaque": 76800,
+          "hiddenRgb": 0
+        }
+      }
+    },
+    {
+      "id": "grayscale",
+      "inputBytes": 394,
+      "inputSha256": "96e7c6643642edf112ade917badc979345e5a0ceaceffa17d04570d5bc70c5a6",
+      "inputPixels": {
+        "width": 64,
+        "height": 16,
+        "hash": "e53d9e5822f1b5c0321dc7c127bba7e641d0d6e05c5bf0d94ccac5ecc4369465",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 1024,
+        "hiddenRgb": 0
+      },
+      "outputBytes": 85,
+      "outputSha256": "df657fc41475ddcea8b39ccefebe5dfa8778433419a022d6a2b140684986fded",
+      "outputPixels": {
+        "width": 64,
+        "height": 16,
+        "hash": "e53d9e5822f1b5c0321dc7c127bba7e641d0d6e05c5bf0d94ccac5ecc4369465",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 1024,
+        "hiddenRgb": 0
+      },
+      "pixelEqualsInput": true,
+      "outputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false,
+        "iccSha256": null,
+        "chunks": [
+          "IHDR",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      "coldMs": 1.656334,
+      "warmMs": [
+        1.545875,
+        1.530459,
+        1.533584,
+        1.5205,
+        1.465417
+      ],
+      "warmMedianMs": 1.530459,
+      "warmMinMs": 1.465417,
+      "warmMaxMs": 1.545875,
+      "file": null
+    },
+    {
+      "id": "rgba",
+      "inputBytes": 61394,
+      "inputSha256": "1706235121b55e8750c2cd7547d4b5b42b5a1f52ca1cdb49dec9e77b0b875bea",
+      "inputPixels": {
+        "width": 160,
+        "height": 120,
+        "hash": "7f0233b997908d3a0c10eb01d9b010e0647783914f0beafd9045078a3c16a2ba",
+        "transparent": 120,
+        "semi": 18960,
+        "opaque": 120,
+        "hiddenRgb": 120
+      },
+      "outputBytes": 319,
+      "outputSha256": "0998726bd1cdab6f703031a7ac7ab040fcc1f81e1ee5c4e46c4d9d6735d55271",
+      "outputPixels": {
+        "width": 160,
+        "height": 120,
+        "hash": "7f0233b997908d3a0c10eb01d9b010e0647783914f0beafd9045078a3c16a2ba",
+        "transparent": 120,
+        "semi": 18960,
+        "opaque": 120,
+        "hiddenRgb": 120
+      },
+      "pixelEqualsInput": true,
+      "outputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false,
+        "iccSha256": null,
+        "chunks": [
+          "IHDR",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      "coldMs": 19.030333,
+      "warmMs": [
+        19.400875,
+        19.064625,
+        19.425875,
+        19.201625,
+        19.147667
+      ],
+      "warmMedianMs": 19.201625,
+      "warmMinMs": 19.064625,
+      "warmMaxMs": 19.425875,
+      "file": null
+    },
+    {
+      "id": "metadata_default",
+      "inputBytes": 7343,
+      "inputSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "inputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "59ad1cdceaccef601555b872e9b9bca855cae601f30fd01ba2db670f71ec0495",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "outputBytes": 17702,
+      "outputSha256": "b3093e9bbc65e3e140f447557c884dec21fec914189afad69265f8507b2f4bc8",
+      "outputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "59ad1cdceaccef601555b872e9b9bca855cae601f30fd01ba2db670f71ec0495",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "pixelEqualsInput": true,
+      "outputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": false,
+        "iccSha256": null,
+        "chunks": [
+          "IHDR",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      "coldMs": 54.05875,
+      "warmMs": [
+        51.488833,
+        52.695458,
+        52.987792,
+        52.707959,
+        51.6215
+      ],
+      "warmMedianMs": 52.695458,
+      "warmMinMs": 51.488833,
+      "warmMaxMs": 52.987792,
+      "file": null
+    },
+    {
+      "id": "metadata_icc",
+      "inputBytes": 7343,
+      "inputSha256": "29a8b5ce307f40c8fa546da2e3773341451bcfc60106eb62fb71d8a101dfce70",
+      "inputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "59ad1cdceaccef601555b872e9b9bca855cae601f30fd01ba2db670f71ec0495",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "outputBytes": 18039,
+      "outputSha256": "c9d76d90c5ea221277742fa04ea3c4aa86d9f9496e15ee3e8ad2b70f40d2e4e4",
+      "outputPixels": {
+        "width": 320,
+        "height": 240,
+        "hash": "59ad1cdceaccef601555b872e9b9bca855cae601f30fd01ba2db670f71ec0495",
+        "transparent": 0,
+        "semi": 0,
+        "opaque": 76800,
+        "hiddenRgb": 0
+      },
+      "pixelEqualsInput": true,
+      "outputMetadata": {
+        "exif": false,
+        "gpsTag": false,
+        "xmp": false,
+        "icc": true,
+        "iccSha256": "c56e1685d888f5edb92fe07f2750f387f8fe8e91b32ff8fb0b56bfbbb9458353",
+        "chunks": [
+          "IHDR",
+          "iCCP",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      "coldMs": 52.715541,
+      "warmMs": [
+        52.136708,
+        51.744459,
+        52.238292,
+        52.346167,
+        55.37525
+      ],
+      "warmMedianMs": 52.238292,
+      "warmMinMs": 51.744459,
+      "warmMaxMs": 55.37525,
+      "file": null
+    }
+  ]
+}
